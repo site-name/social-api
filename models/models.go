@@ -189,8 +189,25 @@ type Statistic struct {
 func GetStatistic() (stats Statistic) {
 	stats.Counter.User = CountUsers()
 	stats.Counter.Org = CountOrganizations()
+	// stats.Counter.PublicKey, _ = x.Count(new(PublicKey))
+	// stats.Counter.Repo = CountRepositories(true)
+	// stats.Counter.Watch, _ = x.Count(new(Watch))
+	// stats.Counter.Star, _ = x.Count(new(Star))
+	// stats.Counter.Action, _ = x.Count(new(Action))
+	// stats.Counter.Access, _ = x.Count(new(Access))
+	// stats.Counter.Issue, _ = x.Count(new(Issue))
+	// stats.Counter.Comment, _ = x.Count(new(Comment))
 	stats.Counter.Oauth = 0
-
+	stats.Counter.Follow, _ = x.Count(new(Follow))
+	// stats.Counter.Mirror, _ = x.Count(new(Mirror))
+	// stats.Counter.Release, _ = x.Count(new(Release))
+	stats.Counter.LoginSource = CountLoginSources()
+	// stats.Counter.Webhook, _ = x.Count(new(Webhook))
+	// stats.Counter.Milestone, _ = x.Count(new(Milestone))
+	// stats.Counter.Label, _ = x.Count(new(Label))
+	// stats.Counter.HookTask, _ = x.Count(new(HookTask))
+	// stats.Counter.Team, _ = x.Count(new(Team))
+	// stats.Counter.Attachment, _ = x.Count(new(Attachment))
 	return
 }
 

@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"code.gitea.io/gitea/modules/generate"
 	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/generate"
 	"github.com/sitename/sitename/modules/user"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/unknwon/com"
@@ -145,6 +145,8 @@ var (
 	CookieUserName                     string
 	CookieRememberName                 string
 	ReverseProxyAuthUser               string
+	ReverseProxyLimit                  int
+	ReverseProxyTrustedProxies         []string
 	ReverseProxyAuthEmail              string
 	MinPasswordLength                  int
 	ImportLocalPaths                   bool
@@ -365,7 +367,7 @@ func getAppPath() (string, error) {
 	}
 
 	// Note: we don't use path.Dir here because it does not handle case
-	//	which path starts with two "/" in Windows: "//psf/Home/..."
+	// which path starts with two "/" in Windows: "//psf/Home/..."
 	return strings.ReplaceAll(appPath, "\\", "/"), err
 }
 
@@ -499,43 +501,42 @@ func NewContext() {
 	forcePathSeparator(LogRootPath)
 	RouterLogLevel = log.FromString(Cfg.Section("log").Key("ROUTER_LOG_LEVEL").MustString("Info"))
 
-	sec := Cfg.Section("server")
+	serverSection := Cfg.Section("server")
 	AppName = Cfg.Section("").Key("APP_NAME").MustString("Sitename: A selling platform")
 
 	Protocol = HTTP
-	switch sec.Key("PROTOCOL").String() {
+	switch serverSection.Key("PROTOCOL").String() {
 	case "https":
 		Protocol = HTTPS
-		CertFile = sec.Key("CERT_FILE").String()
-		KeyFile = sec.Key("KEY_FILE").String()
+		CertFile = serverSection.Key("CERT_FILE").String()
+		KeyFile = serverSection.Key("KEY_FILE").String()
 		if !filepath.IsAbs(CertFile) && len(CertFile) > 0 {
 			CertFile = filepath.Join(CustomPath, CertFile)
 		}
 		if !filepath.IsAbs(KeyFile) && len(KeyFile) > 0 {
 			KeyFile = filepath.Join(CustomPath, KeyFile)
 		}
-		// NOTE, there are more protocols like unix, fcgi+unix, fcgi
 	}
-	EnableLetsEncrypt = sec.Key("ENABLE_LETSENCRYPT").MustBool(false)
-	LetsEncryptTOS = sec.Key("LETSENCRYPT_ACCEPTTOS").MustBool(false)
+	EnableLetsEncrypt = serverSection.Key("ENABLE_LETSENCRYPT").MustBool(false)
+	LetsEncryptTOS = serverSection.Key("LETSENCRYPT_ACCEPTTOS").MustBool(false)
 	if !LetsEncryptTOS && EnableLetsEncrypt {
 		log.Warn("Failed to enable Let's Encrypt due to Let's Encrypt TOS not being accepted")
 		EnableLetsEncrypt = false
 	}
-	LetsEncryptDirectory = sec.Key("LETSENCRYPT_DIRECTORY").MustString("https")
-	LetsEncryptEmail = sec.Key("LETSENCRYPT_EMAIL").MustString("")
-	Domain = sec.Key("DOMAIN").MustString("localhost")
-	HTTPAddr = sec.Key("HTTP_ADDR").MustString("0.0.0.0")
-	HTTPPort = sec.Key("HTTP_PORT").MustString("3000")
-	GracefulRestartable = sec.Key("ALLOW_GRACEFUL_RESTARTS").MustBool(true)
-	GracefulHammerTime = sec.Key("GRACEFUL_HAMMER_TIME").MustDuration(60 * time.Second)
-	StartupTimeout = sec.Key("STARTUP_TIMEOUT").MustDuration(0 * time.Second)
+	LetsEncryptDirectory = serverSection.Key("LETSENCRYPT_DIRECTORY").MustString("https")
+	LetsEncryptEmail = serverSection.Key("LETSENCRYPT_EMAIL").MustString("")
+	Domain = serverSection.Key("DOMAIN").MustString("localhost")
+	HTTPAddr = serverSection.Key("HTTP_ADDR").MustString("0.0.0.0")
+	HTTPPort = serverSection.Key("HTTP_PORT").MustString("3000")
+	GracefulRestartable = serverSection.Key("ALLOW_GRACEFUL_RESTARTS").MustBool(true)
+	GracefulHammerTime = serverSection.Key("GRACEFUL_HAMMER_TIME").MustDuration(60 * time.Second)
+	StartupTimeout = serverSection.Key("STARTUP_TIMEOUT").MustDuration(0 * time.Second)
 
 	defaultAppURL := string(Protocol) + "://" + Domain
 	if (Protocol == HTTP && HTTPPort != "80") || (Protocol == HTTPS && HTTPPort != "443") {
 		defaultAppURL = ":" + HTTPPort
 	}
-	AppURL = sec.Key("ROOT_URL").MustString(defaultAppURL + "/")
+	AppURL = serverSection.Key("ROOT_URL").MustString(defaultAppURL + "/")
 	// This should be TrimRight to ensure that there is only a single '/' at the end of AppURL.
 	AppURL = strings.TrimRight(AppURL, "/") + "/"
 
@@ -547,7 +548,7 @@ func NewContext() {
 	// Suburl should start with '/' and end without '/', such as '/{subpath}'.
 	// This value is empty if site does not have sub-url.
 	AppSubURL = strings.TrimSuffix(appURL.Path, "/")
-	StaticURLPrefix = strings.TrimSuffix(sec.Key("STATIC_URL_PREFIX").MustString(AppSubURL), "/")
+	StaticURLPrefix = strings.TrimSuffix(serverSection.Key("STATIC_URL_PREFIX").MustString(AppSubURL), "/")
 
 	// Check if Domain differs from AppURL domain than update it to AppURL's domain
 	urlHostname := appURL.Hostname()
@@ -573,20 +574,20 @@ func NewContext() {
 			defaultLocalURL += net.JoinHostPort(HTTPAddr, HTTPPort) + "/"
 		}
 	}
-	LocalURL = sec.Key("LOCAL_ROOT_URL").MustString(defaultLocalURL)
-	RedirectOtherPort = sec.Key("REDIRECT_OTHER_PORT").MustBool(false)
-	PortToRedirect = sec.Key("PORT_TO_REDIRECT").MustString("80")
-	OfflineMode = sec.Key("OFFLINE_MODE").MustBool()
-	DisableRouterLog = sec.Key("DISABLE_ROUTER_LOG").MustBool()
+	LocalURL = serverSection.Key("LOCAL_ROOT_URL").MustString(defaultLocalURL)
+	RedirectOtherPort = serverSection.Key("REDIRECT_OTHER_PORT").MustBool(false)
+	PortToRedirect = serverSection.Key("PORT_TO_REDIRECT").MustString("80")
+	OfflineMode = serverSection.Key("OFFLINE_MODE").MustBool()
+	DisableRouterLog = serverSection.Key("DISABLE_ROUTER_LOG").MustBool()
 	if len(StaticRootPath) == 0 {
 		StaticRootPath = AppWorkPath
 	}
-	StaticRootPath = sec.Key("STATIC_ROOT_PATH").MustString(StaticRootPath)
-	StaticCacheTime = sec.Key("STATIC_CACHE_TIME").MustDuration(6 * time.Hour)
-	AppDataPath = sec.Key("APP_DATA_PATH").MustString(path.Join(AppWorkPath, "data"))
-	EnableGzip = sec.Key("ENABLE_GZIP").MustBool()
-	EnablePprof = sec.Key("ENABLE_PPROF").MustBool(false)
-	PprofDataPath = sec.Key("PPROF_DATA_PATH").MustString(path.Join(AppWorkPath, "data/tmp/pprof"))
+	StaticRootPath = serverSection.Key("STATIC_ROOT_PATH").MustString(StaticRootPath)
+	StaticCacheTime = serverSection.Key("STATIC_CACHE_TIME").MustDuration(6 * time.Hour)
+	AppDataPath = serverSection.Key("APP_DATA_PATH").MustString(path.Join(AppWorkPath, "data"))
+	EnableGzip = serverSection.Key("ENABLE_GZIP").MustBool()
+	EnablePprof = serverSection.Key("ENABLE_PPROF").MustBool(false)
+	PprofDataPath = serverSection.Key("PPROF_DATA_PATH").MustString(path.Join(AppWorkPath, "data/tmp/pprof"))
 	if !filepath.IsAbs(PprofDataPath) {
 		PprofDataPath = filepath.Join(AppWorkPath, PprofDataPath)
 	}
@@ -595,15 +596,15 @@ func NewContext() {
 		SSH.Domain = Domain
 	}
 	SSH.RootPath = path.Join(homeDir, ".ssh")
-	serverCiphers := sec.Key("SSH_SERVER_CIPHERS").Strings(",")
+	serverCiphers := serverSection.Key("SSH_SERVER_CIPHERS").Strings(",")
 	if len(serverCiphers) > 0 {
 		SSH.ServerCiphers = serverCiphers
 	}
-	serverKeyExchanges := sec.Key("SSH_SERVER_KEY_EXCHANGES").Strings(",")
+	serverKeyExchanges := serverSection.Key("SSH_SERVER_KEY_EXCHANGES").Strings(",")
 	if len(serverKeyExchanges) > 0 {
 		SSH.ServerKeyExchanges = serverKeyExchanges
 	}
-	serverMACs := sec.Key("SSH_SERVER_MACS").Strings(",")
+	serverMACs := serverSection.Key("SSH_SERVER_MACS").Strings(",")
 	if len(serverMACs) > 0 {
 		SSH.ServerMACs = serverMACs
 	}
@@ -612,16 +613,16 @@ func NewContext() {
 		log.Fatal("Failed to map SSH settings: %v", err)
 	}
 
-	SSH.KeygenPath = sec.Key("SSH_KEYGEN_PATH").MustString("ssh-keygen")
-	SSH.Port = sec.Key("SSH_PORT").MustInt(22)
-	SSH.ListenPort = sec.Key("SSH_LISTEN_PORT").MustInt(SSH.Port)
+	SSH.KeygenPath = serverSection.Key("SSH_KEYGEN_PATH").MustString("ssh-keygen")
+	SSH.Port = serverSection.Key("SSH_PORT").MustInt(22)
+	SSH.ListenPort = serverSection.Key("SSH_LISTEN_PORT").MustInt(SSH.Port)
 
 	// When disable SSH, start builtin server value is ignored.
 	if SSH.Disabled {
 		SSH.StartBuiltinServer = false
 	}
 
-	trustedUserCaKeys := sec.Key("SSH_TRUSTED_USER_CA_KEYS").Strings(",")
+	trustedUserCaKeys := serverSection.Key("SSH_TRUSTED_USER_CA_KEYS").Strings(",")
 	for _, caKey := range trustedUserCaKeys {
 		pubKey, _, _, _, err := gossh.ParseAuthorizedKey([]byte(caKey))
 		if err != nil {
@@ -632,12 +633,12 @@ func NewContext() {
 	}
 	if len(trustedUserCaKeys) > 0 {
 		// Set the default as email,username otherwise we can leave it empty
-		sec.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").MustString("username,email")
+		serverSection.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").MustString("username,email")
 	} else {
-		sec.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").MustString("off")
+		serverSection.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").MustString("off")
 	}
 
-	SSH.AuthorizedPrincipalsAllow, SSH.AuthorizedPrincipalsEnabled = parseAuthorizedPrincipalsAllow(sec.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").Strings(","))
+	SSH.AuthorizedPrincipalsAllow, SSH.AuthorizedPrincipalsEnabled = parseAuthorizedPrincipalsAllow(serverSection.Key("SSH_AUTHORIZED_PRINCIPALS_ALLOW").Strings(","))
 
 	if !SSH.Disabled && !SSH.StartBuiltinServer {
 		if err := os.MkdirAll(SSH.RootPath, 0700); err != nil {
@@ -647,7 +648,7 @@ func NewContext() {
 		}
 
 		if len(trustedUserCaKeys) > 0 && SSH.AuthorizedPrincipalsEnabled {
-			fname := sec.Key("SSH_TRUSTED_USER_CA_KEYS_FILENAME").MustString(filepath.Join(SSH.RootPath, "sitename-trusted-user-ca-keys.pem"))
+			fname := serverSection.Key("SSH_TRUSTED_USER_CA_KEYS_FILENAME").MustString(filepath.Join(SSH.RootPath, "sitename-trusted-user-ca-keys.pem"))
 			if err := ioutil.WriteFile(fname,
 				[]byte(strings.Join(trustedUserCaKeys, "\n")), 0600); err != nil {
 				log.Fatal("Failed to create '%s': %v", fname, err)
@@ -655,7 +656,7 @@ func NewContext() {
 		}
 	}
 
-	SSH.MinimumKeySizeCheck = sec.Key("MINIMUM_KEY_SIZE_CHECK").MustBool(SSH.MinimumKeySizeCheck)
+	SSH.MinimumKeySizeCheck = serverSection.Key("MINIMUM_KEY_SIZE_CHECK").MustBool(SSH.MinimumKeySizeCheck)
 	minimumKeySizes := Cfg.Section("ssh.minimum_key_sizes").Keys()
 	for _, key := range minimumKeySizes {
 		if key.MustInt() != -1 {
@@ -665,17 +666,17 @@ func NewContext() {
 		}
 	}
 
-	SSH.AuthorizedKeysBackup = sec.Key("SSH_AUTHORIZED_KEYS_BACKUP").MustBool(true)
-	SSH.CreateAuthorizedKeysFile = sec.Key("SSH_CREATE_AUTHORIZED_KEYS_FILE").MustBool(true)
+	SSH.AuthorizedKeysBackup = serverSection.Key("SSH_AUTHORIZED_KEYS_BACKUP").MustBool(true)
+	SSH.CreateAuthorizedKeysFile = serverSection.Key("SSH_CREATE_AUTHORIZED_KEYS_FILE").MustBool(true)
 
 	SSH.AuthorizedPrincipalsBackup = false
 	SSH.CreateAuthorizedPrincipalsFile = false
 	if SSH.AuthorizedPrincipalsEnabled {
-		SSH.AuthorizedPrincipalsBackup = sec.Key("SSH_AUTHORIZED_PRINCIPALS_BACKUP").MustBool(true)
-		SSH.CreateAuthorizedPrincipalsFile = sec.Key("SSH_CREATE_AUTHORIZED_PRINCIPALS_FILE").MustBool(true)
+		SSH.AuthorizedPrincipalsBackup = serverSection.Key("SSH_AUTHORIZED_PRINCIPALS_BACKUP").MustBool(true)
+		SSH.CreateAuthorizedPrincipalsFile = serverSection.Key("SSH_CREATE_AUTHORIZED_PRINCIPALS_FILE").MustBool(true)
 	}
 
-	SSH.ExposeAnonymous = sec.Key("SSH_EXPOSE_ANONYMOUS").MustBool(false)
+	SSH.ExposeAnonymous = serverSection.Key("SSH_EXPOSE_ANONYMOUS").MustBool(false)
 
 	if err = Cfg.Section("oauth2").MapTo(&OAuth2); err != nil {
 		log.Fatal("Failed to OAuth2 settings: %v", err)
@@ -716,29 +717,34 @@ func NewContext() {
 		}
 	}
 
-	sec = Cfg.Section("admin")
-	Admin.DefaultEmailNotification = sec.Key("DEFAULT_EMAIL_NOTIFICATIONS").MustString("enabled")
+	adminSection := Cfg.Section("admin")
+	Admin.DefaultEmailNotification = adminSection.Key("DEFAULT_EMAIL_NOTIFICATIONS").MustString("enabled")
 
-	sec = Cfg.Section("security")
-	InstallLock = sec.Key("INSTALL_LOCK").MustBool(false)
-	SecretKey = sec.Key("SECRET_KEY").MustString("!#@FDEWREWR&*(")
-	LogInRememberDays = sec.Key("LOGIN_REMEMBER_DAYS").MustInt(7)
-	CookieUserName = sec.Key("COOKIE_USERNAME").MustString("gitea_awesome")
-	CookieRememberName = sec.Key("COOKIE_REMEMBER_NAME").MustString("gitea_incredible")
-	ReverseProxyAuthUser = sec.Key("REVERSE_PROXY_AUTHENTICATION_USER").MustString("X-WEBAUTH-USER")
-	ReverseProxyAuthEmail = sec.Key("REVERSE_PROXY_AUTHENTICATION_EMAIL").MustString("X-WEBAUTH-EMAIL")
-	MinPasswordLength = sec.Key("MIN_PASSWORD_LENGTH").MustInt(6)
-	ImportLocalPaths = sec.Key("IMPORT_LOCAL_PATHS").MustBool(false)
-	DisableGitHooks = sec.Key("DISABLE_GIT_HOOKS").MustBool(true)
-	DisableWebhooks = sec.Key("DISABLE_WEBHOOKS").MustBool(false)
-	OnlyAllowPushIfGiteaEnvironmentSet = sec.Key("ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET").MustBool(true)
-	PasswordHashAlgo = sec.Key("PASSWORD_HASH_ALGO").MustString("pbkdf2")
-	CSRFCookieHTTPOnly = sec.Key("CSRF_COOKIE_HTTP_ONLY").MustBool(true)
-	PasswordCheckPwn = sec.Key("PASSWORD_CHECK_PWN").MustBool(false)
+	adminSection = Cfg.Section("security")
+	InstallLock = adminSection.Key("INSTALL_LOCK").MustBool(false)
+	SecretKey = adminSection.Key("SECRET_KEY").MustString("!#@FDEWREWR&*(")
+	LogInRememberDays = adminSection.Key("LOGIN_REMEMBER_DAYS").MustInt(7)
+	CookieUserName = adminSection.Key("COOKIE_USERNAME").MustString("gitea_awesome")
+	CookieRememberName = adminSection.Key("COOKIE_REMEMBER_NAME").MustString("gitea_incredible")
+	ReverseProxyAuthUser = adminSection.Key("REVERSE_PROXY_AUTHENTICATION_USER").MustString("X-WEBAUTH-USER")
+	ReverseProxyAuthEmail = adminSection.Key("REVERSE_PROXY_AUTHENTICATION_EMAIL").MustString("X-WEBAUTH-EMAIL")
+	ReverseProxyLimit = adminSection.Key("REVERSE_PROXY_LIMIT").MustInt(1)
+	ReverseProxyTrustedProxies = adminSection.Key("REVERSE_PROXY_TRUSTED_PROXIES").Strings(",")
+	if len(ReverseProxyTrustedProxies) == 0 {
+		ReverseProxyTrustedProxies = []string{"127.0.0.0/8", "::1/128"}
+	}
+	MinPasswordLength = adminSection.Key("MIN_PASSWORD_LENGTH").MustInt(6)
+	ImportLocalPaths = adminSection.Key("IMPORT_LOCAL_PATHS").MustBool(false)
+	DisableGitHooks = adminSection.Key("DISABLE_GIT_HOOKS").MustBool(true)
+	DisableWebhooks = adminSection.Key("DISABLE_WEBHOOKS").MustBool(false)
+	OnlyAllowPushIfGiteaEnvironmentSet = adminSection.Key("ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET").MustBool(true)
+	PasswordHashAlgo = adminSection.Key("PASSWORD_HASH_ALGO").MustString("pbkdf2")
+	CSRFCookieHTTPOnly = adminSection.Key("CSRF_COOKIE_HTTP_ONLY").MustBool(true)
+	PasswordCheckPwn = adminSection.Key("PASSWORD_CHECK_PWN").MustBool(false)
 
-	InternalToken = loadInternalToken(sec)
+	InternalToken = loadInternalToken(adminSection)
 
-	cfgdata := sec.Key("PASSWORD_COMPLEXITY").Strings(",")
+	cfgdata := adminSection.Key("PASSWORD_COMPLEXITY").Strings(",")
 	if len(cfgdata) == 0 {
 		cfgdata = []string{"off"}
 	}
@@ -838,10 +844,10 @@ func MakeAbsoluteAssetURL(appURL string, staticURLPrefix string) string {
 	if err == nil && parsedPrefix.Hostname() == "" {
 		if staticURLPrefix == "" {
 			return strings.TrimSuffix(appURL, "/")
-
-			// StaticURLPrefix is just a path
-			return strings.TrimSuffix(appURL, "/") + strings.TrimSuffix(staticURLPrefix, "/")
 		}
+
+		// StaticURLPrefix is just a path
+		return util.URLJoin(appURL, strings.TrimSuffix(staticURLPrefix, "/"))
 	}
 
 	return strings.TrimSuffix(staticURLPrefix, "/")

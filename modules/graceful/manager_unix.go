@@ -62,6 +62,7 @@ func (g *Manager) start(ctx context.Context) {
 		// They're logged in the CloseProvidedListeners function
 		_ = CloseProvidedListeners()
 	}()
+
 	if setting.StartupTimeout > 0 {
 		go func() {
 			select {

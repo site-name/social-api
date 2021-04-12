@@ -5,8 +5,14 @@ go 1.14
 require (
 	code.gitea.io/gitea v1.13.2
 	gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e
+	gitea.com/go-chi/captcha v0.0.0-20210110083842-e7696c336a1e
 	github.com/99designs/gqlgen v0.13.0
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/caddyserver/certmagic v0.12.0
+	github.com/chi-middleware/proxy v1.1.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-chi/chi v3.3.2+incompatible
+	github.com/go-chi/cors v1.2.0
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-redis/redis/v8 v8.6.0
 	github.com/gogs/cron v0.0.0-20171120032916-9f6c956d3e14
@@ -23,15 +29,18 @@ require (
 	github.com/minio/minio-go/v7 v7.0.4
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/oliamb/cutter v0.2.2
+	github.com/prometheus/client_golang v1.10.0
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.0
+	github.com/tstranex/u2f v1.0.0
 	github.com/unknwon/com v1.0.1
 	github.com/unknwon/i18n v0.0.0-20200823051745-09abd91c7f2c
-	github.com/urfave/cli v1.20.0
+	github.com/urfave/cli v1.22.1
 	github.com/vektah/gqlparser/v2 v2.1.0
 	golang.org/x/crypto v0.0.0-20201217014255-9d1352758620
-	golang.org/x/sys v0.0.0-20210112080510-489259a85091
+	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2
+	golang.org/x/text v0.3.3
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251

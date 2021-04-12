@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/modules/setting"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/routers"
+	"github.com/sitename/sitename/routers/routes"
 	"github.com/urfave/cli"
 	"gopkg.in/ini.v1"
 )
@@ -92,8 +93,32 @@ func runWeb(ctx *cli.Context) error {
 		}
 	}
 
-	// Set up Chi routes
+	NoInstallListener()
+	if setting.EnablePprof {
+		go func() {
+			log.Info("Starting pport server on localhost:6060")
+			log.Info("%v", http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
 
+	log.Info("Global init")
+	// perform global initialization
+	routers.GlobalInit(graceful.GetManager().HammerContext())
+
+	// Override the provided port number within the configuration
+	if ctx.IsSet("port") {
+		if err := setPort(ctx.String("port")); err != nil {
+			return err
+		}
+	}
+
+	// Setup chi routes
+	c := routes.NormalRoutes()
+	err := listen(c, true)
+	<-graceful.GetManager().Done()
+	log.Info("PID: %d Sitename Web Finished", os.Getpid())
+	log.Close()
+	return err
 }
 
 func setPort(port string) error {
@@ -165,21 +190,21 @@ func listen(m http.Handler, handleRedirector bool) error {
 			}
 		}
 		err = runHTTPS("tcp", listenAddr, "Web", setting.CertFile, setting.KeyFile, context2.ClearHandler(m))
-	case setting.FCGI:
-		if handleRedirector {
-			NoHTTPRedirector()
-		}
-		err = runFCGI("tcp", listenAddr, "FCGI Web", context2.ClearHandler(m))
-	case setting.UnixSocket:
-		if handleRedirector {
-			NoHTTPRedirector()
-		}
-		err = runHTTP("unix", listenAddr, "Web", context2.ClearHandler(m))
-	case setting.FCGIUnix:
-		if handleRedirector {
-			NoHTTPRedirector()
-		}
-		err = runFCGI("unix", listenAddr, "Web", context2.ClearHandler(m))
+	// case setting.FCGI:
+	// 	if handleRedirector {
+	// 		NoHTTPRedirector()
+	// 	}
+	// 	err = runFCGI("tcp", listenAddr, "FCGI Web", context2.ClearHandler(m))
+	// case setting.UnixSocket:
+	// 	if handleRedirector {
+	// 		NoHTTPRedirector()
+	// 	}
+	// 	err = runHTTP("unix", listenAddr, "Web", context2.ClearHandler(m))
+	// case setting.FCGIUnix:
+	// 	if handleRedirector {
+	// 		NoHTTPRedirector()
+	// 	}
+	// 	err = runFCGI("unix", listenAddr, "Web", context2.ClearHandler(m))
 	default:
 		log.Fatal("Invalid protocol: %s", setting.Protocol)
 	}
