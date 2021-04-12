@@ -19,7 +19,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-var cmdWeb = cli.Command{
+var CmdWeb = cli.Command{
 	Name:        "web",
 	Usage:       "Start Sitename web server",
 	Description: "Sitename web server is the only thing you need to run",

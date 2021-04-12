@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sitename/sitename/cmd"
+	"github.com/sitename/sitename/modules/log"
 	"github.com/sitename/sitename/modules/setting"
 	"github.com/urfave/cli"
 )
@@ -40,7 +42,12 @@ func main() {
 	app.Usage = "selling platform"
 	app.Description = "Selling platform"
 	app.Version = Version + formatBuiltWith()
-	app.Commands = []cli.Command{}
+	app.Commands = []cli.Command{
+		cmd.CmdWeb,
+		cmd.CmdMigrate,
+		cmd.CmdCert,
+		cmd.CmdGenerate,
+	}
 
 	setting.SetCustomPathAndConf("", "", "")
 	setAppHelpTemplates()
@@ -65,10 +72,28 @@ func main() {
 	}
 
 	// Set the default to be equivalent to cmdWeb and add the default flags
+	app.Flags = append(app.Flags, cmd.CmdWeb.Flags...)
 	app.Flags = append(app.Flags, defaultFlags...)
+	app.Action = cmd.CmdWeb.Action
 
 	// Add functions to set these paths and these flags to the commands
 	app.Before = establishCustomPath
+	for i := range app.Commands {
+		setFlagsAndBeforeOnSubcommands(&app.Commands[i], defaultFlags, establishCustomPath)
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal("Failed to run app with %s: %v", os.Args, err)
+	}
+}
+
+func setFlagsAndBeforeOnSubcommands(command *cli.Command, defaultFlags []cli.Flag, before cli.BeforeFunc) {
+	command.Flags = append(command.Flags, defaultFlags...)
+	command.Before = establishCustomPath
+	for i := range command.Subcommands {
+		setFlagsAndBeforeOnSubcommands(&command.Subcommands[i], defaultFlags, before)
+	}
 }
 
 func establishCustomPath(ctx *cli.Context) error {
