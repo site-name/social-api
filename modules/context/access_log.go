@@ -6,8 +6,8 @@ package context
 // 	"net/http"
 // 	"time"
 
-// 	"code.gitea.io/gitea/modules/log"
-// 	"code.gitea.io/gitea/modules/setting"
+// 	"github.com/sitename/sitename/modules/log"
+// 	"github.com/sitename/sitename/modules/setting"
 // )
 
 // type routerLoggerOptions struct {

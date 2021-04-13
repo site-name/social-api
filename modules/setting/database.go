@@ -40,12 +40,12 @@ func InitDBConfig() {
 	defaultCharset := "utf8"
 
 	Database.Host = sec.Key("HOST").String()
-	Database.Name = sec.Key("NAME").String()
-	Database.User = sec.Key("USER").String()
+	Database.Name = sec.Key("NAME").MustString("sitename")
+	Database.User = sec.Key("USER").MustString("minh")
 	if len(Database.Passwd) == 0 {
-		Database.Passwd = sec.Key("PASSWD").String()
+		Database.Passwd = sec.Key("PASSWD").MustString("anhyeuem98")
 	}
-	Database.Schema = sec.Key("SCHEMA").String()
+	Database.Schema = sec.Key("SCHEMA").MustString("postgres")
 	Database.SSLMode = sec.Key("SSL_MODE").MustString("disable")
 	Database.Charset = sec.Key("CHARSET").In(defaultCharset, []string{"utf8", "utf8mb4"})
 	Database.Path = sec.Key("PATH").MustString(filepath.Join(AppDataPath, "gitea.db"))

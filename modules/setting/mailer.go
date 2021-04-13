@@ -4,7 +4,7 @@ import (
 	"net/mail"
 	"time"
 
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/log"
 
 	shellquote "github.com/kballard/go-shellquote"
 )

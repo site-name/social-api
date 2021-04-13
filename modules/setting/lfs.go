@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"code.gitea.io/gitea/modules/generate"
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/generate"
+	"github.com/sitename/sitename/modules/log"
 	"github.com/sitename/sitename/modules/util"
 
 	ini "gopkg.in/ini.v1"

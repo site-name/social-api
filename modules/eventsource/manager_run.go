@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/timeutil"
+	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/timeutil"
 	"github.com/sitename/sitename/models"
 	"github.com/sitename/sitename/modules/graceful"
 	"github.com/sitename/sitename/modules/setting"

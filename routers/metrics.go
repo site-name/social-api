@@ -4,7 +4,7 @@ import (
 	"crypto/subtle"
 	"net/http"
 
-	"code.gitea.io/gitea/modules/setting"
+	"github.com/sitename/sitename/modules/setting"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/log"
 
 	"github.com/go-ldap/ldap/v3"
 )

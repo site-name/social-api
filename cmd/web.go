@@ -64,9 +64,9 @@ func runWeb(ctx *cli.Context) error {
 	defer cancel()
 
 	if os.Getpid() > 1 && len(os.Getenv("LISTEN_FDS")) > 0 {
-		log.Info("Restarting Gitea on PID: %d from parent PID: %d", os.Getpid(), os.Getppid())
+		log.Info("Restarting Sitename on PID: %d from parent PID: %d", os.Getpid(), os.Getppid())
 	} else {
-		log.Info("Starting Gitea on PID: %d", os.Getpid())
+		log.Info("Starting Sitename on PID: %d", os.Getpid())
 	}
 
 	// Set pid file setting

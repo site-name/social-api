@@ -11,7 +11,8 @@ import (
 	"github.com/sitename/sitename/modules/eventsource"
 	"github.com/sitename/sitename/modules/log"
 	"github.com/sitename/sitename/modules/setting"
-	"github.com/sitename/sitename/modules/storage"
+
+	// "github.com/sitename/sitename/modules/storage"
 	"github.com/sitename/sitename/services/mailer"
 )
 
@@ -19,9 +20,9 @@ import (
 func NewServices() {
 	// run setting services
 	setting.NewServices()
-	if err := storage.Init(); err != nil {
-		log.Fatal("storage init failed: %v", err)
-	}
+	// if err := storage.Init(); err != nil {
+	// 	log.Fatal("storage init failed: %v", err)
+	// }
 
 	// run mailer service
 	mailer.NewContext()

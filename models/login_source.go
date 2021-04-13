@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/timeutil"
 	"github.com/sitename/sitename/modules/auth/ldap"
 	"github.com/sitename/sitename/modules/auth/oauth2"
+	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/timeutil"
 	"xorm.io/xorm"
 	"xorm.io/xorm/convert"
 )

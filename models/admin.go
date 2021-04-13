@@ -1,16 +1,11 @@
-// Copyright 2014 The Gogs Authors. All rights reserved.
-// Copyright 2020 The Gitea Authors. All rights reserved.
-// Use of this source code is governed by a MIT-style
-// license that can be found in the LICENSE file.
-
 package models
 
 import (
 	"fmt"
 
-	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/storage"
-	"code.gitea.io/gitea/modules/timeutil"
+	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/storage"
+	"github.com/sitename/sitename/modules/timeutil"
 	"github.com/sitename/sitename/modules/util"
 )
 

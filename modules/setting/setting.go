@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"code.gitea.io/gitea/modules/log"
 	"github.com/sitename/sitename/modules/generate"
+	"github.com/sitename/sitename/modules/log"
 	"github.com/sitename/sitename/modules/user"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/unknwon/com"
@@ -534,7 +534,7 @@ func NewContext() {
 
 	defaultAppURL := string(Protocol) + "://" + Domain
 	if (Protocol == HTTP && HTTPPort != "80") || (Protocol == HTTPS && HTTPPort != "443") {
-		defaultAppURL = ":" + HTTPPort
+		defaultAppURL += ":" + HTTPPort
 	}
 	AppURL = serverSection.Key("ROOT_URL").MustString(defaultAppURL + "/")
 	// This should be TrimRight to ensure that there is only a single '/' at the end of AppURL.

@@ -1,7 +1,7 @@
 package setting
 
 import (
-	// "code.gitea.io/gitea/modules/log"
+	// "github.com/sitename/sitename/modules/log"
 	// "fmt"
 	"path/filepath"
 	"strconv"

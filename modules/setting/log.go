@@ -14,7 +14,7 @@ import (
 	"strings"
 	"sync"
 
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/log"
 
 	ini "gopkg.in/ini.v1"
 )

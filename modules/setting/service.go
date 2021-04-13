@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"time"
 
-	"code.gitea.io/gitea/modules/structs"
+	"github.com/sitename/sitename/modules/structs"
 )
 
 // Service settings

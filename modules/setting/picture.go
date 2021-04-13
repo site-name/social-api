@@ -3,7 +3,7 @@ package setting
 import (
 	"net/url"
 
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/log"
 	"strk.kbt.io/projects/go/libravatar"
 )
 

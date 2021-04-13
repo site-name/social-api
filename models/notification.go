@@ -1,6 +1,6 @@
 package models
 
-import "code.gitea.io/gitea/modules/timeutil"
+import "github.com/sitename/sitename/modules/timeutil"
 
 type (
 	// NotificationStatus is the status of the notification (read or unread)

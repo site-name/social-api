@@ -1,7 +1,7 @@
 package models
 
 import (
-	"code.gitea.io/gitea/modules/timeutil"
+	"github.com/sitename/sitename/modules/timeutil"
 )
 
 // Follow represents relations of user and his/her followers.

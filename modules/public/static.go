@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"code.gitea.io/gitea/modules/log"
+	"github.com/sitename/sitename/modules/log"
 )
 
 // Static implements the static handler for serving assets.

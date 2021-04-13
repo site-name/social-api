@@ -3,8 +3,8 @@ package models
 import (
 	"sort"
 
-	"code.gitea.io/gitea/modules/log"
 	"github.com/sitename/sitename/modules/auth/oauth2"
+	"github.com/sitename/sitename/modules/log"
 )
 
 // OAuth2Provider describes the display values of a single OAuth2 provider
@@ -15,7 +15,7 @@ type OAuth2Provider struct {
 	CustomURLMapping *oauth2.CustomURLMapping
 }
 
-// OAuth2Providers contains the map of registered OAuth2 providers in Gitea (based on goth)
+// OAuth2Providers contains the map of registered OAuth2 providers in Sitename (based on goth)
 // key is used to map the OAuth2Provider with the goth provider type (also in LoginSource.OAuth2Config.Provider)
 // value is used to store display data
 var OAuth2Providers = map[string]OAuth2Provider{

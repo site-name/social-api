@@ -13,11 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"code.gitea.io/gitea/modules/base"
-	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/process"
-	"code.gitea.io/gitea/modules/queue"
+	"github.com/sitename/sitename/modules/base"
 	"github.com/sitename/sitename/modules/graceful"
+	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/process"
+	"github.com/sitename/sitename/modules/queue"
 	"github.com/sitename/sitename/modules/setting"
 
 	"github.com/jaytaylor/html2text"
