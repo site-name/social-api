@@ -8,26 +8,40 @@ import (
 	"time"
 )
 
+// DatabaseSetting holds settings for database
+type DatabaseSetting struct {
+	Host                     string
+	Name                     string
+	User                     string
+	Passwd                   string
+	Schema                   string
+	SSLMode                  string
+	Path                     string
+	LogSQL                   bool
+	Charset                  string
+	Timeout                  int // seconds
+	DBConnectRetries         int
+	DBConnectBackoff         time.Duration
+	MaxIdleConns             int
+	MaxOpenConns             int
+	ConnMaxLifetime          time.Duration
+	ConnMaxIdleTime          time.Duration
+	IterateBufferSize        int
+	DataSource               string
+	DataSourceReplicas       []string
+	DataSourceSearchReplicas []string
+	ReplicaLagSettings       []*ReplicaLagSetting
+}
+
+type ReplicaLagSetting struct {
+	DataSource       string
+	QueryAbsoluteLag string
+	QueryTimeLag     string
+}
+
 var (
 	// Database holds the database settings
-	Database = struct {
-		Host              string
-		Name              string
-		User              string
-		Passwd            string
-		Schema            string
-		SSLMode           string
-		Path              string
-		LogSQL            bool
-		Charset           string
-		Timeout           int // seconds
-		DBConnectRetries  int
-		DBConnectBackoff  time.Duration
-		MaxIdleConns      int
-		MaxOpenConns      int
-		ConnMaxLifetime   time.Duration
-		IterateBufferSize int
-	}{
+	Database = DatabaseSetting{
 		Timeout:           500,
 		IterateBufferSize: 50,
 	}
@@ -53,11 +67,19 @@ func InitDBConfig() {
 	Database.MaxIdleConns = sec.Key("MAX_IDLE_CONNS").MustInt(2)
 	Database.ConnMaxLifetime = sec.Key("CONN_MAX_LIFE_TIME").MustDuration(0)
 	Database.MaxOpenConns = sec.Key("MAX_OPEN_CONNS").MustInt(0)
-
 	Database.IterateBufferSize = sec.Key("ITERATE_BUFFER_SIZE").MustInt(50)
 	Database.LogSQL = sec.Key("LOG_SQL").MustBool(true)
 	Database.DBConnectRetries = sec.Key("DB_RETRIES").MustInt(10)
 	Database.DBConnectBackoff = sec.Key("DB_RETRY_BACKOFF").MustDuration(3 * time.Second)
+
+	Database.ConnMaxIdleTime = sec.Key("CONN_MAX_IDLE_TIME").MustDuration(0) // NOTE: database idle time is only supported in go >= 1.15
+	Database.DataSource, _ = DBConnStr()                                     // error is nil
+
+	replicaSec := Cfg.Section("database-replica")
+	// defaults settings for replications
+	Database.DataSourceReplicas = replicaSec.Key("DB_SOURCE_REPLICAS").Strings(",")
+	Database.DataSourceSearchReplicas = replicaSec.Key("DB_SOURCE_SEARCH_REPLICAS").Strings(",")
+	Database.ReplicaLagSettings = []*ReplicaLagSetting{} // NOTE: fix me
 }
 
 // DBConnStr returns database connection string

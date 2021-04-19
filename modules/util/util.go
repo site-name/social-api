@@ -120,3 +120,12 @@ func MergeInto(dict map[string]interface{}, values ...interface{}) (map[string]i
 
 	return dict, nil
 }
+
+func StringInSlice(a string, slice []string) bool {
+	for _, b := range slice {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
