@@ -35,10 +35,13 @@ type Server struct {
 	Server                             *http.Server
 	ListenAddr                         *net.TCPAddr
 	localModeServer                    *http.Server
+	metricsServer                      *http.Server
+	metricsRouter                      *mux.Router
 	metricsLock                        sync.Mutex
 	goroutineCount                     int32
 	hashSeed                           maphash.Seed
 	goroutineExitSignal                chan struct{}
+	didFinishListen                    chan struct{}
 	pushNotificationClient             *http.Client // TODO: move this to it's own package
 	runEssentialJobs                   bool
 	clusterLeaderListeners             sync.Map
@@ -76,6 +79,9 @@ type Server struct {
 	licenseValue                       atomic.Value
 	Jobs                               *jobs.JobServer
 	Metrics                            einterfaces.MetricsInterface
+	RateLimiter                        *RateLimiter
+	Busy                               *Busy
+	EmailService                       *EmailService
 }
 
 // func NewServer(options ...Option) (*Server, error) {

@@ -15,6 +15,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 // MaxWriteLength defines the maximum length accepted for write to the Configurations or
@@ -196,7 +197,7 @@ func (ds *DatabaseStore) persist(cfg *model.Config) error {
 	defer func() {
 		// Rollback after Commit just returns sql.ErrTxDone.
 		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-			slogError("Failed to rollback configuration transaction", slogErr(err))
+			slog.Error("Failed to rollback configuration transaction", slog.Err(err))
 		}
 	}()
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 // watcher monitors a file for changes
@@ -32,7 +33,7 @@ func newWatcher(path string, callback func()) (w *watcher, err error) {
 	configDir, _ := filepath.Split(path)
 	if err := fsWatcher.Add(configDir); err != nil {
 		if closeErr := fsWatcher.Close(); closeErr != nil {
-			slogError("failed to stop fsnotify watcher for %s", slogString("path", path), slogErr(closeErr))
+			slog.Error("failed to stop fsnotify watcher for %s", slog.String("path", path), slog.Err(closeErr))
 		}
 		return nil, errors.Wrapf(err, "failed to watch directory %s", configDir)
 	}
@@ -47,7 +48,7 @@ func newWatcher(path string, callback func()) (w *watcher, err error) {
 		defer close(w.closed)
 		defer func() {
 			if err := fsWatcher.Close(); err != nil {
-				slogError("failed to stop fsnotify watcher for %s", slogString("path", path))
+				slog.Error("failed to stop fsnotify watcher for %s", slog.String("path", path))
 			}
 		}()
 
@@ -57,12 +58,12 @@ func newWatcher(path string, callback func()) (w *watcher, err error) {
 				// We only care about the given file.
 				if filepath.Clean(event.Name) == path {
 					if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create {
-						slogInfo("Config file watcher detected a change", slogString("path", path))
+						slog.Info("Config file watcher detected a change", slog.String("path", path))
 						go callback()
 					}
 				}
 			case err := <-fsWatcher.Errors:
-				slogError("Failed while watching config file", slogString("path", path), slogErr(err))
+				slog.Error("Failed while watching config file", slog.String("path", path), slog.Err(err))
 			case <-w.close:
 				return
 			}

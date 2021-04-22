@@ -52,6 +52,7 @@ require (
 	github.com/splitio/go-client/v6 v6.1.0
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.0
+	github.com/throttled/throttled v2.2.5+incompatible
 	github.com/tidwall/gjson v1.7.5 // indirect
 	github.com/tinylib/msgp v1.1.5
 	github.com/unknwon/com v1.0.1

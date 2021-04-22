@@ -5,10 +5,12 @@ package config
 
 import (
 	"fmt"
+
+	"github.com/sitename/sitename/modules/slog"
 )
 
 type splitLogger struct {
-	wrappedLog *slogLogger
+	wrappedLog *slog.Logger
 }
 
 func (s *splitLogger) Error(msg ...interface{}) {

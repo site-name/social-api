@@ -1,6 +1,3 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
 package config
 
 import (
@@ -12,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
@@ -120,7 +118,7 @@ func (fs *FileStore) persist(cfg *model.Config) error {
 
 	if fs.watch && needsRestart {
 		if err = fs.Watch(fs.callback); err != nil {
-			slogError("failed to start config watcher", slogString("path", fs.path), slogErr(err))
+			slog.Error("failed to start config watcher", slog.String("path", fs.path), slog.Err(err))
 		}
 	}
 
@@ -198,7 +196,7 @@ func (fs *FileStore) HasFile(name string) (bool, error) {
 func (fs *FileStore) RemoveFile(name string) error {
 	if filepath.IsAbs(name) {
 		// Don't delete absolute filenames, as may be mounted drive, etc.
-		slogDebug("Skipping removal of configuration file with absolute path", slogString("filename", name))
+		slog.Debug("Skipping removal of configuration file with absolute path", slog.String("filename", name))
 		return nil
 	}
 	resolvedPath := filepath.Join(filepath.Dir(fs.path), name)
@@ -237,7 +235,7 @@ func (fs *FileStore) stopWatcher() {
 	}
 
 	if err := fs.watcher.Close(); err != nil {
-		slogError("failed to close watcher", slogErr(err))
+		slog.Error("failed to close watcher", slog.Err(err))
 	}
 	fs.watcher = nil
 }

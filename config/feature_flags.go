@@ -1,6 +1,3 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
 package config
 
 import (
@@ -14,13 +11,14 @@ import (
 	"github.com/splitio/go-client/v6/splitio/conf"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 type FeatureFlagSyncParams struct {
 	ServerID            string
 	SplitKey            string
 	SyncIntervalSeconds int
-	Log                 *slogLogger
+	Log                 *slog.Logger
 	Attributes          map[string]interface{}
 }
 
@@ -37,7 +35,7 @@ var featureNames = getStructFields(model.FeatureFlags{})
 func NewFeatureFlagSynchronizer(params FeatureFlagSyncParams) (*FeatureFlagSynchronizer, error) {
 	cfg := conf.Default()
 	if params.Log != nil {
-		cfg.Logger = &splitLogger{wrappedLog: params.Log.With(slogString("service", "split"))}
+		cfg.Logger = &splitLogger{wrappedLog: params.Log.With(slog.String("service", "split"))}
 	} else {
 		cfg.LoggerConfig.LogLevel = math.MinInt32
 	}
