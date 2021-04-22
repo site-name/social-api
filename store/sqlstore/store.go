@@ -202,7 +202,7 @@ type JSONSerializable interface {
 
 type SqlStore struct {
 	// rrCounter and srCounter should be kept first.
-	// See https://github.com/mattermost/mattermost-server/v5/pull/7281
+	// See https://github.com/sitename/sitename/pull/7281
 	rrCounter         int64
 	srCounter         int64
 	master            *gorp.DbMap

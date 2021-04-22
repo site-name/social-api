@@ -16,9 +16,9 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	MaxGroupChannelsForProfiles = 50
-)
+// const (
+// 	MaxGroupChannelsForProfiles = 50
+// )
 
 var (
 	UserSearchTypeNames_NO_FULL_NAME = []string{"Username", "Nickname"}
@@ -48,10 +48,9 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 		Select(
 			"u.Id", "u.CreateAt", "u.UpdateAt", "u.DeleteAt", "u.Username",
 			"u.Password", "u.AuthData", "u.AuthService", "u.Email", "u.EmailVerified",
-			"u.Nickname", "u.FirstName", "u.LastName", "u.Position", "u.Roles",
-			"u.AllowMarketing", "u.Props", "u.NotifyProps", "u.LastPasswordUpdate",
-			"u.LastPictureUpdate", "u.FailedAttempts", "u.Locale", "u.Timezone",
-			"u.MfaActive", "u.MfaSecret",
+			"u.Nickname", "u.FirstName", "u.LastName", "u.Roles", "u.AllowMarketing",
+			"u.Props", "u.NotifyProps", "u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts",
+			"u.Locale", "u.Timezone", "u.MfaActive", "u.MfaSecret",
 			"b.UserId IS NOT NULL AS IsBot", "COALESCE(b.Description, '') AS BotDescription", "COALESCE(b.LastIconUpdate, 0) AS BotLastIconUpdate", "u.RemoteId",
 		).
 		From("Users u").
@@ -73,7 +72,7 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 		table.ColMap("MfaSecret").SetMaxSize(128)
 		table.ColMap("Timezone").SetMaxSize(model.USER_TIMEZONE_MAX_RUNES)
 		table.ColMap("NotifyProps").SetMaxSize(2000)
-		// table.ColMap("Props").SetMaxSize(4000)
+		table.ColMap("Props").SetMaxSize(4000)
 		// table.ColMap("RemoteId").SetMaxSize(26)
 		// table.ColMap("Position").SetMaxSize(128)
 	}
@@ -278,7 +277,7 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 
 	user.Sanitize(map[string]bool{})
 	oldUser.Sanitize(map[string]bool{})
-	return &model.UserUpdate{user, oldUser}, nil
+	return &model.UserUpdate{New: user, Old: oldUser}, nil
 }
 
 func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
@@ -492,7 +491,7 @@ func (us *SqlUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.Use
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) GetProfilesByUsernames(usernames []string, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error) {
+func (us *SqlUserStore) GetProfilesByUsernames(usernames []string /*, viewRestrictions *model.ViewUsersRestrictions */) ([]*model.User, error) {
 	query := us.usersQuery
 	query = query.Where(map[string]interface{}{"Username": usernames}).OrderBy("u.Username ASC")
 

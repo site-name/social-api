@@ -1,7 +1,6 @@
 package model
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/http"
@@ -71,9 +70,6 @@ var (
 // please run make gen-serialized.
 type User struct {
 	Id                     string    `json:"id"`
-	CreateAt               int64     `json:"create_at,omitempty"`
-	UpdateAt               int64     `json:"update_at,omitempty"`
-	DeleteAt               int64     `json:"delete_at"`
 	Username               string    `json:"username"`
 	Password               string    `json:"password,omitempty"`
 	AuthData               *string   `json:"auth_data,omitempty"`
@@ -93,6 +89,9 @@ type User struct {
 	Timezone               StringMap `json:"timezone"`
 	MfaActive              bool      `json:"mfa_active,omitempty"`
 	MfaSecret              string    `json:"mfa_secret,omitempty"`
+	CreateAt               int64     `json:"create_at,omitempty"`
+	UpdateAt               int64     `json:"update_at,omitempty"`
+	DeleteAt               int64     `json:"delete_at"`
 	LastActivityAt         int64     `db:"-" json:"last_activity_at,omitempty"`
 	IsBot                  bool      `db:"-" json:"is_bot,omitempty"`
 	BotDescription         string    `db:"-" json:"bot_description,omitempty"`
@@ -140,21 +139,21 @@ type UserForIndexing struct {
 	DeleteAt  int64  `json:"delete_at"`
 }
 
-type ViewUsersRestrictions struct {
-	Teams    []string
-	Channels []string
-}
+// type ViewUsersRestrictions struct {
+// 	Teams    []string
+// 	Channels []string
+// }
 
-func (r *ViewUsersRestrictions) Hash() string {
-	if r == nil {
-		return ""
-	}
-	ids := append(r.Teams, r.Channels...)
-	sort.Strings(ids)
-	hash := sha256.New()
-	hash.Write([]byte(strings.Join(ids, "")))
-	return fmt.Sprintf("%x", hash.Sum(nil))
-}
+// func (r *ViewUsersRestrictions) Hash() string {
+// 	if r == nil {
+// 		return ""
+// 	}
+// 	ids := append(r.Teams, r.Channels...)
+// 	sort.Strings(ids)
+// 	hash := sha256.New()
+// 	hash.Write([]byte(strings.Join(ids, "")))
+// 	return fmt.Sprintf("%x", hash.Sum(nil))
+// }
 
 type UserSlice []*User
 
@@ -303,7 +302,7 @@ func (u *User) PreSave() {
 		u.Id = uuid.NewString()
 	}
 	if u.Username == "" {
-		u.Username = "user_" + uuid.NewString()
+		u.Username = "user_" + strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
@@ -630,7 +629,7 @@ func (u *UserPatch) SetField(fieldName string, fieldValue string) {
 // UserFromJson will decode the input and return a User
 func UserFromJson(data io.Reader) *User {
 	var user *User
-	json.JSON.NewDecoder(data).Decode(&user)
+	json.JSON.NewDecoder(data).Decode(user)
 	return user
 }
 
@@ -697,10 +696,6 @@ func IsValidUsername(s string) bool {
 
 func NormalizeUsername(username string) string {
 	return strings.ToLower(username)
-}
-
-func NormalizeEmail(email string) string {
-	return strings.ToLower(email)
 }
 
 func CleanUsername(uname string) string {

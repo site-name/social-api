@@ -9,14 +9,26 @@ import (
 type Store interface {
 	User() UserStore
 	System() SystemStore
+	Session() SessionStore
 	Token() TokenStore
 	Context() context.Context
+	Status() StatusStore
 	Close()
 	LockToMaster()
 	UnlockFromMaster()
 	DropAllTables()
 	SetContext(context context.Context)
 	Role() RoleStore
+	GetDbVersion(numerical bool) (string, error)
+}
+
+type StatusStore interface {
+	SaveOrUpdate(status *model.Status) error
+	Get(userID string) (*model.Status, error)
+	GetByIds(userIds []string) ([]*model.Status, error)
+	ResetAll() error
+	GetTotalActiveUsersCount() (int64, error)
+	UpdateLastActivityAt(userID string, lastActivityAt int64) error
 }
 
 type UserStore interface {
@@ -60,6 +72,7 @@ type UserStore interface {
 	DemoteUserToGuest(userID string) (*model.User, error)
 	DeactivateGuests() ([]string, error)
 	GetKnownUsers(userID string) ([]string, error)
+	Count(options model.UserCountOptions) (int64, error)
 
 	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
@@ -89,7 +102,6 @@ type UserStore interface {
 	// AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
 	// AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
 	// GetProfilesNotInTeam(teamID string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// Count(options model.UserCountOptions) (int64, error)
 	// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
 }
 
@@ -110,6 +122,11 @@ type TokenStore interface {
 	GetByToken(token string) (*model.Token, error)
 	Cleanup()
 	RemoveAllTokensByType(tokenType string) error
+}
+
+type SessionStore interface {
+	Save(s *model.Session) (*model.Session, error)
+	Cleanup(expiryTime int64, batchSize int64)
 }
 
 type UserAccessTokenStore interface {

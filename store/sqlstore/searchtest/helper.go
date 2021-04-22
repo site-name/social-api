@@ -9,8 +9,8 @@ package searchtest
 // 	"github.com/stretchr/testify/assert"
 // 	"github.com/stretchr/testify/require"
 
-// 	// "github.com/mattermost/mattermost-server/v5/model"
-// 	"github.com/mattermost/mattermost-server/v5/store"
+// 	// "github.com/sitename/sitename/model"
+// 	"github.com/sitename/sitename/store"
 // )
 
 // type SearchTestHelper struct {

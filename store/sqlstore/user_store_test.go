@@ -3,8 +3,8 @@ package sqlstore
 // import (
 // 	"testing"
 
-// 	"github.com/mattermost/mattermost-server/v5/store/searchtest"
-// 	"github.com/mattermost/mattermost-server/v5/store/storetest"
+// 	"github.com/sitename/sitename/store/searchtest"
+// 	"github.com/sitename/sitename/store/storetest"
 // )
 
 // func TestUserStore(t *testing.T) {

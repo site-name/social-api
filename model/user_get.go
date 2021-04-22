@@ -30,7 +30,7 @@ type UserGetOptions struct {
 	// Sorting option
 	Sort string
 	// Restrict to search in a list of teams and channels
-	ViewRestrictions *ViewUsersRestrictions
+	// ViewRestrictions *ViewUsersRestrictions
 	// Page
 	Page int
 	// Page size

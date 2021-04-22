@@ -5,8 +5,8 @@ package searchtest
 
 // 	"github.com/sitename/sitename/modules/util"
 // 	"github.com/sitename/sitename/store"
-// 	// "github.com/mattermost/mattermost-server/v5/store"
-// 	// "github.com/mattermost/mattermost-server/v5/utils"
+// 	// "github.com/sitename/sitename/store"
+// 	// "github.com/sitename/sitename/utils"
 // )
 
 // const (

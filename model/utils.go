@@ -21,9 +21,10 @@ import (
 const (
 	LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz"
 	UPPERCASE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	NUMBERS           = "0123456789"
-	SYMBOLS           = " !\"\\#$%&'()*+,-./:;<=>?@[]^_`|~"
-	MB                = 1 << 20
+	// SYMBOLS           = " !\"\\#$%&'()*+,-./:;<=>?@[]^_`|~"
+	// MB                = 1 << 20
+	// NUMBERS           = "0123456789"
+
 )
 
 var (
@@ -68,6 +69,15 @@ func (sa StringArray) Equals(input StringArray) bool {
 	}
 
 	return true
+}
+
+func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
+	decoder := json.JSON.NewDecoder(data)
+	var objMap map[string]interface{}
+	if err := decoder.Decode(&objMap); err != nil {
+		return make(map[string]interface{})
+	}
+	return objMap
 }
 
 // GetMillis is a convenience method to get milliseconds since epoch.
@@ -182,10 +192,6 @@ func IsLower(s string) bool {
 }
 
 func IsValidEmail(email string) bool {
-	if !IsLower(email) {
-		return false
-	}
-
 	if addr, err := mail.ParseAddress(email); err != nil {
 		return false
 	} else if addr.Name != "" {
@@ -316,6 +322,12 @@ func IsValidAlphaNum(s string) bool {
 	return validAlphaNum.MatchString(s)
 }
 
+// IsAllNumbers checks is string s contains only ASCII digits
+func IsAllNumbers(s string) bool {
+	validNumbers := regexp.MustCompile("^[0-9]+$")
+	return validNumbers.MatchString(s)
+}
+
 func IsValidAlphaNumHyphenUnderscore(s string, withFormat bool) bool {
 	if withFormat {
 		validAlphaNumHyphenUnderscore := regexp.MustCompile(`^[a-z0-9]+([a-z\-\_0-9]+|(__)?)[a-z0-9]+$`)
@@ -436,4 +448,14 @@ func IsValidWebsocketUrl(rawUrl string) bool {
 	}
 
 	return true
+}
+
+// NormalizeEmail is borrowed from django's BaseUserManager class
+func NormalizeEmail(email string) string {
+	splitEmail := strings.Split(email, "@")
+	if len(splitEmail) != 2 {
+		return email
+	}
+
+	return splitEmail[0] + "@" + strings.ToLower(splitEmail[1])
 }
