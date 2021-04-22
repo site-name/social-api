@@ -11,6 +11,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/config"
+	"github.com/sitename/sitename/einterfaces"
+	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -72,6 +74,8 @@ type Server struct {
 	statusCache                        cache.Cache
 	telemetryService                   *telemetry.TelemetryService
 	licenseValue                       atomic.Value
+	Jobs                               *jobs.JobServer
+	Metrics                            einterfaces.MetricsInterface
 }
 
 // func NewServer(options ...Option) (*Server, error) {

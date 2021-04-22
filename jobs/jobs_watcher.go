@@ -1,0 +1,183 @@
+package jobs
+
+import (
+	"math/rand"
+	"time"
+
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
+)
+
+// Default polling interval for jobs termination.
+// (Defining as `var` rather than `const` allows tests to lower the interval.)
+var DefaultWatcherPollingInterval = 15000
+
+type Watcher struct {
+	srv             *JobServer
+	workers         *Workers
+	stop            chan struct{}
+	stopped         chan struct{}
+	pollingInterval int
+}
+
+func (watcher *Watcher) Start() {
+	slog.Debug("Watcher Started")
+
+	// Delay for some random number of milliseconds before starting to ensure that multiple
+	// instances of the jobserver  don't poll at a time too close to each other.
+	rand.Seed(time.Now().UnixNano())
+	<-time.After(time.Duration(rand.Intn(watcher.pollingInterval)) * time.Millisecond)
+
+	defer func() {
+		slog.Debug("Watcher Finished")
+		close(watcher.stopped)
+	}()
+
+	for {
+		select {
+		case <-watcher.stop:
+			slog.Debug("Watcher: Received stop signal.")
+			return
+		case <-time.After(time.Duration(watcher.pollingInterval) * time.Millisecond):
+			watcher.PollAndNotify()
+		}
+	}
+}
+
+func (watcher *Watcher) Stop() {
+	slog.Debug("Watcher Stopping")
+	close(watcher.stop)
+	<-watcher.stopped
+}
+
+func (watcher *Watcher) PollAndNotify() {
+	jobs, err := watcher.srv.Store.Job().GetAllByStatus(model.JOB_STATUS_PENDING)
+	if err != nil {
+		slog.Error("Error occured getting all pending statuses.", slog.Err(err))
+		return
+	}
+
+	for _, job := range jobs {
+		switch job.Type {
+		case model.JOB_TYPE_DATA_RETENTION:
+			if watcher.workers.DataRetention != nil {
+				select {
+				case watcher.workers.DataRetention.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_MESSAGE_EXPORT:
+			if watcher.workers.MessageExport != nil {
+				select {
+				case watcher.workers.MessageExport.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_ELASTICSEARCH_POST_INDEXING:
+			if watcher.workers.ElasticsearchIndexing != nil {
+				select {
+				case watcher.workers.ElasticsearchIndexing.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_ELASTICSEARCH_POST_AGGREGATION:
+			if watcher.workers.ElasticsearchAggregation != nil {
+				select {
+				case watcher.workers.ElasticsearchAggregation.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_BLEVE_POST_INDEXING:
+			if watcher.workers.BleveIndexing != nil {
+				select {
+				case watcher.workers.BleveIndexing.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_LDAP_SYNC:
+			if watcher.workers.LdapSync != nil {
+				select {
+				case watcher.workers.LdapSync.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_MIGRATIONS:
+			if watcher.workers.Migrations != nil {
+				select {
+				case watcher.workers.Migrations.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_PLUGINS:
+			if watcher.workers.Plugins != nil {
+				select {
+				case watcher.workers.Plugins.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_EXPIRY_NOTIFY:
+			if watcher.workers.ExpiryNotify != nil {
+				select {
+				case watcher.workers.ExpiryNotify.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_PRODUCT_NOTICES:
+			if watcher.workers.ProductNotices != nil {
+				select {
+				case watcher.workers.ProductNotices.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_ACTIVE_USERS:
+			if watcher.workers.ActiveUsers != nil {
+				select {
+				case watcher.workers.ActiveUsers.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_IMPORT_PROCESS:
+			if watcher.workers.ImportProcess != nil {
+				select {
+				case watcher.workers.ImportProcess.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_IMPORT_DELETE:
+			if watcher.workers.ImportDelete != nil {
+				select {
+				case watcher.workers.ImportDelete.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_EXPORT_PROCESS:
+			if watcher.workers.ExportProcess != nil {
+				select {
+				case watcher.workers.ExportProcess.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_EXPORT_DELETE:
+			if watcher.workers.ExportDelete != nil {
+				select {
+				case watcher.workers.ExportDelete.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_CLOUD:
+			if watcher.workers.Cloud != nil {
+				select {
+				case watcher.workers.Cloud.JobChannel() <- *job:
+				default:
+				}
+			}
+		case model.JOB_TYPE_RESEND_INVITATION_EMAIL:
+			if watcher.workers.ResendInvitationEmail != nil {
+				select {
+				case watcher.workers.ResendInvitationEmail.JobChannel() <- *job:
+				default:
+				}
+			}
+		}
+	}
+}

@@ -1,10 +1,11 @@
 package model
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -25,14 +26,13 @@ const (
 	JOB_TYPE_EXPORT_DELETE                  = "export_delete"
 	JOB_TYPE_CLOUD                          = "cloud"
 	JOB_TYPE_RESEND_INVITATION_EMAIL        = "resend_invitation_email"
-
-	JOB_STATUS_PENDING          = "pending"
-	JOB_STATUS_IN_PROGRESS      = "in_progress"
-	JOB_STATUS_SUCCESS          = "success"
-	JOB_STATUS_ERROR            = "error"
-	JOB_STATUS_CANCEL_REQUESTED = "cancel_requested"
-	JOB_STATUS_CANCELED         = "canceled"
-	JOB_STATUS_WARNING          = "warning"
+	JOB_STATUS_PENDING                      = "pending"
+	JOB_STATUS_IN_PROGRESS                  = "in_progress"
+	JOB_STATUS_SUCCESS                      = "success"
+	JOB_STATUS_ERROR                        = "error"
+	JOB_STATUS_CANCEL_REQUESTED             = "cancel_requested"
+	JOB_STATUS_CANCELED                     = "canceled"
+	JOB_STATUS_WARNING                      = "warning"
 )
 
 var ALL_JOB_TYPES = [...]string{
@@ -112,33 +112,33 @@ func (j *Job) IsValid() *AppError {
 }
 
 func (j *Job) ToJson() string {
-	b, _ := json.Marshal(j)
+	b, _ := json.JSON.Marshal(j)
 	return string(b)
 }
 
 func JobFromJson(data io.Reader) *Job {
 	var job Job
-	if err := json.NewDecoder(data).Decode(&job); err == nil {
+	if err := json.JSON.NewDecoder(data).Decode(&job); err == nil {
 		return &job
 	}
 	return nil
 }
 
 func JobsToJson(jobs []*Job) string {
-	b, _ := json.Marshal(jobs)
+	b, _ := json.JSON.Marshal(jobs)
 	return string(b)
 }
 
 func JobsFromJson(data io.Reader) []*Job {
 	var jobs []*Job
-	if err := json.NewDecoder(data).Decode(&jobs); err == nil {
+	if err := json.JSON.NewDecoder(data).Decode(&jobs); err == nil {
 		return jobs
 	}
 	return nil
 }
 
 func (j *Job) DataToJson() string {
-	b, _ := json.Marshal(j.Data)
+	b, _ := json.JSON.Marshal(j.Data)
 	return string(b)
 }
 
