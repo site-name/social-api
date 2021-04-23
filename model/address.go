@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/modules/json"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 // length limits for address fields
@@ -201,7 +201,7 @@ func CleanNamePart(s string, nameType namePart) string {
 	name = strings.Trim(name, "-")
 
 	if !IsValidNamePart(name, nameType) {
-		log.Info("generatng new %s", nameType)
+		slog.Info("generatng new", slog.String("name type", string(nameType)))
 		name = "a" + strings.ReplaceAll(uuid.NewString(), "-", "")
 	}
 

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"crypto/ecdsa"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/util"
@@ -41,4 +43,25 @@ func (s *Server) MailServiceConfig() *mail.SMTPConfig {
 		ReplyToAddress:                    *emailSettings.ReplyToAddress,
 	}
 	return &cfg
+}
+
+// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
+func (s *Server) AsymmetricSigningKey() *ecdsa.PrivateKey {
+	if key := s.asymmetricSigningKey.Load(); key != nil {
+		return key.(*ecdsa.PrivateKey)
+	}
+	return nil
+}
+
+// Removes a listener function by the unique ID returned when AddConfigListener was called
+func (s *Server) RemoveConfigListener(id string) {
+	s.configStore.RemoveListener(id)
+}
+
+func (a *App) RemoveConfigListener(id string) {
+	a.Srv().RemoveConfigListener(id)
+}
+
+func (a *App) GetSiteURL() string {
+	return *a.Config().ServiceSettings.SiteURL
 }

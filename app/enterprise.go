@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/mattermost/mattermost-server/einterfaces"
-	ejobs "github.com/mattermost/mattermost-server/einterfaces/jobs"
+	"github.com/sitename/sitename/einterfaces"
+	ejobs "github.com/sitename/sitename/einterfaces/jobs"
 )
 
 var accountMigrationInterface func(*App) einterfaces.AccountMigrationInterface

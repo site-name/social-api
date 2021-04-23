@@ -50,7 +50,22 @@ func (a *App) CreateUserFromSignup(user *model.User, redirect string) (*model.Us
 
 	user.EmailVerified = false
 
-	// ruser, err := a.CreateUser(user)
+	ruser, err := a.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := a.Srv().EmailService.sendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale, a.GetSiteURL(), redirect); err != nil {
+		slog.Warn("Failed to send welcome email on create user from signup", slog.Err(err))
+	}
+
+	return ruser, nil
+}
+
+// CreateUser creates a user and sets several fields of the returned User struct to
+// their zero values.
+func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
+	// return a.createUserOrGuest(user, false)
 }
 
 func (s *Server) IsFirstUserAccount() bool {
@@ -67,9 +82,8 @@ func (s *Server) IsFirstUserAccount() bool {
 		if count <= 0 {
 			return true
 		}
-
-		return false
 	}
+	return false
 }
 
 func (a *App) IsFirstUserAccount() bool {
@@ -93,20 +107,20 @@ func (a *App) DeleteToken(token *model.Token) *model.AppError {
 	return nil
 }
 
-func (a *App) DeactivateGuests() *model.AppError {
-	userIDs, err := a.Srv().Store.User().DeactivateGuests()
-	if err != nil {
-		return model.NewAppError("DeactivateGuests", "app.user.update_active_for_multiple_users.updating.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+// func (a *App) DeactivateGuests() *model.AppError {
+// 	userIDs, err := a.Srv().Store.User().DeactivateGuests()
+// 	if err != nil {
+// 		return model.NewAppError("DeactivateGuests", "app.user.update_active_for_multiple_users.updating.app_error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
 
-	for _, userID := range userIDs {
-		if err := a.userDeactivated(userID); err != nil {
-			return err
-		}
-	}
+// 	for _, userID := range userIDs {
+// 		if err := a.userDeactivated(userID); err != nil {
+// 			return err
+// 		}
+// 	}
 
-	a.Srv().Store.User().ClearCaches()
-}
+// 	a.Srv().Store.User().ClearCaches()
+// }
 
 // func (a *App) userDeactivated(userID string) *model.AppError {
 // 	if err := a.Revo

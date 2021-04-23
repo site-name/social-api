@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -26,7 +27,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/log"
-	"github.com/sitename/sitename/modules/setting"
 	"github.com/sitename/sitename/store"
 )
 
@@ -84,7 +84,15 @@ const (
 )
 
 type SqlStoreStores struct {
-	user store.UserStore
+	user            store.UserStore
+	job             store.JobStore
+	session         store.SessionStore
+	preference      store.PreferenceStore
+	system          store.SystemStore
+	token           store.TokenStore
+	status          store.StatusStore
+	role            store.RoleStore
+	userAccessToken store.UserAccessTokenStore
 }
 
 type TraceOnAdapter struct{}
@@ -210,7 +218,7 @@ type SqlStore struct {
 	searchReplicas    []*gorp.DbMap
 	replicaLagHandles []*dbsql.DB
 	stores            SqlStoreStores
-	settings          *setting.DatabaseSetting
+	settings          *model.SqlSettings
 	lockedToMaster    bool
 	context           context.Context
 	license           *model.License
@@ -224,7 +232,7 @@ type ColumnInfo struct {
 	CharMaximumLength int
 }
 
-func New(settings setting.DatabaseSetting, metrics einterfaces.MetricsInterface) *SqlStore {
+func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlStore {
 	store := &SqlStore{
 		rrCounter: 0,
 		srCounter: 0,
@@ -258,7 +266,7 @@ func New(settings setting.DatabaseSetting, metrics einterfaces.MetricsInterface)
 }
 
 func (ss *SqlStore) DriverName() string {
-	return ss.settings.Schema
+	return *ss.settings.DriverName
 }
 
 func (ss *SqlStore) getQueryBuilder() squirrel.StatementBuilderType {
@@ -282,7 +290,7 @@ func (ss *SqlStore) GetAllConns() []*gorp.DbMap {
 // to d, and then resets them back to their original duration.
 func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	// Get old time
-	originalDuration := ss.settings.ConnMaxLifetime
+	originalDuration := time.Duration(*ss.settings.ConnMaxLifetimeMilliseconds) * time.Millisecond
 	// Set the max lifetimes for all connections.
 	for _, conn := range ss.GetAllConns() {
 		conn.Db.SetConnMaxLifetime(d)
@@ -419,6 +427,38 @@ func (ss *SqlStore) User() store.UserStore {
 	return ss.stores.user
 }
 
+func (ss *SqlStore) Job() store.JobStore {
+	return ss.stores.job
+}
+
+func (ss *SqlStore) System() store.SystemStore {
+	return ss.stores.system
+}
+
+func (ss *SqlStore) Session() store.SessionStore {
+	return ss.stores.session
+}
+
+func (ss *SqlStore) Preference() store.PreferenceStore {
+	return ss.stores.preference
+}
+
+func (ss *SqlStore) Token() store.TokenStore {
+	return ss.stores.token
+}
+
+func (ss *SqlStore) Status() store.StatusStore {
+	return ss.stores.status
+}
+
+func (ss *SqlStore) UserAccessToken() store.UserAccessTokenStore {
+	return ss.stores.userAccessToken
+}
+
+func (ss *SqlStore) Role() store.RoleStore {
+	return ss.stores.role
+}
+
 // Close databse and every replications
 func (ss *SqlStore) Close() {
 	ss.master.Db.Close()
@@ -473,7 +513,7 @@ func (ss *SqlStore) TotalMasterDbConnections() int {
 }
 
 func (ss *SqlStore) initConnection() {
-	ss.master = setupConnection("master", ss.settings.DataSource, ss.settings)
+	ss.master = setupConnection("master", *ss.settings.DataSource, ss.settings)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
 		ss.Replicas = make([]*gorp.DbMap, len(ss.settings.DataSourceReplicas))
@@ -492,17 +532,17 @@ func (ss *SqlStore) initConnection() {
 	if len(ss.settings.ReplicaLagSettings) > 0 {
 		ss.replicaLagHandles = make([]*dbsql.DB, len(ss.settings.ReplicaLagSettings))
 		for i, src := range ss.settings.ReplicaLagSettings {
-			if src.DataSource == "" {
+			if src.DataSource == nil {
 				continue
 			}
-			gorpConn := setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), src.DataSource, ss.settings)
+			gorpConn := setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), *src.DataSource, ss.settings)
 			ss.replicaLagHandles[i] = gorpConn.Db
 		}
 	}
 }
 
-func setupConnection(connType string, dataSource string, settings *setting.DatabaseSetting) *gorp.DbMap {
-	db, err := dbsql.Open(settings.Schema, dataSource)
+func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *gorp.DbMap {
+	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
 		log.Critical("Failed to open SQL connection: %v", err)
 		time.Sleep(time.Second)
@@ -532,17 +572,17 @@ func setupConnection(connType string, dataSource string, settings *setting.Datab
 		db.SetMaxIdleConns(1)
 		db.SetMaxOpenConns(1)
 	} else {
-		db.SetMaxIdleConns(settings.MaxIdleConns)
-		db.SetMaxOpenConns(settings.MaxOpenConns)
+		db.SetMaxIdleConns(*settings.MaxIdleConns)
+		db.SetMaxOpenConns(*settings.MaxOpenConns)
 	}
-	db.SetConnMaxLifetime(time.Duration(settings.ConnMaxLifetime) * time.Millisecond)
+	db.SetConnMaxLifetime(time.Duration(*settings.ConnMaxLifetimeMilliseconds) * time.Millisecond)
 
 	// only go 1.15 or above support this:
-	db.SetConnMaxIdleTime(time.Duration(settings.ConnMaxIdleTime) * time.Millisecond)
+	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
 	var dbmap *gorp.DbMap
 
-	if settings.Schema == model.DATABASE_DRIVER_POSTGRES {
+	if *settings.DriverName == model.DATABASE_DRIVER_POSTGRES {
 		dbmap = &gorp.DbMap{
 			Db:            db,
 			TypeConverter: mattermConverter{},
@@ -556,7 +596,7 @@ func setupConnection(connType string, dataSource string, settings *setting.Datab
 	}
 
 	// Check if need to perform database logging
-	if settings.LogSQL {
+	if settings.Trace != nil && *settings.Trace {
 		dbmap.TraceOn("sql-trace:", &TraceOnAdapter{})
 	}
 
@@ -595,7 +635,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 
 	// When WithInstance is used in golang-migrate, the underlying driver connections are not tracked.
 	// So we will have to open a fresh connection for migrations and explicitly close it when all is done.
-	dataSource := ss.appendMultipleStatementsFlag(ss.settings.DataSource)
+	dataSource := ss.appendMultipleStatementsFlag(*ss.settings.DataSource)
 	conn := setupConnection("migrations", dataSource, ss.settings)
 	defer conn.Db.Close()
 
@@ -910,4 +950,14 @@ func convertMySQLFullTextColumnsToPostgres(columnNames string) string {
 	}
 
 	return concatenatedColumnNames
+}
+
+// VersionString converts an integer representation of a DB version
+// to a pretty-printed string.
+// Postgres doesn't follow three-part version numbers from 10.0 onwards:
+// https://www.postgresql.org/docs/13/libpq-status.html#LIBPQ-PQSERVERVERSION.
+func VersionString(v int) string {
+	minor := v % 10000
+	major := v / 10000
+	return strconv.Itoa(major) + "." + strconv.Itoa(minor)
 }

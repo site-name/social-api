@@ -1,7 +1,7 @@
 package searchengine
 
 import (
-	"github.com/mattermost/mattermost-server/jobs"
+	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
 )
 

@@ -1,11 +1,7 @@
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
 package mail
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -74,7 +72,7 @@ func GetMailBox(email string) (results JSONMessageHeaderInbucket, err error) {
 	}
 
 	var record JSONMessageHeaderInbucket
-	err = json.NewDecoder(resp.Body).Decode(&record)
+	err = json.JSON.NewDecoder(resp.Body).Decode(&record)
 	switch {
 	case err == io.EOF:
 		return nil, fmt.Errorf("error: %s", err)
@@ -103,7 +101,7 @@ func GetMessageFromMailbox(email, id string) (JSONMessageInbucket, error) {
 		emailResponse.Body.Close()
 	}()
 
-	if err = json.NewDecoder(emailResponse.Body).Decode(&record); err != nil {
+	if err = json.JSON.NewDecoder(emailResponse.Body).Decode(&record); err != nil {
 		return record, err
 	}
 

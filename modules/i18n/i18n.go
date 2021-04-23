@@ -97,8 +97,7 @@ func GetUserTranslations(locale string) TranslateFunc {
 		locale = defaultLocale
 	}
 
-	translations := tfuncWithFallback(locale)
-	return translations
+	return tfuncWithFallback(locale)
 }
 
 // GetTranslationsAndLocaleFromRequest return the translation function and the

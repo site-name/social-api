@@ -11,9 +11,11 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/log"
 )
@@ -21,10 +23,9 @@ import (
 const (
 	LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz"
 	UPPERCASE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	// SYMBOLS           = " !\"\\#$%&'()*+,-./:;<=>?@[]^_`|~"
-	// MB                = 1 << 20
-	// NUMBERS           = "0123456789"
-
+	SYMBOLS           = " !\"\\#$%&'()*+,-./:;<=>?@[]^_`|~"
+	MB                = 1 << 20
+	NUMBERS           = "0123456789"
 )
 
 var (
@@ -43,6 +44,15 @@ func (sa StringArray) Remove(input string) StringArray {
 		}
 	}
 	return sa
+}
+
+var translateFunc i18n.TranslateFunc
+var translateFuncOnce sync.Once
+
+func AppErrorInit(t i18n.TranslateFunc) {
+	translateFuncOnce.Do(func() {
+		translateFunc = t
+	})
 }
 
 func (sa StringArray) Contains(input string) bool {
@@ -109,6 +119,7 @@ func GetEndOfDayMillis(thisTime time.Time, timeZoneOffset int) int64 {
 	return GetMillisForTime(resultTime)
 }
 
+// AppError represents error caused while the system is operating
 type AppError struct {
 	Id            string `json:"id"`
 	Message       string `json:"message"`               // Message to be display to the end user without debugging information

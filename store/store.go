@@ -1,3 +1,5 @@
+//go:generate go run layer_generators/main.go
+
 package store
 
 import (
@@ -11,6 +13,7 @@ type Store interface {
 	System() SystemStore
 	Job() JobStore
 	Session() SessionStore
+	Preference() PreferenceStore
 	Token() TokenStore
 	Context() context.Context
 	Status() StatusStore
@@ -21,6 +24,19 @@ type Store interface {
 	SetContext(context context.Context)
 	Role() RoleStore
 	GetDbVersion(numerical bool) (string, error)
+	UserAccessToken() UserAccessTokenStore
+}
+
+type PreferenceStore interface {
+	Save(preferences *model.Preferences) error
+	GetCategory(userID, category string) (model.Preferences, error)
+	Get(userID, category, name string) (*model.Preference, error)
+	GetAll(userID string) (model.Preferences, error)
+	Delete(userID, category, name string) error
+	DeleteCategory(userID string, category string) error
+	DeleteCategoryAndName(category string, name string) error
+	PermanentDeleteByUser(userID string) error
+	CleanupFlagsBatch(limit int64) (int64, error)
 }
 
 type JobStore interface {

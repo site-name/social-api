@@ -1,6 +1,8 @@
 package einterfaces
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model"
+)
 
 type MfaInterface interface {
 	GenerateSecret(user *model.User) (string, []byte, *model.AppError)

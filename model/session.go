@@ -34,8 +34,6 @@ const (
 	USER_AUTH_SERVICE_IS_OAUTH        = "isOAuthUser"
 )
 
-type StringMap map[string]string
-
 // Session contains the user session details.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.

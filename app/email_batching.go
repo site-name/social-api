@@ -100,13 +100,36 @@ func (job *EmailBatchingJob) handleNewNotifications() {
 }
 
 func (job *EmailBatchingJob) checkPendingNotifications(now time.Time, handler func(string, []*batchedNotification)) {
-
+	// for userID, notifications := range job.pendingNotifications {
+	// 	// get how long we need to wait to send notifications to the user
+	// 	preference, err := job.server.Store.Preference().Get(userID, model.PREFERENCE_CATEGORY_NOTIFICATIONS, model.PREFERENCE_NAME_EMAIL_INTERVAL)
+	// 	if err != nil {
+	// 		// use the default batching interval if an error ocurrs while fetching user preferences
+	// 		interval, _ =
+	// 	}
+	// }
 }
 
 func (es *EmailService) sendBatchedEmailNotification(userID string, notifications []*batchedNotification) {
+	// user, err := es.srv.Store.User().Get(context.Background(), userID)
+	// if err != nil {
+	// 	slog.Warn("Unable to find recipient for batched email notification")
+	// 	return
+	// }
 
+	// translatedFunc := i18n.GetUserTranslations(user.Locale)
+	// var content string
+	// for _, notification := range notifications {
+	// 	sender, err := es.srv.Store.User().Get(context.Background(), notification.userID)
+	// 	if err != nil {
+	// 		slog.Warn("Unable to find sender or post for batched email notification")
+	// 		continue
+	// 	}
+
+	// }
+	panic("not implemented")
 }
 
 func (es *EmailService) renderBatchedPost(notification *batchedNotification, sender *model.User, siteURL string, displayNameFormat string, translateFunc i18n.TranslateFunc, userLocale string, emailNotificationContentsType string) (string, error) {
-
+	panic("not implemented")
 }

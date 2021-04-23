@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/modules/json"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/language"
@@ -716,7 +716,7 @@ func CleanUsername(uname string) string {
 	s = strings.Trim(s, "-")
 
 	if !IsValidUsername(s) {
-		log.Info("generating new username")
+		slog.Info("generating new username")
 		s = "a" + uuid.New().String()
 	}
 
