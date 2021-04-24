@@ -43,16 +43,16 @@ type BLVFile struct {
 	Extension string
 }
 
-func BLVChannelFromChannel(channel *model.Channel) *BLVChannel {
-	displayNameInputs := searchengine.GetSuggestionInputsSplitBy(channel.DisplayName, " ")
-	nameInputs := searchengine.GetSuggestionInputsSplitByMultiple(channel.Name, []string{"-", "_"})
+// func BLVChannelFromChannel(channel *model.Channel) *BLVChannel {
+// 	displayNameInputs := searchengine.GetSuggestionInputsSplitBy(channel.DisplayName, " ")
+// 	nameInputs := searchengine.GetSuggestionInputsSplitByMultiple(channel.Name, []string{"-", "_"})
 
-	return &BLVChannel{
-		Id:          channel.Id,
-		TeamId:      []string{channel.TeamId},
-		NameSuggest: append(displayNameInputs, nameInputs...),
-	}
-}
+// 	return &BLVChannel{
+// 		Id:          channel.Id,
+// 		TeamId:      []string{channel.TeamId},
+// 		NameSuggest: append(displayNameInputs, nameInputs...),
+// 	}
+// }
 
 func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *BLVUser {
 	usernameSuggestions := searchengine.GetSuggestionInputsSplitByMultiple(user.Username, []string{".", "-", "_"})
@@ -87,40 +87,40 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	}
 }
 
-func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
-	user := &model.User{
-		Id:        userForIndexing.Id,
-		Username:  userForIndexing.Username,
-		Nickname:  userForIndexing.Nickname,
-		FirstName: userForIndexing.FirstName,
-		LastName:  userForIndexing.LastName,
-		CreateAt:  userForIndexing.CreateAt,
-		DeleteAt:  userForIndexing.DeleteAt,
-	}
+// func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
+// 	user := &model.User{
+// 		Id:        userForIndexing.Id,
+// 		Username:  userForIndexing.Username,
+// 		Nickname:  userForIndexing.Nickname,
+// 		FirstName: userForIndexing.FirstName,
+// 		LastName:  userForIndexing.LastName,
+// 		CreateAt:  userForIndexing.CreateAt,
+// 		DeleteAt:  userForIndexing.DeleteAt,
+// 	}
 
-	return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)
-}
+// 	return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)
+// }
 
-func BLVPostFromPost(post *model.Post, teamId string) *BLVPost {
-	p := &model.PostForIndexing{
-		TeamId: teamId,
-	}
-	post.ShallowCopy(&p.Post)
-	return BLVPostFromPostForIndexing(p)
-}
+// func BLVPostFromPost(post *model.Post, teamId string) *BLVPost {
+// 	p := &model.PostForIndexing{
+// 		TeamId: teamId,
+// 	}
+// 	post.ShallowCopy(&p.Post)
+// 	return BLVPostFromPostForIndexing(p)
+// }
 
-func BLVPostFromPostForIndexing(post *model.PostForIndexing) *BLVPost {
-	return &BLVPost{
-		Id:        post.Id,
-		TeamId:    post.TeamId,
-		ChannelId: post.ChannelId,
-		UserId:    post.UserId,
-		CreateAt:  post.CreateAt,
-		Message:   post.Message,
-		Type:      post.Type,
-		Hashtags:  strings.Fields(post.Hashtags),
-	}
-}
+// func BLVPostFromPostForIndexing(post *model.PostForIndexing) *BLVPost {
+// 	return &BLVPost{
+// 		Id:        post.Id,
+// 		TeamId:    post.TeamId,
+// 		ChannelId: post.ChannelId,
+// 		UserId:    post.UserId,
+// 		CreateAt:  post.CreateAt,
+// 		Message:   post.Message,
+// 		Type:      post.Type,
+// 		Hashtags:  strings.Fields(post.Hashtags),
+// 	}
+// }
 
 func splitFilenameWords(name string) string {
 	result := name
@@ -129,26 +129,26 @@ func splitFilenameWords(name string) string {
 	return result
 }
 
-func BLVFileFromFileInfo(fileInfo *model.FileInfo, channelId string) *BLVFile {
-	return &BLVFile{
-		Id:        fileInfo.Id,
-		ChannelId: channelId,
-		CreatorId: fileInfo.CreatorId,
-		CreateAt:  fileInfo.CreateAt,
-		Content:   fileInfo.Content,
-		Extension: fileInfo.Extension,
-		Name:      fileInfo.Name + " " + splitFilenameWords(fileInfo.Name),
-	}
-}
+// func BLVFileFromFileInfo(fileInfo *model.FileInfo, channelId string) *BLVFile {
+// 	return &BLVFile{
+// 		Id:        fileInfo.Id,
+// 		ChannelId: channelId,
+// 		CreatorId: fileInfo.CreatorId,
+// 		CreateAt:  fileInfo.CreateAt,
+// 		Content:   fileInfo.Content,
+// 		Extension: fileInfo.Extension,
+// 		Name:      fileInfo.Name + " " + splitFilenameWords(fileInfo.Name),
+// 	}
+// }
 
-func BLVFileFromFileForIndexing(file *model.FileForIndexing) *BLVFile {
-	return &BLVFile{
-		Id:        file.Id,
-		ChannelId: file.ChannelId,
-		CreatorId: file.CreatorId,
-		CreateAt:  file.CreateAt,
-		Content:   file.Content,
-		Extension: file.Extension,
-		Name:      file.Name + " " + splitFilenameWords(file.Name),
-	}
-}
+// func BLVFileFromFileForIndexing(file *model.FileForIndexing) *BLVFile {
+// 	return &BLVFile{
+// 		Id:        file.Id,
+// 		ChannelId: file.ChannelId,
+// 		CreatorId: file.CreatorId,
+// 		CreateAt:  file.CreateAt,
+// 		Content:   file.Content,
+// 		Extension: file.Extension,
+// 		Name:      file.Name + " " + splitFilenameWords(file.Name),
+// 	}
+// }

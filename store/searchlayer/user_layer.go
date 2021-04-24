@@ -2,9 +2,9 @@ package searchlayer
 
 import (
 	"context"
-	"strings"
+	// "strings"
 
-	"github.com/pkg/errors"
+	// "github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -31,60 +31,60 @@ func (s *SearchUserStore) deleteUserIndex(user *model.User) {
 	}
 }
 
-func (s *SearchUserStore) Search(teamId, term string, options *model.UserSearchOptions) ([]*model.User, error) {
-	for _, engine := range s.rootStore.searchEngine.GetActiveEngines() {
-		if engine.IsSearchEnabled() {
-			listOfAllowedChannels, nErr := s.getListOfAllowedChannelsForTeam(teamId, options.ViewRestrictions)
-			if nErr != nil {
-				slog.Warn("Encountered error on Search.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
-				continue
-			}
+// func (s *SearchUserStore) Search(teamId, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+// 	for _, engine := range s.rootStore.searchEngine.GetActiveEngines() {
+// 		if engine.IsSearchEnabled() {
+// 			listOfAllowedChannels, nErr := s.getListOfAllowedChannelsForTeam(teamId, options.ViewRestrictions)
+// 			if nErr != nil {
+// 				slog.Warn("Encountered error on Search.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
+// 				continue
+// 			}
 
-			if listOfAllowedChannels != nil && len(listOfAllowedChannels) == 0 {
-				return []*model.User{}, nil
-			}
+// 			if listOfAllowedChannels != nil && len(listOfAllowedChannels) == 0 {
+// 				return []*model.User{}, nil
+// 			}
 
-			sanitizedTerm := sanitizeSearchTerm(term)
+// 			sanitizedTerm := sanitizeSearchTerm(term)
 
-			usersIds, err := engine.SearchUsersInTeam(teamId, listOfAllowedChannels, sanitizedTerm, options)
-			if err != nil {
-				slog.Warn("Encountered error on Search", slog.String("search_engine", engine.GetName()), slog.Err(err))
-				continue
-			}
+// 			usersIds, err := engine.SearchUsersInTeam(teamId, listOfAllowedChannels, sanitizedTerm, options)
+// 			if err != nil {
+// 				slog.Warn("Encountered error on Search", slog.String("search_engine", engine.GetName()), slog.Err(err))
+// 				continue
+// 			}
 
-			users, nErr := s.UserStore.GetProfileByIds(context.Background(), usersIds, nil, false)
-			if nErr != nil {
-				slog.Warn("Encountered error on Search", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
-				continue
-			}
+// 			users, nErr := s.UserStore.GetProfileByIds(context.Background(), usersIds, nil, false)
+// 			if nErr != nil {
+// 				slog.Warn("Encountered error on Search", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
+// 				continue
+// 			}
 
-			slog.Debug("Using the first available search engine", slog.String("search_engine", engine.GetName()))
-			return users, nil
-		}
-	}
+// 			slog.Debug("Using the first available search engine", slog.String("search_engine", engine.GetName()))
+// 			return users, nil
+// 		}
+// 	}
 
-	slog.Debug("Using database search because no other search engine is available")
+// 	slog.Debug("Using database search because no other search engine is available")
 
-	return s.UserStore.Search(teamId, term, options)
-}
+// 	return s.UserStore.Search(teamId, term, options)
+// }
 
-func (s *SearchUserStore) Update(user *model.User, trustedUpdateData bool) (*model.UserUpdate, error) {
-	userUpdate, err := s.UserStore.Update(user, trustedUpdateData)
+// func (s *SearchUserStore) Update(user *model.User, trustedUpdateData bool) (*model.UserUpdate, error) {
+// 	userUpdate, err := s.UserStore.Update(user, trustedUpdateData)
 
-	if err == nil {
-		s.rootStore.indexUser(userUpdate.New)
-	}
-	return userUpdate, err
-}
+// 	if err == nil {
+// 		s.rootStore.indexUser(userUpdate.New)
+// 	}
+// 	return userUpdate, err
+// }
 
-func (s *SearchUserStore) Save(user *model.User) (*model.User, error) {
-	nuser, err := s.UserStore.Save(user)
+// func (s *SearchUserStore) Save(user *model.User) (*model.User, error) {
+// 	nuser, err := s.UserStore.Save(user)
 
-	if err == nil {
-		s.rootStore.indexUser(nuser)
-	}
-	return nuser, err
-}
+// 	if err == nil {
+// 		s.rootStore.indexUser(nuser)
+// 	}
+// 	return nuser, err
+// }
 
 func (s *SearchUserStore) PermanentDelete(userId string) error {
 	user, userErr := s.UserStore.Get(context.Background(), userId)
@@ -98,52 +98,52 @@ func (s *SearchUserStore) PermanentDelete(userId string) error {
 	return err
 }
 
-func (s *SearchUserStore) autocompleteUsersInChannelByEngine(engine searchengine.SearchEngineInterface, teamId, channelId, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error) {
-	var err *model.AppError
-	uchanIds := []string{}
-	nuchanIds := []string{}
-	sanitizedTerm := sanitizeSearchTerm(term)
-	if channelId != "" && options.ListOfAllowedChannels != nil && !strings.Contains(strings.Join(options.ListOfAllowedChannels, "."), channelId) {
-		nuchanIds, err = engine.SearchUsersInTeam(teamId, options.ListOfAllowedChannels, sanitizedTerm, options)
-	} else {
-		uchanIds, nuchanIds, err = engine.SearchUsersInChannel(teamId, channelId, options.ListOfAllowedChannels, sanitizedTerm, options)
-	}
-	if err != nil {
-		return nil, err
-	}
+// func (s *SearchUserStore) autocompleteUsersInChannelByEngine(engine searchengine.SearchEngineInterface, teamId, channelId, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error) {
+// 	var err *model.AppError
+// 	uchanIds := []string{}
+// 	nuchanIds := []string{}
+// 	sanitizedTerm := sanitizeSearchTerm(term)
+// 	if channelId != "" && options.ListOfAllowedChannels != nil && !strings.Contains(strings.Join(options.ListOfAllowedChannels, "."), channelId) {
+// 		nuchanIds, err = engine.SearchUsersInTeam(teamId, options.ListOfAllowedChannels, sanitizedTerm, options)
+// 	} else {
+// 		uchanIds, nuchanIds, err = engine.SearchUsersInChannel(teamId, channelId, options.ListOfAllowedChannels, sanitizedTerm, options)
+// 	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	uchan := make(chan store.StoreResult, 1)
-	go func() {
-		users, nErr := s.UserStore.GetProfileByIds(context.Background(), uchanIds, nil, false)
-		uchan <- store.StoreResult{Data: users, NErr: nErr}
-		close(uchan)
-	}()
+// 	uchan := make(chan store.StoreResult, 1)
+// 	go func() {
+// 		users, nErr := s.UserStore.GetProfileByIds(context.Background(), uchanIds, nil, false)
+// 		uchan <- store.StoreResult{Data: users, NErr: nErr}
+// 		close(uchan)
+// 	}()
 
-	nuchan := make(chan store.StoreResult, 1)
-	go func() {
-		users, nErr := s.UserStore.GetProfileByIds(context.Background(), nuchanIds, nil, false)
-		nuchan <- store.StoreResult{Data: users, NErr: nErr}
-		close(nuchan)
-	}()
+// 	nuchan := make(chan store.StoreResult, 1)
+// 	go func() {
+// 		users, nErr := s.UserStore.GetProfileByIds(context.Background(), nuchanIds, nil, false)
+// 		nuchan <- store.StoreResult{Data: users, NErr: nErr}
+// 		close(nuchan)
+// 	}()
 
-	autocomplete := &model.UserAutocompleteInChannel{}
+// 	autocomplete := &model.UserAutocompleteInChannel{}
 
-	result := <-uchan
-	if result.NErr != nil {
-		return nil, errors.Wrap(result.NErr, "failed to get user profiles by ids")
-	}
-	inUsers := result.Data.([]*model.User)
-	autocomplete.InChannel = inUsers
+// 	result := <-uchan
+// 	if result.NErr != nil {
+// 		return nil, errors.Wrap(result.NErr, "failed to get user profiles by ids")
+// 	}
+// 	inUsers := result.Data.([]*model.User)
+// 	autocomplete.InChannel = inUsers
 
-	result = <-nuchan
-	if result.NErr != nil {
-		return nil, errors.Wrap(result.NErr, "failed to get user profiles by ids")
-	}
-	outUsers := result.Data.([]*model.User)
-	autocomplete.OutOfChannel = outUsers
+// 	result = <-nuchan
+// 	if result.NErr != nil {
+// 		return nil, errors.Wrap(result.NErr, "failed to get user profiles by ids")
+// 	}
+// 	outUsers := result.Data.([]*model.User)
+// 	autocomplete.OutOfChannel = outUsers
 
-	return autocomplete, nil
-}
+// 	return autocomplete, nil
+// }
 
 // getListOfAllowedChannelsForTeam return the list of allowed channels to search user based on the
 //	next scenarios:
@@ -156,62 +156,62 @@ func (s *SearchUserStore) autocompleteUsersInChannelByEngine(engine searchengine
 //		- If we receive channels restrictions we get:
 //			- If we don't have team id, we get those restricted channels (guest accounts and quick search)
 //			- If we have a team id then we only return those restricted channels that belongs to that team
-func (s *SearchUserStore) getListOfAllowedChannelsForTeam(teamId string, viewRestrictions *model.ViewUsersRestrictions) ([]string, error) {
-	var listOfAllowedChannels []string
-	if viewRestrictions == nil && teamId == "" {
-		// nil return without error means all channels are allowed
-		return nil, nil
-	}
+// func (s *SearchUserStore) getListOfAllowedChannelsForTeam(teamId string, viewRestrictions *model.ViewUsersRestrictions) ([]string, error) {
+// 	var listOfAllowedChannels []string
+// 	if viewRestrictions == nil && teamId == "" {
+// 		// nil return without error means all channels are allowed
+// 		return nil, nil
+// 	}
 
-	if teamId != "" && (viewRestrictions == nil || strings.Contains(strings.Join(viewRestrictions.Teams, "."), teamId)) {
-		channels, err := s.rootStore.Channel().GetTeamChannels(teamId)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get team channels")
-		}
-		for _, channel := range *channels {
-			listOfAllowedChannels = append(listOfAllowedChannels, channel.Id)
-		}
-		return listOfAllowedChannels, nil
-	}
+// 	if teamId != "" && (viewRestrictions == nil || strings.Contains(strings.Join(viewRestrictions.Teams, "."), teamId)) {
+// 		channels, err := s.rootStore.Channel().GetTeamChannels(teamId)
+// 		if err != nil {
+// 			return nil, errors.Wrap(err, "failed to get team channels")
+// 		}
+// 		for _, channel := range *channels {
+// 			listOfAllowedChannels = append(listOfAllowedChannels, channel.Id)
+// 		}
+// 		return listOfAllowedChannels, nil
+// 	}
 
-	if len(viewRestrictions.Channels) > 0 {
-		channels, err := s.rootStore.Channel().GetChannelsByIds(viewRestrictions.Channels, false)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get channels by ids")
-		}
-		for _, c := range channels {
-			if teamId == "" || (teamId != "" && c.TeamId == teamId) {
-				listOfAllowedChannels = append(listOfAllowedChannels, c.Id)
-			}
-		}
-		return listOfAllowedChannels, nil
-	}
+// 	if len(viewRestrictions.Channels) > 0 {
+// 		channels, err := s.rootStore.Channel().GetChannelsByIds(viewRestrictions.Channels, false)
+// 		if err != nil {
+// 			return nil, errors.Wrap(err, "failed to get channels by ids")
+// 		}
+// 		for _, c := range channels {
+// 			if teamId == "" || (teamId != "" && c.TeamId == teamId) {
+// 				listOfAllowedChannels = append(listOfAllowedChannels, c.Id)
+// 			}
+// 		}
+// 		return listOfAllowedChannels, nil
+// 	}
 
-	return []string{}, nil
-}
+// 	return []string{}, nil
+// }
 
-func (s *SearchUserStore) AutocompleteUsersInChannel(teamId, channelId, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error) {
-	for _, engine := range s.rootStore.searchEngine.GetActiveEngines() {
-		if engine.IsAutocompletionEnabled() {
-			listOfAllowedChannels, nErr := s.getListOfAllowedChannelsForTeam(teamId, options.ViewRestrictions)
-			if nErr != nil {
-				slog.Warn("Encountered error on AutocompleteUsersInChannel.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
-				continue
-			}
-			if listOfAllowedChannels != nil && len(listOfAllowedChannels) == 0 {
-				return &model.UserAutocompleteInChannel{}, nil
-			}
-			options.ListOfAllowedChannels = listOfAllowedChannels
-			autocomplete, nErr := s.autocompleteUsersInChannelByEngine(engine, teamId, channelId, term, options)
-			if nErr != nil {
-				slog.Warn("Encountered error on AutocompleteUsersInChannel.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
-				continue
-			}
-			slog.Debug("Using the first available search engine", slog.String("search_engine", engine.GetName()))
-			return autocomplete, nil
-		}
-	}
+// func (s *SearchUserStore) AutocompleteUsersInChannel(teamId, channelId, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error) {
+// 	for _, engine := range s.rootStore.searchEngine.GetActiveEngines() {
+// 		if engine.IsAutocompletionEnabled() {
+// 			listOfAllowedChannels, nErr := s.getListOfAllowedChannelsForTeam(teamId, options.ViewRestrictions)
+// 			if nErr != nil {
+// 				slog.Warn("Encountered error on AutocompleteUsersInChannel.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
+// 				continue
+// 			}
+// 			if listOfAllowedChannels != nil && len(listOfAllowedChannels) == 0 {
+// 				return &model.UserAutocompleteInChannel{}, nil
+// 			}
+// 			options.ListOfAllowedChannels = listOfAllowedChannels
+// 			autocomplete, nErr := s.autocompleteUsersInChannelByEngine(engine, teamId, channelId, term, options)
+// 			if nErr != nil {
+// 				slog.Warn("Encountered error on AutocompleteUsersInChannel.", slog.String("search_engine", engine.GetName()), slog.Err(nErr))
+// 				continue
+// 			}
+// 			slog.Debug("Using the first available search engine", slog.String("search_engine", engine.GetName()))
+// 			return autocomplete, nil
+// 		}
+// 	}
 
-	slog.Debug("Using database search because no other search engine is available")
-	return s.UserStore.AutocompleteUsersInChannel(teamId, channelId, term, options)
-}
+// 	slog.Debug("Using database search because no other search engine is available")
+// 	return s.UserStore.AutocompleteUsersInChannel(teamId, channelId, term, options)
+// }

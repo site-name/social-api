@@ -1,7 +1,7 @@
 package searchlayer
 
 import (
-	"context"
+	// "context"
 	"sync/atomic"
 
 	"github.com/sitename/sitename/model"
@@ -27,11 +27,11 @@ func NewSearchLayer(baseStore store.Store, searchEngine *searchengine.Broker, cf
 		searchEngine: searchEngine,
 	}
 	searchStore.configValue.Store(cfg)
+	searchStore.user = &SearchUserStore{UserStore: baseStore.User(), rootStore: searchStore}
+	// searchStore.fileInfo = &SearchFileInfoStore{FileInfoStore: baseStore.FileInfo(), rootStore: searchStore}
 	// searchStore.channel = &SearchChannelStore{ChannelStore: baseStore.Channel(), rootStore: searchStore}
 	// searchStore.post = &SearchPostStore{PostStore: baseStore.Post(), rootStore: searchStore}
 	// searchStore.team = &SearchTeamStore{TeamStore: baseStore.Team(), rootStore: searchStore}
-	searchStore.user = &SearchUserStore{UserStore: baseStore.User(), rootStore: searchStore}
-	// searchStore.fileInfo = &SearchFileInfoStore{FileInfoStore: baseStore.FileInfo(), rootStore: searchStore}
 
 	return searchStore
 }
@@ -44,69 +44,69 @@ func (s *SearchStore) getConfig() *model.Config {
 	return s.configValue.Load().(*model.Config)
 }
 
-func (s *SearchStore) Channel() store.ChannelStore {
-	return s.channel
-}
+// func (s *SearchStore) Channel() store.ChannelStore {
+// 	return s.channel
+// }
 
-func (s *SearchStore) Post() store.PostStore {
-	return s.post
-}
+// func (s *SearchStore) Post() store.PostStore {
+// 	return s.post
+// }
 
-func (s *SearchStore) FileInfo() store.FileInfoStore {
-	return s.fileInfo
-}
+// func (s *SearchStore) FileInfo() store.FileInfoStore {
+// 	return s.fileInfo
+// }
 
-func (s *SearchStore) Team() store.TeamStore {
-	return s.team
-}
+// func (s *SearchStore) Team() store.TeamStore {
+// 	return s.team
+// }
 
 func (s *SearchStore) User() store.UserStore {
 	return s.user
 }
 
-func (s *SearchStore) indexUserFromID(userId string) {
-	user, err := s.User().Get(context.Background(), userId)
-	if err != nil {
-		return
-	}
-	s.indexUser(user)
-}
+// func (s *SearchStore) indexUserFromID(userId string) {
+// 	user, err := s.User().Get(context.Background(), userId)
+// 	if err != nil {
+// 		return
+// 	}
+// 	s.indexUser(user)
+// }
 
-func (s *SearchStore) indexUser(user *model.User) {
-	for _, engine := range s.searchEngine.GetActiveEngines() {
-		if engine.IsIndexingEnabled() {
-			runIndexFn(engine, func(engineCopy searchengine.SearchEngineInterface) {
-				userTeams, nErr := s.Team().GetTeamsByUserId(user.Id)
-				if nErr != nil {
-					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(nErr))
-					return
-				}
+// func (s *SearchStore) indexUser(user *model.User) {
+// 	for _, engine := range s.searchEngine.GetActiveEngines() {
+// 		if engine.IsIndexingEnabled() {
+// 			runIndexFn(engine, func(engineCopy searchengine.SearchEngineInterface) {
+// 				userTeams, nErr := s.Team().GetTeamsByUserId(user.Id)
+// 				if nErr != nil {
+// 					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(nErr))
+// 					return
+// 				}
 
-				userTeamsIds := []string{}
-				for _, team := range userTeams {
-					userTeamsIds = append(userTeamsIds, team.Id)
-				}
+// 				userTeamsIds := []string{}
+// 				for _, team := range userTeams {
+// 					userTeamsIds = append(userTeamsIds, team.Id)
+// 				}
 
-				userChannelMembers, err := s.Channel().GetAllChannelMembersForUser(user.Id, false, true)
-				if err != nil {
-					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
-					return
-				}
+// 				userChannelMembers, err := s.Channel().GetAllChannelMembersForUser(user.Id, false, true)
+// 				if err != nil {
+// 					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
+// 					return
+// 				}
 
-				userChannelsIds := []string{}
-				for channelId := range userChannelMembers {
-					userChannelsIds = append(userChannelsIds, channelId)
-				}
+// 				userChannelsIds := []string{}
+// 				for channelId := range userChannelMembers {
+// 					userChannelsIds = append(userChannelsIds, channelId)
+// 				}
 
-				if err := engineCopy.IndexUser(user, userTeamsIds, userChannelsIds); err != nil {
-					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
-					return
-				}
-				slog.Debug("Indexed user in search engine", slog.String("search_engine", engineCopy.GetName()), slog.String("user_id", user.Id))
-			})
-		}
-	}
-}
+// 				if err := engineCopy.IndexUser(user, userTeamsIds, userChannelsIds); err != nil {
+// 					slog.Error("Encountered error indexing user", slog.String("user_id", user.Id), slog.String("search_engine", engineCopy.GetName()), slog.Err(err))
+// 					return
+// 				}
+// 				slog.Debug("Indexed user in search engine", slog.String("search_engine", engineCopy.GetName()), slog.String("user_id", user.Id))
+// 			})
+// 		}
+// 	}
+// }
 
 // Runs an indexing function synchronously or asynchronously depending on the engine
 func runIndexFn(engine searchengine.SearchEngineInterface, indexFn func(searchengine.SearchEngineInterface)) {

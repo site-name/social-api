@@ -9,6 +9,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
+	github.com/aws/aws-sdk-go v1.27.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -46,7 +47,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/oliamb/cutter v0.2.2
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pelletier/go-toml v1.9.0
+	github.com/pelletier/go-toml v1.9.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rudderlabs/analytics-go v3.3.1+incompatible

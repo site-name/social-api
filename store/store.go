@@ -107,6 +107,7 @@ type UserStore interface {
 	DeactivateGuests() ([]string, error)
 	GetKnownUsers(userID string) ([]string, error)
 	Count(options model.UserCountOptions) (int64, error)
+	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
 
 	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
@@ -134,7 +135,6 @@ type UserStore interface {
 	// GetProfiles(options *model.UserGetOptions) ([]*model.User, error)
 	// GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error)
 	// AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
-	// AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
 	// GetProfilesNotInTeam(teamID string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
 	// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
 }

@@ -2,14 +2,14 @@ package bleveengine
 
 import (
 	"net/http"
-	"strings"
+	// "strings"
 
-	"github.com/blevesearch/bleve"
-	"github.com/pelletier/go-toml/query"
+	// "github.com/blevesearch/bleve"
+	// "github.com/pelletier/go-toml/query"
 	// "github.com/blevesearch/bleve/search/query"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/slog"
+	// "github.com/sitename/sitename/modules/slog"
 )
 
 const DeletePostsBatchSize = 500
@@ -359,143 +359,143 @@ func (b *BleveEngine) IndexUser(user *model.User, teamsIds, channelsIds []string
 	return nil
 }
 
-func (b *BleveEngine) SearchUsersInChannel(teamId, channelId string, restrictedToChannels []string, term string, options *model.UserSearchOptions) ([]string, []string, *model.AppError) {
-	if restrictedToChannels != nil && len(restrictedToChannels) == 0 {
-		return []string{}, []string{}, nil
-	}
+// func (b *BleveEngine) SearchUsersInChannel(teamId, channelId string, restrictedToChannels []string, term string, options *model.UserSearchOptions) ([]string, []string, *model.AppError) {
+// 	if restrictedToChannels != nil && len(restrictedToChannels) == 0 {
+// 		return []string{}, []string{}, nil
+// 	}
 
-	// users in channel
-	var queries []query.Query
-	if term != "" {
-		termQ := bleve.NewPrefixQuery(strings.ToLower(term))
-		if options.AllowFullNames {
-			termQ.SetField("SuggestionsWithFullname")
-		} else {
-			termQ.SetField("SuggestionsWithoutFullname")
-		}
-		queries = append(queries, termQ)
-	}
+// 	// users in channel
+// 	var queries []query.Query
+// 	if term != "" {
+// 		termQ := bleve.NewPrefixQuery(strings.ToLower(term))
+// 		if options.AllowFullNames {
+// 			termQ.SetField("SuggestionsWithFullname")
+// 		} else {
+// 			termQ.SetField("SuggestionsWithoutFullname")
+// 		}
+// 		queries = append(queries, termQ)
+// 	}
 
-	channelIdQ := bleve.NewTermQuery(channelId)
-	channelIdQ.SetField("ChannelsIds")
-	queries = append(queries, channelIdQ)
+// 	channelIdQ := bleve.NewTermQuery(channelId)
+// 	channelIdQ.SetField("ChannelsIds")
+// 	queries = append(queries, channelIdQ)
 
-	query := bleve.NewConjunctionQuery(queries...)
+// 	query := bleve.NewConjunctionQuery(queries...)
 
-	uchanSearch := bleve.NewSearchRequest(query)
-	uchanSearch.Size = options.Limit
-	uchan, err := b.UserIndex.Search(uchanSearch)
-	if err != nil {
-		return nil, nil, model.NewAppError("Bleveengine.SearchUsersInChannel", "bleveengine.search_users_in_channel.uchan.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+// 	uchanSearch := bleve.NewSearchRequest(query)
+// 	uchanSearch.Size = options.Limit
+// 	uchan, err := b.UserIndex.Search(uchanSearch)
+// 	if err != nil {
+// 		return nil, nil, model.NewAppError("Bleveengine.SearchUsersInChannel", "bleveengine.search_users_in_channel.uchan.error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
 
-	// users not in channel
-	boolQ := bleve.NewBooleanQuery()
+// 	// users not in channel
+// 	boolQ := bleve.NewBooleanQuery()
 
-	if term != "" {
-		termQ := bleve.NewPrefixQuery(strings.ToLower(term))
-		if options.AllowFullNames {
-			termQ.SetField("SuggestionsWithFullname")
-		} else {
-			termQ.SetField("SuggestionsWithoutFullname")
-		}
-		boolQ.AddMust(termQ)
-	}
+// 	if term != "" {
+// 		termQ := bleve.NewPrefixQuery(strings.ToLower(term))
+// 		if options.AllowFullNames {
+// 			termQ.SetField("SuggestionsWithFullname")
+// 		} else {
+// 			termQ.SetField("SuggestionsWithoutFullname")
+// 		}
+// 		boolQ.AddMust(termQ)
+// 	}
 
-	teamIdQ := bleve.NewTermQuery(teamId)
-	teamIdQ.SetField("TeamsIds")
-	boolQ.AddMust(teamIdQ)
+// 	teamIdQ := bleve.NewTermQuery(teamId)
+// 	teamIdQ.SetField("TeamsIds")
+// 	boolQ.AddMust(teamIdQ)
 
-	outsideChannelIdQ := bleve.NewTermQuery(channelId)
-	outsideChannelIdQ.SetField("ChannelsIds")
-	boolQ.AddMustNot(outsideChannelIdQ)
+// 	outsideChannelIdQ := bleve.NewTermQuery(channelId)
+// 	outsideChannelIdQ.SetField("ChannelsIds")
+// 	boolQ.AddMustNot(outsideChannelIdQ)
 
-	if len(restrictedToChannels) > 0 {
-		restrictedChannelsQ := bleve.NewDisjunctionQuery()
-		for _, channelId := range restrictedToChannels {
-			restrictedChannelQ := bleve.NewTermQuery(channelId)
-			restrictedChannelsQ.AddQuery(restrictedChannelQ)
-		}
-		boolQ.AddMust(restrictedChannelsQ)
-	}
+// 	if len(restrictedToChannels) > 0 {
+// 		restrictedChannelsQ := bleve.NewDisjunctionQuery()
+// 		for _, channelId := range restrictedToChannels {
+// 			restrictedChannelQ := bleve.NewTermQuery(channelId)
+// 			restrictedChannelsQ.AddQuery(restrictedChannelQ)
+// 		}
+// 		boolQ.AddMust(restrictedChannelsQ)
+// 	}
 
-	nuchanSearch := bleve.NewSearchRequest(boolQ)
-	nuchanSearch.Size = options.Limit
-	nuchan, err := b.UserIndex.Search(nuchanSearch)
-	if err != nil {
-		return nil, nil, model.NewAppError("Bleveengine.SearchUsersInChannel", "bleveengine.search_users_in_channel.nuchan.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+// 	nuchanSearch := bleve.NewSearchRequest(boolQ)
+// 	nuchanSearch.Size = options.Limit
+// 	nuchan, err := b.UserIndex.Search(nuchanSearch)
+// 	if err != nil {
+// 		return nil, nil, model.NewAppError("Bleveengine.SearchUsersInChannel", "bleveengine.search_users_in_channel.nuchan.error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
 
-	uchanIds := []string{}
-	for _, result := range uchan.Hits {
-		uchanIds = append(uchanIds, result.ID)
-	}
+// 	uchanIds := []string{}
+// 	for _, result := range uchan.Hits {
+// 		uchanIds = append(uchanIds, result.ID)
+// 	}
 
-	nuchanIds := []string{}
-	for _, result := range nuchan.Hits {
-		nuchanIds = append(nuchanIds, result.ID)
-	}
+// 	nuchanIds := []string{}
+// 	for _, result := range nuchan.Hits {
+// 		nuchanIds = append(nuchanIds, result.ID)
+// 	}
 
-	return uchanIds, nuchanIds, nil
-}
+// 	return uchanIds, nuchanIds, nil
+// }
 
-func (b *BleveEngine) SearchUsersInTeam(teamId string, restrictedToChannels []string, term string, options *model.UserSearchOptions) ([]string, *model.AppError) {
-	if restrictedToChannels != nil && len(restrictedToChannels) == 0 {
-		return []string{}, nil
-	}
+// func (b *BleveEngine) SearchUsersInTeam(teamId string, restrictedToChannels []string, term string, options *model.UserSearchOptions) ([]string, *model.AppError) {
+// 	if restrictedToChannels != nil && len(restrictedToChannels) == 0 {
+// 		return []string{}, nil
+// 	}
 
-	var rootQ query.Query
-	if term == "" && teamId == "" && restrictedToChannels == nil {
-		rootQ = bleve.NewMatchAllQuery()
-	} else {
-		boolQ := bleve.NewBooleanQuery()
+// 	var rootQ query.Query
+// 	if term == "" && teamId == "" && restrictedToChannels == nil {
+// 		rootQ = bleve.NewMatchAllQuery()
+// 	} else {
+// 		boolQ := bleve.NewBooleanQuery()
 
-		if term != "" {
-			termQ := bleve.NewPrefixQuery(strings.ToLower(term))
-			if options.AllowFullNames {
-				termQ.SetField("SuggestionsWithFullname")
-			} else {
-				termQ.SetField("SuggestionsWithoutFullname")
-			}
-			boolQ.AddMust(termQ)
-		}
+// 		if term != "" {
+// 			termQ := bleve.NewPrefixQuery(strings.ToLower(term))
+// 			if options.AllowFullNames {
+// 				termQ.SetField("SuggestionsWithFullname")
+// 			} else {
+// 				termQ.SetField("SuggestionsWithoutFullname")
+// 			}
+// 			boolQ.AddMust(termQ)
+// 		}
 
-		if len(restrictedToChannels) > 0 {
-			// restricted channels are already filtered by team, so we
-			// can search only those matches
-			restrictedChannelsQ := []query.Query{}
-			for _, channelId := range restrictedToChannels {
-				channelIdQ := bleve.NewTermQuery(channelId)
-				channelIdQ.SetField("ChannelsIds")
-				restrictedChannelsQ = append(restrictedChannelsQ, channelIdQ)
-			}
-			boolQ.AddMust(bleve.NewDisjunctionQuery(restrictedChannelsQ...))
-		} else {
-			// this means that we only need to restrict by team
-			if teamId != "" {
-				teamIdQ := bleve.NewTermQuery(teamId)
-				teamIdQ.SetField("TeamsIds")
-				boolQ.AddMust(teamIdQ)
-			}
-		}
+// 		if len(restrictedToChannels) > 0 {
+// 			// restricted channels are already filtered by team, so we
+// 			// can search only those matches
+// 			restrictedChannelsQ := []query.Query{}
+// 			for _, channelId := range restrictedToChannels {
+// 				channelIdQ := bleve.NewTermQuery(channelId)
+// 				channelIdQ.SetField("ChannelsIds")
+// 				restrictedChannelsQ = append(restrictedChannelsQ, channelIdQ)
+// 			}
+// 			boolQ.AddMust(bleve.NewDisjunctionQuery(restrictedChannelsQ...))
+// 		} else {
+// 			// this means that we only need to restrict by team
+// 			if teamId != "" {
+// 				teamIdQ := bleve.NewTermQuery(teamId)
+// 				teamIdQ.SetField("TeamsIds")
+// 				boolQ.AddMust(teamIdQ)
+// 			}
+// 		}
 
-		rootQ = boolQ
-	}
+// 		rootQ = boolQ
+// 	}
 
-	search := bleve.NewSearchRequest(rootQ)
-	search.Size = options.Limit
-	results, err := b.UserIndex.Search(search)
-	if err != nil {
-		return nil, model.NewAppError("Bleveengine.SearchUsersInTeam", "bleveengine.search_users_in_team.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+// 	search := bleve.NewSearchRequest(rootQ)
+// 	search.Size = options.Limit
+// 	results, err := b.UserIndex.Search(search)
+// 	if err != nil {
+// 		return nil, model.NewAppError("Bleveengine.SearchUsersInTeam", "bleveengine.search_users_in_team.error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
 
-	usersIds := []string{}
-	for _, r := range results.Hits {
-		usersIds = append(usersIds, r.ID)
-	}
+// 	usersIds := []string{}
+// 	for _, r := range results.Hits {
+// 		usersIds = append(usersIds, r.ID)
+// 	}
 
-	return usersIds, nil
-}
+// 	return usersIds, nil
+// }
 
 func (b *BleveEngine) DeleteUser(user *model.User) *model.AppError {
 	b.Mutex.RLock()
@@ -726,100 +726,100 @@ func (b *BleveEngine) DeleteUser(user *model.User) *model.AppError {
 // 	return fileIds, nil
 // }
 
-func (b *BleveEngine) DeleteFile(fileID string) *model.AppError {
-	b.Mutex.RLock()
-	defer b.Mutex.RUnlock()
+// func (b *BleveEngine) DeleteFile(fileID string) *model.AppError {
+// 	b.Mutex.RLock()
+// 	defer b.Mutex.RUnlock()
 
-	if err := b.FileIndex.Delete(fileID); err != nil {
-		return model.NewAppError("Bleveengine.DeleteFile", "bleveengine.delete_file.error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return nil
-}
+// 	if err := b.FileIndex.Delete(fileID); err != nil {
+// 		return model.NewAppError("Bleveengine.DeleteFile", "bleveengine.delete_file.error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
+// 	return nil
+// }
 
-func (b *BleveEngine) deleteFiles(searchRequest *bleve.SearchRequest, batchSize int) (int64, error) {
-	resultsCount := int64(0)
+// func (b *BleveEngine) deleteFiles(searchRequest *bleve.SearchRequest, batchSize int) (int64, error) {
+// 	resultsCount := int64(0)
 
-	for {
-		// As we are deleting the files after fetching them, we need to keep
-		// From fixed always to 0
-		searchRequest.From = 0
-		searchRequest.Size = batchSize
-		results, err := b.FileIndex.Search(searchRequest)
-		if err != nil {
-			return -1, err
-		}
-		batch := b.FileIndex.NewBatch()
-		for _, file := range results.Hits {
-			batch.Delete(file.ID)
-		}
-		if err := b.FileIndex.Batch(batch); err != nil {
-			return -1, err
-		}
-		resultsCount += int64(results.Hits.Len())
-		if results.Hits.Len() < batchSize {
-			break
-		}
-	}
+// 	for {
+// 		// As we are deleting the files after fetching them, we need to keep
+// 		// From fixed always to 0
+// 		searchRequest.From = 0
+// 		searchRequest.Size = batchSize
+// 		results, err := b.FileIndex.Search(searchRequest)
+// 		if err != nil {
+// 			return -1, err
+// 		}
+// 		batch := b.FileIndex.NewBatch()
+// 		for _, file := range results.Hits {
+// 			batch.Delete(file.ID)
+// 		}
+// 		if err := b.FileIndex.Batch(batch); err != nil {
+// 			return -1, err
+// 		}
+// 		resultsCount += int64(results.Hits.Len())
+// 		if results.Hits.Len() < batchSize {
+// 			break
+// 		}
+// 	}
 
-	return resultsCount, nil
-}
+// 	return resultsCount, nil
+// }
 
-func (b *BleveEngine) DeleteUserFiles(userID string) *model.AppError {
-	b.Mutex.RLock()
-	defer b.Mutex.RUnlock()
+// func (b *BleveEngine) DeleteUserFiles(userID string) *model.AppError {
+// 	b.Mutex.RLock()
+// 	defer b.Mutex.RUnlock()
 
-	query := bleve.NewTermQuery(userID)
-	query.SetField("CreatorId")
-	search := bleve.NewSearchRequest(query)
-	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
-	if err != nil {
-		return model.NewAppError("Bleveengine.DeleteUserFiles",
-			"bleveengine.delete_user_files.error", nil,
-			err.Error(), http.StatusInternalServerError)
-	}
+// 	query := bleve.NewTermQuery(userID)
+// 	query.SetField("CreatorId")
+// 	search := bleve.NewSearchRequest(query)
+// 	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
+// 	if err != nil {
+// 		return model.NewAppError("Bleveengine.DeleteUserFiles",
+// 			"bleveengine.delete_user_files.error", nil,
+// 			err.Error(), http.StatusInternalServerError)
+// 	}
 
-	slog.Info("Files for user deleted", slog.String("user_id", userID), slog.Int64("deleted", deleted))
+// 	slog.Info("Files for user deleted", slog.String("user_id", userID), slog.Int64("deleted", deleted))
 
-	return nil
-}
+// 	return nil
+// }
 
-func (b *BleveEngine) DeletePostFiles(postID string) *model.AppError {
-	b.Mutex.RLock()
-	defer b.Mutex.RUnlock()
+// func (b *BleveEngine) DeletePostFiles(postID string) *model.AppError {
+// 	b.Mutex.RLock()
+// 	defer b.Mutex.RUnlock()
 
-	query := bleve.NewTermQuery(postID)
-	query.SetField("PostId")
-	search := bleve.NewSearchRequest(query)
-	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
-	if err != nil {
-		return model.NewAppError("Bleveengine.DeletePostFiles",
-			"bleveengine.delete_post_files.error", nil,
-			err.Error(), http.StatusInternalServerError)
-	}
+// 	query := bleve.NewTermQuery(postID)
+// 	query.SetField("PostId")
+// 	search := bleve.NewSearchRequest(query)
+// 	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
+// 	if err != nil {
+// 		return model.NewAppError("Bleveengine.DeletePostFiles",
+// 			"bleveengine.delete_post_files.error", nil,
+// 			err.Error(), http.StatusInternalServerError)
+// 	}
 
-	slog.Info("Files for post deleted", slog.String("post_id", postID), slog.Int64("deleted", deleted))
+// 	slog.Info("Files for post deleted", slog.String("post_id", postID), slog.Int64("deleted", deleted))
 
-	return nil
-}
+// 	return nil
+// }
 
-func (b *BleveEngine) DeleteFilesBatch(endTime, limit int64) *model.AppError {
-	b.Mutex.RLock()
-	defer b.Mutex.RUnlock()
+// func (b *BleveEngine) DeleteFilesBatch(endTime, limit int64) *model.AppError {
+// 	b.Mutex.RLock()
+// 	defer b.Mutex.RUnlock()
 
-	endTimeFloat := float64(endTime)
-	query := bleve.NewNumericRangeQuery(nil, &endTimeFloat)
-	query.SetField("CreateAt")
-	search := bleve.NewSearchRequestOptions(query, int(limit), 0, false)
-	search.SortBy([]string{"-CreateAt"})
+// 	endTimeFloat := float64(endTime)
+// 	query := bleve.NewNumericRangeQuery(nil, &endTimeFloat)
+// 	query.SetField("CreateAt")
+// 	search := bleve.NewSearchRequestOptions(query, int(limit), 0, false)
+// 	search.SortBy([]string{"-CreateAt"})
 
-	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
-	if err != nil {
-		return model.NewAppError("Bleveengine.DeleteFilesBatch",
-			"bleveengine.delete_files_batch.error", nil,
-			err.Error(), http.StatusInternalServerError)
-	}
+// 	deleted, err := b.deleteFiles(search, DeleteFilesBatchSize)
+// 	if err != nil {
+// 		return model.NewAppError("Bleveengine.DeleteFilesBatch",
+// 			"bleveengine.delete_files_batch.error", nil,
+// 			err.Error(), http.StatusInternalServerError)
+// 	}
 
-	slog.Info("Files in batch deleted", slog.Int64("endTime", endTime), slog.Int64("limit", limit), slog.Int64("deleted", deleted))
+// 	slog.Info("Files in batch deleted", slog.Int64("endTime", endTime), slog.Int64("limit", limit), slog.Int64("deleted", deleted))
 
-	return nil
-}
+// 	return nil
+// }

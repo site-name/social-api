@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"html/template"
 	"io"
+	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
 // Container represents a set of templates that can be render
@@ -24,6 +26,15 @@ type Container struct {
 type Data struct {
 	Props map[string]interface{}
 	HTML  map[string]template.HTML
+}
+
+func GetTemplateDirectory() (string, bool) {
+	templatesDir := "templates"
+	if sitenamePath := os.Getenv("SN_SERVER_PATH"); sitenamePath != "" {
+		templatesDir = filepath.Join(sitenamePath, templatesDir)
+	}
+
+	return fileutils.FindDir(templatesDir)
 }
 
 // NewFromTemplates creates a new templates container using a

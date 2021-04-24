@@ -1,10 +1,17 @@
 package app
 
 import (
+	"context"
+	"crypto/tls"
 	"fmt"
 	"hash/maphash"
+	"html/template"
 	"net"
 	"net/http"
+	"net/http/pprof"
+	"net/url"
+	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -13,6 +20,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/gorilla/handlers"
+	"github.com/rs/cors"
+	"golang.org/x/crypto/acme/autocert"
+
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -20,15 +32,20 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/audit"
+	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
+	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
+	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/services/httpservice"
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
 
+	"github.com/sitename/sitename/services/awsmeter"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
 	"github.com/sitename/sitename/services/telemetry"
 	"github.com/sitename/sitename/services/tracing"
@@ -38,13 +55,15 @@ import (
 	"github.com/sitename/sitename/store/retrylayer"
 	"github.com/sitename/sitename/store/searchlayer"
 	"github.com/sitename/sitename/store/sqlstore"
+	"github.com/sitename/sitename/store/timerlayer"
 )
 
 // declaring this as var to allow overriding in tests
 var SentryDSN = "placeholder_sentry_dsn"
 
 const (
-	SessionsCleanupBatchSize = 1000
+	SessionsCleanupBatchSize                        = 1000
+	TimeToWaitForConnectionsToCloseOnServerShutdown = time.Second
 )
 
 type Server struct {
@@ -117,6 +136,10 @@ type Server struct {
 	SearchEngine                       *searchengine.Broker
 	CacheProvider                      cache.Provider
 	Cluster                            einterfaces.ClusterInterface
+	postActionCookieSecret             []byte
+	timezones                          *timezones.Timezones
+	Audit                              *audit.Audit
+	Compliance                         einterfaces.ComplianceInterface
 }
 
 func NewServer(options ...Option) (*Server, error) {
@@ -267,11 +290,293 @@ func NewServer(options ...Option) (*Server, error) {
 				return nil, errors.Wrap(err2, "cannot create local cache layer")
 			}
 
-			searchStore := searchlayer.NewSearchLayer
+			searchStore := searchlayer.NewSearchLayer(
+				lcl,
+				s.SearchEngine,
+				s.Config(),
+			)
+
+			s.AddConfigListener(func(prev, cfg *model.Config) {
+				searchStore.UpdateConfig(cfg)
+			})
+
+			// s.sqlStore.UpdateLicense(s.License())
+			// s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+			// 	s.sqlStore.UpdateLicense(newLicense)
+			// })
+
+			return timerlayer.New(
+				searchStore,
+				s.Metrics,
+			), nil
 		}
 	}
 
-	return nil, nil
+	templatesDir, ok := templates.GetTemplateDirectory()
+	if !ok {
+		slog.Error("Failed to find server templates", slog.String("directory", "templates"))
+	} else {
+		htmlTemplateWatcher, errorsChan, err2 := templates.NewWithWatcher(templatesDir)
+		if err2 != nil {
+			return nil, errors.Wrap(err2, "cannot initialize server templates")
+		}
+		s.Go(func() {
+			for err2 := range errorsChan {
+				slog.Warn("Server templates error", slog.Err(err2))
+			}
+		})
+		s.htmlTemplateWatcher = htmlTemplateWatcher
+	}
+
+	s.Store, err = s.newStore()
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create store")
+	}
+
+	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
+	// 	// s.configOrLicenseListener()
+
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", nil)
+
+	// 	message.Add("config", s.ClientConfigWithComputed())
+	// 	s.Go(func() {
+	// 		s.Publish(message)
+	// 	})
+	// })
+	// s.licenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+	// 	s.configOrLicenseListener()
+
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_LICENSE_CHANGED, "", "", "", nil)
+	// 	message.Add("license", s.GetSanitizedClientLicense())
+	// 	s.Go(func() {
+	// 		s.Publish(message)
+	// 	})
+
+	// })
+
+	// This enterprise init should happen after the store is set
+	// but we don't want to move the s.initEnterprise() call because
+	// we had side-effects with that in the past and needs further
+	// investigation
+	// if cloudInterface != nil {
+	// 	s.Cloud = cloudInterface(s)
+	// }
+
+	// s.telemetryService = telemetry.New(s, s.Store, s.SearchEngine, s.Log)
+
+	emailService, err := NewEmailService(s)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to initialize email service")
+	}
+	s.EmailService = emailService
+
+	// if model.BuildEnterpriseReady == "true" {
+	// 	s.LoadLicense()
+	// }
+
+	// s.setupFeatureFlags()
+
+	s.initJobs()
+
+	// s.clusterLeaderListenerId = s.AddClusterLeaderChangedListener(func() {
+	// 	slog.Info("Cluster leader changed. Determining if job schedulers should be running:", slog.Bool("isLeader", s.IsLeader()))
+	// 	if s.Jobs != nil {
+	// 		s.Jobs.HandleClusterLeaderChange(s.IsLeader())
+	// 	}
+	// 	s.setupFeatureFlags()
+	// })
+
+	// if s.joinCluster && s.Cluster != nil {
+	// 	s.registerClusterHandlers()
+	// 	s.Cluster.StartInterNodeCommunication()
+	// }
+
+	if err = s.ensureAsymmetricSigningKey(); err != nil {
+		return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
+	}
+
+	if err = s.ensurePostActionCookieSecret(); err != nil {
+		return nil, errors.Wrapf(err, "unable to ensure PostAction cookie secret")
+	}
+
+	if err = s.ensureInstallationDate(); err != nil {
+		return nil, errors.Wrapf(err, "unable to ensure installation date")
+	}
+
+	if err = s.ensureFirstServerRunTimestamp(); err != nil {
+		return nil, errors.Wrapf(err, "unable to ensure first run timestamp")
+	}
+
+	// s.regenerateClientConfig()
+
+	subPath, err := util.GetSubpathFromConfig(s.Config())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse SiteURL subpath")
+	}
+	// s.Router = s.RootRouter.PathPrefix(subpath).Subrouter()
+
+	// // FakeApp: remove this when we have the ServePluginRequest and ServePluginPublicRequest migrated in the server
+	// pluginsRoute := s.Router.PathPrefix("/plugins/{plugin_id:[A-Za-z0-9\\_\\-\\.]+}").Subrouter()
+	// pluginsRoute.HandleFunc("", fakeApp.ServePluginRequest)
+	// pluginsRoute.HandleFunc("/public/{public_file:.*}", fakeApp.ServePluginPublicRequest)
+	// pluginsRoute.HandleFunc("/{anything:.*}", fakeApp.ServePluginRequest)
+
+	// If configured with a subpath, redirect 404s at the root back into the subpath.
+	if subPath != "/" {
+		s.RootRouter.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.URL.Path = path.Join(subPath, r.URL.Path)
+			http.Redirect(w, r, r.URL.String(), http.StatusFound)
+		})
+	}
+
+	// s.WebSocketRouter = &WebSocketRouter{
+	// 	handlers: make(map[string]webSocketHandler),
+	// 	app:      fakeApp,
+	// }
+
+	mailConfig := s.MailServiceConfig()
+	if nErr := mail.TestConnection(mailConfig); nErr != nil {
+		slog.Error("Mail server connection test is failed", slog.Err(nErr))
+	}
+
+	if _, err = url.ParseRequestURI(*s.Config().ServiceSettings.SiteURL); err != nil {
+		slog.Error("SiteURL must be set. Some features will operate incorrectly if the SiteURL is not set.")
+	}
+
+	backend, appErr := s.FileBackend()
+	if appErr != nil {
+		slog.Error("Problem with file storage settings", slog.Err(appErr))
+	} else {
+		nErr := backend.TestConnection()
+		if nErr != nil {
+			if _, ok := nErr.(*filestore.S3FileBackendNoBucketError); ok {
+				nErr = backend.(*filestore.S3FileBackend).MakeBucket()
+			}
+			if nErr != nil {
+				slog.Error("Problem with file storage settings", slog.Err(nErr))
+			}
+		}
+	}
+
+	s.timezones = timezones.New()
+	// Start email batching because it's not like the other jobs
+	s.AddConfigListener(func(_, _ *model.Config) {
+		s.EmailService.InitEmailBatching()
+	})
+
+	// Start plugin health check job
+	// pluginsEnvironment := s.PluginsEnvironment
+	// if pluginsEnvironment != nil {
+	// 	pluginsEnvironment.InitPluginHealthCheckJob(*s.Config().PluginSettings.Enable && *s.Config().PluginSettings.EnableHealthCheck)
+	// }
+	// s.AddConfigListener(func(_, c *model.Config) {
+	// 	s.PluginsLock.RLock()
+	// 	pluginsEnvironment := s.PluginsEnvironment
+	// 	s.PluginsLock.RUnlock()
+	// 	if pluginsEnvironment != nil {
+	// 		pluginsEnvironment.InitPluginHealthCheckJob(*s.Config().PluginSettings.Enable && *c.PluginSettings.EnableHealthCheck)
+	// 	}
+	// })
+
+	logCurrentVersion := fmt.Sprintf(
+		"Current version is %v (%v/%v/%v/%v)",
+		model.CurrentVersion,
+		model.BuildNumber,
+		model.BuildDate,
+		model.BuildHash,
+		model.BuildHashEnterprise,
+	)
+	slog.Info(
+		logCurrentVersion,
+		slog.String("current_version", model.CurrentVersion),
+		slog.String("build_number", model.BuildNumber),
+		slog.String("build_date", model.BuildDate),
+		slog.String("build_hash", model.BuildHash),
+		slog.String("build_hash_enterprise", model.BuildHashEnterprise),
+	)
+	// l.BuildEnterpriseReady == "true" {
+	// 	slog.Info("Enterprise Build", slog.Bool("enterprise_build", true))
+	// } else {
+	// 	slog.Info("Team Edition Build", slog.Bool("enterprise_build", false))
+	// }
+
+	pwd, _ := os.Getwd()
+	slog.Info("Printing current working", slog.String("directory", pwd))
+	slog.Info("Loading config", slog.String("source", s.configStore.String()))
+
+	s.checkPushNotificationServerUrl()
+
+	// license := s.License()
+	// if license == nil {
+	// 	s.UpdateConfig(func(cfg *model.Config) {
+	// 		cfg.TeamSettings.MaxNotificationsPerChannel = &MaxNotificationsPerChannelDefault
+	// 	})
+	// }
+
+	s.ReloadConfig()
+
+	if s.Audit == nil {
+		s.Audit = &audit.Audit{}
+		s.Audit.Init(audit.DefMaxQueueSize)
+		if err = s.configureAudit(s.Audit, true); err != nil {
+			slog.Error("Error configuring audit", slog.Err(err))
+		}
+	}
+
+	// s.removeUnlicensedLogTargets(license)
+	s.enableLoggingMetrics()
+
+	// s.loggerLicenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+	// 	s.removeUnlicensedLogTargets(newLicense)
+	// 	s.enableLoggingMetrics()
+	// })
+
+	// Enable developer settings if this is a "dev" build
+	// if model.BuildNumber == "dev" {
+	// 	s.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableDeveloper = true })
+	// }
+
+	if err = s.Store.Status().ResetAll(); err != nil {
+		slog.Error("Error to reset the server status.", slog.Err(err))
+	}
+
+	if s.startMetrics {
+		s.SetupMetricsServer()
+	}
+
+	// s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+	// 	if (oldLicense == nil && newLicense == nil) || !s.startMetrics {
+	// 		return
+	// 	}
+
+	// 	if oldLicense != nil && newLicense != nil && *oldLicense.Features.Metrics == *newLicense.Features.Metrics {
+	// 		return
+	// 	}
+
+	// 	s.SetupMetricsServer()
+	// })
+
+	s.SearchEngine.UpdateConfig(s.Config())
+	searchConfigListenerId := s.StartSearchEngine()
+	s.searchConfigListenerId = searchConfigListenerId
+
+	// if enabled - perform initial product notices fetch
+	// if *s.Config().AnnouncementSettings.AdminNoticesEnabled || *s.Config().AnnouncementSettings.UserNoticesEnabled {
+	// 	go func() {
+	// 		if err := fakeApp.UpdateProductNotices(); err != nil {
+	// 			slog.Warn("Failied to perform initial product notices fetch", slog.Err(err))
+	// 		}
+	// 	}()
+	// }
+
+	return s, nil
+}
+
+func (s *Server) initJobs() {
+	// s.Jobs = jobs.NewJobServer(s, s.Store, s.Metrics)
+	// if jobsDataRetentionJobInterface != nil {
+
+	// }
 }
 
 // initLogging initializes and configures the logger. This may be called more than once.
@@ -378,7 +683,55 @@ func (s *Server) runJobs() {
 	// 	runCommandWebhookCleanupJob(s)
 	// })
 
-	// if complianceI := s.Com
+	if s.Compliance != nil {
+		s.Compliance.StartComplianceDailyJob()
+	}
+
+	if *s.Config().JobSettings.RunJobs && s.Jobs != nil {
+		if err := s.Jobs.StartWorkers(); err != nil {
+			slog.Error("Failed to start job server workers", slog.Err(err))
+		}
+	}
+	if *s.Config().JobSettings.RunScheduler && s.Jobs != nil {
+		if err := s.Jobs.StartSchedulers(); err != nil {
+			slog.Error("Failed to start job server schedulers", slog.Err(err))
+		}
+	}
+
+	if *s.Config().ServiceSettings.EnableAWSMetering {
+		runReportToAWSMeterJob(s)
+	}
+}
+
+// Global app options that should be applied to apps created by this server
+func (s *Server) AppOptions() []AppOption {
+	return []AppOption{
+		ServerConnector(s),
+	}
+}
+
+// Return Database type (postgres or mysql) and current version of Mattermost
+func (s *Server) DatabaseTypeAndMattermostVersion() (string, string) {
+	mattermostVersion, _ := s.Store.System().GetByName("Version")
+	return *s.Config().SqlSettings.DriverName, mattermostVersion.Value
+}
+
+func runReportToAWSMeterJob(s *Server) {
+	model.CreateRecurringTask("Collect and send usage report to AWS Metering Service", func() {
+		doReportUsageToAWSMeteringService(s)
+	}, time.Hour*model.AWS_METERING_REPORT_INTERVAL)
+}
+
+func doReportUsageToAWSMeteringService(s *Server) {
+	awsMeter := awsmeter.New(s.Store, s.Config())
+	if awsMeter == nil {
+		slog.Error("Cannot obtain instance of AWS Metering Service.")
+		return
+	}
+
+	dimensions := []string{model.AWS_METERING_DIMENSION_USAGE_HRS}
+	reports := awsMeter.GetUserCategoryUsage(dimensions, time.Now().UTC(), time.Now().Add(-model.AWS_METERING_REPORT_INTERVAL*time.Hour).UTC())
+	awsMeter.ReportUserCategoryUsage(reports)
 }
 
 // Go creates a goroutine, but maintains a record of it to ensure that execution completes before
@@ -466,17 +819,600 @@ func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
 	return value, nil
 }
 
-func (s *Server) ensureFirstServerRunTimestamp() error {
-	_, appErr := s.getFirstServerRunTimestamp()
-	if appErr == nil {
-		return nil
+func (s *Server) FileBackend() (filestore.FileBackend, *model.AppError) {
+	backend, err := filestore.NewFileBackend(s.Config().FileSettings.ToFileBackendSettings(true))
+	if err != nil {
+		return nil, model.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return backend, nil
+}
+
+func (s *Server) checkPushNotificationServerUrl() {
+	notificationServer := *s.Config().EmailSettings.PushNotificationServer
+	if strings.HasPrefix(notificationServer, "http://") {
+		slog.Warn("Your push notification server is configured with HTTP. For improved security, update to HTTPS in your configuration.")
+	}
+}
+
+func (s *Server) enableLoggingMetrics() {
+	if s.Metrics == nil {
+		return
 	}
 
-	if err := s.Store.System().SaveOrUpdate(&model.System{
-		Name:  model.SYSTEM_FIRST_SERVER_RUN_TIMESTAMP_KEY,
-		Value: strconv.FormatInt(util.MillisFromTime(time.Now()), 10),
-	}); err != nil {
+	if err := slog.EnableMetrics(s.Metrics.GetLoggerMetricsCollector()); err != nil {
+		slog.Error("Failed to enable advanced logging metrics", slog.Err(err))
+	} else {
+		slog.Debug("Advanced logging metrics enabled")
+	}
+}
+
+func (s *Server) StopHTTPServer() {
+	if s.Server != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), TimeToWaitForConnectionsToCloseOnServerShutdown)
+		defer cancel()
+
+		didShutDown := false
+		for s.didFinishListen != nil && !didShutDown {
+			if err := s.Server.Shutdown(ctx); err != nil {
+				slog.Warn("Unable to shutdown server", slog.Err(err))
+			}
+			timer := time.NewTimer(time.Millisecond * 50)
+			select {
+			case <-s.didFinishListen:
+				didShutDown = true
+			case <-timer.C:
+			}
+			timer.Stop()
+		}
+		s.Server.Close()
+		s.Server = nil
+	}
+}
+
+func (s *Server) Shutdown() {
+	slog.Info("Stopping Server...")
+
+	defer sentry.Flush(2 * time.Second)
+
+	// s.HubStop()
+	// s.ShutDownPlugins()
+	// s.RemoveLicenseListener(s.licenseListenerId)
+	// s.RemoveLicenseListener(s.loggerLicenseListenerId)
+	// s.RemoveClusterLeaderChangedListener(s.clusterLeaderListenerId)
+
+	if s.tracer != nil {
+		if err := s.tracer.Close(); err != nil {
+			slog.Warn("Unable to cleanly shutdown opentracing client", slog.Err(err))
+		}
+	}
+
+	err := s.telemetryService.Shutdown()
+	if err != nil {
+		slog.Warn("Unable to cleanly shutdown telemetry client", slog.Err(err))
+	}
+
+	// if s.remoteClusterService != nil {
+	// 	if err = s.remoteClusterService.Shutdown(); err != nil {
+	// 		slog.Error("Error shutting down intercluster services", slog.Err(err))
+	// 	}
+	// }
+
+	s.StopHTTPServer()
+	// s.stopLocalModeServer()
+
+	// Push notification hub needs to be shutdown after HTTP server
+	// to prevent stray requests from generating a push notification after it's shut down.
+	// s.StopPushNotificationsHubWorkers()
+	s.htmlTemplateWatcher.Close()
+
+	s.WaitForGoroutines()
+
+	if s.advancedLogListenerCleanup != nil {
+		s.advancedLogListenerCleanup()
+		s.advancedLogListenerCleanup = nil
+	}
+
+	s.RemoveConfigListener(s.configListenerId)
+	s.RemoveConfigListener(s.logListenerId)
+	s.stopSearchEngine()
+
+	s.Audit.Shutdown()
+
+	// s.stopFeatureFlagUpdateJob()
+	s.configStore.Close()
+
+	if s.Cluster != nil {
+		s.Cluster.StopInterNodeCommunication()
+	}
+
+	s.StopMetricsServer()
+
+	if s.Jobs != nil {
+		// For simplicity we don't check if workers and schedulers are active
+		// before stopping them as both calls essentially become no-ops
+		// if nothing is running.
+		if err = s.Jobs.StopWorkers(); err != nil && !errors.Is(err, jobs.ErrWorkersNotRunning) {
+			slog.Warn("Failed to stop job server workers", slog.Err(err))
+		}
+		if err = s.Jobs.StopSchedulers(); err != nil && !errors.Is(err, jobs.ErrSchedulersNotRunning) {
+			slog.Warn("Failed to stop job server schedulers", slog.Err(err))
+		}
+	}
+
+	if s.Store != nil {
+		s.Store.Close()
+	}
+
+	if s.CacheProvider != nil {
+		if err = s.CacheProvider.Close(); err != nil {
+			slog.Warn("Unable to cleanly shutdown cache", slog.Err(err))
+		}
+	}
+
+	timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer timeoutCancel()
+
+	if err := slog.Flush(timeoutCtx); err != nil {
+		slog.Warn("Error flushing logs", slog.Err(err))
+	}
+
+	slog.Info("Server stopped")
+	// this should just write the "server stopped" record, the rest are already flushed.
+	timeoutCtx2, timeoutCancel2 := context.WithTimeout(context.Background(), time.Second*5)
+	defer timeoutCancel2()
+	_ = slog.ShutdownAdvancedLogging(timeoutCtx2)
+}
+
+// func (s *Server) Restart() error {
+// 	percentage, err := s.UpgradeToE0Status()
+// 	if err != nil || percentage != 100 {
+// 		return errors.Wrap(err, "unable to restart because the system has not been upgraded")
+// 	}
+// 	s.Shutdown()
+
+// 	argv0, err := exec.LookPath(os.Args[0])
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	if _, err = os.Stat(argv0); err != nil {
+// 		return err
+// 	}
+
+// 	slog.Info("Restarting server")
+// 	return syscall.Exec(argv0, os.Args, os.Environ())
+// }
+
+var corsAllowedMethods = []string{
+	"POST",
+	"GET",
+	"OPTIONS",
+	"PUT",
+	"PATCH",
+	"DELETE",
+}
+
+// golang.org/x/crypto/acme/autocert/autocert.go
+func handleHTTPRedirect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" && r.Method != "HEAD" {
+		http.Error(w, "Use HTTPS", http.StatusBadRequest)
+		return
+	}
+	target := "https://" + stripPort(r.Host) + r.URL.RequestURI()
+	http.Redirect(w, r, target, http.StatusFound)
+}
+
+// golang.org/x/crypto/acme/autocert/autocert.go
+func stripPort(hostport string) string {
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return hostport
+	}
+	return net.JoinHostPort(host, "443")
+}
+
+func (s *Server) Start() error {
+	slog.Info("Starting Server...")
+
+	var handler http.Handler = s.RootRouter
+
+	if *s.Config().LogSettings.EnableDiagnostics && *s.Config().LogSettings.EnableSentry && !strings.Contains(SentryDSN, "placeholder") {
+		sentryHandler := sentryhttp.New(sentryhttp.Options{
+			Repanic: true,
+		})
+		handler = sentryHandler.Handle(handler)
+	}
+
+	if allowedOrigins := *s.Config().ServiceSettings.AllowCorsFrom; allowedOrigins != "" {
+		exposedCorsHeaders := *s.Config().ServiceSettings.CorsExposedHeaders
+		allowCredentials := *s.Config().ServiceSettings.CorsAllowCredentials
+		debug := *s.Config().ServiceSettings.CorsDebug
+		corsWrapper := cors.New(cors.Options{
+			AllowedOrigins:   strings.Fields(allowedOrigins),
+			AllowedMethods:   corsAllowedMethods,
+			AllowedHeaders:   []string{"*"},
+			ExposedHeaders:   strings.Fields(exposedCorsHeaders),
+			MaxAge:           86400,
+			AllowCredentials: allowCredentials,
+			Debug:            debug,
+		})
+
+		// If we have debugging of CORS turned on then forward messages to logs
+		if debug {
+			corsWrapper.Log = s.Log.StdLog(slog.String("source", "cors"))
+		}
+
+		handler = corsWrapper.Handler(handler)
+	}
+
+	if *s.Config().RateLimitSettings.Enable {
+		slog.Info("RateLimiter is enabled")
+
+		rateLimiter, err := NewRateLimiter(&s.Config().RateLimitSettings, s.Config().ServiceSettings.TrustedProxyIPHeader)
+		if err != nil {
+			return err
+		}
+
+		s.RateLimiter = rateLimiter
+		handler = rateLimiter.RateLimitHandler(handler)
+	}
+	s.Busy = NewBusy(s.Cluster)
+
+	// Creating a logger for logging errors from http.Server at error level
+	errStdLog, err := s.Log.StdLogAt(slog.LevelError, slog.String("source", "httpserver"))
+	if err != nil {
 		return err
 	}
+
+	s.Server = &http.Server{
+		Handler:      handler,
+		ReadTimeout:  time.Duration(*s.Config().ServiceSettings.ReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(*s.Config().ServiceSettings.WriteTimeout) * time.Second,
+		IdleTimeout:  time.Duration(*s.Config().ServiceSettings.IdleTimeout) * time.Second,
+		ErrorLog:     errStdLog,
+	}
+
+	addr := *s.Config().ServiceSettings.ListenAddress
+	if addr == "" {
+		if *s.Config().ServiceSettings.ConnectionSecurity == model.CONN_SECURITY_TLS {
+			addr = ":https"
+		} else {
+			addr = ":http"
+		}
+	}
+
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return errors.Wrapf(err, i18n.T("api.server.start_server.starting.critical"), err)
+	}
+	s.ListenAddr = listener.Addr().(*net.TCPAddr)
+
+	logListeningPort := fmt.Sprintf("Server is listening on %v", listener.Addr().String())
+	slog.Info(logListeningPort, slog.String("address", listener.Addr().String()))
+
+	m := &autocert.Manager{
+		Cache:  autocert.DirCache(*s.Config().ServiceSettings.LetsEncryptCertificateCacheFile),
+		Prompt: autocert.AcceptTOS,
+	}
+
+	if *s.Config().ServiceSettings.Forward80To443 {
+		if host, port, err := net.SplitHostPort(addr); err != nil {
+			slog.Error("Unable to setup forwarding", slog.Err(err))
+		} else if port != "443" {
+			return fmt.Errorf(i18n.T("api.server.start_server.forward80to443.enabled_but_listening_on_wrong_port"), port)
+		} else {
+			httpListenAddress := net.JoinHostPort(host, "http")
+
+			if *s.Config().ServiceSettings.UseLetsEncrypt {
+				server := &http.Server{
+					Addr:     httpListenAddress,
+					Handler:  m.HTTPHandler(nil),
+					ErrorLog: s.Log.StdLog(slog.String("source", "le_forwarder_server")),
+				}
+				go server.ListenAndServe()
+			} else {
+				go func() {
+					redirectListener, err := net.Listen("tcp", httpListenAddress)
+					if err != nil {
+						slog.Error("Unable to setup forwarding", slog.Err(err))
+						return
+					}
+					defer redirectListener.Close()
+
+					server := &http.Server{
+						Handler:  http.HandlerFunc(handleHTTPRedirect),
+						ErrorLog: s.Log.StdLog(slog.String("source", "forwarder_server")),
+					}
+					server.Serve(redirectListener)
+				}()
+			}
+		}
+	} else if *s.Config().ServiceSettings.UseLetsEncrypt {
+		return errors.New(i18n.T("api.server.start_server.forward80to443.disabled_while_using_lets_encrypt"))
+	}
+
+	s.didFinishListen = make(chan struct{})
+	go func() {
+		var err error
+		if *s.Config().ServiceSettings.ConnectionSecurity == model.CONN_SECURITY_TLS {
+
+			tlsConfig := &tls.Config{
+				PreferServerCipherSuites: true,
+				CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			}
+
+			switch *s.Config().ServiceSettings.TLSMinVer {
+			case "1.0":
+				tlsConfig.MinVersion = tls.VersionTLS10
+			case "1.1":
+				tlsConfig.MinVersion = tls.VersionTLS11
+			default:
+				tlsConfig.MinVersion = tls.VersionTLS12
+			}
+
+			defaultCiphers := []uint16{
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			}
+
+			if len(s.Config().ServiceSettings.TLSOverwriteCiphers) == 0 {
+				tlsConfig.CipherSuites = defaultCiphers
+			} else {
+				var cipherSuites []uint16
+				for _, cipher := range s.Config().ServiceSettings.TLSOverwriteCiphers {
+					value, ok := model.ServerTLSSupportedCiphers[cipher]
+
+					if !ok {
+						slog.Warn("Unsupported cipher passed", slog.String("cipher", cipher))
+						continue
+					}
+
+					cipherSuites = append(cipherSuites, value)
+				}
+
+				if len(cipherSuites) == 0 {
+					slog.Warn("No supported ciphers passed, fallback to default cipher suite")
+					cipherSuites = defaultCiphers
+				}
+
+				tlsConfig.CipherSuites = cipherSuites
+			}
+
+			certFile := ""
+			keyFile := ""
+
+			if *s.Config().ServiceSettings.UseLetsEncrypt {
+				tlsConfig.GetCertificate = m.GetCertificate
+				tlsConfig.NextProtos = append(tlsConfig.NextProtos, "h2")
+			} else {
+				certFile = *s.Config().ServiceSettings.TLSCertFile
+				keyFile = *s.Config().ServiceSettings.TLSKeyFile
+			}
+
+			s.Server.TLSConfig = tlsConfig
+			err = s.Server.ServeTLS(listener, certFile, keyFile)
+		} else {
+			err = s.Server.Serve(listener)
+		}
+
+		if err != nil && err != http.ErrServerClosed {
+			slog.Critical("Error starting server", slog.Err(err))
+			time.Sleep(time.Second)
+		}
+
+		close(s.didFinishListen)
+	}()
+
+	if *s.Config().ServiceSettings.EnableLocalMode {
+		if err := s.startLocalModeServer(); err != nil {
+			slog.Critical(err.Error())
+		}
+	}
+
+	if err := s.startInterClusterServices(s.License(), s.WebSocketRouter.app); err != nil {
+		slog.Error("Error starting inter-cluster services", slog.Err(err))
+	}
+
 	return nil
+}
+
+// WaitForGoroutines blocks until all goroutines created by App.Go exit.
+func (s *Server) WaitForGoroutines() {
+	for atomic.LoadInt32(&s.goroutineCount) != 0 {
+		<-s.goroutineExitSignal
+	}
+}
+
+func (s *Server) stopSearchEngine() {
+	s.RemoveConfigListener(s.searchConfigListenerId)
+	// s.RemoveLicenseListener(s.searchLicenseListenerId)
+	if s.SearchEngine != nil && s.SearchEngine.ElasticsearchEngine != nil && s.SearchEngine.ElasticsearchEngine.IsActive() {
+		s.SearchEngine.ElasticsearchEngine.Stop()
+	}
+	if s.SearchEngine != nil && s.SearchEngine.BleveEngine != nil && s.SearchEngine.BleveEngine.IsActive() {
+		s.SearchEngine.BleveEngine.Stop()
+	}
+}
+
+func (s *Server) SetupMetricsServer() {
+	if !*s.Config().MetricsSettings.Enable {
+		return
+	}
+
+	s.StopMetricsServer()
+
+	if err := s.InitMetricsRouter(); err != nil {
+		slog.Error("Error initiating metrics router", slog.Err(err))
+	}
+
+	if s.Metrics != nil {
+		s.Metrics.Register()
+	}
+
+	s.startMetricsServer()
+}
+
+func (s *Server) startMetricsServer() {
+	var notify chan struct{}
+	s.metricsLock.Lock()
+	defer func() {
+		if notify != nil {
+			<-notify
+		}
+		s.metricsLock.Unlock()
+	}()
+
+	l, err := net.Listen("tcp", *s.Config().MetricsSettings.ListenAddress)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
+
+	notify = make(chan struct{})
+	s.metricsServer = &http.Server{
+		Handler:      handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(s.metricsRouter),
+		ReadTimeout:  time.Duration(*s.Config().ServiceSettings.ReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(*s.Config().ServiceSettings.WriteTimeout) * time.Second,
+	}
+
+	go func() {
+		close(notify)
+		if err := s.metricsServer.Serve(l); err != nil && err != http.ErrServerClosed {
+			slog.Critical(err.Error())
+		}
+	}()
+
+	s.Log.Info("Metrics and profiling server is started", slog.String("address", l.Addr().String()))
+}
+
+func (s *Server) StopMetricsServer() {
+	s.metricsLock.Lock()
+	defer s.metricsLock.Unlock()
+
+	if s.metricsServer != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), TimeToWaitForConnectionsToCloseOnServerShutdown)
+		defer cancel()
+
+		s.metricsServer.Shutdown(ctx)
+		s.Log.Info("Metrics and profiling server is stopping")
+	}
+}
+
+func (s *Server) InitMetricsRouter() error {
+	s.metricsRouter = mux.NewRouter()
+	runtime.SetBlockProfileRate(*s.Config().MetricsSettings.BlockProfileRate)
+
+	metricsPage := `
+			<html>
+				<body>{{if .}}
+					<div><a href="/metrics">Metrics</a></div>{{end}}
+					<div><a href="/debug/pprof/">Profiling Root</a></div>
+					<div><a href="/debug/pprof/cmdline">Profiling Command Line</a></div>
+					<div><a href="/debug/pprof/symbol">Profiling Symbols</a></div>
+					<div><a href="/debug/pprof/goroutine">Profiling Goroutines</a></div>
+					<div><a href="/debug/pprof/heap">Profiling Heap</a></div>
+					<div><a href="/debug/pprof/threadcreate">Profiling Threads</a></div>
+					<div><a href="/debug/pprof/block">Profiling Blocking</a></div>
+					<div><a href="/debug/pprof/trace">Profiling Execution Trace</a></div>
+					<div><a href="/debug/pprof/profile">Profiling CPU</a></div>
+				</body>
+			</html>
+		`
+	metricsPageTmpl, err := template.New("page").Parse(metricsPage)
+	if err != nil {
+		return errors.Wrap(err, "failed to create template")
+	}
+
+	rootHandler := func(w http.ResponseWriter, r *http.Request) {
+		metricsPageTmpl.Execute(w, s.Metrics != nil)
+	}
+
+	s.metricsRouter.HandleFunc("/", rootHandler)
+	s.metricsRouter.StrictSlash(true)
+
+	s.metricsRouter.Handle("/debug", http.RedirectHandler("/", http.StatusMovedPermanently))
+	s.metricsRouter.HandleFunc("/debug/pprof/", pprof.Index)
+	s.metricsRouter.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	s.metricsRouter.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	s.metricsRouter.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	s.metricsRouter.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+	// Manually add support for paths linked to by index page at /debug/pprof/
+	s.metricsRouter.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+	s.metricsRouter.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	s.metricsRouter.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+	s.metricsRouter.Handle("/debug/pprof/block", pprof.Handler("block"))
+
+	return nil
+}
+
+func (s *Server) StartSearchEngine() string {
+	if s.SearchEngine.ElasticsearchEngine != nil && s.SearchEngine.ElasticsearchEngine.IsActive() {
+		s.Go(func() {
+			if err := s.SearchEngine.ElasticsearchEngine.Start(); err != nil {
+				s.Log.Error(err.Error())
+			}
+		})
+	}
+
+	configListenerId := s.AddConfigListener(func(oldConfig *model.Config, newConfig *model.Config) {
+		if s.SearchEngine == nil {
+			return
+		}
+		s.SearchEngine.UpdateConfig(newConfig)
+
+		if s.SearchEngine.ElasticsearchEngine != nil && !*oldConfig.ElasticsearchSettings.EnableIndexing && *newConfig.ElasticsearchSettings.EnableIndexing {
+			s.Go(func() {
+				if err := s.SearchEngine.ElasticsearchEngine.Start(); err != nil {
+					slog.Error(err.Error())
+				}
+			})
+		} else if s.SearchEngine.ElasticsearchEngine != nil && *oldConfig.ElasticsearchSettings.EnableIndexing && !*newConfig.ElasticsearchSettings.EnableIndexing {
+			s.Go(func() {
+				if err := s.SearchEngine.ElasticsearchEngine.Stop(); err != nil {
+					slog.Error(err.Error())
+				}
+			})
+		} else if s.SearchEngine.ElasticsearchEngine != nil && *oldConfig.ElasticsearchSettings.Password != *newConfig.ElasticsearchSettings.Password || *oldConfig.ElasticsearchSettings.Username != *newConfig.ElasticsearchSettings.Username || *oldConfig.ElasticsearchSettings.ConnectionUrl != *newConfig.ElasticsearchSettings.ConnectionUrl || *oldConfig.ElasticsearchSettings.Sniff != *newConfig.ElasticsearchSettings.Sniff {
+			s.Go(func() {
+				if *oldConfig.ElasticsearchSettings.EnableIndexing {
+					if err := s.SearchEngine.ElasticsearchEngine.Stop(); err != nil {
+						slog.Error(err.Error())
+					}
+					if err := s.SearchEngine.ElasticsearchEngine.Start(); err != nil {
+						slog.Error(err.Error())
+					}
+				}
+			})
+		}
+	})
+
+	// licenseListenerId := s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+	// 	if s.SearchEngine == nil {
+	// 		return
+	// 	}
+	// 	if oldLicense == nil && newLicense != nil {
+	// 		if s.SearchEngine.ElasticsearchEngine != nil && s.SearchEngine.ElasticsearchEngine.IsActive() {
+	// 			s.Go(func() {
+	// 				if err := s.SearchEngine.ElasticsearchEngine.Start(); err != nil {
+	// 					slog.Error(err.Error())
+	// 				}
+	// 			})
+	// 		}
+	// 	} else if oldLicense != nil && newLicense == nil {
+	// 		if s.SearchEngine.ElasticsearchEngine != nil {
+	// 			s.Go(func() {
+	// 				if err := s.SearchEngine.ElasticsearchEngine.Stop(); err != nil {
+	// 					slog.Error(err.Error())
+	// 				}
+	// 			})
+	// 		}
+	// 	}
+	// })
+
+	return configListenerId
 }

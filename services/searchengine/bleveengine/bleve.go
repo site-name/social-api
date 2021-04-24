@@ -28,15 +28,16 @@ const (
 )
 
 type BleveEngine struct {
-	PostIndex    bleve.Index
-	FileIndex    bleve.Index
-	UserIndex    bleve.Index
-	ChannelIndex bleve.Index
-	Mutex        sync.RWMutex
-	ready        int32
-	cfg          *model.Config
-	jobServer    *jobs.JobServer
-	indexSync    bool
+	// PostIndex    bleve.Index
+	// FileIndex    bleve.Index
+	// ChannelIndex bleve.Index
+
+	UserIndex bleve.Index
+	Mutex     sync.RWMutex
+	ready     int32
+	cfg       *model.Config
+	jobServer *jobs.JobServer
+	indexSync bool
 }
 
 var keywordMapping *mapping.FieldMapping
@@ -53,52 +54,52 @@ func init() {
 	dateMapping = bleve.NewNumericFieldMapping()
 }
 
-func getChannelIndexMapping() *mapping.IndexMappingImpl {
-	channelMapping := bleve.NewDocumentMapping()
-	channelMapping.AddFieldMappingsAt("Id", keywordMapping)
-	channelMapping.AddFieldMappingsAt("TeamId", keywordMapping)
-	channelMapping.AddFieldMappingsAt("NameSuggest", keywordMapping)
+// func getChannelIndexMapping() *mapping.IndexMappingImpl {
+// 	channelMapping := bleve.NewDocumentMapping()
+// 	channelMapping.AddFieldMappingsAt("Id", keywordMapping)
+// 	channelMapping.AddFieldMappingsAt("TeamId", keywordMapping)
+// 	channelMapping.AddFieldMappingsAt("NameSuggest", keywordMapping)
 
-	indexMapping := bleve.NewIndexMapping()
-	indexMapping.AddDocumentMapping("_default", channelMapping)
+// 	indexMapping := bleve.NewIndexMapping()
+// 	indexMapping.AddDocumentMapping("_default", channelMapping)
 
-	return indexMapping
-}
+// 	return indexMapping
+// }
 
-func getPostIndexMapping() *mapping.IndexMappingImpl {
-	postMapping := bleve.NewDocumentMapping()
-	postMapping.AddFieldMappingsAt("Id", keywordMapping)
-	postMapping.AddFieldMappingsAt("TeamId", keywordMapping)
-	postMapping.AddFieldMappingsAt("ChannelId", keywordMapping)
-	postMapping.AddFieldMappingsAt("UserId", keywordMapping)
-	postMapping.AddFieldMappingsAt("CreateAt", dateMapping)
-	postMapping.AddFieldMappingsAt("Message", standardMapping)
-	postMapping.AddFieldMappingsAt("Type", keywordMapping)
-	postMapping.AddFieldMappingsAt("Hashtags", standardMapping)
-	postMapping.AddFieldMappingsAt("Attachments", standardMapping)
+// func getPostIndexMapping() *mapping.IndexMappingImpl {
+// 	postMapping := bleve.NewDocumentMapping()
+// 	postMapping.AddFieldMappingsAt("Id", keywordMapping)
+// 	postMapping.AddFieldMappingsAt("TeamId", keywordMapping)
+// 	postMapping.AddFieldMappingsAt("ChannelId", keywordMapping)
+// 	postMapping.AddFieldMappingsAt("UserId", keywordMapping)
+// 	postMapping.AddFieldMappingsAt("CreateAt", dateMapping)
+// 	postMapping.AddFieldMappingsAt("Message", standardMapping)
+// 	postMapping.AddFieldMappingsAt("Type", keywordMapping)
+// 	postMapping.AddFieldMappingsAt("Hashtags", standardMapping)
+// 	postMapping.AddFieldMappingsAt("Attachments", standardMapping)
 
-	indexMapping := bleve.NewIndexMapping()
-	indexMapping.AddDocumentMapping("_default", postMapping)
+// 	indexMapping := bleve.NewIndexMapping()
+// 	indexMapping.AddDocumentMapping("_default", postMapping)
 
-	return indexMapping
-}
+// 	return indexMapping
+// }
 
-func getFileIndexMapping() *mapping.IndexMappingImpl {
-	fileMapping := bleve.NewDocumentMapping()
-	fileMapping.AddFieldMappingsAt("Id", keywordMapping)
-	fileMapping.AddFieldMappingsAt("CreatorId", keywordMapping)
-	fileMapping.AddFieldMappingsAt("ChannelId", keywordMapping)
-	fileMapping.AddFieldMappingsAt("CreateAt", dateMapping)
-	fileMapping.AddFieldMappingsAt("Name", standardMapping)
-	fileMapping.AddFieldMappingsAt("Content", standardMapping)
-	fileMapping.AddFieldMappingsAt("Extension", keywordMapping)
-	fileMapping.AddFieldMappingsAt("Content", standardMapping)
+// func getFileIndexMapping() *mapping.IndexMappingImpl {
+// 	fileMapping := bleve.NewDocumentMapping()
+// 	fileMapping.AddFieldMappingsAt("Id", keywordMapping)
+// 	fileMapping.AddFieldMappingsAt("CreatorId", keywordMapping)
+// 	fileMapping.AddFieldMappingsAt("ChannelId", keywordMapping)
+// 	fileMapping.AddFieldMappingsAt("CreateAt", dateMapping)
+// 	fileMapping.AddFieldMappingsAt("Name", standardMapping)
+// 	fileMapping.AddFieldMappingsAt("Content", standardMapping)
+// 	fileMapping.AddFieldMappingsAt("Extension", keywordMapping)
+// 	fileMapping.AddFieldMappingsAt("Content", standardMapping)
 
-	indexMapping := bleve.NewIndexMapping()
-	indexMapping.AddDocumentMapping("_default", fileMapping)
+// 	indexMapping := bleve.NewIndexMapping()
+// 	indexMapping.AddDocumentMapping("_default", fileMapping)
 
-	return indexMapping
-}
+// 	return indexMapping
+// }
 
 func getUserIndexMapping() *mapping.IndexMappingImpl {
 	userMapping := bleve.NewDocumentMapping()
@@ -144,25 +145,25 @@ func (b *BleveEngine) openIndexes() *model.AppError {
 	}
 
 	var err error
-	b.PostIndex, err = b.createOrOpenIndex(PostIndex, getPostIndexMapping())
-	if err != nil {
-		return model.NewAppError("Bleveengine.Start", "bleveengine.create_post_index.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	// b.PostIndex, err = b.createOrOpenIndex(PostIndex, getPostIndexMapping())
+	// if err != nil {
+	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_post_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// }
 
-	b.FileIndex, err = b.createOrOpenIndex(FileIndex, getFileIndexMapping())
-	if err != nil {
-		return model.NewAppError("Bleveengine.Start", "bleveengine.create_file_index.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	// b.FileIndex, err = b.createOrOpenIndex(FileIndex, getFileIndexMapping())
+	// if err != nil {
+	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_file_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// }
 
 	b.UserIndex, err = b.createOrOpenIndex(UserIndex, getUserIndexMapping())
 	if err != nil {
 		return model.NewAppError("Bleveengine.Start", "bleveengine.create_user_index.error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	b.ChannelIndex, err = b.createOrOpenIndex(ChannelIndex, getChannelIndexMapping())
-	if err != nil {
-		return model.NewAppError("Bleveengine.Start", "bleveengine.create_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	// b.ChannelIndex, err = b.createOrOpenIndex(ChannelIndex, getChannelIndexMapping())
+	// if err != nil {
+	// 	return model.NewAppError("Bleveengine.Start", "bleveengine.create_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
+	// }
 
 	atomic.StoreInt32(&b.ready, 1)
 	return nil
@@ -183,21 +184,21 @@ func (b *BleveEngine) Start() *model.AppError {
 
 func (b *BleveEngine) closeIndexes() *model.AppError {
 	if b.IsActive() {
-		if err := b.PostIndex.Close(); err != nil {
-			return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_post_index.error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		// if err := b.PostIndex.Close(); err != nil {
+		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_post_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// }
 
-		if err := b.FileIndex.Close(); err != nil {
-			return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_file_index.error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		// if err := b.FileIndex.Close(); err != nil {
+		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_file_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// }
 
 		if err := b.UserIndex.Close(); err != nil {
 			return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_user_index.error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
-		if err := b.ChannelIndex.Close(); err != nil {
-			return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		// if err := b.ChannelIndex.Close(); err != nil {
+		// 	return model.NewAppError("Bleveengine.Stop", "bleveengine.stop_channel_index.error", nil, err.Error(), http.StatusInternalServerError)
+		// }
 	}
 
 	atomic.StoreInt32(&b.ready, 0)

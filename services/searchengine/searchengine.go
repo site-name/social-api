@@ -5,6 +5,13 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+type Broker struct {
+	cfg                 *model.Config
+	jobServer           *jobs.JobServer
+	ElasticsearchEngine SearchEngineInterface
+	BleveEngine         SearchEngineInterface
+}
+
 func NewBroker(cfg *model.Config, jobServer *jobs.JobServer) *Broker {
 	return &Broker{
 		cfg:       cfg,
@@ -18,13 +25,6 @@ func (seb *Broker) RegisterElasticsearchEngine(es SearchEngineInterface) {
 
 func (seb *Broker) RegisterBleveEngine(be SearchEngineInterface) {
 	seb.BleveEngine = be
-}
-
-type Broker struct {
-	cfg                 *model.Config
-	jobServer           *jobs.JobServer
-	ElasticsearchEngine SearchEngineInterface
-	BleveEngine         SearchEngineInterface
 }
 
 func (seb *Broker) UpdateConfig(cfg *model.Config) *model.AppError {
