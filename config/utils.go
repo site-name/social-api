@@ -1,12 +1,12 @@
 package config
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -190,12 +190,12 @@ func stripPassword(dsn, schema string) string {
 
 func IsJsonMap(data string) bool {
 	var m map[string]interface{}
-	return json.Unmarshal([]byte(data), &m) == nil
+	return json.JSON.Unmarshal([]byte(data), &m) == nil
 }
 
 func JSONToLogTargetCfg(data []byte) (slog.LogTargetCfg, error) {
 	cfg := make(slog.LogTargetCfg)
-	err := json.Unmarshal(data, &cfg)
+	err := json.JSON.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, err
 	}

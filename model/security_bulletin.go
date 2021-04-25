@@ -1,8 +1,9 @@
 package model
 
 import (
-	"encoding/json"
 	"io"
+
+	"github.com/sitename/sitename/modules/json"
 )
 
 type SecurityBulletin struct {
@@ -13,18 +14,18 @@ type SecurityBulletin struct {
 type SecurityBulletins []SecurityBulletin
 
 func (sb *SecurityBulletin) ToJson() string {
-	b, _ := json.Marshal(sb)
+	b, _ := json.JSON.Marshal(sb)
 	return string(b)
 }
 
 func SecurityBulletinFromJson(data io.Reader) *SecurityBulletin {
 	var o *SecurityBulletin
-	json.NewDecoder(data).Decode(&o)
+	json.JSON.NewDecoder(data).Decode(&o)
 	return o
 }
 
 func (sb SecurityBulletins) ToJson() string {
-	b, err := json.Marshal(sb)
+	b, err := json.JSON.Marshal(sb)
 	if err != nil {
 		return "[]"
 	}
@@ -33,6 +34,6 @@ func (sb SecurityBulletins) ToJson() string {
 
 func SecurityBulletinsFromJson(data io.Reader) SecurityBulletins {
 	var o SecurityBulletins
-	json.NewDecoder(data).Decode(&o)
+	json.JSON.NewDecoder(data).Decode(&o)
 	return o
 }

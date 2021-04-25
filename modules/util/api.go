@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/sitename/sitename/model"
 )
@@ -58,4 +59,29 @@ func RenderWebError(config *model.Config, w http.ResponseWriter, r *http.Request
 		template.HTMLEscapeString(destination),
 		template.HTMLEscapeString(destination),
 	))
+}
+
+func OriginChecker(allowedOrigins string) func(*http.Request) bool {
+	return func(r *http.Request) bool {
+		return CheckOrigin(r, allowedOrigins)
+	}
+}
+
+// CheckOrigin check if the origin of r is in allowedOrigins or not
+func CheckOrigin(r *http.Request, allowedOrigins string) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+
+	if allowedOrigins == "*" {
+		return true
+	}
+
+	for _, allowed := range strings.Split(allowedOrigins, " ") {
+		if allowed == origin {
+			return true
+		}
+	}
+	return false
 }

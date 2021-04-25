@@ -1036,3 +1036,8 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 	panic("not implemented")
 
 }
+
+func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+	panic("not implemented")
+
+}

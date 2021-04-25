@@ -11,6 +11,7 @@ import (
 	"net/http/pprof"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -18,6 +19,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	sentryhttp "github.com/getsentry/sentry-go/http"
@@ -140,14 +142,17 @@ type Server struct {
 	timezones                          *timezones.Timezones
 	Audit                              *audit.Audit
 	Compliance                         einterfaces.ComplianceInterface
+	LocalRouter                        *mux.Router
 }
 
 func NewServer(options ...Option) (*Server, error) {
 	rootRouter := mux.NewRouter()
+	localRouter := mux.NewRouter()
 
 	s := &Server{
 		goroutineExitSignal: make(chan struct{}, 1),
 		RootRouter:          rootRouter,
+		LocalRouter:         localRouter,
 		hashSeed:            maphash.MakeSeed(),
 		uploadLockMap:       map[string]bool{},
 	}
@@ -243,14 +248,22 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.sessionCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.SESSION_CACHE_SIZE,
 		Striped:        true,
-		StripedBuckets: util.MaxInt(runtime.NumCPU()-1, 1),
+		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return nil, errors.Wrap(err, "Unable to create session cache")
 	}
+
+	// NOTE: not sure need this:
 	if s.seenPendingPostIdsCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
+		Size: 25000,
+	}); err != nil {
+		return nil, errors.Wrap(err, "Unable to create status cache")
+	}
+
+	if s.statusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.STATUS_CACHE_SIZE,
 		Striped:        true,
-		StripedBuckets: util.MaxInt(runtime.NumCPU()-1, 1),
+		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return nil, errors.Wrap(err, "Unable to create status cache")
 	}
@@ -266,18 +279,16 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.newStore == nil {
 		s.newStore = func() (store.Store, error) {
 			s.sqlStore = sqlstore.New(s.Config().SqlSettings, s.Metrics)
-			if s.sqlStore.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-				ver, err2 := s.sqlStore.GetDbVersion(true)
-				if err != nil {
-					return nil, errors.Wrap(err2, "cannot get DB version")
-				}
-				intVer, err2 := strconv.Atoi(ver)
-				if err2 != nil {
-					return nil, errors.Wrap(err2, "cannot parse DB version")
-				}
-				if intVer < sqlstore.MinimumRequiredPostgresVersion {
-					return nil, fmt.Errorf("minimum required postgres version is %s; found %s", sqlstore.VersionString(sqlstore.MinimumRequiredPostgresVersion), sqlstore.VersionString(intVer))
-				}
+			ver, err2 := s.sqlStore.GetDbVersion(true)
+			if err2 != nil {
+				return nil, errors.Wrap(err2, "cannot get DB version")
+			}
+			intVer, err2 := strconv.Atoi(ver)
+			if err2 != nil {
+				return nil, errors.Wrap(err2, "cannot parse DB version")
+			}
+			if intVer < sqlstore.MinimumRequiredPostgresVersion {
+				return nil, fmt.Errorf("minimum required postgres version is %s; found %s", sqlstore.VersionString(sqlstore.MinimumRequiredPostgresVersion), sqlstore.VersionString(intVer))
 			}
 
 			lcl, err2 := localcachelayer.NewLocalCacheLayer(
@@ -573,10 +584,22 @@ func NewServer(options ...Option) (*Server, error) {
 }
 
 func (s *Server) initJobs() {
-	// s.Jobs = jobs.NewJobServer(s, s.Store, s.Metrics)
-	// if jobsDataRetentionJobInterface != nil {
-
-	// }
+	s.Jobs = jobs.NewJobServer(s, s.Store, s.Metrics)
+	if jobsDataRetentionJobInterface != nil {
+		s.Jobs.DataRetentionJob = jobsDataRetentionJobInterface(s)
+	}
+	if jobsMessageExportJobInterface != nil {
+		s.Jobs.MessageExportJob = jobsMessageExportJobInterface(s)
+	}
+	if jobsElasticsearchAggregatorInterface != nil {
+		s.Jobs.ElasticsearchAggregator = jobsElasticsearchAggregatorInterface(s)
+	}
+	if jobsBleveIndexerInterface != nil {
+		s.Jobs.BleveIndexer = jobsBleveIndexerInterface(s)
+	}
+	if jobsMigrationsInterface != nil {
+		s.Jobs.Migrations = jobsMigrationsInterface(s)
+	}
 }
 
 // initLogging initializes and configures the logger. This may be called more than once.
@@ -898,10 +921,11 @@ func (s *Server) Shutdown() {
 	// }
 
 	s.StopHTTPServer()
-	// s.stopLocalModeServer()
+	s.stopLocalModeServer()
 
 	// Push notification hub needs to be shutdown after HTTP server
 	// to prevent stray requests from generating a push notification after it's shut down.
+
 	// s.StopPushNotificationsHubWorkers()
 	s.htmlTemplateWatcher.Close()
 
@@ -957,31 +981,32 @@ func (s *Server) Shutdown() {
 	}
 
 	slog.Info("Server stopped")
+
 	// this should just write the "server stopped" record, the rest are already flushed.
 	timeoutCtx2, timeoutCancel2 := context.WithTimeout(context.Background(), time.Second*5)
 	defer timeoutCancel2()
 	_ = slog.ShutdownAdvancedLogging(timeoutCtx2)
 }
 
-// func (s *Server) Restart() error {
-// 	percentage, err := s.UpgradeToE0Status()
-// 	if err != nil || percentage != 100 {
-// 		return errors.Wrap(err, "unable to restart because the system has not been upgraded")
-// 	}
-// 	s.Shutdown()
+func (s *Server) Restart() error {
+	// percentage, err := s.UpgradeToE0Status()
+	// if err != nil || percentage != 100 {
+	// 	return errors.Wrap(err, "unable to restart because the system has not been upgraded")
+	// }
+	s.Shutdown()
 
-// 	argv0, err := exec.LookPath(os.Args[0])
-// 	if err != nil {
-// 		return err
-// 	}
+	argv0, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		return err
+	}
 
-// 	if _, err = os.Stat(argv0); err != nil {
-// 		return err
-// 	}
+	if _, err = os.Stat(argv0); err != nil {
+		return err
+	}
 
-// 	slog.Info("Restarting server")
-// 	return syscall.Exec(argv0, os.Args, os.Environ())
-// }
+	slog.Info("Restarting server")
+	return syscall.Exec(argv0, os.Args, os.Environ())
+}
 
 var corsAllowedMethods = []string{
 	"POST",
@@ -1213,8 +1238,57 @@ func (s *Server) Start() error {
 		}
 	}
 
-	if err := s.startInterClusterServices(s.License(), s.WebSocketRouter.app); err != nil {
-		slog.Error("Error starting inter-cluster services", slog.Err(err))
+	// if err := s.startInterClusterServices(s.License(), s.WebSocketRouter.app); err != nil {
+	// 	slog.Error("Error starting inter-cluster services", slog.Err(err))
+	// }
+
+	return nil
+}
+
+func (s *Server) startLocalModeServer() error {
+	s.localModeServer = &http.Server{
+		Handler: s.LocalRouter,
+	}
+
+	socket := *s.Config().ServiceSettings.LocalModeSocketLocation
+	if err := os.RemoveAll(socket); err != nil {
+		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+	}
+
+	unixListener, err := net.Listen("unix", socket)
+	if err != nil {
+		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+	}
+	if err = os.Chmod(socket, 0600); err != nil {
+		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+	}
+
+	go func() {
+		err = s.localModeServer.Serve(unixListener)
+		if err != nil && err != http.ErrServerClosed {
+			slog.Critical("Error starting unix socket server", slog.Err(err))
+		}
+	}()
+
+	return nil
+}
+
+func (s *Server) stopLocalModeServer() {
+	if s.localModeServer != nil {
+		s.localModeServer.Close()
+	}
+}
+
+func (a *App) OriginChecker() func(*http.Request) bool {
+	if allowed := *a.Config().ServiceSettings.AllowCorsFrom; allowed != "" {
+		if allowed != "*" {
+			siteURL, err := url.Parse(*a.Config().ServiceSettings.SiteURL)
+			if err == nil {
+				siteURL.Path = ""
+				allowed += " " + siteURL.String()
+			}
+		}
+		return util.OriginChecker(allowed)
 	}
 
 	return nil

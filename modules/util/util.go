@@ -327,10 +327,3 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 // 	}
 // 	return false
 // }
-
-func MaxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}

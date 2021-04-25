@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -15,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -247,7 +247,7 @@ func (ds *DatabaseStore) Load() ([]byte, error) {
 		configWithDB := model.Config{}
 		configWithDB.SqlSettings.DriverName = model.NewString(ds.driverName)
 		configWithDB.SqlSettings.DataSource = model.NewString(ds.dataSourceName)
-		return json.Marshal(configWithDB)
+		return json.JSON.Marshal(configWithDB)
 	}
 
 	return configurationData, nil

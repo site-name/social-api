@@ -84,7 +84,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
 		InvalidateClusterEvent: model.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS,
 		Striped:                true,
-		StripedBuckets:         util.MaxInt(runtime.NumCPU()-1, 1),
+		StripedBuckets:         util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return
 	}

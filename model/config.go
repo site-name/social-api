@@ -2,7 +2,6 @@ package model
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"io"
 	"math"
 	"net"
@@ -18,6 +17,7 @@ import (
 	"github.com/mattermost/ldap"
 
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -3142,14 +3142,14 @@ type Config struct {
 
 func (o *Config) Clone() *Config {
 	var ret Config
-	if err := json.Unmarshal([]byte(o.ToJson()), &ret); err != nil {
+	if err := json.JSON.Unmarshal([]byte(o.ToJson()), &ret); err != nil {
 		panic(err)
 	}
 	return &ret
 }
 
 func (o *Config) ToJson() string {
-	b, _ := json.Marshal(o)
+	b, _ := json.JSON.Marshal(o)
 	return string(b)
 }
 
@@ -3161,7 +3161,7 @@ func (o *Config) ToJsonFiltered(tagType, tagValue string) string {
 			delete(filteredConfigMap, key)
 		}
 	}
-	b, _ := json.Marshal(filteredConfigMap)
+	b, _ := json.JSON.Marshal(filteredConfigMap)
 	return string(b)
 }
 
@@ -3182,7 +3182,7 @@ func (o *Config) GetSSOService(service string) *SSOSettings {
 
 func ConfigFromJson(data io.Reader) *Config {
 	var o *Config
-	json.NewDecoder(data).Decode(&o)
+	json.JSON.NewDecoder(data).Decode(&o)
 	return o
 }
 
@@ -3834,6 +3834,7 @@ func (s *ImageProxySettings) isValid() *AppError {
 	return nil
 }
 
+// GetSanitizeOptions returns options for User type only
 func (o *Config) GetSanitizeOptions() map[string]bool {
 	options := map[string]bool{}
 	options["fullname"] = *o.PrivacySettings.ShowFullName

@@ -2,13 +2,13 @@ package config
 
 import (
 	"bytes"
-	"encoding/json"
 	"reflect"
 	"sync"
 
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util/jsonutils"
 )
 
@@ -213,7 +213,7 @@ func (s *Store) loadLockedWithOld(oldCfg *model.Config, unlockOnce *sync.Once) e
 
 	loadedConfig := &model.Config{}
 	if len(configBytes) != 0 {
-		if err = json.Unmarshal(configBytes, &loadedConfig); err != nil {
+		if err = json.JSON.Unmarshal(configBytes, &loadedConfig); err != nil {
 			return jsonutils.HumanizeJSONError(err, configBytes)
 		}
 	}
@@ -246,11 +246,11 @@ func (s *Store) loadLockedWithOld(oldCfg *model.Config, unlockOnce *sync.Once) e
 	}
 
 	// Apply changes that may have happened on load to the backing store.
-	oldCfgBytes, err := json.Marshal(oldCfg)
+	oldCfgBytes, err := json.JSON.Marshal(oldCfg)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal old config")
 	}
-	newCfgBytes, err := json.Marshal(loadedConfig)
+	newCfgBytes, err := json.JSON.Marshal(loadedConfig)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal loaded config")
 	}
@@ -265,7 +265,7 @@ func (s *Store) loadLockedWithOld(oldCfg *model.Config, unlockOnce *sync.Once) e
 		if !s.persistFeatureFlags {
 			s.configNoEnv.FeatureFlags = loadedFeatureFlags
 		}
-		toStoreBytes, err := json.Marshal(s.configNoEnv)
+		toStoreBytes, err := json.JSON.Marshal(s.configNoEnv)
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal old config")
 		}

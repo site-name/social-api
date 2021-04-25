@@ -361,6 +361,10 @@ func (u *User) IsLDAPUser() bool {
 	return u.AuthService == USER_AUTH_SERVICE_LDAP
 }
 
+func (u *User) IsSAMLUser() bool {
+	return u.AuthService == USER_AUTH_SERVICE_SAML
+}
+
 func (u *User) Patch(patch *UserPatch) {
 	if patch.Username != nil {
 		u.Username = *patch.Username
@@ -742,4 +746,14 @@ func ComparePassword(hash string, password string) bool {
 
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func (u *User) MakeNonNil() {
+	if u.Props == nil {
+		u.Props = make(map[string]string)
+	}
+
+	if u.NotifyProps == nil {
+		u.NotifyProps = make(map[string]string)
+	}
 }
