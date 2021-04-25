@@ -17,7 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 const (
@@ -152,7 +152,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 func (a *AppError) ToJson() string {
 	b, err := json.JSON.Marshal(a)
 	if err != nil {
-		log.Error("failed marshaling app error: %v", err)
+		slog.Error("failed marshaling app error: %v", slog.Err(err))
 		return ""
 	}
 	return string(b)

@@ -7,7 +7,7 @@ import (
 	"unicode"
 
 	"github.com/mattermost/gorp"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 var escapeLikeSearchChar = []string{
@@ -49,11 +49,11 @@ func finalizeTransaction(transaction interface{}) {
 	switch t := transaction.(type) {
 	case *gorp.Transaction:
 		if err := t.Rollback(); err != nil && err != sql.ErrTxDone {
-			log.Error("Failed to rollback transaction: %v", err)
+			slog.Error("Failed to rollback transaction", slog.Err(err))
 		}
 	case *sql.Tx:
 		if err := t.Rollback(); err != nil && err != sql.ErrTxDone {
-			log.Error("Failed to rollback transaction: %v", err)
+			slog.Error("Failed to rollback transaction: %v", slog.Err(err))
 		}
 	}
 }

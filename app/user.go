@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/sitename/sitename/model"
@@ -681,9 +682,56 @@ func (a *App) SetProfileImageFromMultiPartFile(userID string, file multipart.Fil
 	// This casting is done to prevent overflow on 32 bit systems (not needed
 	// in 64 bits systems because images can't have more than 32 bits height or
 	// width)
-	if int64(config.Width) * int64(config.Height) > model.MaxImageSize {
-
+	if int64(config.Width)*int64(config.Height) > model.MaxImageSize {
+		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.too_large.app_error", nil, "", http.StatusBadRequest)
 	}
+
+	file.Seek(0, 0)
+
+	return a.SetProfileImageFromFile(userID, file)
+}
+
+func (a *App) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError) {
+	// Decode image into Image object
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode.app_error", nil, err.Error(), http.StatusBadRequest)
+	}
+
+	orientation, _ := getImageOrientation(file)
+	img = makeImageUpright(img, orientation)
+
+	// Scale profile image
+	profileWidthAndHeight := 128
+	img = imaging.Fill(img, profileWidthAndHeight, profileWidthAndHeight, imaging.Center, imaging.Lanczos)
+
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, img)
+	if err != nil {
+		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.encode.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return buf, nil
+}
+
+func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppError {
+	buf, err := a.AdjustImage(file)
+	if err != nil {
+		return err
+	}
+
+	path := "users/" + userID + "/profile.png"
+
+	if _, err := a.WriteFile(buf, path); err != nil {
+		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.upload_profile.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if err := a.Srv().Store.User().UpdateLastPictureUpdate(userID); err != nil {
+		slog.Warn("Error with updating last picture update", slog.Err(err))
+	}
+
+	// a.invalidateUserCacheAndPublish(userID)
+
+	return nil
 }
 
 // func (a *App) DeactivateGuests() *model.AppError {

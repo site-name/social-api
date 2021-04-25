@@ -3,7 +3,7 @@ package sqlstore
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 type relationalCheckConfig struct {
@@ -61,7 +61,7 @@ func checkParentChildIntegrity(ss *SqlStore, config relationalCheckConfig) model
 	config.sortRecords = true
 	data.Records, result.Err = getOrphanedRecords(ss, config)
 	if result.Err != nil {
-		log.Error("Error while getting orphaned records", result.Err)
+		slog.Error("Error while getting orphaned records", slog.Err(result.Err))
 		return result
 	}
 	data.ParentName = config.parentName
@@ -124,8 +124,8 @@ func checkUsersIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult
 }
 
 func CheckRelationalIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult) {
-	log.Info("Starting relational integrity checks...")
+	slog.Info("Starting relational integrity checks...")
 
-	log.Info("Done with relational integrity checks")
+	slog.Info("Done with relational integrity checks")
 	close(results)
 }

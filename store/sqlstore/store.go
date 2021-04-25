@@ -4,7 +4,6 @@ import (
 	"context"
 	dbsql "database/sql"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/dyatlov/go-opengraph/opengraph"
@@ -26,7 +27,7 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -102,7 +103,7 @@ func (t *TraceOnAdapter) Printf(format string, v ...interface{}) {
 	newString := strings.ReplaceAll(originalString, "\n", " ")
 	newString = strings.ReplaceAll(newString, "\t", " ")
 	newString = strings.ReplaceAll(newString, "\"", "")
-	log.Debug(newString)
+	slog.Debug(newString)
 }
 
 type mattermConverter struct{}
@@ -244,7 +245,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 
 	err := store.migrate(migrationsDirectionUp)
 	if err != nil {
-		log.Critical("Failed to apply database migrations: %v", err)
+		slog.Critical("Failed to apply database migrations", slog.Err(err))
 		os.Exit(ExitGenericFailure)
 	}
 
@@ -252,9 +253,9 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	err = store.GetMaster().CreateTablesIfNotExists()
 	if err != nil {
 		if IsDuplicate(err) {
-			log.Warn("Duplicate key error occured; assuming table already created and proceeding: %v", err)
+			slog.Warn("Duplicate key error occured; assuming table already created and proceeding: %v", slog.Err(err))
 		} else {
-			log.Critical("Error creating database tables: %v", err)
+			slog.Critical("Error creating database tables", slog.Err(err))
 			os.Exit(ExitCreateTable)
 		}
 	}
@@ -318,7 +319,7 @@ func (ss *SqlStore) createIndexIfNotExists(indexName, tableName string, columnNa
 	query := ""
 	if indexType == IndexTypeFullText {
 		if len(columnNames) != 1 {
-			log.Critical("Unable to create multi column full text index")
+			slog.Critical("Unable to create multi column full text index")
 			os.Exit(ExitCreateIndexPostgres)
 		}
 		columnName := columnNames[0]
@@ -326,7 +327,7 @@ func (ss *SqlStore) createIndexIfNotExists(indexName, tableName string, columnNa
 		query = fmt.Sprintf("CREATE INDEX %s ON %s USING(gin(to_tsvector('english', %s))", indexName, tableName, postgresColumnNames)
 	} else if indexType == IndexTypeFullTextFunc {
 		if len(columnNames) != 1 {
-			log.Critical("Unable to create multi column full text index")
+			slog.Critical("Unable to create multi column full text index")
 			os.Exit(ExitCreateIndexPostgres)
 		}
 		columnName := columnNames[0]
@@ -337,7 +338,7 @@ func (ss *SqlStore) createIndexIfNotExists(indexName, tableName string, columnNa
 
 	_, err := ss.GetMaster().Exec(query)
 	if err != nil {
-		log.Critical("Failed to create index: %v, %v", errExists, err)
+		slog.Critical("Failed to create index", slog.Err(errExists), slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitCreateIndexPostgres)
 	}
@@ -403,7 +404,7 @@ func (ss *SqlStore) RemoveIndexIfExists(indexName string, tableName string) bool
 
 	_, err = ss.GetMaster().Exec("DROP INDEX " + indexName)
 	if err != nil {
-		log.Critical("Failed to remove index %v", err)
+		slog.Critical("Failed to remove index", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitRemoveIndexPostgres)
 	}
@@ -544,13 +545,13 @@ func (ss *SqlStore) initConnection() {
 func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *gorp.DbMap {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
-		log.Critical("Failed to open SQL connection: %v", err)
+		slog.Critical("Failed to open SQL connection", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitDBOpen)
 	}
 
 	for i := 0; i < DBPingAttempts; i++ {
-		log.Info("Pinging SQL #%d/%d...", i+1, DBPingAttempts)
+		slog.Info("Pinging SQL ", slog.String("database", connType))
 		ctx, cancel := context.WithTimeout(context.Background(), DBPingTimeoutSecs*time.Second)
 		defer cancel()
 		err = db.PingContext(ctx)
@@ -558,11 +559,11 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 			break
 		} else {
 			if i == DBPingAttempts-1 {
-				log.Critical("Failed to ping DB, server will exit. Err: %v", err)
+				slog.Critical("Failed to ping DB, server will exit", slog.Err(err))
 				time.Sleep(time.Second)
 				os.Exit(ExitPing)
 			} else {
-				log.Error("Failed to ping: %v", err)
+				slog.Error("Failed to ping", slog.Err(err), slog.Int("retrying in seconds", DBPingTimeoutSecs))
 				time.Sleep(DBPingTimeoutSecs * time.Second)
 			}
 		}
@@ -590,7 +591,7 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 			// QueryTimeout: time.Duration,
 		}
 	} else {
-		log.Critical("Failed to create dialect specific driver")
+		slog.Critical("Failed to create dialect specific driver")
 		time.Sleep(time.Second)
 		os.Exit(ExitNoDriver)
 	}
@@ -611,22 +612,20 @@ func (ss *SqlStore) Context() context.Context {
 	return ss.context
 }
 
-func (ss *SqlStore) appendMultipleStatementsFlag(dataSource string) string {
+func (ss *SqlStore) appendMultipleStatementsFlag(dataSource string) (string, error) {
 	// We need to tell the MySQL driver that we want to use multiStatements
 	// in order to make migrations work.
 	if ss.DriverName() == model.DATABASE_DRIVER_MYSQL {
-		u, err := url.Parse(dataSource)
+		config, err := mysql.ParseDSN(dataSource)
 		if err != nil {
-			log.Critical("Invalid database url found: %v", err)
-			os.Exit(ExitGenericFailure)
+			return "", err
 		}
-		q := u.Query()
-		q.Set("multiStatements", "true")
-		u.RawQuery = q.Encode()
-		return u.String()
+
+		config.Params["multiStatements"] = "true"
+		return config.FormatDSN(), nil
 	}
 
-	return dataSource
+	return dataSource, nil
 }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
@@ -635,7 +634,10 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 
 	// When WithInstance is used in golang-migrate, the underlying driver connections are not tracked.
 	// So we will have to open a fresh connection for migrations and explicitly close it when all is done.
-	dataSource := ss.appendMultipleStatementsFlag(*ss.settings.DataSource)
+	dataSource, err := ss.appendMultipleStatementsFlag(*ss.settings.DataSource)
+	if err != nil {
+		return err
+	}
 	conn := setupConnection("migrations", dataSource, ss.settings)
 	defer conn.Db.Close()
 
@@ -703,7 +705,7 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 		if err.Error() == "pq: relation \""+strings.ToLower(tableName)+"\" does not exist" {
 			return false
 		}
-		log.Critical("Failed to check if column exists: %v", err)
+		slog.Critical("Failed to check if column exists: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitDoesColumnExistsPostgres)
 	}
@@ -754,7 +756,7 @@ func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
 	WHERE
 		tgname = $1`, triggerName)
 	if err != nil {
-		log.Critical("Failed to check if trigger exists: %v", err)
+		slog.Critical("Failed to check if trigger exists: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitGenericFailure)
 	}
@@ -769,7 +771,7 @@ func (ss *SqlStore) CreateColumnIfNotExists(tableName string, columnName string,
 
 	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " AND " + columnName + " " + postgresColType + " DEFAULT '" + defaultValue + "'")
 	if err != nil {
-		log.Critical("Failed to create column: %v", err)
+		slog.Critical("Failed to create column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitCreateColumnPostgres)
 	}
@@ -783,7 +785,7 @@ func (ss *SqlStore) CreateColumnIfNotExistsNoDefault(tableName string, columnNam
 
 	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + "AND " + columnName + " " + postgresColType)
 	if err != nil {
-		log.Critical("Failed to create column: %v", err)
+		slog.Critical("Failed to create column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitCreateColumnPostgres)
 	}
@@ -798,7 +800,7 @@ func (ss *SqlStore) RemoveColumnIfExists(tableName string, columnName string) bo
 
 	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " DROP COLUMN " + columnName)
 	if err != nil {
-		log.Critical("Failed to drop column: %v", err)
+		slog.Critical("Failed to drop column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitRemoveColumn)
 	}
@@ -809,7 +811,7 @@ func (ss *SqlStore) RemoveColumnIfExists(tableName string, columnName string) bo
 func (ss *SqlStore) DoesTableExist(tableName string) bool {
 	count, err := ss.GetMaster().SelectInt(`SELECT count(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName))
 	if err != nil {
-		log.Critical("Failed to check if table exists: %v", err)
+		slog.Critical("Failed to check if table exists: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitTableExists)
 	}
@@ -824,7 +826,7 @@ func (ss *SqlStore) GetMaxLengthOfColumnIfExists(tableName string, columnName st
 
 	res, err := ss.GetMaster().SelectStr("SELECT character_maximum_length FROM information_schema.columns WHERE table_name = '" + strings.ToLower(tableName) + "' AND column_name = '" + strings.ToLower(columnName) + "'")
 	if err != nil {
-		log.Critical("Failed to get max length of column: %v", err)
+		slog.Critical("Failed to get max length of column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitMaxColumn)
 	}
@@ -838,7 +840,7 @@ func (ss *SqlStore) AlterColumnTypeIfExists(tableName string, columnName string,
 	}
 
 	if _, err := ss.GetMaster().Exec("ALTER TABLE " + strings.ToLower(tableName) + " ALTER COLUMN " + strings.ToLower(columnName) + " TYPE " + postgresColType); err != nil {
-		log.Critical("Failed to alter column type: %v", err)
+		slog.Critical("Failed to alter column type: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitAlterColumn)
 	}
@@ -853,7 +855,7 @@ func (ss *SqlStore) RemoveTableIfExists(tableName string) bool {
 
 	_, err := ss.GetMaster().Exec("DROP TABLE " + tableName)
 	if err != nil {
-		log.Critical("Failed to drop table: %v", err)
+		slog.Critical("Failed to drop table: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitRemoveTable)
 	}
@@ -867,7 +869,7 @@ func (ss *SqlStore) RenameColumnIfExists(tableName string, oldColumnName string,
 	}
 
 	if _, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " RENAME COLUMN " + oldColumnName + " TO " + newColumnName); err != nil {
-		log.Critical("Failed to rename column: %v", err)
+		slog.Critical("Failed to rename column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitRenameColumn)
 	}
@@ -897,7 +899,7 @@ func (ss *SqlStore) AlterColumnDefaultIfExists(tableName string, columnName stri
 	}
 
 	if err != nil {
-		log.Critical("Failed to alter column: %v", err)
+		slog.Critical("Failed to alter column: %v", slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitGenericFailure)
 		return false
@@ -919,7 +921,7 @@ func (ss *SqlStore) AlterPrimaryKey(tableName string, columnNames []string) bool
 		index_name`
 	currentPrimaryKey, err := ss.GetMaster().SelectStr(query, tableName)
 	if err != nil {
-		log.Critical("Failed to get current primary key: %v", err)
+		slog.Critical("Failed to get current primary key", slog.String("table", tableName), slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitAlterPrimaryKey)
 	}
@@ -932,7 +934,7 @@ func (ss *SqlStore) AlterPrimaryKey(tableName string, columnNames []string) bool
 	// alter primary key
 	alterQuery := "ALTER TABLE " + tableName + " DROP CONSTRAINT " + strings.ToLower(tableName) + "_pkey, AND PRIMARY KEY (" + strings.ToLower(primaryKey) + ")"
 	if _, err := ss.GetMaster().Exec(alterQuery); err != nil {
-		log.Critical("Failed to alter primary key: %v", err)
+		slog.Critical("Failed to alter primary key", slog.String("table", tableName), slog.Err(err))
 		time.Sleep(time.Second)
 		os.Exit(ExitAlterPrimaryKey)
 	}

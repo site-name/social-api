@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/log"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -63,10 +63,10 @@ func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
 }
 
 func (s *SqlTokenStore) Cleanup() {
-	log.Debug("Cleaning up token store.")
+	slog.Debug("Cleaning up token store.")
 	deltime := model.GetMillis() - model.MAX_TOKEN_EXIPRY_TIME
 	if _, err := s.GetMaster().Exec("DELETE FROM Tokens WHERE CreateAt < :DelTime", map[string]interface{}{"DelTime": deltime}); err != nil {
-		log.Error("Unable to cleanup token store.")
+		slog.Error("Unable to cleanup token store.")
 	}
 }
 

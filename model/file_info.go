@@ -1,7 +1,19 @@
 package model
 
 import (
-	""
+	"bytes"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"io"
+	"mime"
+	"net/http"
+	"path/filepath"
+	"strings"
+
+	"github.com/disintegration/imaging"
+	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 const (
@@ -11,18 +23,18 @@ const (
 
 // GetFileInfosOptions contains options for getting FileInfos
 type GetFileInfoOptions struct {
-	UserIds []string `json:"user_ids"`
+	UserIds        []string `json:"user_ids"`
+	Since          int64    `json:"since"`
+	IncludeDeleted bool     `json:"include_deleted"`
+	SortBy         string   `json:"sort_by"`
+	SortDescending bool     `json:"sort_descending"`
 	// ChannelIds []string `json:"channel_ids"`
-	Since int64 `json:"since"`
-	IncludeDeleted bool `json:"include_deleted"`
-	SortBy string `json:"sort_by"`
-	SortDescending bool `json:"sort_descending"`
 }
 
 type FileInfo struct {
 	Id              string  `json:"id"`
 	CreatorId       string  `json:"user_id"`
-	PostId          string  `json:"post_id,omitempty"`
+	ProductId       string  `json:"product_id,omitempty"`
 	CreateAt        int64   `json:"create_at"`
 	UpdateAt        int64   `json:"update_at"`
 	DeleteAt        int64   `json:"delete_at"`
@@ -42,5 +54,169 @@ type FileInfo struct {
 }
 
 func (fi *FileInfo) ToJson() string {
-	// b, _ := json.JSON.New
+	b, _ := json.JSON.Marshal(fi)
+	return string(b)
+}
+
+func FileInfoFromJson(data io.Reader) *FileInfo {
+	decoder := json.JSON.NewDecoder(data)
+
+	var fi FileInfo
+	if err := decoder.Decode(&fi); err != nil {
+		return nil
+	}
+
+	return &fi
+}
+
+func FileInfosToJson(infos []*FileInfo) string {
+	b, _ := json.JSON.Marshal(infos)
+	return string(b)
+}
+
+func FileInfosFromJson(data io.Reader) []*FileInfo {
+	decoder := json.JSON.NewDecoder(data)
+
+	var infos []*FileInfo
+	if err := decoder.Decode(&infos); err != nil {
+		return nil
+	}
+	return infos
+}
+
+func (fi *FileInfo) PreSave() {
+	if fi.Id == "" {
+		fi.Id = NewId()
+	}
+
+	if fi.CreateAt == 0 {
+		fi.CreateAt = GetMillis()
+	}
+	if fi.UpdateAt < fi.CreateAt {
+		fi.UpdateAt = fi.CreateAt
+	}
+
+	if fi.RemoteId == nil {
+		fi.RemoteId = NewString("")
+	}
+}
+
+func (fi *FileInfo) IsValid() *AppError {
+	if !IsValidId(fi.Id) {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.user_id.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+	}
+
+	if fi.ProductId != "" && !IsValidId(fi.ProductId) {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.post_id.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+	}
+
+	if fi.CreateAt == 0 {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.create_at.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+	}
+
+	if fi.UpdateAt == 0 {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.update_at.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+	}
+
+	if fi.Path == "" {
+		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.path.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+	}
+
+	return nil
+}
+
+func (fi *FileInfo) IsImage() bool {
+	return strings.HasPrefix(fi.MimeType, "image")
+}
+
+func NewInfo(name string) *FileInfo {
+	info := &FileInfo{
+		Name: name,
+	}
+
+	extension := strings.ToLower(filepath.Ext(name))
+	info.MimeType = mime.TypeByExtension(extension)
+
+	if extension != "" && extension[0] == '.' {
+		// The client expects a file extension without the leading period
+		info.Extension = extension[1:]
+	} else {
+		info.Extension = extension
+	}
+
+	return info
+}
+
+func GenerateMiniPreviewImage(img image.Image) *[]byte {
+	preview := imaging.Resize(img, 16, 16, imaging.Lanczos)
+
+	buf := new(bytes.Buffer)
+
+	if err := jpeg.Encode(buf, preview, &jpeg.Options{Quality: 90}); err != nil {
+		slog.Info("Unable to encode image as mini preview jpg", slog.Err(err))
+		return nil
+	}
+
+	data := buf.Bytes()
+	return &data
+}
+
+func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *AppError) {
+	info := &FileInfo{
+		Name: name,
+		Size: int64(size),
+	}
+
+	var err *AppError
+
+	extension := strings.ToLower(filepath.Ext(name))
+	info.MimeType = mime.TypeByExtension(extension)
+
+	if extension != "" && extension[0] == '.' {
+		info.Extension = extension[1:]
+	} else {
+		info.Extension = extension
+	}
+
+	if info.IsImage() {
+		if config, _, err := image.DecodeConfig(data); err == nil {
+			info.Width = config.Width
+			info.Height = config.Height
+
+			if info.MimeType == "image/gif" {
+				data.Seek(0, io.SeekStart)
+				gifConfig, err := gif.DecodeAll(data)
+				if err != nil {
+					// Still return the rest of the info even though it doesn't appear to be an actual gif
+					info.HasPreviewImage = true
+					return info, NewAppError("GetInfoForBytes", "model.file_info.get.gif.app_error", nil, err.Error(), http.StatusBadRequest)
+				}
+				info.HasPreviewImage = len(gifConfig.Image) == 1
+			} else {
+				info.HasPreviewImage = true
+			}
+		}
+	}
+
+	return info, err
+}
+
+func GetEtagForFileInfos(infos []*FileInfo) string {
+	if len(infos) == 0 {
+		return Etag()
+	}
+
+	var maxUpdateAt int64
+
+	for _, info := range infos {
+		if info.UpdateAt > maxUpdateAt {
+			maxUpdateAt = info.UpdateAt
+		}
+	}
+
+	return Etag(infos[0].ProductId, maxUpdateAt)
 }
