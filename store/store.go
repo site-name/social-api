@@ -167,7 +167,21 @@ type TokenStore interface {
 }
 
 type SessionStore interface {
-	Save(s *model.Session) (*model.Session, error)
+	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
+	Save(session *model.Session) (*model.Session, error)
+	GetSessions(userID string) ([]*model.Session, error)
+	GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error)
+	GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error)
+	UpdateExpiredNotify(sessionid string, notified bool) error
+	Remove(sessionIDOrToken string) error
+	RemoveAllSessions() error
+	PermanentDeleteSessionsByUser(teamID string) error
+	UpdateExpiresAt(sessionID string, time int64) error
+	UpdateLastActivityAt(sessionID string, time int64) error
+	UpdateRoles(userID string, roles string) (string, error)
+	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error)
+	UpdateProps(session *model.Session) error
+	AnalyticsSessionCount() (int64, error)
 	Cleanup(expiryTime int64, batchSize int64)
 }
 

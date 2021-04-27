@@ -749,35 +749,9 @@ func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppE
 // 	a.Srv().Store.User().ClearCaches()
 // }
 
-// func (a *App) userDeactivated(userID string) *model.AppError {
-// 	if err := a.Revo
-// }
-
-// func (a *App) userDeactivated(userID string) *model.AppError {
-// 	if err := a.RevokeAllSessions(userID); err != nil {
-// 		return err
-// 	}
-
-// 	a.SetStatusOffline(userID, false)
-
-// 	user, err := a.GetUser(userID)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// when disable a user, userDeactivated is called for the user and the
-// 	// bots the user owns. Only notify once, when the user is the owner, not the
-// 	// owners bots
-// 	// if !user.IsBot {
-// 	// 	a.notifySysadminsBotOwnerDeactivated(userID)
-// 	// }
-
-// 	// if *a.Config().ServiceSettings.DisableBotsWhenOwnerIsDeactivated {
-// 	// 	a.disableUserBots(userID)
-// 	// }
-
-// 	return nil
-// }
+func (a *App) userDeactivated(userID string) *model.AppError {
+	panic("not implemented")
+}
 
 func (a *App) UpdateActive(user *model.User, active bool) (*model.User, *model.AppError) {
 	user.UpdateAt = model.GetMillis()

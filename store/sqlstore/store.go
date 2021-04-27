@@ -249,6 +249,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	}
 
 	store.stores.user = newSqlUserStore(store, metrics)
+	store.stores.session = newSqlSessionStore(store)
 
 	err = store.GetMaster().CreateTablesIfNotExists()
 	if err != nil {
@@ -263,6 +264,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// err =
 
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
+	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
 	return store
 }
 
