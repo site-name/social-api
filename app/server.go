@@ -49,7 +49,6 @@ import (
 
 	"github.com/sitename/sitename/services/awsmeter"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
-	"github.com/sitename/sitename/services/telemetry"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
 
@@ -125,7 +124,6 @@ type Server struct {
 	sessionCache                       cache.Cache
 	seenPendingPostIdsCache            cache.Cache
 	statusCache                        cache.Cache
-	telemetryService                   *telemetry.TelemetryService
 	licenseValue                       atomic.Value
 	Jobs                               *jobs.JobServer
 	Metrics                            einterfaces.MetricsInterface
@@ -143,6 +141,8 @@ type Server struct {
 	Audit                              *audit.Audit
 	Compliance                         einterfaces.ComplianceInterface
 	LocalRouter                        *mux.Router
+
+	// telemetryService                   *telemetry.TelemetryService
 }
 
 func NewServer(options ...Option) (*Server, error) {
@@ -687,15 +687,15 @@ func (s *Server) runJobs() {
 	s.Go(func() {
 		runSecurityJob(s)
 	})
-	s.Go(func() {
-		firstRun, err := s.getFirstServerRunTimestamp()
-		if err != nil {
-			slog.Warn("Fetching time of first server run failed. Setting to 'now'.")
-			s.ensureFirstServerRunTimestamp()
-			firstRun = util.MillisFromTime(time.Now())
-		}
-		s.telemetryService.RunTelemetryJob(firstRun)
-	})
+	// s.Go(func() {
+	// 	firstRun, err := s.getFirstServerRunTimestamp()
+	// 	if err != nil {
+	// 		slog.Warn("Fetching time of first server run failed. Setting to 'now'.")
+	// 		s.ensureFirstServerRunTimestamp()
+	// 		firstRun = util.MillisFromTime(time.Now())
+	// 	}
+	// 	s.telemetryService.RunTelemetryJob(firstRun)
+	// })
 	s.Go(func() {
 		runSessionCleanupJob(s)
 	})
@@ -817,13 +817,13 @@ func doSecurity(s *Server) {
 	s.DoSecurityUpdateCheck()
 }
 
-func (s *Server) TelemetryId() string {
-	if s.telemetryService == nil {
-		return ""
-	}
+// func (s *Server) TelemetryId() string {
+// 	if s.telemetryService == nil {
+// 		return ""
+// 	}
 
-	return s.telemetryService.TelemetryID
-}
+// 	return s.telemetryService.TelemetryID
+// }
 
 func (s *Server) License() *model.License {
 	license, _ := s.licenseValue.Load().(*model.License)
@@ -909,10 +909,10 @@ func (s *Server) Shutdown() {
 		}
 	}
 
-	err := s.telemetryService.Shutdown()
-	if err != nil {
-		slog.Warn("Unable to cleanly shutdown telemetry client", slog.Err(err))
-	}
+	// err := s.telemetryService.Shutdown()
+	// if err != nil {
+	// 	slog.Warn("Unable to cleanly shutdown telemetry client", slog.Err(err))
+	// }
 
 	// if s.remoteClusterService != nil {
 	// 	if err = s.remoteClusterService.Shutdown(); err != nil {
@@ -951,6 +951,7 @@ func (s *Server) Shutdown() {
 
 	s.StopMetricsServer()
 
+	var err error
 	if s.Jobs != nil {
 		// For simplicity we don't check if workers and schedulers are active
 		// before stopping them as both calls essentially become no-ops

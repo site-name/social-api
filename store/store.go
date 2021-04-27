@@ -8,6 +8,13 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+type StoreResult struct {
+	Data interface{}
+
+	// NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
+	NErr error
+}
+
 type Store interface {
 	User() UserStore
 	System() SystemStore
@@ -110,6 +117,7 @@ type UserStore interface {
 	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
 	GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error)
 	Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
+	AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
 
 	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)

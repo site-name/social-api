@@ -112,10 +112,10 @@ func (a *Address) IsValid() *AppError {
 	if a.UpdateAt == 0 {
 		return InvalidAddressError("update_at", a.Id)
 	}
-	if utf8.RuneCountInString(a.FirstName) > FIRST_NAME_MAX_LENGTH || a.FirstName == "" || !IsValidNamePart(a.FirstName, firstName) {
+	if a.FirstName == "" || !IsValidNamePart(a.FirstName, firstName) {
 		return InvalidAddressError("first_name", a.Id)
 	}
-	if utf8.RuneCountInString(a.LastName) > LAST_NAME_MAX_LENGTH || a.LastName == "" || !IsValidNamePart(a.LastName, lastName) {
+	if a.LastName == "" || !IsValidNamePart(a.LastName, lastName) {
 		return InvalidAddressError("last_name", a.Id)
 	}
 	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > COMPANY_NAME_MAX_LENGTH {
@@ -159,11 +159,11 @@ const (
 // IsValidNamePart check if given first_name/last_name is valid or not
 func IsValidNamePart(s string, nameType namePart) bool {
 	if nameType == firstName {
-		if len(s) > FIRST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > FIRST_NAME_MAX_LENGTH {
 			return false
 		}
 	} else if nameType == lastName {
-		if len(s) > LAST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > LAST_NAME_MAX_LENGTH {
 			return false
 		}
 	}

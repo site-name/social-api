@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/config"
+	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +34,7 @@ This command should be run using a database configuration DSN.`,
 
 func init() {
 	DbCmd.AddCommand(
-		InitDbCmd
+		InitDbCmd,
 	)
 
 	RootCmd.AddCommand(
@@ -50,4 +53,17 @@ func initDbCmdF(command *cobra.Command, _ []string) error {
 	if err != nil {
 		return errors.Wrap(err, "error loading custom configuration defaults")
 	}
+
+	configStore, err := config.NewStore(getConfigDSN(command, config.GetEnvironment()), false, false, customDefaults)
+	if err != nil {
+		return errors.Wrap(err, "failed to load configuration")
+	}
+	defer configStore.Close()
+
+	sqlStore := sqlstore.New(configStore.Get().SqlSettings, nil)
+	defer sqlStore.Close()
+
+	fmt.Println("Database store correctly initialized")
+
+	return nil
 }

@@ -16,12 +16,17 @@ type UserAccessToken struct {
 	IsActive    bool   `json:"is_active"`
 }
 
+const (
+	USER_ACCESS_TOKEN_MAX_LENGTH             = 26
+	USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH = 255
+)
+
 func (t *UserAccessToken) IsValid() *AppError {
 	if !IsValidId(t.Id) {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	if len(t.Token) != 26 {
+	if len(t.Token) != USER_ACCESS_TOKEN_MAX_LENGTH {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.token.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -29,7 +34,7 @@ func (t *UserAccessToken) IsValid() *AppError {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	if len(t.Description) > 255 {
+	if len(t.Description) > USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.description.app_error", nil, "", http.StatusBadRequest)
 	}
 

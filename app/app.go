@@ -11,10 +11,17 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/services/searchengine"
 )
 
 type App struct {
-	srv            *Server
+	srv *Server
+
+	// XXX: This is required because removing this needs BleveEngine
+	// to be registered in (h *MainHelper) setupStore, but that creates
+	// a cyclic dependency as bleve tests themselves import testlib.
+	searchEngine *searchengine.Broker
+
 	t              i18n.TranslateFunc
 	session        model.Session
 	requestId      string
@@ -136,9 +143,9 @@ func (a *App) AcceptLanguage() string {
 	return a.acceptLanguage
 }
 
-func (a *App) TelemetryId() string {
-	return a.Srv().TelemetryId()
-}
+// func (a *App) TelemetryId() string {
+// 	return a.Srv().TelemetryId()
+// }
 
 func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 	ipAddress := util.GetIPAddress(r, a.Config().ServiceSettings.TrustedProxyIPHeader)
@@ -165,4 +172,8 @@ func (s *Server) getSystemInstallDate() (int64, *model.AppError) {
 		return 0, model.NewAppError("getSystemInstallDate", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return value, nil
+}
+
+func (a *App) Cluster() einterfaces.ClusterInterface {
+	return a.srv.Cluster
 }

@@ -752,3 +752,326 @@ func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppE
 // func (a *App) userDeactivated(userID string) *model.AppError {
 // 	if err := a.Revo
 // }
+
+// func (a *App) userDeactivated(userID string) *model.AppError {
+// 	if err := a.RevokeAllSessions(userID); err != nil {
+// 		return err
+// 	}
+
+// 	a.SetStatusOffline(userID, false)
+
+// 	user, err := a.GetUser(userID)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	// when disable a user, userDeactivated is called for the user and the
+// 	// bots the user owns. Only notify once, when the user is the owner, not the
+// 	// owners bots
+// 	// if !user.IsBot {
+// 	// 	a.notifySysadminsBotOwnerDeactivated(userID)
+// 	// }
+
+// 	// if *a.Config().ServiceSettings.DisableBotsWhenOwnerIsDeactivated {
+// 	// 	a.disableUserBots(userID)
+// 	// }
+
+// 	return nil
+// }
+
+func (a *App) UpdateActive(user *model.User, active bool) (*model.User, *model.AppError) {
+	user.UpdateAt = model.GetMillis()
+	if active {
+		user.DeleteAt = 0
+	} else {
+		user.DeleteAt = user.UpdateAt
+	}
+
+	userUpdate, err := a.Srv().Store.User().Update(user, true)
+	if err != nil {
+		var appErr *model.AppError
+		var invErr *store.ErrInvalidInput
+		switch {
+		case errors.As(err, &appErr):
+			return nil, appErr
+		case errors.As(err, &invErr):
+			return nil, model.NewAppError("UpdateActive", "app.user.update.find.app_error", nil, invErr.Error(), http.StatusBadRequest)
+		default:
+			return nil, model.NewAppError("UpdateActive", "app.user.update.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+	ruser := userUpdate.New
+
+	if !active {
+		if err := a.userDeactivated(ruser.Id); err != nil {
+			return nil, err
+		}
+	}
+
+	// a.invalidateUserChannelMembersCaches(user.Id)
+	a.InvalidateCacheForUser(user.Id)
+
+	// a.sendUpdatedUserEvent(*ruser)
+
+	return ruser, nil
+}
+
+// mergeChannelHigherScopedPermissions updates the permissions based on the role type, whether the permission is
+// moderated, and the value of the permission on the higher-scoped scheme.
+func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
+	return a.Srv().mergeChannelHigherScopedPermissions(roles)
+}
+
+func (a *App) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
+	roles, nErr := a.Srv().Store.Role().GetByNames(names)
+	if nErr != nil {
+		return nil, model.NewAppError("GetRolesByNames", "app.role.get_by_names.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+	}
+
+	err := a.mergeChannelHigherScopedPermissions(roles)
+	if err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
+func (a *App) CheckRolesExist(roleNames []string) *model.AppError {
+	roles, err := a.GetRolesByNames(roleNames)
+	if err != nil {
+		return err
+	}
+
+	for _, name := range roleNames {
+		nameFound := false
+		for _, role := range roles {
+			if name == role.Name {
+				nameFound = true
+				break
+			}
+		}
+		if !nameFound {
+			return model.NewAppError("CheckRolesExist", "app.role.check_roles_exist.role_not_found", nil, "role="+name, http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+func (a *App) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError) {
+
+	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
+		return nil, err
+	}
+
+	user.Roles = newRoles
+	uchan := make(chan store.StoreResult, 1)
+	go func() {
+		userUpdate, err := a.Srv().Store.User().Update(user, true)
+		uchan <- store.StoreResult{Data: userUpdate, NErr: err}
+		close(uchan)
+	}()
+
+	schan := make(chan store.StoreResult, 1)
+	go func() {
+		id, err := a.Srv().Store.Session().UpdateRoles(user.Id, newRoles)
+		schan <- store.StoreResult{Data: id, NErr: err}
+		close(schan)
+	}()
+
+	result := <-uchan
+	if result.NErr != nil {
+		var appErr *model.AppError
+		var invErr *store.ErrInvalidInput
+		switch {
+		case errors.As(result.NErr, &appErr):
+			return nil, appErr
+		case errors.As(result.NErr, &invErr):
+			return nil, model.NewAppError("UpdateUserRoles", "app.user.update.find.app_error", nil, invErr.Error(), http.StatusBadRequest)
+		default:
+			return nil, model.NewAppError("UpdateUserRoles", "app.user.update.finding.app_error", nil, result.NErr.Error(), http.StatusInternalServerError)
+		}
+	}
+	ruser := result.Data.(*model.UserUpdate).New
+
+	if result := <-schan; result.NErr != nil {
+		// soft error since the user roles were still updated
+		slog.Warn("Failed during updating user roles", slog.Err(result.NErr))
+	}
+
+	a.InvalidateCacheForUser(user.Id)
+	// a.ClearSessionCacheForUser(user.Id)
+
+	// if sendWebSocketEvent {
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ROLE_UPDATED, "", "", user.Id, nil)
+	// 	message.Add("user_id", user.Id)
+	// 	message.Add("roles", newRoles)
+	// 	a.Publish(message)
+	// }
+
+	return ruser, nil
+}
+
+func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
+	prev, err := a.Srv().Store.User().Get(context.Background(), user.Id)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		switch {
+		case errors.As(err, &nfErr):
+			return nil, model.NewAppError("UpdateUser", MissingAccountError, nil, nfErr.Error(), http.StatusNotFound)
+		default:
+			return nil, model.NewAppError("UpdateUser", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	var newEmail string
+	if user.Email != prev.Email {
+		if !CheckUserDomain(user, *a.Config().TeamSettings.RestrictCreationToDomains) {
+			if !prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
+				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
+			}
+		}
+
+		if !CheckUserDomain(user, *a.Config().GuestAccountsSettings.RestrictCreationToDomains) {
+			if prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
+				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_guest_domain.app_error", nil, "", http.StatusBadRequest)
+			}
+		}
+
+		if *a.Config().EmailSettings.RequireEmailVerification {
+			newEmail = user.Email
+			// Don't set new eMail on user account if email verification is required, this will be done as a post-verification action
+			// to avoid users being able to set non-controlled eMails as their account email
+			if _, appErr := a.GetUserByEmail(newEmail); appErr == nil {
+				return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
+			}
+
+			//  When a bot is created, prev.Email will be an autogenerated faked email,
+			//  which will not match a CLI email input during bot to user conversions.
+			//  To update a bot users email, do not set the email to the faked email
+			//  stored in prev.Email.  Allow using the email defined in the CLI
+			if !user.IsBot {
+				user.Email = prev.Email
+			}
+		}
+	}
+
+	userUpdate, err := a.Srv().Store.User().Update(user, false)
+	if err != nil {
+		var appErr *model.AppError
+		var invErr *store.ErrInvalidInput
+		var conErr *store.ErrConflict
+		switch {
+		case errors.As(err, &appErr):
+			return nil, appErr
+		case errors.As(err, &invErr):
+			return nil, model.NewAppError("UpdateUser", "app.user.update.find.app_error", nil, invErr.Error(), http.StatusBadRequest)
+		case errors.As(err, &conErr):
+			if cErr, ok := err.(*store.ErrConflict); ok && cErr.Resource == "Username" {
+				return nil, model.NewAppError("UpdateUser", "app.user.save.username_exists.app_error", nil, "", http.StatusBadRequest)
+			}
+			return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "", http.StatusBadRequest)
+		default:
+			return nil, model.NewAppError("UpdateUser", "app.user.update.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	if sendNotifications {
+		if userUpdate.New.Email != userUpdate.Old.Email || newEmail != "" {
+			if *a.Config().EmailSettings.RequireEmailVerification {
+				a.Srv().Go(func() {
+					if err := a.SendEmailVerification(userUpdate.New, newEmail, ""); err != nil {
+						slog.Error("Failed to send email verification", slog.Err(err))
+					}
+				})
+			} else {
+				a.Srv().Go(func() {
+					if err := a.Srv().EmailService.sendEmailChangeEmail(userUpdate.Old.Email, userUpdate.New.Email, userUpdate.New.Locale, a.GetSiteURL()); err != nil {
+						slog.Error("Failed to send email change email", slog.Err(err))
+					}
+				})
+			}
+		}
+
+		if userUpdate.New.Username != userUpdate.Old.Username {
+			a.Srv().Go(func() {
+				if err := a.Srv().EmailService.sendChangeUsernameEmail(userUpdate.New.Username, userUpdate.New.Email, userUpdate.New.Locale, a.GetSiteURL()); err != nil {
+					slog.Error("Failed to send change username email", slog.Err(err))
+				}
+			})
+		}
+		a.sendUpdatedUserEvent(userUpdate.New)
+	}
+
+	a.InvalidateCacheForUser(user.Id)
+
+	return userUpdate.New, nil
+}
+
+func (a *App) SendEmailVerification(user *model.User, newEmail, redirect string) *model.AppError {
+	token, err := a.Srv().EmailService.CreateVerifyEmailToken(user.Id, newEmail)
+	if err != nil {
+		return err
+	}
+
+	if _, err := a.GetStatus(user.Id); err != nil {
+		return a.Srv().EmailService.sendVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token, redirect)
+	}
+	return a.Srv().EmailService.sendEmailChangeVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token)
+}
+
+func (a *App) GetStatus(userID string) (*model.Status, *model.AppError) {
+	if !*a.Config().ServiceSettings.EnableUserStatuses {
+		return &model.Status{}, nil
+	}
+
+	status := a.GetStatusFromCache(userID)
+	if status != nil {
+		return status, nil
+	}
+
+	status, err := a.Srv().Store.Status().Get(userID)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		switch {
+		case errors.As(err, &nfErr):
+			return nil, model.NewAppError("GetStatus", "app.status.get.missing.app_error", nil, nfErr.Error(), http.StatusNotFound)
+		default:
+			return nil, model.NewAppError("GetStatus", "app.status.get.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	return status, nil
+}
+
+func (a *App) GetStatusFromCache(userID string) *model.Status {
+	var status *model.Status
+	if err := a.Srv().statusCache.Get(userID, &status); err == nil {
+		statusCopy := &model.Status{}
+		*statusCopy = *status
+		return statusCopy
+	}
+
+	return nil
+}
+
+func (a *App) DeactivateGuests() *model.AppError {
+	userIDs, err := a.Srv().Store.User().DeactivateGuests()
+	if err != nil {
+		return model.NewAppError("DeactivateGuests", "app.user.update_active_for_multiple_users.updating.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	for _, userID := range userIDs {
+		if err := a.userDeactivated(userID); err != nil {
+			return err
+		}
+	}
+
+	// a.Srv().Store.Channel().ClearCaches()
+	a.Srv().Store.User().ClearCaches()
+
+	// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_GUESTS_DEACTIVATED, "", "", "", nil)
+	// a.Publish(message)
+
+	return nil
+}
