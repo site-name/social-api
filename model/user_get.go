@@ -2,19 +2,19 @@ package model
 
 type UserGetOptions struct {
 	// Filters the users in the team
-	InTeamId string
+	// InTeamId string
 	// Filters the users not in the team
-	NotInTeamId string
+	// NotInTeamId string
 	// Filters the users in the channel
-	InChannelId string
+	// InChannelId string
 	// Filters the users not in the channel
-	NotInChannelId string
+	// NotInChannelId string
 	// Filters the users in the group
-	InGroupId string
+	// InGroupId string
 	// Filters the users group constrained
-	GroupConstrained bool
+	// GroupConstrained bool
 	// Filters the users without a team
-	WithoutTeam bool
+	// WithoutTeam bool
 	// Filters the inactive users
 	Inactive bool
 	// Filters the active users
@@ -24,9 +24,9 @@ type UserGetOptions struct {
 	// Filters for users matching any of the given system wide roles
 	Roles []string
 	// Filters for users matching any of the given channel roles, must be used with InChannelId
-	ChannelRoles []string
+	// ChannelRoles []string
 	// Filters for users matching any of the given team roles, must be used with InTeamId
-	TeamRoles []string
+	// TeamRoles []string
 	// Sorting option
 	Sort string
 	// Restrict to search in a list of teams and channels

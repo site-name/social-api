@@ -109,6 +109,7 @@ type UserStore interface {
 	Count(options model.UserCountOptions) (int64, error)
 	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
 	GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error)
+	Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
 
 	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
@@ -118,7 +119,6 @@ type UserStore interface {
 	// GetAnyUnreadPostCountForChannel(userID string, channelID string) (int64, error)
 	// GetRecentlyActiveUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
 	// GetNewUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
 	// SearchNotInTeam(notInTeamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
 	// SearchInChannel(channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
 	// SearchNotInChannel(teamID string, channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)

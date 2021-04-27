@@ -40,11 +40,11 @@ const (
 
 var (
 	validUsernameChars  = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)
-	restrictedUsernames = []string{
-		"all",
-		"channel",
-		"matterbot",
-		"system",
+	restrictedUsernames = map[string]struct{}{
+		"all":      {},
+		"channel":  {},
+		"sitename": {},
+		"system":   {},
 	}
 	reservedName = []string{
 		"admin",
@@ -62,6 +62,7 @@ var (
 		"plugins",
 		"post",
 		"signup",
+		"sitename",
 	}
 )
 
@@ -229,6 +230,7 @@ func (u *User) DeepCopy() *User {
 	return &copyUser
 }
 
+// Check if given locale is valid to use
 func IsValidLocale(locale string) bool {
 	if locale != "" {
 		if len(locale) > USER_LOCALE_MAX_LENGTH {
@@ -302,7 +304,7 @@ func (u *User) PreSave() {
 		u.Id = uuid.NewString()
 	}
 	if u.Username == "" {
-		u.Username = "user_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+		u.Username = "user_" + NewRandomString(10)
 	}
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
@@ -684,18 +686,12 @@ func IsValidUsername(s string) bool {
 	if len(s) < USER_NAME_MIN_LENGTH || len(s) > USER_NAME_MAX_LENGTH {
 		return false
 	}
-
 	if !validUsernameChars.MatchString(s) {
 		return false
 	}
+	_, found := restrictedUsernames[s]
 
-	for _, uname := range restrictedUsernames {
-		if s == uname {
-			return false
-		}
-	}
-
-	return true
+	return !found
 }
 
 func NormalizeUsername(username string) string {

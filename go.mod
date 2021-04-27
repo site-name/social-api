@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
+	github.com/Rhymond/go-money v1.0.2 // indirect
 	github.com/aws/aws-sdk-go v1.38.25
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
@@ -45,6 +46,7 @@ require (
 	github.com/rudderlabs/analytics-go v3.3.1+incompatible
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/segmentio/backo-go v0.0.0-20200129164019-23eae7c10bd3 // indirect
+	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
@@ -64,7 +66,7 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7 // indirect
+	golang.org/x/sys v0.0.0-20210426080607-c94f62235c83 // indirect
 	golang.org/x/text v0.3.6
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect

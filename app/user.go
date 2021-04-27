@@ -108,6 +108,24 @@ func (a *App) IsUserSignUpAllowed() *model.AppError {
 	return nil
 }
 
+func (s *Server) IsFirstUserAccount() bool {
+	cachedSessions, err := s.sessionCache.Len()
+	if err != nil {
+		return false
+	}
+	if cachedSessions == 0 {
+		count, err := s.Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
+		if err != nil {
+			slog.Debug("There was an error fetching if first usder account", slog.Err(err))
+			return false
+		}
+		if count <= 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // CreateUser creates a user and sets several fields of the returned User struct to
 // their zero values.
 func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
@@ -118,28 +136,6 @@ func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
 // their zero values.
 func (a *App) CreateGuest(user *model.User) (*model.User, *model.AppError) {
 	return a.createUserOrGuest(user, true)
-}
-
-// CheckEmailDomain checks that an email domain matches a list of space-delimited domains as a string.
-func CheckEmailDomain(email string, domains string) bool {
-	if domains == "" {
-		return true
-	}
-
-	domainArray := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(strings.Replace(domains, "@", " ", -1), ",", " ", -1))))
-
-	for _, d := range domainArray {
-		if strings.HasSuffix(strings.ToLower(email), "@"+d) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// CheckUserDomain checks that a user's email domain matches a list of space-delimited domains as a string.
-func CheckUserDomain(user *model.User, domains string) bool {
-	return CheckEmailDomain(user.Email, domains)
 }
 
 func (a *App) createUserOrGuest(user *model.User, guest bool) (*model.User, *model.AppError) {
@@ -191,6 +187,28 @@ func (a *App) createUserOrGuest(user *model.User, guest bool) (*model.User, *mod
 	// }
 
 	return ruser, nil
+}
+
+// CheckEmailDomain checks that an email domain matches a list of space-delimited domains as a string.
+func CheckEmailDomain(email string, domains string) bool {
+	if domains == "" {
+		return true
+	}
+
+	domainArray := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(strings.Replace(domains, "@", " ", -1), ",", " ", -1))))
+
+	for _, d := range domainArray {
+		if strings.HasSuffix(strings.ToLower(email), "@"+d) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// CheckUserDomain checks that a user's email domain matches a list of space-delimited domains as a string.
+func CheckUserDomain(user *model.User, domains string) bool {
+	return CheckEmailDomain(user.Email, domains)
 }
 
 func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
@@ -300,24 +318,6 @@ func (a *App) VerifyUserEmail(userID, email string) *model.AppError {
 	// a.sendUpdatedUserEvent(user)
 
 	return nil
-}
-
-func (s *Server) IsFirstUserAccount() bool {
-	cachedSessions, err := s.sessionCache.Len()
-	if err != nil {
-		return false
-	}
-	if cachedSessions == 0 {
-		count, err := s.Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
-		if err != nil {
-			slog.Debug("There was an error fetching if first usder account", slog.Err(err))
-			return false
-		}
-		if count <= 0 {
-			return true
-		}
-	}
-	return false
 }
 
 func (a *App) IsFirstUserAccount() bool {

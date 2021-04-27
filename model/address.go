@@ -171,14 +171,9 @@ func IsValidNamePart(s string, nameType namePart) bool {
 	if !validUsernameChars.MatchString(s) {
 		return false
 	}
+	_, found := restrictedUsernames[s]
 
-	for _, uname := range restrictedUsernames {
-		if s == uname {
-			return false
-		}
-	}
-
-	return true
+	return !found
 }
 
 // CleanNamePart makes sure first_name or last_name do not violate standard requirements
@@ -201,8 +196,8 @@ func CleanNamePart(s string, nameType namePart) string {
 	name = strings.Trim(name, "-")
 
 	if !IsValidNamePart(name, nameType) {
-		slog.Info("generatng new", slog.String("name type", string(nameType)))
-		name = "a" + strings.ReplaceAll(uuid.NewString(), "-", "")
+		slog.Info("generating new", slog.String("name type", string(nameType)))
+		name = "a" + strings.ReplaceAll(NewRandomString(8), "-", "")
 	}
 
 	return name

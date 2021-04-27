@@ -50,7 +50,6 @@ type Session struct {
 	ExpiredNotify  bool      `json:"expired_notify"`
 	Props          StringMap `json:"props"`
 	Local          bool      `json:"local" db:"-"`
-	// TeamMembers    []*TeamMember `json:"team_members" db:"-"`
 }
 
 // Returns true if the session is unrestricted, which should grant it

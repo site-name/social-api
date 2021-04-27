@@ -18,6 +18,8 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
+	// "golang.org/x/text/currency"
+	// "golang.org/x/text/language"
 )
 
 const (
@@ -35,6 +37,7 @@ var (
 type StringInterface map[string]interface{}
 type StringArray []string
 
+// Remove removes input from the array
 func (sa StringArray) Remove(input string) StringArray {
 	for index := range sa {
 		if sa[index] == input {
@@ -65,14 +68,12 @@ func (sa StringArray) Contains(input string) bool {
 	return false
 }
 
+// Equals checks if two arrays of strings have same length and contains the same elements at each index
 func (sa StringArray) Equals(input StringArray) bool {
-
 	if len(sa) != len(input) {
 		return false
 	}
-
 	for index := range sa {
-
 		if sa[index] != input[index] {
 			return false
 		}
@@ -81,6 +82,7 @@ func (sa StringArray) Equals(input StringArray) bool {
 	return true
 }
 
+// StringInterfaceFromJson decodes input data in to a map with keys are strings and values are interface{}
 func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
 	decoder := json.JSON.NewDecoder(data)
 	var objMap map[string]interface{}
@@ -176,6 +178,7 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 	return &er
 }
 
+// CopyStringMap make a new map, copy all the key-value pairs from original map into the new map
 func CopyStringMap(originalMap map[string]string) map[string]string {
 	copyMap := make(map[string]string)
 	for k, v := range originalMap {
@@ -327,6 +330,7 @@ func UniqueStrings(input []string) []string {
 	return u
 }
 
+// IsValidAlphaNum checks if s contains only ASCII characters
 func IsValidAlphaNum(s string) bool {
 	validAlphaNum := regexp.MustCompile(`^[a-z0-9]+([a-z\-0-9]+|(__)?)[a-z0-9]+$`)
 
@@ -393,6 +397,7 @@ func MapFromJson(data io.Reader) map[string]string {
 	return objmap
 }
 
+// Conserts Jsonify string aray
 func ArrayToJson(objmap []string) string {
 	b, _ := json.JSON.Marshal(objmap)
 	return string(b)
@@ -423,6 +428,7 @@ func Etag(parts ...interface{}) string {
 	return etag
 }
 
+// Check is rawURL is a valid URL or not
 func IsValidHttpUrl(rawURL string) bool {
 	if strings.Index(rawURL, "http://") != 0 && strings.Index(rawURL, "https://") != 0 {
 		return false
@@ -449,11 +455,13 @@ func IsSafeLink(link *string) bool {
 	return true
 }
 
+// Check is rawURL is valid websocket url or not
+//
+// Valid websocket URLs must be prefixed with ws:// or wss://
 func IsValidWebsocketUrl(rawUrl string) bool {
 	if strings.Index(rawUrl, "ws://") != 0 && strings.Index(rawUrl, "wss://") != 0 {
 		return false
 	}
-
 	if _, err := url.ParseRequestURI(rawUrl); err != nil {
 		return false
 	}
@@ -470,3 +478,23 @@ func NormalizeEmail(email string) string {
 
 	return splitEmail[0] + "@" + strings.ToLower(splitEmail[1])
 }
+
+// func IsValidCountryCode(code string) (*language.Region, error) {
+// 	region, err := language.ParseRegion(code)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &region, true
+// }
+
+// func CurrencyFromRegion(rg *language.Region) (currency.Unit, bool) {
+// 	return currency.FromRegion(*rg)
+// }
+
+// func IsCurrencyCodeValid(code string) (*currency.Unit, bool) {
+// 	unit, err := currency.ParseISO(code)
+// 	if err != nil {
+// 		return nil, false
+// 	}
+// 	return &unit, true
+// }

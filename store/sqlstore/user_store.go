@@ -50,11 +50,8 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 			"u.Password", "u.AuthData", "u.AuthService", "u.Email", "u.EmailVerified",
 			"u.Nickname", "u.FirstName", "u.LastName", "u.Roles", "u.AllowMarketing",
 			"u.Props", "u.NotifyProps", "u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts",
-			"u.Locale", "u.Timezone", "u.MfaActive", "u.MfaSecret",
-			"b.UserId IS NOT NULL AS IsBot", "COALESCE(b.Description, '') AS BotDescription", "COALESCE(b.LastIconUpdate, 0) AS BotLastIconUpdate", "u.RemoteId",
-		).
-		From("Users u").
-		LeftJoin("Bots b ON (b.UserId = u.Id)")
+			"u.Locale", "u.Timezone", "u.MfaActive", "u.MfaSecret").
+		From("Users u")
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(model.User{}, "Users").SetKeys(false, "Id")
@@ -165,9 +162,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 	return int(numAffected), err
 }
 
-func (us *SqlUserStore) InvalidateProfileCacheForUser(userId string) {
-
-}
+func (us *SqlUserStore) InvalidateProfileCacheForUser(userId string) {}
 
 func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
 	// updateAt, err := us.GetReplica().SelectInt("SELECT UpdateAt FROM User")
@@ -187,7 +182,19 @@ func (us *SqlUserStore) GetEtagForAllProfiles() string {
 }
 
 func (us *SqlUserStore) createIndexesIfNotExists() {
-	// us.Create
+	us.CreateIndexIfNotExists("idx_users_email", "Users", "Email")
+	us.CreateIndexIfNotExists("idx_users_update_at", "Users", "UpdateAt")
+	us.CreateIndexIfNotExists("idx_users_create_at", "Users", "CreateAt")
+	us.CreateIndexIfNotExists("idx_users_delete_at", "Users", "DeleteAt")
+	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", "Users", "lower(Email) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", "Users", "lower(Username) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", "Users", "lower(Nickname) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", "Users", "lower(FirstName) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", "Users", "lower(LastName) text_pattern_ops")
+	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", "Users", strings.Join(UserSearchTypeAll, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", "Users", strings.Join(UserSearchTypeAll_NO_FULL_NAME, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", "Users", strings.Join(UserSearchTypeNames, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", "Users", strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
 }
 
 func (us *SqlUserStore) Save(user *model.User) (*model.User, error) {
@@ -492,8 +499,7 @@ func (us *SqlUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.Use
 }
 
 func (us *SqlUserStore) GetProfilesByUsernames(usernames []string /*, viewRestrictions *model.ViewUsersRestrictions */) ([]*model.User, error) {
-	query := us.usersQuery
-	query = query.Where(map[string]interface{}{"Username": usernames}).OrderBy("u.Username ASC")
+	query := us.usersQuery.Where(squirrel.Eq{"Username": usernames}).OrderBy("u.Username ASC")
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -514,14 +520,10 @@ func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, o
 	}
 
 	users := []*model.User{}
-	query := us.usersQuery.Where(map[string]interface{}{
-		"u.Id": userIds,
-	}).OrderBy("u.Username ASC")
+	query := us.usersQuery.Where(squirrel.Eq{"u.Id": userIds}).OrderBy("u.Username ASC")
 
 	if options.Since > 0 {
-		query = query.Where(squirrel.Gt(map[string]interface{}{
-			"u.UpdateAt": options.Since,
-		}))
+		query = query.Where(squirrel.Gt{"u.UpdateAt": options.Since})
 	}
 
 	query = applyViewRestrictionsFilter(query, true)
@@ -843,9 +845,9 @@ func (us *SqlUserStore) Search(teamId string, term string, options *model.UserSe
 		OrderBy("Username ASC").
 		Limit(uint64(options.Limit))
 
-	if teamId != "" {
-		query = query.Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
-	}
+	// if teamId != "" {
+	// 	query = query.Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
+	// }
 	return us.performSearch(query, term, options)
 }
 

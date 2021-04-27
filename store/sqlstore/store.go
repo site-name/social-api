@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -222,9 +221,9 @@ type SqlStore struct {
 	settings          *model.SqlSettings
 	lockedToMaster    bool
 	context           context.Context
-	license           *model.License
-	licenseMutex      sync.RWMutex
-	metrics           einterfaces.MetricsInterface
+	// license           *model.License
+	// licenseMutex      sync.RWMutex
+	metrics einterfaces.MetricsInterface
 }
 
 // ColumnInfo holds information about a column.
@@ -250,6 +249,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	}
 
 	store.stores.user = newSqlUserStore(store, metrics)
+
 	err = store.GetMaster().CreateTablesIfNotExists()
 	if err != nil {
 		if IsDuplicate(err) {
@@ -280,6 +280,7 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
+// returns all database connections, master and replications also
 func (ss *SqlStore) GetAllConns() []*gorp.DbMap {
 	all := make([]*gorp.DbMap, len(ss.Replicas)+1)
 	copy(all, ss.Replicas)
@@ -324,7 +325,7 @@ func (ss *SqlStore) createIndexIfNotExists(indexName, tableName string, columnNa
 		}
 		columnName := columnNames[0]
 		postgresColumnNames := convertMySQLFullTextColumnsToPostgres(columnName)
-		query = fmt.Sprintf("CREATE INDEX %s ON %s USING(gin(to_tsvector('english', %s))", indexName, tableName, postgresColumnNames)
+		query = "CREATE INDEX " + indexName + " ON " + tableName + " USING gin(to_tsvector('english', " + postgresColumnNames + "))"
 	} else if indexType == IndexTypeFullTextFunc {
 		if len(columnNames) != 1 {
 			slog.Critical("Unable to create multi column full text index")
@@ -477,12 +478,12 @@ func (ss *SqlStore) GetMaster() *gorp.DbMap {
 }
 
 func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
-	ss.licenseMutex.RLock()
-	license := ss.license
-	ss.licenseMutex.RUnlock()
-	if license == nil {
-		return ss.GetMaster()
-	}
+	// ss.licenseMutex.RLock()
+	// license := ss.license
+	// ss.licenseMutex.RUnlock()
+	// if license == nil {
+	// 	return ss.GetMaster()
+	// }
 
 	if len(ss.settings.DataSourceReplicas) == 0 {
 		return ss.GetReplica()
@@ -493,10 +494,10 @@ func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
 }
 
 func (ss *SqlStore) GetReplica() *gorp.DbMap {
-	ss.licenseMutex.RLock()
-	license := ss.license
-	ss.licenseMutex.RUnlock()
-	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster || license == nil {
+	// ss.licenseMutex.RLock()
+	// license := ss.license
+	// ss.licenseMutex.RUnlock()
+	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMaster()
 	}
 
@@ -581,19 +582,11 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 	// only go 1.15 or above support this:
 	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
-	var dbmap *gorp.DbMap
-
-	if *settings.DriverName == model.DATABASE_DRIVER_POSTGRES {
-		dbmap = &gorp.DbMap{
-			Db:            db,
-			TypeConverter: mattermConverter{},
-			Dialect:       gorp.PostgresDialect{},
-			// QueryTimeout: time.Duration,
-		}
-	} else {
-		slog.Critical("Failed to create dialect specific driver")
-		time.Sleep(time.Second)
-		os.Exit(ExitNoDriver)
+	dbmap := &gorp.DbMap{
+		Db:            db,
+		TypeConverter: mattermConverter{},
+		Dialect:       gorp.PostgresDialect{},
+		// QueryTimeout: time.Duration,
 	}
 
 	// Check if need to perform database logging
@@ -739,12 +732,6 @@ func IsDuplicate(err error) bool {
 	}
 
 	return false
-}
-
-// IsVarchar returns true if the column type matches one of the varchar types
-// either in MySQL or PostgreSQL.
-func (ss *SqlStore) IsVarChar(columnType string) bool {
-	return columnType == "character varying"
 }
 
 func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
