@@ -58,7 +58,6 @@ const (
 	ExitCreateTable              = 100
 	ExitDBOpen                   = 101
 	ExitPing                     = 102
-	ExitNoDriver                 = 103
 	ExitTableExists              = 104
 	ExitTableExistsMySQL         = 105
 	ExitColumnExists             = 106
@@ -81,6 +80,8 @@ const (
 	ExitRemoveIndexMissing       = 123
 	ExitRemoveTable              = 134
 	ExitAlterPrimaryKey          = 139
+	// ExitNoDriver                 = 103
+
 )
 
 type SqlStoreStores struct {
@@ -221,9 +222,7 @@ type SqlStore struct {
 	settings          *model.SqlSettings
 	lockedToMaster    bool
 	context           context.Context
-	// license           *model.License
-	// licenseMutex      sync.RWMutex
-	metrics einterfaces.MetricsInterface
+	metrics           einterfaces.MetricsInterface
 }
 
 // ColumnInfo holds information about a column.
@@ -250,6 +249,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 
 	store.stores.user = newSqlUserStore(store, metrics)
 	store.stores.session = newSqlSessionStore(store)
+	store.stores.token = newSqlTokenStore(store)
+	store.stores.job = NewSqlJobStore(store)
+	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
+	store.stores.system = newSqlSystemStore(store)
 
 	err = store.GetMaster().CreateTablesIfNotExists()
 	if err != nil {
@@ -261,10 +264,13 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		}
 	}
 
-	// err =
-
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
 	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
+	store.stores.token.(*SqlTokenStore).createIndexesIfNotExists()
+	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
+	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
+	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
+
 	return store
 }
 
