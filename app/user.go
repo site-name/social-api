@@ -101,7 +101,7 @@ func (a *App) CreateUserFromSignup(user *model.User, redirect string) (*model.Us
 }
 
 func (a *App) IsUserSignUpAllowed() *model.AppError {
-	if !*a.Config().EmailSettings.EnableSignUpWithEmail || !*a.Config().TeamSettings.EnableUserCreation {
+	if !*a.Config().EmailSettings.EnableSignUpWithEmail {
 		err := model.NewAppError("IsUserSignUpAllowed", "api.user.create_user.signup_email_disabled.app_error", nil, "", http.StatusNotImplemented)
 		return err
 	}
@@ -143,10 +143,6 @@ func (a *App) createUserOrGuest(user *model.User, guest bool) (*model.User, *mod
 	if guest {
 		user.Roles = model.SYSTEM_GUEST_ROLE_ID
 	}
-
-	// if !user.IsLDAPUser() && !user.IsSAMLUser() && !user.IsGuest() && !CheckUserDomain(user, *a.Config().TeamSettings.RestrictCreationToDomains) {
-	// 	return nil, model.NewAppError("CreateUser", "api.user.create_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
-	// }
 
 	if !user.IsLDAPUser() && !user.IsSAMLUser() && user.IsGuest() && !CheckUserDomain(user, *a.Config().GuestAccountsSettings.RestrictCreationToDomains) {
 		return nil, model.NewAppError("CreateUser", "api.user.create_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
@@ -900,12 +896,6 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 
 	var newEmail string
 	if user.Email != prev.Email {
-		if !CheckUserDomain(user, *a.Config().TeamSettings.RestrictCreationToDomains) {
-			if !prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
-				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
-			}
-		}
-
 		if !CheckUserDomain(user, *a.Config().GuestAccountsSettings.RestrictCreationToDomains) {
 			if prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
 				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_guest_domain.app_error", nil, "", http.StatusBadRequest)

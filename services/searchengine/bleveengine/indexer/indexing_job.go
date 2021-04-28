@@ -348,29 +348,29 @@ func (worker *BleveIndexerWorker) IndexPostsBatch(progress IndexingProgress) (In
 	return progress, nil
 }
 
-func (worker *BleveIndexerWorker) BulkIndexPosts(posts []*model.PostForIndexing, progress IndexingProgress) (int64, *model.AppError) {
-	lastCreateAt := int64(0)
-	batch := worker.engine.PostIndex.NewBatch()
+// func (worker *BleveIndexerWorker) BulkIndexPosts(posts []*model.PostForIndexing, progress IndexingProgress) (int64, *model.AppError) {
+// 	lastCreateAt := int64(0)
+// 	batch := worker.engine.PostIndex.NewBatch()
 
-	for _, post := range posts {
-		if post.DeleteAt == 0 {
-			searchPost := bleveengine.BLVPostFromPostForIndexing(post)
-			batch.Index(searchPost.Id, searchPost)
-		} else {
-			batch.Delete(post.Id)
-		}
+// 	for _, post := range posts {
+// 		if post.DeleteAt == 0 {
+// 			searchPost := bleveengine.BLVPostFromPostForIndexing(post)
+// 			batch.Index(searchPost.Id, searchPost)
+// 		} else {
+// 			batch.Delete(post.Id)
+// 		}
 
-		lastCreateAt = post.CreateAt
-	}
+// 		lastCreateAt = post.CreateAt
+// 	}
 
-	worker.engine.Mutex.RLock()
-	defer worker.engine.Mutex.RUnlock()
+// 	worker.engine.Mutex.RLock()
+// 	defer worker.engine.Mutex.RUnlock()
 
-	if err := worker.engine.PostIndex.Batch(batch); err != nil {
-		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_posts.batch_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return lastCreateAt, nil
-}
+// 	if err := worker.engine.PostIndex.Batch(batch); err != nil {
+// 		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexPosts", "bleveengine.indexer.do_job.bulk_index_posts.batch_error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
+// 	return lastCreateAt, nil
+// }
 
 func (worker *BleveIndexerWorker) IndexFilesBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
@@ -450,83 +450,83 @@ func (worker *BleveIndexerWorker) BulkIndexFiles(files []*model.FileForIndexing,
 	return lastCreateAt, nil
 }
 
-func (worker *BleveIndexerWorker) IndexChannelsBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
-	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
+// func (worker *BleveIndexerWorker) IndexChannelsBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
+// 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
 
-	var channels []*model.Channel
+// 	var channels []*model.Channel
 
-	tries := 0
-	for channels == nil {
-		var nErr error
-		channels, nErr = worker.jobServer.Store.Channel().GetChannelsBatchForIndexing(progress.LastEntityTime, endTime, BatchSize)
-		if nErr != nil {
-			if tries >= 10 {
-				return progress, model.NewAppError("BleveIndexerWorker.IndexChannelsBatch", "app.channel.get_channels_batch_for_indexing.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
-			}
+// 	tries := 0
+// 	for channels == nil {
+// 		var nErr error
+// 		channels, nErr = worker.jobServer.Store.Channel().GetChannelsBatchForIndexing(progress.LastEntityTime, endTime, BatchSize)
+// 		if nErr != nil {
+// 			if tries >= 10 {
+// 				return progress, model.NewAppError("BleveIndexerWorker.IndexChannelsBatch", "app.channel.get_channels_batch_for_indexing.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
+// 			}
 
-			slog.Warn("Failed to get channels batch for indexing. Retrying.", slog.Err(nErr))
+// 			slog.Warn("Failed to get channels batch for indexing. Retrying.", slog.Err(nErr))
 
-			// Wait a bit before trying again.
-			time.Sleep(15 * time.Second)
-		}
-		tries++
-	}
+// 			// Wait a bit before trying again.
+// 			time.Sleep(15 * time.Second)
+// 		}
+// 		tries++
+// 	}
 
-	newLastChannelTime, err := worker.BulkIndexChannels(channels, progress)
-	if err != nil {
-		return progress, err
-	}
+// 	newLastChannelTime, err := worker.BulkIndexChannels(channels, progress)
+// 	if err != nil {
+// 		return progress, err
+// 	}
 
-	// Due to the "endTime" parameter in the store query, we might get an incomplete batch before the end. In this
-	// case, set the "newLastChannelTime" to the endTime so we don't get stuck running the same query in a loop.
-	if len(channels) < BatchSize {
-		newLastChannelTime = endTime
-	}
+// 	// Due to the "endTime" parameter in the store query, we might get an incomplete batch before the end. In this
+// 	// case, set the "newLastChannelTime" to the endTime so we don't get stuck running the same query in a loop.
+// 	if len(channels) < BatchSize {
+// 		newLastChannelTime = endTime
+// 	}
 
-	// When to Stop: we index either until we pass a batch of channels where the last
-	// channel is created at or after the specified end time when setting up the batch
-	// index, or until two consecutive full batches have the same end time of their final
-	// channels. This second case is safe as long as the assumption that the database
-	// cannot contain more channels with the same CreateAt time than the batch size holds.
-	if progress.EndAtTime <= newLastChannelTime {
-		progress.DoneChannels = true
-		progress.LastEntityTime = progress.StartAtTime
-	} else if progress.LastEntityTime == newLastChannelTime && len(channels) == BatchSize {
-		slog.Warn("More channels with the same CreateAt time were detected than the permitted batch size. Aborting indexing job.", slog.Int64("CreateAt", newLastChannelTime), slog.Int("Batch Size", BatchSize))
-		progress.DoneChannels = true
-		progress.LastEntityTime = progress.StartAtTime
-	} else {
-		progress.LastEntityTime = newLastChannelTime
-	}
+// 	// When to Stop: we index either until we pass a batch of channels where the last
+// 	// channel is created at or after the specified end time when setting up the batch
+// 	// index, or until two consecutive full batches have the same end time of their final
+// 	// channels. This second case is safe as long as the assumption that the database
+// 	// cannot contain more channels with the same CreateAt time than the batch size holds.
+// 	if progress.EndAtTime <= newLastChannelTime {
+// 		progress.DoneChannels = true
+// 		progress.LastEntityTime = progress.StartAtTime
+// 	} else if progress.LastEntityTime == newLastChannelTime && len(channels) == BatchSize {
+// 		slog.Warn("More channels with the same CreateAt time were detected than the permitted batch size. Aborting indexing job.", slog.Int64("CreateAt", newLastChannelTime), slog.Int("Batch Size", BatchSize))
+// 		progress.DoneChannels = true
+// 		progress.LastEntityTime = progress.StartAtTime
+// 	} else {
+// 		progress.LastEntityTime = newLastChannelTime
+// 	}
 
-	progress.DoneChannelsCount += int64(len(channels))
+// 	progress.DoneChannelsCount += int64(len(channels))
 
-	return progress, nil
-}
+// 	return progress, nil
+// }
 
-func (worker *BleveIndexerWorker) BulkIndexChannels(channels []*model.Channel, progress IndexingProgress) (int64, *model.AppError) {
-	lastCreateAt := int64(0)
-	batch := worker.engine.ChannelIndex.NewBatch()
+// func (worker *BleveIndexerWorker) BulkIndexChannels(channels []*model.Channel, progress IndexingProgress) (int64, *model.AppError) {
+// 	lastCreateAt := int64(0)
+// 	batch := worker.engine.ChannelIndex.NewBatch()
 
-	for _, channel := range channels {
-		if channel.DeleteAt == 0 {
-			searchChannel := bleveengine.BLVChannelFromChannel(channel)
-			batch.Index(searchChannel.Id, searchChannel)
-		} else {
-			batch.Delete(channel.Id)
-		}
+// 	for _, channel := range channels {
+// 		if channel.DeleteAt == 0 {
+// 			searchChannel := bleveengine.BLVChannelFromChannel(channel)
+// 			batch.Index(searchChannel.Id, searchChannel)
+// 		} else {
+// 			batch.Delete(channel.Id)
+// 		}
 
-		lastCreateAt = channel.CreateAt
-	}
+// 		lastCreateAt = channel.CreateAt
+// 	}
 
-	worker.engine.Mutex.RLock()
-	defer worker.engine.Mutex.RUnlock()
+// 	worker.engine.Mutex.RLock()
+// 	defer worker.engine.Mutex.RUnlock()
 
-	if err := worker.engine.ChannelIndex.Batch(batch); err != nil {
-		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexChannels", "bleveengine.indexer.do_job.bulk_index_channels.batch_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return lastCreateAt, nil
-}
+// 	if err := worker.engine.ChannelIndex.Batch(batch); err != nil {
+// 		return 0, model.NewAppError("BleveIndexerWorker.BulkIndexChannels", "bleveengine.indexer.do_job.bulk_index_channels.batch_error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
+// 	return lastCreateAt, nil
+// }
 
 func (worker *BleveIndexerWorker) IndexUsersBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)

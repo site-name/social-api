@@ -108,13 +108,13 @@ const (
 	SERVICE_SETTINGS_DEFAULT_GFYCAT_API_KEY     = "2_KtH_W5"
 	SERVICE_SETTINGS_DEFAULT_GFYCAT_API_SECRET  = "3wLVZPiswc3DnaiaFoLkDvB4X0IV6CpMkj4tf2inJRsBY6-FnkT08zGmppWFgeof"
 
-	TEAM_SETTINGS_DEFAULT_SITE_NAME                = "Mattermost"
+	TEAM_SETTINGS_DEFAULT_SITE_NAME                = "Sitename"
 	TEAM_SETTINGS_DEFAULT_MAX_USERS_PER_TEAM       = 50
 	TEAM_SETTINGS_DEFAULT_CUSTOM_BRAND_TEXT        = ""
 	TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT  = ""
 	TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT = 300
 
-	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://mmuser:mostest@localhost/mattermost_test?sslmode=disable&connect_timeout=10"
+	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://minh:anhyeuem98@localhost/sitename_test?sslmode=disable&connect_timeout=10"
 
 	FILE_SETTINGS_DEFAULT_DIRECTORY = "./data/"
 
@@ -237,11 +237,11 @@ const (
 	CLOUD_SETTINGS_DEFAULT_CWS_API_URL = "https://portal.internal.prod.cloud.mattermost.com"
 	OPENID_SETTINGS_DEFAULT_SCOPE      = "profile openid email"
 
-	LOCAL_MODE_SOCKET_PATH = "/var/tmp/mattermost_local.socket"
+	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
 )
 
 func GetDefaultAppCustomURLSchemes() []string {
-	return []string{"mmauth://", "mmauthbeta://"}
+	return []string{"snauth://", "snauthbeta://"}
 }
 
 var ServerTLSSupportedCiphers = map[string]uint16{
@@ -1049,69 +1049,6 @@ func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userApiEnd
 	}
 }
 
-type Office365Settings struct {
-	Enable            *bool   `access:"authentication_openid"`
-	Secret            *string `access:"authentication_openid"` // telemetry: none
-	Id                *string `access:"authentication_openid"` // telemetry: none
-	Scope             *string `access:"authentication_openid"`
-	AuthEndpoint      *string `access:"authentication_openid"` // telemetry: none
-	TokenEndpoint     *string `access:"authentication_openid"` // telemetry: none
-	UserApiEndpoint   *string `access:"authentication_openid"` // telemetry: none
-	DiscoveryEndpoint *string `access:"authentication_openid"` // telemetry: none
-	DirectoryId       *string `access:"authentication_openid"` // telemetry: none
-}
-
-func (s *Office365Settings) setDefaults() {
-	if s.Enable == nil {
-		s.Enable = NewBool(false)
-	}
-
-	if s.Id == nil {
-		s.Id = NewString("")
-	}
-
-	if s.Secret == nil {
-		s.Secret = NewString("")
-	}
-
-	if s.Scope == nil {
-		s.Scope = NewString(OFFICE365_SETTINGS_DEFAULT_SCOPE)
-	}
-
-	if s.DiscoveryEndpoint == nil {
-		s.DiscoveryEndpoint = NewString("")
-	}
-
-	if s.AuthEndpoint == nil {
-		s.AuthEndpoint = NewString(OFFICE365_SETTINGS_DEFAULT_AUTH_ENDPOINT)
-	}
-
-	if s.TokenEndpoint == nil {
-		s.TokenEndpoint = NewString(OFFICE365_SETTINGS_DEFAULT_TOKEN_ENDPOINT)
-	}
-
-	if s.UserApiEndpoint == nil {
-		s.UserApiEndpoint = NewString(OFFICE365_SETTINGS_DEFAULT_USER_API_ENDPOINT)
-	}
-
-	if s.DirectoryId == nil {
-		s.DirectoryId = NewString("")
-	}
-}
-
-func (s *Office365Settings) SSOSettings() *SSOSettings {
-	ssoSettings := SSOSettings{}
-	ssoSettings.Enable = s.Enable
-	ssoSettings.Secret = s.Secret
-	ssoSettings.Id = s.Id
-	ssoSettings.Scope = s.Scope
-	ssoSettings.DiscoveryEndpoint = s.DiscoveryEndpoint
-	ssoSettings.AuthEndpoint = s.AuthEndpoint
-	ssoSettings.TokenEndpoint = s.TokenEndpoint
-	ssoSettings.UserApiEndpoint = s.UserApiEndpoint
-	return &ssoSettings
-}
-
 type ReplicaLagSettings struct {
 	DataSource       *string `access:"environment,write_restrictable,cloud_restrictable"` // telemetry: none
 	QueryAbsoluteLag *string `access:"environment,write_restrictable,cloud_restrictable"` // telemetry: none
@@ -1896,194 +1833,6 @@ func (s *ThemeSettings) SetDefaults() {
 
 	if s.AllowedThemes == nil {
 		s.AllowedThemes = []string{}
-	}
-}
-
-type TeamSettings struct {
-	SiteName                                                  *string  `access:"site_customization"`
-	MaxUsersPerTeam                                           *int     `access:"site_users_and_teams"`
-	DEPRECATED_DO_NOT_USE_EnableTeamCreation                  *bool    `json:"EnableTeamCreation" mapstructure:"EnableTeamCreation"` // Deprecated: do not use
-	EnableUserCreation                                        *bool    `access:"authentication_signup"`
-	EnableOpenServer                                          *bool    `access:"authentication_signup"`
-	EnableUserDeactivation                                    *bool    `access:"experimental_features"`
-	RestrictCreationToDomains                                 *string  `access:"authentication_signup"` // telemetry: none
-	EnableCustomUserStatuses                                  *bool    `access:"site_users_and_teams"`
-	EnableCustomBrand                                         *bool    `access:"site_customization"`
-	CustomBrandText                                           *string  `access:"site_customization"`
-	CustomDescriptionText                                     *string  `access:"site_customization"`
-	RestrictDirectMessage                                     *string  `access:"site_users_and_teams"`
-	DEPRECATED_DO_NOT_USE_RestrictTeamInvite                  *string  `json:"RestrictTeamInvite" mapstructure:"RestrictTeamInvite"`                                   // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement     *string  `json:"RestrictPublicChannelManagement" mapstructure:"RestrictPublicChannelManagement"`         // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement    *string  `json:"RestrictPrivateChannelManagement" mapstructure:"RestrictPrivateChannelManagement"`       // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPublicChannelCreation       *string  `json:"RestrictPublicChannelCreation" mapstructure:"RestrictPublicChannelCreation"`             // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPrivateChannelCreation      *string  `json:"RestrictPrivateChannelCreation" mapstructure:"RestrictPrivateChannelCreation"`           // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPublicChannelDeletion       *string  `json:"RestrictPublicChannelDeletion" mapstructure:"RestrictPublicChannelDeletion"`             // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPrivateChannelDeletion      *string  `json:"RestrictPrivateChannelDeletion" mapstructure:"RestrictPrivateChannelDeletion"`           // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManageMembers *string  `json:"RestrictPrivateChannelManageMembers" mapstructure:"RestrictPrivateChannelManageMembers"` // Deprecated: do not use
-	EnableXToLeaveChannelsFromLHS                             *bool    `access:"experimental_features"`
-	UserStatusAwayTimeout                                     *int64   `access:"experimental_features"`
-	MaxChannelsPerTeam                                        *int64   `access:"site_users_and_teams"`
-	MaxNotificationsPerChannel                                *int64   `access:"environment_push_notification_server"`
-	EnableConfirmNotificationsToChannel                       *bool    `access:"site_notifications"`
-	TeammateNameDisplay                                       *string  `access:"site_users_and_teams"`
-	ExperimentalViewArchivedChannels                          *bool    `access:"experimental_features,site_users_and_teams"`
-	ExperimentalEnableAutomaticReplies                        *bool    `access:"experimental_features"`
-	ExperimentalHideTownSquareinLHS                           *bool    `access:"experimental_features"`
-	ExperimentalTownSquareIsReadOnly                          *bool    `access:"experimental_features"`
-	LockTeammateNameDisplay                                   *bool    `access:"site_users_and_teams"`
-	ExperimentalPrimaryTeam                                   *string  `access:"experimental_features"`
-	ExperimentalDefaultChannels                               []string `access:"experimental_features"`
-}
-
-func (s *TeamSettings) SetDefaults() {
-
-	if s.SiteName == nil || *s.SiteName == "" {
-		s.SiteName = NewString(TEAM_SETTINGS_DEFAULT_SITE_NAME)
-	}
-
-	if s.MaxUsersPerTeam == nil {
-		s.MaxUsersPerTeam = NewInt(TEAM_SETTINGS_DEFAULT_MAX_USERS_PER_TEAM)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_EnableTeamCreation == nil {
-		s.DEPRECATED_DO_NOT_USE_EnableTeamCreation = NewBool(true)
-	}
-
-	if s.EnableUserCreation == nil {
-		s.EnableUserCreation = NewBool(true)
-	}
-
-	if s.EnableOpenServer == nil {
-		s.EnableOpenServer = NewBool(false)
-	}
-
-	if s.RestrictCreationToDomains == nil {
-		s.RestrictCreationToDomains = NewString("")
-	}
-
-	if s.EnableCustomUserStatuses == nil {
-		s.EnableCustomUserStatuses = NewBool(true)
-	}
-
-	if s.EnableCustomBrand == nil {
-		s.EnableCustomBrand = NewBool(false)
-	}
-
-	if s.EnableUserDeactivation == nil {
-		s.EnableUserDeactivation = NewBool(false)
-	}
-
-	if s.CustomBrandText == nil {
-		s.CustomBrandText = NewString(TEAM_SETTINGS_DEFAULT_CUSTOM_BRAND_TEXT)
-	}
-
-	if s.CustomDescriptionText == nil {
-		s.CustomDescriptionText = NewString(TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT)
-	}
-
-	if s.RestrictDirectMessage == nil {
-		s.RestrictDirectMessage = NewString(DIRECT_MESSAGE_ANY)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictTeamInvite == nil {
-		s.DEPRECATED_DO_NOT_USE_RestrictTeamInvite = NewString(PERMISSIONS_ALL)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement == nil {
-		s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement = NewString(PERMISSIONS_ALL)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement == nil {
-		s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement = NewString(PERMISSIONS_ALL)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelCreation == nil {
-		s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelCreation = new(string)
-		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
-		if *s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement == PERMISSIONS_CHANNEL_ADMIN {
-			*s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelCreation = PERMISSIONS_TEAM_ADMIN
-		} else {
-			*s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelCreation = *s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement
-		}
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelCreation == nil {
-		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
-		if *s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement == PERMISSIONS_CHANNEL_ADMIN {
-			s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelCreation = NewString(PERMISSIONS_TEAM_ADMIN)
-		} else {
-			s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelCreation = NewString(*s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement)
-		}
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelDeletion == nil {
-		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
-		s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelDeletion = NewString(*s.DEPRECATED_DO_NOT_USE_RestrictPublicChannelManagement)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelDeletion == nil {
-		// If this setting does not exist, assume migration from <3.6, so use management setting as default.
-		s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelDeletion = NewString(*s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManagement)
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManageMembers == nil {
-		s.DEPRECATED_DO_NOT_USE_RestrictPrivateChannelManageMembers = NewString(PERMISSIONS_ALL)
-	}
-
-	if s.EnableXToLeaveChannelsFromLHS == nil {
-		s.EnableXToLeaveChannelsFromLHS = NewBool(false)
-	}
-
-	if s.UserStatusAwayTimeout == nil {
-		s.UserStatusAwayTimeout = NewInt64(TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT)
-	}
-
-	if s.MaxChannelsPerTeam == nil {
-		s.MaxChannelsPerTeam = NewInt64(2000)
-	}
-
-	if s.MaxNotificationsPerChannel == nil {
-		s.MaxNotificationsPerChannel = NewInt64(1000)
-	}
-
-	if s.EnableConfirmNotificationsToChannel == nil {
-		s.EnableConfirmNotificationsToChannel = NewBool(true)
-	}
-
-	if s.ExperimentalEnableAutomaticReplies == nil {
-		s.ExperimentalEnableAutomaticReplies = NewBool(false)
-	}
-
-	if s.ExperimentalHideTownSquareinLHS == nil {
-		s.ExperimentalHideTownSquareinLHS = NewBool(false)
-	}
-
-	if s.ExperimentalTownSquareIsReadOnly == nil {
-		s.ExperimentalTownSquareIsReadOnly = NewBool(false)
-	}
-
-	if s.ExperimentalPrimaryTeam == nil {
-		s.ExperimentalPrimaryTeam = NewString("")
-	}
-
-	if s.ExperimentalDefaultChannels == nil {
-		s.ExperimentalDefaultChannels = []string{}
-	}
-
-	if s.DEPRECATED_DO_NOT_USE_EnableTeamCreation == nil {
-		s.DEPRECATED_DO_NOT_USE_EnableTeamCreation = NewBool(true)
-	}
-
-	if s.EnableUserCreation == nil {
-		s.EnableUserCreation = NewBool(true)
-	}
-
-	if s.ExperimentalViewArchivedChannels == nil {
-		s.ExperimentalViewArchivedChannels = NewBool(true)
-	}
-
-	if s.LockTeammateNameDisplay == nil {
-		s.LockTeammateNameDisplay = NewBool(false)
 	}
 }
 
@@ -3098,7 +2847,6 @@ const ConfigAccessTagAnySysConsoleRead = "*_read"
 //  }
 type Config struct {
 	ServiceSettings           ServiceSettings
-	TeamSettings              TeamSettings
 	ClientRequirements        ClientRequirements
 	SqlSettings               SqlSettings
 	LogSettings               LogSettings
@@ -3114,7 +2862,6 @@ type Config struct {
 	ThemeSettings             ThemeSettings
 	GitLabSettings            SSOSettings
 	GoogleSettings            SSOSettings
-	Office365Settings         Office365Settings
 	OpenIdSettings            SSOSettings
 	LdapSettings              LdapSettings
 	ComplianceSettings        ComplianceSettings
@@ -3171,8 +2918,6 @@ func (o *Config) GetSSOService(service string) *SSOSettings {
 		return &o.GitLabSettings
 	case SERVICE_GOOGLE:
 		return &o.GoogleSettings
-	case SERVICE_OFFICE365:
-		return o.Office365Settings.SSOSettings()
 	case SERVICE_OPENID:
 		return &o.OpenIdSettings
 	}
@@ -3197,26 +2942,15 @@ func (o *Config) SetDefaults() {
 	o.LdapSettings.SetDefaults()
 	o.SamlSettings.SetDefaults()
 
-	if o.TeamSettings.TeammateNameDisplay == nil {
-		o.TeamSettings.TeammateNameDisplay = NewString(SHOW_USERNAME)
-
-		if *o.SamlSettings.Enable || *o.LdapSettings.Enable {
-			*o.TeamSettings.TeammateNameDisplay = SHOW_FULLNAME
-		}
-	}
-
 	o.SqlSettings.SetDefaults(isUpdate)
 	o.FileSettings.SetDefaults(isUpdate)
 	o.EmailSettings.SetDefaults(isUpdate)
 	o.PrivacySettings.setDefaults()
-	o.Office365Settings.setDefaults()
-	o.Office365Settings.setDefaults()
 	o.GitLabSettings.setDefaults("", "", "", "", "")
 	o.GoogleSettings.setDefaults(GOOGLE_SETTINGS_DEFAULT_SCOPE, GOOGLE_SETTINGS_DEFAULT_AUTH_ENDPOINT, GOOGLE_SETTINGS_DEFAULT_TOKEN_ENDPOINT, GOOGLE_SETTINGS_DEFAULT_USER_API_ENDPOINT, "")
 	o.OpenIdSettings.setDefaults(OPENID_SETTINGS_DEFAULT_SCOPE, "", "", "", "#145DBF")
 	o.ServiceSettings.SetDefaults(isUpdate)
 	o.PasswordSettings.SetDefaults()
-	o.TeamSettings.SetDefaults()
 	o.MetricsSettings.SetDefaults()
 	o.ExperimentalSettings.SetDefaults()
 	o.SupportSettings.SetDefaults()
@@ -3260,10 +2994,6 @@ func (o *Config) IsValid() *AppError {
 
 	if *o.ServiceSettings.SiteURL == "" && *o.ServiceSettings.AllowCookiesForSubdomains {
 		return NewAppError("Config.IsValid", "model.config.is_valid.allow_cookies_for_subdomains.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if err := o.TeamSettings.isValid(); err != nil {
-		return err
 	}
 
 	if err := o.SqlSettings.isValid(); err != nil {
@@ -3329,34 +3059,6 @@ func (o *Config) IsValid() *AppError {
 	if err := o.ImportSettings.isValid(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func (s *TeamSettings) isValid() *AppError {
-	if *s.MaxUsersPerTeam <= 0 {
-		return NewAppError("Config.IsValid", "model.config.is_valid.max_users.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if *s.MaxChannelsPerTeam <= 0 {
-		return NewAppError("Config.IsValid", "model.config.is_valid.max_channels.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if *s.MaxNotificationsPerChannel <= 0 {
-		return NewAppError("Config.IsValid", "model.config.is_valid.max_notify_per_channel.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if !(*s.RestrictDirectMessage == DIRECT_MESSAGE_ANY || *s.RestrictDirectMessage == DIRECT_MESSAGE_TEAM) {
-		return NewAppError("Config.IsValid", "model.config.is_valid.restrict_direct_message.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if !(*s.TeammateNameDisplay == SHOW_FULLNAME || *s.TeammateNameDisplay == SHOW_NICKNAME_FULLNAME || *s.TeammateNameDisplay == SHOW_USERNAME) {
-		return NewAppError("Config.IsValid", "model.config.is_valid.teammate_name_display.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	if len(*s.SiteName) > SITENAME_MAX_LENGTH {
-		return NewAppError("Config.IsValid", "model.config.is_valid.sitename_length.app_error", map[string]interface{}{"MaxLength": SITENAME_MAX_LENGTH}, "", http.StatusBadRequest)
-	}
-
 	return nil
 }
 
@@ -3864,10 +3566,6 @@ func (o *Config) Sanitize() {
 
 	if o.GoogleSettings.Secret != nil && *o.GoogleSettings.Secret != "" {
 		*o.GoogleSettings.Secret = FAKE_SETTING
-	}
-
-	if o.Office365Settings.Secret != nil && *o.Office365Settings.Secret != "" {
-		*o.Office365Settings.Secret = FAKE_SETTING
 	}
 
 	if o.OpenIdSettings.Secret != nil && *o.OpenIdSettings.Secret != "" {

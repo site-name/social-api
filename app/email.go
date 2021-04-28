@@ -85,7 +85,7 @@ func (es *EmailService) sendChangeUsernameEmail(newUsername, email, locale, site
 	subject := T(
 		"api.templates.username_change_subject",
 		map[string]interface{}{
-			"SiteName": es.srv.Config().TeamSettings.SiteName,
+			"SiteName": model.TEAM_SETTINGS_DEFAULT_SITE_NAME,
 		},
 	)
 
@@ -93,7 +93,7 @@ func (es *EmailService) sendChangeUsernameEmail(newUsername, email, locale, site
 	data.Props["SiteURL"] = siteURL
 	data.Props["Title"] = T("api.templates.username_change_body.title")
 	data.Props["Info"] = T("api.templates.username_change_body.info",
-		map[string]interface{}{"TeamDisplayName": es.srv.Config().TeamSettings.SiteName, "NewUsername": newUsername})
+		map[string]interface{}{"TeamDisplayName": model.TEAM_SETTINGS_DEFAULT_SITE_NAME, "NewUsername": newUsername})
 	data.Props["Warning"] = T("api.templates.email_warning")
 
 	body, err := es.srv.TemplatesContainer().RenderToString("email_change_body", data)
@@ -182,7 +182,7 @@ func (es *EmailService) newEmailTemplateData(locale string) templates.Data {
 		Props: map[string]interface{}{
 			"EmailInfo1":   localT("api.templates.email_info1"),
 			"EmailInfo2":   localT("api.templates.email_info2"),
-			"EmailInfo3":   localT("api.templates.email_info3", map[string]interface{}{"SiteName": es.srv.Config().TeamSettings.SiteName}),
+			"EmailInfo3":   localT("api.templates.email_info3", map[string]interface{}{"SiteName": model.TEAM_SETTINGS_DEFAULT_SITE_NAME}),
 			"SupportEmail": *es.srv.Config().SupportSettings.SupportEmail,
 			"Footer":       localT("api.templates.email_footer"),
 			"FooterV2":     localT("api.templates.email_footer_v2"),
@@ -197,10 +197,12 @@ func (es *EmailService) sendMail(to, subject, htmlBody string) error {
 }
 
 func (es *EmailService) sendMailWithCC(to, subject, htmlBody string, ccMail string) error {
-	license := es.srv.License()
 	mailConfig := es.srv.MailServiceConfig()
 
-	return mail.SendMailUsingConfig(to, subject, htmlBody, mailConfig, license != nil && *license.Features.Compliance, ccMail)
+	return mail.SendMailUsingConfig(to, subject, htmlBody, mailConfig,
+		true,
+		ccMail,
+	)
 }
 
 func (es *EmailService) sendMailWithEmbeddedFiles(to, subject, htmlBody string, embeddedFiles map[string]io.Reader) error {

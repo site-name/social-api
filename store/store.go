@@ -32,6 +32,23 @@ type Store interface {
 	Role() RoleStore
 	GetDbVersion(numerical bool) (string, error)
 	UserAccessToken() UserAccessTokenStore
+	TermsOfService() TermsOfServiceStore
+	ClusterDiscovery() ClusterDiscoveryStore
+}
+
+type ClusterDiscoveryStore interface {
+	Save(discovery *model.ClusterDiscovery) error
+	Delete(discovery *model.ClusterDiscovery) (bool, error)
+	Exists(discovery *model.ClusterDiscovery) (bool, error)
+	GetAll(discoveryType, clusterName string) ([]*model.ClusterDiscovery, error)
+	SetLastPingAt(discovery *model.ClusterDiscovery) error
+	Cleanup() error
+}
+
+type TermsOfServiceStore interface {
+	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
+	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
+	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
 }
 
 type PreferenceStore interface {

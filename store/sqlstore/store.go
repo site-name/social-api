@@ -81,7 +81,6 @@ const (
 	ExitRemoveTable              = 134
 	ExitAlterPrimaryKey          = 139
 	// ExitNoDriver                 = 103
-
 )
 
 type SqlStoreStores struct {
@@ -94,6 +93,8 @@ type SqlStoreStores struct {
 	status          store.StatusStore
 	role            store.RoleStore
 	userAccessToken store.UserAccessTokenStore
+	TermsOfService  store.TermsOfServiceStore
+	cluster         store.ClusterDiscoveryStore
 }
 
 type TraceOnAdapter struct{}
@@ -253,6 +254,8 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.job = NewSqlJobStore(store)
 	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
 	store.stores.system = newSqlSystemStore(store)
+	store.stores.TermsOfService = newSqlTermsOfServiceStore(store, metrics)
+	store.stores.cluster = newSqlClusterDiscoveryStore(store)
 
 	err = store.GetMaster().CreateTablesIfNotExists()
 	if err != nil {
@@ -270,6 +273,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
 	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
 	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
+	store.stores.TermsOfService.(*SqlTermsOfServiceStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -467,6 +471,14 @@ func (ss *SqlStore) UserAccessToken() store.UserAccessTokenStore {
 
 func (ss *SqlStore) Role() store.RoleStore {
 	return ss.stores.role
+}
+
+func (ss *SqlStore) TermsOfService() store.TermsOfServiceStore {
+	return ss.stores.TermsOfService
+}
+
+func (ss *SqlStore) ClusterDiscovery() store.ClusterDiscoveryStore {
+	return ss.stores.cluster
 }
 
 // Close databse and every replications

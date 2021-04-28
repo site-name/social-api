@@ -2,15 +2,19 @@ package app
 
 import (
 	"context"
-	"crypto/ecdsa"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/services/httpservice"
+	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
 )
 
@@ -24,12 +28,12 @@ type App struct {
 
 	t              i18n.TranslateFunc
 	session        model.Session
-	requestId      string
 	ipAddress      string
 	path           string
 	userAgent      string
 	acceptLanguage string
 	context        context.Context
+	requestId      string
 }
 
 func New(options ...AppOption) *App {
@@ -99,54 +103,6 @@ func (a *App) initJobs() {
 	a.srv.Jobs.InitWorkers()
 }
 
-func (a *App) Srv() *Server {
-	return a.srv
-}
-
-func (a *App) Log() *slog.Logger {
-	return a.srv.Log
-}
-
-func (a *App) NotificationsLog() *slog.Logger {
-	return a.srv.NotificationsLog
-}
-
-func (a *App) RequestId() string {
-	return a.requestId
-}
-
-func (a *App) IpAddress() string {
-	return a.ipAddress
-}
-
-func (a *App) Config() *model.Config {
-	return a.Srv().Config()
-}
-
-func (a *App) Metrics() einterfaces.MetricsInterface {
-	return a.srv.Metrics
-}
-
-func (a *App) Ldap() einterfaces.LdapInterface {
-	return a.srv.Ldap
-}
-
-func (a *App) Path() string {
-	return a.path
-}
-
-func (a *App) UserAgent() string {
-	return a.userAgent
-}
-
-func (a *App) AcceptLanguage() string {
-	return a.acceptLanguage
-}
-
-// func (a *App) TelemetryId() string {
-// 	return a.Srv().TelemetryId()
-// }
-
 func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 	ipAddress := util.GetIPAddress(r, a.Config().ServiceSettings.TrustedProxyIPHeader)
 	slog.Debug("not found handler triggered", slog.String("path", r.URL.Path), slog.Int("code", 404), slog.String("ip", ipAddress))
@@ -156,10 +112,6 @@ func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RenderWebAppError(a.Config(), w, r, model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
-}
-
-func (a *App) AsymmetricSigningKey() *ecdsa.PrivateKey {
-	return a.Srv().AsymmetricSigningKey()
 }
 
 func (s *Server) getSystemInstallDate() (int64, *model.AppError) {
@@ -176,4 +128,141 @@ func (s *Server) getSystemInstallDate() (int64, *model.AppError) {
 
 func (a *App) Cluster() einterfaces.ClusterInterface {
 	return a.srv.Cluster
+}
+
+func (a *App) Srv() *Server {
+	return a.srv
+}
+
+func (a *App) Log() *slog.Logger {
+	return a.srv.Log
+}
+
+func (a *App) NotificationsLog() *slog.Logger {
+	return a.srv.NotificationsLog
+}
+
+func (a *App) T(translationID string, args ...interface{}) string {
+	return a.t(translationID, args...)
+}
+
+func (a *App) Session() *model.Session {
+	return &a.session
+}
+
+func (a *App) RequestId() string {
+	return a.requestId
+}
+
+func (a *App) IpAddress() string {
+	return a.ipAddress
+}
+
+func (a *App) Path() string {
+	return a.path
+}
+
+func (a *App) UserAgent() string {
+	return a.userAgent
+}
+
+func (a *App) AcceptLanguage() string {
+	return a.acceptLanguage
+}
+
+func (a *App) Compliance() einterfaces.ComplianceInterface {
+	return a.srv.Compliance
+}
+
+// func (a *App) DataRetention() einterfaces.DataRetentionInterface {
+// 	return a.srv.DataRetention
+// }
+func (a *App) Metrics() einterfaces.MetricsInterface {
+	return a.srv.Metrics
+}
+
+func (a *App) SearchEngine() *searchengine.Broker {
+	return a.searchEngine
+}
+
+func (a *App) Ldap() einterfaces.LdapInterface {
+	return a.srv.Ldap
+}
+
+// func (a *App) Notification() einterfaces.NotificationInterface {
+// 	return a.srv.Notification
+// }
+
+func (a *App) HTTPService() httpservice.HTTPService {
+	return a.srv.HTTPService
+}
+
+func (a *App) ImageProxy() *imageproxy.ImageProxy {
+	return a.srv.ImageProxy
+}
+
+func (a *App) Timezones() *timezones.Timezones {
+	return a.srv.timezones
+}
+
+func (a *App) Context() context.Context {
+	return a.context
+}
+
+func (a *App) SetSession(s *model.Session) {
+	a.session = *s
+}
+
+func (a *App) SetT(t i18n.TranslateFunc) {
+	a.t = t
+}
+
+func (a *App) SetRequestId(s string) {
+	a.requestId = s
+}
+
+func (a *App) SetIpAddress(s string) {
+	a.ipAddress = s
+}
+
+func (a *App) SetUserAgent(s string) {
+	a.userAgent = s
+}
+
+func (a *App) SetAcceptLanguage(s string) {
+	a.acceptLanguage = s
+}
+
+func (a *App) SetPath(s string) {
+	a.path = s
+}
+
+func (a *App) SetContext(c context.Context) {
+	a.context = c
+}
+
+func (a *App) SetServer(srv *Server) {
+	a.srv = srv
+}
+
+func (a *App) GetT() i18n.TranslateFunc {
+	return a.t
+}
+
+func (a *App) DBHealthCheckWrite() error {
+	currentTime := strconv.FormatInt(time.Now().Unix(), 10)
+
+	return a.Srv().Store.System().SaveOrUpdate(&model.System{
+		Name:  a.dbHealthCheckKey(),
+		Value: currentTime,
+	})
+}
+
+func (a *App) DBHealthCheckDelete() error {
+	_, err := a.Srv().Store.System().PermanentDeleteByName(a.dbHealthCheckKey())
+	return err
+}
+
+func (a *App) dbHealthCheckKey() string {
+	return fmt.Sprintf("health_check_%s", a.GetClusterId())
 }

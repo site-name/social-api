@@ -2,11 +2,11 @@ package sqlstore
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -43,18 +43,18 @@ func MapStringsToQueryParams(list []string, paramPrefix string) (string, map[str
 	return "(" + keys.String() + ")", params
 }
 
+type Rollbackable interface {
+	Rollback() error
+}
+
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 func finalizeTransaction(transaction interface{}) {
-	// Rollback returns sql.ErrTxDone if the transaction was already closed.
-	switch t := transaction.(type) {
-	case *gorp.Transaction:
+	if t, ok := transaction.(Rollbackable); ok {
 		if err := t.Rollback(); err != nil && err != sql.ErrTxDone {
 			slog.Error("Failed to rollback transaction", slog.Err(err))
 		}
-	case *sql.Tx:
-		if err := t.Rollback(); err != nil && err != sql.ErrTxDone {
-			slog.Error("Failed to rollback transaction: %v", slog.Err(err))
-		}
+	} else {
+		slog.Error(fmt.Sprintf("Unknown type of transaction: %T", transaction))
 	}
 }
 

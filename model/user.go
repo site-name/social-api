@@ -40,11 +40,11 @@ const (
 
 var (
 	validUsernameChars  = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)
-	restrictedUsernames = map[string]struct{}{
-		"all":      {},
-		"channel":  {},
-		"sitename": {},
-		"system":   {},
+	restrictedUsernames = map[string]interface{}{
+		"all":      nil,
+		"channel":  nil,
+		"sitename": nil,
+		"system":   nil,
 	}
 	reservedName = []string{
 		"admin",

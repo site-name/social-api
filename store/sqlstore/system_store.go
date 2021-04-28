@@ -6,6 +6,7 @@ package sqlstore
 import (
 	// "context"
 
+	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
@@ -121,33 +122,35 @@ func (s SqlSystemStore) PermanentDeleteByName(name string) (*model.System, error
 
 // InsertIfExists inserts a given system value if it does not already exist. If a value
 // already exists, it returns the old one, else returns the new one.
-// func (s SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
-// 	tx, err := s.GetMaster().Db.BeginTx(context.Background(), &sql.TxOptions{
-// 		Isolation: sql.LevelSerializable,
-// 	})
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "begin_transaction")
-// 	}
-// 	defer finalizeTransaction(tx)
+func (s SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
+	tx, err := s.GetMaster().Db.BeginTx(context.Background(), &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "begin_transaction")
+	}
+	defer finalizeTransaction(tx)
 
-// 	var origSystem model.System
-// 	row := tx.QueryRow(`SELECT * FROM Systems WHERE Name = :Name`, map[string]interface{}{"Name": system.Name})
-// 	if err != nil && err != sql.ErrNoRows {
-// 		return nil, errors.Wrapf(err, "failed to get system property with name=%s", system.Name)
-// 	}
+	var origSystem model.System
+	row := tx.QueryRow(`SELECT Name, Value FROM Systems WHERE Name = $1`, system.Name)
 
-// 	if origSystem.Value != "" {
-// 		// Already a value exists, return that.
-// 		return &origSystem, nil
-// 	}
+	err = row.Scan(&origSystem.Name, &origSystem.Value)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, errors.Wrapf(err, "failed to get system property with name=%s", system.Name)
+	}
 
-// 	// Key does not exist, need to insert.
-// 	if err := tx.Insert(system); err != nil {
-// 		return nil, errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
-// 	}
+	if origSystem.Value != "" {
+		// Already a value exists, return that.
+		return &origSystem, nil
+	}
 
-// 	if err := tx.Commit(); err != nil {
-// 		return nil, errors.Wrap(err, "commit_transaction")
-// 	}
-// 	return system, nil
-// }
+	// Key does not exist, need to insert.
+	if _, err := tx.Exec("INSERT INTO Systems (Name, Value) VALUES ($1, $2)", system.Name, system.Value); err != nil {
+		return nil, errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, errors.Wrap(err, "commit_transaction")
+	}
+	return system, nil
+}

@@ -7,17 +7,6 @@ type Customer struct {
 	Company string `json:"company"`
 }
 
-type License struct {
-	Id           string    `json:"id"`
-	IssuedAt     int64     `json:"issued_at"`
-	StartsAt     int64     `json:"starts_at"`
-	ExpiresAt    int64     `json:"expires_at"`
-	Customer     *Customer `json:"customer"`
-	Features     *Features `json:"features"`
-	SkuName      string    `json:"sku_name"`
-	SkuShortName string    `json:"sku_short_name"`
-}
-
 type Features struct {
 	Users                     *int  `json:"users"`
 	LDAP                      *bool `json:"ldap"`

@@ -69,28 +69,22 @@ const (
 
 type Server struct {
 	// RootRouter is the starting point for all HTTP requests to the server.
-	RootRouter         *mux.Router
-	sqlStore           *sqlstore.SqlStore
-	Store              store.Store
-	AppInitializedOnce sync.Once
-
-	Server      *http.Server
-	ListenAddr  *net.TCPAddr
-	RateLimiter *RateLimiter
-	Busy        *Busy
-
-	localModeServer *http.Server
-
-	metricsServer *http.Server
-	metricsRouter *mux.Router
-	metricsLock   sync.Mutex
-
-	goroutineCount      int32
-	hashSeed            maphash.Seed
-	goroutineExitSignal chan struct{}
-
-	didFinishListen chan struct{}
-
+	RootRouter                         *mux.Router
+	sqlStore                           *sqlstore.SqlStore
+	Store                              store.Store
+	AppInitializedOnce                 sync.Once
+	Server                             *http.Server
+	ListenAddr                         *net.TCPAddr
+	RateLimiter                        *RateLimiter
+	Busy                               *Busy
+	localModeServer                    *http.Server
+	metricsServer                      *http.Server
+	metricsRouter                      *mux.Router
+	metricsLock                        sync.Mutex
+	goroutineCount                     int32
+	hashSeed                           maphash.Seed
+	goroutineExitSignal                chan struct{}
+	didFinishListen                    chan struct{}
 	pushNotificationClient             *http.Client // TODO: move this to it's own package
 	runEssentialJobs                   bool
 	clusterLeaderListeners             sync.Map
@@ -141,7 +135,6 @@ type Server struct {
 	Audit                              *audit.Audit
 	Compliance                         einterfaces.ComplianceInterface
 	LocalRouter                        *mux.Router
-
 	// telemetryService                   *telemetry.TelemetryService
 }
 
@@ -311,11 +304,6 @@ func NewServer(options ...Option) (*Server, error) {
 				searchStore.UpdateConfig(cfg)
 			})
 
-			// s.sqlStore.UpdateLicense(s.License())
-			// s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-			// 	s.sqlStore.UpdateLicense(newLicense)
-			// })
-
 			return timerlayer.New(
 				searchStore,
 				s.Metrics,
@@ -353,16 +341,6 @@ func NewServer(options ...Option) (*Server, error) {
 	// 	s.Go(func() {
 	// 		s.Publish(message)
 	// 	})
-	// })
-	// s.licenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-	// 	s.configOrLicenseListener()
-
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_LICENSE_CHANGED, "", "", "", nil)
-	// 	message.Add("license", s.GetSanitizedClientLicense())
-	// 	s.Go(func() {
-	// 		s.Publish(message)
-	// 	})
-
 	// })
 
 	// This enterprise init should happen after the store is set
@@ -402,9 +380,9 @@ func NewServer(options ...Option) (*Server, error) {
 	// 	s.Cluster.StartInterNodeCommunication()
 	// }
 
-	if err = s.ensureAsymmetricSigningKey(); err != nil {
-		return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
-	}
+	// if err = s.ensureAsymmetricSigningKey(); err != nil {
+	// 	return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
+	// }
 
 	if err = s.ensurePostActionCookieSecret(); err != nil {
 		return nil, errors.Wrapf(err, "unable to ensure PostAction cookie secret")
@@ -517,13 +495,6 @@ func NewServer(options ...Option) (*Server, error) {
 
 	s.checkPushNotificationServerUrl()
 
-	// license := s.License()
-	// if license == nil {
-	// 	s.UpdateConfig(func(cfg *model.Config) {
-	// 		cfg.TeamSettings.MaxNotificationsPerChannel = &MaxNotificationsPerChannelDefault
-	// 	})
-	// }
-
 	s.ReloadConfig()
 
 	if s.Audit == nil {
@@ -534,13 +505,7 @@ func NewServer(options ...Option) (*Server, error) {
 		}
 	}
 
-	// s.removeUnlicensedLogTargets(license)
 	s.enableLoggingMetrics()
-
-	// s.loggerLicenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-	// 	s.removeUnlicensedLogTargets(newLicense)
-	// 	s.enableLoggingMetrics()
-	// })
 
 	// Enable developer settings if this is a "dev" build
 	// if model.BuildNumber == "dev" {
@@ -554,18 +519,6 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.startMetrics {
 		s.SetupMetricsServer()
 	}
-
-	// s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-	// 	if (oldLicense == nil && newLicense == nil) || !s.startMetrics {
-	// 		return
-	// 	}
-
-	// 	if oldLicense != nil && newLicense != nil && *oldLicense.Features.Metrics == *newLicense.Features.Metrics {
-	// 		return
-	// 	}
-
-	// 	s.SetupMetricsServer()
-	// })
 
 	s.SearchEngine.UpdateConfig(s.Config())
 	searchConfigListenerId := s.StartSearchEngine()
@@ -581,6 +534,10 @@ func NewServer(options ...Option) (*Server, error) {
 	// }
 
 	return s, nil
+}
+
+func (s *Server) ClientConfigHash() string {
+	return s.clientConfigHash.Load().(string)
 }
 
 func (s *Server) initJobs() {
@@ -824,11 +781,6 @@ func doSecurity(s *Server) {
 
 // 	return s.telemetryService.TelemetryID
 // }
-
-func (s *Server) License() *model.License {
-	license, _ := s.licenseValue.Load().(*model.License)
-	return license
-}
 
 func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
 	systemData, err := s.Store.System().GetByName(model.SYSTEM_FIRST_SERVER_RUN_TIMESTAMP_KEY)
@@ -1239,10 +1191,6 @@ func (s *Server) Start() error {
 		}
 	}
 
-	// if err := s.startInterClusterServices(s.License(), s.WebSocketRouter.app); err != nil {
-	// 	slog.Error("Error starting inter-cluster services", slog.Err(err))
-	// }
-
 	return nil
 }
 
@@ -1465,29 +1413,6 @@ func (s *Server) StartSearchEngine() string {
 			})
 		}
 	})
-
-	// licenseListenerId := s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-	// 	if s.SearchEngine == nil {
-	// 		return
-	// 	}
-	// 	if oldLicense == nil && newLicense != nil {
-	// 		if s.SearchEngine.ElasticsearchEngine != nil && s.SearchEngine.ElasticsearchEngine.IsActive() {
-	// 			s.Go(func() {
-	// 				if err := s.SearchEngine.ElasticsearchEngine.Start(); err != nil {
-	// 					slog.Error(err.Error())
-	// 				}
-	// 			})
-	// 		}
-	// 	} else if oldLicense != nil && newLicense == nil {
-	// 		if s.SearchEngine.ElasticsearchEngine != nil {
-	// 			s.Go(func() {
-	// 				if err := s.SearchEngine.ElasticsearchEngine.Stop(); err != nil {
-	// 					slog.Error(err.Error())
-	// 				}
-	// 			})
-	// 		}
-	// 	}
-	// })
 
 	return configListenerId
 }

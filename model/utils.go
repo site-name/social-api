@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -498,3 +499,59 @@ func NormalizeEmail(email string) string {
 // 	}
 // 	return &unit, true
 // }
+
+func GetServerIpAddress(iface string) string {
+	var addrs []net.Addr
+	if iface == "" {
+		var err error
+		addrs, err = net.InterfaceAddrs()
+		if err != nil {
+			return ""
+		}
+	} else {
+		interfaces, err := net.Interfaces()
+		if err != nil {
+			return ""
+		}
+		for _, i := range interfaces {
+			if i.Name == iface {
+				addrs, err = i.Addrs()
+				if err != nil {
+					return ""
+				}
+				break
+			}
+		}
+	}
+
+	for _, addr := range addrs {
+
+		if ip, ok := addr.(*net.IPNet); ok && !ip.IP.IsLoopback() && !ip.IP.IsLinkLocalUnicast() && !ip.IP.IsLinkLocalMulticast() {
+			if ip.IP.To4() != nil {
+				return ip.IP.String()
+			}
+		}
+	}
+
+	return ""
+}
+
+func (er *AppError) Translate(T i18n.TranslateFunc) {
+	if T == nil {
+		er.Message = er.Id
+		return
+	}
+
+	if er.params == nil {
+		er.Message = T(er.Id)
+	} else {
+		er.Message = T(er.Id, er.params)
+	}
+}
+
+func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
+	if er.params == nil {
+		return T(er.Id)
+	}
+	return T(er.Id, er.params)
+}

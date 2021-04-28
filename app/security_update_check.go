@@ -112,7 +112,6 @@ func (s *Server) DoSecurityUpdateCheck() {
 
 					for _, user := range users {
 						slog.Info("Sending security bulletin", slog.String("bulletin_id", bulletin.Id), slog.String("user_email", user.Email))
-						// license := s.License()
 						mailConfig := s.MailServiceConfig()
 						mail.SendMailUsingConfig(user.Email, i18n.T("mattermost.bulletin.subject"), string(body), mailConfig, true, "")
 					}
