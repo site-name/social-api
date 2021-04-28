@@ -136,3 +136,17 @@ app-layers: ## Extract interface from App struct
 	$(GOBIN)/struct2interface -f "app" -o "app/app_iface.go" -p "app" -s "App" -i "AppIface" -t ./app/layer_generators/app_iface.go.tmpl
 	$(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
 
+migration-prereqs: ## Builds prerequisite packages for migrations
+	$(GO) get -modfile=go.tools.mod github.com/golang-migrate/migrate/v4/cmd/migrate
+
+new-migration: migration-prereqs ## Creates a new migration
+	@echo "Generating new migration for postgres"
+	$(GOBIN)/migrate create -ext sql -dir db/migrations/postgres -seq $(name)
+
+	@echo "When you are done writing your migration, run 'make migrations'"
+
+migrations-bindata: ## Generates bindata migrations
+	$(GO) get -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
+
+	@echo Generating bindata for migrations
+	$(GO) generate $(GOFLAGS) ./db/migrations/
