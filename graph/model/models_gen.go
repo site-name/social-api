@@ -27,29 +27,29 @@ type TranslatableItem interface {
 }
 
 type AccountAddressCreate struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
 type AccountAddressDelete struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
 type AccountAddressUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
 type AccountDelete struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	User          *User           `json:"user"`
 }
 
@@ -68,9 +68,9 @@ type AccountInput struct {
 }
 
 type AccountRegister struct {
-	Errors               []*Error        `json:"errors"`
 	RequiresConfirmation *bool           `json:"requiresConfirmation"`
 	AccountErrors        []*AccountError `json:"accountErrors"`
+	Errors               []*AccountError `json:"errors"`
 	User                 *User           `json:"user"`
 }
 
@@ -79,22 +79,23 @@ type AccountRegisterInput struct {
 	Password     string            `json:"password"`
 	RedirectURL  *string           `json:"redirectUrl"`
 	LanguageCode *LanguageCodeEnum `json:"languageCode"`
+	Metadata     []*MetadataInput  `json:"metadata"`
 }
 
 type AccountRequestDeletion struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type AccountSetDefaultAddress struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type AccountUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	User          *User           `json:"user"`
 }
 
@@ -118,16 +119,16 @@ type Address struct {
 func (Address) IsNode() {}
 
 type AddressCreate struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
 type AddressDelete struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
@@ -146,15 +147,15 @@ type AddressInput struct {
 }
 
 type AddressSetDefault struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type AddressUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	Address       *Address        `json:"address"`
 }
 
@@ -212,8 +213,8 @@ func (App) IsNode()               {}
 func (App) IsObjectWithMetadata() {}
 
 type AppActivate struct {
-	Errors    []*Error    `json:"errors"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	App       *App        `json:"app"`
 }
 
@@ -229,27 +230,27 @@ type AppCountableEdge struct {
 }
 
 type AppCreate struct {
-	Errors    []*Error    `json:"errors"`
 	AuthToken *string     `json:"authToken"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	App       *App        `json:"app"`
 }
 
 type AppDeactivate struct {
-	Errors    []*Error    `json:"errors"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	App       *App        `json:"app"`
 }
 
 type AppDelete struct {
-	Errors    []*Error    `json:"errors"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	App       *App        `json:"app"`
 }
 
 type AppDeleteFailedInstallation struct {
-	Errors          []*Error         `json:"errors"`
 	AppErrors       []*AppError      `json:"appErrors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -261,9 +262,9 @@ type AppError struct {
 }
 
 type AppFetchManifest struct {
-	Errors    []*Error    `json:"errors"`
 	Manifest  *Manifest   `json:"manifest"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 }
 
 type AppFilterInput struct {
@@ -274,13 +275,12 @@ type AppFilterInput struct {
 
 type AppInput struct {
 	Name        *string           `json:"name"`
-	IsActive    *bool             `json:"isActive"`
 	Permissions []*PermissionEnum `json:"permissions"`
 }
 
 type AppInstall struct {
-	Errors          []*Error         `json:"errors"`
 	AppErrors       []*AppError      `json:"appErrors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -305,8 +305,8 @@ func (AppInstallation) IsNode() {}
 func (AppInstallation) IsJob()  {}
 
 type AppRetryInstall struct {
-	Errors          []*Error         `json:"errors"`
 	AppErrors       []*AppError      `json:"appErrors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -324,15 +324,15 @@ type AppToken struct {
 func (AppToken) IsNode() {}
 
 type AppTokenCreate struct {
-	Errors    []*Error    `json:"errors"`
 	AuthToken *string     `json:"authToken"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	AppToken  *AppToken   `json:"appToken"`
 }
 
 type AppTokenDelete struct {
-	Errors    []*Error    `json:"errors"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	AppToken  *AppToken   `json:"appToken"`
 }
 
@@ -342,21 +342,21 @@ type AppTokenInput struct {
 }
 
 type AppTokenVerify struct {
-	Errors    []*Error    `json:"errors"`
 	Valid     bool        `json:"valid"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 }
 
 type AppUpdate struct {
-	Errors    []*Error    `json:"errors"`
 	AppErrors []*AppError `json:"appErrors"`
+	Errors    []*AppError `json:"errors"`
 	App       *App        `json:"app"`
 }
 
 type AssignNavigation struct {
-	Errors     []*Error     `json:"errors"`
 	Menu       *Menu        `json:"menu"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 }
 
 type Attribute struct {
@@ -384,9 +384,9 @@ func (Attribute) IsNode()               {}
 func (Attribute) IsObjectWithMetadata() {}
 
 type AttributeBulkDelete struct {
-	Errors          []*Error          `json:"errors"`
 	Count           int               `json:"count"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 }
 
 type AttributeCountableConnection struct {
@@ -401,9 +401,9 @@ type AttributeCountableEdge struct {
 }
 
 type AttributeCreate struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 }
 
 type AttributeCreateInput struct {
@@ -423,8 +423,8 @@ type AttributeCreateInput struct {
 }
 
 type AttributeDelete struct {
-	Errors          []*Error          `json:"errors"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 }
 
@@ -452,14 +452,13 @@ type AttributeFilterInput struct {
 
 type AttributeInput struct {
 	Slug   string    `json:"slug"`
-	Value  *string   `json:"value"`
 	Values []*string `json:"values"`
 }
 
 type AttributeReorderValues struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 }
 
 type AttributeSortingInput struct {
@@ -478,8 +477,8 @@ func (AttributeTranslatableContent) IsNode()             {}
 func (AttributeTranslatableContent) IsTranslatableItem() {}
 
 type AttributeTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Attribute         *Attribute          `json:"attribute"`
 }
 
@@ -492,9 +491,9 @@ type AttributeTranslation struct {
 func (AttributeTranslation) IsNode() {}
 
 type AttributeUpdate struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 }
 
 type AttributeUpdateInput struct {
@@ -520,32 +519,34 @@ type AttributeValue struct {
 	InputType   *AttributeInputTypeEnum    `json:"inputType"`
 	Reference   *string                    `json:"reference"`
 	File        *File                      `json:"file"`
+	RichText    *string                    `json:"richText"`
 }
 
 func (AttributeValue) IsNode() {}
 
 type AttributeValueBulkDelete struct {
-	Errors          []*Error          `json:"errors"`
 	Count           int               `json:"count"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 }
 
 type AttributeValueCreate struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 	AttributeValue  *AttributeValue   `json:"attributeValue"`
 }
 
 type AttributeValueCreateInput struct {
-	Name  string  `json:"name"`
-	Value *string `json:"value"`
+	Name     string  `json:"name"`
+	Value    *string `json:"value"`
+	RichText *string `json:"richText"`
 }
 
 type AttributeValueDelete struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 	AttributeValue  *AttributeValue   `json:"attributeValue"`
 }
 
@@ -555,6 +556,7 @@ type AttributeValueInput struct {
 	File        *string   `json:"file"`
 	ContentType *string   `json:"contentType"`
 	References  []string  `json:"references"`
+	RichText    *string   `json:"richText"`
 }
 
 type AttributeValueTranslatableContent struct {
@@ -568,23 +570,29 @@ func (AttributeValueTranslatableContent) IsNode()             {}
 func (AttributeValueTranslatableContent) IsTranslatableItem() {}
 
 type AttributeValueTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	AttributeValue    *AttributeValue     `json:"attributeValue"`
 }
 
 type AttributeValueTranslation struct {
 	ID       string           `json:"id"`
 	Name     string           `json:"name"`
+	RichText *string          `json:"richText"`
 	Language *LanguageDisplay `json:"language"`
 }
 
 func (AttributeValueTranslation) IsNode() {}
 
+type AttributeValueTranslationInput struct {
+	Name     *string `json:"name"`
+	RichText *string `json:"richText"`
+}
+
 type AttributeValueUpdate struct {
-	Errors          []*Error          `json:"errors"`
 	Attribute       *Attribute        `json:"attribute"`
 	AttributeErrors []*AttributeError `json:"attributeErrors"`
+	Errors          []*AttributeError `json:"errors"`
 	AttributeValue  *AttributeValue   `json:"attributeValue"`
 }
 
@@ -633,7 +641,6 @@ type Category struct {
 	DescriptionJSON *string                      `json:"descriptionJson"`
 	Ancestors       *CategoryCountableConnection `json:"ancestors"`
 	Products        *ProductCountableConnection  `json:"products"`
-	URL             *string                      `json:"url"`
 	Children        *CategoryCountableConnection `json:"children"`
 	BackgroundImage *Image                       `json:"backgroundImage"`
 	Translation     *CategoryTranslation         `json:"translation"`
@@ -643,9 +650,9 @@ func (Category) IsNode()               {}
 func (Category) IsObjectWithMetadata() {}
 
 type CategoryBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type CategoryCountableConnection struct {
@@ -660,14 +667,14 @@ type CategoryCountableEdge struct {
 }
 
 type CategoryCreate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Category      *Category       `json:"category"`
 }
 
 type CategoryDelete struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Category      *Category       `json:"category"`
 }
 
@@ -707,8 +714,8 @@ func (CategoryTranslatableContent) IsNode()             {}
 func (CategoryTranslatableContent) IsTranslatableItem() {}
 
 type CategoryTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Category          *Category           `json:"category"`
 }
 
@@ -725,50 +732,52 @@ type CategoryTranslation struct {
 func (CategoryTranslation) IsNode() {}
 
 type CategoryUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Category      *Category       `json:"category"`
 }
 
 type Channel struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	IsActive     bool   `json:"isActive"`
-	Slug         string `json:"slug"`
-	CurrencyCode string `json:"currencyCode"`
-	HasOrders    bool   `json:"hasOrders"`
+	ID            string          `json:"id"`
+	Name          string          `json:"name"`
+	IsActive      bool            `json:"isActive"`
+	Slug          string          `json:"slug"`
+	CurrencyCode  string          `json:"currencyCode"`
+	HasOrders     bool            `json:"hasOrders"`
+	ShippingZones []*ShippingZone `json:"shippingZones"`
 }
 
 func (Channel) IsNode() {}
 
 type ChannelActivate struct {
-	Errors        []*Error        `json:"errors"`
 	Channel       *Channel        `json:"channel"`
 	ChannelErrors []*ChannelError `json:"channelErrors"`
+	Errors        []*ChannelError `json:"errors"`
 }
 
 type ChannelCreate struct {
-	Errors        []*Error        `json:"errors"`
 	ChannelErrors []*ChannelError `json:"channelErrors"`
+	Errors        []*ChannelError `json:"errors"`
 	Channel       *Channel        `json:"channel"`
 }
 
 type ChannelCreateInput struct {
-	IsActive     *bool  `json:"isActive"`
-	Name         string `json:"name"`
-	Slug         string `json:"slug"`
-	CurrencyCode string `json:"currencyCode"`
+	IsActive         *bool    `json:"isActive"`
+	Name             string   `json:"name"`
+	Slug             string   `json:"slug"`
+	CurrencyCode     string   `json:"currencyCode"`
+	AddShippingZones []string `json:"addShippingZones"`
 }
 
 type ChannelDeactivate struct {
-	Errors        []*Error        `json:"errors"`
 	Channel       *Channel        `json:"channel"`
 	ChannelErrors []*ChannelError `json:"channelErrors"`
+	Errors        []*ChannelError `json:"errors"`
 }
 
 type ChannelDelete struct {
-	Errors        []*Error        `json:"errors"`
 	ChannelErrors []*ChannelError `json:"channelErrors"`
+	Errors        []*ChannelError `json:"errors"`
 	Channel       *Channel        `json:"channel"`
 }
 
@@ -777,21 +786,24 @@ type ChannelDeleteInput struct {
 }
 
 type ChannelError struct {
-	Field   *string          `json:"field"`
-	Message *string          `json:"message"`
-	Code    ChannelErrorCode `json:"code"`
+	Field         *string          `json:"field"`
+	Message       *string          `json:"message"`
+	Code          ChannelErrorCode `json:"code"`
+	ShippingZones []string         `json:"shippingZones"`
 }
 
 type ChannelUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	ChannelErrors []*ChannelError `json:"channelErrors"`
+	Errors        []*ChannelError `json:"errors"`
 	Channel       *Channel        `json:"channel"`
 }
 
 type ChannelUpdateInput struct {
-	IsActive *bool   `json:"isActive"`
-	Name     *string `json:"name"`
-	Slug     *string `json:"slug"`
+	IsActive            *bool    `json:"isActive"`
+	Name                *string  `json:"name"`
+	Slug                *string  `json:"slug"`
+	AddShippingZones    []string `json:"addShippingZones"`
+	RemoveShippingZones []string `json:"removeShippingZones"`
 }
 
 type Checkout struct {
@@ -828,23 +840,23 @@ func (Checkout) IsNode()               {}
 func (Checkout) IsObjectWithMetadata() {}
 
 type CheckoutAddPromoCode struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutBillingAddressUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutComplete struct {
-	Errors             []*Error         `json:"errors"`
 	Order              *Order           `json:"order"`
 	ConfirmationNeeded bool             `json:"confirmationNeeded"`
 	ConfirmationData   *string          `json:"confirmationData"`
 	CheckoutErrors     []*CheckoutError `json:"checkoutErrors"`
+	Errors             []*CheckoutError `json:"errors"`
 }
 
 type CheckoutCountableConnection struct {
@@ -859,9 +871,9 @@ type CheckoutCountableEdge struct {
 }
 
 type CheckoutCreate struct {
-	Errors         []*Error         `json:"errors"`
 	Created        *bool            `json:"created"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 }
 
@@ -875,21 +887,21 @@ type CheckoutCreateInput struct {
 }
 
 type CheckoutCustomerAttach struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutCustomerDetach struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutEmailUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutError struct {
@@ -900,9 +912,9 @@ type CheckoutError struct {
 }
 
 type CheckoutLanguageCodeUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLine struct {
@@ -927,9 +939,9 @@ type CheckoutLineCountableEdge struct {
 }
 
 type CheckoutLineDelete struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLineInput struct {
@@ -938,40 +950,40 @@ type CheckoutLineInput struct {
 }
 
 type CheckoutLinesAdd struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLinesUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutPaymentCreate struct {
-	Errors        []*Error        `json:"errors"`
 	Checkout      *Checkout       `json:"checkout"`
 	Payment       *Payment        `json:"payment"`
 	PaymentErrors []*PaymentError `json:"paymentErrors"`
+	Errors        []*PaymentError `json:"errors"`
 }
 
 type CheckoutRemovePromoCode struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutShippingAddressUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type CheckoutShippingMethodUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Checkout       *Checkout        `json:"checkout"`
 	CheckoutErrors []*CheckoutError `json:"checkoutErrors"`
+	Errors         []*CheckoutError `json:"errors"`
 }
 
 type ChoiceValue struct {
@@ -999,15 +1011,15 @@ func (Collection) IsNode()               {}
 func (Collection) IsObjectWithMetadata() {}
 
 type CollectionAddProducts struct {
-	Errors           []*Error           `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 }
 
 type CollectionBulkDelete struct {
-	Errors           []*Error           `json:"errors"`
 	Count            int                `json:"count"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 }
 
 type CollectionChannelListing struct {
@@ -1029,9 +1041,9 @@ type CollectionChannelListingError struct {
 }
 
 type CollectionChannelListingUpdate struct {
-	Errors                         []*Error                         `json:"errors"`
 	Collection                     *Collection                      `json:"collection"`
 	CollectionChannelListingErrors []*CollectionChannelListingError `json:"collectionChannelListingErrors"`
+	Errors                         []*CollectionChannelListingError `json:"errors"`
 }
 
 type CollectionChannelListingUpdateInput struct {
@@ -1051,8 +1063,8 @@ type CollectionCountableEdge struct {
 }
 
 type CollectionCreate struct {
-	Errors           []*Error           `json:"errors"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 }
 
@@ -1069,8 +1081,8 @@ type CollectionCreateInput struct {
 }
 
 type CollectionDelete struct {
-	Errors           []*Error           `json:"errors"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 }
 
@@ -1101,15 +1113,15 @@ type CollectionInput struct {
 }
 
 type CollectionRemoveProducts struct {
-	Errors           []*Error           `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 }
 
 type CollectionReorderProducts struct {
-	Errors           []*Error           `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 }
 
 type CollectionSortingInput struct {
@@ -1133,8 +1145,8 @@ func (CollectionTranslatableContent) IsNode()             {}
 func (CollectionTranslatableContent) IsTranslatableItem() {}
 
 type CollectionTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Collection        *Collection         `json:"collection"`
 }
 
@@ -1151,8 +1163,8 @@ type CollectionTranslation struct {
 func (CollectionTranslation) IsNode() {}
 
 type CollectionUpdate struct {
-	Errors           []*Error           `json:"errors"`
 	CollectionErrors []*CollectionError `json:"collectionErrors"`
+	Errors           []*CollectionError `json:"errors"`
 	Collection       *Collection        `json:"collection"`
 }
 
@@ -1170,15 +1182,15 @@ type ConfigurationItemInput struct {
 }
 
 type ConfirmAccount struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ConfirmEmailChange struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type CountryDisplay struct {
@@ -1188,12 +1200,12 @@ type CountryDisplay struct {
 }
 
 type CreateToken struct {
-	Errors        []*Error        `json:"errors"`
 	Token         *string         `json:"token"`
 	RefreshToken  *string         `json:"refreshToken"`
 	CsrfToken     *string         `json:"csrfToken"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type CreditCard struct {
@@ -1205,20 +1217,20 @@ type CreditCard struct {
 }
 
 type CustomerBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type CustomerCreate struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	User          *User           `json:"user"`
 }
 
 type CustomerDelete struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	User          *User           `json:"user"`
 }
 
@@ -1254,8 +1266,8 @@ type CustomerInput struct {
 }
 
 type CustomerUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 	User          *User           `json:"user"`
 }
 
@@ -1270,19 +1282,19 @@ type DateTimeRangeInput struct {
 }
 
 type DeactivateAllUserTokens struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type DeleteMetadata struct {
-	Errors         []*Error           `json:"errors"`
 	MetadataErrors []*MetadataError   `json:"metadataErrors"`
+	Errors         []*MetadataError   `json:"errors"`
 	Item           ObjectWithMetadata `json:"item"`
 }
 
 type DeletePrivateMetadata struct {
-	Errors         []*Error           `json:"errors"`
 	MetadataErrors []*MetadataError   `json:"metadataErrors"`
+	Errors         []*MetadataError   `json:"errors"`
 	Item           ObjectWithMetadata `json:"item"`
 }
 
@@ -1314,16 +1326,16 @@ type DigitalContentCountableEdge struct {
 }
 
 type DigitalContentCreate struct {
-	Errors        []*Error        `json:"errors"`
 	Variant       *ProductVariant `json:"variant"`
 	Content       *DigitalContent `json:"content"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type DigitalContentDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Variant       *ProductVariant `json:"variant"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type DigitalContentInput struct {
@@ -1334,10 +1346,10 @@ type DigitalContentInput struct {
 }
 
 type DigitalContentUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	Variant       *ProductVariant `json:"variant"`
 	Content       *DigitalContent `json:"content"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type DigitalContentUploadInput struct {
@@ -1360,8 +1372,8 @@ type DigitalContentURL struct {
 func (DigitalContentURL) IsNode() {}
 
 type DigitalContentURLCreate struct {
-	Errors            []*Error           `json:"errors"`
 	ProductErrors     []*ProductError    `json:"productErrors"`
+	Errors            []*ProductError    `json:"errors"`
 	DigitalContentURL *DigitalContentURL `json:"digitalContentUrl"`
 }
 
@@ -1384,20 +1396,20 @@ type Domain struct {
 }
 
 type DraftOrderBulkDelete struct {
-	Errors      []*Error      `json:"errors"`
 	Count       int           `json:"count"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type DraftOrderComplete struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type DraftOrderCreate struct {
-	Errors      []*Error      `json:"errors"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 	Order       *Order        `json:"order"`
 }
 
@@ -1416,8 +1428,8 @@ type DraftOrderCreateInput struct {
 }
 
 type DraftOrderDelete struct {
-	Errors      []*Error      `json:"errors"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 	Order       *Order        `json:"order"`
 }
 
@@ -1434,42 +1446,16 @@ type DraftOrderInput struct {
 	RedirectURL     *string       `json:"redirectUrl"`
 }
 
-type DraftOrderLineDelete struct {
-	Errors      []*Error      `json:"errors"`
-	Order       *Order        `json:"order"`
-	OrderLine   *OrderLine    `json:"orderLine"`
-	OrderErrors []*OrderError `json:"orderErrors"`
-}
-
-type DraftOrderLineUpdate struct {
-	Errors      []*Error      `json:"errors"`
-	Order       *Order        `json:"order"`
-	OrderErrors []*OrderError `json:"orderErrors"`
-	OrderLine   *OrderLine    `json:"orderLine"`
-}
-
 type DraftOrderLinesBulkDelete struct {
-	Errors      []*Error      `json:"errors"`
 	Count       int           `json:"count"`
 	OrderErrors []*OrderError `json:"orderErrors"`
-}
-
-type DraftOrderLinesCreate struct {
-	Errors      []*Error      `json:"errors"`
-	Order       *Order        `json:"order"`
-	OrderLines  []*OrderLine  `json:"orderLines"`
-	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type DraftOrderUpdate struct {
-	Errors      []*Error      `json:"errors"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 	Order       *Order        `json:"order"`
-}
-
-type Error struct {
-	Field   *string `json:"field"`
-	Message *string `json:"message"`
 }
 
 type ExportError struct {
@@ -1536,9 +1522,9 @@ type ExportInfoInput struct {
 }
 
 type ExportProducts struct {
-	Errors       []*Error       `json:"errors"`
 	ExportFile   *ExportFile    `json:"exportFile"`
 	ExportErrors []*ExportError `json:"exportErrors"`
+	Errors       []*ExportError `json:"errors"`
 }
 
 type ExportProductsInput struct {
@@ -1555,41 +1541,41 @@ type ExternalAuthentication struct {
 }
 
 type ExternalAuthenticationURL struct {
-	Errors             []*Error        `json:"errors"`
 	AuthenticationData *string         `json:"authenticationData"`
 	AccountErrors      []*AccountError `json:"accountErrors"`
+	Errors             []*AccountError `json:"errors"`
 }
 
 type ExternalLogout struct {
-	Errors        []*Error        `json:"errors"`
 	LogoutData    *string         `json:"logoutData"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ExternalObtainAccessTokens struct {
-	Errors        []*Error        `json:"errors"`
 	Token         *string         `json:"token"`
 	RefreshToken  *string         `json:"refreshToken"`
 	CsrfToken     *string         `json:"csrfToken"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ExternalRefresh struct {
-	Errors        []*Error        `json:"errors"`
 	Token         *string         `json:"token"`
 	RefreshToken  *string         `json:"refreshToken"`
 	CsrfToken     *string         `json:"csrfToken"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ExternalVerify struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	IsValid       bool            `json:"isValid"`
 	VerifyData    *string         `json:"verifyData"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type File struct {
@@ -1598,9 +1584,9 @@ type File struct {
 }
 
 type FileUpload struct {
-	Errors       []*Error       `json:"errors"`
 	UploadedFile *File          `json:"uploadedFile"`
 	UploadErrors []*UploadError `json:"uploadErrors"`
+	Errors       []*UploadError `json:"errors"`
 }
 
 type Fulfillment struct {
@@ -1620,10 +1606,10 @@ func (Fulfillment) IsNode()               {}
 func (Fulfillment) IsObjectWithMetadata() {}
 
 type FulfillmentCancel struct {
-	Errors      []*Error      `json:"errors"`
 	Fulfillment *Fulfillment  `json:"fulfillment"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentCancelInput struct {
@@ -1639,26 +1625,26 @@ type FulfillmentLine struct {
 func (FulfillmentLine) IsNode() {}
 
 type FulfillmentRefundProducts struct {
-	Errors      []*Error      `json:"errors"`
 	Fulfillment *Fulfillment  `json:"fulfillment"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentReturnProducts struct {
-	Errors             []*Error      `json:"errors"`
 	ReturnFulfillment  *Fulfillment  `json:"returnFulfillment"`
 	ReplaceFulfillment *Fulfillment  `json:"replaceFulfillment"`
 	Order              *Order        `json:"order"`
 	ReplaceOrder       *Order        `json:"replaceOrder"`
 	OrderErrors        []*OrderError `json:"orderErrors"`
+	Errors             []*OrderError `json:"errors"`
 }
 
 type FulfillmentUpdateTracking struct {
-	Errors      []*Error      `json:"errors"`
 	Fulfillment *Fulfillment  `json:"fulfillment"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentUpdateTrackingInput struct {
@@ -1688,9 +1674,9 @@ type GiftCard struct {
 func (GiftCard) IsNode() {}
 
 type GiftCardActivate struct {
-	Errors         []*Error         `json:"errors"`
 	GiftCard       *GiftCard        `json:"giftCard"`
 	GiftCardErrors []*GiftCardError `json:"giftCardErrors"`
+	Errors         []*GiftCardError `json:"errors"`
 }
 
 type GiftCardCountableConnection struct {
@@ -1705,8 +1691,8 @@ type GiftCardCountableEdge struct {
 }
 
 type GiftCardCreate struct {
-	Errors         []*Error         `json:"errors"`
 	GiftCardErrors []*GiftCardError `json:"giftCardErrors"`
+	Errors         []*GiftCardError `json:"errors"`
 	GiftCard       *GiftCard        `json:"giftCard"`
 }
 
@@ -1719,9 +1705,9 @@ type GiftCardCreateInput struct {
 }
 
 type GiftCardDeactivate struct {
-	Errors         []*Error         `json:"errors"`
 	GiftCard       *GiftCard        `json:"giftCard"`
 	GiftCardErrors []*GiftCardError `json:"giftCardErrors"`
+	Errors         []*GiftCardError `json:"errors"`
 }
 
 type GiftCardError struct {
@@ -1731,8 +1717,8 @@ type GiftCardError struct {
 }
 
 type GiftCardUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	GiftCardErrors []*GiftCardError `json:"giftCardErrors"`
+	Errors         []*GiftCardError `json:"errors"`
 	GiftCard       *GiftCard        `json:"giftCard"`
 }
 
@@ -1792,8 +1778,8 @@ func (Invoice) IsJob()                {}
 func (Invoice) IsNode()               {}
 
 type InvoiceCreate struct {
-	Errors        []*Error        `json:"errors"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
@@ -1803,8 +1789,8 @@ type InvoiceCreateInput struct {
 }
 
 type InvoiceDelete struct {
-	Errors        []*Error        `json:"errors"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
@@ -1815,27 +1801,27 @@ type InvoiceError struct {
 }
 
 type InvoiceRequest struct {
-	Errors        []*Error        `json:"errors"`
 	Order         *Order          `json:"order"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
 type InvoiceRequestDelete struct {
-	Errors        []*Error        `json:"errors"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
 type InvoiceSendNotification struct {
-	Errors        []*Error        `json:"errors"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
 type InvoiceUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	InvoiceErrors []*InvoiceError `json:"invoiceErrors"`
+	Errors        []*InvoiceError `json:"errors"`
 	Invoice       *Invoice        `json:"invoice"`
 }
 
@@ -1890,9 +1876,9 @@ func (Menu) IsNode()               {}
 func (Menu) IsObjectWithMetadata() {}
 
 type MenuBulkDelete struct {
-	Errors     []*Error     `json:"errors"`
 	Count      int          `json:"count"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 }
 
 type MenuCountableConnection struct {
@@ -1907,8 +1893,8 @@ type MenuCountableEdge struct {
 }
 
 type MenuCreate struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	Menu       *Menu        `json:"menu"`
 }
 
@@ -1919,8 +1905,8 @@ type MenuCreateInput struct {
 }
 
 type MenuDelete struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	Menu       *Menu        `json:"menu"`
 }
 
@@ -1961,9 +1947,9 @@ func (MenuItem) IsNode()               {}
 func (MenuItem) IsObjectWithMetadata() {}
 
 type MenuItemBulkDelete struct {
-	Errors     []*Error     `json:"errors"`
 	Count      int          `json:"count"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 }
 
 type MenuItemCountableConnection struct {
@@ -1978,8 +1964,8 @@ type MenuItemCountableEdge struct {
 }
 
 type MenuItemCreate struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	MenuItem   *MenuItem    `json:"menuItem"`
 }
 
@@ -1994,8 +1980,8 @@ type MenuItemCreateInput struct {
 }
 
 type MenuItemDelete struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	MenuItem   *MenuItem    `json:"menuItem"`
 }
 
@@ -2013,9 +1999,9 @@ type MenuItemInput struct {
 }
 
 type MenuItemMove struct {
-	Errors     []*Error     `json:"errors"`
 	Menu       *Menu        `json:"menu"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 }
 
 type MenuItemMoveInput struct {
@@ -2040,8 +2026,8 @@ func (MenuItemTranslatableContent) IsNode()             {}
 func (MenuItemTranslatableContent) IsTranslatableItem() {}
 
 type MenuItemTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	MenuItem          *MenuItem           `json:"menuItem"`
 }
 
@@ -2054,8 +2040,8 @@ type MenuItemTranslation struct {
 func (MenuItemTranslation) IsNode() {}
 
 type MenuItemUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	MenuItem   *MenuItem    `json:"menuItem"`
 }
 
@@ -2065,8 +2051,8 @@ type MenuSortingInput struct {
 }
 
 type MenuUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	MenuErrors []*MenuError `json:"menuErrors"`
+	Errors     []*MenuError `json:"errors"`
 	Menu       *Menu        `json:"menu"`
 }
 
@@ -2087,9 +2073,8 @@ type MetadataItem struct {
 }
 
 type Money struct {
-	Currency  string  `json:"currency"`
-	Amount    float64 `json:"amount"`
-	Localized string  `json:"localized"`
+	Currency string  `json:"currency"`
+	Amount   float64 `json:"amount"`
 }
 
 type MoneyRange struct {
@@ -2104,11 +2089,6 @@ type MoveProductInput struct {
 
 type NameTranslationInput struct {
 	Name *string `json:"name"`
-}
-
-type Navigation struct {
-	Main      *Menu `json:"main"`
-	Secondary *Menu `json:"secondary"`
 }
 
 type Order struct {
@@ -2166,10 +2146,10 @@ func (Order) IsNode()               {}
 func (Order) IsObjectWithMetadata() {}
 
 type OrderAddNote struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	Event       *OrderEvent   `json:"event"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderAddNoteInput struct {
@@ -2177,27 +2157,27 @@ type OrderAddNoteInput struct {
 }
 
 type OrderBulkCancel struct {
-	Errors      []*Error      `json:"errors"`
 	Count       int           `json:"count"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderCancel struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderCapture struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderConfirm struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderCountableConnection struct {
@@ -2225,9 +2205,9 @@ type OrderDiscount struct {
 func (OrderDiscount) IsNode() {}
 
 type OrderDiscountAdd struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderDiscountCommonInput struct {
@@ -2237,15 +2217,15 @@ type OrderDiscountCommonInput struct {
 }
 
 type OrderDiscountDelete struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderDiscountUpdate struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderDraftFilterInput struct {
@@ -2331,10 +2311,10 @@ type OrderFilterInput struct {
 }
 
 type OrderFulfill struct {
-	Errors       []*Error       `json:"errors"`
 	Fulfillments []*Fulfillment `json:"fulfillments"`
 	Order        *Order         `json:"order"`
 	OrderErrors  []*OrderError  `json:"orderErrors"`
+	Errors       []*OrderError  `json:"errors"`
 }
 
 type OrderFulfillInput struct {
@@ -2383,34 +2363,55 @@ type OrderLineCreateInput struct {
 	VariantID string `json:"variantId"`
 }
 
+type OrderLineDelete struct {
+	Order       *Order        `json:"order"`
+	OrderLine   *OrderLine    `json:"orderLine"`
+	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
+}
+
 type OrderLineDiscountRemove struct {
-	Errors      []*Error      `json:"errors"`
 	OrderLine   *OrderLine    `json:"orderLine"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderLineDiscountUpdate struct {
-	Errors      []*Error      `json:"errors"`
 	OrderLine   *OrderLine    `json:"orderLine"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderLineInput struct {
 	Quantity int `json:"quantity"`
 }
 
-type OrderMarkAsPaid struct {
-	Errors      []*Error      `json:"errors"`
+type OrderLineUpdate struct {
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
+	OrderLine   *OrderLine    `json:"orderLine"`
+}
+
+type OrderLinesCreate struct {
+	Order       *Order        `json:"order"`
+	OrderLines  []*OrderLine  `json:"orderLines"`
+	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
+}
+
+type OrderMarkAsPaid struct {
+	Order       *Order        `json:"order"`
+	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderRefund struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderRefundFulfillmentLineInput struct {
@@ -2461,9 +2462,9 @@ type OrderSettingsError struct {
 }
 
 type OrderSettingsUpdate struct {
-	Errors              []*Error              `json:"errors"`
 	OrderSettings       *OrderSettings        `json:"orderSettings"`
 	OrderSettingsErrors []*OrderSettingsError `json:"orderSettingsErrors"`
+	Errors              []*OrderSettingsError `json:"errors"`
 }
 
 type OrderSettingsUpdateInput struct {
@@ -2476,8 +2477,8 @@ type OrderSortingInput struct {
 }
 
 type OrderUpdate struct {
-	Errors      []*Error      `json:"errors"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 	Order       *Order        `json:"order"`
 }
 
@@ -2488,9 +2489,9 @@ type OrderUpdateInput struct {
 }
 
 type OrderUpdateShipping struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type OrderUpdateShippingInput struct {
@@ -2498,9 +2499,9 @@ type OrderUpdateShippingInput struct {
 }
 
 type OrderVoid struct {
-	Errors      []*Error      `json:"errors"`
 	Order       *Order        `json:"order"`
 	OrderErrors []*OrderError `json:"orderErrors"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type Page struct {
@@ -2525,27 +2526,27 @@ func (Page) IsNode()               {}
 func (Page) IsObjectWithMetadata() {}
 
 type PageAttributeAssign struct {
-	Errors     []*Error     `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageAttributeUnassign struct {
-	Errors     []*Error     `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageBulkDelete struct {
-	Errors     []*Error     `json:"errors"`
 	Count      int          `json:"count"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageBulkPublish struct {
-	Errors     []*Error     `json:"errors"`
 	Count      int          `json:"count"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageCountableConnection struct {
@@ -2560,8 +2561,8 @@ type PageCountableEdge struct {
 }
 
 type PageCreate struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	Page       *Page        `json:"page"`
 }
 
@@ -2577,8 +2578,8 @@ type PageCreateInput struct {
 }
 
 type PageDelete struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	Page       *Page        `json:"page"`
 }
 
@@ -2613,9 +2614,9 @@ type PageInput struct {
 }
 
 type PageReorderAttributeValues struct {
-	Errors     []*Error     `json:"errors"`
 	Page       *Page        `json:"page"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageSortingInput struct {
@@ -2638,8 +2639,8 @@ func (PageTranslatableContent) IsNode()             {}
 func (PageTranslatableContent) IsTranslatableItem() {}
 
 type PageTranslate struct {
-	Errors            []*Error                 `json:"errors"`
 	TranslationErrors []*TranslationError      `json:"translationErrors"`
+	Errors            []*TranslationError      `json:"errors"`
 	Page              *PageTranslatableContent `json:"page"`
 }
 
@@ -2677,9 +2678,9 @@ func (PageType) IsNode()               {}
 func (PageType) IsObjectWithMetadata() {}
 
 type PageTypeBulkDelete struct {
-	Errors     []*Error     `json:"errors"`
 	Count      int          `json:"count"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageTypeCountableConnection struct {
@@ -2694,8 +2695,8 @@ type PageTypeCountableEdge struct {
 }
 
 type PageTypeCreate struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 }
 
@@ -2706,8 +2707,8 @@ type PageTypeCreateInput struct {
 }
 
 type PageTypeDelete struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 }
 
@@ -2716,9 +2717,9 @@ type PageTypeFilterInput struct {
 }
 
 type PageTypeReorderAttributes struct {
-	Errors     []*Error     `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 }
 
 type PageTypeSortingInput struct {
@@ -2727,8 +2728,8 @@ type PageTypeSortingInput struct {
 }
 
 type PageTypeUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	PageType   *PageType    `json:"pageType"`
 }
 
@@ -2740,15 +2741,15 @@ type PageTypeUpdateInput struct {
 }
 
 type PageUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	PageErrors []*PageError `json:"pageErrors"`
+	Errors     []*PageError `json:"errors"`
 	Page       *Page        `json:"page"`
 }
 
 type PasswordChange struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type Payment struct {
@@ -2775,9 +2776,9 @@ type Payment struct {
 func (Payment) IsNode() {}
 
 type PaymentCapture struct {
-	Errors        []*Error        `json:"errors"`
 	Payment       *Payment        `json:"payment"`
 	PaymentErrors []*PaymentError `json:"paymentErrors"`
+	Errors        []*PaymentError `json:"errors"`
 }
 
 type PaymentCountableConnection struct {
@@ -2809,9 +2810,9 @@ type PaymentGateway struct {
 }
 
 type PaymentInitialize struct {
-	Errors             []*Error            `json:"errors"`
 	InitializedPayment *PaymentInitialized `json:"initializedPayment"`
 	PaymentErrors      []*PaymentError     `json:"paymentErrors"`
+	Errors             []*PaymentError     `json:"errors"`
 }
 
 type PaymentInitialized struct {
@@ -2828,9 +2829,9 @@ type PaymentInput struct {
 }
 
 type PaymentRefund struct {
-	Errors        []*Error        `json:"errors"`
 	Payment       *Payment        `json:"payment"`
 	PaymentErrors []*PaymentError `json:"paymentErrors"`
+	Errors        []*PaymentError `json:"errors"`
 }
 
 type PaymentSource struct {
@@ -2839,9 +2840,9 @@ type PaymentSource struct {
 }
 
 type PaymentVoid struct {
-	Errors        []*Error        `json:"errors"`
 	Payment       *Payment        `json:"payment"`
 	PaymentErrors []*PaymentError `json:"paymentErrors"`
+	Errors        []*PaymentError `json:"errors"`
 }
 
 type Permission struct {
@@ -2850,8 +2851,8 @@ type Permission struct {
 }
 
 type PermissionGroupCreate struct {
-	Errors                []*Error                `json:"errors"`
 	PermissionGroupErrors []*PermissionGroupError `json:"permissionGroupErrors"`
+	Errors                []*PermissionGroupError `json:"errors"`
 	Group                 *Group                  `json:"group"`
 }
 
@@ -2862,8 +2863,8 @@ type PermissionGroupCreateInput struct {
 }
 
 type PermissionGroupDelete struct {
-	Errors                []*Error                `json:"errors"`
 	PermissionGroupErrors []*PermissionGroupError `json:"permissionGroupErrors"`
+	Errors                []*PermissionGroupError `json:"errors"`
 	Group                 *Group                  `json:"group"`
 }
 
@@ -2885,8 +2886,8 @@ type PermissionGroupSortingInput struct {
 }
 
 type PermissionGroupUpdate struct {
-	Errors                []*Error                `json:"errors"`
 	PermissionGroupErrors []*PermissionGroupError `json:"permissionGroupErrors"`
+	Errors                []*PermissionGroupError `json:"errors"`
 	Group                 *Group                  `json:"group"`
 }
 
@@ -2936,9 +2937,9 @@ type PluginSortingInput struct {
 }
 
 type PluginUpdate struct {
-	Errors        []*Error       `json:"errors"`
 	Plugin        *Plugin        `json:"plugin"`
 	PluginsErrors []*PluginError `json:"pluginsErrors"`
+	Errors        []*PluginError `json:"errors"`
 }
 
 type PluginUpdateInput struct {
@@ -2968,7 +2969,6 @@ type Product struct {
 	PrivateMetadata        []*MetadataItem          `json:"privateMetadata"`
 	Metadata               []*MetadataItem          `json:"metadata"`
 	DescriptionJSON        *string                  `json:"descriptionJson"`
-	URL                    string                   `json:"url"`
 	Thumbnail              *Image                   `json:"thumbnail"`
 	Pricing                *ProductPricingInfo      `json:"pricing"`
 	IsAvailable            *bool                    `json:"isAvailable"`
@@ -2990,9 +2990,9 @@ func (Product) IsNode()               {}
 func (Product) IsObjectWithMetadata() {}
 
 type ProductAttributeAssign struct {
-	Errors        []*Error        `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductAttributeAssignInput struct {
@@ -3001,15 +3001,15 @@ type ProductAttributeAssignInput struct {
 }
 
 type ProductAttributeUnassign struct {
-	Errors        []*Error        `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductChannelListing struct {
@@ -3029,12 +3029,14 @@ type ProductChannelListing struct {
 func (ProductChannelListing) IsNode() {}
 
 type ProductChannelListingAddInput struct {
-	ChannelID                string  `json:"channelId"`
-	IsPublished              *bool   `json:"isPublished"`
-	PublicationDate          *string `json:"publicationDate"`
-	VisibleInListings        *bool   `json:"visibleInListings"`
-	IsAvailableForPurchase   *bool   `json:"isAvailableForPurchase"`
-	AvailableForPurchaseDate *string `json:"availableForPurchaseDate"`
+	ChannelID                string   `json:"channelId"`
+	IsPublished              *bool    `json:"isPublished"`
+	PublicationDate          *string  `json:"publicationDate"`
+	VisibleInListings        *bool    `json:"visibleInListings"`
+	IsAvailableForPurchase   *bool    `json:"isAvailableForPurchase"`
+	AvailableForPurchaseDate *string  `json:"availableForPurchaseDate"`
+	AddVariants              []string `json:"addVariants"`
+	RemoveVariants           []string `json:"removeVariants"`
 }
 
 type ProductChannelListingError struct {
@@ -3044,16 +3046,17 @@ type ProductChannelListingError struct {
 	Attributes []string         `json:"attributes"`
 	Values     []string         `json:"values"`
 	Channels   []string         `json:"channels"`
+	Variants   []string         `json:"variants"`
 }
 
 type ProductChannelListingUpdate struct {
-	Errors                      []*Error                      `json:"errors"`
 	Product                     *Product                      `json:"product"`
 	ProductChannelListingErrors []*ProductChannelListingError `json:"productChannelListingErrors"`
+	Errors                      []*ProductChannelListingError `json:"errors"`
 }
 
 type ProductChannelListingUpdateInput struct {
-	AddChannels    []*ProductChannelListingAddInput `json:"addChannels"`
+	UpdateChannels []*ProductChannelListingAddInput `json:"updateChannels"`
 	RemoveChannels []string                         `json:"removeChannels"`
 }
 
@@ -3069,8 +3072,8 @@ type ProductCountableEdge struct {
 }
 
 type ProductCreate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Product       *Product        `json:"product"`
 }
 
@@ -3090,8 +3093,8 @@ type ProductCreateInput struct {
 }
 
 type ProductDelete struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Product       *Product        `json:"product"`
 }
 
@@ -3110,7 +3113,6 @@ type ProductFilterInput struct {
 	HasCategory       *bool                    `json:"hasCategory"`
 	Attributes        []*AttributeInput        `json:"attributes"`
 	StockAvailability *StockAvailability       `json:"stockAvailability"`
-	ProductType       *string                  `json:"productType"`
 	Stocks            *ProductStockFilterInput `json:"stocks"`
 	Search            *string                  `json:"search"`
 	Metadata          []*MetadataInput         `json:"metadata"`
@@ -3154,16 +3156,16 @@ type ProductMedia struct {
 func (ProductMedia) IsNode() {}
 
 type ProductMediaBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductMediaCreate struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	Media         *ProductMedia   `json:"media"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductMediaCreateInput struct {
@@ -3174,24 +3176,24 @@ type ProductMediaCreateInput struct {
 }
 
 type ProductMediaDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	Media         *ProductMedia   `json:"media"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductMediaReorder struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	Media         []*ProductMedia `json:"media"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductMediaUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	Media         *ProductMedia   `json:"media"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductMediaUpdateInput struct {
@@ -3215,9 +3217,9 @@ type ProductPricingInfo struct {
 }
 
 type ProductReorderAttributeValues struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductStockFilterInput struct {
@@ -3240,8 +3242,8 @@ func (ProductTranslatableContent) IsNode()             {}
 func (ProductTranslatableContent) IsTranslatableItem() {}
 
 type ProductTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Product           *Product            `json:"product"`
 }
 
@@ -3278,9 +3280,9 @@ func (ProductType) IsNode()               {}
 func (ProductType) IsObjectWithMetadata() {}
 
 type ProductTypeBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductTypeCountableConnection struct {
@@ -3295,14 +3297,14 @@ type ProductTypeCountableEdge struct {
 }
 
 type ProductTypeCreate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 }
 
 type ProductTypeDelete struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 }
 
@@ -3327,9 +3329,9 @@ type ProductTypeInput struct {
 }
 
 type ProductTypeReorderAttributes struct {
-	Errors        []*Error        `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductTypeSortingInput struct {
@@ -3338,14 +3340,14 @@ type ProductTypeSortingInput struct {
 }
 
 type ProductTypeUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	ProductType   *ProductType    `json:"productType"`
 }
 
 type ProductUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 	Product       *Product        `json:"product"`
 }
 
@@ -3377,10 +3379,10 @@ func (ProductVariant) IsNode()               {}
 func (ProductVariant) IsObjectWithMetadata() {}
 
 type ProductVariantBulkCreate struct {
-	Errors            []*Error            `json:"errors"`
 	Count             int                 `json:"count"`
 	ProductVariants   []*ProductVariant   `json:"productVariants"`
 	BulkProductErrors []*BulkProductError `json:"bulkProductErrors"`
+	Errors            []*BulkProductError `json:"errors"`
 }
 
 type ProductVariantBulkCreateInput struct {
@@ -3393,9 +3395,9 @@ type ProductVariantBulkCreateInput struct {
 }
 
 type ProductVariantBulkDelete struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductVariantChannelListing struct {
@@ -3415,9 +3417,9 @@ type ProductVariantChannelListingAddInput struct {
 }
 
 type ProductVariantChannelListingUpdate struct {
-	Errors                      []*Error                      `json:"errors"`
 	Variant                     *ProductVariant               `json:"variant"`
 	ProductChannelListingErrors []*ProductChannelListingError `json:"productChannelListingErrors"`
+	Errors                      []*ProductChannelListingError `json:"errors"`
 }
 
 type ProductVariantCountableConnection struct {
@@ -3432,8 +3434,8 @@ type ProductVariantCountableEdge struct {
 }
 
 type ProductVariantCreate struct {
-	Errors         []*Error        `json:"errors"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
@@ -3447,8 +3449,8 @@ type ProductVariantCreateInput struct {
 }
 
 type ProductVariantDelete struct {
-	Errors         []*Error        `json:"errors"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
@@ -3466,39 +3468,39 @@ type ProductVariantInput struct {
 }
 
 type ProductVariantReorder struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductVariantReorderAttributeValues struct {
-	Errors         []*Error        `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type ProductVariantSetDefault struct {
-	Errors        []*Error        `json:"errors"`
 	Product       *Product        `json:"product"`
 	ProductErrors []*ProductError `json:"productErrors"`
+	Errors        []*ProductError `json:"errors"`
 }
 
 type ProductVariantStocksCreate struct {
-	Errors          []*Error          `json:"errors"`
 	ProductVariant  *ProductVariant   `json:"productVariant"`
 	BulkStockErrors []*BulkStockError `json:"bulkStockErrors"`
+	Errors          []*BulkStockError `json:"errors"`
 }
 
 type ProductVariantStocksDelete struct {
-	Errors         []*Error        `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 	StockErrors    []*StockError   `json:"stockErrors"`
+	Errors         []*StockError   `json:"errors"`
 }
 
 type ProductVariantStocksUpdate struct {
-	Errors          []*Error          `json:"errors"`
 	ProductVariant  *ProductVariant   `json:"productVariant"`
 	BulkStockErrors []*BulkStockError `json:"bulkStockErrors"`
+	Errors          []*BulkStockError `json:"errors"`
 }
 
 type ProductVariantTranslatableContent struct {
@@ -3512,8 +3514,8 @@ func (ProductVariantTranslatableContent) IsNode()             {}
 func (ProductVariantTranslatableContent) IsTranslatableItem() {}
 
 type ProductVariantTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	ProductVariant    *ProductVariant     `json:"productVariant"`
 }
 
@@ -3526,8 +3528,8 @@ type ProductVariantTranslation struct {
 func (ProductVariantTranslation) IsNode() {}
 
 type ProductVariantUpdate struct {
-	Errors         []*Error        `json:"errors"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
@@ -3543,10 +3545,10 @@ type ReducedRate struct {
 }
 
 type RefreshToken struct {
-	Errors        []*Error        `json:"errors"`
 	Token         *string         `json:"token"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ReorderInput struct {
@@ -3555,14 +3557,14 @@ type ReorderInput struct {
 }
 
 type RequestEmailChange struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type RequestPasswordReset struct {
-	Errors        []*Error        `json:"errors"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type Sale struct {
@@ -3583,15 +3585,15 @@ type Sale struct {
 func (Sale) IsNode() {}
 
 type SaleAddCatalogues struct {
-	Errors         []*Error         `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type SaleBulkDelete struct {
-	Errors         []*Error         `json:"errors"`
 	Count          int              `json:"count"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type SaleChannelListing struct {
@@ -3614,9 +3616,9 @@ type SaleChannelListingInput struct {
 }
 
 type SaleChannelListingUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type SaleCountableConnection struct {
@@ -3631,14 +3633,14 @@ type SaleCountableEdge struct {
 }
 
 type SaleCreate struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 }
 
 type SaleDelete struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 }
 
@@ -3661,9 +3663,9 @@ type SaleInput struct {
 }
 
 type SaleRemoveCatalogues struct {
-	Errors         []*Error         `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type SaleSortingInput struct {
@@ -3683,8 +3685,8 @@ func (SaleTranslatableContent) IsNode()             {}
 func (SaleTranslatableContent) IsTranslatableItem() {}
 
 type SaleTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Sale              *Sale               `json:"sale"`
 }
 
@@ -3697,8 +3699,8 @@ type SaleTranslation struct {
 func (SaleTranslation) IsNode() {}
 
 type SaleUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Sale           *Sale            `json:"sale"`
 }
 
@@ -3713,12 +3715,12 @@ type SeoInput struct {
 }
 
 type SetPassword struct {
-	Errors        []*Error        `json:"errors"`
 	Token         *string         `json:"token"`
 	RefreshToken  *string         `json:"refreshToken"`
 	CsrfToken     *string         `json:"csrfToken"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type ShippingError struct {
@@ -3732,6 +3734,7 @@ type ShippingError struct {
 type ShippingMethod struct {
 	ID                  string                          `json:"id"`
 	Name                string                          `json:"name"`
+	Description         *string                         `json:"description"`
 	MinimumOrderWeight  *Weight                         `json:"minimumOrderWeight"`
 	MaximumOrderWeight  *Weight                         `json:"maximumOrderWeight"`
 	MaximumDeliveryDays *int                            `json:"maximumDeliveryDays"`
@@ -3774,9 +3777,9 @@ type ShippingMethodChannelListingInput struct {
 }
 
 type ShippingMethodChannelListingUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingMethodPostalCodeRule struct {
@@ -3791,6 +3794,7 @@ func (ShippingMethodPostalCodeRule) IsNode() {}
 type ShippingMethodTranslatableContent struct {
 	ID             string                     `json:"id"`
 	Name           string                     `json:"name"`
+	Description    *string                    `json:"description"`
 	Translation    *ShippingMethodTranslation `json:"translation"`
 	ShippingMethod *ShippingMethod            `json:"shippingMethod"`
 }
@@ -3799,9 +3803,10 @@ func (ShippingMethodTranslatableContent) IsNode()             {}
 func (ShippingMethodTranslatableContent) IsTranslatableItem() {}
 
 type ShippingMethodTranslation struct {
-	ID       string           `json:"id"`
-	Name     *string          `json:"name"`
-	Language *LanguageDisplay `json:"language"`
+	ID          string           `json:"id"`
+	Name        *string          `json:"name"`
+	Description *string          `json:"description"`
+	Language    *LanguageDisplay `json:"language"`
 }
 
 func (ShippingMethodTranslation) IsNode() {}
@@ -3812,29 +3817,29 @@ type ShippingPostalCodeRulesCreateInputRange struct {
 }
 
 type ShippingPriceBulkDelete struct {
-	Errors         []*Error         `json:"errors"`
 	Count          int              `json:"count"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceCreate struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceDelete struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceExcludeProducts struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceExcludeProductsInput struct {
@@ -3843,6 +3848,7 @@ type ShippingPriceExcludeProductsInput struct {
 
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
+	Description           *string                                    `json:"description"`
 	MinimumOrderWeight    *string                                    `json:"minimumOrderWeight"`
 	MaximumOrderWeight    *string                                    `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int                                       `json:"maximumDeliveryDays"`
@@ -3855,22 +3861,27 @@ type ShippingPriceInput struct {
 }
 
 type ShippingPriceRemoveProductFromExclude struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	ShippingMethod    *ShippingMethod     `json:"shippingMethod"`
 }
 
+type ShippingPriceTranslationInput struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
 type ShippingPriceUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingZone struct {
@@ -3883,6 +3894,7 @@ type ShippingZone struct {
 	Countries       []*CountryDisplay `json:"countries"`
 	ShippingMethods []*ShippingMethod `json:"shippingMethods"`
 	Warehouses      []*Warehouse      `json:"warehouses"`
+	Channels        []*Channel        `json:"channels"`
 	Description     *string           `json:"description"`
 }
 
@@ -3890,9 +3902,9 @@ func (ShippingZone) IsNode()               {}
 func (ShippingZone) IsObjectWithMetadata() {}
 
 type ShippingZoneBulkDelete struct {
-	Errors         []*Error         `json:"errors"`
 	Count          int              `json:"count"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingZoneCountableConnection struct {
@@ -3907,8 +3919,8 @@ type ShippingZoneCountableEdge struct {
 }
 
 type ShippingZoneCreate struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 }
 
@@ -3918,17 +3930,22 @@ type ShippingZoneCreateInput struct {
 	Countries     []*string `json:"countries"`
 	Default       *bool     `json:"default"`
 	AddWarehouses []*string `json:"addWarehouses"`
+	AddChannels   []string  `json:"addChannels"`
 }
 
 type ShippingZoneDelete struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 }
 
+type ShippingZoneFilterInput struct {
+	Search *string `json:"search"`
+}
+
 type ShippingZoneUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	ShippingErrors []*ShippingError `json:"shippingErrors"`
+	Errors         []*ShippingError `json:"errors"`
 	ShippingZone   *ShippingZone    `json:"shippingZone"`
 }
 
@@ -3938,7 +3955,9 @@ type ShippingZoneUpdateInput struct {
 	Countries        []*string `json:"countries"`
 	Default          *bool     `json:"default"`
 	AddWarehouses    []*string `json:"addWarehouses"`
+	AddChannels      []string  `json:"addChannels"`
 	RemoveWarehouses []*string `json:"removeWarehouses"`
+	RemoveChannels   []string  `json:"removeChannels"`
 }
 
 type Shop struct {
@@ -3953,7 +3972,6 @@ type Shop struct {
 	Domain                              *Domain                       `json:"domain"`
 	Languages                           []*LanguageDisplay            `json:"languages"`
 	Name                                string                        `json:"name"`
-	Navigation                          *Navigation                   `json:"navigation"`
 	Permissions                         []*Permission                 `json:"permissions"`
 	PhonePrefixes                       []*string                     `json:"phonePrefixes"`
 	HeaderText                          *string                       `json:"headerText"`
@@ -3974,15 +3992,15 @@ type Shop struct {
 }
 
 type ShopAddressUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	Shop       *Shop        `json:"shop"`
 	ShopErrors []*ShopError `json:"shopErrors"`
+	Errors     []*ShopError `json:"errors"`
 }
 
 type ShopDomainUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	Shop       *Shop        `json:"shop"`
 	ShopErrors []*ShopError `json:"shopErrors"`
+	Errors     []*ShopError `json:"errors"`
 }
 
 type ShopError struct {
@@ -3992,9 +4010,9 @@ type ShopError struct {
 }
 
 type ShopFetchTaxRates struct {
-	Errors     []*Error     `json:"errors"`
 	Shop       *Shop        `json:"shop"`
 	ShopErrors []*ShopError `json:"shopErrors"`
+	Errors     []*ShopError `json:"errors"`
 }
 
 type ShopSettingsInput struct {
@@ -4014,9 +4032,9 @@ type ShopSettingsInput struct {
 }
 
 type ShopSettingsTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	Shop              *Shop               `json:"shop"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 }
 
 type ShopSettingsTranslationInput struct {
@@ -4025,9 +4043,9 @@ type ShopSettingsTranslationInput struct {
 }
 
 type ShopSettingsUpdate struct {
-	Errors     []*Error     `json:"errors"`
 	Shop       *Shop        `json:"shop"`
 	ShopErrors []*ShopError `json:"shopErrors"`
+	Errors     []*ShopError `json:"errors"`
 }
 
 type ShopTranslation struct {
@@ -4045,14 +4063,14 @@ type SiteDomainInput struct {
 }
 
 type StaffBulkDelete struct {
-	Errors      []*Error      `json:"errors"`
 	Count       int           `json:"count"`
 	StaffErrors []*StaffError `json:"staffErrors"`
+	Errors      []*StaffError `json:"errors"`
 }
 
 type StaffCreate struct {
-	Errors      []*Error      `json:"errors"`
 	StaffErrors []*StaffError `json:"staffErrors"`
+	Errors      []*StaffError `json:"errors"`
 	User        *User         `json:"user"`
 }
 
@@ -4067,8 +4085,8 @@ type StaffCreateInput struct {
 }
 
 type StaffDelete struct {
-	Errors      []*Error      `json:"errors"`
 	StaffErrors []*StaffError `json:"staffErrors"`
+	Errors      []*StaffError `json:"errors"`
 	User        *User         `json:"user"`
 }
 
@@ -4091,14 +4109,14 @@ type StaffNotificationRecipient struct {
 func (StaffNotificationRecipient) IsNode() {}
 
 type StaffNotificationRecipientCreate struct {
-	Errors                     []*Error                    `json:"errors"`
 	ShopErrors                 []*ShopError                `json:"shopErrors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
 type StaffNotificationRecipientDelete struct {
-	Errors                     []*Error                    `json:"errors"`
 	ShopErrors                 []*ShopError                `json:"shopErrors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
@@ -4109,14 +4127,14 @@ type StaffNotificationRecipientInput struct {
 }
 
 type StaffNotificationRecipientUpdate struct {
-	Errors                     []*Error                    `json:"errors"`
 	ShopErrors                 []*ShopError                `json:"shopErrors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
 type StaffUpdate struct {
-	Errors      []*Error      `json:"errors"`
 	StaffErrors []*StaffError `json:"staffErrors"`
+	Errors      []*StaffError `json:"errors"`
 	User        *User         `json:"user"`
 }
 
@@ -4169,7 +4187,7 @@ type StockFilterInput struct {
 
 type StockInput struct {
 	Warehouse string `json:"warehouse"`
-	Quantity  *int   `json:"quantity"`
+	Quantity  int    `json:"quantity"`
 }
 
 type TaxType struct {
@@ -4233,14 +4251,14 @@ type UpdateInvoiceInput struct {
 }
 
 type UpdateMetadata struct {
-	Errors         []*Error           `json:"errors"`
 	MetadataErrors []*MetadataError   `json:"metadataErrors"`
+	Errors         []*MetadataError   `json:"errors"`
 	Item           ObjectWithMetadata `json:"item"`
 }
 
 type UpdatePrivateMetadata struct {
-	Errors         []*Error           `json:"errors"`
 	MetadataErrors []*MetadataError   `json:"metadataErrors"`
+	Errors         []*MetadataError   `json:"errors"`
 	Item           ObjectWithMetadata `json:"item"`
 }
 
@@ -4269,7 +4287,6 @@ type User struct {
 	CheckoutTokens         []string                     `json:"checkoutTokens"`
 	GiftCards              *GiftCardCountableConnection `json:"giftCards"`
 	Orders                 *OrderCountableConnection    `json:"orders"`
-	Permissions            []*Permission                `json:"permissions"`
 	UserPermissions        []*UserPermission            `json:"userPermissions"`
 	PermissionGroups       []*Group                     `json:"permissionGroups"`
 	EditableGroups         []*Group                     `json:"editableGroups"`
@@ -4283,21 +4300,21 @@ func (User) IsNode()               {}
 func (User) IsObjectWithMetadata() {}
 
 type UserAvatarDelete struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type UserAvatarUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type UserBulkSetActive struct {
-	Errors        []*Error        `json:"errors"`
 	Count         int             `json:"count"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type UserCountableConnection struct {
@@ -4341,17 +4358,17 @@ type Vat struct {
 }
 
 type VariantMediaAssign struct {
-	Errors         []*Error        `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 	Media          *ProductMedia   `json:"media"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type VariantMediaUnassign struct {
-	Errors         []*Error        `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 	Media          *ProductMedia   `json:"media"`
 	ProductErrors  []*ProductError `json:"productErrors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type VariantPricingInfo struct {
@@ -4364,11 +4381,11 @@ type VariantPricingInfo struct {
 }
 
 type VerifyToken struct {
-	Errors        []*Error        `json:"errors"`
 	User          *User           `json:"user"`
 	IsValid       bool            `json:"isValid"`
 	Payload       *string         `json:"payload"`
 	AccountErrors []*AccountError `json:"accountErrors"`
+	Errors        []*AccountError `json:"errors"`
 }
 
 type Voucher struct {
@@ -4398,15 +4415,15 @@ type Voucher struct {
 func (Voucher) IsNode() {}
 
 type VoucherAddCatalogues struct {
-	Errors         []*Error         `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type VoucherBulkDelete struct {
-	Errors         []*Error         `json:"errors"`
 	Count          int              `json:"count"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type VoucherChannelListing struct {
@@ -4431,9 +4448,9 @@ type VoucherChannelListingInput struct {
 }
 
 type VoucherChannelListingUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type VoucherCountableConnection struct {
@@ -4448,14 +4465,14 @@ type VoucherCountableEdge struct {
 }
 
 type VoucherCreate struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 }
 
 type VoucherDelete struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 }
 
@@ -4485,9 +4502,9 @@ type VoucherInput struct {
 }
 
 type VoucherRemoveCatalogues struct {
-	Errors         []*Error         `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 }
 
 type VoucherSortingInput struct {
@@ -4507,8 +4524,8 @@ func (VoucherTranslatableContent) IsTranslatableItem() {}
 func (VoucherTranslatableContent) IsNode()             {}
 
 type VoucherTranslate struct {
-	Errors            []*Error            `json:"errors"`
 	TranslationErrors []*TranslationError `json:"translationErrors"`
+	Errors            []*TranslationError `json:"errors"`
 	Voucher           *Voucher            `json:"voucher"`
 }
 
@@ -4521,8 +4538,8 @@ type VoucherTranslation struct {
 func (VoucherTranslation) IsNode() {}
 
 type VoucherUpdate struct {
-	Errors         []*Error         `json:"errors"`
 	DiscountErrors []*DiscountError `json:"discountErrors"`
+	Errors         []*DiscountError `json:"errors"`
 	Voucher        *Voucher         `json:"voucher"`
 }
 
@@ -4564,8 +4581,8 @@ type WarehouseCountableEdge struct {
 }
 
 type WarehouseCreate struct {
-	Errors          []*Error          `json:"errors"`
 	WarehouseErrors []*WarehouseError `json:"warehouseErrors"`
+	Errors          []*WarehouseError `json:"errors"`
 	Warehouse       *Warehouse        `json:"warehouse"`
 }
 
@@ -4579,8 +4596,8 @@ type WarehouseCreateInput struct {
 }
 
 type WarehouseDelete struct {
-	Errors          []*Error          `json:"errors"`
 	WarehouseErrors []*WarehouseError `json:"warehouseErrors"`
+	Errors          []*WarehouseError `json:"errors"`
 	Warehouse       *Warehouse        `json:"warehouse"`
 }
 
@@ -4596,14 +4613,14 @@ type WarehouseFilterInput struct {
 }
 
 type WarehouseShippingZoneAssign struct {
-	Errors          []*Error          `json:"errors"`
 	WarehouseErrors []*WarehouseError `json:"warehouseErrors"`
+	Errors          []*WarehouseError `json:"errors"`
 	Warehouse       *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseShippingZoneUnassign struct {
-	Errors          []*Error          `json:"errors"`
 	WarehouseErrors []*WarehouseError `json:"warehouseErrors"`
+	Errors          []*WarehouseError `json:"errors"`
 	Warehouse       *Warehouse        `json:"warehouse"`
 }
 
@@ -4613,8 +4630,8 @@ type WarehouseSortingInput struct {
 }
 
 type WarehouseUpdate struct {
-	Errors          []*Error          `json:"errors"`
 	WarehouseErrors []*WarehouseError `json:"warehouseErrors"`
+	Errors          []*WarehouseError `json:"errors"`
 	Warehouse       *Warehouse        `json:"warehouse"`
 }
 
@@ -4639,8 +4656,8 @@ type Webhook struct {
 func (Webhook) IsNode() {}
 
 type WebhookCreate struct {
-	Errors        []*Error        `json:"errors"`
 	WebhookErrors []*WebhookError `json:"webhookErrors"`
+	Errors        []*WebhookError `json:"errors"`
 	Webhook       *Webhook        `json:"webhook"`
 }
 
@@ -4654,8 +4671,8 @@ type WebhookCreateInput struct {
 }
 
 type WebhookDelete struct {
-	Errors        []*Error        `json:"errors"`
 	WebhookErrors []*WebhookError `json:"webhookErrors"`
+	Errors        []*WebhookError `json:"errors"`
 	Webhook       *Webhook        `json:"webhook"`
 }
 
@@ -4671,8 +4688,8 @@ type WebhookEvent struct {
 }
 
 type WebhookUpdate struct {
-	Errors        []*Error        `json:"errors"`
 	WebhookErrors []*WebhookError `json:"webhookErrors"`
+	Errors        []*WebhookError `json:"errors"`
 	Webhook       *Webhook        `json:"webhook"`
 }
 
@@ -5070,6 +5087,7 @@ const (
 	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = "MULTISELECT"
 	AttributeInputTypeEnumFile        AttributeInputTypeEnum = "FILE"
 	AttributeInputTypeEnumReference   AttributeInputTypeEnum = "REFERENCE"
+	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = "RICH_TEXT"
 )
 
 var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
@@ -5077,11 +5095,12 @@ var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
 	AttributeInputTypeEnumMultiselect,
 	AttributeInputTypeEnumFile,
 	AttributeInputTypeEnumReference,
+	AttributeInputTypeEnumRichText,
 }
 
 func (e AttributeInputTypeEnum) IsValid() bool {
 	switch e {
-	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference:
+	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumRichText:
 		return true
 	}
 	return false
@@ -5259,6 +5278,7 @@ const (
 	ChannelErrorCodeChannelTargetIDMustBeDifferent ChannelErrorCode = "CHANNEL_TARGET_ID_MUST_BE_DIFFERENT"
 	ChannelErrorCodeChannelsCurrencyMustBeTheSame  ChannelErrorCode = "CHANNELS_CURRENCY_MUST_BE_THE_SAME"
 	ChannelErrorCodeChannelWithOrders              ChannelErrorCode = "CHANNEL_WITH_ORDERS"
+	ChannelErrorCodeDuplicatedInputItem            ChannelErrorCode = "DUPLICATED_INPUT_ITEM"
 )
 
 var AllChannelErrorCode = []ChannelErrorCode{
@@ -5271,11 +5291,12 @@ var AllChannelErrorCode = []ChannelErrorCode{
 	ChannelErrorCodeChannelTargetIDMustBeDifferent,
 	ChannelErrorCodeChannelsCurrencyMustBeTheSame,
 	ChannelErrorCodeChannelWithOrders,
+	ChannelErrorCodeDuplicatedInputItem,
 }
 
 func (e ChannelErrorCode) IsValid() bool {
 	switch e {
-	case ChannelErrorCodeAlreadyExists, ChannelErrorCodeGraphqlError, ChannelErrorCodeInvalid, ChannelErrorCodeNotFound, ChannelErrorCodeRequired, ChannelErrorCodeUnique, ChannelErrorCodeChannelTargetIDMustBeDifferent, ChannelErrorCodeChannelsCurrencyMustBeTheSame, ChannelErrorCodeChannelWithOrders:
+	case ChannelErrorCodeAlreadyExists, ChannelErrorCodeGraphqlError, ChannelErrorCodeInvalid, ChannelErrorCodeNotFound, ChannelErrorCodeRequired, ChannelErrorCodeUnique, ChannelErrorCodeChannelTargetIDMustBeDifferent, ChannelErrorCodeChannelsCurrencyMustBeTheSame, ChannelErrorCodeChannelWithOrders, ChannelErrorCodeDuplicatedInputItem:
 		return true
 	}
 	return false
@@ -5327,6 +5348,7 @@ const (
 	CheckoutErrorCodeZeroQuantity                  CheckoutErrorCode = "ZERO_QUANTITY"
 	CheckoutErrorCodeMissingChannelSlug            CheckoutErrorCode = "MISSING_CHANNEL_SLUG"
 	CheckoutErrorCodeChannelInactive               CheckoutErrorCode = "CHANNEL_INACTIVE"
+	CheckoutErrorCodeUnavailableVariantInChannel   CheckoutErrorCode = "UNAVAILABLE_VARIANT_IN_CHANNEL"
 )
 
 var AllCheckoutErrorCode = []CheckoutErrorCode{
@@ -5352,11 +5374,12 @@ var AllCheckoutErrorCode = []CheckoutErrorCode{
 	CheckoutErrorCodeZeroQuantity,
 	CheckoutErrorCodeMissingChannelSlug,
 	CheckoutErrorCodeChannelInactive,
+	CheckoutErrorCodeUnavailableVariantInChannel,
 }
 
 func (e CheckoutErrorCode) IsValid() bool {
 	switch e {
-	case CheckoutErrorCodeBillingAddressNotSet, CheckoutErrorCodeCheckoutNotFullyPaid, CheckoutErrorCodeGraphqlError, CheckoutErrorCodeProductNotPublished, CheckoutErrorCodeProductUnavailableForPurchase, CheckoutErrorCodeInsufficientStock, CheckoutErrorCodeInvalid, CheckoutErrorCodeInvalidShippingMethod, CheckoutErrorCodeNotFound, CheckoutErrorCodePaymentError, CheckoutErrorCodeQuantityGreaterThanLimit, CheckoutErrorCodeRequired, CheckoutErrorCodeShippingAddressNotSet, CheckoutErrorCodeShippingMethodNotApplicable, CheckoutErrorCodeShippingMethodNotSet, CheckoutErrorCodeShippingNotRequired, CheckoutErrorCodeTaxError, CheckoutErrorCodeUnique, CheckoutErrorCodeVoucherNotApplicable, CheckoutErrorCodeZeroQuantity, CheckoutErrorCodeMissingChannelSlug, CheckoutErrorCodeChannelInactive:
+	case CheckoutErrorCodeBillingAddressNotSet, CheckoutErrorCodeCheckoutNotFullyPaid, CheckoutErrorCodeGraphqlError, CheckoutErrorCodeProductNotPublished, CheckoutErrorCodeProductUnavailableForPurchase, CheckoutErrorCodeInsufficientStock, CheckoutErrorCodeInvalid, CheckoutErrorCodeInvalidShippingMethod, CheckoutErrorCodeNotFound, CheckoutErrorCodePaymentError, CheckoutErrorCodeQuantityGreaterThanLimit, CheckoutErrorCodeRequired, CheckoutErrorCodeShippingAddressNotSet, CheckoutErrorCodeShippingMethodNotApplicable, CheckoutErrorCodeShippingMethodNotSet, CheckoutErrorCodeShippingNotRequired, CheckoutErrorCodeTaxError, CheckoutErrorCodeUnique, CheckoutErrorCodeVoucherNotApplicable, CheckoutErrorCodeZeroQuantity, CheckoutErrorCodeMissingChannelSlug, CheckoutErrorCodeChannelInactive, CheckoutErrorCodeUnavailableVariantInChannel:
 		return true
 	}
 	return false
@@ -7357,8 +7380,8 @@ type OrderEventsEnum string
 const (
 	OrderEventsEnumDraftCreated                      OrderEventsEnum = "DRAFT_CREATED"
 	OrderEventsEnumDraftCreatedFromReplace           OrderEventsEnum = "DRAFT_CREATED_FROM_REPLACE"
-	OrderEventsEnumDraftAddedProducts                OrderEventsEnum = "DRAFT_ADDED_PRODUCTS"
-	OrderEventsEnumDraftRemovedProducts              OrderEventsEnum = "DRAFT_REMOVED_PRODUCTS"
+	OrderEventsEnumAddedProducts                     OrderEventsEnum = "ADDED_PRODUCTS"
+	OrderEventsEnumRemovedProducts                   OrderEventsEnum = "REMOVED_PRODUCTS"
 	OrderEventsEnumPlaced                            OrderEventsEnum = "PLACED"
 	OrderEventsEnumPlacedFromDraft                   OrderEventsEnum = "PLACED_FROM_DRAFT"
 	OrderEventsEnumOversoldItems                     OrderEventsEnum = "OVERSOLD_ITEMS"
@@ -7399,8 +7422,8 @@ const (
 var AllOrderEventsEnum = []OrderEventsEnum{
 	OrderEventsEnumDraftCreated,
 	OrderEventsEnumDraftCreatedFromReplace,
-	OrderEventsEnumDraftAddedProducts,
-	OrderEventsEnumDraftRemovedProducts,
+	OrderEventsEnumAddedProducts,
+	OrderEventsEnumRemovedProducts,
 	OrderEventsEnumPlaced,
 	OrderEventsEnumPlacedFromDraft,
 	OrderEventsEnumOversoldItems,
@@ -7440,7 +7463,7 @@ var AllOrderEventsEnum = []OrderEventsEnum{
 
 func (e OrderEventsEnum) IsValid() bool {
 	switch e {
-	case OrderEventsEnumDraftCreated, OrderEventsEnumDraftCreatedFromReplace, OrderEventsEnumDraftAddedProducts, OrderEventsEnumDraftRemovedProducts, OrderEventsEnumPlaced, OrderEventsEnumPlacedFromDraft, OrderEventsEnumOversoldItems, OrderEventsEnumCanceled, OrderEventsEnumOrderMarkedAsPaid, OrderEventsEnumOrderFullyPaid, OrderEventsEnumOrderReplacementCreated, OrderEventsEnumOrderDiscountAdded, OrderEventsEnumOrderDiscountAutomaticallyUpdated, OrderEventsEnumOrderDiscountUpdated, OrderEventsEnumOrderDiscountDeleted, OrderEventsEnumOrderLineDiscountUpdated, OrderEventsEnumOrderLineDiscountRemoved, OrderEventsEnumUpdatedAddress, OrderEventsEnumEmailSent, OrderEventsEnumConfirmed, OrderEventsEnumPaymentAuthorized, OrderEventsEnumPaymentCaptured, OrderEventsEnumExternalServiceNotification, OrderEventsEnumPaymentRefunded, OrderEventsEnumPaymentVoided, OrderEventsEnumPaymentFailed, OrderEventsEnumInvoiceRequested, OrderEventsEnumInvoiceGenerated, OrderEventsEnumInvoiceUpdated, OrderEventsEnumInvoiceSent, OrderEventsEnumFulfillmentCanceled, OrderEventsEnumFulfillmentRestockedItems, OrderEventsEnumFulfillmentFulfilledItems, OrderEventsEnumFulfillmentRefunded, OrderEventsEnumFulfillmentReturned, OrderEventsEnumFulfillmentReplaced, OrderEventsEnumTrackingUpdated, OrderEventsEnumNoteAdded, OrderEventsEnumOther:
+	case OrderEventsEnumDraftCreated, OrderEventsEnumDraftCreatedFromReplace, OrderEventsEnumAddedProducts, OrderEventsEnumRemovedProducts, OrderEventsEnumPlaced, OrderEventsEnumPlacedFromDraft, OrderEventsEnumOversoldItems, OrderEventsEnumCanceled, OrderEventsEnumOrderMarkedAsPaid, OrderEventsEnumOrderFullyPaid, OrderEventsEnumOrderReplacementCreated, OrderEventsEnumOrderDiscountAdded, OrderEventsEnumOrderDiscountAutomaticallyUpdated, OrderEventsEnumOrderDiscountUpdated, OrderEventsEnumOrderDiscountDeleted, OrderEventsEnumOrderLineDiscountUpdated, OrderEventsEnumOrderLineDiscountRemoved, OrderEventsEnumUpdatedAddress, OrderEventsEnumEmailSent, OrderEventsEnumConfirmed, OrderEventsEnumPaymentAuthorized, OrderEventsEnumPaymentCaptured, OrderEventsEnumExternalServiceNotification, OrderEventsEnumPaymentRefunded, OrderEventsEnumPaymentVoided, OrderEventsEnumPaymentFailed, OrderEventsEnumInvoiceRequested, OrderEventsEnumInvoiceGenerated, OrderEventsEnumInvoiceUpdated, OrderEventsEnumInvoiceSent, OrderEventsEnumFulfillmentCanceled, OrderEventsEnumFulfillmentRestockedItems, OrderEventsEnumFulfillmentFulfilledItems, OrderEventsEnumFulfillmentRefunded, OrderEventsEnumFulfillmentReturned, OrderEventsEnumFulfillmentReplaced, OrderEventsEnumTrackingUpdated, OrderEventsEnumNoteAdded, OrderEventsEnumOther:
 		return true
 	}
 	return false
@@ -8323,14 +8346,13 @@ const (
 	ProductFieldEnumDescription   ProductFieldEnum = "DESCRIPTION"
 	ProductFieldEnumProductType   ProductFieldEnum = "PRODUCT_TYPE"
 	ProductFieldEnumCategory      ProductFieldEnum = "CATEGORY"
-	ProductFieldEnumVisible       ProductFieldEnum = "VISIBLE"
 	ProductFieldEnumProductWeight ProductFieldEnum = "PRODUCT_WEIGHT"
 	ProductFieldEnumCollections   ProductFieldEnum = "COLLECTIONS"
 	ProductFieldEnumChargeTaxes   ProductFieldEnum = "CHARGE_TAXES"
-	ProductFieldEnumProductImages ProductFieldEnum = "PRODUCT_IMAGES"
+	ProductFieldEnumProductMedia  ProductFieldEnum = "PRODUCT_MEDIA"
 	ProductFieldEnumVariantSku    ProductFieldEnum = "VARIANT_SKU"
 	ProductFieldEnumVariantWeight ProductFieldEnum = "VARIANT_WEIGHT"
-	ProductFieldEnumVariantImages ProductFieldEnum = "VARIANT_IMAGES"
+	ProductFieldEnumVariantMedia  ProductFieldEnum = "VARIANT_MEDIA"
 )
 
 var AllProductFieldEnum = []ProductFieldEnum{
@@ -8338,19 +8360,18 @@ var AllProductFieldEnum = []ProductFieldEnum{
 	ProductFieldEnumDescription,
 	ProductFieldEnumProductType,
 	ProductFieldEnumCategory,
-	ProductFieldEnumVisible,
 	ProductFieldEnumProductWeight,
 	ProductFieldEnumCollections,
 	ProductFieldEnumChargeTaxes,
-	ProductFieldEnumProductImages,
+	ProductFieldEnumProductMedia,
 	ProductFieldEnumVariantSku,
 	ProductFieldEnumVariantWeight,
-	ProductFieldEnumVariantImages,
+	ProductFieldEnumVariantMedia,
 }
 
 func (e ProductFieldEnum) IsValid() bool {
 	switch e {
-	case ProductFieldEnumName, ProductFieldEnumDescription, ProductFieldEnumProductType, ProductFieldEnumCategory, ProductFieldEnumVisible, ProductFieldEnumProductWeight, ProductFieldEnumCollections, ProductFieldEnumChargeTaxes, ProductFieldEnumProductImages, ProductFieldEnumVariantSku, ProductFieldEnumVariantWeight, ProductFieldEnumVariantImages:
+	case ProductFieldEnumName, ProductFieldEnumDescription, ProductFieldEnumProductType, ProductFieldEnumCategory, ProductFieldEnumProductWeight, ProductFieldEnumCollections, ProductFieldEnumChargeTaxes, ProductFieldEnumProductMedia, ProductFieldEnumVariantSku, ProductFieldEnumVariantWeight, ProductFieldEnumVariantMedia:
 		return true
 	}
 	return false

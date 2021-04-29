@@ -1,10 +1,13 @@
 package jobs
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -43,6 +46,7 @@ func (srv *JobServer) GetJob(id string) (*model.Job, *model.AppError) {
 			return nil, model.NewAppError("GetJob", "app.job.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
+
 	return job, nil
 }
 
@@ -59,25 +63,21 @@ func (srv *JobServer) ClaimJob(job *model.Job) (bool, *model.AppError) {
 	return updated, nil
 }
 
-func (srv *JobServer) CheckForPendingJobsByType(jobType string) (bool, *model.AppError) {
-	count, err := srv.Store.Job().GetCountByStatusAndType(model.JOB_STATUS_PENDING, jobType)
-	if err != nil {
-		return false, model.NewAppError("CheckForPendingJobsByType", "app.job.get_count_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
+func (srv *JobServer) SetJobProgress(job *model.Job, progress int64) *model.AppError {
+	job.Status = model.JOB_STATUS_IN_PROGRESS
+	job.Progress = progress
+
+	if _, err := srv.Store.Job().UpdateOptimistically(job, model.JOB_STATUS_IN_PROGRESS); err != nil {
+		return model.NewAppError("SetJobProgress", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	return count > 0, nil
+	return nil
 }
 
-func (srv *JobServer) GetLastSuccessfulJobByType(jobType string) (*model.Job, *model.AppError) {
-	statuses := []string{model.JOB_STATUS_SUCCESS}
-	if jobType == model.JOB_TYPE_MESSAGE_EXPORT {
-		statuses = []string{model.JOB_STATUS_WARNING, model.JOB_STATUS_SUCCESS}
+func (srv *JobServer) SetJobWarning(job *model.Job) *model.AppError {
+	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JOB_STATUS_WARNING); err != nil {
+		return model.NewAppError("SetJobWarning", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	job, err := srv.Store.Job().GetNewestJobByStatusesAndType(statuses, jobType)
-	var nfErr *store.ErrNotFound
-	if err != nil && !errors.As(err, &nfErr) {
-		return nil, model.NewAppError("GetLastSuccessfulJobByType", "app.job.get_newest_job_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return job, nil
+	return nil
 }
 
 func (srv *JobServer) SetJobSuccess(job *model.Job) *model.AppError {
@@ -134,4 +134,104 @@ func (srv *JobServer) SetJobError(job *model.Job, jobError *model.AppError) *mod
 	}
 
 	return nil
+}
+
+func (srv *JobServer) SetJobCanceled(job *model.Job) *model.AppError {
+	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JOB_STATUS_CANCELED); err != nil {
+		return model.NewAppError("SetJobCanceled", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if srv.metrics != nil {
+		srv.metrics.DecrementJobActive(job.Type)
+	}
+
+	return nil
+}
+
+func (srv *JobServer) UpdateInProgressJobData(job *model.Job) *model.AppError {
+	job.Status = model.JOB_STATUS_IN_PROGRESS
+	job.LastActivityAt = model.GetMillis()
+	if _, err := srv.Store.Job().UpdateOptimistically(job, model.JOB_STATUS_IN_PROGRESS); err != nil {
+		return model.NewAppError("UpdateInProgressJobData", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
+func (srv *JobServer) RequestCancellation(jobId string) *model.AppError {
+	updated, err := srv.Store.Job().UpdateStatusOptimistically(jobId, model.JOB_STATUS_PENDING, model.JOB_STATUS_CANCELED)
+	if err != nil {
+		return model.NewAppError("RequestCancellation", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if updated {
+		if srv.metrics != nil {
+			job, err := srv.GetJob(jobId)
+			if err != nil {
+				return model.NewAppError("RequestCancellation", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+
+			srv.metrics.DecrementJobActive(job.Type)
+		}
+
+		return nil
+	}
+
+	updated, err = srv.Store.Job().UpdateStatusOptimistically(jobId, model.JOB_STATUS_IN_PROGRESS, model.JOB_STATUS_CANCEL_REQUESTED)
+	if err != nil {
+		return model.NewAppError("RequestCancellation", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if updated {
+		return nil
+	}
+
+	return model.NewAppError("RequestCancellation", "jobs.request_cancellation.status.error", nil, "id="+jobId, http.StatusInternalServerError)
+}
+
+func (srv *JobServer) CancellationWatcher(ctx context.Context, jobId string, cancelChan chan interface{}) {
+	for {
+		select {
+		case <-ctx.Done():
+			slog.Debug("CancellationWatcher for Job Aborting as job has finished.", slog.String("job_id", jobId))
+			return
+		case <-time.After(CancelWatcherPollingInterval * time.Millisecond):
+			slog.Debug("CancellationWatcher for Job started polling.", slog.String("job_id", jobId))
+			if jobStatus, err := srv.Store.Job().Get(jobId); err == nil {
+				if jobStatus.Status == model.JOB_STATUS_CANCEL_REQUESTED {
+					close(cancelChan)
+					return
+				}
+			}
+		}
+	}
+}
+
+func GenerateNextStartDateTime(now time.Time, nextStartTime time.Time) *time.Time {
+	nextTime := time.Date(now.Year(), now.Month(), now.Day(), nextStartTime.Hour(), nextStartTime.Minute(), 0, 0, time.Local)
+
+	if !now.Before(nextTime) {
+		nextTime = nextTime.AddDate(0, 0, 1)
+	}
+
+	return &nextTime
+}
+
+func (srv *JobServer) CheckForPendingJobsByType(jobType string) (bool, *model.AppError) {
+	count, err := srv.Store.Job().GetCountByStatusAndType(model.JOB_STATUS_PENDING, jobType)
+	if err != nil {
+		return false, model.NewAppError("CheckForPendingJobsByType", "app.job.get_count_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return count > 0, nil
+}
+
+func (srv *JobServer) GetLastSuccessfulJobByType(jobType string) (*model.Job, *model.AppError) {
+	statuses := []string{model.JOB_STATUS_SUCCESS}
+	if jobType == model.JOB_TYPE_MESSAGE_EXPORT {
+		statuses = []string{model.JOB_STATUS_WARNING, model.JOB_STATUS_SUCCESS}
+	}
+	job, err := srv.Store.Job().GetNewestJobByStatusesAndType(statuses, jobType)
+	var nfErr *store.ErrNotFound
+	if err != nil && !errors.As(err, &nfErr) {
+		return nil, model.NewAppError("GetLastSuccessfulJobByType", "app.job.get_newest_job_by_status_and_type.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return job, nil
 }

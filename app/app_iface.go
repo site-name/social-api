@@ -40,6 +40,9 @@ type AppIface interface {
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model.Config
+	// GetSessionLengthInMillis returns the session length, in milliseconds,
+	// based on the type of session (Mobile, SSO, Web/LDAP).
+	GetSessionLengthInMillis(session *model.Session) int64
 	// IsUserSignupAllowed checks email settings if signing up with email is allowed
 	IsUserSignupAllowed() *model.AppError
 	// IsUsernameTaken checks if the username is already used by another user. Return false if the username is invalid.
@@ -64,6 +67,7 @@ type AppIface interface {
 	AddSessionToCache(s *model.Session)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AsymmetricSigningKey() *ecdsa.PrivateKey
+	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError
@@ -79,6 +83,7 @@ type AppIface interface {
 	Config() *model.Config
 	Context() context.Context
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
+	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(user *model.User, redirect string) (*model.User, *model.AppError)
 	CreateUserFromSignup(user *model.User, redirect string) (*model.User, *model.AppError)
 	DBHealthCheckDelete() error
@@ -86,7 +91,9 @@ type AppIface interface {
 	DeactivateGuests() *model.AppError
 	DeactivateMfa(userID string) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
+	DisableUserAccessToken(token *model.UserAccessToken) *model.AppError
 	DoAppMigrations()
+	EnableUserAccessToken(token *model.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
 	FileBackend() (filestore.FileBackend, *model.AppError)
@@ -98,11 +105,16 @@ type AppIface interface {
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
+	GetSessionById(sessionID string) (*model.Session, *model.AppError)
+	GetSessions(userID string) ([]*model.Session, *model.AppError)
 	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
 	GetT() i18n.TranslateFunc
 	GetUser(userID string) (*model.User, *model.AppError)
+	GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError)
+	GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model.AppError)
+	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model.AppError)
 	GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError)
 	GetUserByEmail(email string) (*model.User, *model.AppError)
 	GetUserByUsername(username string) (*model.User, *model.AppError)
@@ -132,14 +144,17 @@ type AppIface interface {
 	RemoveConfigListener(id string)
 	RequestId() string
 	ResetPermissionsSystem() *model.AppError
-	RevokeAccessToken(token string) *model.AppError
 	RevokeAllSessions(userID string) *model.AppError
 	RevokeSession(session *model.Session) *model.AppError
 	RevokeSessionById(sessionID string) *model.AppError
+	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
+	RevokeUserAccessToken(token *model.UserAccessToken) *model.AppError
 	SanitizeProfile(user *model.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
+	SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model.AppError)
 	SendEmailVerification(user *model.User, newEmail, redirect string) *model.AppError
 	Session() *model.Session
+	SessionCacheLength() int
 	SetAcceptLanguage(s string)
 	SetContext(c context.Context)
 	SetDefaultProfileImage(user *model.User) *model.AppError
@@ -158,6 +173,7 @@ type AppIface interface {
 	Timezones() *timezones.Timezones
 	UpdateActive(user *model.User, active bool) (*model.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
+	UpdateLastActivityAtIfNeeded(session model.Session)
 	UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError)
 	UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
 	UserAgent() string

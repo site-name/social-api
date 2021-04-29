@@ -13,7 +13,7 @@ import (
 )
 
 func (r *mutationResolver) WebhookCreate(ctx context.Context, input model.WebhookCreateInput) (*model.WebhookCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	return create(ctx, input)
 }
 
 func (r *mutationResolver) WebhookDelete(ctx context.Context, id string) (*model.WebhookDelete, error) {
@@ -100,7 +100,7 @@ func (r *mutationResolver) ShippingPriceUpdate(ctx context.Context, id string, i
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceTranslate(ctx context.Context, id string, input model.NameTranslationInput, languageCode model.LanguageCodeEnum) (*model.ShippingPriceTranslate, error) {
+func (r *mutationResolver) ShippingPriceTranslate(ctx context.Context, id string, input model.ShippingPriceTranslationInput, languageCode model.LanguageCodeEnum) (*model.ShippingPriceTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -428,18 +428,6 @@ func (r *mutationResolver) DraftOrderLinesBulkDelete(ctx context.Context, ids []
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) DraftOrderLinesCreate(ctx context.Context, id string, input []*model.OrderLineCreateInput) (*model.DraftOrderLinesCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) DraftOrderLineDelete(ctx context.Context, id string) (*model.DraftOrderLineDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) DraftOrderLineUpdate(ctx context.Context, id string, input model.OrderLineInput) (*model.DraftOrderLineUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) DraftOrderUpdate(ctx context.Context, id string, input model.DraftOrderInput) (*model.DraftOrderUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -477,6 +465,18 @@ func (r *mutationResolver) OrderFulfillmentRefundProducts(ctx context.Context, i
 }
 
 func (r *mutationResolver) OrderFulfillmentReturnProducts(ctx context.Context, input model.OrderReturnProductsInput, order string) (*model.FulfillmentReturnProducts, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) OrderLinesCreate(ctx context.Context, id string, input []*model.OrderLineCreateInput) (*model.OrderLinesCreate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) OrderLineDelete(ctx context.Context, id string) (*model.OrderLineDelete, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) OrderLineUpdate(ctx context.Context, id string, input model.OrderLineInput) (*model.OrderLineUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -716,7 +716,7 @@ func (r *mutationResolver) CheckoutCreate(ctx context.Context, input model.Check
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID string, customerID *string) (*model.CheckoutCustomerAttach, error) {
+func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID string) (*model.CheckoutCustomerAttach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -816,7 +816,7 @@ func (r *mutationResolver) AttributeValueUpdate(ctx context.Context, id string, 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) AttributeValueTranslate(ctx context.Context, id string, input model.NameTranslationInput, languageCode model.LanguageCodeEnum) (*model.AttributeValueTranslate, error) {
+func (r *mutationResolver) AttributeValueTranslate(ctx context.Context, id string, input model.AttributeValueTranslationInput, languageCode model.LanguageCodeEnum) (*model.AttributeValueTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1084,7 +1084,7 @@ func (r *queryResolver) ShippingZone(ctx context.Context, id string, channel *st
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ShippingZones(ctx context.Context, channel *string, before *string, after *string, first *int, last *int) (*model.ShippingZoneCountableConnection, error) {
+func (r *queryResolver) ShippingZones(ctx context.Context, filter *model.ShippingZoneFilterInput, channel *string, before *string, after *string, first *int, last *int) (*model.ShippingZoneCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1116,7 +1116,7 @@ func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, c
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Products(ctx context.Context, filter *model.ProductFilterInput, sortBy *model.ProductOrder, stockAvailability *model.StockAvailability, channel *string, before *string, after *string, first *int, last *int) (*model.ProductCountableConnection, error) {
+func (r *queryResolver) Products(ctx context.Context, filter *model.ProductFilterInput, sortBy *model.ProductOrder, channel *string, before *string, after *string, first *int, last *int) (*model.ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1172,11 +1172,11 @@ func (r *queryResolver) Order(ctx context.Context, id string) (*model.Order, err
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Orders(ctx context.Context, sortBy *model.OrderSortingInput, filter *model.OrderFilterInput, created *model.ReportingPeriod, status *model.OrderStatusFilter, channel *string, before *string, after *string, first *int, last *int) (*model.OrderCountableConnection, error) {
+func (r *queryResolver) Orders(ctx context.Context, sortBy *model.OrderSortingInput, filter *model.OrderFilterInput, channel *string, before *string, after *string, first *int, last *int) (*model.OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) DraftOrders(ctx context.Context, sortBy *model.OrderSortingInput, filter *model.OrderDraftFilterInput, created *model.ReportingPeriod, before *string, after *string, first *int, last *int) (*model.OrderCountableConnection, error) {
+func (r *queryResolver) DraftOrders(ctx context.Context, sortBy *model.OrderSortingInput, filter *model.OrderDraftFilterInput, before *string, after *string, first *int, last *int) (*model.OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

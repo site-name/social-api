@@ -87,19 +87,21 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	}
 }
 
-// func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
-// 	user := &model.User{
-// 		Id:        userForIndexing.Id,
-// 		Username:  userForIndexing.Username,
-// 		Nickname:  userForIndexing.Nickname,
-// 		FirstName: userForIndexing.FirstName,
-// 		LastName:  userForIndexing.LastName,
-// 		CreateAt:  userForIndexing.CreateAt,
-// 		DeleteAt:  userForIndexing.DeleteAt,
-// 	}
+func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
+	user := &model.User{
+		Id:        userForIndexing.Id,
+		Username:  userForIndexing.Username,
+		Nickname:  userForIndexing.Nickname,
+		FirstName: userForIndexing.FirstName,
+		LastName:  userForIndexing.LastName,
+		CreateAt:  userForIndexing.CreateAt,
+		DeleteAt:  userForIndexing.DeleteAt,
+	}
 
-// 	return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)
-// }
+	// return BLVUserFromUserAndTeams(user, userForIndexing.TeamsIds, userForIndexing.ChannelsIds)
+	return BLVUserFromUserAndTeams(user, []string{}, []string{})
+
+}
 
 // func BLVPostFromPost(post *model.Post, teamId string) *BLVPost {
 // 	p := &model.PostForIndexing{

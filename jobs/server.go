@@ -63,10 +63,12 @@ func (srv *JobServer) MakeWatcher(workers *Workers, pollingInterval int) *Watche
 func (srv *JobServer) InitWorkers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
-
 	if srv.workers != nil && srv.workers.running {
 		return ErrWorkersRunning
 	}
+
+	slog.Debug("Initialising workers.")
+
 	workers := &Workers{
 		ConfigService: srv.ConfigService,
 	}
