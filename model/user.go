@@ -231,16 +231,17 @@ func (u *User) DeepCopy() *User {
 }
 
 // Check if given locale is valid to use
-func IsValidLocale(locale string) bool {
-	if locale != "" {
-		if len(locale) > USER_LOCALE_MAX_LENGTH {
-			return false
-		} else if _, err := language.Parse(locale); err != nil {
-			return false
-		}
+func (u *User) IsValidLocale() bool {
+	if u.Locale == "" || len(u.Locale) > USER_LOCALE_MAX_LENGTH {
+		return false
 	}
 
-	return true
+	tag, err := language.Parse(u.Locale)
+	if err != nil {
+		return false
+	}
+
+	return tag.String() == u.Locale
 }
 
 // IsValid validates the user and returns an error if it isn't configured
@@ -282,7 +283,7 @@ func (u *User) IsValid() *AppError {
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
 		return InvalidUserError("password_limit", u.Id)
 	}
-	if !IsValidLocale(u.Locale) {
+	if !u.IsValidLocale() {
 		return InvalidUserError("locale", u.Id)
 	}
 	if len(u.Timezone) > 0 {

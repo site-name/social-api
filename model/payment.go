@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sync"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
@@ -18,8 +18,6 @@ const (
 	MAX_LENGTH_PAYMENT_GATEWAY       = 255
 	MAX_LENGTH_PAYMENT_CHARGE_STATUS = 20
 	MAX_LENGTH_PAYMENT_TOKEN         = 512
-	MAX_LENGTH_PAYMENT_CURRENCY_CODE = 3
-	MAX_LENGTH_PAYMENT_COUNTRY_CODE  = 2
 	MAX_LENGTH_CC_FIRST_DIGITS       = 6
 	MAX_LENGTH_CC_LAST_DIGITS        = 4
 	MAX_LENGTHCC_BRAND               = 40
@@ -56,56 +54,41 @@ var validChargeStatues = StringArray([]string{
 	CANCELLED,
 })
 
-// Default decimal values
-var (
-	DEFAULT_DECIMAL_VALUE *decimal.NullDecimal
-	initOnce              sync.Once
-)
-
-func init() {
-	initOnce.Do(func() {
-		DEFAULT_DECIMAL_VALUE = &decimal.NullDecimal{
-			Decimal: decimal.Zero,
-			Valid:   true,
-		}
-	})
-}
-
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string               `json:"id"`
-	GateWay            string               `json:"gate_way"`
-	IsActive           bool                 `json:"is_active"`
-	ToConfirm          bool                 `json:"to_confirm"`
-	CreateAt           int64                `json:"create_at"`
-	UpdateAt           int64                `json:"update_at"`
-	ChargeStatus       string               `json:"charge_status"`
-	Token              string               `json:"token"`
-	Total              *decimal.NullDecimal `json:"total"`
-	CapturedAmount     *decimal.NullDecimal `json:"captured_amount"`
-	Currency           string               `json:"currency"`
-	CheckoutID         string               `json:"checkout_id"`
-	OrderID            string               `json:"order_id"`
-	BillingEmail       string               `json:"billing_email"`
-	BillingFirstName   string               `json:"billing_first_name"`
-	BillingLastName    string               `json:"billing_last_name"`
-	BillingCompanyName string               `json:"billing_company_name"`
-	BillingAddress1    string               `json:"billing_address_1"`
-	BillingAddress2    string               `json:"billing_address_2"`
-	BillingCity        string               `json:"billing_city"`
-	BillingCityArea    string               `json:"billing_city_area"`
-	BillingPostalCode  string               `json:"billing_postal_code"`
-	BillingCountryCode string               `json:"billing_country_code"`
-	BillingCountryArea string               `json:"billing_country_area"`
-	CcFirstDigits      string               `json:"cc_first_digits"`
-	CcLastDigits       string               `json:"cc_last_digits"`
-	CcBranh            string               `json:"cc_brand"`
-	CcExpMonth         *uint8               `json:"cc_exp_month"`
-	CcExpYear          *uint16              `json:"cc_exp_year"`
-	PaymentMethodType  string               `json:"payment_method_type"`
-	CustomerIpAddress  *string              `json:"customer_ip_address"`
-	ExtraData          string               `json:"extra_data"`
-	ReturnUrl          *string              `json:"return_url_url"`
+	Id                 string           `json:"id"`
+	GateWay            string           `json:"gate_way"`
+	IsActive           bool             `json:"is_active"`
+	ToConfirm          bool             `json:"to_confirm"`
+	CreateAt           int64            `json:"create_at"`
+	UpdateAt           int64            `json:"update_at"`
+	ChargeStatus       string           `json:"charge_status"`
+	Token              string           `json:"token"`
+	Total              *decimal.Decimal `json:"total"`
+	CapturedAmount     *decimal.Decimal `json:"captured_amount"`
+	Currency           string           `json:"currency"`
+	CheckoutID         string           `json:"checkout_id"`
+	OrderID            string           `json:"order_id"`
+	BillingEmail       string           `json:"billing_email"`
+	BillingFirstName   string           `json:"billing_first_name"`
+	BillingLastName    string           `json:"billing_last_name"`
+	BillingCompanyName string           `json:"billing_company_name"`
+	BillingAddress1    string           `json:"billing_address_1"`
+	BillingAddress2    string           `json:"billing_address_2"`
+	BillingCity        string           `json:"billing_city"`
+	BillingCityArea    string           `json:"billing_city_area"`
+	BillingPostalCode  string           `json:"billing_postal_code"`
+	BillingCountryCode string           `json:"billing_country_code"`
+	BillingCountryArea string           `json:"billing_country_area"`
+	CcFirstDigits      string           `json:"cc_first_digits"`
+	CcLastDigits       string           `json:"cc_last_digits"`
+	CcBranh            string           `json:"cc_brand"`
+	CcExpMonth         *uint8           `json:"cc_exp_month"`
+	CcExpYear          *uint16          `json:"cc_exp_year"`
+	PaymentMethodType  string           `json:"payment_method_type"`
+	CustomerIpAddress  *string          `json:"customer_ip_address"`
+	ExtraData          string           `json:"extra_data"`
+	ReturnUrl          *string          `json:"return_url_url"`
 }
 
 func (p *Payment) String() string {
@@ -119,7 +102,7 @@ func (p *Payment) String() string {
 }
 
 func (p *Payment) GetChargeAmount() decimal.Decimal {
-	res := p.Total.Decimal.Sub(p.CapturedAmount.Decimal)
+	res := p.Total.Sub(*p.CapturedAmount)
 	return res
 }
 
@@ -201,10 +184,10 @@ func (p *Payment) IsValid() *AppError {
 	if utf8.RuneCountInString(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
 		return InvalidPaymentError("token", p.Id)
 	}
-	if p.Total == nil || !p.Total.Valid {
+	if p.Total == nil {
 		return InvalidPaymentError("total", p.Id)
 	}
-	if p.CapturedAmount == nil || !p.CapturedAmount.Valid {
+	if p.CapturedAmount == nil {
 		return InvalidPaymentError("captured_amount", p.Id)
 	}
 	if len(p.BillingEmail) > USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !IsValidEmail(p.BillingEmail) {
@@ -234,17 +217,17 @@ func (p *Payment) IsValid() *AppError {
 	if utf8.RuneCountInString(p.BillingPostalCode) > POSTAL_CODE_MAX_LENGTH {
 		return InvalidPaymentError("billing_postal_code", p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingCountryCode) > MAX_LENGTH_PAYMENT_COUNTRY_CODE {
+	if utf8.RuneCountInString(p.BillingCountryCode) > MAX_LENGTH_COUNTRY_CODE {
 		return InvalidPaymentError("billing_country_code", p.Id)
 	}
 	region, err := language.ParseRegion(p.BillingCountryCode)
-	if err != nil || region.String() != p.BillingCountryCode {
+	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {
 		return InvalidPaymentError("billing_country_code", p.Id)
 	}
-	if utf8.RuneCountInString(p.Currency) > MAX_LENGTH_PAYMENT_CURRENCY_CODE {
+	if utf8.RuneCountInString(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
 		return InvalidPaymentError("currency", p.Id)
 	}
-	if un, ok := currency.FromRegion(region); !ok || un.String() != p.Currency {
+	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
 		return InvalidPaymentError("currency", p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCountryArea) > MAX_LENGTH_PAYMENT_COMMON_256 {
@@ -279,12 +262,12 @@ func (p *Payment) PreSave() {
 	p.BillingFirstName = SanitizeUnicode(CleanNamePart(p.BillingFirstName, firstName))
 	p.BillingLastName = SanitizeUnicode(CleanNamePart(p.BillingLastName, lastName))
 
-	if p.Total == nil || !p.Total.Valid {
-		p.Total = DEFAULT_DECIMAL_VALUE
+	if p.Total == nil {
+		p.Total = &decimal.Zero
 	}
 
-	if p.CapturedAmount == nil || !p.CapturedAmount.Valid {
-		p.CapturedAmount = DEFAULT_DECIMAL_VALUE
+	if p.CapturedAmount == nil {
+		p.CapturedAmount = &decimal.Zero
 	}
 
 	if p.ChargeStatus == "" || !validChargeStatues.Contains(p.ChargeStatus) {
@@ -310,8 +293,10 @@ func (p *Payment) ToJson() string {
 }
 
 func PaymentFromJson(data io.Reader) *Payment {
-	var payment *Payment
-	json.JSON.NewDecoder(data).Decode(payment)
-
-	return payment
+	var payment Payment
+	err := json.JSON.NewDecoder(data).Decode(&payment)
+	if err != nil {
+		return nil
+	}
+	return &payment
 }

@@ -37,6 +37,7 @@ require (
 	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/minio/minio-go/v7 v7.0.10
+	github.com/nyaruka/phonenumbers v1.0.68 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pelletier/go-toml v1.9.0 // indirect
 	github.com/pkg/errors v0.9.1

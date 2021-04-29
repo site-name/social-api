@@ -16,11 +16,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/nyaruka/phonenumbers"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
-	// "golang.org/x/text/currency"
-	// "golang.org/x/text/language"
 )
 
 const (
@@ -555,3 +554,11 @@ func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
 	}
 	return T(er.Id, er.params)
 }
+
+// IsValidPhoneNumber checks if number is valid
+func IsValidPhoneNumber(phone, countryCode string) bool {
+	_, err := phonenumbers.Parse(phone, countryCode)
+	return err == nil
+}
+
+// func CleanEditorJs(definitions )

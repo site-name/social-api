@@ -51,21 +51,21 @@ const (
 )
 
 type PaymentTransaction struct {
-	Id                 string               `json:"id"`
-	CreateAt           int64                `json:"create_at"`
-	PaymentID          string               `json:"payment_id"`
-	Token              string               `json:"token"`
-	Kind               string               `json:"kind"`
-	IsSuccess          bool                 `json:"is_success"`
-	ActionRequired     bool                 `json:"action_required"`
-	ActionRequiredData StringMap            `json:"action_required_data"`
-	Currency           string               `json:"currency"`
-	Amount             *decimal.NullDecimal `json:"amount"`
-	Error              *string              `json:"error"`
-	CustomerID         *string              `json:"customer_id"`
-	GatewayResponse    StringMap            `json:"gateway_response"`
-	AlreadyProcessed   bool                 `json:"already_processed"`
-	SearchableKey      *string              `json:"searchable_key"`
+	Id                 string           `json:"id"`
+	CreateAt           int64            `json:"create_at"`
+	PaymentID          string           `json:"payment_id"`
+	Token              string           `json:"token"`
+	Kind               string           `json:"kind"`
+	IsSuccess          bool             `json:"is_success"`
+	ActionRequired     bool             `json:"action_required"`
+	ActionRequiredData StringMap        `json:"action_required_data"`
+	Currency           string           `json:"currency"`
+	Amount             *decimal.Decimal `json:"amount"`
+	Error              *string          `json:"error"`
+	CustomerID         *string          `json:"customer_id"`
+	GatewayResponse    StringMap        `json:"gateway_response"`
+	AlreadyProcessed   bool             `json:"already_processed"`
+	SearchableKey      *string          `json:"searchable_key"`
 }
 
 func (p *PaymentTransaction) String() string {
@@ -114,7 +114,7 @@ func (p *PaymentTransaction) IsValid() *AppError {
 	if !validTransactionKinds.Contains(p.Kind) {
 		return InvalidPaymentTransactionErr("kind", p.Id)
 	}
-	if len(p.Currency) > MAX_LENGTH_PAYMENT_CURRENCY_CODE {
+	if len(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
 		return InvalidPaymentTransactionErr("currency", p.Id)
 	}
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
@@ -126,7 +126,7 @@ func (p *PaymentTransaction) IsValid() *AppError {
 	if un, err := currency.ParseISO(p.Currency); err != nil || un.String() != p.Currency {
 		return InvalidPaymentError("currency", p.Id)
 	}
-	if p.Amount == nil || !p.Amount.Valid {
+	if p.Amount == nil {
 		return InvalidPaymentError("amount", p.Id)
 	}
 
@@ -138,8 +138,8 @@ func (p *PaymentTransaction) PreSave() {
 		p.Id = NewId()
 	}
 
-	if p.Amount == nil || !p.Amount.Valid {
-		p.Amount = DEFAULT_DECIMAL_VALUE
+	if p.Amount == nil {
+		p.Amount = &decimal.Zero
 	}
 
 	p.CreateAt = GetMillis()
