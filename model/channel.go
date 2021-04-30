@@ -32,7 +32,7 @@ func (c *Channel) invalidChannelErr(field string) *AppError {
 	id := fmt.Sprintf("model.channel.is_valid.%s.app_error", field)
 	var details string
 	if strings.ToLower(field) != "id" {
-		details += "channel_id=" + c.Id
+		details = "channel_id=" + c.Id
 	}
 	return NewAppError("Channel.IsValid", id, nil, details, http.StatusBadRequest)
 }
@@ -63,10 +63,10 @@ func (c *Channel) ToJson() string {
 }
 
 func ChannelFromJson(data io.Reader) *Channel {
-	var channel *Channel
-	err := json.JSON.NewDecoder(data).Decode(channel)
+	var channel Channel
+	err := json.JSON.NewDecoder(data).Decode(&channel)
 	if err != nil {
 		return nil
 	}
-	return channel
+	return &channel
 }

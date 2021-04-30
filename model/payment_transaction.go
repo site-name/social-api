@@ -151,7 +151,7 @@ func (p *PaymentTransaction) ToJson() string {
 }
 
 func PaymentTransactionFromJson(data io.Reader) *PaymentTransaction {
-	var pmtr *PaymentTransaction
-	json.JSON.NewDecoder(data).Decode(pmtr)
-	return pmtr
+	var pmtr PaymentTransaction
+	json.JSON.NewDecoder(data).Decode(&pmtr)
+	return &pmtr
 }

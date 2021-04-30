@@ -26,12 +26,12 @@ func (c *CheckoutLine) ToJson() string {
 }
 
 func CheckoutLineFromJson(data io.Reader) *CheckoutLine {
-	var checkoutLine *CheckoutLine
-	err := json.JSON.NewDecoder(data).Decode(checkoutLine)
+	var checkoutLine CheckoutLine
+	err := json.JSON.NewDecoder(data).Decode(&checkoutLine)
 	if err != nil {
 		return nil
 	}
-	return checkoutLine
+	return &checkoutLine
 }
 
 func (c *CheckoutLine) checkoutLineAppErr(field string) *AppError {

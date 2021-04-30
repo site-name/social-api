@@ -1,6 +1,8 @@
 package model
 
 import (
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/sitename/sitename/modules/json"
@@ -14,6 +16,28 @@ type Sortable struct {
 func (s *Sortable) ToJson() string {
 	b, _ := json.JSON.Marshal(s)
 	return string(b)
+}
+
+func SortableFromJson(data io.Reader) *Sortable {
+	var st Sortable
+	err := json.JSON.NewDecoder(data).Decode(&st)
+	if err != nil {
+		return nil
+	}
+	return &st
+}
+
+func (s *Sortable) IsValid() *AppError {
+	if s.Id == "" {
+		return NewAppError("Sortable.IsValid", "model.sortable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func (s *Sortable) PreSave() {
+	if s.Id == "" {
+		s.Id = NewId()
+	}
 }
 
 type Publishable struct {
@@ -30,4 +54,26 @@ func (p *Publishable) IsVisible() bool {
 func (p *Publishable) ToJson() string {
 	b, _ := json.JSON.Marshal(p)
 	return string(b)
+}
+
+func PublishableFromJson(data io.Reader) *Publishable {
+	var st Publishable
+	err := json.JSON.NewDecoder(data).Decode(&st)
+	if err != nil {
+		return nil
+	}
+	return &st
+}
+
+func (s *Publishable) IsValid() *AppError {
+	if s.Id == "" {
+		return NewAppError("Publishable.IsValid", "model.publishable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+	}
+	return nil
+}
+
+func (s *Publishable) PreSave() {
+	if s.Id == "" {
+		s.Id = NewId()
+	}
 }

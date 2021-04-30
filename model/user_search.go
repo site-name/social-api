@@ -36,7 +36,7 @@ func (u *UserSearch) ToJson() []byte {
 
 // UserSearchFromJson will decode the input and return a User
 func UserSearchFromJson(data io.Reader) *UserSearch {
-	us := UserSearch{}
+	var us UserSearch
 	json.JSON.NewDecoder(data).Decode(&us)
 
 	if us.Limit == 0 {

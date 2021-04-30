@@ -243,11 +243,6 @@ func (es *EmailService) SendOverUserLimitWarningEmail(email string, locale strin
 	panic("not implemented")
 }
 
-func (es *EmailService) SendPaymentFailedEmail(email string, locale string, failedPayment *model.FailedPayment, siteURL string) (bool, *model.AppError) {
-	panic("not implemented")
-
-}
-
 func (es *EmailService) SendNoCardPaymentFailedEmail(email string, locale string, siteURL string) *model.AppError {
 	panic("not implemented")
 

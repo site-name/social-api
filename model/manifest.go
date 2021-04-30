@@ -402,7 +402,7 @@ func (m *Manifest) MeetMinServerVersion(serverVersion string) (bool, error) {
 }
 
 func (m *Manifest) IsValid() error {
-	if !IsValidPluginId(m.Id) {
+	if !IsValidId(m.Id) {
 		return errors.New("invalid plugin ID")
 	}
 
