@@ -171,21 +171,6 @@ func (z *User) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		err = msgp.WrapError(err, "LastActivityAt")
 		return
 	}
-	z.IsBot, bts, err = msgp.ReadBoolBytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err, "IsBot")
-		return
-	}
-	z.BotDescription, bts, err = msgp.ReadStringBytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err, "BotDescription")
-		return
-	}
-	z.BotLastIconUpdate, bts, err = msgp.ReadInt64Bytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err, "BotLastIconUpdate")
-		return
-	}
 	z.TermsOfServiceId, bts, err = msgp.ReadStringBytes(bts)
 	if err != nil {
 		err = msgp.WrapError(err, "TermsOfServiceId")

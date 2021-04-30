@@ -46,11 +46,32 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
 	us.usersQuery = us.getQueryBuilder().
 		Select(
-			"u.Id", "u.CreateAt", "u.UpdateAt", "u.DeleteAt", "u.Username",
-			"u.Password", "u.AuthData", "u.AuthService", "u.Email", "u.EmailVerified",
-			"u.Nickname", "u.FirstName", "u.LastName", "u.Roles", "u.AllowMarketing",
-			"u.Props", "u.NotifyProps", "u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts",
-			"u.Locale", "u.Timezone", "u.MfaActive", "u.MfaSecret").
+			"u.Id",
+			"u.CreateAt",
+			"u.UpdateAt",
+			"u.DeleteAt",
+			"u.Username",
+			"u.Password",
+			"u.AuthData",
+			"u.AuthService",
+			"u.Email",
+			"u.EmailVerified",
+			"u.Nickname",
+			"u.FirstName",
+			"u.LastName",
+			"u.Roles",
+			"u.Props",
+			"u.NotifyProps",
+			"u.LastPasswordUpdate",
+			"u.LastPictureUpdate",
+			"u.FailedAttempts",
+			"u.Locale",
+			"u.Timezone",
+			"u.MfaActive",
+			"u.MfaSecret",
+			"u.DefaultShippingAddressID",
+			"u.DefaultBillingAddressID",
+		).
 		From("Users u")
 
 	for _, db := range sqlStore.GetAllConns() {
@@ -352,12 +373,11 @@ func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *
 	if email != "" {
 		query += ", Email = lower(:Email)"
 	}
-
 	if resetMfa {
 		query += ", MfaActive = false, MfaSecret = ''"
 	}
-
 	query += " WHERE Id = :UserId"
+
 	if _, err := us.
 		GetMaster().
 		Exec(query, map[string]interface{}{
@@ -429,13 +449,31 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*model.User, error)
 	var user model.User
 	var props, notifyProps, timezone []byte
 	err = row.Scan(
-		&user.Id, &user.CreateAt, &user.UpdateAt, &user.DeleteAt, &user.Username,
-		&user.Password, &user.AuthData, &user.AuthService, &user.Email, &user.EmailVerified,
-		&user.Nickname, &user.FirstName, &user.LastName,
-		// &user.Position,
-		&user.Roles, &props, &notifyProps, &user.LastPasswordUpdate, &user.LastPictureUpdate,
-		&user.FailedAttempts, &user.Locale, &timezone, &user.MfaActive, &user.MfaSecret,
-		&user.IsBot, &user.BotDescription, &user.BotLastIconUpdate,
+		&user.Id,
+		&user.CreateAt,
+		&user.UpdateAt,
+		&user.DeleteAt,
+		&user.Username,
+		&user.Password,
+		&user.AuthData,
+		&user.AuthService,
+		&user.Email,
+		&user.EmailVerified,
+		&user.Nickname,
+		&user.FirstName,
+		&user.LastName,
+		&user.Roles,
+		&props,
+		&notifyProps,
+		&user.LastPasswordUpdate,
+		&user.LastPictureUpdate,
+		&user.FailedAttempts,
+		&user.Locale,
+		&timezone,
+		&user.MfaActive,
+		&user.MfaSecret,
+		&user.DefaultBillingAddressID,
+		&user.DefaultShippingAddressID,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {

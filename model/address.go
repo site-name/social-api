@@ -22,7 +22,7 @@ const (
 	CITY_NAME_MAX_LENGTH      = 256
 	CITY_AREA_MAX_LENGTH      = 128
 	POSTAL_CODE_MAX_LENGTH    = 20
-	COUNTRY_MAX_LENGTH        = 128
+	COUNTRY_MAX_LENGTH        = 3
 	COUNTRY_AREA_MAX_LENGTH   = 128
 	PHONE_MAX_LENGTH          = 20
 )
@@ -141,7 +141,7 @@ func (a *Address) IsValid() *AppError {
 	if utf8.RuneCountInString(a.PostalCode) > POSTAL_CODE_MAX_LENGTH || !IsAllNumbers(a.PostalCode) {
 		return a.InvalidAddressError("postal_code")
 	}
-	if utf8.RuneCountInString(a.Country) > COUNTRY_MAX_LENGTH {
+	if _, ok := Countries[strings.ToUpper(a.Country)]; !ok {
 		return a.InvalidAddressError("country")
 	}
 	if utf8.RuneCountInString(a.CountryArea) > COUNTRY_AREA_MAX_LENGTH {

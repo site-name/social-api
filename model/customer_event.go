@@ -1,0 +1,176 @@
+package model
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	"github.com/sitename/sitename/modules/json"
+)
+
+const (
+	CUSTOMER_EVENT_TYPE_MAX_LENGTH = 255
+
+	ACCOUNT_CREATED          = "account_created"
+	PASSWORD_RESET_LINK_SENT = "password_reset_link_sent"
+	PASSWORD_RESET           = "password_reset"
+	PASSWORD_CHANGED         = "password_changed"
+	EMAIL_CHANGE_REQUEST     = "email_changed_request"
+	EMAIL_CHANGED            = "email_changed"
+
+	// Order related events
+	PLACED_ORDER            = "placed_order"            // created an order
+	NOTE_ADDED_TO_ORDER     = "note_added_to_order"     // added a note to one of their orders
+	DIGITAL_LINK_DOWNLOADED = "digital_link_downloaded" // downloaded a digital good
+
+	// Staff actions over customers events
+	CUSTOMER_DELETED = "customer_deleted" // staff user deleted a customer
+	EMAIL_ASSIGNED   = "email_assigned"   // the staff user assigned a email to the customer
+	NAME_ASSIGNED    = "name_assigned"    // the staff user added set a name to the customer
+	NOTE_ADDED       = "note_added"       // the staff user added a note to the customer
+)
+
+var CustomerEventTypes = []string{
+	ACCOUNT_CREATED,
+	PASSWORD_RESET_LINK_SENT,
+	PASSWORD_RESET,
+	PASSWORD_CHANGED,
+	EMAIL_CHANGE_REQUEST,
+	EMAIL_CHANGED,
+	PLACED_ORDER,
+	NOTE_ADDED_TO_ORDER,
+	DIGITAL_LINK_DOWNLOADED,
+	CUSTOMER_DELETED,
+	EMAIL_ASSIGNED,
+	NAME_ASSIGNED,
+	NOTE_ADDED,
+}
+
+// Model used to store events that happened during the customer lifecycle
+type CustomerEvent struct {
+	Id         string    `json:"id"`
+	Date       int64     `json:"date"`
+	Type       string    `json:"type"`
+	OrderID    string    `json:"order_id"`
+	UserID     string    `json:"user_id"`
+	Parameters StringMap `json:"parameters"`
+}
+
+func (c *CustomerEvent) ToJson() string {
+	b, _ := json.JSON.Marshal(c)
+	return string(b)
+}
+
+func CustomerEventFromJson(data io.Reader) *CustomerEvent {
+	var ce CustomerEvent
+	err := json.JSON.NewDecoder(data).Decode(&ce)
+	if err != nil {
+		return nil
+	}
+	return &ce
+}
+
+func (c *CustomerEvent) createAppError(field string) *AppError {
+	id := fmt.Sprintf("model.customer_event.is_valid.%s.app_error", field)
+	var details string
+	if !strings.EqualFold(field, "id") {
+		details = "customer_event_id=" + c.Id
+	}
+
+	return NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
+}
+
+func (ce *CustomerEvent) IsValid() *AppError {
+	if ce.Id == "" {
+		return ce.createAppError("id")
+	}
+	if ce.UserID == "" {
+		return ce.createAppError("usder_id")
+	}
+	if ce.OrderID == "" {
+		return ce.createAppError("order_id")
+	}
+	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !StringArray(CustomerEventTypes).Contains(ce.Type) {
+		return ce.createAppError("type")
+	}
+
+	return nil
+}
+
+func (c *CustomerEvent) PreSave() {
+	if c.Id == "" {
+		c.Id = NewId()
+	}
+	if c.Date == 0 {
+		c.Date = GetMillis()
+	}
+	_, ok1 := c.Parameters["currency"]
+	_, ok2 := c.Parameters["amount"]
+	if ok1 && ok2 {
+		c.Parameters["_type"] = "Money"
+	}
+}
+
+type StaffNotificationRecipient struct {
+	Id         string  `json:"id"`
+	UserID     *string `json:"user_id"`
+	StaffEmail *string `json:"staff_email"`
+	Active     *bool   `json:"active"`
+}
+
+func (c *StaffNotificationRecipient) ToJson() string {
+	b, _ := json.JSON.Marshal(c)
+	return string(b)
+}
+
+func StaffNotificationRecipientFromJson(data io.Reader) *StaffNotificationRecipient {
+	var ce StaffNotificationRecipient
+	err := json.JSON.NewDecoder(data).Decode(&ce)
+	if err != nil {
+		return nil
+	}
+	return &ce
+}
+
+func (c *StaffNotificationRecipient) createAppError(field string) *AppError {
+	id := fmt.Sprintf("model.staff_notification_recipient.is_valid.%s.app_error", field)
+	var details string
+	if !strings.EqualFold(field, "id") {
+		details = "staff_notification_recipient_id=" + c.Id
+	}
+
+	return NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
+}
+
+func (ce *StaffNotificationRecipient) IsValid() *AppError {
+	if ce.Id == "" {
+		return ce.createAppError("id")
+	}
+	if ce.UserID != nil && *ce.UserID == "" {
+		return ce.createAppError("usder_id")
+	}
+	if ce.StaffEmail != nil && !IsValidEmail(*ce.StaffEmail) {
+		return ce.createAppError("staff_email")
+	}
+
+	return nil
+}
+
+func (c *StaffNotificationRecipient) PreSave() {
+	if c.Id == "" {
+		c.Id = NewId()
+	}
+	if c.UserID != nil && *c.UserID == "" {
+		id := NewId()
+		c.UserID = &id
+	}
+	if c.Active != nil {
+		b := true
+		c.Active = &b
+	}
+	if c.StaffEmail != nil {
+		nmEmail := NormalizeEmail(*c.StaffEmail)
+		c.StaffEmail = &nmEmail
+	}
+}

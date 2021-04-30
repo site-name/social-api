@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/modules/json"
@@ -30,25 +31,25 @@ type Checkout struct {
 	Id                     string           `json:"id"`
 	CreateAt               int64            `json:"create_at"`
 	UpdateAt               int64            `json:"update_at"`
-	UserID                 string           `json:"user_id"`
+	UserID                 *string          `json:"user_id"`
 	Email                  string           `json:"email"`
 	Token                  string           `json:"token"`
 	Quantity               uint             `json:"quantity"`
 	ChannelID              string           `json:"channel_id"`
-	BillingAddressID       string           `json:"billing_address_id"`
-	ShippingAddressID      string           `json:"shipping_address_id"`
-	ShippingMethodID       string           `json:"shipping_method_id"`
+	BillingAddressID       *string          `json:"billing_address_id,omitempty"`
+	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"`
+	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
 	Note                   string           `json:"note"`
 	Currency               string           `json:"currency"`
 	Country                string           `json:"country"`
 	DiscountAmount         *decimal.Decimal `json:"discount_amount"`
-	Discount               *Money           `db:"-" json:"discount"`
-	DiscountName           string           `json:"discount_name"`
-	TranslatedDiscountName string           `json:"translated_discount_name"`
-	VoucherCode            string           `json:"voucher_code"`
-	GiftCards              []*GiftCard      `json:"gift_cards" db:"-"`
-	RedirectURL            string           `json:"redirect_url"`
-	TrackingCode           string           `json:"tracking_code"`
+	Discount               *Money           `db:"-" json:"discount,omitempty"`
+	DiscountName           *string          `json:"discount_name"`
+	TranslatedDiscountName *string          `json:"translated_discount_name"`
+	VoucherCode            *string          `json:"voucher_code"`
+	GiftCards              []*GiftCard      `json:"gift_cards,omitempty" db:"-"`
+	RedirectURL            *string          `json:"redirect_url"`
+	TrackingCode           *string          `json:"tracking_code"`
 	LanguageCode           string           `json:"language_code"`
 }
 
@@ -66,8 +67,14 @@ func (c *Checkout) IsValid() *AppError {
 	if c.Id == "" {
 		return c.checkoutAppErr("id")
 	}
-	if c.UserID == "" {
+	if c.UserID != nil && *c.UserID == "" {
 		return c.checkoutAppErr("user_id")
+	}
+	if c.BillingAddressID != nil && *c.BillingAddressID == "" {
+		return c.checkoutAppErr("billing_address")
+	}
+	if c.ShippingAddressID != nil && *c.ShippingAddressID == "" {
+		return c.checkoutAppErr("shipping_address")
 	}
 	if c.Currency == "" || len(c.Currency) > MAX_LENGTH_CURRENCY_CODE {
 		return c.checkoutAppErr("currency")
@@ -84,13 +91,13 @@ func (c *Checkout) IsValid() *AppError {
 	if !IsValidEmail(c.Email) || len(c.Email) > USER_EMAIL_MAX_LENGTH {
 		return c.checkoutAppErr("email")
 	}
-	if len(c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {
+	if c.DiscountName != nil && utf8.RuneCountInString(*c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {
 		return c.checkoutAppErr("discount_name")
 	}
-	if len(c.TranslatedDiscountName) > CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH {
+	if c.TranslatedDiscountName != nil && utf8.RuneCountInString(*c.TranslatedDiscountName) > CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH {
 		return c.checkoutAppErr("translated_discount_name")
 	}
-	if len(c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH {
+	if c.VoucherCode != nil && len(*c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH || *c.VoucherCode == "" {
 		return c.checkoutAppErr("voucher_code")
 	}
 	if c.LanguageCode == "" {
@@ -99,8 +106,11 @@ func (c *Checkout) IsValid() *AppError {
 	if tag, err := language.Parse(c.LanguageCode); err != nil || !strings.EqualFold(tag.String(), c.LanguageCode) {
 		return c.checkoutAppErr("language_code")
 	}
-	if len(c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || c.TrackingCode == "" {
+	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
 		return c.checkoutAppErr("tracking_code")
+	}
+	if _, ok := Countries[strings.ToUpper(c.Country)]; !ok {
+		return c.checkoutAppErr("country")
 	}
 
 	return nil
@@ -118,6 +128,36 @@ func CheckoutFromJson(data io.Reader) *Checkout {
 		return nil
 	}
 	return &checkout
+}
+
+func (c *Checkout) PreSave() {
+	if c.Id == "" {
+		c.Id = NewId()
+	}
+	if c.LanguageCode == "" {
+		c.LanguageCode = "en"
+	}
+	if c.DiscountAmount == nil {
+		c.DiscountAmount = &decimal.Zero
+	}
+	if c.Country == "" {
+		c.Country = "US"
+	}
+	if c.Token == "" {
+		c.Token = NewId()
+	}
+	c.Note = SanitizeUnicode(c.Note)
+
+	c.Email = NormalizeEmail(c.Email)
+
+	c.CreateAt = GetMillis()
+	c.UpdateAt = c.CreateAt
+}
+
+func (c *Checkout) PreUpdate() {
+	c.Note = SanitizeUnicode(c.Note)
+	c.Email = NormalizeEmail(c.Email)
+	c.UpdateAt = GetMillis()
 }
 
 func (c *Checkout) GetCustomerEmail() string {

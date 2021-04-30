@@ -64,3 +64,9 @@ func (c *CheckoutLine) IsValid() *AppError {
 
 	return nil
 }
+
+func (c *CheckoutLine) PreSave() {
+	if c.Id == "" {
+		c.Id = NewId()
+	}
+}
