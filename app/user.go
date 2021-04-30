@@ -914,9 +914,10 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 			//  which will not match a CLI email input during bot to user conversions.
 			//  To update a bot users email, do not set the email to the faked email
 			//  stored in prev.Email.  Allow using the email defined in the CLI
-			if !user.IsBot {
-				user.Email = prev.Email
-			}
+			// if !user.IsBot {
+			// 	user.Email = prev.Email
+			// }
+			user.Email = prev.Email
 		}
 	}
 

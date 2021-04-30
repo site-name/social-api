@@ -224,7 +224,7 @@ func (a *App) createSessionForUserAccessToken(tokenString string) (*model.Sessio
 		}
 	}
 
-	if !*a.Config().ServiceSettings.EnableUserAccessTokens && !user.IsBot {
+	if !*a.Config().ServiceSettings.EnableUserAccessTokens {
 		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "EnableUserAccessTokens=false", http.StatusUnauthorized)
 	}
 
@@ -241,9 +241,9 @@ func (a *App) createSessionForUserAccessToken(tokenString string) (*model.Sessio
 
 	session.AddProp(model.SESSION_PROP_USER_ACCESS_TOKEN_ID, token.Id)
 	session.AddProp(model.SESSION_PROP_TYPE, model.SESSION_TYPE_USER_ACCESS_TOKEN)
-	if user.IsBot {
-		session.AddProp(model.SESSION_PROP_IS_BOT, model.SESSION_PROP_IS_BOT_VALUE)
-	}
+	// if user.IsBot {
+	// 	session.AddProp(model.SESSION_PROP_IS_BOT, model.SESSION_PROP_IS_BOT_VALUE)
+	// }
 	if user.IsGuest() {
 		session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
 	} else {
@@ -369,7 +369,7 @@ func (a *App) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAc
 		}
 	}
 
-	if !*a.Config().ServiceSettings.EnableUserAccessTokens && !user.IsBot {
+	if !*a.Config().ServiceSettings.EnableUserAccessTokens /*&& !user.IsBot*/ {
 		return nil, model.NewAppError("CreateUserAccessToken", "app.user_access_token.disabled", nil, "", http.StatusNotImplemented)
 	}
 
