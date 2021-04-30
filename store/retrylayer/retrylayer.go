@@ -17,15 +17,21 @@ const mySQLDeadlockCode = uint16(1213)
 
 type RetryLayer struct {
 	store.Store
-	JobStore             store.JobStore
-	PreferenceStore      store.PreferenceStore
-	RoleStore            store.RoleStore
-	SessionStore         store.SessionStore
-	StatusStore          store.StatusStore
-	SystemStore          store.SystemStore
-	TokenStore           store.TokenStore
-	UserStore            store.UserStore
-	UserAccessTokenStore store.UserAccessTokenStore
+	ClusterDiscoveryStore store.ClusterDiscoveryStore
+	JobStore              store.JobStore
+	PreferenceStore       store.PreferenceStore
+	RoleStore             store.RoleStore
+	SessionStore          store.SessionStore
+	StatusStore           store.StatusStore
+	SystemStore           store.SystemStore
+	TermsOfServiceStore   store.TermsOfServiceStore
+	TokenStore            store.TokenStore
+	UserStore             store.UserStore
+	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *RetryLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
+	return s.ClusterDiscoveryStore
 }
 
 func (s *RetryLayer) Job() store.JobStore {
@@ -52,6 +58,10 @@ func (s *RetryLayer) System() store.SystemStore {
 	return s.SystemStore
 }
 
+func (s *RetryLayer) TermsOfService() store.TermsOfServiceStore {
+	return s.TermsOfServiceStore
+}
+
 func (s *RetryLayer) Token() store.TokenStore {
 	return s.TokenStore
 }
@@ -62,6 +72,11 @@ func (s *RetryLayer) User() store.UserStore {
 
 func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type RetryLayerClusterDiscoveryStore struct {
+	store.ClusterDiscoveryStore
+	Root *RetryLayer
 }
 
 type RetryLayerJobStore struct {
@@ -94,6 +109,11 @@ type RetryLayerSystemStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerTermsOfServiceStore struct {
+	store.TermsOfServiceStore
+	Root *RetryLayer
+}
+
 type RetryLayerTokenStore struct {
 	store.TokenStore
 	Root *RetryLayer
@@ -123,6 +143,126 @@ func isRepeatableError(err error) bool {
 		}
 	}
 	return false
+}
+
+func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
+
+	tries := 0
+	for {
+		err := s.ClusterDiscoveryStore.Cleanup()
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.ClusterDiscoveryStore.Delete(discovery)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.ClusterDiscoveryStore.Exists(discovery)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+
+	tries := 0
+	for {
+		result, err := s.ClusterDiscoveryStore.GetAll(discoveryType, clusterName)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+
+	tries := 0
+	for {
+		err := s.ClusterDiscoveryStore.Save(discovery)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+
+	tries := 0
+	for {
+		err := s.ClusterDiscoveryStore.SetLastPingAt(discovery)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
 }
 
 func (s *RetryLayerJobStore) Delete(id string) (string, error) {
@@ -665,11 +805,11 @@ func (s *RetryLayerRoleStore) GetAll() ([]*model.Role, error) {
 
 }
 
-func (s *RetryLayerRoleStore) GetByName(name string) (*model.Role, error) {
+func (s *RetryLayerRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
 
 	tries := 0
 	for {
-		result, err := s.RoleStore.GetByName(name)
+		result, err := s.RoleStore.GetByName(ctx, name)
 		if err == nil {
 			return result, nil
 		}
@@ -745,17 +885,297 @@ func (s *RetryLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 
 }
 
+func (s *RetryLayerSessionStore) AnalyticsSessionCount() (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.AnalyticsSessionCount()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 
 	s.SessionStore.Cleanup(expiryTime, batchSize)
 
 }
 
-func (s *RetryLayerSessionStore) Save(ss *model.Session) (*model.Session, error) {
+func (s *RetryLayerSessionStore) Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error) {
 
 	tries := 0
 	for {
-		result, err := s.SessionStore.Save(ss)
+		result, err := s.SessionStore.Get(ctx, sessionIDOrToken)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) GetSessions(userID string) ([]*model.Session, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.GetSessions(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.GetSessionsExpired(thresholdMillis, mobileOnly, unnotifiedOnly)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.GetSessionsWithActiveDeviceIds(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) PermanentDeleteSessionsByUser(teamID string) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.PermanentDeleteSessionsByUser(teamID)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) Remove(sessionIDOrToken string) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.Remove(sessionIDOrToken)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) RemoveAllSessions() error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.RemoveAllSessions()
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) Save(session *model.Session) (*model.Session, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.Save(session)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.UpdateDeviceId(id, deviceID, expiresAt)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateExpiredNotify(sessionid string, notified bool) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.UpdateExpiredNotify(sessionid, notified)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateExpiresAt(sessionID string, time int64) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.UpdateExpiresAt(sessionID, time)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateLastActivityAt(sessionID string, time int64) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.UpdateLastActivityAt(sessionID, time)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateProps(session *model.Session) error {
+
+	tries := 0
+	for {
+		err := s.SessionStore.UpdateProps(session)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (string, error) {
+
+	tries := 0
+	for {
+		result, err := s.SessionStore.UpdateRoles(userID, roles)
 		if err == nil {
 			return result, nil
 		}
@@ -1051,6 +1471,66 @@ func (s *RetryLayerSystemStore) Update(system *model.System) error {
 
 }
 
+func (s *RetryLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
+
+	tries := 0
+	for {
+		result, err := s.TermsOfServiceStore.Get(id, allowFromCache)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
+
+	tries := 0
+	for {
+		result, err := s.TermsOfServiceStore.GetLatest(allowFromCache)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+
+	tries := 0
+	for {
+		result, err := s.TermsOfServiceStore.Save(termsOfService)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerTokenStore) Cleanup() {
 
 	s.TokenStore.Cleanup()
@@ -1132,6 +1612,46 @@ func (s *RetryLayerTokenStore) Save(recovery *model.Token) error {
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.AnalyticsActiveCount(time, options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.AnalyticsActiveCountForPeriod(startTime, endTime, options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 
@@ -1368,6 +1888,26 @@ func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 	tries := 0
 	for {
 		result, err := s.UserStore.GetAllNotInAuthService(authServices)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.GetAllProfiles(options)
 		if err == nil {
 			return result, nil
 		}
@@ -1706,6 +2246,26 @@ func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
 	tries := 0
 	for {
 		result, err := s.UserStore.Save(user)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.Search(teamID, term, options)
 		if err == nil {
 			return result, nil
 		}
@@ -2126,12 +2686,14 @@ func New(childStore store.Store) *RetryLayer {
 		Store: childStore,
 	}
 
+	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
 	newStore.RoleStore = &RetryLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.SystemStore = &RetryLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
+	newStore.TermsOfServiceStore = &RetryLayerTermsOfServiceStore{TermsOfServiceStore: childStore.TermsOfService(), Root: &newStore}
 	newStore.TokenStore = &RetryLayerTokenStore{TokenStore: childStore.Token(), Root: &newStore}
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}

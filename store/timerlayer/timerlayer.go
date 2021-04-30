@@ -14,16 +14,22 @@ import (
 
 type TimerLayer struct {
 	store.Store
-	Metrics              einterfaces.MetricsInterface
-	JobStore             store.JobStore
-	PreferenceStore      store.PreferenceStore
-	RoleStore            store.RoleStore
-	SessionStore         store.SessionStore
-	StatusStore          store.StatusStore
-	SystemStore          store.SystemStore
-	TokenStore           store.TokenStore
-	UserStore            store.UserStore
-	UserAccessTokenStore store.UserAccessTokenStore
+	Metrics               einterfaces.MetricsInterface
+	ClusterDiscoveryStore store.ClusterDiscoveryStore
+	JobStore              store.JobStore
+	PreferenceStore       store.PreferenceStore
+	RoleStore             store.RoleStore
+	SessionStore          store.SessionStore
+	StatusStore           store.StatusStore
+	SystemStore           store.SystemStore
+	TermsOfServiceStore   store.TermsOfServiceStore
+	TokenStore            store.TokenStore
+	UserStore             store.UserStore
+	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *TimerLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
+	return s.ClusterDiscoveryStore
 }
 
 func (s *TimerLayer) Job() store.JobStore {
@@ -50,6 +56,10 @@ func (s *TimerLayer) System() store.SystemStore {
 	return s.SystemStore
 }
 
+func (s *TimerLayer) TermsOfService() store.TermsOfServiceStore {
+	return s.TermsOfServiceStore
+}
+
 func (s *TimerLayer) Token() store.TokenStore {
 	return s.TokenStore
 }
@@ -60,6 +70,11 @@ func (s *TimerLayer) User() store.UserStore {
 
 func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type TimerLayerClusterDiscoveryStore struct {
+	store.ClusterDiscoveryStore
+	Root *TimerLayer
 }
 
 type TimerLayerJobStore struct {
@@ -92,6 +107,11 @@ type TimerLayerSystemStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerTermsOfServiceStore struct {
+	store.TermsOfServiceStore
+	Root *TimerLayer
+}
+
 type TimerLayerTokenStore struct {
 	store.TokenStore
 	Root *TimerLayer
@@ -105,6 +125,102 @@ type TimerLayerUserStore struct {
 type TimerLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
 	Root *TimerLayer
+}
+
+func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
+	start := timemodule.Now()
+
+	err := s.ClusterDiscoveryStore.Cleanup()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.Cleanup", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.ClusterDiscoveryStore.Delete(discovery)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.Delete", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.ClusterDiscoveryStore.Exists(discovery)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.Exists", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+	start := timemodule.Now()
+
+	result, err := s.ClusterDiscoveryStore.GetAll(discoveryType, clusterName)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.GetAll", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+	start := timemodule.Now()
+
+	err := s.ClusterDiscoveryStore.Save(discovery)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.Save", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+	start := timemodule.Now()
+
+	err := s.ClusterDiscoveryStore.SetLastPingAt(discovery)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.SetLastPingAt", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerJobStore) Delete(id string) (string, error) {
@@ -539,10 +655,10 @@ func (s *TimerLayerRoleStore) GetAll() ([]*model.Role, error) {
 	return result, err
 }
 
-func (s *TimerLayerRoleStore) GetByName(name string) (*model.Role, error) {
+func (s *TimerLayerRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
 	start := timemodule.Now()
 
-	result, err := s.RoleStore.GetByName(name)
+	result, err := s.RoleStore.GetByName(ctx, name)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -603,6 +719,22 @@ func (s *TimerLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return result, err
 }
 
+func (s *TimerLayerSessionStore) AnalyticsSessionCount() (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.AnalyticsSessionCount()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.AnalyticsSessionCount", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 	start := timemodule.Now()
 
@@ -618,10 +750,122 @@ func (s *TimerLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 	}
 }
 
-func (s *TimerLayerSessionStore) Save(ss *model.Session) (*model.Session, error) {
+func (s *TimerLayerSessionStore) Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error) {
 	start := timemodule.Now()
 
-	result, err := s.SessionStore.Save(ss)
+	result, err := s.SessionStore.Get(ctx, sessionIDOrToken)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) GetSessions(userID string) ([]*model.Session, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.GetSessions(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.GetSessions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.GetSessionsExpired(thresholdMillis, mobileOnly, unnotifiedOnly)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.GetSessionsExpired", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.GetSessionsWithActiveDeviceIds(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.GetSessionsWithActiveDeviceIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) PermanentDeleteSessionsByUser(teamID string) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.PermanentDeleteSessionsByUser(teamID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.PermanentDeleteSessionsByUser", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) Remove(sessionIDOrToken string) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.Remove(sessionIDOrToken)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.Remove", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) RemoveAllSessions() error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.RemoveAllSessions()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.RemoveAllSessions", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) Save(session *model.Session) (*model.Session, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.Save(session)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -630,6 +874,102 @@ func (s *TimerLayerSessionStore) Save(ss *model.Session) (*model.Session, error)
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.UpdateDeviceId(id, deviceID, expiresAt)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateDeviceId", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSessionStore) UpdateExpiredNotify(sessionid string, notified bool) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.UpdateExpiredNotify(sessionid, notified)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateExpiredNotify", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) UpdateExpiresAt(sessionID string, time int64) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.UpdateExpiresAt(sessionID, time)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateExpiresAt", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) UpdateLastActivityAt(sessionID string, time int64) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.UpdateLastActivityAt(sessionID, time)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateLastActivityAt", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) UpdateProps(session *model.Session) error {
+	start := timemodule.Now()
+
+	err := s.SessionStore.UpdateProps(session)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateProps", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (string, error) {
+	start := timemodule.Now()
+
+	result, err := s.SessionStore.UpdateRoles(userID, roles)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.UpdateRoles", success, elapsed)
 	}
 	return result, err
 }
@@ -858,6 +1198,54 @@ func (s *TimerLayerSystemStore) Update(system *model.System) error {
 	return err
 }
 
+func (s *TimerLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
+	start := timemodule.Now()
+
+	result, err := s.TermsOfServiceStore.Get(id, allowFromCache)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("TermsOfServiceStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
+	start := timemodule.Now()
+
+	result, err := s.TermsOfServiceStore.GetLatest(allowFromCache)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("TermsOfServiceStore.GetLatest", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+	start := timemodule.Now()
+
+	result, err := s.TermsOfServiceStore.Save(termsOfService)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("TermsOfServiceStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerTokenStore) Cleanup() {
 	start := timemodule.Now()
 
@@ -935,6 +1323,38 @@ func (s *TimerLayerTokenStore) Save(recovery *model.Token) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.Save", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.AnalyticsActiveCount(time, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.AnalyticsActiveCount", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.AnalyticsActiveCountForPeriod(startTime, endTime, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.AnalyticsActiveCountForPeriod", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, error) {
@@ -1140,6 +1560,22 @@ func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllNotInAuthService", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.GetAllProfiles(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllProfiles", success, elapsed)
 	}
 	return result, err
 }
@@ -1443,6 +1879,22 @@ func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.Search(teamID, term, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Search", success, elapsed)
 	}
 	return result, err
 }
@@ -1777,12 +2229,14 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 		Metrics: metrics,
 	}
 
+	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
 	newStore.RoleStore = &TimerLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.StatusStore = &TimerLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.SystemStore = &TimerLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
+	newStore.TermsOfServiceStore = &TimerLayerTermsOfServiceStore{TermsOfServiceStore: childStore.TermsOfService(), Root: &newStore}
 	newStore.TokenStore = &TimerLayerTokenStore{TokenStore: childStore.Token(), Root: &newStore}
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}

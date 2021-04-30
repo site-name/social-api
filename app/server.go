@@ -263,7 +263,10 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.createPushNotificationsHub()
 
-	if err2 := i18n.InitTranslations(*s.Config().LocalizationSettings.DefaultClientLocale, *s.Config().LocalizationSettings.DefaultClientLocale); err2 != nil {
+	if err2 := i18n.InitTranslations(
+		*s.Config().LocalizationSettings.DefaultServerLocale,
+		*s.Config().LocalizationSettings.DefaultClientLocale,
+	); err2 != nil {
 		return nil, errors.Wrapf(err2, "unable to load Sitename translation files")
 	}
 

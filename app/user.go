@@ -242,7 +242,7 @@ func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 	}
 
 	pref := model.Preference{
-		UserID:   ruser.Id,
+		UserId:   ruser.Id,
 		Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
 		Name:     ruser.Id,
 		Value:    "0",
