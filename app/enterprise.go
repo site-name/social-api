@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/sitename/sitename/einterfaces"
 	ejobs "github.com/sitename/sitename/einterfaces/jobs"
-	tjobs "github.com/sitename/sitename/jobs/interfaces"
+	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 )
 
 var accountMigrationInterface func(*App) einterfaces.AccountMigrationInterface

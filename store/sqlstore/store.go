@@ -548,12 +548,18 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 func (ss *SqlStore) GetColumnInfo(tableName, columnName string) (*ColumnInfo, error) {
 	var columnInfo ColumnInfo
 	err := ss.GetMaster().SelectOne(&columnInfo,
-		`SELECT data_type as DataType,
-					COALESCE(character_maximum_length, 0) as CharMaximumLength
-			 FROM information_schema.columns
-			 WHERE lower(table_name) = lower($1)
-			 AND lower(column_name) = lower($2)`,
-		tableName, columnName)
+		`SELECT 
+			data_type as DataType,
+			COALESCE(character_maximum_length, 0) as CharMaximumLength
+		FROM 
+			information_schema.columns
+		WHERE 
+			lower(table_name) = lower($1)
+		AND 
+			lower(column_name) = lower($2)`,
+		tableName,
+		columnName,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -563,11 +569,7 @@ func (ss *SqlStore) GetColumnInfo(tableName, columnName string) (*ColumnInfo, er
 // IsVarchar returns true if the column type matches one of the varchar types
 // either in MySQL or PostgreSQL.
 func (ss *SqlStore) IsVarchar(columnType string) bool {
-	if columnType == "character varying" {
-		return true
-	}
-
-	return false
+	return columnType == "character varying"
 }
 
 func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
@@ -639,7 +641,6 @@ func (ss *SqlStore) RemoveTableIfExists(tableName string) bool {
 	if !ss.DoesTableExist(tableName) {
 		return false
 	}
-
 	_, err := ss.GetMaster().Exec("DROP TABLE " + tableName)
 	if err != nil {
 		slog.Critical("Failed to drop table", slog.Err(err))
@@ -1118,9 +1119,6 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 	}
 
 	var assetNamesForDriver []string
-	fmt.Println("---------------------",
-		migrations.AssetNames(),
-	)
 	for _, assetName := range migrations.AssetNames() {
 		if strings.HasPrefix(assetName, ss.DriverName()) {
 			assetNamesForDriver = append(assetNamesForDriver, filepath.Base(assetName))

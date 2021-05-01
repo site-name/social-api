@@ -6,8 +6,8 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	ejobs "github.com/sitename/sitename/einterfaces/jobs"
-	tjobs "github.com/sitename/sitename/jobs/interfaces"
 	"github.com/sitename/sitename/model"
+	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/configservice"
 	"github.com/sitename/sitename/store"

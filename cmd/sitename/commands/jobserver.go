@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/sitename/sitename/config"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/spf13/cobra"
 )

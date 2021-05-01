@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/config"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/spf13/cobra"

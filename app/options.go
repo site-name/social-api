@@ -2,8 +2,8 @@ package app
 
 import (
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/config"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )

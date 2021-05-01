@@ -2,8 +2,8 @@ package commands
 
 import (
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/config"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/spf13/cobra"

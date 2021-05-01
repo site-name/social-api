@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/jobs"
-	tjobs "github.com/sitename/sitename/jobs/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/jobs"
+	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
 )

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 )
 

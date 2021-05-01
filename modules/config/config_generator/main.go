@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sitename/sitename/config/config_generator/generator"
+	"github.com/sitename/sitename/modules/config/config_generator/generator"
 )
 
 func main() {

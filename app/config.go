@@ -16,8 +16,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sitename/sitename/config"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"

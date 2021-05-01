@@ -14,8 +14,8 @@ import (
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/mapping"
 
-	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 )
 

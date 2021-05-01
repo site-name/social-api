@@ -1,8 +1,8 @@
 package searchengine
 
 import (
-	"github.com/sitename/sitename/jobs"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/jobs"
 )
 
 type Broker struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/config"
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
 )
