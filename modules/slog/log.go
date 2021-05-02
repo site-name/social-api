@@ -103,13 +103,13 @@ func getZapLevel(level string) zapcore.Level {
 
 func makeEncoder(json, color bool) zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
+	if color {
+		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	}
 	if json {
 		return zapcore.NewJSONEncoder(encoderConfig)
 	}
 
-	if color {
-		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	}
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }

@@ -65,3 +65,10 @@ var jobsMigrationsInterface func(*Server) tjobs.MigrationsJobInterface
 func RegisterJobsMigrationsJobInterface(f func(*Server) tjobs.MigrationsJobInterface) {
 	jobsMigrationsInterface = f
 }
+
+var jobsResendInvitationEmailInterface func(*App) ejobs.ResendInvitationEmailJobInterface
+
+// RegisterJobsResendInvitationEmailInterface is used to register or initialize the jobsResendInvitationEmailInterface
+func RegisterJobsResendInvitationEmailInterface(f func(*App) ejobs.ResendInvitationEmailJobInterface) {
+	jobsResendInvitationEmailInterface = f
+}

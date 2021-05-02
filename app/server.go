@@ -554,6 +554,9 @@ func (s *Server) initJobs() {
 	if jobsElasticsearchAggregatorInterface != nil {
 		s.Jobs.ElasticsearchAggregator = jobsElasticsearchAggregatorInterface(s)
 	}
+	if jobsElasticsearchIndexerInterface != nil {
+		s.Jobs.ElasticsearchIndexer = jobsElasticsearchIndexerInterface(s)
+	}
 	if jobsBleveIndexerInterface != nil {
 		s.Jobs.BleveIndexer = jobsBleveIndexerInterface(s)
 	}
