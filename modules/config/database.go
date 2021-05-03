@@ -146,13 +146,7 @@ func parseDSN(dsn string) (string, string, error) {
 
 	scheme := s[0]
 	switch scheme {
-	case "mysql":
-		// Strip off the mysql:// for the dsn with which to connect.
-		dsn = s[1]
-
 	case "postgres":
-		// No changes required
-
 	default:
 		return "", "", errors.Errorf("unsupported scheme %s", scheme)
 	}
