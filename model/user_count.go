@@ -8,16 +8,5 @@ type UserCountOptions struct {
 	IncludeDeleted bool
 	// Exclude regular users
 	ExcludeRegularUsers bool
-	// Only include users on a specific team. "" for any team.
-	// TeamId string
-	// Only include users on a specific channel. "" for any channel.
-	// ChannelId string
-	// Restrict to search in a list of teams and channels
-	// ViewRestrictions *ViewUsersRestrictions
-	// Only include users matching any of the given system wide roles.
-	Roles []string
-	// Only include users matching any of the given channel roles, must be used with ChannelId.
-	// ChannelRoles []string
-	// Only include users matching any of the given team roles, must be used with TeamId.
-	// TeamRoles []string
+	Roles               []string
 }

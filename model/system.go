@@ -60,9 +60,12 @@ func (o *System) ToJson() string {
 }
 
 func SystemFromJson(data io.Reader) *System {
-	var o *System
-	json.JSON.NewDecoder(data).Decode(&o)
-	return o
+	var o System
+	err := json.JSON.NewDecoder(data).Decode(&o)
+	if err != nil {
+		return nil
+	}
+	return &o
 }
 
 type SystemPostActionCookieSecret struct {
@@ -116,9 +119,12 @@ func (sbs *ServerBusyState) ToJson() string {
 }
 
 func ServerBusyStateFromJson(r io.Reader) *ServerBusyState {
-	var sbs *ServerBusyState
-	json.JSON.NewDecoder(r).Decode(&sbs)
-	return sbs
+	var sbs ServerBusyState
+	err := json.JSON.NewDecoder(r).Decode(&sbs)
+	if err != nil {
+		return nil
+	}
+	return &sbs
 }
 
 var WarnMetricsTable = map[string]WarnMetric{
@@ -220,7 +226,10 @@ func (swma *SendWarnMetricAck) ToJson() string {
 }
 
 func SendWarnMetricAckFromJson(r io.Reader) *SendWarnMetricAck {
-	var swma *SendWarnMetricAck
-	json.JSON.NewDecoder(r).Decode(&swma)
-	return swma
+	var swma SendWarnMetricAck
+	err := json.JSON.NewDecoder(r).Decode(&swma)
+	if err != nil {
+		return nil
+	}
+	return &swma
 }

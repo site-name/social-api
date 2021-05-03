@@ -1,13 +1,14 @@
 package model
 
 import (
+	"io"
 	"sync"
 
 	"github.com/sitename/sitename/modules/json"
 )
 
 type ModelMetadata struct {
-	Id              string    `json:"string"`
+	// Id              string    `json:"string"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
 
@@ -16,9 +17,9 @@ type ModelMetadata struct {
 }
 
 func (m *ModelMetadata) PreSave() {
-	if m.Id == "" {
-		m.Id = NewId()
-	}
+	// if m.Id == "" {
+	// 	m.Id = NewId()
+	// }
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
 	}
@@ -31,6 +32,15 @@ func (m *ModelMetadata) PreSave() {
 func (p *ModelMetadata) ToJson() string {
 	b, _ := json.JSON.Marshal(p)
 	return string(b)
+}
+
+func ModelMetadataFromJson(data io.Reader) *ModelMetadata {
+	var mdt ModelMetadata
+	err := json.JSON.NewDecoder(data).Decode(&mdt)
+	if err != nil {
+		return nil
+	}
+	return &mdt
 }
 
 type WhichMeta string

@@ -17,7 +17,10 @@ func (mfa *MfaSecret) ToJson() string {
 }
 
 func MfaSecretFromJson(data io.Reader) *MfaSecret {
-	var mfa *MfaSecret
-	json.JSON.NewDecoder(data).Decode(&mfa)
-	return mfa
+	var mfa MfaSecret
+	err := json.JSON.NewDecoder(data).Decode(&mfa)
+	if err != nil {
+		return nil
+	}
+	return &mfa
 }

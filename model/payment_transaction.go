@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
@@ -82,11 +83,11 @@ func (p *PaymentTransaction) GetAmount() {
 }
 
 // Common method for creating app error for payment transaction
-func InvalidPaymentTransactionErr(fieldName string, paymentTransactionID string) *AppError {
+func (p *PaymentTransaction) InvalidPaymentTransactionErr(fieldName string) *AppError {
 	id := fmt.Sprintf("model.payment_transaction.is_valid.%s.app_error", fieldName)
 	var details string
-	if paymentTransactionID != "" {
-		details = "transaction_id=" + paymentTransactionID
+	if !strings.EqualFold(fieldName, "id") {
+		details = "transaction_id=" + p.Id
 	}
 
 	return NewAppError("PaymentTransaction.IsValid", id, nil, details, http.StatusBadRequest)
@@ -94,40 +95,40 @@ func InvalidPaymentTransactionErr(fieldName string, paymentTransactionID string)
 
 func (p *PaymentTransaction) IsValid() *AppError {
 	if !IsValidId(p.Id) {
-		return InvalidPaymentTransactionErr("id", "")
+		return p.InvalidPaymentTransactionErr("id")
 	}
 	if !IsValidId(p.PaymentID) {
-		return InvalidPaymentTransactionErr("payment_id", p.Id)
+		return p.InvalidPaymentTransactionErr("payment_id")
 	}
 	if p.CustomerID != nil && !IsValidId(*p.CustomerID) {
-		return InvalidPaymentTransactionErr("customer_id", p.Id)
+		return p.InvalidPaymentTransactionErr("customer_id")
 	}
 	if p.CreateAt == 0 {
-		return InvalidPaymentTransactionErr("create_at", p.Id)
+		return p.InvalidPaymentTransactionErr("create_at")
 	}
 	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return InvalidPaymentTransactionErr("token", p.Id)
+		return p.InvalidPaymentTransactionErr("token")
 	}
 	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH {
-		return InvalidPaymentTransactionErr("kind", p.Id)
+		return p.InvalidPaymentTransactionErr("kind")
 	}
 	if !validTransactionKinds.Contains(p.Kind) {
-		return InvalidPaymentTransactionErr("kind", p.Id)
+		return p.InvalidPaymentTransactionErr("kind")
 	}
 	if len(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
-		return InvalidPaymentTransactionErr("currency", p.Id)
+		return p.InvalidPaymentTransactionErr("currency")
 	}
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
-		return InvalidPaymentTransactionErr("error", p.Id)
+		return p.InvalidPaymentTransactionErr("error")
 	}
 	if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
-		return InvalidPaymentTransactionErr("searchable_key", p.Id)
+		return p.InvalidPaymentTransactionErr("searchable_key")
 	}
 	if un, err := currency.ParseISO(p.Currency); err != nil || un.String() != p.Currency {
-		return InvalidPaymentError("currency", p.Id)
+		return p.InvalidPaymentTransactionErr("currency")
 	}
 	if p.Amount == nil {
-		return InvalidPaymentError("amount", p.Id)
+		return p.InvalidPaymentTransactionErr("amount")
 	}
 
 	return nil
@@ -152,6 +153,9 @@ func (p *PaymentTransaction) ToJson() string {
 
 func PaymentTransactionFromJson(data io.Reader) *PaymentTransaction {
 	var pmtr PaymentTransaction
-	json.JSON.NewDecoder(data).Decode(&pmtr)
+	err := json.JSON.NewDecoder(data).Decode(&pmtr)
+	if err != nil {
+		return nil
+	}
 	return &pmtr
 }

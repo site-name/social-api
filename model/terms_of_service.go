@@ -26,15 +26,12 @@ func (t *TermsOfService) IsValid() *AppError {
 	if !IsValidId(t.Id) {
 		return InvalidTermsOfServiceError("id", "")
 	}
-
 	if t.CreateAt == 0 {
 		return InvalidTermsOfServiceError("create_at", t.Id)
 	}
-
 	if !IsValidId(t.UserId) {
 		return InvalidTermsOfServiceError("user_id", t.Id)
 	}
-
 	if utf8.RuneCountInString(t.Text) > POST_MESSAGE_MAX_RUNES_V2 {
 		return InvalidTermsOfServiceError("text", t.Id)
 	}
@@ -48,9 +45,12 @@ func (t *TermsOfService) ToJson() string {
 }
 
 func TermsOfServiceFromJson(data io.Reader) *TermsOfService {
-	var termsOfService *TermsOfService
-	json.JSON.NewDecoder(data).Decode(&termsOfService)
-	return termsOfService
+	var termsOfService TermsOfService
+	err := json.JSON.NewDecoder(data).Decode(&termsOfService)
+	if err != nil {
+		return nil
+	}
+	return &termsOfService
 }
 
 func InvalidTermsOfServiceError(fieldName string, termsOfServiceId string) *AppError {

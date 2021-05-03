@@ -25,15 +25,12 @@ func (t *UserAccessToken) IsValid() *AppError {
 	if !IsValidId(t.Id) {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
-
 	if len(t.Token) != USER_ACCESS_TOKEN_MAX_LENGTH {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.token.app_error", nil, "", http.StatusBadRequest)
 	}
-
 	if !IsValidId(t.UserId) {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
 	}
-
 	if len(t.Description) > USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH {
 		return NewAppError("UserAccessToken.IsValid", "model.user_access_token.is_valid.description.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -52,9 +49,12 @@ func (t *UserAccessToken) ToJson() string {
 }
 
 func UserAccessTokenFromJson(data io.Reader) *UserAccessToken {
-	var t *UserAccessToken
-	json.JSON.NewDecoder(data).Decode(&t)
-	return t
+	var t UserAccessToken
+	err := json.JSON.NewDecoder(data).Decode(&t)
+	if err != nil {
+		return nil
+	}
+	return &t
 }
 
 func UserAccessTokenListToJson(t []*UserAccessToken) string {
@@ -64,6 +64,9 @@ func UserAccessTokenListToJson(t []*UserAccessToken) string {
 
 func UserAccessTokenListFromJson(data io.Reader) []*UserAccessToken {
 	var t []*UserAccessToken
-	json.JSON.NewDecoder(data).Decode(&t)
+	err := json.JSON.NewDecoder(data).Decode(&t)
+	if err != nil {
+		return nil
+	}
 	return t
 }

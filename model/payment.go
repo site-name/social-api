@@ -146,11 +146,11 @@ func (p *Payment) IsManual() bool {
 }
 
 // Common method to create app error for payment
-func InvalidPaymentError(fieldName string, paymentID string) *AppError {
+func (p *Payment) InvalidPaymentError(fieldName string) *AppError {
 	id := fmt.Sprintf("model.payment.is_valid.%s.app_error", fieldName)
 	details := ""
-	if paymentID != "" {
-		details = "payment_id=" + paymentID
+	if !strings.EqualFold(fieldName, "id") {
+		details = "payment_id=" + p.Id
 	}
 
 	return NewAppError("Payment.IsValid", id, nil, details, http.StatusBadRequest)
@@ -159,94 +159,94 @@ func InvalidPaymentError(fieldName string, paymentID string) *AppError {
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *AppError {
 	if !IsValidId(p.Id) {
-		return InvalidPaymentError("id", "")
+		return p.InvalidPaymentError("id")
 	}
 	if !IsValidId(p.OrderID) {
-		return InvalidPaymentError("order_id", p.Id)
+		return p.InvalidPaymentError("order_id")
 	}
 	if !IsValidId(p.CheckoutID) {
-		return InvalidPaymentError("checkout_id", p.Id)
+		return p.InvalidPaymentError("checkout_id")
 	}
 	if p.CreateAt == 0 {
-		return InvalidPaymentError("create_at", p.Id)
+		return p.InvalidPaymentError("create_at")
 	}
 	if p.UpdateAt == 0 {
-		return InvalidPaymentError("update_at", p.Id)
+		return p.InvalidPaymentError("update_at")
 	}
 	if utf8.RuneCountInString(p.GateWay) > MAX_LENGTH_PAYMENT_GATEWAY {
-		return InvalidPaymentError("gateway", p.Id)
+		return p.InvalidPaymentError("gateway")
 	}
 	if p.ChargeStatus == "" ||
 		utf8.RuneCountInString(p.ChargeStatus) > MAX_LENGTH_PAYMENT_CHARGE_STATUS ||
 		!validChargeStatues.Contains(p.ChargeStatus) {
-		return InvalidPaymentError("charge_status", p.Id)
+		return p.InvalidPaymentError("charge_status")
 	}
 	if utf8.RuneCountInString(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return InvalidPaymentError("token", p.Id)
+		return p.InvalidPaymentError("token")
 	}
 	if p.Total == nil {
-		return InvalidPaymentError("total", p.Id)
+		return p.InvalidPaymentError("total")
 	}
 	if p.CapturedAmount == nil {
-		return InvalidPaymentError("captured_amount", p.Id)
+		return p.InvalidPaymentError("captured_amount")
 	}
 	if len(p.BillingEmail) > USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !IsValidEmail(p.BillingEmail) {
-		return InvalidPaymentError("billing_email", p.Id)
+		return p.InvalidPaymentError("billing_email")
 	}
 	if utf8.RuneCountInString(p.BillingFirstName) > FIRST_NAME_MAX_LENGTH || !IsValidNamePart(p.BillingFirstName, firstName) {
-		return InvalidPaymentError("billing_first_name", p.Id)
+		return p.InvalidPaymentError("billing_first_name")
 	}
 	if utf8.RuneCountInString(p.BillingLastName) > LAST_NAME_MAX_LENGTH || !IsValidNamePart(p.BillingLastName, lastName) {
-		return InvalidPaymentError("billing_last_name", p.Id)
+		return p.InvalidPaymentError("billing_last_name")
 	}
 	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("billing_company_name", p.Id)
+		return p.InvalidPaymentError("billing_company_name")
 	}
 	if utf8.RuneCountInString(p.BillingAddress1) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("billing_address_1", p.Id)
+		return p.InvalidPaymentError("billing_address_1")
 	}
 	if utf8.RuneCountInString(p.BillingAddress2) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("billing_address_2", p.Id)
+		return p.InvalidPaymentError("billing_address_2")
 	}
 	if utf8.RuneCountInString(p.BillingCity) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("billing_city", p.Id)
+		return p.InvalidPaymentError("billing_city")
 	}
 	if utf8.RuneCountInString(p.BillingCityArea) > CITY_AREA_MAX_LENGTH {
-		return InvalidPaymentError("billing_city_area", p.Id)
+		return p.InvalidPaymentError("billing_city_area")
 	}
 	if utf8.RuneCountInString(p.BillingPostalCode) > POSTAL_CODE_MAX_LENGTH {
-		return InvalidPaymentError("billing_postal_code", p.Id)
+		return p.InvalidPaymentError("billing_postal_code")
 	}
 	if utf8.RuneCountInString(p.BillingCountryCode) > MAX_LENGTH_COUNTRY_CODE {
-		return InvalidPaymentError("billing_country_code", p.Id)
+		return p.InvalidPaymentError("billing_country_code")
 	}
 	region, err := language.ParseRegion(p.BillingCountryCode)
 	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {
-		return InvalidPaymentError("billing_country_code", p.Id)
+		return p.InvalidPaymentError("billing_country_code")
 	}
 	if utf8.RuneCountInString(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
-		return InvalidPaymentError("currency", p.Id)
+		return p.InvalidPaymentError("currency")
 	}
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
-		return InvalidPaymentError("currency", p.Id)
+		return p.InvalidPaymentError("currency")
 	}
 	if utf8.RuneCountInString(p.BillingCountryArea) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("billing_country_area", p.Id)
+		return p.InvalidPaymentError("billing_country_area")
 	}
 	if len(p.CcFirstDigits) > MAX_LENGTH_CC_FIRST_DIGITS {
-		return InvalidPaymentError("cc_first_digits", p.Id)
+		return p.InvalidPaymentError("cc_first_digits")
 	}
 	if len(p.CcFirstDigits) > MAX_LENGTH_CC_LAST_DIGITS {
-		return InvalidPaymentError("cc_last_digits", p.Id)
+		return p.InvalidPaymentError("cc_last_digits")
 	}
 	if *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
-		return InvalidPaymentError("cc_exp_month", p.Id)
+		return p.InvalidPaymentError("cc_exp_month")
 	}
 	if *p.CcExpYear < MIN_CC_EXP_YEAR {
-		return InvalidPaymentError("cc_exp_year", p.Id)
+		return p.InvalidPaymentError("cc_exp_year")
 	}
 	if len(p.PaymentMethodType) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return InvalidPaymentError("payment_method_type", p.Id)
+		return p.InvalidPaymentError("payment_method_type")
 	}
 
 	return nil
