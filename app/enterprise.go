@@ -4,6 +4,7 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	ejobs "github.com/sitename/sitename/einterfaces/jobs"
 	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
+	"github.com/sitename/sitename/services/searchengine"
 )
 
 var accountMigrationInterface func(*App) einterfaces.AccountMigrationInterface
@@ -71,4 +72,37 @@ var jobsResendInvitationEmailInterface func(*App) ejobs.ResendInvitationEmailJob
 // RegisterJobsResendInvitationEmailInterface is used to register or initialize the jobsResendInvitationEmailInterface
 func RegisterJobsResendInvitationEmailInterface(f func(*App) ejobs.ResendInvitationEmailJobInterface) {
 	jobsResendInvitationEmailInterface = f
+}
+
+var metricsInterface func(*Server) einterfaces.MetricsInterface
+
+func RegisterMetricsInterface(f func(*Server) einterfaces.MetricsInterface) {
+	metricsInterface = f
+}
+
+var elasticsearchInterface func(*Server) searchengine.SearchEngineInterface
+
+func RegisterElasticsearchInterface(f func(*Server) searchengine.SearchEngineInterface) {
+	elasticsearchInterface = f
+}
+
+func (s *Server) initEnterprise() {
+	if metricsInterface != nil {
+		s.Metrics = metricsInterface(s)
+	}
+	if complianceInterface != nil {
+		s.Compliance = complianceInterface(s)
+	}
+	// if messageExportInterface != nil {
+	// 	s.MessageExport = messageExportInterface(s)
+	// }
+	// if dataRetentionInterface != nil {
+	// 	s.DataRetention = dataRetentionInterface(s)
+	// }
+	if clusterInterface != nil {
+		s.Cluster = clusterInterface(s)
+	}
+	if elasticsearchInterface != nil {
+		s.SearchEngine.RegisterElasticsearchEngine(elasticsearchInterface(s))
+	}
 }

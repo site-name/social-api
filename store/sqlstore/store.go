@@ -17,6 +17,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/db/migrations"
@@ -307,17 +308,7 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 	db.SetConnMaxLifetime(time.Duration(*settings.ConnMaxLifetimeMilliseconds) * time.Millisecond)
 	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
-	var dbmap *gorp.DbMap
-
-	// connectionTimeout := time.Duration(*settings.QueryTimeout) * time.Second
-
-	if *settings.DriverName == model.DATABASE_DRIVER_POSTGRES {
-		dbmap = &gorp.DbMap{Db: db, TypeConverter: mattermConverter{}, Dialect: gorp.PostgresDialect{}}
-	} else {
-		slog.Critical("Failed to create dialect specific driver")
-		time.Sleep(time.Second)
-		os.Exit(ExitNoDriver)
-	}
+	dbmap := &gorp.DbMap{Db: db, TypeConverter: mattermConverter{}, Dialect: gorp.PostgresDialect{}}
 
 	if settings.Trace != nil && *settings.Trace {
 		dbmap.TraceOn("sql-trace:", &TraceOnAdapter{})
@@ -1134,7 +1125,8 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		return err
 	}
 
-	migrations, err := migrate.NewWithInstance("go-bindata",
+	migrations, err := migrate.NewWithInstance(
+		"go-bindata",
 		sourceDriver,
 		ss.DriverName(),
 		driver)
@@ -1150,7 +1142,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 	case migrationsDirectionDown:
 		err = migrations.Down()
 	default:
-		return errors.New(fmt.Sprintf("unsupported migration direction %s", direction))
+		return fmt.Errorf("unsupported migration direction %s", direction)
 	}
 
 	if err != nil && err != migrate.ErrNoChange && !errors.Is(err, os.ErrNotExist) {

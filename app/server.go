@@ -270,7 +270,7 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrapf(err2, "unable to load Sitename translation files")
 	}
 
-	// s.initEnterprise()
+	s.initEnterprise()
 
 	if s.newStore == nil {
 		s.newStore = func() (store.Store, error) {

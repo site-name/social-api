@@ -8,7 +8,7 @@ import (
 )
 
 type ModelMetadata struct {
-	// Id              string    `json:"string"`
+	Id              string    `json:"string"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
 
@@ -17,9 +17,9 @@ type ModelMetadata struct {
 }
 
 func (m *ModelMetadata) PreSave() {
-	// if m.Id == "" {
-	// 	m.Id = NewId()
-	// }
+	if m.Id == "" {
+		m.Id = NewId()
+	}
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
 	}

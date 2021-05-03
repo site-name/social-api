@@ -58,7 +58,7 @@ func resolveConfigFilePath(path string) (string, error) {
 
 	// Search for the relative path to the file in the config folder, taking into account
 	// various common starting points.
-	if configFile := fileutils.FindFile(filepath.Join("config", path)); configFile != "" {
+	if configFile := fileutils.FindFile(filepath.Join("modules", "config", path)); configFile != "" {
 		return configFile, nil
 	}
 
