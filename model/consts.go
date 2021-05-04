@@ -5,6 +5,10 @@ import "regexp"
 const (
 	TimeZone                 = "UTC"
 	LanguageCode             = "en"
+	DEFAULT_LOCALE           = "en"
+	USER_NAME_MAX_LENGTH     = 64
+	USER_EMAIL_MAX_LENGTH    = 128
+	USER_NAME_MIN_LENGTH     = 1
 	MAX_LENGTH_CURRENCY_CODE = 3
 	MAX_LENGTH_COUNTRY_CODE  = 2
 )

@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
@@ -66,7 +67,7 @@ func (s *Server) DoSecurityUpdateCheck() {
 			s.Store.System().Update(systemSecurityLastTime)
 		}
 
-		if count, err := s.Store.User().Count(model.UserCountOptions{IncludeDeleted: true}); err == nil {
+		if count, err := s.Store.User().Count(account.UserCountOptions{IncludeDeleted: true}); err == nil {
 			v.Set(PropSecurityUserCount, strconv.FormatInt(count, 10))
 		}
 

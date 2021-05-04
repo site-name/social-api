@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/mfa"
 )
 
@@ -47,7 +48,7 @@ func (a *App) IsPasswordValid(password string) *model.AppError {
 	return IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
 }
 
-func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model.AppError {
+func (a *App) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
@@ -90,7 +91,7 @@ func (a *App) CheckPasswordAndAllCriteria(user *model.User, password string, mfa
 }
 
 // This to be used for places we check the users password when they are already logged in
-func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppError {
+func (a *App) DoubleCheckPassword(user *account.User, password string) *model.AppError {
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
 	}
@@ -114,15 +115,15 @@ func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppE
 	return nil
 }
 
-func (a *App) checkUserPassword(user *model.User, password string) *model.AppError {
-	if !model.ComparePassword(user.Password, password) {
+func (a *App) checkUserPassword(user *account.User, password string) *model.AppError {
+	if !account.ComparePassword(user.Password, password) {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
 
 	return nil
 }
 
-func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*model.User, *model.AppError) {
+func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*account.User, *model.AppError) {
 	if a.Ldap() == nil || ldapId == nil {
 		err := model.NewAppError("doLdapAuthentication", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
 		return nil, err
@@ -146,7 +147,7 @@ func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password strin
 	return ldapUser, nil
 }
 
-func (a *App) CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *App) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
@@ -158,7 +159,7 @@ func (a *App) CheckUserAllAuthenticationCriteria(user *model.User, mfaToken stri
 	return nil
 }
 
-func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *App) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	if err := checkUserNotDisabled(user); err != nil {
 		return err
 	}
@@ -174,7 +175,7 @@ func (a *App) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToke
 	return nil
 }
 
-func (a *App) CheckUserPostflightAuthenticationCriteria(user *model.User) *model.AppError {
+func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError {
 	if !user.EmailVerified && *a.Config().EmailSettings.RequireEmailVerification {
 		return model.NewAppError("Login", "api.user.login.not_verified.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
@@ -182,7 +183,7 @@ func (a *App) CheckUserPostflightAuthenticationCriteria(user *model.User) *model
 	return nil
 }
 
-func (a *App) CheckUserMfa(user *model.User, token string) *model.AppError {
+func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
 	if !user.MfaActive || !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return nil
 	}
@@ -203,7 +204,7 @@ func (a *App) CheckUserMfa(user *model.User, token string) *model.AppError {
 	return nil
 }
 
-func checkUserLoginAttempts(user *model.User, max int) *model.AppError {
+func checkUserLoginAttempts(user *account.User, max int) *model.AppError {
 	if user.FailedAttempts >= max {
 		return model.NewAppError("checkUserLoginAttempts", "api.user.check_user_login_attempts.too_many.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
@@ -211,7 +212,7 @@ func checkUserLoginAttempts(user *model.User, max int) *model.AppError {
 	return nil
 }
 
-func checkUserNotDisabled(user *model.User) *model.AppError {
+func checkUserNotDisabled(user *account.User) *model.AppError {
 	if user.DeleteAt > 0 {
 		return model.NewAppError("Login", "api.user.login.inactive.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
@@ -225,7 +226,7 @@ func checkUserNotDisabled(user *model.User) *model.AppError {
 // 	return nil
 // }
 
-func (a *App) authenticateUser(user *model.User, password, mfaToken string) (*model.User, *model.AppError) {
+func (a *App) authenticateUser(user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap() != nil
 
 	if user.AuthService == model.USER_AUTH_SERVICE_LDAP {

@@ -17,7 +17,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
@@ -543,7 +542,7 @@ func IsValidPhoneNumber(phone, countryCode string) bool {
 }
 
 func IsValidUsername(s string) bool {
-	if len(s) < account.USER_NAME_MIN_LENGTH || len(s) > account.USER_NAME_MAX_LENGTH {
+	if len(s) < USER_NAME_MIN_LENGTH || len(s) > USER_NAME_MAX_LENGTH {
 		return false
 	}
 	if !ValidUsernameChars.MatchString(s) {

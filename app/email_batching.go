@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -59,7 +60,7 @@ func (job *EmailBatchingJob) Start() {
 	}
 }
 
-func (job *EmailBatchingJob) Add(user *model.User) bool {
+func (job *EmailBatchingJob) Add(user *account.User) bool {
 	notification := &batchedNotification{userID: user.Id}
 	select {
 	case job.newNotifications <- notification:
@@ -130,6 +131,6 @@ func (es *EmailService) sendBatchedEmailNotification(userID string, notification
 	panic("not implemented")
 }
 
-func (es *EmailService) renderBatchedPost(notification *batchedNotification, sender *model.User, siteURL string, displayNameFormat string, translateFunc i18n.TranslateFunc, userLocale string, emailNotificationContentsType string) (string, error) {
+func (es *EmailService) renderBatchedPost(notification *batchedNotification, sender *account.User, siteURL string, displayNameFormat string, translateFunc i18n.TranslateFunc, userLocale string, emailNotificationContentsType string) (string, error) {
 	panic("not implemented")
 }

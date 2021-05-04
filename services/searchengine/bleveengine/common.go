@@ -3,7 +3,7 @@ package bleveengine
 import (
 	"strings"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/services/searchengine"
 )
 
@@ -54,7 +54,7 @@ type BLVFile struct {
 // 	}
 // }
 
-func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *BLVUser {
+func BLVUserFromUserAndTeams(user *account.User, teamsIds, channelsIds []string) *BLVUser {
 	usernameSuggestions := searchengine.GetSuggestionInputsSplitByMultiple(user.Username, []string{".", "-", "_"})
 
 	fullnameStrings := []string{}
@@ -87,8 +87,8 @@ func BLVUserFromUserAndTeams(user *model.User, teamsIds, channelsIds []string) *
 	}
 }
 
-func BLVUserFromUserForIndexing(userForIndexing *model.UserForIndexing) *BLVUser {
-	user := &model.User{
+func BLVUserFromUserForIndexing(userForIndexing *account.UserForIndexing) *BLVUser {
+	user := &account.User{
 		Id:        userForIndexing.Id,
 		Username:  userForIndexing.Username,
 		Nickname:  userForIndexing.Nickname,

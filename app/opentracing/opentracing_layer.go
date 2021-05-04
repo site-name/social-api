@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -174,7 +175,7 @@ func (a *OpenTracingAppLayer) AttachDeviceId(sessionID string, deviceID string, 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CheckPasswordAndAllCriteria(user *model.User, password string, mfaToken string) *model.AppError {
+func (a *OpenTracingAppLayer) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckPasswordAndAllCriteria")
 
@@ -218,7 +219,7 @@ func (a *OpenTracingAppLayer) CheckRolesExist(roleNames []string) *model.AppErro
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *OpenTracingAppLayer) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckUserAllAuthenticationCriteria")
 
@@ -240,7 +241,7 @@ func (a *OpenTracingAppLayer) CheckUserAllAuthenticationCriteria(user *model.Use
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CheckUserMfa(user *model.User, token string) *model.AppError {
+func (a *OpenTracingAppLayer) CheckUserMfa(user *account.User, token string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckUserMfa")
 
@@ -262,7 +263,7 @@ func (a *OpenTracingAppLayer) CheckUserMfa(user *model.User, token string) *mode
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CheckUserPostflightAuthenticationCriteria(user *model.User) *model.AppError {
+func (a *OpenTracingAppLayer) CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckUserPostflightAuthenticationCriteria")
 
@@ -284,7 +285,7 @@ func (a *OpenTracingAppLayer) CheckUserPostflightAuthenticationCriteria(user *mo
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CheckUserPreflightAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError {
+func (a *OpenTracingAppLayer) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckUserPreflightAuthenticationCriteria")
 
@@ -404,7 +405,7 @@ func (a *OpenTracingAppLayer) Config() *model.Config {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CreateGuest(user *model.User) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateGuest(user *account.User) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateGuest")
 
@@ -448,7 +449,7 @@ func (a *OpenTracingAppLayer) CreateSession(session *model.Session) (*model.Sess
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUser(user *account.User) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUser")
 
@@ -470,7 +471,7 @@ func (a *OpenTracingAppLayer) CreateUser(user *model.User) (*model.User, *model.
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserAccessToken")
 
@@ -492,7 +493,7 @@ func (a *OpenTracingAppLayer) CreateUserAccessToken(token *model.UserAccessToken
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *model.User, redirect string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserAsAdmin")
 
@@ -514,7 +515,7 @@ func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *model.User, redirect strin
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserFromSignup(user *model.User, redirect string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserFromSignup")
 
@@ -646,7 +647,7 @@ func (a *OpenTracingAppLayer) DeleteToken(token *model.Token) *model.AppError {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) DisableUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *OpenTracingAppLayer) DisableUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DisableUserAccessToken")
 
@@ -683,7 +684,7 @@ func (a *OpenTracingAppLayer) DoAppMigrations() {
 	a.app.DoAppMigrations()
 }
 
-func (a *OpenTracingAppLayer) DoubleCheckPassword(user *model.User, password string) *model.AppError {
+func (a *OpenTracingAppLayer) DoubleCheckPassword(user *account.User, password string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoubleCheckPassword")
 
@@ -705,7 +706,7 @@ func (a *OpenTracingAppLayer) DoubleCheckPassword(user *model.User, password str
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) EnableUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *OpenTracingAppLayer) EnableUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.EnableUserAccessToken")
 
@@ -866,7 +867,7 @@ func (a *OpenTracingAppLayer) GetCookieDomain() string {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError) {
+func (a *OpenTracingAppLayer) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetDefaultProfileImage")
 
@@ -905,7 +906,7 @@ func (a *OpenTracingAppLayer) GetEnvironmentConfig(filter func(reflect.StructFie
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) {
+func (a *OpenTracingAppLayer) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetProfileImage")
 
@@ -1122,7 +1123,7 @@ func (a *OpenTracingAppLayer) GetStatusFromCache(userID string) *model.Status {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetUser(userID string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUser(userID string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUser")
 
@@ -1144,7 +1145,7 @@ func (a *OpenTracingAppLayer) GetUser(userID string) (*model.User, *model.AppErr
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserAccessToken")
 
@@ -1166,7 +1167,7 @@ func (a *OpenTracingAppLayer) GetUserAccessToken(tokenID string, sanitize bool) 
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserAccessTokens(page int, perPage int) ([]*model.UserAccessToken, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserAccessTokens(page int, perPage int) ([]*account.UserAccessToken, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserAccessTokens")
 
@@ -1188,7 +1189,7 @@ func (a *OpenTracingAppLayer) GetUserAccessTokens(page int, perPage int) ([]*mod
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserAccessTokensForUser(userID string, page int, perPage int) ([]*model.UserAccessToken, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserAccessTokensForUser(userID string, page int, perPage int) ([]*account.UserAccessToken, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserAccessTokensForUser")
 
@@ -1210,7 +1211,7 @@ func (a *OpenTracingAppLayer) GetUserAccessTokensForUser(userID string, page int
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserByAuth")
 
@@ -1232,7 +1233,7 @@ func (a *OpenTracingAppLayer) GetUserByAuth(authData *string, authService string
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserByEmail(email string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserByEmail")
 
@@ -1254,7 +1255,7 @@ func (a *OpenTracingAppLayer) GetUserByEmail(email string) (*model.User, *model.
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUserByUsername(username string) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUserByUsername(username string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserByUsername")
 
@@ -1276,7 +1277,7 @@ func (a *OpenTracingAppLayer) GetUserByUsername(username string) (*model.User, *
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUsers")
 
@@ -1744,7 +1745,7 @@ func (a *OpenTracingAppLayer) RevokeSessionsForDeviceId(userID string, deviceID 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) RevokeUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *OpenTracingAppLayer) RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.RevokeUserAccessToken")
 
@@ -1766,7 +1767,7 @@ func (a *OpenTracingAppLayer) RevokeUserAccessToken(token *model.UserAccessToken
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SanitizeProfile(user *model.User, asAdmin bool) {
+func (a *OpenTracingAppLayer) SanitizeProfile(user *account.User, asAdmin bool) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SanitizeProfile")
 
@@ -1820,7 +1821,7 @@ func (a *OpenTracingAppLayer) SearchEngine() *searchengine.Broker {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model.AppError) {
+func (a *OpenTracingAppLayer) SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SearchUserAccessTokens")
 
@@ -1842,7 +1843,7 @@ func (a *OpenTracingAppLayer) SearchUserAccessTokens(term string) ([]*model.User
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) SendEmailVerification(user *model.User, newEmail string, redirect string) *model.AppError {
+func (a *OpenTracingAppLayer) SendEmailVerification(user *account.User, newEmail string, redirect string) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SendEmailVerification")
 
@@ -1881,7 +1882,7 @@ func (a *OpenTracingAppLayer) SessionCacheLength() int {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SetDefaultProfileImage(user *model.User) *model.AppError {
+func (a *OpenTracingAppLayer) SetDefaultProfileImage(user *account.User) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SetDefaultProfileImage")
 
@@ -1984,7 +1985,7 @@ func (a *OpenTracingAppLayer) SetSessionExpireInDays(session *model.Session, day
 	a.app.SetSessionExpireInDays(session, days)
 }
 
-func (a *OpenTracingAppLayer) UpdateActive(user *model.User, active bool) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) UpdateActive(user *account.User, active bool) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateActive")
 
@@ -2036,7 +2037,7 @@ func (a *OpenTracingAppLayer) UpdateLastActivityAtIfNeeded(session model.Session
 	a.app.UpdateLastActivityAtIfNeeded(session)
 }
 
-func (a *OpenTracingAppLayer) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateUser")
 
@@ -2058,7 +2059,7 @@ func (a *OpenTracingAppLayer) UpdateUser(user *model.User, sendNotifications boo
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError) {
+func (a *OpenTracingAppLayer) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateUserRolesWithUser")
 

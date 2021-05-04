@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -356,7 +357,7 @@ func (a *App) GetSessionLengthInMillis(session *model.Session) int64 {
 	return int64(days * 24 * 60 * 60 * 1000)
 }
 
-func (a *App) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
+func (a *App) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
 
 	user, nErr := a.Srv().Store.User().Get(context.Background(), token.UserId)
 	if nErr != nil {
@@ -394,7 +395,7 @@ func (a *App) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAc
 	return token, nil
 }
 
-func (a *App) RevokeUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *App) RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.Srv().Store.Session().Get(context.Background(), token.Token)
 
@@ -409,7 +410,7 @@ func (a *App) RevokeUserAccessToken(token *model.UserAccessToken) *model.AppErro
 	return a.RevokeSession(session)
 }
 
-func (a *App) DisableUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *App) DisableUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.Srv().Store.Session().Get(context.Background(), token.Token)
 
@@ -424,7 +425,7 @@ func (a *App) DisableUserAccessToken(token *model.UserAccessToken) *model.AppErr
 	return a.RevokeSession(session)
 }
 
-func (a *App) EnableUserAccessToken(token *model.UserAccessToken) *model.AppError {
+func (a *App) EnableUserAccessToken(token *account.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.Srv().Store.Session().Get(context.Background(), token.Token)
 
@@ -440,7 +441,7 @@ func (a *App) EnableUserAccessToken(token *model.UserAccessToken) *model.AppErro
 	return nil
 }
 
-func (a *App) GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model.AppError) {
+func (a *App) GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError) {
 	tokens, err := a.Srv().Store.UserAccessToken().GetAll(page*perPage, perPage)
 	if err != nil {
 		return nil, model.NewAppError("GetUserAccessTokens", "app.user_access_token.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -453,7 +454,7 @@ func (a *App) GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, 
 	return tokens, nil
 }
 
-func (a *App) GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model.AppError) {
+func (a *App) GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError) {
 	tokens, err := a.Srv().Store.UserAccessToken().GetByUser(userID, page*perPage, perPage)
 	if err != nil {
 		return nil, model.NewAppError("GetUserAccessTokensForUser", "app.user_access_token.get_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -465,7 +466,7 @@ func (a *App) GetUserAccessTokensForUser(userID string, page, perPage int) ([]*m
 	return tokens, nil
 }
 
-func (a *App) GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError) {
+func (a *App) GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError) {
 	token, err := a.Srv().Store.UserAccessToken().Get(tokenID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -483,7 +484,7 @@ func (a *App) GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAcce
 	return token, nil
 }
 
-func (a *App) SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model.AppError) {
+func (a *App) SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError) {
 	tokens, err := a.Srv().Store.UserAccessToken().Search(term)
 	if err != nil {
 		return nil, model.NewAppError("SearchUserAccessTokens", "app.user_access_token.search.app_error", nil, err.Error(), http.StatusInternalServerError)

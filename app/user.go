@@ -21,6 +21,7 @@ import (
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mfa"
@@ -63,7 +64,7 @@ const (
 
 // }
 
-func (a *App) CreateUserAsAdmin(user *model.User, redirect string) (*model.User, *model.AppError) {
+func (a *App) CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError) {
 	ruser, err := a.CreateUser(user)
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func (a *App) CreateUserAsAdmin(user *model.User, redirect string) (*model.User,
 	return ruser, nil
 }
 
-func (a *App) CreateUserFromSignup(user *model.User, redirect string) (*model.User, *model.AppError) {
+func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError) {
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
 	}
@@ -114,7 +115,7 @@ func (s *Server) IsFirstUserAccount() bool {
 		return false
 	}
 	if cachedSessions == 0 {
-		count, err := s.Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
+		count, err := s.Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
 		if err != nil {
 			slog.Debug("There was an error fetching if first usder account", slog.Err(err))
 			return false
@@ -128,17 +129,17 @@ func (s *Server) IsFirstUserAccount() bool {
 
 // CreateUser creates a user and sets several fields of the returned User struct to
 // their zero values.
-func (a *App) CreateUser(user *model.User) (*model.User, *model.AppError) {
+func (a *App) CreateUser(user *account.User) (*account.User, *model.AppError) {
 	return a.createUserOrGuest(user, false)
 }
 
 // CreateGuest creates a guest and sets several fields of the returned User struct to
 // their zero values.
-func (a *App) CreateGuest(user *model.User) (*model.User, *model.AppError) {
+func (a *App) CreateGuest(user *account.User) (*account.User, *model.AppError) {
 	return a.createUserOrGuest(user, true)
 }
 
-func (a *App) createUserOrGuest(user *model.User, guest bool) (*model.User, *model.AppError) {
+func (a *App) createUserOrGuest(user *account.User, guest bool) (*account.User, *model.AppError) {
 	user.Roles = model.SYSTEM_USER_ROLE_ID
 	if guest {
 		user.Roles = model.SYSTEM_GUEST_ROLE_ID
@@ -150,7 +151,7 @@ func (a *App) createUserOrGuest(user *model.User, guest bool) (*model.User, *mod
 
 	// Below is a special case where the first user in the entire
 	// system is granted the system_admin role
-	count, err := a.Srv().Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
+	count, err := a.Srv().Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
 	if err != nil {
 		return nil, model.NewAppError("createUserOrGuest", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -203,11 +204,11 @@ func CheckEmailDomain(email string, domains string) bool {
 }
 
 // CheckUserDomain checks that a user's email domain matches a list of space-delimited domains as a string.
-func CheckUserDomain(user *model.User, domains string) bool {
+func CheckUserDomain(user *account.User, domains string) bool {
 	return CheckEmailDomain(user.Email, domains)
 }
 
-func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
+func (a *App) createUser(user *account.User) (*account.User, *model.AppError) {
 	user.MakeNonNil()
 
 	if err := a.IsPasswordValid(user.Password); user.AuthService == "" && err != nil {
@@ -262,7 +263,7 @@ func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 
 const MissingAccountError = "app.user.missing_account.const"
 
-func (a *App) GetUser(userID string) (*model.User, *model.AppError) {
+func (a *App) GetUser(userID string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().Get(context.Background(), userID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -287,12 +288,12 @@ func (a *App) GetSanitizeOptions(asAdmin bool) map[string]bool {
 	return options
 }
 
-func (a *App) SanitizeProfile(user *model.User, asAdmin bool) {
+func (a *App) SanitizeProfile(user *account.User, asAdmin bool) {
 	options := a.GetSanitizeOptions(asAdmin)
 	user.SanitizeProfile(options)
 }
 
-func (a *App) sendUpdatedUserEvent(user *model.User) {
+func (a *App) sendUpdatedUserEvent(user *account.User) {
 	// adminCopyOfUser := user.DeepCopy()
 	// a.SanitizeProfile(adminCopyOfUser, true)
 	// adminMessage := model.NewWebSocketEvent()
@@ -337,7 +338,7 @@ func (a *App) DeleteToken(token *model.Token) *model.AppError {
 	return nil
 }
 
-func (a *App) GetUserByUsername(username string) (*model.User, *model.AppError) {
+func (a *App) GetUserByUsername(username string) (*account.User, *model.AppError) {
 	result, err := a.Srv().Store.User().GetByUsername(username)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -351,7 +352,7 @@ func (a *App) GetUserByUsername(username string) (*model.User, *model.AppError) 
 	return result, nil
 }
 
-func (a *App) GetUserByEmail(email string) (*model.User, *model.AppError) {
+func (a *App) GetUserByEmail(email string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().GetByEmail(email)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -378,7 +379,7 @@ func (a *App) IsUsernameTaken(name string) bool {
 	return true
 }
 
-func (a *App) GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError) {
+func (a *App) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().GetByAuth(authData, authService)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
@@ -396,7 +397,7 @@ func (a *App) GetUserByAuth(authData *string, authService string) (*model.User, 
 	return user, nil
 }
 
-func (a *App) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
+func (a *App) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
 	users, err := a.Srv().Store.User().GetAllProfiles(options)
 	if err != nil {
 		return nil, model.NewAppError("GetUsers", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -570,7 +571,7 @@ func (a *App) WriteFile(fr io.Reader, path string) (int64, *model.AppError) {
 	return result, nil
 }
 
-func (a *App) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) {
+func (a *App) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
 	if *a.Config().FileSettings.DriverName == "" {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
@@ -613,7 +614,7 @@ func (a *App) ReadFile(path string) ([]byte, *model.AppError) {
 	return result, nil
 }
 
-func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError) {
+func (a *App) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
 	var img []byte
 	var appErr *model.AppError
 
@@ -625,7 +626,7 @@ func (a *App) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError)
 	return img, nil
 }
 
-func (a *App) SetDefaultProfileImage(user *model.User) *model.AppError {
+func (a *App) SetDefaultProfileImage(user *account.User) *model.AppError {
 	img, appErr := a.GetDefaultProfileImage(user)
 	if appErr != nil {
 		return appErr
@@ -749,7 +750,7 @@ func (a *App) userDeactivated(userID string) *model.AppError {
 	panic("not implemented")
 }
 
-func (a *App) UpdateActive(user *model.User, active bool) (*model.User, *model.AppError) {
+func (a *App) UpdateActive(user *account.User, active bool) (*account.User, *model.AppError) {
 	user.UpdateAt = model.GetMillis()
 	if active {
 		user.DeleteAt = 0
@@ -828,7 +829,7 @@ func (a *App) CheckRolesExist(roleNames []string) *model.AppError {
 	return nil
 }
 
-func (a *App) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError) {
+func (a *App) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
 
 	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
 		return nil, err
@@ -862,7 +863,7 @@ func (a *App) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWeb
 			return nil, model.NewAppError("UpdateUserRoles", "app.user.update.finding.app_error", nil, result.NErr.Error(), http.StatusInternalServerError)
 		}
 	}
-	ruser := result.Data.(*model.UserUpdate).New
+	ruser := result.Data.(*account.UserUpdate).New
 
 	if result := <-schan; result.NErr != nil {
 		// soft error since the user roles were still updated
@@ -882,7 +883,7 @@ func (a *App) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWeb
 	return ruser, nil
 }
 
-func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
+func (a *App) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
 	prev, err := a.Srv().Store.User().Get(context.Background(), user.Id)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -973,7 +974,7 @@ func (a *App) UpdateUser(user *model.User, sendNotifications bool) (*model.User,
 	return userUpdate.New, nil
 }
 
-func (a *App) SendEmailVerification(user *model.User, newEmail, redirect string) *model.AppError {
+func (a *App) SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError {
 	token, err := a.Srv().EmailService.CreateVerifyEmailToken(user.Id, newEmail)
 	if err != nil {
 		return err

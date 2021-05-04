@@ -9,7 +9,6 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
@@ -91,7 +90,7 @@ func (c *Checkout) IsValid() *model.AppError {
 	if c.UpdateAt == 0 {
 		return c.checkoutAppErr("update_at")
 	}
-	if !model.IsValidEmail(c.Email) || len(c.Email) > account.USER_EMAIL_MAX_LENGTH {
+	if !model.IsValidEmail(c.Email) || len(c.Email) > model.USER_EMAIL_MAX_LENGTH {
 		return c.checkoutAppErr("email")
 	}
 	if c.DiscountName != nil && utf8.RuneCountInString(*c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {

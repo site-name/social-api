@@ -21,16 +21,12 @@ const (
 	EMAIL_NOTIFY_PROP             = "email"
 	USER_NOTIFY_MENTION           = "mention"
 	MENTION_KEYS_NOTIFY_PROP      = "mention_keys"
-	DEFAULT_LOCALE                = "en"
 	USER_AUTH_SERVICE_EMAIL       = "email"
-	USER_EMAIL_MAX_LENGTH         = 128
 	USER_NICKNAME_MAX_RUNES       = 64
 	USER_POSITION_MAX_RUNES       = 128
 	USER_FIRST_NAME_MAX_RUNES     = 64
 	USER_LAST_NAME_MAX_RUNES      = 64
 	USER_AUTH_DATA_MAX_LENGTH     = 128
-	USER_NAME_MAX_LENGTH          = 64
-	USER_NAME_MIN_LENGTH          = 1
 	USER_PASSWORD_MAX_LENGTH      = 72
 	USER_HASH_PASSWORD_MAX_LENGTH = 128
 	USER_LOCALE_MAX_LENGTH        = 5
@@ -235,7 +231,7 @@ func (u *User) IsValid() *model.AppError {
 	if !model.IsValidUsername(u.Username) {
 		return InvalidUserError("username", u.Id)
 	}
-	if len(u.Email) > USER_EMAIL_MAX_LENGTH || u.Email == "" || !model.IsValidEmail(u.Email) {
+	if len(u.Email) > model.USER_EMAIL_MAX_LENGTH || u.Email == "" || !model.IsValidEmail(u.Email) {
 		return InvalidUserError("email", u.Id)
 	}
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
@@ -297,7 +293,7 @@ func (u *User) PreSave() {
 	u.LastPasswordUpdate = u.CreateAt
 	u.MfaActive = false
 	if u.Locale == "" {
-		u.Locale = DEFAULT_LOCALE
+		u.Locale = model.DEFAULT_LOCALE
 	}
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()

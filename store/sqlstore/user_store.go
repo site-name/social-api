@@ -78,12 +78,12 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(account.User{}, "Users").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH) // 16
-		table.ColMap("Username").SetMaxSize(account.USER_NAME_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Username").SetMaxSize(model.USER_NAME_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Password").SetMaxSize(account.USER_HASH_PASSWORD_MAX_LENGTH)
 		table.ColMap("AuthData").SetMaxSize(account.USER_AUTH_DATA_MAX_LENGTH).SetUnique(true)
 		table.ColMap("AuthService").SetMaxSize(32)
-		table.ColMap("Email").SetMaxSize(account.USER_EMAIL_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Nickname").SetMaxSize(account.USER_NAME_MAX_LENGTH)
+		table.ColMap("Email").SetMaxSize(model.USER_EMAIL_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Nickname").SetMaxSize(model.USER_NAME_MAX_LENGTH)
 		table.ColMap("FirstName").SetMaxSize(account.USER_FIRST_NAME_MAX_RUNES)
 		table.ColMap("LastName").SetMaxSize(account.USER_LAST_NAME_MAX_RUNES)
 		table.ColMap("Roles").SetMaxSize(256)
