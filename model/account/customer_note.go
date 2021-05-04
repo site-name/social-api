@@ -1,4 +1,4 @@
-package model
+package account
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -32,17 +33,17 @@ func CustomerNoteFromJson(data io.Reader) *CustomerNote {
 	return &cn
 }
 
-func (c *CustomerNote) createAppError(field string) *AppError {
+func (c *CustomerNote) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.customer_note.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "customer_note_id=" + c.Id
 	}
 
-	return NewAppError("CustomerNote.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("CustomerNote.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (c *CustomerNote) IsValid() *AppError {
+func (c *CustomerNote) IsValid() *model.AppError {
 	if c.Id == "" {
 		return c.createAppError("id")
 	}
@@ -60,10 +61,10 @@ func (c *CustomerNote) IsValid() *AppError {
 
 func (cn *CustomerNote) PreSave() {
 	if cn.Id == "" {
-		cn.Id = NewId()
+		cn.Id = model.NewId()
 	}
 	if cn.Date == 0 {
-		cn.Date = GetMillis()
+		cn.Date = model.GetMillis()
 	}
 	if cn.IsPublic == nil {
 		a := true

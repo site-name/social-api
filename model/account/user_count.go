@@ -1,4 +1,4 @@
-package model
+package account
 
 // Options for counting users
 type UserCountOptions struct {

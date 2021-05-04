@@ -1,4 +1,4 @@
-package model
+package product
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/gosimple/slug"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -41,20 +43,21 @@ type ProductType struct {
 	IsDigital          *bool    `json:"is_digital"`
 	Weight             *float32 `json:"weight"`
 	WeightUnit         string   `json:"weight_unit"`
+	*model.ModelMetadata
 }
 
-func (p *ProductType) createAppError(fieldName string) *AppError {
+func (p *ProductType) createAppError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.product_type.is_valid.%s.app_error", fieldName)
 	var details string
 	if !strings.EqualFold(fieldName, "id") {
 		details = "product_type_id=" + p.Id
 	}
 
-	return NewAppError("ProductType.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("ProductType.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (p *ProductType) IsValid() *AppError {
-	if !IsValidId(p.Id) {
+func (p *ProductType) IsValid() *model.AppError {
+	if !model.IsValidId(p.Id) {
 		return p.createAppError("id")
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_TYPE_NAME_MAX_LENGTH {
@@ -75,23 +78,29 @@ func (p *ProductType) IsValid() *AppError {
 
 func (p *ProductType) PreSave() {
 	if p.Id == "" {
-		p.Id = NewId()
+		p.Id = model.NewId()
 	}
-	p.Name = SanitizeUnicode(p.Name)
+	p.Name = model.SanitizeUnicode(p.Name)
+	p.Slug = slug.Make(p.Name)
 
 	if p.HasVariants == nil {
-		p.HasVariants = NewBool(true)
+		p.HasVariants = model.NewBool(true)
 	}
 	if p.IsShippingRequired == nil {
-		p.IsShippingRequired = NewBool(true)
+		p.IsShippingRequired = model.NewBool(true)
 	}
 	if p.IsDigital == nil {
-		p.IsDigital = NewBool(false)
+		p.IsDigital = model.NewBool(false)
 	}
 	if p.Weight == nil {
-		p.Weight = NewFloat32(0)
+		p.Weight = model.NewFloat32(0)
 		p.WeightUnit = KG
 	}
+}
+
+func (p *ProductType) PreUpdate() {
+	p.Name = model.SanitizeUnicode(p.Name)
+	p.Slug = slug.Make(p.Name)
 }
 
 func (p *ProductType) ToJson() string {

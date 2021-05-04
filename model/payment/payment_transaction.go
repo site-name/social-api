@@ -1,4 +1,4 @@
-package model
+package payment
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
@@ -29,7 +30,7 @@ const (
 	CANCEL            = "cancel"
 )
 
-var validTransactionKinds = StringArray([]string{
+var validTransactionKinds = model.StringArray([]string{
 	EXTERNAL,
 	AUTH,
 	CAPTURE,
@@ -59,12 +60,12 @@ type PaymentTransaction struct {
 	Kind               string           `json:"kind"`
 	IsSuccess          bool             `json:"is_success"`
 	ActionRequired     bool             `json:"action_required"`
-	ActionRequiredData StringMap        `json:"action_required_data"`
+	ActionRequiredData model.StringMap  `json:"action_required_data"`
 	Currency           string           `json:"currency"`
 	Amount             *decimal.Decimal `json:"amount"`
 	Error              *string          `json:"error"`
 	CustomerID         *string          `json:"customer_id"`
-	GatewayResponse    StringMap        `json:"gateway_response"`
+	GatewayResponse    model.StringMap  `json:"gateway_response"`
 	AlreadyProcessed   bool             `json:"already_processed"`
 	SearchableKey      *string          `json:"searchable_key"`
 }
@@ -83,24 +84,24 @@ func (p *PaymentTransaction) GetAmount() {
 }
 
 // Common method for creating app error for payment transaction
-func (p *PaymentTransaction) InvalidPaymentTransactionErr(fieldName string) *AppError {
+func (p *PaymentTransaction) InvalidPaymentTransactionErr(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.payment_transaction.is_valid.%s.app_error", fieldName)
 	var details string
 	if !strings.EqualFold(fieldName, "id") {
 		details = "transaction_id=" + p.Id
 	}
 
-	return NewAppError("PaymentTransaction.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("PaymentTransaction.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (p *PaymentTransaction) IsValid() *AppError {
-	if !IsValidId(p.Id) {
+func (p *PaymentTransaction) IsValid() *model.AppError {
+	if !model.IsValidId(p.Id) {
 		return p.InvalidPaymentTransactionErr("id")
 	}
-	if !IsValidId(p.PaymentID) {
+	if !model.IsValidId(p.PaymentID) {
 		return p.InvalidPaymentTransactionErr("payment_id")
 	}
-	if p.CustomerID != nil && !IsValidId(*p.CustomerID) {
+	if p.CustomerID != nil && !model.IsValidId(*p.CustomerID) {
 		return p.InvalidPaymentTransactionErr("customer_id")
 	}
 	if p.CreateAt == 0 {
@@ -115,7 +116,7 @@ func (p *PaymentTransaction) IsValid() *AppError {
 	if !validTransactionKinds.Contains(p.Kind) {
 		return p.InvalidPaymentTransactionErr("kind")
 	}
-	if len(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
+	if len(p.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
 		return p.InvalidPaymentTransactionErr("currency")
 	}
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
@@ -136,14 +137,14 @@ func (p *PaymentTransaction) IsValid() *AppError {
 
 func (p *PaymentTransaction) PreSave() {
 	if p.Id == "" {
-		p.Id = NewId()
+		p.Id = model.NewId()
 	}
 
 	if p.Amount == nil {
 		p.Amount = &decimal.Zero
 	}
 
-	p.CreateAt = GetMillis()
+	p.CreateAt = model.GetMillis()
 }
 
 func (p *PaymentTransaction) ToJson() string {

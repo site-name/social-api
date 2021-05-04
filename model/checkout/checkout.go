@@ -1,4 +1,4 @@
-package model
+package checkout
 
 import (
 	"fmt"
@@ -8,6 +8,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -28,42 +31,42 @@ type Money struct {
 
 // A Shopping checkout
 type Checkout struct {
-	Id                     string           `json:"id"`
-	CreateAt               int64            `json:"create_at"`
-	UpdateAt               int64            `json:"update_at"`
-	UserID                 *string          `json:"user_id"`
-	Email                  string           `json:"email"`
-	Token                  string           `json:"token"`
-	Quantity               uint             `json:"quantity"`
-	ChannelID              string           `json:"channel_id"`
-	BillingAddressID       *string          `json:"billing_address_id,omitempty"`
-	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"`
-	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
-	Note                   string           `json:"note"`
-	Currency               string           `json:"currency"`
-	Country                string           `json:"country"`
-	DiscountAmount         *decimal.Decimal `json:"discount_amount"`
-	Discount               *Money           `db:"-" json:"discount,omitempty"`
-	DiscountName           *string          `json:"discount_name"`
-	TranslatedDiscountName *string          `json:"translated_discount_name"`
-	VoucherCode            *string          `json:"voucher_code"`
-	GiftCards              []*GiftCard      `json:"gift_cards,omitempty" db:"-"`
-	RedirectURL            *string          `json:"redirect_url"`
-	TrackingCode           *string          `json:"tracking_code"`
-	LanguageCode           string           `json:"language_code"`
+	Id                     string               `json:"id"`
+	CreateAt               int64                `json:"create_at"`
+	UpdateAt               int64                `json:"update_at"`
+	UserID                 *string              `json:"user_id"`
+	Email                  string               `json:"email"`
+	Token                  string               `json:"token"`
+	Quantity               uint                 `json:"quantity"`
+	ChannelID              string               `json:"channel_id"`
+	BillingAddressID       *string              `json:"billing_address_id,omitempty"`
+	ShippingAddressID      *string              `json:"shipping_address_id,omitempty"`
+	ShippingMethodID       *string              `json:"shipping_method_id,omitempty"`
+	Note                   string               `json:"note"`
+	Currency               string               `json:"currency"`
+	Country                string               `json:"country"`
+	DiscountAmount         *decimal.Decimal     `json:"discount_amount"`
+	Discount               *Money               `db:"-" json:"discount,omitempty"`
+	DiscountName           *string              `json:"discount_name"`
+	TranslatedDiscountName *string              `json:"translated_discount_name"`
+	VoucherCode            *string              `json:"voucher_code"`
+	GiftCards              []*giftcard.GiftCard `json:"gift_cards,omitempty" db:"-"`
+	RedirectURL            *string              `json:"redirect_url"`
+	TrackingCode           *string              `json:"tracking_code"`
+	LanguageCode           string               `json:"language_code"`
 }
 
-func (c *Checkout) checkoutAppErr(field string) *AppError {
+func (c *Checkout) checkoutAppErr(field string) *model.AppError {
 	var details string
 	if strings.ToLower(field) != "id" {
 		details += "checkout_id=" + c.Id
 	}
 	id := fmt.Sprintf("model.checkout.is_valid.%s.app_error", field)
 
-	return NewAppError("Checkout.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Checkout.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (c *Checkout) IsValid() *AppError {
+func (c *Checkout) IsValid() *model.AppError {
 	if c.Id == "" {
 		return c.checkoutAppErr("id")
 	}
@@ -76,7 +79,7 @@ func (c *Checkout) IsValid() *AppError {
 	if c.ShippingAddressID != nil && *c.ShippingAddressID == "" {
 		return c.checkoutAppErr("shipping_address")
 	}
-	if c.Currency == "" || len(c.Currency) > MAX_LENGTH_CURRENCY_CODE {
+	if c.Currency == "" || len(c.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
 		return c.checkoutAppErr("currency")
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
@@ -88,7 +91,7 @@ func (c *Checkout) IsValid() *AppError {
 	if c.UpdateAt == 0 {
 		return c.checkoutAppErr("update_at")
 	}
-	if !IsValidEmail(c.Email) || len(c.Email) > USER_EMAIL_MAX_LENGTH {
+	if !model.IsValidEmail(c.Email) || len(c.Email) > account.USER_EMAIL_MAX_LENGTH {
 		return c.checkoutAppErr("email")
 	}
 	if c.DiscountName != nil && utf8.RuneCountInString(*c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {
@@ -109,7 +112,7 @@ func (c *Checkout) IsValid() *AppError {
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
 		return c.checkoutAppErr("tracking_code")
 	}
-	if _, ok := Countries[strings.ToUpper(c.Country)]; !ok {
+	if _, ok := model.Countries[strings.ToUpper(c.Country)]; !ok {
 		return c.checkoutAppErr("country")
 	}
 
@@ -132,7 +135,7 @@ func CheckoutFromJson(data io.Reader) *Checkout {
 
 func (c *Checkout) PreSave() {
 	if c.Id == "" {
-		c.Id = NewId()
+		c.Id = model.NewId()
 	}
 	if c.LanguageCode == "" {
 		c.LanguageCode = "en"
@@ -144,20 +147,20 @@ func (c *Checkout) PreSave() {
 		c.Country = "US"
 	}
 	if c.Token == "" {
-		c.Token = NewId()
+		c.Token = model.NewId()
 	}
-	c.Note = SanitizeUnicode(c.Note)
+	c.Note = model.SanitizeUnicode(c.Note)
 
-	c.Email = NormalizeEmail(c.Email)
+	c.Email = model.NormalizeEmail(c.Email)
 
-	c.CreateAt = GetMillis()
+	c.CreateAt = model.GetMillis()
 	c.UpdateAt = c.CreateAt
 }
 
 func (c *Checkout) PreUpdate() {
-	c.Note = SanitizeUnicode(c.Note)
-	c.Email = NormalizeEmail(c.Email)
-	c.UpdateAt = GetMillis()
+	c.Note = model.SanitizeUnicode(c.Note)
+	c.Email = model.NormalizeEmail(c.Email)
+	c.UpdateAt = model.GetMillis()
 }
 
 func (c *Checkout) GetCustomerEmail() string {

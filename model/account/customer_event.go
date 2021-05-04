@@ -1,4 +1,4 @@
-package model
+package account
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -49,12 +50,12 @@ var CustomerEventTypes = []string{
 
 // Model used to store events that happened during the customer lifecycle
 type CustomerEvent struct {
-	Id         string    `json:"id"`
-	Date       int64     `json:"date"`
-	Type       string    `json:"type"`
-	OrderID    string    `json:"order_id"`
-	UserID     string    `json:"user_id"`
-	Parameters StringMap `json:"parameters"`
+	Id         string          `json:"id"`
+	Date       int64           `json:"date"`
+	Type       string          `json:"type"`
+	OrderID    string          `json:"order_id"`
+	UserID     string          `json:"user_id"`
+	Parameters model.StringMap `json:"parameters"`
 }
 
 func (c *CustomerEvent) ToJson() string {
@@ -71,17 +72,17 @@ func CustomerEventFromJson(data io.Reader) *CustomerEvent {
 	return &ce
 }
 
-func (c *CustomerEvent) createAppError(field string) *AppError {
+func (c *CustomerEvent) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.customer_event.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "customer_event_id=" + c.Id
 	}
 
-	return NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (ce *CustomerEvent) IsValid() *AppError {
+func (ce *CustomerEvent) IsValid() *model.AppError {
 	if ce.Id == "" {
 		return ce.createAppError("id")
 	}
@@ -91,7 +92,7 @@ func (ce *CustomerEvent) IsValid() *AppError {
 	if ce.OrderID == "" {
 		return ce.createAppError("order_id")
 	}
-	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !StringArray(CustomerEventTypes).Contains(ce.Type) {
+	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !model.StringArray(CustomerEventTypes).Contains(ce.Type) {
 		return ce.createAppError("type")
 	}
 
@@ -100,10 +101,10 @@ func (ce *CustomerEvent) IsValid() *AppError {
 
 func (c *CustomerEvent) PreSave() {
 	if c.Id == "" {
-		c.Id = NewId()
+		c.Id = model.NewId()
 	}
 	if c.Date == 0 {
-		c.Date = GetMillis()
+		c.Date = model.GetMillis()
 	}
 	_, ok1 := c.Parameters["currency"]
 	_, ok2 := c.Parameters["amount"]
@@ -133,24 +134,24 @@ func StaffNotificationRecipientFromJson(data io.Reader) *StaffNotificationRecipi
 	return &ce
 }
 
-func (c *StaffNotificationRecipient) createAppError(field string) *AppError {
+func (c *StaffNotificationRecipient) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.staff_notification_recipient.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "staff_notification_recipient_id=" + c.Id
 	}
 
-	return NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (ce *StaffNotificationRecipient) IsValid() *AppError {
+func (ce *StaffNotificationRecipient) IsValid() *model.AppError {
 	if ce.Id == "" {
 		return ce.createAppError("id")
 	}
 	if ce.UserID != nil && *ce.UserID == "" {
 		return ce.createAppError("usder_id")
 	}
-	if ce.StaffEmail != nil && !IsValidEmail(*ce.StaffEmail) {
+	if ce.StaffEmail != nil && !model.IsValidEmail(*ce.StaffEmail) {
 		return ce.createAppError("staff_email")
 	}
 
@@ -159,10 +160,10 @@ func (ce *StaffNotificationRecipient) IsValid() *AppError {
 
 func (c *StaffNotificationRecipient) PreSave() {
 	if c.Id == "" {
-		c.Id = NewId()
+		c.Id = model.NewId()
 	}
 	if c.UserID != nil && *c.UserID == "" {
-		id := NewId()
+		id := model.NewId()
 		c.UserID = &id
 	}
 	if c.Active != nil {
@@ -170,7 +171,7 @@ func (c *StaffNotificationRecipient) PreSave() {
 		c.Active = &b
 	}
 	if c.StaffEmail != nil {
-		nmEmail := NormalizeEmail(*c.StaffEmail)
+		nmEmail := model.NormalizeEmail(*c.StaffEmail)
 		c.StaffEmail = &nmEmail
 	}
 }

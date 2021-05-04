@@ -1,4 +1,4 @@
-package model
+package payment
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -43,7 +45,7 @@ const (
 	GATE_WAY_MANUAL = "manual"
 )
 
-var validChargeStatues = StringArray([]string{
+var validChargeStatues = model.StringArray([]string{
 	NOT_CHARGED,
 	PENDING,
 	PARTIALLY_CHARGED,
@@ -134,7 +136,7 @@ func (p *Payment) CanRefund() bool {
 	}
 
 	return p.IsActive &&
-		StringArray(canRefundChargeStatuses).Contains(p.ChargeStatus)
+		model.StringArray(canRefundChargeStatuses).Contains(p.ChargeStatus)
 }
 
 func (p *Payment) CanConfirm() bool {
@@ -146,25 +148,25 @@ func (p *Payment) IsManual() bool {
 }
 
 // Common method to create app error for payment
-func (p *Payment) InvalidPaymentError(fieldName string) *AppError {
+func (p *Payment) InvalidPaymentError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.payment.is_valid.%s.app_error", fieldName)
 	details := ""
 	if !strings.EqualFold(fieldName, "id") {
 		details = "payment_id=" + p.Id
 	}
 
-	return NewAppError("Payment.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Payment.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
 // Check if input from user is valid or not
-func (p *Payment) IsValid() *AppError {
-	if !IsValidId(p.Id) {
+func (p *Payment) IsValid() *model.AppError {
+	if !model.IsValidId(p.Id) {
 		return p.InvalidPaymentError("id")
 	}
-	if !IsValidId(p.OrderID) {
+	if !model.IsValidId(p.OrderID) {
 		return p.InvalidPaymentError("order_id")
 	}
-	if !IsValidId(p.CheckoutID) {
+	if !model.IsValidId(p.CheckoutID) {
 		return p.InvalidPaymentError("checkout_id")
 	}
 	if p.CreateAt == 0 {
@@ -190,13 +192,13 @@ func (p *Payment) IsValid() *AppError {
 	if p.CapturedAmount == nil {
 		return p.InvalidPaymentError("captured_amount")
 	}
-	if len(p.BillingEmail) > USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !IsValidEmail(p.BillingEmail) {
+	if len(p.BillingEmail) > account.USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !model.IsValidEmail(p.BillingEmail) {
 		return p.InvalidPaymentError("billing_email")
 	}
-	if utf8.RuneCountInString(p.BillingFirstName) > FIRST_NAME_MAX_LENGTH || !IsValidNamePart(p.BillingFirstName, firstName) {
+	if utf8.RuneCountInString(p.BillingFirstName) > account.FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
 		return p.InvalidPaymentError("billing_first_name")
 	}
-	if utf8.RuneCountInString(p.BillingLastName) > LAST_NAME_MAX_LENGTH || !IsValidNamePart(p.BillingLastName, lastName) {
+	if utf8.RuneCountInString(p.BillingLastName) > account.LAST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingLastName, model.LastName) {
 		return p.InvalidPaymentError("billing_last_name")
 	}
 	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {
@@ -211,20 +213,20 @@ func (p *Payment) IsValid() *AppError {
 	if utf8.RuneCountInString(p.BillingCity) > MAX_LENGTH_PAYMENT_COMMON_256 {
 		return p.InvalidPaymentError("billing_city")
 	}
-	if utf8.RuneCountInString(p.BillingCityArea) > CITY_AREA_MAX_LENGTH {
+	if utf8.RuneCountInString(p.BillingCityArea) > account.CITY_AREA_MAX_LENGTH {
 		return p.InvalidPaymentError("billing_city_area")
 	}
-	if utf8.RuneCountInString(p.BillingPostalCode) > POSTAL_CODE_MAX_LENGTH {
+	if utf8.RuneCountInString(p.BillingPostalCode) > account.POSTAL_CODE_MAX_LENGTH {
 		return p.InvalidPaymentError("billing_postal_code")
 	}
-	if utf8.RuneCountInString(p.BillingCountryCode) > MAX_LENGTH_COUNTRY_CODE {
+	if utf8.RuneCountInString(p.BillingCountryCode) > model.MAX_LENGTH_COUNTRY_CODE {
 		return p.InvalidPaymentError("billing_country_code")
 	}
 	region, err := language.ParseRegion(p.BillingCountryCode)
 	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {
 		return p.InvalidPaymentError("billing_country_code")
 	}
-	if utf8.RuneCountInString(p.Currency) > MAX_LENGTH_CURRENCY_CODE {
+	if utf8.RuneCountInString(p.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
 		return p.InvalidPaymentError("currency")
 	}
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
@@ -255,12 +257,12 @@ func (p *Payment) IsValid() *AppError {
 // populate some fields if empty and perform some sanitizes
 func (p *Payment) PreSave() {
 	if p.Id == "" {
-		p.Id = NewId()
+		p.Id = model.NewId()
 	}
 
-	p.BillingEmail = NormalizeEmail(p.BillingEmail)
-	p.BillingFirstName = SanitizeUnicode(CleanNamePart(p.BillingFirstName, firstName))
-	p.BillingLastName = SanitizeUnicode(CleanNamePart(p.BillingLastName, lastName))
+	p.BillingEmail = model.NormalizeEmail(p.BillingEmail)
+	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
+	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
 
 	if p.Total == nil {
 		p.Total = &decimal.Zero
@@ -274,16 +276,16 @@ func (p *Payment) PreSave() {
 		p.ChargeStatus = DEFAULT_CHARGE_STATUS
 	}
 
-	p.CreateAt = GetMillis()
+	p.CreateAt = model.GetMillis()
 	p.UpdateAt = p.CreateAt
 }
 
 func (p *Payment) PreUpdate() {
-	p.BillingEmail = NormalizeEmail(p.BillingEmail)
-	p.BillingFirstName = SanitizeUnicode(CleanNamePart(p.BillingFirstName, firstName))
-	p.BillingLastName = SanitizeUnicode(CleanNamePart(p.BillingLastName, lastName))
+	p.BillingEmail = model.NormalizeEmail(p.BillingEmail)
+	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
+	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
 
-	p.UpdateAt = GetMillis()
+	p.UpdateAt = model.GetMillis()
 }
 
 func (p *Payment) ToJson() string {

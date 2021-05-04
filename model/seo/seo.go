@@ -1,4 +1,4 @@
-package model
+package seo
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -21,17 +22,17 @@ type Seo struct {
 	SeoDescription *string `json:"seo_description"`
 }
 
-func (s *Seo) createAppError(field string) *AppError {
+func (s *Seo) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.seo.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "seo_id=" + s.Id
 	}
 
-	return NewAppError("Seo.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Seo.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (s *Seo) IsValid() *AppError {
+func (s *Seo) IsValid() *model.AppError {
 	if s.Id == "" {
 		return s.createAppError("id")
 	}
@@ -47,14 +48,14 @@ func (s *Seo) IsValid() *AppError {
 
 func (s *Seo) PreSave() {
 	if s.Id == "" {
-		s.Id = NewId()
+		s.Id = model.NewId()
 	}
 	if s.SeoTitle != nil {
-		st := SanitizeUnicode(*s.SeoTitle)
+		st := model.SanitizeUnicode(*s.SeoTitle)
 		s.SeoTitle = &st
 	}
 	if s.SeoDescription != nil {
-		st := SanitizeUnicode(*s.SeoDescription)
+		st := model.SanitizeUnicode(*s.SeoDescription)
 		s.SeoDescription = &st
 	}
 }
@@ -80,17 +81,17 @@ type SeoTranslation struct {
 	SeoDescription *string `json:"seo_description"`
 }
 
-func (s *SeoTranslation) createAppError(field string) *AppError {
+func (s *SeoTranslation) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.seo_translation.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "seo_id=" + s.Id
 	}
 
-	return NewAppError("SeoTranslation.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("SeoTranslation.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (s *SeoTranslation) IsValid() *AppError {
+func (s *SeoTranslation) IsValid() *model.AppError {
 	if s.Id == "" {
 		return s.createAppError("id")
 	}
@@ -106,14 +107,14 @@ func (s *SeoTranslation) IsValid() *AppError {
 
 func (s *SeoTranslation) PreSave() {
 	if s.Id == "" {
-		s.Id = NewId()
+		s.Id = model.NewId()
 	}
 	if s.SeoTitle != nil {
-		st := SanitizeUnicode(*s.SeoTitle)
+		st := model.SanitizeUnicode(*s.SeoTitle)
 		s.SeoTitle = &st
 	}
 	if s.SeoDescription != nil {
-		st := SanitizeUnicode(*s.SeoDescription)
+		st := model.SanitizeUnicode(*s.SeoDescription)
 		s.SeoDescription = &st
 	}
 }

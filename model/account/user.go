@@ -1,17 +1,16 @@
-package model
+package account
 
 import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"sort"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/language"
@@ -38,73 +37,45 @@ const (
 	USER_TIMEZONE_MAX_RUNES       = 256
 )
 
-var (
-	validUsernameChars  = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)
-	restrictedUsernames = map[string]interface{}{
-		"all":      nil,
-		"channel":  nil,
-		"sitename": nil,
-		"system":   nil,
-	}
-	reservedName = []string{
-		"admin",
-		"api",
-		"channel",
-		"claim",
-		"error",
-		"files",
-		"help",
-		"landing",
-		"login",
-		"mfa",
-		"oauth",
-		"plug",
-		"plugins",
-		"post",
-		"signup",
-		"sitename",
-	}
-)
-
 // User contains the details about the user.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type User struct {
-	Id                       string     `json:"id"`
-	DefaultShippingAddressID string     `json:"default_shipping_address,omitempty"`
-	DefaultBillingAddressID  string     `json:"default_billing_address,omitempty"`
-	Username                 string     `json:"username"`
-	Password                 string     `json:"password,omitempty"`
-	AuthData                 *string    `json:"auth_data,omitempty"`
-	AuthService              string     `json:"auth_service"`
-	Email                    string     `json:"email"`
-	EmailVerified            bool       `json:"email_verified,omitempty"`
-	Nickname                 string     `json:"nickname"`
-	FirstName                string     `json:"first_name"`
-	LastName                 string     `json:"last_name"`
-	Roles                    string     `json:"roles"`
-	Props                    StringMap  `json:"props,omitempty"`
-	NotifyProps              StringMap  `json:"notify_props,omitempty"`
-	LastPasswordUpdate       int64      `json:"last_password_update,omitempty"`
-	LastPictureUpdate        int64      `json:"last_picture_update,omitempty"`
-	FailedAttempts           int        `json:"failed_attempts,omitempty"`
-	Locale                   string     `json:"locale"`
-	Timezone                 StringMap  `json:"timezone"`
-	MfaActive                bool       `json:"mfa_active,omitempty"`
-	MfaSecret                string     `json:"mfa_secret,omitempty"`
-	CreateAt                 int64      `json:"create_at,omitempty"`
-	UpdateAt                 int64      `json:"update_at,omitempty"`
-	DeleteAt                 int64      `json:"delete_at"`
-	IsStaff                  bool       `json:"is_staff"`
-	IsActive                 bool       `json:"is_active"`
-	Note                     string     `json:"note"`
-	Addresses                []*Address `json:"addresses" db:"-"`
-	*ModelMetadata                      // user's ID will override model data's ID
-	JwtTokenKey              string     `json:"jwt_token_key"`
-	LastActivityAt           int64      `db:"-" json:"last_activity_at,omitempty"`
-	TermsOfServiceId         string     `db:"-" json:"terms_of_service_id,omitempty"`
-	TermsOfServiceCreateAt   int64      `db:"-" json:"terms_of_service_create_at,omitempty"`
-	DisableWelcomeEmail      bool       `db:"-" json:"disable_welcome_email"`
+	Id                       string          `json:"id"`
+	DefaultShippingAddressID string          `json:"default_shipping_address,omitempty"`
+	DefaultBillingAddressID  string          `json:"default_billing_address,omitempty"`
+	Username                 string          `json:"username"`
+	Password                 string          `json:"password,omitempty"`
+	AuthData                 *string         `json:"auth_data,omitempty"`
+	AuthService              string          `json:"auth_service"`
+	Email                    string          `json:"email"`
+	EmailVerified            bool            `json:"email_verified,omitempty"`
+	Nickname                 string          `json:"nickname"`
+	FirstName                string          `json:"first_name"`
+	LastName                 string          `json:"last_name"`
+	Roles                    string          `json:"roles"`
+	Props                    model.StringMap `json:"props,omitempty"`
+	NotifyProps              model.StringMap `json:"notify_props,omitempty"`
+	LastPasswordUpdate       int64           `json:"last_password_update,omitempty"`
+	LastPictureUpdate        int64           `json:"last_picture_update,omitempty"`
+	FailedAttempts           int             `json:"failed_attempts,omitempty"`
+	Locale                   string          `json:"locale"`
+	Timezone                 model.StringMap `json:"timezone"`
+	MfaActive                bool            `json:"mfa_active,omitempty"`
+	MfaSecret                string          `json:"mfa_secret,omitempty"`
+	CreateAt                 int64           `json:"create_at,omitempty"`
+	UpdateAt                 int64           `json:"update_at,omitempty"`
+	DeleteAt                 int64           `json:"delete_at"`
+	IsStaff                  bool            `json:"is_staff"`
+	IsActive                 bool            `json:"is_active"`
+	Note                     string          `json:"note"`
+	Addresses                []*Address      `json:"addresses" db:"-"`
+	*model.ModelMetadata                     // user's ID will override model data's ID
+	JwtTokenKey              string          `json:"jwt_token_key"`
+	LastActivityAt           int64           `db:"-" json:"last_activity_at,omitempty"`
+	TermsOfServiceId         string          `db:"-" json:"terms_of_service_id,omitempty"`
+	TermsOfServiceCreateAt   int64           `db:"-" json:"terms_of_service_create_at,omitempty"`
+	DisableWelcomeEmail      bool            `db:"-" json:"disable_welcome_email"`
 }
 
 // UserMap is a map from a userId to a user object.
@@ -117,15 +88,15 @@ type UserUpdate struct {
 }
 
 type UserPatch struct {
-	Username    *string   `json:"username"`
-	Password    *string   `json:"password,omitempty"`
-	Nickname    *string   `json:"nickname"`
-	FirstName   *string   `json:"first_name"`
-	LastName    *string   `json:"last_name"`
-	Email       *string   `json:"email"`
-	Locale      *string   `json:"locale"`
-	Timezone    StringMap `json:"timezone"`
-	NotifyProps StringMap `json:"notify_props,omitempty"`
+	Username    *string         `json:"username"`
+	Password    *string         `json:"password,omitempty"`
+	Nickname    *string         `json:"nickname"`
+	FirstName   *string         `json:"first_name"`
+	LastName    *string         `json:"last_name"`
+	Email       *string         `json:"email"`
+	Locale      *string         `json:"locale"`
+	Timezone    model.StringMap `json:"timezone"`
+	NotifyProps model.StringMap `json:"notify_props,omitempty"`
 }
 
 type UserAuth struct {
@@ -223,13 +194,13 @@ func (u UserSlice) FilterWithoutID(ids []string) UserSlice {
 func (u *User) DeepCopy() *User {
 	copyUser := *u
 	if u.AuthData != nil {
-		copyUser.AuthData = NewString(*u.AuthData)
+		copyUser.AuthData = model.NewString(*u.AuthData)
 	}
 	if u.NotifyProps != nil {
-		copyUser.NotifyProps = CopyStringMap(u.NotifyProps)
+		copyUser.NotifyProps = model.CopyStringMap(u.NotifyProps)
 	}
 	if u.Timezone != nil {
-		copyUser.Timezone = CopyStringMap(u.Timezone)
+		copyUser.Timezone = model.CopyStringMap(u.Timezone)
 	}
 
 	return &copyUser
@@ -251,8 +222,8 @@ func (u *User) IsValidLocale() bool {
 
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
-func (u *User) IsValid() *AppError {
-	if !IsValidId(u.Id) {
+func (u *User) IsValid() *model.AppError {
+	if !model.IsValidId(u.Id) {
 		return InvalidUserError("id", "")
 	}
 	if u.CreateAt == 0 {
@@ -261,10 +232,10 @@ func (u *User) IsValid() *AppError {
 	if u.UpdateAt == 0 {
 		return InvalidUserError("update_at", u.Id)
 	}
-	if !IsValidUsername(u.Username) {
+	if !model.IsValidUsername(u.Username) {
 		return InvalidUserError("username", u.Id)
 	}
-	if len(u.Email) > USER_EMAIL_MAX_LENGTH || u.Email == "" || !IsValidEmail(u.Email) {
+	if len(u.Email) > USER_EMAIL_MAX_LENGTH || u.Email == "" || !model.IsValidEmail(u.Email) {
 		return InvalidUserError("email", u.Id)
 	}
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
@@ -293,7 +264,7 @@ func (u *User) IsValid() *AppError {
 	}
 	if len(u.Timezone) > 0 {
 		if tzJson, err := json.JSON.Marshal(u.Timezone); err != nil {
-			return NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
+			return model.NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else if utf8.RuneCount(tzJson) > USER_TIMEZONE_MAX_RUNES {
 			return InvalidUserError("timezone_limit", u.Id)
 		}
@@ -310,18 +281,18 @@ func (u *User) PreSave() {
 		u.Id = uuid.NewString()
 	}
 	if u.Username == "" {
-		u.Username = "user_" + NewRandomString(10)
+		u.Username = "user_" + model.NewRandomString(10)
 	}
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
 	}
-	u.Username = SanitizeUnicode(u.Username)
-	u.FirstName = SanitizeUnicode(u.FirstName)
-	u.LastName = SanitizeUnicode(u.LastName)
-	u.Nickname = SanitizeUnicode(u.Nickname)
-	u.Username = NormalizeUsername(u.Username)
-	u.Email = NormalizeEmail(u.Email)
-	u.CreateAt = GetMillis()
+	u.Username = model.SanitizeUnicode(u.Username)
+	u.FirstName = model.SanitizeUnicode(u.FirstName)
+	u.LastName = model.SanitizeUnicode(u.LastName)
+	u.Nickname = model.SanitizeUnicode(u.Nickname)
+	u.Username = model.NormalizeUsername(u.Username)
+	u.Email = model.NormalizeEmail(u.Email)
+	u.CreateAt = model.GetMillis()
 	u.UpdateAt = u.CreateAt
 	u.LastPasswordUpdate = u.CreateAt
 	u.MfaActive = false
@@ -338,13 +309,13 @@ func (u *User) PreSave() {
 
 // PreUpdate should be run before updating the user in the db.
 func (u *User) PreUpdate() {
-	u.Username = SanitizeUnicode(u.Username)
-	u.FirstName = SanitizeUnicode(u.FirstName)
-	u.LastName = SanitizeUnicode(u.LastName)
-	u.Nickname = SanitizeUnicode(u.Nickname)
-	u.Username = NormalizeUsername(u.Username)
-	u.Email = NormalizeEmail(u.Email)
-	u.UpdateAt = GetMillis()
+	u.Username = model.SanitizeUnicode(u.Username)
+	u.FirstName = model.SanitizeUnicode(u.FirstName)
+	u.LastName = model.SanitizeUnicode(u.LastName)
+	u.Nickname = model.SanitizeUnicode(u.Nickname)
+	u.Username = model.NormalizeUsername(u.Username)
+	u.Email = model.NormalizeEmail(u.Email)
+	u.UpdateAt = model.GetMillis()
 
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
@@ -366,11 +337,11 @@ func (u *User) PreUpdate() {
 }
 
 func (u *User) IsLDAPUser() bool {
-	return u.AuthService == USER_AUTH_SERVICE_LDAP
+	return u.AuthService == model.USER_AUTH_SERVICE_LDAP
 }
 
 func (u *User) IsSAMLUser() bool {
-	return u.AuthService == USER_AUTH_SERVICE_SAML
+	return u.AuthService == model.USER_AUTH_SERVICE_SAML
 }
 
 func (u *User) Patch(patch *UserPatch) {
@@ -425,13 +396,13 @@ func (u *UserAuth) ToJson() string {
 
 // Generate a valid strong etag so the browser can cache the results
 func (u *User) Etag(showFullName, showEmail bool) string {
-	return Etag(u.Id, u.UpdateAt, u.TermsOfServiceId, u.TermsOfServiceCreateAt, showFullName, showEmail)
+	return model.Etag(u.Id, u.UpdateAt, u.TermsOfServiceId, u.TermsOfServiceCreateAt, showFullName, showEmail)
 }
 
 // Remove any private data from the user object
 func (u *User) Sanitize(options map[string]bool) {
 	u.Password = ""
-	u.AuthData = NewString("")
+	u.AuthData = model.NewString("")
 	u.MfaSecret = ""
 
 	if len(options) != 0 && !options["email"] {
@@ -452,7 +423,7 @@ func (u *User) Sanitize(options map[string]bool) {
 // Remove any input data from the user object that is not user controlled
 func (u *User) SanitizeInput(isAdmin bool) {
 	if !isAdmin {
-		u.AuthData = NewString("")
+		u.AuthData = model.NewString("")
 		u.AuthService = ""
 		u.EmailVerified = false
 	}
@@ -498,7 +469,7 @@ func (u *User) GetMentionKeys() []string {
 
 func (u *User) ClearNonProfileFields() {
 	u.Password = ""
-	u.AuthData = NewString("")
+	u.AuthData = model.NewString("")
 	u.MfaSecret = ""
 	u.EmailVerified = false
 	u.LastPasswordUpdate = 0
@@ -526,13 +497,13 @@ func (u *User) GetFullName() string {
 func (u *User) getDisplayName(baseName, nameFormat string) string {
 	displayName := baseName
 
-	if nameFormat == SHOW_NICKNAME_FULLNAME {
+	if nameFormat == model.SHOW_NICKNAME_FULLNAME {
 		if u.Nickname != "" {
 			displayName = u.Nickname
 		} else if fullName := u.GetFullName(); fullName != "" {
 			displayName = fullName
 		}
-	} else if nameFormat == SHOW_FULLNAME {
+	} else if nameFormat == model.SHOW_FULLNAME {
 		if fullName := u.GetFullName(); fullName != "" {
 			displayName = fullName
 		}
@@ -566,7 +537,7 @@ func IsValidUserRoles(userRoles string) bool {
 	roles := strings.Fields(userRoles)
 
 	for _, r := range roles {
-		if !IsValidRoleName(r) {
+		if !model.IsValidRoleName(r) {
 			return false
 		}
 	}
@@ -582,11 +553,11 @@ func IsValidUserRoles(userRoles string) bool {
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
 // This function should not be used to check permissions.
 func (u *User) IsGuest() bool {
-	return IsInRole(u.Roles, SYSTEM_GUEST_ROLE_ID)
+	return IsInRole(u.Roles, model.SYSTEM_GUEST_ROLE_ID)
 }
 
 func (u *User) IsSystemAdmin() bool {
-	return IsInRole(u.Roles, SYSTEM_ADMIN_ROLE_ID)
+	return IsInRole(u.Roles, model.SYSTEM_ADMIN_ROLE_ID)
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
@@ -604,10 +575,7 @@ func IsInRole(userRoles string, inRole string) bool {
 }
 
 func (u *User) IsOAuthUser() bool {
-	return u.AuthService == SERVICE_GITLAB ||
-		u.AuthService == SERVICE_GOOGLE ||
-		u.AuthService == SERVICE_OFFICE365 ||
-		u.AuthService == SERVICE_OPENID
+	return u.AuthService == model.SERVICE_GOOGLE || u.AuthService == model.SERVICE_OPENID
 }
 
 func (u *User) ToPatch() *UserPatch {
@@ -679,54 +647,13 @@ func UserListFromJson(data io.Reader) []*User {
 	return users
 }
 
-func InvalidUserError(fieldName string, userId string) *AppError {
+func InvalidUserError(fieldName string, userId string) *model.AppError {
 	id := fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName)
 	details := ""
 	if userId != "" {
 		details = "user_id=" + userId
 	}
-	return NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
-func IsValidUsername(s string) bool {
-	if len(s) < USER_NAME_MIN_LENGTH || len(s) > USER_NAME_MAX_LENGTH {
-		return false
-	}
-	if !validUsernameChars.MatchString(s) {
-		return false
-	}
-	_, found := restrictedUsernames[s]
-
-	return !found
-}
-
-func NormalizeUsername(username string) string {
-	return strings.ToLower(username)
-}
-
-func CleanUsername(uname string) string {
-	s := NormalizeUsername(strings.Replace(uname, " ", "-", -1))
-	for _, value := range reservedName {
-		if s == value {
-			s = strings.Replace(s, value, "", -1)
-		}
-	}
-	s = strings.TrimSpace(s)
-	for _, c := range s {
-		char := fmt.Sprintf("%c", c)
-		if !validUsernameChars.MatchString(char) {
-			s = strings.Replace(s, char, "-", -1)
-		}
-	}
-
-	s = strings.Trim(s, "-")
-
-	if !IsValidUsername(s) {
-		slog.Info("generating new username")
-		s = "a" + uuid.New().String()
-	}
-
-	return s
+	return model.NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword

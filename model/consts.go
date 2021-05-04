@@ -1,5 +1,7 @@
 package model
 
+import "regexp"
+
 const (
 	TimeZone                 = "UTC"
 	LanguageCode             = "en"
@@ -7,6 +9,35 @@ const (
 	MAX_LENGTH_COUNTRY_CODE  = 2
 )
 
+var (
+	ValidUsernameChars  = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)
+	RestrictedUsernames = map[string]interface{}{
+		"all":      nil,
+		"channel":  nil,
+		"sitename": nil,
+		"system":   nil,
+	}
+	ReservedName = []string{
+		"admin",
+		"api",
+		"channel",
+		"claim",
+		"error",
+		"files",
+		"help",
+		"landing",
+		"login",
+		"mfa",
+		"oauth",
+		"plug",
+		"plugins",
+		"post",
+		"signup",
+		"sitename",
+	}
+)
+
+// Languages supported by app
 var Languages = map[string]string{
 	"ar":      "Arabic",
 	"az":      "Azerbaijani",
@@ -59,6 +90,7 @@ var Languages = map[string]string{
 	"zh-hant": "Traditional Chinese",
 }
 
+// countries supported by app
 var Countries = map[string]string{
 	"AF": "Afghanistan",
 	"AX": "Åland Islands",
@@ -311,3 +343,12 @@ var Countries = map[string]string{
 	"ZW": "Zimbabwe",
 	"EU": "European Union",
 }
+
+// NamePart is an Enum
+type NamePart string
+
+// two name parts
+const (
+	FirstName NamePart = "first name"
+	LastName  NamePart = "last name"
+)

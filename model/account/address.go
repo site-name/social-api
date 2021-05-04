@@ -1,4 +1,4 @@
-package model
+package account
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -84,31 +85,31 @@ func (add *Address) PreSave() {
 	if add.LastName == "" {
 		add.LastName = "last_name"
 	}
-	add.FirstName = SanitizeUnicode(CleanNamePart(add.FirstName, firstName))
-	add.LastName = SanitizeUnicode(CleanNamePart(add.LastName, lastName))
-	add.CreateAt = GetMillis()
+	add.FirstName = model.SanitizeUnicode(CleanNamePart(add.FirstName, model.FirstName))
+	add.LastName = model.SanitizeUnicode(CleanNamePart(add.LastName, model.LastName))
+	add.CreateAt = model.GetMillis()
 	add.UpdateAt = add.CreateAt
 }
 
 func (a *Address) PreUpdate() {
-	a.FirstName = SanitizeUnicode(a.FirstName)
-	a.LastName = SanitizeUnicode(a.LastName)
-	a.UpdateAt = GetMillis()
+	a.FirstName = model.SanitizeUnicode(a.FirstName)
+	a.LastName = model.SanitizeUnicode(a.LastName)
+	a.UpdateAt = model.GetMillis()
 }
 
-func (a *Address) InvalidAddressError(fieldName string) *AppError {
+func (a *Address) InvalidAddressError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.address.is_valid.%s.app_error", fieldName)
 	var details string
 	if strings.ToLower(fieldName) != "id" {
 		details += "address_id=" + a.Id
 	}
 
-	return NewAppError("Address.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Address.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
 // IsValid validates address and returns an error if data is not processed
-func (a *Address) IsValid() *AppError {
-	if !IsValidId(a.Id) {
+func (a *Address) IsValid() *model.AppError {
+	if !model.IsValidId(a.Id) {
 		return a.InvalidAddressError("id")
 	}
 	if a.CreateAt == 0 {
@@ -117,10 +118,10 @@ func (a *Address) IsValid() *AppError {
 	if a.UpdateAt == 0 {
 		return a.InvalidAddressError("update_at")
 	}
-	if a.FirstName == "" || !IsValidNamePart(a.FirstName, firstName) {
+	if a.FirstName == "" || !IsValidNamePart(a.FirstName, model.FirstName) {
 		return a.InvalidAddressError("first_name")
 	}
-	if a.LastName == "" || !IsValidNamePart(a.LastName, lastName) {
+	if a.LastName == "" || !IsValidNamePart(a.LastName, model.LastName) {
 		return a.InvalidAddressError("last_name")
 	}
 	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > COMPANY_NAME_MAX_LENGTH {
@@ -138,45 +139,38 @@ func (a *Address) IsValid() *AppError {
 	if a.CityArea != nil && utf8.RuneCountInString(*a.CityArea) > CITY_AREA_MAX_LENGTH {
 		return a.InvalidAddressError("city_area")
 	}
-	if utf8.RuneCountInString(a.PostalCode) > POSTAL_CODE_MAX_LENGTH || !IsAllNumbers(a.PostalCode) {
+	if utf8.RuneCountInString(a.PostalCode) > POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
 		return a.InvalidAddressError("postal_code")
 	}
-	if _, ok := Countries[strings.ToUpper(a.Country)]; !ok {
+	if _, ok := model.Countries[strings.ToUpper(a.Country)]; !ok {
 		return a.InvalidAddressError("country")
 	}
 	if utf8.RuneCountInString(a.CountryArea) > COUNTRY_AREA_MAX_LENGTH {
 		return a.InvalidAddressError("country_area")
 	}
-	if utf8.RuneCountInString(a.Phone) > PHONE_MAX_LENGTH || !IsValidPhoneNumber(a.Phone, "") {
+	if utf8.RuneCountInString(a.Phone) > PHONE_MAX_LENGTH || !model.IsValidPhoneNumber(a.Phone, "") {
 		return a.InvalidAddressError("phone")
 	}
 
 	return nil
 }
 
-type namePart string
-
-const (
-	firstName namePart = "first name"
-	lastName  namePart = "last name"
-)
-
 // IsValidNamePart check if given first_name/last_name is valid or not
-func IsValidNamePart(s string, nameType namePart) bool {
-	if nameType == firstName {
+func IsValidNamePart(s string, nameType model.NamePart) bool {
+	if nameType == model.FirstName {
 		if utf8.RuneCountInString(s) > FIRST_NAME_MAX_LENGTH {
 			return false
 		}
-	} else if nameType == lastName {
+	} else if nameType == model.LastName {
 		if utf8.RuneCountInString(s) > LAST_NAME_MAX_LENGTH {
 			return false
 		}
 	}
 
-	if !validUsernameChars.MatchString(s) {
+	if !model.ValidUsernameChars.MatchString(s) {
 		return false
 	}
-	_, found := restrictedUsernames[s]
+	_, found := model.RestrictedUsernames[s]
 
 	return !found
 }
@@ -184,9 +178,9 @@ func IsValidNamePart(s string, nameType namePart) bool {
 // CleanNamePart makes sure first_name or last_name do not violate standard requirements
 //
 // E.g: reserved names, only digits and ASCII letters are allowed
-func CleanNamePart(s string, nameType namePart) string {
-	name := NormalizeUsername(strings.Replace(s, " ", "-", -1))
-	for _, value := range reservedName {
+func CleanNamePart(s string, nameType model.NamePart) string {
+	name := model.NormalizeUsername(strings.Replace(s, " ", "-", -1))
+	for _, value := range model.ReservedName {
 		if name == value {
 			name = strings.Replace(name, value, "", -1)
 		}
@@ -194,7 +188,7 @@ func CleanNamePart(s string, nameType namePart) string {
 	name = strings.TrimSpace(name)
 	for _, c := range name {
 		char := string(c)
-		if !validUsernameChars.MatchString(char) {
+		if !model.ValidUsernameChars.MatchString(char) {
 			name = strings.Replace(s, char, "-", -1)
 		}
 	}
@@ -202,7 +196,7 @@ func CleanNamePart(s string, nameType namePart) string {
 
 	if !IsValidNamePart(name, nameType) {
 		slog.Info("generating new", slog.String("name type", string(nameType)))
-		name = "a" + strings.ReplaceAll(NewRandomString(8), "-", "")
+		name = "a" + strings.ReplaceAll(model.NewRandomString(8), "-", "")
 	}
 
 	return name

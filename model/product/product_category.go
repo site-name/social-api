@@ -1,4 +1,4 @@
-package model
+package product
 
 import (
 	"fmt"
@@ -7,6 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/gosimple/slug"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -25,29 +28,29 @@ type Category struct {
 	ParentID           string  `json:"parent_id"`
 	BackgroundImage    *string `json:"background_image"`
 	BackgroundImageAlt string  `json:"background_image_alt"`
-	*Seo
-	*ModelMetadata
+	*seo.Seo
+	*model.ModelMetadata
 }
 
 func (c *Category) String() string {
 	return c.Name
 }
 
-func (c *Category) createAppError(fieldName string) *AppError {
+func (c *Category) createAppError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.category.is_valid.%s.app_error", fieldName)
 	var details string
 	if !strings.EqualFold(fieldName, "id") {
 		details = "category_id=" + c.Id
 	}
 
-	return NewAppError("Category.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Category.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (c *Category) IsValid() *AppError {
-	if !IsValidId(c.Id) {
+func (c *Category) IsValid() *model.AppError {
+	if !model.IsValidId(c.Id) {
 		return c.createAppError("id")
 	}
-	if !IsValidId(c.ParentID) {
+	if !model.IsValidId(c.ParentID) {
 		return c.createAppError("id")
 	}
 	if len(c.BackgroundImageAlt) > CATEGORY_BG_IMAGE_ALT_MAX_LENGTH {
@@ -65,10 +68,15 @@ func (c *Category) IsValid() *AppError {
 
 func (c *Category) PreSave() {
 	if c.Id == "" {
-		c.Id = NewId()
+		c.Id = model.NewId()
 	}
-	c.Name = SanitizeUnicode(c.Name)
-	c.Slug = SanitizeUnicode(c.Slug)
+	c.Name = model.SanitizeUnicode(c.Name)
+	c.Slug = slug.Make(c.Slug)
+}
+
+func (c *Category) PreUpdate() {
+	c.Name = model.SanitizeUnicode(c.Name)
+	c.Slug = slug.Make(c.Slug)
 }
 
 func (c *Category) ToJson() string {
@@ -91,7 +99,7 @@ type CategoryTranslation struct {
 	CategoryID   string  `json:"category_id"`
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
-	*SeoTranslation
+	*seo.SeoTranslation
 }
 
 func (c *CategoryTranslation) String() string {
@@ -112,21 +120,21 @@ func CategoryTranslationFromJSON(data io.Reader) *Category {
 	return &c
 }
 
-func (c *CategoryTranslation) createAppError(fieldName string) *AppError {
+func (c *CategoryTranslation) createAppError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.category_translation.is_valid.%s.app_error", fieldName)
 	var details string
 	if !strings.EqualFold(fieldName, "id") {
 		details = "category_translation_id=" + c.Id
 	}
 
-	return NewAppError("CategoryTranslation.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("CategoryTranslation.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (c *CategoryTranslation) IsValid() *AppError {
-	if !IsValidId(c.Id) {
+func (c *CategoryTranslation) IsValid() *model.AppError {
+	if !model.IsValidId(c.Id) {
 		return c.createAppError("id")
 	}
-	if !IsValidId(c.CategoryID) {
+	if !model.IsValidId(c.CategoryID) {
 		return c.createAppError("category_id")
 	}
 	if utf8.RuneCountInString(c.Name) > CATEGORY_NAME_MAX_LENGTH {
@@ -138,7 +146,7 @@ func (c *CategoryTranslation) IsValid() *AppError {
 
 func (c *CategoryTranslation) PreSave() {
 	if c.Id == "" {
-		c.Id = NewId()
+		c.Id = model.NewId()
 	}
-	c.Name = SanitizeUnicode(c.Name)
+	c.Name = model.SanitizeUnicode(c.Name)
 }

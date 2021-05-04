@@ -1,4 +1,4 @@
-package model
+package discount
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -32,7 +33,7 @@ const (
 )
 
 var (
-	VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH = len(Countries)*3 - 1 // hihi
+	VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH = len(model.Countries)*3 - 1 // hihi
 )
 
 type NotApplicable struct {
@@ -71,21 +72,21 @@ func VoucherFromJson(data io.Reader) *Voucher {
 	return &v
 }
 
-func (v *Voucher) createAppError(field string) *AppError {
+func (v *Voucher) createAppError(field string) *model.AppError {
 	id := fmt.Sprintf("model.voucher.is_valid.%s.app_error", field)
 	var details string
 	if !strings.EqualFold(field, "id") {
 		details = "voucher_id=" + v.Id
 	}
 
-	return NewAppError("Voucher.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Voucher.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (v *Voucher) IsValid() *AppError {
+func (v *Voucher) IsValid() *model.AppError {
 	if v.Id == "" {
 		return v.createAppError("id")
 	}
-	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
+	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !model.StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
 		return v.createAppError("type")
 	}
 	if len(v.Name) > VOUCHER_NAME_MAX_LENGTH {
@@ -97,7 +98,7 @@ func (v *Voucher) IsValid() *AppError {
 	if v.StartDate == nil {
 		return v.createAppError("start_date")
 	}
-	if len(v.DiscountValueType) > VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH || !StringArray([]string{FIXED, PERCENTAGE}).Contains(v.DiscountValueType) {
+	if len(v.DiscountValueType) > VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH || !model.StringArray([]string{FIXED, PERCENTAGE}).Contains(v.DiscountValueType) {
 		return v.createAppError("discount_value_type")
 	}
 	if len(v.Countries) > VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH {
@@ -109,7 +110,7 @@ func (v *Voucher) IsValid() *AppError {
 
 func (v *Voucher) PreSave() {
 	if v.Id == "" {
-		v.Id = NewId()
+		v.Id = model.NewId()
 	}
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
@@ -121,12 +122,12 @@ func (v *Voucher) PreSave() {
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
 	}
-	v.Name = SanitizeUnicode(v.Name)
+	v.Name = model.SanitizeUnicode(v.Name)
 }
 
 func (v *Voucher) PreUpdate() {
 	if v.Id == "" {
-		v.Id = NewId()
+		v.Id = model.NewId()
 	}
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
@@ -138,5 +139,5 @@ func (v *Voucher) PreUpdate() {
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
 	}
-	v.Name = SanitizeUnicode(v.Name)
+	v.Name = model.SanitizeUnicode(v.Name)
 }

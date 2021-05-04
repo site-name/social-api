@@ -17,6 +17,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
@@ -479,26 +480,6 @@ func NormalizeEmail(email string) string {
 	return splitEmail[0] + "@" + strings.ToLower(splitEmail[1])
 }
 
-// func IsValidCountryCode(code string) (*language.Region, error) {
-// 	region, err := language.ParseRegion(code)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &region, true
-// }
-
-// func CurrencyFromRegion(rg *language.Region) (currency.Unit, bool) {
-// 	return currency.FromRegion(*rg)
-// }
-
-// func IsCurrencyCodeValid(code string) (*currency.Unit, bool) {
-// 	unit, err := currency.ParseISO(code)
-// 	if err != nil {
-// 		return nil, false
-// 	}
-// 	return &unit, true
-// }
-
 func GetServerIpAddress(iface string) string {
 	var addrs []net.Addr
 	if iface == "" {
@@ -561,4 +542,43 @@ func IsValidPhoneNumber(phone, countryCode string) bool {
 	return err == nil
 }
 
-// func CleanEditorJs(definitions )
+func IsValidUsername(s string) bool {
+	if len(s) < account.USER_NAME_MIN_LENGTH || len(s) > account.USER_NAME_MAX_LENGTH {
+		return false
+	}
+	if !ValidUsernameChars.MatchString(s) {
+		return false
+	}
+	_, found := RestrictedUsernames[s]
+
+	return !found
+}
+
+func NormalizeUsername(username string) string {
+	return strings.ToLower(username)
+}
+
+func CleanUsername(uname string) string {
+	s := NormalizeUsername(strings.Replace(uname, " ", "-", -1))
+	for _, value := range ReservedName {
+		if s == value {
+			s = strings.Replace(s, value, "", -1)
+		}
+	}
+	s = strings.TrimSpace(s)
+	for _, c := range s {
+		char := fmt.Sprintf("%c", c)
+		if !ValidUsernameChars.MatchString(char) {
+			s = strings.Replace(s, char, "-", -1)
+		}
+	}
+
+	s = strings.Trim(s, "-")
+
+	if !IsValidUsername(s) {
+		slog.Info("generating new username")
+		s = "a" + uuid.New().String()
+	}
+
+	return s
+}

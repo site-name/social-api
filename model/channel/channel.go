@@ -1,4 +1,4 @@
-package model
+package channel
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/gosimple/slug"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
@@ -25,19 +27,19 @@ type Channel struct {
 }
 
 func (c *Channel) String() string {
-	return c.Slug
+	return c.Name
 }
 
-func (c *Channel) invalidChannelErr(field string) *AppError {
+func (c *Channel) invalidChannelErr(field string) *model.AppError {
 	id := fmt.Sprintf("model.channel.is_valid.%s.app_error", field)
 	var details string
 	if strings.ToLower(field) != "id" {
 		details = "channel_id=" + c.Id
 	}
-	return NewAppError("Channel.IsValid", id, nil, details, http.StatusBadRequest)
+	return model.NewAppError("Channel.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
-func (c *Channel) IsValid() *AppError {
+func (c *Channel) IsValid() *model.AppError {
 	if c.Id == "" {
 		return c.invalidChannelErr("id")
 	}
@@ -46,9 +48,6 @@ func (c *Channel) IsValid() *AppError {
 	}
 	if utf8.RuneCountInString(c.Slug) > CHANNEL_SLUG_MAX_LENGTH {
 		c.invalidChannelErr("slug")
-	}
-	if len(c.Currency) > MAX_LENGTH_CURRENCY_CODE || c.Currency == "" {
-		c.invalidChannelErr("currency")
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
 		return c.invalidChannelErr("currency")
@@ -69,4 +68,20 @@ func ChannelFromJson(data io.Reader) *Channel {
 		return nil
 	}
 	return &channel
+}
+
+func (c *Channel) PreSave() {
+	if c.Id == "" {
+		c.Id = model.NewId()
+	}
+	c.Name = model.SanitizeUnicode(c.Name)
+	c.Slug = slug.Make(c.Name)
+}
+
+func (c *Channel) PreUpdate() {
+	if c.Id == "" {
+		c.Id = model.NewId()
+	}
+	c.Name = model.SanitizeUnicode(c.Name)
+	c.Slug = slug.Make(c.Name)
 }
