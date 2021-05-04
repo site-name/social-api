@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 )
 
-func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
-	users := make([]*model.User, 0, len(userArgs))
+func getUsersFromUserArgs(a *app.App, userArgs []string) []*account.User {
+	users := make([]*account.User, 0, len(userArgs))
 	for _, userArg := range userArgs {
 		user := getUserFromUserArg(a, userArg)
 		users = append(users, user)
@@ -16,7 +16,7 @@ func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
 	return users
 }
 
-func getUserFromUserArg(a *app.App, userArg string) *model.User {
+func getUserFromUserArg(a *app.App, userArg string) *account.User {
 	user, _ := a.Srv().Store.User().GetByEmail(userArg)
 
 	if user == nil {

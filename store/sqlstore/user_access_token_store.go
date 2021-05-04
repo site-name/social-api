@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -19,7 +20,7 @@ func newSqlUserAccessTokenStore(sqlStore *SqlStore) store.UserAccessTokenStore {
 	s := &SqlUserAccessTokenStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.UserAccessToken{}, "UserAccessTokens").SetKeys(false, "Id")
+		table := db.AddTableWithName(account.UserAccessToken{}, "UserAccessTokens").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Token").SetMaxSize(26).SetUnique(true)
 		table.ColMap("UserId").SetMaxSize(26)
@@ -34,7 +35,7 @@ func (s SqlUserAccessTokenStore) createIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_user_access_tokens_user_id", "UserAccessTokens", "UserId")
 }
 
-func (s SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
+func (s SqlUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
 	token.PreSave()
 
 	if err := token.IsValid(); err != nil {
@@ -131,8 +132,8 @@ func (s SqlUserAccessTokenStore) deleteTokensByUser(transaction *gorp.Transactio
 	return nil
 }
 
-func (s SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, error) {
-	token := model.UserAccessToken{}
+func (s SqlUserAccessTokenStore) Get(tokenId string) (*account.UserAccessToken, error) {
+	token := account.UserAccessToken{}
 
 	if err := s.GetReplica().SelectOne(&token, "SELECT * FROM UserAccessTokens WHERE Id = :Id", map[string]interface{}{"Id": tokenId}); err != nil {
 		if err == sql.ErrNoRows {
@@ -144,8 +145,8 @@ func (s SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, er
 	return &token, nil
 }
 
-func (s SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccessToken, error) {
-	tokens := []*model.UserAccessToken{}
+func (s SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*account.UserAccessToken, error) {
+	tokens := []*account.UserAccessToken{}
 
 	if _, err := s.GetReplica().Select(&tokens, "SELECT * FROM UserAccessTokens LIMIT :Limit OFFSET :Offset", map[string]interface{}{"Offset": offset, "Limit": limit}); err != nil {
 		return nil, errors.Wrap(err, "failed to find UserAccessTokens")
@@ -154,8 +155,8 @@ func (s SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccessT
 	return tokens, nil
 }
 
-func (s SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
-	token := model.UserAccessToken{}
+func (s SqlUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
+	token := account.UserAccessToken{}
 
 	if err := s.GetReplica().SelectOne(&token, "SELECT * FROM UserAccessTokens WHERE Token = :Token", map[string]interface{}{"Token": tokenString}); err != nil {
 		if err == sql.ErrNoRows {
@@ -167,8 +168,8 @@ func (s SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAcce
 	return &token, nil
 }
 
-func (s SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*model.UserAccessToken, error) {
-	tokens := []*model.UserAccessToken{}
+func (s SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*account.UserAccessToken, error) {
+	tokens := []*account.UserAccessToken{}
 
 	if _, err := s.GetReplica().Select(&tokens, "SELECT * FROM UserAccessTokens WHERE UserId = :UserId LIMIT :Limit OFFSET :Offset", map[string]interface{}{"UserId": userId, "Offset": offset, "Limit": limit}); err != nil {
 		return nil, errors.Wrapf(err, "failed to find UserAccessTokens with userId=%s", userId)
@@ -177,9 +178,9 @@ func (s SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]
 	return tokens, nil
 }
 
-func (s SqlUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s SqlUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
 	term = sanitizeSearchTerm(term, "\\")
-	tokens := []*model.UserAccessToken{}
+	tokens := []*account.UserAccessToken{}
 	params := map[string]interface{}{"Term": term + "%"}
 	query := `
 		SELECT

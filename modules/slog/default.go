@@ -2,10 +2,11 @@ package slog
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/sitename/sitename/modules/json"
 
 	"github.com/mattermost/logr"
 )
@@ -23,7 +24,7 @@ func defaultLog(level, msg string, fields ...Field) {
 		fields,
 	}
 
-	if b, err := json.Marshal(log); err != nil {
+	if b, err := json.JSON.Marshal(log); err != nil {
 		fmt.Fprintf(os.Stderr, `{"level":"error","msg":"failed to encode log message"}%s`, "\n")
 	} else {
 		fmt.Fprintf(os.Stderr, "%s\n", b)

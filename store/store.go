@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 )
 
 type StoreResult struct {
@@ -90,8 +91,8 @@ type StatusStore interface {
 }
 
 type UserStore interface {
-	Save(user *model.User) (*model.User, error)
-	Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error)
+	Save(user *account.User) (*account.User, error)
+	Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error)
 	UpdateLastPictureUpdate(userID string) error
 	ResetLastPictureUpdate(userID string) error
 	UpdatePassword(userID, newPassword string) error
@@ -100,22 +101,22 @@ type UserStore interface {
 	ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error)
 	UpdateMfaSecret(userID, secret string) error
 	UpdateMfaActive(userID string, active bool) error
-	Get(ctx context.Context, id string) (*model.User, error)
-	GetMany(ctx context.Context, ids []string) ([]*model.User, error)
-	GetAll() ([]*model.User, error)
+	Get(ctx context.Context, id string) (*account.User, error)
+	GetMany(ctx context.Context, ids []string) ([]*account.User, error)
+	GetAll() ([]*account.User, error)
 	ClearCaches()
 	InvalidateProfileCacheForUser(userID string)
-	GetByEmail(email string) (*model.User, error)
-	GetByAuth(authData *string, authService string) (*model.User, error)
-	GetAllUsingAuthService(authService string) ([]*model.User, error)
-	GetAllNotInAuthService(authServices []string) ([]*model.User, error)
-	GetByUsername(username string) (*model.User, error)
-	GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*model.User, error)
+	GetByEmail(email string) (*account.User, error)
+	GetByAuth(authData *string, authService string) (*account.User, error)
+	GetAllUsingAuthService(authService string) ([]*account.User, error)
+	GetAllNotInAuthService(authServices []string) ([]*account.User, error)
+	GetByUsername(username string) (*account.User, error)
+	GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*account.User, error)
 	VerifyEmail(userID, email string) (string, error)
 	GetEtagForAllProfiles() string
 	GetEtagForProfiles(teamID string) string
 	UpdateFailedPasswordAttempts(userID string, attempts int) error
-	GetSystemAdminProfiles() (map[string]*model.User, error)
+	GetSystemAdminProfiles() (map[string]*account.User, error)
 	PermanentDelete(userID string) error
 	GetUnreadCount(userID string) (int64, error)
 	AnalyticsGetInactiveUsersCount() (int64, error)
@@ -124,17 +125,17 @@ type UserStore interface {
 	AnalyticsGetGuestCount() (int64, error)
 	ClearAllCustomRoleAssignments() error
 	InferSystemInstallDate() (int64, error)
-	GetAllAfter(limit int, afterID string) ([]*model.User, error)
-	GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error)
+	GetAllAfter(limit int, afterID string) ([]*account.User, error)
+	GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*account.UserForIndexing, error)
 	PromoteGuestToUser(userID string) error
-	DemoteUserToGuest(userID string) (*model.User, error)
+	DemoteUserToGuest(userID string) (*account.User, error)
 	DeactivateGuests() ([]string, error)
 	GetKnownUsers(userID string) ([]string, error)
-	Count(options model.UserCountOptions) (int64, error)
-	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error)
-	GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error)
-	Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-	AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
+	Count(options account.UserCountOptions) (int64, error)
+	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error)
+	GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error)
+	Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error)
+	AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error)
 
 	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
@@ -203,14 +204,14 @@ type SessionStore interface {
 }
 
 type UserAccessTokenStore interface {
-	Save(token *model.UserAccessToken) (*model.UserAccessToken, error)
+	Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
 	DeleteAllForUser(userID string) error
 	Delete(tokenID string) error
-	Get(tokenID string) (*model.UserAccessToken, error)
-	GetAll(offset int, limit int) ([]*model.UserAccessToken, error)
-	GetByToken(tokenString string) (*model.UserAccessToken, error)
-	GetByUser(userID string, page, perPage int) ([]*model.UserAccessToken, error)
-	Search(term string) ([]*model.UserAccessToken, error)
+	Get(tokenID string) (*account.UserAccessToken, error)
+	GetAll(offset int, limit int) ([]*account.UserAccessToken, error)
+	GetByToken(tokenString string) (*account.UserAccessToken, error)
+	GetByUser(userID string, page, perPage int) ([]*account.UserAccessToken, error)
+	Search(term string) ([]*account.UserAccessToken, error)
 	UpdateTokenEnable(tokenID string) error
 	UpdateTokenDisable(tokenID string) error
 }

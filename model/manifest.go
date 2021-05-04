@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/modules/json"
 	"gopkg.in/yaml.v2"
 )
 
@@ -233,14 +233,14 @@ func (ms *ManifestServer) MarshalJSON() ([]byte, error) {
 		ms.AllExecutables["windows-amd64"] = ms.Executables.WindowsAmd64
 	}
 
-	return json.Marshal((*auxManifestServer)(ms))
+	return json.JSON.Marshal((*auxManifestServer)(ms))
 }
 
 func (ms *ManifestServer) UnmarshalJSON(data []byte) error {
 	type auxManifestServer ManifestServer
 
 	aux := (*auxManifestServer)(ms)
-	if err := json.Unmarshal(data, aux); err != nil {
+	if err := json.JSON.Unmarshal(data, aux); err != nil {
 		return err
 	}
 
@@ -312,24 +312,24 @@ type ManifestWebapp struct {
 }
 
 func (m *Manifest) ToJson() string {
-	b, _ := json.Marshal(m)
+	b, _ := json.JSON.Marshal(m)
 	return string(b)
 }
 
 func ManifestListToJson(m []*Manifest) string {
-	b, _ := json.Marshal(m)
+	b, _ := json.JSON.Marshal(m)
 	return string(b)
 }
 
 func ManifestFromJson(data io.Reader) *Manifest {
 	var m *Manifest
-	json.NewDecoder(data).Decode(&m)
+	json.JSON.NewDecoder(data).Decode(&m)
 	return m
 }
 
 func ManifestListFromJson(data io.Reader) []*Manifest {
 	var manifests []*Manifest
-	json.NewDecoder(data).Decode(&manifests)
+	json.JSON.NewDecoder(data).Decode(&manifests)
 	return manifests
 }
 
@@ -557,7 +557,7 @@ func FindManifest(dir string) (manifest *Manifest, path string, err error) {
 	}
 	defer f.Close()
 	var parsed Manifest
-	err = json.NewDecoder(f).Decode(&parsed)
+	err = json.JSON.NewDecoder(f).Decode(&parsed)
 	if err != nil {
 		return nil, path, err
 	}

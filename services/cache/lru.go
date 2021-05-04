@@ -8,7 +8,7 @@ import (
 	"github.com/tinylib/msgp/msgp"
 	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 )
 
 // LRU is a thread-safe fixed size LRU cache.
@@ -202,13 +202,13 @@ func (l *LRU) get(key string, value interface{}) error {
 	// like these and then return a pointer while returning from the cache function,
 	// but it will make the codebase inconsistent, and has some edge-cases to take care of.
 	switch v := value.(type) {
-	case **model.User:
-		var u model.User
+	case **account.User:
+		var u account.User
 		_, err := u.UnmarshalMsg(val)
 		*v = &u
 		return err
-	case *map[string]*model.User:
-		var u model.UserMap
+	case *map[string]*account.User:
+		var u account.UserMap
 		_, err := u.UnmarshalMsg(val)
 		*v = u
 		return err

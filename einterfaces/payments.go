@@ -3,6 +3,7 @@ package einterfaces
 import (
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/checkout"
 )
 
 // Uniform way to represent payment method information.
@@ -106,7 +107,7 @@ type InitializedPaymentResponse struct {
 }
 
 type PaymentInterface interface {
-	ListPaymentGateWays(currency string, checkout *model.Checkout, activeOnly bool) []*PaymentGateway
+	ListPaymentGateWays(currency string, checkout *checkout.Checkout, activeOnly bool) []*PaymentGateway
 	AuthorizePayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
 	CapturePayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
 	RefundPayent(gateway string, paymentInformation *PaymentData) *GatewayResponse
