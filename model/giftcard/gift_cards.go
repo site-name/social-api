@@ -25,7 +25,7 @@ type GiftCard struct {
 	StartDate            *time.Time       `json:"start_date"`
 	EndDate              *time.Time       `json:"end_date"`
 	LastUsedOn           int64            `json:"last_used_on"`
-	IsActive             bool             `json:"is_active"`
+	IsActive             *bool            `json:"is_active"`
 	Currency             string           `json:"currency"`
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
 	InitialBalance       *model.Money     `json:"initial_balance" db:"-"`
@@ -38,6 +38,14 @@ func (gc *GiftCard) DisplayCode() string {
 }
 
 func (gc *GiftCard) ToJson() string {
+	gc.InitialBalance = &model.Money{
+		Amount:   gc.InitialBalanceAmount,
+		Currency: gc.Currency,
+	}
+	gc.CurrentBalance = &model.Money{
+		Amount:   gc.CurrentBalanceAmount,
+		Currency: gc.Currency,
+	}
 	b, _ := json.JSON.Marshal(gc)
 	return string(b)
 }
@@ -82,4 +90,18 @@ func (gc *GiftCard) IsValid() *model.AppError {
 	}
 
 	return nil
+}
+
+func (gc *GiftCard) PreSave() {
+	if gc.Id == "" {
+		gc.Id = model.NewId()
+	}
+	gc.CreateAt = model.GetMillis()
+	if gc.IsActive == nil {
+		gc.IsActive = model.NewBool(true)
+	}
+	if gc.StartDate == nil {
+		today := time.Now()
+		gc.StartDate = &today
+	}
 }

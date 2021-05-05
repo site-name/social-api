@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
 
@@ -97,7 +98,7 @@ func (p *Product) IsValid() *model.AppError {
 		return p.createAppError("weight")
 	}
 	if p.Weight != nil {
-		if _, ok := WeightUnitString[p.WeightUnit]; !ok {
+		if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
 			return p.createAppError("weight_unit")
 		}
 	}
@@ -113,10 +114,8 @@ func (p *Product) PreSave() {
 	p.UpdateAt = p.CreateAt
 	p.Name = model.SanitizeUnicode(p.Name)
 	p.Slug = slug.Make(p.Name)
-	if p.Weight != nil {
-		if p.WeightUnit == "" {
-			p.WeightUnit = KG
-		}
+	if p.Weight != nil && p.WeightUnit == "" {
+		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 }
 
@@ -124,10 +123,8 @@ func (p *Product) PreUpdate() {
 	p.UpdateAt = model.GetMillis()
 	p.Name = model.SanitizeUnicode(p.Name)
 	p.Slug = slug.Make(p.Name)
-	if p.Weight != nil {
-		if p.WeightUnit == "" {
-			p.WeightUnit = KG
-		}
+	if p.Weight != nil && p.WeightUnit == "" {
+		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 }
 

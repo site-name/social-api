@@ -114,6 +114,10 @@ func (c *Checkout) IsValid() *model.AppError {
 }
 
 func (c *Checkout) ToJson() string {
+	c.Discount = &model.Money{
+		Amount:   c.DiscountAmount,
+		Currency: c.Currency,
+	}
 	b, _ := json.JSON.Marshal(c)
 	return string(b)
 }

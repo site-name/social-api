@@ -10,29 +10,13 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
-)
-
-// standard units for weight
-const (
-	G     = "g"
-	LB    = "lb"
-	OZ    = "oz"
-	KG    = "kg"
-	TONNE = "tonne"
+	"github.com/sitename/sitename/modules/measurement"
 )
 
 const (
 	PRODUCT_TYPE_NAME_MAX_LENGTH = 250
 	PRODUCT_TYPE_SLUG_MAX_LENGTH = 255
 )
-
-var WeightUnitString = map[string]string{
-	G:     "Gram",
-	LB:    "Pound",
-	OZ:    "Ounce",
-	KG:    "kg",
-	TONNE: "Tonne",
-}
 
 type ProductType struct {
 	Id                 string   `json:"id"`
@@ -44,6 +28,10 @@ type ProductType struct {
 	Weight             *float32 `json:"weight"`
 	WeightUnit         string   `json:"weight_unit"`
 	*model.ModelMetadata
+}
+
+func (p *ProductType) String() string {
+	return p.Name
 }
 
 func (p *ProductType) createAppError(fieldName string) *model.AppError {
@@ -69,7 +57,7 @@ func (p *ProductType) IsValid() *model.AppError {
 	if p.Weight != nil && *p.Weight < 0 {
 		return p.createAppError("weight")
 	}
-	if _, ok := WeightUnitString[p.WeightUnit]; !ok {
+	if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
 		return p.createAppError("weight_unit")
 	}
 
@@ -92,15 +80,20 @@ func (p *ProductType) PreSave() {
 	if p.IsDigital == nil {
 		p.IsDigital = model.NewBool(false)
 	}
-	if p.Weight == nil {
-		p.Weight = model.NewFloat32(0)
-		p.WeightUnit = KG
+	if p.Weight != nil && p.WeightUnit == "" {
+		// p.Weight = model.NewFloat32(0)
+		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 }
 
 func (p *ProductType) PreUpdate() {
 	p.Name = model.SanitizeUnicode(p.Name)
 	p.Slug = slug.Make(p.Name)
+
+	if p.Weight != nil && p.WeightUnit == "" {
+		// p.Weight = model.NewFloat32(0)
+		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
+	}
 }
 
 func (p *ProductType) ToJson() string {
