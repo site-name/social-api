@@ -75,7 +75,7 @@ func (s *Session) ToJson() string {
 
 func SessionFromJson(data io.Reader) *Session {
 	var s *Session
-	json.JSON.NewDecoder(data).Decode(s)
+	json.JSON.NewDecoder(data).Decode(&s)
 	return s
 }
 
@@ -113,6 +113,17 @@ func (s *Session) IsExpired() bool {
 	return false
 }
 
+// Deprecated: SetExpireInDays is deprecated and should not be used.
+//             Use (*App).SetSessionExpireInDays instead which handles the
+//			   cases where the new ExpiresAt is not relative to CreateAt.
+func (s *Session) SetExpireInDays(days int) {
+	if s.CreateAt == 0 {
+		s.ExpiresAt = GetMillis() + (1000 * 60 * 60 * 24 * int64(days))
+	} else {
+		s.ExpiresAt = s.CreateAt + (1000 * 60 * 60 * 24 * int64(days))
+	}
+}
+
 func (s *Session) AddProp(key string, value string) {
 
 	if s.Props == nil {
@@ -139,6 +150,19 @@ func (s *Session) IsMobile() bool {
 	return isMobile
 }
 
+func (s *Session) IsSaml() bool {
+	val, ok := s.Props[USER_AUTH_SERVICE_IS_SAML]
+	if !ok {
+		return false
+	}
+	isSaml, err := strconv.ParseBool(val)
+	if err != nil {
+		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
+		return false
+	}
+	return isSaml
+}
+
 func (s *Session) IsOAuthUser() bool {
 	val, ok := s.Props[USER_AUTH_SERVICE_IS_OAUTH]
 	if !ok {
@@ -153,7 +177,7 @@ func (s *Session) IsOAuthUser() bool {
 }
 
 func (s *Session) IsSSOLogin() bool {
-	return s.IsOAuthUser()
+	return s.IsOAuthUser() || s.IsSaml()
 }
 
 func (s *Session) GetUserRoles() []string {

@@ -136,6 +136,18 @@ app-layers: ## Extract interface from App struct
 	$(GOBIN)/struct2interface -f "app" -o "app/app_iface.go" -p "app" -s "App" -i "AppIface" -t ./app/layer_generators/app_iface.go.tmpl
 	$(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
 
+i18n-extract: ## Extract strings for translation from the source code
+	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool
+	$(GOBIN)/mmgotool i18n extract --portal-dir=""
+
+i18n-check: ## Exit on empty translation strings and translation source strings
+	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool
+	$(GOBIN)/mmgotool i18n clean-empty --portal-dir="" --check
+	$(GOBIN)/mmgotool i18n check-empty-src --portal-dir=""
+
+store-layers: ## Generate layers for the store
+	$(GO) generate $(GOFLAGS) ./store
+
 migration-prereqs: ## Builds prerequisite packages for migrations
 	$(GO) get -modfile=go.tools.mod github.com/golang-migrate/migrate/v4/cmd/migrate
 
@@ -150,3 +162,29 @@ migrations-bindata: ## Generates bindata migrations
 
 	@echo Generating bindata for migrations
 	$(GO) generate $(GOFLAGS) ./db/migrations/
+
+filestore-mocks: ## Creates mock files.
+	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
+	$(GOBIN)/mockery -dir modules/filestore -all -output modules/filestore/mocks -note 'Regenerate this file using `make filestore-mocks`.'
+
+einterfaces-mocks: ## Creates mock files for einterfaces.
+	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
+	$(GOBIN)/mockery -dir einterfaces -all -output einterfaces/mocks -note 'Regenerate this file using `make einterfaces-mocks`.'
+
+searchengine-mocks: ## Creates mock files for searchengines.
+	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
+	$(GOBIN)/mockery -dir services/searchengine -all -output services/searchengine/mocks -note 'Regenerate this file using `make searchengine-mocks`.'
+
+gen-serialized: ## Generates serialization methods for hot structs
+	# This tool only works at a file level, not at a package level.
+	# There will be some warnings about "unresolved identifiers",
+	# but that is because of the above problem. Since we are generating
+	# methods for all the relevant files at a package level, all
+	# identifiers will be resolved. An alternative to remove the warnings
+	# would be to temporarily move all the structs to the same file,
+	# but that involves a lot of manual work.
+	$(GO) get -modfile=go.tools.mod github.com/tinylib/msgp
+	# $(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
+	$(GOBIN)/msgp -file=./model/account/user.go -tests=false -o=./model/account/user_serial_gen.go
+
+

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -32,45 +33,72 @@ const (
 	USER_TIMEZONE_MAX_RUNES       = 256
 )
 
+type StringMap = map[string]string
+type ModelMetadata struct {
+	Id              string    `json:"string"`
+	Metadata        StringMap `json:"metadata"`
+	PrivateMetadata StringMap `json:"private_metadata"`
+
+	// mutex is used for safe access concurrenly
+	mutex sync.RWMutex `db:"-"`
+}
+type Address_ struct {
+	Id             string  `json:"id"`
+	FirstName      string  `json:"first_name"`
+	LastName       string  `json:"last_name"`
+	CompanyName    *string `json:"company_name,omitempty"`
+	StreetAddress1 string  `json:"street_address_1,omitempty"`
+	StreetAddress2 *string `json:"street_address_2,omitempty"`
+	City           string  `json:"city"`
+	CityArea       *string `json:"city_area,omitempty"`
+	PostalCode     string  `json:"postal_code"`
+	Country        string  `json:"country"`
+	CountryArea    string  `json:"country_area"`
+	Phone          string  `json:"phone"`
+	CreateAt       int64   `json:"create_at,omitempty"`
+	UpdateAt       int64   `json:"update_at,omitempty"`
+	DeleteAt       int64   `json:"delete_at"`
+}
+
 // User contains the details about the user.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type User struct {
-	Id                       string          `json:"id"`
-	DefaultShippingAddressID string          `json:"default_shipping_address,omitempty"`
-	DefaultBillingAddressID  string          `json:"default_billing_address,omitempty"`
-	Username                 string          `json:"username"`
-	Password                 string          `json:"password,omitempty"`
-	AuthData                 *string         `json:"auth_data,omitempty"`
-	AuthService              string          `json:"auth_service"`
-	Email                    string          `json:"email"`
-	EmailVerified            bool            `json:"email_verified,omitempty"`
-	Nickname                 string          `json:"nickname"`
-	FirstName                string          `json:"first_name"`
-	LastName                 string          `json:"last_name"`
-	Roles                    string          `json:"roles"`
-	Props                    model.StringMap `json:"props,omitempty"`
-	NotifyProps              model.StringMap `json:"notify_props,omitempty"`
-	LastPasswordUpdate       int64           `json:"last_password_update,omitempty"`
-	LastPictureUpdate        int64           `json:"last_picture_update,omitempty"`
-	FailedAttempts           int             `json:"failed_attempts,omitempty"`
-	Locale                   string          `json:"locale"`
-	Timezone                 model.StringMap `json:"timezone"`
-	MfaActive                bool            `json:"mfa_active,omitempty"`
-	MfaSecret                string          `json:"mfa_secret,omitempty"`
-	CreateAt                 int64           `json:"create_at,omitempty"`
-	UpdateAt                 int64           `json:"update_at,omitempty"`
-	DeleteAt                 int64           `json:"delete_at"`
-	IsStaff                  bool            `json:"is_staff"`
-	IsActive                 bool            `json:"is_active"`
-	Note                     string          `json:"note"`
-	Addresses                []*Address      `json:"addresses" db:"-"`
-	*model.ModelMetadata                     // user's ID will override model data's ID
-	JwtTokenKey              string          `json:"jwt_token_key"`
-	LastActivityAt           int64           `db:"-" json:"last_activity_at,omitempty"`
-	TermsOfServiceId         string          `db:"-" json:"terms_of_service_id,omitempty"`
-	TermsOfServiceCreateAt   int64           `db:"-" json:"terms_of_service_create_at,omitempty"`
-	DisableWelcomeEmail      bool            `db:"-" json:"disable_welcome_email"`
+	Id                       string      `json:"id"`
+	DefaultShippingAddressID string      `json:"default_shipping_address,omitempty"`
+	DefaultBillingAddressID  string      `json:"default_billing_address,omitempty"`
+	Username                 string      `json:"username"`
+	Password                 string      `json:"password,omitempty"`
+	AuthData                 *string     `json:"auth_data,omitempty"`
+	AuthService              string      `json:"auth_service"`
+	Email                    string      `json:"email"`
+	EmailVerified            bool        `json:"email_verified,omitempty"`
+	Nickname                 string      `json:"nickname"`
+	FirstName                string      `json:"first_name"`
+	LastName                 string      `json:"last_name"`
+	Roles                    string      `json:"roles"`
+	Props                    StringMap   `json:"props,omitempty"`
+	NotifyProps              StringMap   `json:"notify_props,omitempty"`
+	LastPasswordUpdate       int64       `json:"last_password_update,omitempty"`
+	LastPictureUpdate        int64       `json:"last_picture_update,omitempty"`
+	FailedAttempts           int         `json:"failed_attempts,omitempty"`
+	Locale                   string      `json:"locale"`
+	Timezone                 StringMap   `json:"timezone"`
+	MfaActive                bool        `json:"mfa_active,omitempty"`
+	MfaSecret                string      `json:"mfa_secret,omitempty"`
+	CreateAt                 int64       `json:"create_at,omitempty"`
+	UpdateAt                 int64       `json:"update_at,omitempty"`
+	DeleteAt                 int64       `json:"delete_at"`
+	IsStaff                  bool        `json:"is_staff"`
+	IsActive                 bool        `json:"is_active"`
+	Note                     string      `json:"note"`
+	Addresses                []*Address_ `json:"addresses" db:"-"`
+	JwtTokenKey              string      `json:"jwt_token_key"`
+	LastActivityAt           int64       `db:"-" json:"last_activity_at,omitempty"`
+	TermsOfServiceId         string      `db:"-" json:"terms_of_service_id,omitempty"`
+	TermsOfServiceCreateAt   int64       `db:"-" json:"terms_of_service_create_at,omitempty"`
+	DisableWelcomeEmail      bool        `db:"-" json:"disable_welcome_email"`
+	*ModelMetadata                       // user's ID will override model data's ID
 }
 
 // UserMap is a map from a userId to a user object.
@@ -83,15 +111,15 @@ type UserUpdate struct {
 }
 
 type UserPatch struct {
-	Username    *string         `json:"username"`
-	Password    *string         `json:"password,omitempty"`
-	Nickname    *string         `json:"nickname"`
-	FirstName   *string         `json:"first_name"`
-	LastName    *string         `json:"last_name"`
-	Email       *string         `json:"email"`
-	Locale      *string         `json:"locale"`
-	Timezone    model.StringMap `json:"timezone"`
-	NotifyProps model.StringMap `json:"notify_props,omitempty"`
+	Username    *string   `json:"username"`
+	Password    *string   `json:"password,omitempty"`
+	Nickname    *string   `json:"nickname"`
+	FirstName   *string   `json:"first_name"`
+	LastName    *string   `json:"last_name"`
+	Email       *string   `json:"email"`
+	Locale      *string   `json:"locale"`
+	Timezone    StringMap `json:"timezone"`
+	NotifyProps StringMap `json:"notify_props,omitempty"`
 }
 
 type UserAuth struct {
@@ -219,49 +247,49 @@ func (u *User) IsValidLocale() bool {
 // correctly.
 func (u *User) IsValid() *model.AppError {
 	if !model.IsValidId(u.Id) {
-		return InvalidUserError("id", "")
+		return u.InvalidUserError("id")
 	}
 	if u.CreateAt == 0 {
-		return InvalidUserError("create_at", u.Id)
+		return u.InvalidUserError("create_at")
 	}
 	if u.UpdateAt == 0 {
-		return InvalidUserError("update_at", u.Id)
+		return u.InvalidUserError("update_at")
 	}
 	if !model.IsValidUsername(u.Username) {
-		return InvalidUserError("username", u.Id)
+		return u.InvalidUserError("username")
 	}
 	if len(u.Email) > model.USER_EMAIL_MAX_LENGTH || u.Email == "" || !model.IsValidEmail(u.Email) {
-		return InvalidUserError("email", u.Id)
+		return u.InvalidUserError("email")
 	}
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
-		return InvalidUserError("nickname", u.Id)
+		return u.InvalidUserError("nickname")
 	}
 	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
-		return InvalidUserError("first_name", u.Id)
+		return u.InvalidUserError("first_name")
 	}
 	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
-		return InvalidUserError("last_name", u.Id)
+		return u.InvalidUserError("last_name")
 	}
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {
-		return InvalidUserError("auth_data", u.Id)
+		return u.InvalidUserError("auth_data")
 	}
 	if u.AuthData != nil && *u.AuthData != "" && u.AuthService == "" {
-		return InvalidUserError("auth_data_type", u.Id)
+		return u.InvalidUserError("auth_data_type")
 	}
 	if u.Password != "" && u.AuthData != nil && *u.AuthData != "" {
-		return InvalidUserError("auth_data_pwd", u.Id)
+		return u.InvalidUserError("auth_data_pwd")
 	}
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
-		return InvalidUserError("password_limit", u.Id)
+		return u.InvalidUserError("password_limit")
 	}
 	if !u.IsValidLocale() {
-		return InvalidUserError("locale", u.Id)
+		return u.InvalidUserError("locale")
 	}
 	if len(u.Timezone) > 0 {
 		if tzJson, err := json.JSON.Marshal(u.Timezone); err != nil {
 			return model.NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else if utf8.RuneCount(tzJson) > USER_TIMEZONE_MAX_RUNES {
-			return InvalidUserError("timezone_limit", u.Id)
+			return u.InvalidUserError("timezone_limit")
 		}
 	}
 
@@ -642,11 +670,11 @@ func UserListFromJson(data io.Reader) []*User {
 	return users
 }
 
-func InvalidUserError(fieldName string, userId string) *model.AppError {
+func (u *User) InvalidUserError(fieldName string) *model.AppError {
 	id := fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName)
-	details := ""
-	if userId != "" {
-		details = "user_id=" + userId
+	var details string
+	if !strings.EqualFold(fieldName, "id") {
+		details = "user_id=" + u.Id
 	}
 	return model.NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
 }

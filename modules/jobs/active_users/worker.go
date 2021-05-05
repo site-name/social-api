@@ -5,6 +5,7 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -76,7 +77,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 		return
 	}
 
-	count, err := worker.app.Srv().Store.User().Count(model.UserCountOptions{IncludeDeleted: false})
+	count, err := worker.app.Srv().Store.User().Count(account.UserCountOptions{IncludeDeleted: false})
 	if err != nil {
 		slog.Error("Worker: Failed to get active user count", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 		worker.setJobError(job, model.NewAppError("DoJob", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError))
