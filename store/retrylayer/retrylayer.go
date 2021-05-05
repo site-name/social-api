@@ -10,6 +10,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -1617,7 +1618,7 @@ func (s *RetryLayerTokenStore) Save(recovery *model.Token) error {
 
 }
 
-func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -1637,7 +1638,7 @@ func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.Use
 
 }
 
-func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -1763,7 +1764,7 @@ func (s *RetryLayerUserStore) ClearCaches() {
 
 }
 
-func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -1803,7 +1804,7 @@ func (s *RetryLayerUserStore) DeactivateGuests() ([]string, error) {
 
 }
 
-func (s *RetryLayerUserStore) DemoteUserToGuest(userID string) (*model.User, error) {
+func (s *RetryLayerUserStore) DemoteUserToGuest(userID string) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -1823,7 +1824,7 @@ func (s *RetryLayerUserStore) DemoteUserToGuest(userID string) (*model.User, err
 
 }
 
-func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -1843,7 +1844,7 @@ func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*model.User, 
 
 }
 
-func (s *RetryLayerUserStore) GetAll() ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetAll() ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -1863,7 +1864,7 @@ func (s *RetryLayerUserStore) GetAll() ([]*model.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -1883,7 +1884,7 @@ func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.U
 
 }
 
-func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -1903,7 +1904,7 @@ func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 
 }
 
-func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -1923,7 +1924,7 @@ func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 
 }
 
-func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -1943,7 +1944,7 @@ func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*mod
 
 }
 
-func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
+func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -1963,7 +1964,7 @@ func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*
 
 }
 
-func (s *RetryLayerUserStore) GetByEmail(email string) (*model.User, error) {
+func (s *RetryLayerUserStore) GetByEmail(email string) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -1983,7 +1984,7 @@ func (s *RetryLayerUserStore) GetByEmail(email string) (*model.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetByUsername(username string) (*model.User, error) {
+func (s *RetryLayerUserStore) GetByUsername(username string) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -2015,7 +2016,7 @@ func (s *RetryLayerUserStore) GetEtagForProfiles(teamID string) string {
 
 }
 
-func (s *RetryLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*model.User, error) {
+func (s *RetryLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -2055,7 +2056,7 @@ func (s *RetryLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -2075,7 +2076,7 @@ func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 
 }
 
-func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
+func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
 
 	tries := 0
 	for {
@@ -2115,7 +2116,7 @@ func (s *RetryLayerUserStore) GetUnreadCount(userID string) (int64, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*account.UserForIndexing, error) {
 
 	tries := 0
 	for {
@@ -2241,7 +2242,7 @@ func (s *RetryLayerUserStore) ResetLastPictureUpdate(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
+func (s *RetryLayerUserStore) Save(user *account.User) (*account.User, error) {
 
 	tries := 0
 	for {
@@ -2261,7 +2262,7 @@ func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (s *RetryLayerUserStore) Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
 
 	tries := 0
 	for {
@@ -2281,7 +2282,7 @@ func (s *RetryLayerUserStore) Search(teamID string, term string, options *model.
 
 }
 
-func (s *RetryLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
+func (s *RetryLayerUserStore) Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) {
 
 	tries := 0
 	for {
@@ -2501,7 +2502,7 @@ func (s *RetryLayerUserAccessTokenStore) DeleteAllForUser(userID string) error {
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -2521,7 +2522,7 @@ func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*account.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -2541,7 +2542,7 @@ func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -2561,7 +2562,7 @@ func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*account.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -2581,7 +2582,7 @@ func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perP
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -2601,7 +2602,7 @@ func (s *RetryLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*mo
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
 
 	tries := 0
 	for {

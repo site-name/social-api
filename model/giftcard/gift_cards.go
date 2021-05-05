@@ -9,7 +9,6 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
@@ -29,9 +28,9 @@ type GiftCard struct {
 	IsActive             bool             `json:"is_active"`
 	Currency             string           `json:"currency"`
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
-	InitialBalance       *checkout.Money  `json:"initial_balance" db:"-"`
+	InitialBalance       *model.Money     `json:"initial_balance" db:"-"`
 	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"`
-	CurrentBalance       *checkout.Money  `json:"current_balance" db:"-"`
+	CurrentBalance       *model.Money     `json:"current_balance" db:"-"`
 }
 
 func (gc *GiftCard) DisplayCode() string {

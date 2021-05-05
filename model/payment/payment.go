@@ -192,7 +192,7 @@ func (p *Payment) IsValid() *model.AppError {
 	if p.CapturedAmount == nil {
 		return p.InvalidPaymentError("captured_amount")
 	}
-	if len(p.BillingEmail) > account.USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !model.IsValidEmail(p.BillingEmail) {
+	if len(p.BillingEmail) > model.USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !model.IsValidEmail(p.BillingEmail) {
 		return p.InvalidPaymentError("billing_email")
 	}
 	if utf8.RuneCountInString(p.BillingFirstName) > account.FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {

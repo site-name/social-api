@@ -10,7 +10,6 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
@@ -23,7 +22,7 @@ type ProductChannelListing struct {
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase"`
 	Currency              string           `json:"currency"`
 	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`
-	DiscountedPrice       *checkout.Money  `json:"discounted_price" db:"-"`
+	DiscountedPrice       *model.Money     `json:"discounted_price" db:"-"`
 }
 
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {

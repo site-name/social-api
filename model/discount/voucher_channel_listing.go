@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/shopspring/decimal"
-	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 )
 
@@ -13,8 +13,8 @@ type VoucherChannelListing struct {
 	VoucherID     string           `json:"voucher_id"`
 	ChannelID     string           `json:"channel_id"`
 	DiscountValue *decimal.Decimal `json:"discount_value"`
-	Discount      *checkout.Money  `json:"discount" db:"_"`
-	MinSpent      *checkout.Money  `json:"min_spent" db:"_"`
+	Discount      *model.Money     `json:"discount" db:"_"`
+	MinSpent      *model.Money     `json:"min_spent" db:"_"`
 	Currency      string           `json:"currency"`
 	MinSpenAmount *decimal.Decimal `json:"min_spent_amount"`
 }

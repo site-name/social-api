@@ -1,8 +1,16 @@
 package model
 
-import "github.com/tinylib/msgp/msgp"
+import (
+	"github.com/shopspring/decimal"
+	"github.com/tinylib/msgp/msgp"
+)
 
 type StringMap map[string]string
+
+type Money struct {
+	Amount   *decimal.Decimal
+	Currency string
+}
 
 // EncodeMsg implements msgp.Encodable
 func (z StringMap) EncodeMsg(en *msgp.Writer) (err error) {

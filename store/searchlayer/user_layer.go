@@ -6,7 +6,7 @@ import (
 
 	// "github.com/pkg/errors"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine"
 	"github.com/sitename/sitename/store"
@@ -17,7 +17,7 @@ type SearchUserStore struct {
 	rootStore *SearchStore
 }
 
-func (s *SearchUserStore) deleteUserIndex(user *model.User) {
+func (s *SearchUserStore) deleteUserIndex(user *account.User) {
 	for _, engine := range s.rootStore.searchEngine.GetActiveEngines() {
 		if engine.IsIndexingEnabled() {
 			runIndexFn(engine, func(engineCopy searchengine.SearchEngineInterface) {

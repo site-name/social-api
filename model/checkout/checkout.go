@@ -23,11 +23,6 @@ const (
 	CHECKOUT_LANGUAGE_CODE_MAX_LENGTH            = 35
 )
 
-type Money struct {
-	Amount   *decimal.Decimal
-	Currency string
-}
-
 // A Shopping checkout
 type Checkout struct {
 	Id                     string               `json:"id"`
@@ -45,7 +40,7 @@ type Checkout struct {
 	Currency               string               `json:"currency"`
 	Country                string               `json:"country"`
 	DiscountAmount         *decimal.Decimal     `json:"discount_amount"`
-	Discount               *Money               `db:"-" json:"discount,omitempty"`
+	Discount               *model.Money         `db:"-" json:"discount,omitempty"`
 	DiscountName           *string              `json:"discount_name"`
 	TranslatedDiscountName *string              `json:"translated_discount_name"`
 	VoucherCode            *string              `json:"voucher_code"`
@@ -170,7 +165,7 @@ func (c *Checkout) IsShippingRequired() bool {
 	panic("not implemented")
 }
 
-func (c *Checkout) GetTotalGiftCardsBalance() *Money {
+func (c *Checkout) GetTotalGiftCardsBalance() *model.Money {
 	panic("not impl")
 }
 

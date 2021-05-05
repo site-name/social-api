@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -1325,7 +1326,7 @@ func (s *TimerLayerTokenStore) Save(recovery *model.Token) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCount(time, options)
@@ -1341,7 +1342,7 @@ func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.Use
 	return result, err
 }
 
-func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCountForPeriod(startTime, endTime, options)
@@ -1452,7 +1453,7 @@ func (s *TimerLayerUserStore) ClearCaches() {
 	}
 }
 
-func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) Count(options account.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Count(options)
@@ -1484,7 +1485,7 @@ func (s *TimerLayerUserStore) DeactivateGuests() ([]string, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) DemoteUserToGuest(userID string) (*model.User, error) {
+func (s *TimerLayerUserStore) DemoteUserToGuest(userID string) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.DemoteUserToGuest(userID)
@@ -1500,7 +1501,7 @@ func (s *TimerLayerUserStore) DemoteUserToGuest(userID string) (*model.User, err
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Get(ctx, id)
@@ -1516,7 +1517,7 @@ func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, 
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAll() ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetAll() ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAll()
@@ -1532,7 +1533,7 @@ func (s *TimerLayerUserStore) GetAll() ([]*model.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllAfter(limit, afterID)
@@ -1548,7 +1549,7 @@ func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.U
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllNotInAuthService(authServices)
@@ -1564,7 +1565,7 @@ func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllProfiles(options)
@@ -1580,7 +1581,7 @@ func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllUsingAuthService(authService)
@@ -1596,7 +1597,7 @@ func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*mod
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
+func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByAuth(authData, authService)
@@ -1612,7 +1613,7 @@ func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByEmail(email string) (*model.User, error) {
+func (s *TimerLayerUserStore) GetByEmail(email string) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByEmail(email)
@@ -1628,7 +1629,7 @@ func (s *TimerLayerUserStore) GetByEmail(email string) (*model.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByUsername(username string) (*model.User, error) {
+func (s *TimerLayerUserStore) GetByUsername(username string) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByUsername(username)
@@ -1676,7 +1677,7 @@ func (s *TimerLayerUserStore) GetEtagForProfiles(teamID string) string {
 	return result
 }
 
-func (s *TimerLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*model.User, error) {
+func (s *TimerLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetForLogin(loginID, allowSignInWithUsername, allowSignInWithEmail)
@@ -1708,7 +1709,7 @@ func (s *TimerLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetMany(ctx, ids)
@@ -1724,7 +1725,7 @@ func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
+func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetSystemAdminProfiles()
@@ -1756,7 +1757,7 @@ func (s *TimerLayerUserStore) GetUnreadCount(userID string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
+func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*account.UserForIndexing, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetUsersBatchForIndexing(startTime, endTime, limit)
@@ -1867,7 +1868,7 @@ func (s *TimerLayerUserStore) ResetLastPictureUpdate(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
+func (s *TimerLayerUserStore) Save(user *account.User) (*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Save(user)
@@ -1883,7 +1884,7 @@ func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Search(teamID string, term string, options *model.UserSearchOptions) ([]*model.User, error) {
+func (s *TimerLayerUserStore) Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Search(teamID, term, options)
@@ -1899,7 +1900,7 @@ func (s *TimerLayerUserStore) Search(teamID string, term string, options *model.
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
+func (s *TimerLayerUserStore) Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Update(user, allowRoleUpdate)
@@ -2075,7 +2076,7 @@ func (s *TimerLayerUserAccessTokenStore) DeleteAllForUser(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Get(tokenID)
@@ -2091,7 +2092,7 @@ func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessT
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetAll(offset, limit)
@@ -2107,7 +2108,7 @@ func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetByToken(tokenString)
@@ -2123,7 +2124,7 @@ func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetByUser(userID, page, perPage)
@@ -2139,7 +2140,7 @@ func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perP
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Save(token)
@@ -2155,7 +2156,7 @@ func (s *TimerLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*mo
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Search(term)
