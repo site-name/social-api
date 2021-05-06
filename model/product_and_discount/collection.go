@@ -35,7 +35,7 @@ func (c *Collection) String() string {
 
 func (c *Collection) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
-	if c.Id == "" {
+	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
 	if utf8.RuneCountInString(c.Name) > COLLECTION_NAME_MAX_LENGTH {
@@ -72,7 +72,7 @@ type CollectionTranslation struct {
 
 func (c *CollectionTranslation) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel("model.collection_translation.is_valid.%s.app_error", "collection_translation_id=", "CollectionTranslation.IsValid")
-	if c.Id == "" {
+	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
 	if c.CollectionID == "" {

@@ -3,11 +3,9 @@ package product_and_discount
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/language"
 )
 
@@ -90,50 +88,41 @@ func (v *Voucher) ValidateMinCheckoutItemsQuantity(quantity uint) *NotApplicable
 }
 
 func (v *Voucher) ToJson() string {
-	b, _ := json.JSON.Marshal(v)
-	return string(b)
+	return model.ModelToJson(v)
 }
 
 func VoucherFromJson(data io.Reader) *Voucher {
 	var v Voucher
-	err := json.JSON.NewDecoder(data).Decode(&v)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&v, data)
 	return &v
 }
 
-func (v *Voucher) createAppError(field string) *model.AppError {
-	id := fmt.Sprintf("model.voucher.is_valid.%s.app_error", field)
-	var details string
-	if !strings.EqualFold(field, "id") {
-		details = "voucher_id=" + v.Id
-	}
-
-	return model.NewAppError("Voucher.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (v *Voucher) IsValid() *model.AppError {
-	if v.Id == "" {
-		return v.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.voucher.is_valid.%s.app_error",
+		"voucher_id=",
+		"Voucher.IsValid",
+	)
+	if !model.IsValidId(v.Id) {
+		return outer("id", nil)
 	}
 	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !model.StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
-		return v.createAppError("type")
+		return outer("type", &v.Id)
 	}
 	if len(v.Name) > VOUCHER_NAME_MAX_LENGTH {
-		return v.createAppError("name")
+		return outer("name", &v.Id)
 	}
 	if len(v.Code) > VOUCHER_CODE_MAX_LENGTH {
-		return v.createAppError("code")
+		return outer("code", &v.Id)
 	}
 	if v.StartDate == 0 {
-		return v.createAppError("start_date")
+		return outer("start_date", &v.Id)
 	}
 	if len(v.DiscountValueType) > VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH || !SALE_TYPES.Contains(v.DiscountValueType) {
-		return v.createAppError("discount_value_type")
+		return outer("discount_value_type", &v.Id)
 	}
 	if len(v.Countries) > VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH {
-		return v.createAppError("countries")
+		return outer("countries", &v.Id)
 	}
 
 	return nil
@@ -177,41 +166,32 @@ type VoucherTranslation struct {
 }
 
 func (v *VoucherTranslation) ToJson() string {
-	b, _ := json.JSON.Marshal(v)
-	return string(b)
+	return model.ModelToJson(v)
 }
 
 func VoucherTranslationFromJson(data io.Reader) *VoucherTranslation {
 	var vt VoucherTranslation
-	err := json.JSON.NewDecoder(data).Decode(&vt)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&vt, data)
 	return &vt
 }
 
-func (v *VoucherTranslation) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.voucher_translation.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "voucher_trabslation_id=" + v.Id
-	}
-
-	return model.NewAppError("VoucherTranslation.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (v *VoucherTranslation) IsValid() *model.AppError {
-	if v.Id == "" {
-		return v.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.voucher_translation.is_valid.%s.app_error",
+		"voucher_trabslation_id=",
+		"VoucherTranslation.IsValid",
+	)
+	if !model.IsValidId(v.Id) {
+		return outer("id", nil)
 	}
-	if v.VoucherID == "" {
-		return v.createAppError("voucher_id")
+	if !model.IsValidId(v.VoucherID) {
+		return outer("voucher_id", &v.Id)
 	}
 	if len(v.Name) > VOUCHER_NAME_MAX_LENGTH {
-		return v.createAppError("name")
+		return outer("name", &v.Id)
 	}
 	if tag, err := language.Parse(v.LanguageCode); err != nil || !strings.EqualFold(tag.String(), v.LanguageCode) {
-		return v.createAppError("language_code")
+		return outer("language_code", &v.Id)
 	}
 
 	return nil

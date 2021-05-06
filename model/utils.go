@@ -160,7 +160,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 //	}
 // 	outer := CreateAppError("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
 //	return outer("create_at", modelInstance.Id)
-// .
+// NOTE: This is applied for errors with status code "http.StatusBadRequest 400" only
 func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
 	var id, details string
 	return func(fieldName string, typeId *string) *AppError {

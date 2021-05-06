@@ -1,16 +1,13 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
@@ -49,57 +46,48 @@ func SortByAttributeFields() []string {
 }
 
 func (p *Product) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func ProductFromJson(data io.Reader) *Product {
 	var p Product
-	err := json.JSON.NewDecoder(data).Decode(&p)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&p, data)
 	return &p
 }
 
-func (p *Product) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.product.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "product_id=" + p.Id
-	}
-
-	return model.NewAppError("Product.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *Product) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product.is_valid.%s.app_error",
+		"product_id=",
+		"Product.IsValid",
+	)
 	if !model.IsValidId(p.Id) {
-		return p.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.ProductTypeID) {
-		return p.createAppError("product_type_id")
+		return outer("product_type_id", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_NAME_MAX_LENGTH {
-		return p.createAppError("name")
+		return outer("name", &p.Id)
 	}
 	if p.CategoryID != nil && *p.CategoryID == "" {
-		return p.createAppError("category_id")
+		return outer("category_id", &p.Id)
 	}
 	if p.CreateAt == 0 {
-		return p.createAppError("create_at")
+		return outer("create_at", &p.Id)
 	}
 	if p.UpdateAt == 0 {
-		return p.createAppError("update_at")
+		return outer("update_at", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Slug) > PRODUCT_SLUG_MAX_LENGTH {
-		return p.createAppError("slug")
+		return outer("slug", &p.Id)
 	}
 	if p.Weight != nil && *p.Weight == 0 {
-		return p.createAppError("weight")
+		return outer("weight", &p.Id)
 	}
 	if p.Weight != nil {
 		if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
-			return p.createAppError("weight_unit")
+			return outer("weight_unit", &p.Id)
 		}
 	}
 
@@ -141,43 +129,34 @@ func (p *ProductTranslation) String() string {
 	return p.Name
 }
 
-func (p *ProductTranslation) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.product_translation.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "product_translation_id=" + p.Id
-	}
-
-	return model.NewAppError("ProductTranslation.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *ProductTranslation) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_translation.is_valid.%s.app_error",
+		"product_translation_id=",
+		"ProductTranslation.IsValid",
+	)
 	if !model.IsValidId(p.Id) {
-		return p.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.ProductID) {
-		return p.createAppError("product_id")
+		return outer("product_id", &p.Id)
 	}
 	if tag, err := language.Parse(p.LanguageCode); err != nil || tag.String() != p.LanguageCode {
-		return p.createAppError("language_code")
+		return outer("language_code", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_NAME_MAX_LENGTH {
-		return p.createAppError("name")
+		return outer("name", &p.Id)
 	}
 
 	return nil
 }
 
 func (p *ProductTranslation) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func ProductTranslationFromJson(data io.Reader) *ProductTranslation {
 	var p ProductTranslation
-	err := json.JSON.NewDecoder(data).Decode(&p)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&p, data)
 	return &p
 }

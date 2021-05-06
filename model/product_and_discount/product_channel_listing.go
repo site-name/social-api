@@ -65,14 +65,3 @@ func ProductChannelListingFromJson(data io.Reader) *ProductChannelListing {
 	model.ModelFromJson(&p, data)
 	return &p
 }
-
-const (
-	PRODUCT_VARIANT_NAME_MAX_LENGTH = 255
-	PRODUCT_VARIANT_SKU_MAX_LENGTH  = 255
-)
-
-// type VariantMedia struct {
-// 	Id        string `json:"id"`
-// 	VariantID string `json:"variant_id"`
-// 	MediaID   string `json:"media_id"`
-// }

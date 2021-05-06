@@ -1,16 +1,13 @@
 package checkout
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -50,64 +47,59 @@ type Checkout struct {
 	LanguageCode           string               `json:"language_code"`
 }
 
-func (c *Checkout) checkoutAppErr(field string) *model.AppError {
-	var details string
-	if strings.ToLower(field) != "id" {
-		details += "checkout_id=" + c.Id
-	}
-	id := fmt.Sprintf("model.checkout.is_valid.%s.app_error", field)
-
-	return model.NewAppError("Checkout.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (c *Checkout) IsValid() *model.AppError {
-	if c.Id == "" {
-		return c.checkoutAppErr("id")
+	outer := model.CreateAppErrorForModel(
+		"model.checkout.is_valid.%s.app_error",
+		"checkout_id=",
+		"Checkout.IsValid",
+	)
+	if !model.IsValidId(c.Id) {
+		return outer("id", nil)
 	}
 	if c.UserID != nil && *c.UserID == "" {
-		return c.checkoutAppErr("user_id")
+		return outer("user_id", &c.Id)
 	}
 	if c.BillingAddressID != nil && *c.BillingAddressID == "" {
-		return c.checkoutAppErr("billing_address")
+		return outer("billing_address", &c.Id)
 	}
 	if c.ShippingAddressID != nil && *c.ShippingAddressID == "" {
-		return c.checkoutAppErr("shipping_address")
+		return outer("shipping_address", &c.Id)
 	}
 	if c.Currency == "" || len(c.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
-		return c.checkoutAppErr("currency")
+		return outer("currency", &c.Id)
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
-		return c.checkoutAppErr("currency")
+		return outer("currency", &c.Id)
 	}
 	if c.CreateAt == 0 {
-		return c.checkoutAppErr("create_at")
+		return outer("create_at", &c.Id)
 	}
 	if c.UpdateAt == 0 {
-		return c.checkoutAppErr("update_at")
+		return outer("update_at", &c.Id)
 	}
 	if !model.IsValidEmail(c.Email) || len(c.Email) > model.USER_EMAIL_MAX_LENGTH {
-		return c.checkoutAppErr("email")
+		return outer("email", &c.Id)
 	}
 	if c.DiscountName != nil && utf8.RuneCountInString(*c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {
-		return c.checkoutAppErr("discount_name")
+		return outer("discount_name", &c.Id)
 	}
 	if c.TranslatedDiscountName != nil && utf8.RuneCountInString(*c.TranslatedDiscountName) > CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH {
-		return c.checkoutAppErr("translated_discount_name")
+		return outer("translated_discount_name", &c.Id)
 	}
 	if c.VoucherCode != nil && len(*c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH || *c.VoucherCode == "" {
-		return c.checkoutAppErr("voucher_code")
+		return outer("voucher_code", &c.Id)
 	}
 	if c.LanguageCode == "" {
-		return c.checkoutAppErr("language_code")
+		return outer("language_code", &c.Id)
 	}
 	if tag, err := language.Parse(c.LanguageCode); err != nil || !strings.EqualFold(tag.String(), c.LanguageCode) {
-		return c.checkoutAppErr("language_code")
+		return outer("language_code", &c.Id)
 	}
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
-		return c.checkoutAppErr("tracking_code")
+		return outer("tracking_code", &c.Id)
 	}
 	if _, ok := model.Countries[strings.ToUpper(c.Country)]; !ok {
-		return c.checkoutAppErr("country")
+		return outer("country", &c.Id)
 	}
 
 	return nil
@@ -118,16 +110,12 @@ func (c *Checkout) ToJson() string {
 		Amount:   c.DiscountAmount,
 		Currency: c.Currency,
 	}
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func CheckoutFromJson(data io.Reader) *Checkout {
 	var checkout Checkout
-	err := json.JSON.NewDecoder(data).Decode(&checkout)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&checkout, data)
 	return &checkout
 }
 

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -69,25 +68,22 @@ func (s *Session) DeepCopy() *Session {
 }
 
 func (s *Session) ToJson() string {
-	b, _ := json.JSON.Marshal(s)
-	return string(b)
+	return ModelToJson(s)
 }
 
 func SessionFromJson(data io.Reader) *Session {
-	var s *Session
-	json.JSON.NewDecoder(data).Decode(&s)
-	return s
+	var s Session
+	ModelFromJson(&s, data)
+	return &s
 }
 
 func (s *Session) PreSave() {
 	if s.Id == "" {
 		s.Id = NewId()
 	}
-
 	if s.Token == "" {
 		s.Token = NewId()
 	}
-
 	s.CreateAt = GetMillis()
 	s.LastActivityAt = s.CreateAt
 
@@ -101,7 +97,6 @@ func (s *Session) Sanitize() {
 }
 
 func (s *Session) IsExpired() bool {
-
 	if s.ExpiresAt <= 0 {
 		return false
 	}
@@ -199,15 +194,11 @@ func (s *Session) GetCSRF() string {
 }
 
 func SessionsToJson(o []*Session) string {
-	b, err := json.JSON.Marshal(o)
-	if err != nil {
-		return "[]"
-	}
-	return string(b)
+	return ModelToJson(o)
 }
 
 func SessionsFromJson(data io.Reader) []*Session {
 	var o []*Session
-	json.JSON.NewDecoder(data).Decode(&o)
+	ModelFromJson(&o, data)
 	return o
 }

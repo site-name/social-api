@@ -2,7 +2,6 @@ package model
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -13,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -54,33 +52,23 @@ type FileInfo struct {
 }
 
 func (fi *FileInfo) ToJson() string {
-	b, _ := json.JSON.Marshal(fi)
-	return string(b)
+	return ModelToJson(fi)
 }
 
 func FileInfoFromJson(data io.Reader) *FileInfo {
-	decoder := json.JSON.NewDecoder(data)
-
 	var fi FileInfo
-	if err := decoder.Decode(&fi); err != nil {
-		return nil
-	}
+	ModelFromJson(&fi, data)
 
 	return &fi
 }
 
 func FileInfosToJson(infos []*FileInfo) string {
-	b, _ := json.JSON.Marshal(infos)
-	return string(b)
+	return ModelToJson(infos)
 }
 
 func FileInfosFromJson(data io.Reader) []*FileInfo {
-	decoder := json.JSON.NewDecoder(data)
-
 	var infos []*FileInfo
-	if err := decoder.Decode(&infos); err != nil {
-		return nil
-	}
+	ModelFromJson(&infos, data)
 	return infos
 }
 
@@ -101,34 +89,29 @@ func (fi *FileInfo) PreSave() {
 	}
 }
 
-func (fi *FileInfo) createAppError(fieldName string) *AppError {
-	id := fmt.Sprintf("model.file_info.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "file_info_id=" + fi.Id
-	}
-
-	return NewAppError("FileInfo.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (fi *FileInfo) IsValid() *AppError {
+	outer := CreateAppErrorForModel(
+		"model.file_info.is_valid.%s.app_error",
+		"file_info_id=",
+		"FileInfo.IsValid",
+	)
 	if !IsValidId(fi.Id) {
-		return fi.createAppError("id")
+		return outer("id", nil)
 	}
 	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
-		return fi.createAppError("creator_id")
+		return outer("creator_id", &fi.Id)
 	}
 	if fi.ProductId != "" && !IsValidId(fi.ProductId) {
-		return fi.createAppError("product_id")
+		return outer("product_id", &fi.Id)
 	}
 	if fi.CreateAt == 0 {
-		return fi.createAppError("create_at")
+		return outer("create_at", &fi.Id)
 	}
 	if fi.UpdateAt == 0 {
-		return fi.createAppError("update_at")
+		return outer("update_at", &fi.Id)
 	}
 	if fi.Path == "" {
-		return fi.createAppError("path")
+		return outer("path", &fi.Id)
 	}
 
 	return nil

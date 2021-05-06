@@ -3,14 +3,12 @@ package payment
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -147,108 +145,102 @@ func (p *Payment) IsManual() bool {
 	return p.GateWay == GATE_WAY_MANUAL
 }
 
-// Common method to create app error for payment
-func (p *Payment) InvalidPaymentError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.payment.is_valid.%s.app_error", fieldName)
-	details := ""
-	if !strings.EqualFold(fieldName, "id") {
-		details = "payment_id=" + p.Id
-	}
-
-	return model.NewAppError("Payment.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.payment.is_valid.%s.app_error",
+		"payment_id=",
+		"Payment.IsValid",
+	)
 	if !model.IsValidId(p.Id) {
-		return p.InvalidPaymentError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.OrderID) {
-		return p.InvalidPaymentError("order_id")
+		return outer("order_id", &p.Id)
 	}
 	if !model.IsValidId(p.CheckoutID) {
-		return p.InvalidPaymentError("checkout_id")
+		return outer("checkout_id", &p.Id)
 	}
 	if p.CreateAt == 0 {
-		return p.InvalidPaymentError("create_at")
+		return outer("create_at", &p.Id)
 	}
 	if p.UpdateAt == 0 {
-		return p.InvalidPaymentError("update_at")
+		return outer("update_at", &p.Id)
 	}
 	if utf8.RuneCountInString(p.GateWay) > MAX_LENGTH_PAYMENT_GATEWAY {
-		return p.InvalidPaymentError("gateway")
+		return outer("gateway", &p.Id)
 	}
 	if p.ChargeStatus == "" ||
 		utf8.RuneCountInString(p.ChargeStatus) > MAX_LENGTH_PAYMENT_CHARGE_STATUS ||
 		!validChargeStatues.Contains(p.ChargeStatus) {
-		return p.InvalidPaymentError("charge_status")
+		return outer("charge_status", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return p.InvalidPaymentError("token")
+		return outer("token", &p.Id)
 	}
 	if p.Total == nil {
-		return p.InvalidPaymentError("total")
+		return outer("total", &p.Id)
 	}
 	if p.CapturedAmount == nil {
-		return p.InvalidPaymentError("captured_amount")
+		return outer("captured_amount", &p.Id)
 	}
 	if len(p.BillingEmail) > model.USER_EMAIL_MAX_LENGTH || p.BillingEmail == "" || !model.IsValidEmail(p.BillingEmail) {
-		return p.InvalidPaymentError("billing_email")
+		return outer("billing_email", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingFirstName) > account.FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
-		return p.InvalidPaymentError("billing_first_name")
+		return outer("billing_first_name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingLastName) > account.LAST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingLastName, model.LastName) {
-		return p.InvalidPaymentError("billing_last_name")
+		return outer("billing_last_name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("billing_company_name")
+		return outer("billing_company_name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingAddress1) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("billing_address_1")
+		return outer("billing_address_1", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingAddress2) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("billing_address_2")
+		return outer("billing_address_2", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCity) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("billing_city")
+		return outer("billing_city", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCityArea) > account.CITY_AREA_MAX_LENGTH {
-		return p.InvalidPaymentError("billing_city_area")
+		return outer("billing_city_area", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingPostalCode) > account.POSTAL_CODE_MAX_LENGTH {
-		return p.InvalidPaymentError("billing_postal_code")
+		return outer("billing_postal_code", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCountryCode) > model.MAX_LENGTH_COUNTRY_CODE {
-		return p.InvalidPaymentError("billing_country_code")
+		return outer("billing_country_code", &p.Id)
 	}
 	region, err := language.ParseRegion(p.BillingCountryCode)
 	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {
-		return p.InvalidPaymentError("billing_country_code")
+		return outer("billing_country_code", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
-		return p.InvalidPaymentError("currency")
+		return outer("currency", &p.Id)
 	}
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
-		return p.InvalidPaymentError("currency")
+		return outer("currency", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCountryArea) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("billing_country_area")
+		return outer("billing_country_area", &p.Id)
 	}
 	if len(p.CcFirstDigits) > MAX_LENGTH_CC_FIRST_DIGITS {
-		return p.InvalidPaymentError("cc_first_digits")
+		return outer("cc_first_digits", &p.Id)
 	}
 	if len(p.CcFirstDigits) > MAX_LENGTH_CC_LAST_DIGITS {
-		return p.InvalidPaymentError("cc_last_digits")
+		return outer("cc_last_digits", &p.Id)
 	}
 	if *p.CcExpMonth < MIN_CC_EXP_MONTH || *p.CcExpMonth > MAX_CC_EXP_MONTH {
-		return p.InvalidPaymentError("cc_exp_month")
+		return outer("cc_exp_month", &p.Id)
 	}
 	if *p.CcExpYear < MIN_CC_EXP_YEAR {
-		return p.InvalidPaymentError("cc_exp_year")
+		return outer("cc_exp_year", &p.Id)
 	}
 	if len(p.PaymentMethodType) > MAX_LENGTH_PAYMENT_COMMON_256 {
-		return p.InvalidPaymentError("payment_method_type")
+		return outer("payment_method_type", &p.Id)
 	}
 
 	return nil
@@ -289,16 +281,11 @@ func (p *Payment) PreUpdate() {
 }
 
 func (p *Payment) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func PaymentFromJson(data io.Reader) *Payment {
 	var payment Payment
-	err := json.JSON.NewDecoder(data).Decode(&payment)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&payment, data)
 	return &payment
 }

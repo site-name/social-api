@@ -1,13 +1,9 @@
 package checkout
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -22,27 +18,13 @@ type CheckoutLine struct {
 }
 
 func (c *CheckoutLine) ToJson() string {
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func CheckoutLineFromJson(data io.Reader) *CheckoutLine {
 	var checkoutLine CheckoutLine
-	err := json.JSON.NewDecoder(data).Decode(&checkoutLine)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&checkoutLine, data)
 	return &checkoutLine
-}
-
-func (c *CheckoutLine) checkoutLineAppErr(field string) *model.AppError {
-	var details string
-	if strings.ToLower(field) != "id" {
-		details += "checkout_id=" + c.Id
-	}
-	id := fmt.Sprintf("model.checkout_line.is_valid.%s.app_error", field)
-
-	return model.NewAppError("CheckoutLine.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
 func (c *CheckoutLine) Equal(other *CheckoutLine) bool {
@@ -50,17 +32,22 @@ func (c *CheckoutLine) Equal(other *CheckoutLine) bool {
 }
 
 func (c *CheckoutLine) IsValid() *model.AppError {
-	if c.Id == "" {
-		return c.checkoutLineAppErr("id")
+	outer := model.CreateAppErrorForModel(
+		"model.checkout_line.is_valid.%s.app_error",
+		"checkout_id=",
+		"CheckoutLine.IsValid",
+	)
+	if !model.IsValidId(c.Id) {
+		return outer("id", nil)
 	}
 	if c.CheckoutID == "" {
-		return c.checkoutLineAppErr("checkout_id")
+		return outer("checkout_id", &c.Id)
 	}
 	if c.VariantID == "" {
-		return c.checkoutLineAppErr("variant_id")
+		return outer("variant_id", &c.Id)
 	}
 	if c.Quantity < CHECKOUT_LINE_MIN_QUANTITY {
-		return c.checkoutLineAppErr("quantity")
+		return outer("quantity", &c.Id)
 	}
 
 	return nil

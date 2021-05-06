@@ -1,13 +1,9 @@
 package account
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -59,41 +55,32 @@ type CustomerEvent struct {
 }
 
 func (c *CustomerEvent) ToJson() string {
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func CustomerEventFromJson(data io.Reader) *CustomerEvent {
 	var ce CustomerEvent
-	err := json.JSON.NewDecoder(data).Decode(&ce)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&ce, data)
 	return &ce
 }
 
-func (c *CustomerEvent) createAppError(field string) *model.AppError {
-	id := fmt.Sprintf("model.customer_event.is_valid.%s.app_error", field)
-	var details string
-	if !strings.EqualFold(field, "id") {
-		details = "customer_event_id=" + c.Id
-	}
-
-	return model.NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (ce *CustomerEvent) IsValid() *model.AppError {
-	if ce.Id == "" {
-		return ce.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.customer_event.is_valid.%s.app_error",
+		"customer_event_id=",
+		"CustomerEvent.IsValid",
+	)
+	if !model.IsValidId(ce.Id) {
+		return outer("id", nil)
 	}
-	if ce.UserID == "" {
-		return ce.createAppError("usder_id")
+	if !model.IsValidId(ce.UserID) {
+		return outer("usder_id", &ce.Id)
 	}
-	if ce.OrderID == "" {
-		return ce.createAppError("order_id")
+	if !model.IsValidId(ce.OrderID) {
+		return outer("order_id", &ce.Id)
 	}
 	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !model.StringArray(CustomerEventTypes).Contains(ce.Type) {
-		return ce.createAppError("type")
+		return outer("type", &ce.Id)
 	}
 
 	return nil
@@ -121,38 +108,29 @@ type StaffNotificationRecipient struct {
 }
 
 func (c *StaffNotificationRecipient) ToJson() string {
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func StaffNotificationRecipientFromJson(data io.Reader) *StaffNotificationRecipient {
 	var ce StaffNotificationRecipient
-	err := json.JSON.NewDecoder(data).Decode(&ce)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&ce, data)
 	return &ce
 }
 
-func (c *StaffNotificationRecipient) createAppError(field string) *model.AppError {
-	id := fmt.Sprintf("model.staff_notification_recipient.is_valid.%s.app_error", field)
-	var details string
-	if !strings.EqualFold(field, "id") {
-		details = "staff_notification_recipient_id=" + c.Id
-	}
-
-	return model.NewAppError("CustomerEvent.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (ce *StaffNotificationRecipient) IsValid() *model.AppError {
-	if ce.Id == "" {
-		return ce.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.staff_notification_recipient.is_valid.%s.app_error",
+		"staff_notification_recipient_id=",
+		"CustomerEvent.IsValid",
+	)
+	if !model.IsValidId(ce.Id) {
+		return outer("id", nil)
 	}
-	if ce.UserID != nil && *ce.UserID == "" {
-		return ce.createAppError("usder_id")
+	if ce.UserID != nil && !model.IsValidId(*ce.UserID) {
+		return outer("usder_id", &ce.Id)
 	}
 	if ce.StaffEmail != nil && !model.IsValidEmail(*ce.StaffEmail) {
-		return ce.createAppError("staff_email")
+		return outer("staff_email", &ce.Id)
 	}
 
 	return nil

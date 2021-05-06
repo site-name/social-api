@@ -28,7 +28,7 @@ func SortableFromJson(data io.Reader) *Sortable {
 }
 
 func (s *Sortable) IsValid() *AppError {
-	if s.Id == "" {
+	if !IsValidId(s.Id) {
 		return NewAppError("Sortable.IsValid", "model.sortable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	return nil
@@ -66,7 +66,7 @@ func PublishableFromJson(data io.Reader) *Publishable {
 }
 
 func (s *Publishable) IsValid() *AppError {
-	if s.Id == "" {
+	if !IsValidId(s.Id) {
 		return NewAppError("Publishable.IsValid", "model.publishable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
 	}
 	return nil

@@ -1,13 +1,9 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 type VoucherCustomer struct {
@@ -16,40 +12,31 @@ type VoucherCustomer struct {
 	CustomerEmail string `json:"customer_email"`
 }
 
-func (vc *VoucherCustomer) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.voucher_customer.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "voucher_customer_id=" + vc.Id
-	}
-
-	return model.NewAppError("VoucherCustomer.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (vc *VoucherCustomer) IsValid() *model.AppError {
-	if vc.Id == "" {
-		return vc.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.voucher_customer.is_valid.%s.app_error",
+		"voucher_customer_id=",
+		"VoucherCustomer.IsValid",
+	)
+	if !model.IsValidId(vc.Id) {
+		return outer("id", nil)
 	}
-	if vc.VoucherID == "" {
-		return vc.createAppError("voucher_id")
+	if !model.IsValidId(vc.VoucherID) {
+		return outer("voucher_id", &vc.Id)
 	}
 	if !model.IsValidEmail(vc.CustomerEmail) {
-		return vc.createAppError("customer_email")
+		return outer("customer_email", &vc.Id)
 	}
 
 	return nil
 }
 
 func (vc *VoucherCustomer) ToJson() string {
-	b, _ := json.JSON.Marshal(vc)
-	return string(b)
+	return model.ModelToJson(vc)
 }
 
 func VoucherCustomerFromJson(data io.Reader) *VoucherCustomer {
 	var vc VoucherCustomer
-	err := json.JSON.NewDecoder(data).Decode(&vc)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&vc, data)
 	return &vc
 }

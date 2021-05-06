@@ -1,12 +1,8 @@
 package model
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"unicode/utf8"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -23,43 +19,35 @@ type TermsOfService struct {
 }
 
 func (t *TermsOfService) IsValid() *AppError {
+	outer := CreateAppErrorForModel(
+		"model.terms_of_service.is_valid.%s.app_error",
+		"terms_of_service_id=",
+		"TermsOfService.IsValid",
+	)
 	if !IsValidId(t.Id) {
-		return InvalidTermsOfServiceError("id", "")
+		return outer("id", nil)
 	}
 	if t.CreateAt == 0 {
-		return InvalidTermsOfServiceError("create_at", t.Id)
+		return outer("create_at", &t.Id)
 	}
 	if !IsValidId(t.UserId) {
-		return InvalidTermsOfServiceError("user_id", t.Id)
+		return outer("user_id", &t.Id)
 	}
 	if utf8.RuneCountInString(t.Text) > POST_MESSAGE_MAX_RUNES_V2 {
-		return InvalidTermsOfServiceError("text", t.Id)
+		return outer("text", &t.Id)
 	}
 
 	return nil
 }
 
 func (t *TermsOfService) ToJson() string {
-	b, _ := json.JSON.Marshal(t)
-	return string(b)
+	return ModelToJson(t)
 }
 
 func TermsOfServiceFromJson(data io.Reader) *TermsOfService {
 	var termsOfService TermsOfService
-	err := json.JSON.NewDecoder(data).Decode(&termsOfService)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&termsOfService, data)
 	return &termsOfService
-}
-
-func InvalidTermsOfServiceError(fieldName string, termsOfServiceId string) *AppError {
-	id := fmt.Sprintf("model.terms_of_service.is_valid.%s.app_error", fieldName)
-	details := ""
-	if termsOfServiceId != "" {
-		details = "terms_of_service_id=" + termsOfServiceId
-	}
-	return NewAppError("TermsOfService.IsValid", id, map[string]interface{}{"MaxLength": POST_MESSAGE_MAX_RUNES_V2}, details, http.StatusBadRequest)
 }
 
 func (t *TermsOfService) PreSave() {

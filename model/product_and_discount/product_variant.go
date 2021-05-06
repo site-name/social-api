@@ -1,17 +1,19 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
+)
+
+const (
+	PRODUCT_VARIANT_NAME_MAX_LENGTH = 255
+	PRODUCT_VARIANT_SKU_MAX_LENGTH  = 255
 )
 
 type ProductVariant struct {
@@ -27,35 +29,30 @@ type ProductVariant struct {
 	*model.ModelMetadata `db:"-"`
 }
 
-func (p *ProductVariant) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.product_variant.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "product_variant_id=" + p.Id
-	}
-
-	return model.NewAppError("ProductVariant.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *ProductVariant) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_variant.is_valid.%s.app_error",
+		"product_variant_id=",
+		"ProductVariant.IsValid",
+	)
 	if !model.IsValidId(p.Id) {
-		return p.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.ProductID) {
-		return p.createAppError("product_id")
+		return outer("product_id", &p.Id)
 	}
 	if len(p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
-		return p.createAppError("sku")
+		return outer("sku", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_VARIANT_NAME_MAX_LENGTH {
-		return p.createAppError("name")
+		return outer("name", &p.Id)
 	}
 	if p.Weight != nil && *p.Weight < 0 {
-		return p.createAppError("weight")
+		return outer("weight", &p.Id)
 	}
 	if p.WeightUnit != "" {
 		if _, ok := measurement.WEIGHT_UNIT_CONVERSION[strings.ToLower(p.WeightUnit)]; !ok {
-			return p.createAppError("weight_unit")
+			return outer("weight_unit", &p.Id)
 		}
 	}
 
@@ -67,8 +64,7 @@ func (p *ProductVariant) String() string {
 }
 
 func (p *ProductVariant) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func (p *ProductVariant) PreSave() {
@@ -93,10 +89,7 @@ func (p *ProductVariant) PreUpdate() {
 
 func ProductVariantFromJson(data io.Reader) *ProductVariant {
 	var prd ProductVariant
-	err := json.JSON.NewDecoder(data).Decode(&prd)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&prd, data)
 	return &prd
 }
 

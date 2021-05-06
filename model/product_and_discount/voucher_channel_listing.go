@@ -1,14 +1,11 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
 
@@ -32,41 +29,32 @@ func (v *VoucherChannelListing) ToJson() string {
 		Amount:   v.MinSpenAmount,
 		Currency: v.Currency,
 	}
-	b, _ := json.JSON.Marshal(v)
-	return string(b)
+	return model.ModelToJson(v)
 }
 
 func VoucherChannelListingFromJson(data io.Reader) *VoucherChannelListing {
 	var vcl VoucherChannelListing
-	err := json.JSON.NewDecoder(data).Decode(&vcl)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&vcl, data)
 	return &vcl
 }
 
-func (v *VoucherChannelListing) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.voucher_channel_listing.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "voucher_channel_listing_id=" + v.Id
-	}
-
-	return model.NewAppError("VoucherChannelListing.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (v *VoucherChannelListing) IsValid() *model.AppError {
-	if v.Id == "" {
-		return v.createAppError("id")
+	outer := model.CreateAppErrorForModel(
+		"model.voucher_channel_listing.is_valid.%s.app_error",
+		"voucher_channel_listing_id=",
+		"VoucherChannelListing.IsValid",
+	)
+	if !model.IsValidId(v.Id) {
+		return outer("id", nil)
 	}
-	if v.VoucherID == "" {
-		return v.createAppError("voucher_id")
+	if !model.IsValidId(v.VoucherID) {
+		return outer("voucher_id", &v.Id)
 	}
-	if v.ChannelID == "" {
-		return v.createAppError("channel_id")
+	if !model.IsValidId(v.ChannelID) {
+		return outer("channel_id", &v.Id)
 	}
 	if unit, err := currency.ParseISO(v.Currency); err != nil || !strings.EqualFold(unit.String(), v.Currency) {
-		return v.createAppError("currency")
+		return outer("currency", &v.Id)
 	}
 
 	return nil

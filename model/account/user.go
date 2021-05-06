@@ -1,7 +1,6 @@
 package account
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"sort"
@@ -246,50 +245,55 @@ func (u *User) IsValidLocale() bool {
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
 func (u *User) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.user.is_valid.%s.app_error",
+		"user_id=",
+		"User.IsValid")
+
 	if !model.IsValidId(u.Id) {
-		return u.InvalidUserError("id")
+		return outer("id", nil)
 	}
 	if u.CreateAt == 0 {
-		return u.InvalidUserError("create_at")
+		return outer("create_at", &u.Id)
 	}
 	if u.UpdateAt == 0 {
-		return u.InvalidUserError("update_at")
+		return outer("update_at", &u.Id)
 	}
 	if !model.IsValidUsername(u.Username) {
-		return u.InvalidUserError("username")
+		return outer("username", &u.Id)
 	}
 	if len(u.Email) > model.USER_EMAIL_MAX_LENGTH || u.Email == "" || !model.IsValidEmail(u.Email) {
-		return u.InvalidUserError("email")
+		return outer("email", &u.Id)
 	}
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
-		return u.InvalidUserError("nickname")
+		return outer("nickname", &u.Id)
 	}
 	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
-		return u.InvalidUserError("first_name")
+		return outer("first_name", &u.Id)
 	}
 	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
-		return u.InvalidUserError("last_name")
+		return outer("last_name", &u.Id)
 	}
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {
-		return u.InvalidUserError("auth_data")
+		return outer("auth_data", &u.Id)
 	}
 	if u.AuthData != nil && *u.AuthData != "" && u.AuthService == "" {
-		return u.InvalidUserError("auth_data_type")
+		return outer("auth_data_type", &u.Id)
 	}
 	if u.Password != "" && u.AuthData != nil && *u.AuthData != "" {
-		return u.InvalidUserError("auth_data_pwd")
+		return outer("auth_data_pwd", &u.Id)
 	}
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
-		return u.InvalidUserError("password_limit")
+		return outer("password_limit", &u.Id)
 	}
 	if !u.IsValidLocale() {
-		return u.InvalidUserError("locale")
+		return outer("locale", &u.Id)
 	}
 	if len(u.Timezone) > 0 {
 		if tzJson, err := json.JSON.Marshal(u.Timezone); err != nil {
 			return model.NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else if utf8.RuneCount(tzJson) > USER_TIMEZONE_MAX_RUNES {
-			return u.InvalidUserError("timezone_limit")
+			return outer("timezone_limit", &u.Id)
 		}
 	}
 
@@ -403,18 +407,15 @@ func (u *User) Patch(patch *UserPatch) {
 
 // ToJson convert a User to a json.JSON string
 func (u *User) ToJson() string {
-	b, _ := json.JSON.Marshal(u)
-	return string(b)
+	return model.ModelToJson(u)
 }
 
 func (u *UserPatch) ToJson() string {
-	b, _ := json.JSON.Marshal(u)
-	return string(b)
+	return model.ModelToJson(u)
 }
 
 func (u *UserAuth) ToJson() string {
-	b, _ := json.JSON.Marshal(u)
-	return string(b)
+	return model.ModelToJson(u)
 }
 
 // Generate a valid strong etag so the browser can cache the results
@@ -631,52 +632,41 @@ func (u *UserPatch) SetField(fieldName string, fieldValue string) {
 
 // UserFromJson will decode the input and return a User
 func UserFromJson(data io.Reader) *User {
-	var user *User
-	json.JSON.NewDecoder(data).Decode(user)
-	return user
+	var user User
+	model.ModelFromJson(&user, data)
+	return &user
 }
 
 func UserPatchFromJson(data io.Reader) *UserPatch {
-	var user *UserPatch
-	json.JSON.NewDecoder(data).Decode(&user)
-	return user
+	var user UserPatch
+	model.ModelFromJson(&user, data)
+	return &user
 }
 
 func UserAuthFromJson(data io.Reader) *UserAuth {
-	var user *UserAuth
-	json.JSON.NewDecoder(data).Decode(&user)
-	return user
+	var user UserAuth
+	model.ModelFromJson(&user, data)
+	return &user
 }
 
 func UserMapToJson(u map[string]*User) string {
-	b, _ := json.JSON.Marshal(u)
-	return string(b)
+	return model.ModelToJson(&u)
 }
 
 func UserMapFromJson(data io.Reader) map[string]*User {
 	var users map[string]*User
-	json.JSON.NewDecoder(data).Decode(&users)
+	model.ModelFromJson(&users, data)
 	return users
 }
 
 func UserListToJson(u []*User) string {
-	b, _ := json.JSON.Marshal(u)
-	return string(b)
+	return model.ModelToJson(&u)
 }
 
 func UserListFromJson(data io.Reader) []*User {
 	var users []*User
-	json.JSON.NewDecoder(data).Decode(&users)
+	model.ModelFromJson(&users, data)
 	return users
-}
-
-func (u *User) InvalidUserError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.user.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "user_id=" + u.Id
-	}
-	return model.NewAppError("User.IsValid", id, nil, details, http.StatusBadRequest)
 }
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword

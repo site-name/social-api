@@ -18,7 +18,7 @@ func (c *CollectionChannelListing) IsValid() *model.AppError {
 		"collection_channel_listing_id=",
 		"CollectionChannelListing.IsValid")
 
-	if c.Id == "" {
+	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
 	if c.CollectionID == "" {

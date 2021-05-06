@@ -3,13 +3,10 @@ package payment
 import (
 	"fmt"
 	"io"
-	"net/http"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
 
@@ -83,53 +80,47 @@ func (p *PaymentTransaction) GetAmount() {
 	panic("not implemented")
 }
 
-// Common method for creating app error for payment transaction
-func (p *PaymentTransaction) InvalidPaymentTransactionErr(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.payment_transaction.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "transaction_id=" + p.Id
-	}
-
-	return model.NewAppError("PaymentTransaction.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *PaymentTransaction) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.payment_transaction.is_valid.%s.app_error",
+		"transaction_id=",
+		"PaymentTransaction.IsValid",
+	)
 	if !model.IsValidId(p.Id) {
-		return p.InvalidPaymentTransactionErr("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.PaymentID) {
-		return p.InvalidPaymentTransactionErr("payment_id")
+		return outer("payment_id", &p.Id)
 	}
 	if p.CustomerID != nil && !model.IsValidId(*p.CustomerID) {
-		return p.InvalidPaymentTransactionErr("customer_id")
+		return outer("customer_id", &p.Id)
 	}
 	if p.CreateAt == 0 {
-		return p.InvalidPaymentTransactionErr("create_at")
+		return outer("create_at", &p.Id)
 	}
 	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return p.InvalidPaymentTransactionErr("token")
+		return outer("token", &p.Id)
 	}
 	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH {
-		return p.InvalidPaymentTransactionErr("kind")
+		return outer("kind", &p.Id)
 	}
 	if !validTransactionKinds.Contains(p.Kind) {
-		return p.InvalidPaymentTransactionErr("kind")
+		return outer("kind", &p.Id)
 	}
 	if len(p.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
-		return p.InvalidPaymentTransactionErr("currency")
+		return outer("currency", &p.Id)
 	}
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
-		return p.InvalidPaymentTransactionErr("error")
+		return outer("error", &p.Id)
 	}
 	if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
-		return p.InvalidPaymentTransactionErr("searchable_key")
+		return outer("searchable_key", &p.Id)
 	}
 	if un, err := currency.ParseISO(p.Currency); err != nil || un.String() != p.Currency {
-		return p.InvalidPaymentTransactionErr("currency")
+		return outer("currency", &p.Id)
 	}
 	if p.Amount == nil {
-		return p.InvalidPaymentTransactionErr("amount")
+		return outer("amount", &p.Id)
 	}
 
 	return nil
@@ -148,15 +139,11 @@ func (p *PaymentTransaction) PreSave() {
 }
 
 func (p *PaymentTransaction) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func PaymentTransactionFromJson(data io.Reader) *PaymentTransaction {
 	var pmtr PaymentTransaction
-	err := json.JSON.NewDecoder(data).Decode(&pmtr)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&pmtr, data)
 	return &pmtr
 }
