@@ -1,4 +1,4 @@
-package product
+package product_and_discount
 
 import (
 	"github.com/shopspring/decimal"

@@ -1,4 +1,4 @@
-package product
+package product_and_discount
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
+
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -104,6 +105,7 @@ func (p *ProductVariant) GetPrice(
 	collection []*Collection,
 	channel *channel.Channel,
 	channelListing *ProductChannelListing,
-	discounts *[]*model.DiscountInfo) {
+	// discounts *[]*discount.DiscountInfo,
+) {
 
 }

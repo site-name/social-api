@@ -1,4 +1,4 @@
-package discount
+package product_and_discount
 
 import (
 	"errors"
@@ -9,7 +9,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/language"
 )
@@ -21,14 +20,14 @@ const (
 )
 
 type Sale struct {
-	Id          string                `json:"id"`
-	Name        string                `json:"name"`
-	Type        string                `json:"type"`
-	Products    []*product.Product    `json:"products,omitempty" db:"-"`
-	Categories  []*product.Category   `json:"categories,omitempty" db:"-"`
-	Collections []*product.Collection `json:"collections,omitempty" db:"-"`
-	StartDate   int64                 `json:"start_date"`
-	EndDate     *int64                `json:"end_date"`
+	Id          string        `json:"id"`
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	Products    []*Product    `json:"products,omitempty" db:"-"`
+	Categories  []*Category   `json:"categories,omitempty" db:"-"`
+	Collections []*Collection `json:"collections,omitempty" db:"-"`
+	StartDate   int64         `json:"start_date"`
+	EndDate     *int64        `json:"end_date"`
 }
 
 func (s *Sale) String() string {

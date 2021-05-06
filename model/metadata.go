@@ -13,7 +13,7 @@ type ModelMetadata struct {
 	PrivateMetadata StringMap `json:"private_metadata"`
 
 	// mutex is used for safe access concurrenly
-	mutex sync.RWMutex `db:"-"`
+	mutex sync.RWMutex `json:"-" db:"-"`
 }
 
 func (m *ModelMetadata) PreSave() {

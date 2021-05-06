@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.31
+	github.com/aws/aws-sdk-go v1.38.34
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -38,7 +38,7 @@ require (
 	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/minio/minio-go/v7 v7.0.10
-	github.com/nyaruka/phonenumbers v1.0.68
+	github.com/nyaruka/phonenumbers v1.0.69
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pelletier/go-toml v1.9.0 // indirect
@@ -63,7 +63,7 @@ require (
 	github.com/wiggin77/srslog v1.0.1
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	go.uber.org/zap v1.16.0
-	golang.org/x/crypto v0.0.0-20210503195802-e9a32991a82e
+	golang.org/x/crypto v0.0.0-20210505212654-3497b51f5e64
 	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.0

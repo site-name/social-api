@@ -1,4 +1,4 @@
-package discount
+package product_and_discount
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product"
 	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/language"
 )
@@ -60,22 +59,22 @@ func (n *NotApplicable) Error() string {
 }
 
 type Voucher struct {
-	Id                       string                `json:"id"`
-	Type                     string                `json:"type"`
-	Name                     string                `json:"name"`
-	Code                     string                `json:"code"`
-	UsageLimit               uint                  `json:"usage_limit"`
-	Used                     uint                  `json:"used"`
-	StartDate                int64                 `json:"start_date"`
-	EndDate                  *int64                `json:"end_date"`
-	ApplyOncePerOrder        bool                  `json:"apply_once_per_order"`
-	ApplyOncePerCustomer     bool                  `json:"apply_once_per_customer"`
-	DiscountValueType        string                `json:"discount_value_type"`
-	Countries                string                `json:"countries"` // multiple. E.g: "Vietnam America China"
-	MinCheckoutItemsQuantity uint                  `json:"min_checkout_items_quantity"`
-	Products                 []*product.Product    `json:"products,omitempty" db:"-"`
-	Collections              []*product.Collection `json:"collections,omitempty" db:"-"`
-	Categories               []*product.Category   `json:"categories,omitempty" db:"-"`
+	Id                       string        `json:"id"`
+	Type                     string        `json:"type"`
+	Name                     string        `json:"name"`
+	Code                     string        `json:"code"`
+	UsageLimit               uint          `json:"usage_limit"`
+	Used                     uint          `json:"used"`
+	StartDate                int64         `json:"start_date"`
+	EndDate                  *int64        `json:"end_date"`
+	ApplyOncePerOrder        bool          `json:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool          `json:"apply_once_per_customer"`
+	DiscountValueType        string        `json:"discount_value_type"`
+	Countries                string        `json:"countries"` // multiple. E.g: "Vietnam America China"
+	MinCheckoutItemsQuantity uint          `json:"min_checkout_items_quantity"`
+	Products                 []*Product    `json:"products,omitempty" db:"-"`
+	Collections              []*Collection `json:"collections,omitempty" db:"-"`
+	Categories               []*Category   `json:"categories,omitempty" db:"-"`
 }
 
 // ValidateMinCheckoutItemsQuantity checks if given `quantity` satisfies min items quantity required

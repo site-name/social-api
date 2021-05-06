@@ -1,4 +1,4 @@
-package discount
+package product_and_discount
 
 import (
 	"fmt"
