@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 type ProductMedia struct {
@@ -13,16 +12,28 @@ type ProductMedia struct {
 	*model.Sortable
 }
 
+// TODO: not done yet
+func (p *ProductMedia) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_media.is_valid.%s.app_error",
+		"product_media_id=",
+		"ProductMedia.IsValid")
+	if p.Id == "" {
+		return outer("id", nil)
+	}
+	if p.ProductID == "" {
+		return outer("product_id", &p.Id)
+	}
+
+	return nil
+}
+
 func (p *ProductMedia) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func ProductMediaFromJson(data io.Reader) *ProductMedia {
 	var prd ProductMedia
-	err := json.JSON.NewDecoder(data).Decode(&prd)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&prd, data)
 	return &prd
 }

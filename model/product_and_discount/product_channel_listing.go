@@ -1,15 +1,12 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
 
@@ -28,28 +25,23 @@ func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 	return p.AvailableForPurchase != nil && (*p.AvailableForPurchase).Before(time.Now())
 }
 
-func (p *ProductChannelListing) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.product_channel_listing.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "product_channel_listing_id=" + p.Id
-	}
-
-	return model.NewAppError("ProductChannelListing.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *ProductChannelListing) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_channel_listing.is_valid.%s.app_error",
+		"product_channel_listing_id=",
+		"ProductChannelListing.IsValid")
+
 	if !model.IsValidId(p.Id) {
-		return p.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(p.ProductID) {
-		return p.createAppError("product_id")
+		return outer("product_id", &p.Id)
 	}
 	if !model.IsValidId(p.ChannelID) {
-		return p.createAppError("channel_id")
+		return outer("channel_id", &p.Id)
 	}
 	if un, err := currency.ParseISO(p.Currency); !strings.EqualFold(un.String(), p.Currency) || err != nil {
-		return p.createAppError("currency")
+		return outer("currency", &p.Id)
 	}
 	return nil
 }
@@ -65,16 +57,12 @@ func (p *ProductChannelListing) ToJson() string {
 		Amount:   p.DiscountedPriceAmount,
 		Currency: p.Currency,
 	}
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func ProductChannelListingFromJson(data io.Reader) *ProductChannelListing {
 	var p ProductChannelListing
-	err := json.JSON.NewDecoder(data).Decode(&p)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&p, data)
 	return &p
 }
 

@@ -3,14 +3,12 @@ package account
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"reflect"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -64,14 +62,13 @@ func (a *Address) Equal(other *Address) bool {
 }
 
 func (add *Address) ToJson() string {
-	b, _ := json.JSON.Marshal(add)
-	return string(b)
+	return model.ModelToJson(add)
 }
 
 func AddressFromJson(data io.Reader) *Address {
-	var add *Address
-	json.JSON.NewDecoder(data).Decode(add)
-	return add
+	var add Address
+	model.ModelFromJson(&add, data)
+	return &add
 }
 
 // PreSave makes sure the address is perfectly processed before saving into the database
@@ -97,59 +94,53 @@ func (a *Address) PreUpdate() {
 	a.UpdateAt = model.GetMillis()
 }
 
-func (a *Address) InvalidAddressError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.address.is_valid.%s.app_error", fieldName)
-	var details string
-	if strings.ToLower(fieldName) != "id" {
-		details += "address_id=" + a.Id
-	}
-
-	return model.NewAppError("Address.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 // IsValid validates address and returns an error if data is not processed
 func (a *Address) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.address.is_valid.%s.app_error",
+		"address_id=",
+		"Address.IsValid")
 	if !model.IsValidId(a.Id) {
-		return a.InvalidAddressError("id")
+		return outer("id", nil)
 	}
 	if a.CreateAt == 0 {
-		return a.InvalidAddressError("create_at")
+		return outer("create_at", &a.Id)
 	}
 	if a.UpdateAt == 0 {
-		return a.InvalidAddressError("update_at")
+		return outer("update_at", &a.Id)
 	}
 	if a.FirstName == "" || !IsValidNamePart(a.FirstName, model.FirstName) {
-		return a.InvalidAddressError("first_name")
+		return outer("first_name", &a.Id)
 	}
 	if a.LastName == "" || !IsValidNamePart(a.LastName, model.LastName) {
-		return a.InvalidAddressError("last_name")
+		return outer("last_name", &a.Id)
 	}
 	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > COMPANY_NAME_MAX_LENGTH {
-		return a.InvalidAddressError("company_name")
+		return outer("company_name", &a.Id)
 	}
 	if a.StreetAddress1 != "" && utf8.RuneCountInString(a.StreetAddress1) > STREET_ADDRESS_MAX_LENGTH {
-		return a.InvalidAddressError("street_address_1")
+		return outer("street_address_1", &a.Id)
 	}
 	if a.StreetAddress2 != nil && utf8.RuneCountInString(*a.StreetAddress2) > STREET_ADDRESS_MAX_LENGTH {
-		return a.InvalidAddressError("street_address_2")
+		return outer("street_address_2", &a.Id)
 	}
 	if utf8.RuneCountInString(a.City) > CITY_NAME_MAX_LENGTH {
-		return a.InvalidAddressError("city")
+		return outer("city", &a.Id)
 	}
 	if a.CityArea != nil && utf8.RuneCountInString(*a.CityArea) > CITY_AREA_MAX_LENGTH {
-		return a.InvalidAddressError("city_area")
+		return outer("city_area", &a.Id)
 	}
 	if utf8.RuneCountInString(a.PostalCode) > POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
-		return a.InvalidAddressError("postal_code")
+		return outer("postal_code", &a.Id)
 	}
 	if _, ok := model.Countries[strings.ToUpper(a.Country)]; !ok {
-		return a.InvalidAddressError("country")
+		return outer("country", &a.Id)
 	}
 	if utf8.RuneCountInString(a.CountryArea) > COUNTRY_AREA_MAX_LENGTH {
-		return a.InvalidAddressError("country_area")
+		return outer("country_area", &a.Id)
 	}
 	if utf8.RuneCountInString(a.Phone) > PHONE_MAX_LENGTH || !model.IsValidPhoneNumber(a.Phone, "") {
-		return a.InvalidAddressError("phone")
+		return outer("phone", &a.Id)
 	}
 
 	return nil

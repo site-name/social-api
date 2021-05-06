@@ -2,8 +2,6 @@ package model
 
 import (
 	"io"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -16,12 +14,11 @@ type FileUploadResponse struct {
 }
 
 func FileUploadResponseFromJson(data io.Reader) *FileUploadResponse {
-	var o *FileUploadResponse
-	json.JSON.NewDecoder(data).Decode(&o)
-	return o
+	var o FileUploadResponse
+	ModelFromJson(&o, data)
+	return &o
 }
 
 func (o *FileUploadResponse) ToJson() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(o)
 }

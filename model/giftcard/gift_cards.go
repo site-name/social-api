@@ -1,15 +1,12 @@
 package giftcard
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"golang.org/x/text/currency"
 )
 
@@ -46,47 +43,37 @@ func (gc *GiftCard) ToJson() string {
 		Amount:   gc.CurrentBalanceAmount,
 		Currency: gc.Currency,
 	}
-	b, _ := json.JSON.Marshal(gc)
-	return string(b)
+	return model.ModelToJson(gc)
 }
 
 func GiftCardFromJson(data io.Reader) *GiftCard {
 	var gc GiftCard
-	err := json.JSON.NewDecoder(data).Decode(&gc)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&gc, data)
 	return &gc
 }
 
-func (gc *GiftCard) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.gift_card.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "gift_card_id=" + gc.Id
-	}
-
-	return model.NewAppError("GiftCard.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (gc *GiftCard) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.gift_card.is_valid.%s.app_error",
+		"gift_card_id=",
+		"GiftCard.IsValid")
 	if !model.IsValidId(gc.Id) {
-		return gc.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(gc.UserID) {
-		return gc.createAppError("user_id")
+		return outer("user_id", &gc.Id)
 	}
 	if gc.CreateAt == 0 {
-		return gc.createAppError("create_at")
+		return outer("create_at", &gc.Id)
 	}
 	if gc.LastUsedOn == 0 {
-		return gc.createAppError("last_used_on")
+		return outer("last_used_on", &gc.Id)
 	}
 	if len(gc.Code) > GIFT_CARD_CODE_MAX_LENGTH {
-		return gc.createAppError("code")
+		return outer("code", &gc.Id)
 	}
 	if unit, err := currency.ParseISO(gc.Currency); err != nil || !strings.EqualFold(unit.String(), gc.Currency) {
-		return gc.createAppError("currency")
+		return outer("currency", &gc.Id)
 	}
 
 	return nil

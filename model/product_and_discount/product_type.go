@@ -1,15 +1,12 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 )
 
@@ -34,31 +31,26 @@ func (p *ProductType) String() string {
 	return p.Name
 }
 
-func (p *ProductType) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.product_type.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "product_type_id=" + p.Id
-	}
-
-	return model.NewAppError("ProductType.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (p *ProductType) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_type.is_valid.%s.app_error",
+		"product_type_id=",
+		"ProductType.IsValid")
+
 	if !model.IsValidId(p.Id) {
-		return p.createAppError("id")
+		return outer("id", nil)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_TYPE_NAME_MAX_LENGTH {
-		return p.createAppError("name")
+		return outer("name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Slug) > PRODUCT_TYPE_SLUG_MAX_LENGTH {
-		return p.createAppError("slug")
+		return outer("slug", &p.Id)
 	}
 	if p.Weight != nil && *p.Weight < 0 {
-		return p.createAppError("weight")
+		return outer("weight", &p.Id)
 	}
 	if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
-		return p.createAppError("weight_unit")
+		return outer("weight_unit", &p.Id)
 	}
 
 	return nil
@@ -97,15 +89,11 @@ func (p *ProductType) PreUpdate() {
 }
 
 func (p *ProductType) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return model.ModelToJson(p)
 }
 
 func ProductTypeFromJson(data io.Reader) *ProductType {
 	var pt ProductType
-	err := json.JSON.NewDecoder(data).Decode(&pt)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&pt, data)
 	return &pt
 }

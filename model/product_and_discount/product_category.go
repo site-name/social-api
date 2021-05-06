@@ -1,16 +1,12 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
-	"github.com/sitename/sitename/modules/json"
 )
 
 // max length for some fields
@@ -36,31 +32,26 @@ func (c *Category) String() string {
 	return c.Name
 }
 
-func (c *Category) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.category.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "category_id=" + c.Id
-	}
-
-	return model.NewAppError("Category.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (c *Category) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.category.is_valid.%s.app_error",
+		"category_id=",
+		"Category.IsValid")
+
 	if !model.IsValidId(c.Id) {
-		return c.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(c.ParentID) {
-		return c.createAppError("id")
+		return outer("id", &c.Id)
 	}
 	if len(c.BackgroundImageAlt) > CATEGORY_BG_IMAGE_ALT_MAX_LENGTH {
-		return c.createAppError("background_image_alt")
+		return outer("background_image_alt", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > CATEGORY_NAME_MAX_LENGTH {
-		return c.createAppError("name")
+		return outer("name", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Slug) > CATEGORY_SLUG_MAX_LENGTH {
-		return c.createAppError("slug")
+		return outer("slug", &c.Id)
 	}
 
 	return nil
@@ -80,16 +71,12 @@ func (c *Category) PreUpdate() {
 }
 
 func (c *Category) ToJson() string {
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func CategoryFromJSON(data io.Reader) *Category {
 	var c Category
-	err := json.JSON.NewDecoder(data).Decode(&c)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&c, data)
 	return &c
 }
 
@@ -107,38 +94,29 @@ func (c *CategoryTranslation) String() string {
 }
 
 func (c *CategoryTranslation) ToJson() string {
-	b, _ := json.JSON.Marshal(c)
-	return string(b)
+	return model.ModelToJson(c)
 }
 
 func CategoryTranslationFromJSON(data io.Reader) *Category {
 	var c Category
-	err := json.JSON.NewDecoder(data).Decode(&c)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&c, data)
 	return &c
 }
 
-func (c *CategoryTranslation) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.category_translation.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "category_translation_id=" + c.Id
-	}
-
-	return model.NewAppError("CategoryTranslation.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (c *CategoryTranslation) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.category_translation.is_valid.%s.app_error",
+		"category_translation_id=",
+		"CategoryTranslation.IsValid")
+
 	if !model.IsValidId(c.Id) {
-		return c.createAppError("id")
+		return outer("id", nil)
 	}
 	if !model.IsValidId(c.CategoryID) {
-		return c.createAppError("category_id")
+		return outer("category_id", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > CATEGORY_NAME_MAX_LENGTH {
-		return c.createAppError("name")
+		return outer("name", &c.Id)
 	}
 
 	return nil

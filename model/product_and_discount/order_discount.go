@@ -17,7 +17,7 @@ type OrderDiscount struct {
 	Value          *decimal.Decimal `json:"value"`
 	AmountValue    *decimal.Decimal `json:"amount_value"`
 	Amount         *model.Money     `json:"amount,omitempty" db:"-"`
-	Currency       string           `json:""currency`
+	Currency       string           `json:"currency"`
 	Name           *string          `json:"name"`
 	TranslatedName *string          `json:"translated_name"`
 	Reason         *string          `json:"reason"`

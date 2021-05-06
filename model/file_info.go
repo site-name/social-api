@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -28,7 +29,6 @@ type GetFileInfoOptions struct {
 	IncludeDeleted bool     `json:"include_deleted"`
 	SortBy         string   `json:"sort_by"`
 	SortDescending bool     `json:"sort_descending"`
-	// ChannelIds []string `json:"channel_ids"`
 }
 
 type FileInfo struct {
@@ -101,29 +101,34 @@ func (fi *FileInfo) PreSave() {
 	}
 }
 
+func (fi *FileInfo) createAppError(fieldName string) *AppError {
+	id := fmt.Sprintf("model.file_info.is_valid.%s.app_error", fieldName)
+	var details string
+	if !strings.EqualFold(fieldName, "id") {
+		details = "file_info_id=" + fi.Id
+	}
+
+	return NewAppError("FileInfo.IsValid", id, nil, details, http.StatusBadRequest)
+}
+
 func (fi *FileInfo) IsValid() *AppError {
 	if !IsValidId(fi.Id) {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+		return fi.createAppError("id")
 	}
-
 	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.user_id.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+		return fi.createAppError("creator_id")
 	}
-
 	if fi.ProductId != "" && !IsValidId(fi.ProductId) {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.post_id.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+		return fi.createAppError("product_id")
 	}
-
 	if fi.CreateAt == 0 {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.create_at.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+		return fi.createAppError("create_at")
 	}
-
 	if fi.UpdateAt == 0 {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.update_at.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+		return fi.createAppError("update_at")
 	}
-
 	if fi.Path == "" {
-		return NewAppError("FileInfo.IsValid", "model.file_info.is_valid.path.app_error", nil, "id="+fi.Id, http.StatusBadRequest)
+		return fi.createAppError("path")
 	}
 
 	return nil

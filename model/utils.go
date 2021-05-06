@@ -151,6 +151,46 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 	return appErr
 }
 
+// common function for creating model.AppError type
+//
+// Example:
+// 	modelInstance := &ModelType{
+//		Id: "dsdsdre984jf8se990834",
+// 		Name: "Hello World",
+//	}
+// 	outer := CreateAppError("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
+//	return outer("create_at", modelInstance.Id)
+// .
+func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
+	var id, details string
+	return func(fieldName string, typeId *string) *AppError {
+		id = fmt.Sprintf(format, fieldName)
+		if !strings.EqualFold(fieldName, "id") && typeId != nil {
+			details = detailKey + *typeId
+		}
+
+		return NewAppError(where, id, nil, details, http.StatusBadRequest)
+	}
+}
+
+// Encodes database models to json string format
+func ModelToJson(model interface{}) string {
+	bytes, err := json.JSON.Marshal(&model)
+	if err != nil {
+		slog.Error("Error encoding model", slog.Any("type", fmt.Sprintf("%T", model)))
+		return ""
+	}
+	return string(bytes)
+}
+
+// Decodes json string into model
+func ModelFromJson(model interface{}, data io.Reader) {
+	err := json.JSON.NewDecoder(data).Decode(&model)
+	if err != nil {
+		slog.Error("Error decoding model", slog.Any("type", fmt.Sprintf("%T", model)))
+	}
+}
+
 func (a *AppError) ToJson() string {
 	b, err := json.JSON.Marshal(a)
 	if err != nil {
