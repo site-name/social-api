@@ -1,6 +1,7 @@
 package attribute
 
 import (
+	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -71,6 +72,7 @@ type Attribute struct {
 	FilterableInDashboard    *bool                               `json:"filterable_in_dashboard"`
 	StorefrontSearchPosition int                                 `json:"storefront_search_position"`
 	AvailableInGrid          *bool                               `json:"available_in_grid"`
+	model.ModelMetadata      `db:"-"`
 }
 
 func (a *Attribute) IsValid() *model.AppError {
@@ -104,6 +106,43 @@ func (a *Attribute) IsValid() *model.AppError {
 	return nil
 }
 
+func (a *Attribute) PreSave() {
+	if a.Id == "" {
+		a.Id = model.NewId()
+	}
+	if a.InputType == "" {
+		a.InputType = DROPDOWN
+	}
+	if a.ValueRequired == nil {
+		a.ValueRequired = model.NewBool(false)
+	}
+	if a.IsVariantOnly == nil {
+		a.IsVariantOnly = model.NewBool(false)
+	}
+	if a.VisibleInStoreFront == nil {
+		a.VisibleInStoreFront = model.NewBool(true)
+	}
+	if a.FilterableInStorefront == nil {
+		a.FilterableInStorefront = model.NewBool(false)
+	}
+	if a.FilterableInDashboard == nil {
+		a.FilterableInDashboard = model.NewBool(false)
+	}
+	if a.AvailableInGrid == nil {
+		a.AvailableInGrid = model.NewBool(false)
+	}
+}
+
 func (a *Attribute) String() string {
 	return a.Name
+}
+
+func (a *Attribute) ToJson() string {
+	return model.ModelToJson(a)
+}
+
+func AttributeFromJson(data io.Reader) *Attribute {
+	var a Attribute
+	model.ModelFromJson(&a, data)
+	return &a
 }

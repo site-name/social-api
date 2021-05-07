@@ -182,7 +182,9 @@ func ModelToJson(model interface{}) string {
 	return string(bytes)
 }
 
-// Decodes json string into model
+// Decodes json string into model.
+//
+// If decoding process encounter error, model will be nil
 func ModelFromJson(model interface{}, data io.Reader) {
 	type_ := reflect.TypeOf(model)
 	if type_.Kind() != reflect.Ptr {
@@ -190,8 +192,8 @@ func ModelFromJson(model interface{}, data io.Reader) {
 	}
 	err := json.JSON.NewDecoder(data).Decode(&model)
 	if err != nil {
-		slog.Error("Error decoding model", slog.String("error", err.Error()))
-		model = reflect.New(type_)
+		slog.Error("Error decoding json", slog.String("error", err.Error()))
+		model = nil
 	}
 }
 
