@@ -159,6 +159,7 @@ func RemoveStringsFromSlice(slice []string, strings ...string) []string {
 	return newSlice
 }
 
+// returns array of strings contains only common items between two arrays
 func StringArrayIntersection(arr1, arr2 []string) []string {
 	arrMap := map[string]bool{}
 	result := []string{}
@@ -176,6 +177,7 @@ func StringArrayIntersection(arr1, arr2 []string) []string {
 	return result
 }
 
+// filter out items that appear multiple times and keep only one
 func RemoveDuplicatesFromStringArray(arr []string) []string {
 	result := make([]string, 0, len(arr))
 	seen := make(map[string]bool)

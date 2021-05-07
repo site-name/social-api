@@ -56,13 +56,13 @@ func (c *Checkout) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
-	if c.UserID != nil && *c.UserID == "" {
+	if c.UserID != nil && !model.IsValidId(*c.UserID) {
 		return outer("user_id", &c.Id)
 	}
-	if c.BillingAddressID != nil && *c.BillingAddressID == "" {
+	if c.BillingAddressID != nil && !model.IsValidId(*c.BillingAddressID) {
 		return outer("billing_address", &c.Id)
 	}
-	if c.ShippingAddressID != nil && *c.ShippingAddressID == "" {
+	if c.ShippingAddressID != nil && !model.IsValidId(*c.ShippingAddressID) {
 		return outer("shipping_address", &c.Id)
 	}
 	if c.Currency == "" || len(c.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
@@ -88,9 +88,6 @@ func (c *Checkout) IsValid() *model.AppError {
 	}
 	if c.VoucherCode != nil && len(*c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH || *c.VoucherCode == "" {
 		return outer("voucher_code", &c.Id)
-	}
-	if c.LanguageCode == "" {
-		return outer("language_code", &c.Id)
 	}
 	if tag, err := language.Parse(c.LanguageCode); err != nil || !strings.EqualFold(tag.String(), c.LanguageCode) {
 		return outer("language_code", &c.Id)

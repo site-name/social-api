@@ -1,0 +1,131 @@
+package product_and_discount
+
+import (
+	"io"
+	"strings"
+
+	"github.com/sitename/sitename/model"
+)
+
+// max lengths for some fields
+const (
+	DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH = 128
+)
+
+const (
+	FILE = "file"
+)
+
+// system supported content type
+var ContentTypeString = map[string]string{
+	FILE: "Digital product",
+}
+
+type DigitalContent struct {
+	Id                   string  `json:"id"`
+	UseDefaultSettings   *bool   `json:"use_defaults_settings"`
+	AutomaticFulfillment *bool   `json:"automatic_fulfillment"`
+	ContentType          string  `json:"content_type"`
+	ProductVariantID     string  `json:"product_variant_id"`
+	ContentFile          string  `json:"content_file"`
+	MaxDownloads         *uint16 `json:"max_downloads"`
+	UrlValidDays         *uint16 `json:"url_valid_days"`
+	*model.ModelMetadata `db:"-"`
+}
+
+func (d *DigitalContent) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.digital_content.is_valid.%s.app_error",
+		"digital_content_id=",
+		"DigitalContent.IsValid",
+	)
+	if !model.IsValidId(d.Id) {
+		return outer("id", nil)
+	}
+	if len(d.ContentType) > DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH {
+		return outer("content_type", &d.Id)
+	}
+	if ContentTypeString[strings.ToLower(d.ContentType)] == "" {
+		return outer("content_type", &d.Id)
+	}
+
+	return nil
+}
+
+func (d *DigitalContent) ToJson() string {
+	return model.ModelToJson(d)
+}
+
+func DigitalContentFromJson(data io.Reader) *DigitalContent {
+	var d DigitalContent
+	model.ModelFromJson(&d, data)
+	return &d
+}
+
+func (d *DigitalContent) PreSave() {
+	if d.Id == "" {
+		d.Id = model.NewId()
+	}
+	if d.UseDefaultSettings == nil {
+		d.UseDefaultSettings = model.NewBool(true)
+	}
+	if d.AutomaticFulfillment == nil {
+		d.AutomaticFulfillment = model.NewBool(false)
+	}
+	if d.ContentType == "" {
+		d.ContentType = FILE
+	}
+}
+
+type DigitalContentUrl struct {
+	Id          string  `json:"id"`
+	Token       string  `json:"token"` // uuid field
+	ContentID   string  `json:"content_id"`
+	CreateAt    int64   `json:"create_at"`
+	DownloadNum int64   `json:"download_num"`
+	LineID      *string `json:"line_id"` // order line
+}
+
+func (d *DigitalContentUrl) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.digital_content_url.is_valid.%s.app_error",
+		"digital_content_url_id=",
+		"DigitalContentUrl.IsValid",
+	)
+	if !model.IsValidId(d.Id) {
+		return outer("id", nil)
+	}
+	if !model.IsValidId(d.ContentID) {
+		return outer("content_id", &d.Id)
+	}
+	if d.LineID != nil && !model.IsValidId(*d.LineID) {
+		return outer("line_id", &d.Id)
+	}
+	if !model.IsValidId(d.Token) {
+		return outer("token", &d.Id)
+	}
+
+	return nil
+}
+
+func (d *DigitalContentUrl) ToJson() string {
+	return model.ModelToJson(d)
+}
+
+func DigitalContentUrlFromJson(data io.Reader) *DigitalContentUrl {
+	var d DigitalContentUrl
+	model.ModelFromJson(&d, data)
+	return &d
+}
+
+func (d *DigitalContentUrl) PreSave() {
+	if d.Id == "" {
+		d.Id = model.NewId()
+	}
+	if d.CreateAt == 0 {
+		d.CreateAt = model.GetMillis()
+	}
+	if d.Token == "" {
+		d.Token = model.NewId()
+	}
+}

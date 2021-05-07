@@ -1,6 +1,8 @@
 package product_and_discount
 
 import (
+	"io"
+
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 )
@@ -11,7 +13,36 @@ type ProductVariantChannelListing struct {
 	ChannelID       string           `json:"channel_id"`
 	Currency        string           `json:"currency"`
 	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"`
-	Price           *model.Money     `json:"price" db:"-"`
+	Price           *model.Money     `json:"price,omitempty" db:"-"`
 	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"`
 	CostPrice       *model.Money     `json:"cost_price,omitempty" db:"-"`
+}
+
+func (p *ProductVariantChannelListing) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_variant_channel_listing.is_valid.%s.app_error",
+		"product_variant_channel_listing_id=",
+		"ProductVariantChannelListing.IsValid",
+	)
+	if !model.IsValidId(p.Id) {
+		return outer("id", nil)
+	}
+	if !model.IsValidId(p.VariantID) {
+		return outer("variant_id", &p.Id)
+	}
+	if !model.IsValidId(p.ChannelID) {
+		return outer("channel_id", &p.Id)
+	}
+
+	return nil
+}
+
+func (p *ProductVariantChannelListing) ToJson() string {
+	return model.ModelToJson(p)
+}
+
+func ProductVariantChannelListingFromJson(data io.Reader) *ProductVariantChannelListing {
+	var p ProductVariantChannelListing
+	model.ModelFromJson(&p, data)
+	return &p
 }

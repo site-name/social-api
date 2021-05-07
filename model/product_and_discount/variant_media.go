@@ -41,3 +41,9 @@ func VariantMediaToJson(data io.Reader) *VariantMedia {
 	model.ModelFromJson(&v, data)
 	return &v
 }
+
+func (v *VariantMedia) PreSave() {
+	if v.Id == "" {
+		v.Id = model.NewId()
+	}
+}

@@ -105,6 +105,7 @@ type StaffNotificationRecipient struct {
 	UserID     *string `json:"user_id"`
 	StaffEmail *string `json:"staff_email"`
 	Active     *bool   `json:"active"`
+	User       *User   `json:"user" db:"-"`
 }
 
 func (c *StaffNotificationRecipient) ToJson() string {
@@ -140,16 +141,18 @@ func (c *StaffNotificationRecipient) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
-	if c.UserID != nil && *c.UserID == "" {
-		id := model.NewId()
-		c.UserID = &id
-	}
 	if c.Active != nil {
-		b := true
-		c.Active = &b
+		c.Active = model.NewBool(true)
 	}
 	if c.StaffEmail != nil {
-		nmEmail := model.NormalizeEmail(*c.StaffEmail)
-		c.StaffEmail = &nmEmail
+		c.StaffEmail = model.NewString(model.NormalizeEmail(*c.StaffEmail))
 	}
+}
+
+func (c *StaffNotificationRecipient) GetEmail() string {
+	if c.User != nil {
+		return c.User.Email
+	}
+
+	return *c.StaffEmail
 }

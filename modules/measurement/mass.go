@@ -9,6 +9,7 @@ const (
 	TONNE = "tonne"
 )
 
+// weight unit aliases to their full name
 var WEIGHT_UNIT_STRINGS = map[string]string{
 	G:     "Gram",
 	LB:    "Pound",
@@ -17,6 +18,7 @@ var WEIGHT_UNIT_STRINGS = map[string]string{
 	TONNE: "Tonne",
 }
 
+// amount of weight units
 var WEIGHT_UNIT_CONVERSION = map[string]float32{
 	KG:    1.0,
 	G:     1000.0,

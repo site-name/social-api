@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -58,6 +59,7 @@ func AppErrorInit(t i18n.TranslateFunc) {
 	})
 }
 
+// check if array of strings contains given input
 func (sa StringArray) Contains(input string) bool {
 	for index := range sa {
 		if sa[index] == input {
@@ -84,11 +86,8 @@ func (sa StringArray) Equals(input StringArray) bool {
 
 // StringInterfaceFromJson decodes input data in to a map with keys are strings and values are interface{}
 func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
-	decoder := json.JSON.NewDecoder(data)
 	var objMap map[string]interface{}
-	if err := decoder.Decode(&objMap); err != nil {
-		return make(map[string]interface{})
-	}
+	ModelFromJson(&objMap, data)
 	return objMap
 }
 
@@ -160,7 +159,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 //	}
 // 	outer := CreateAppError("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
 //	return outer("create_at", modelInstance.Id)
-// NOTE: This is applied for errors with status code "http.StatusBadRequest 400" only
+// NOTE: This is applied for errors with status code "http.StatusBadRequest (400)" only
 func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
 	var id, details string
 	return func(fieldName string, typeId *string) *AppError {
@@ -185,19 +184,19 @@ func ModelToJson(model interface{}) string {
 
 // Decodes json string into model
 func ModelFromJson(model interface{}, data io.Reader) {
+	type_ := reflect.TypeOf(model)
+	if type_.Kind() != reflect.Ptr {
+		panic("must pass in pointer to type")
+	}
 	err := json.JSON.NewDecoder(data).Decode(&model)
 	if err != nil {
-		slog.Error("Error decoding model", slog.Any("type", fmt.Sprintf("%T", model)))
+		slog.Error("Error decoding model", slog.String("error", err.Error()))
+		model = reflect.New(type_)
 	}
 }
 
 func (a *AppError) ToJson() string {
-	b, err := json.JSON.Marshal(a)
-	if err != nil {
-		slog.Error("failed marshaling app error: %v", slog.Err(err))
-		return ""
-	}
-	return string(b)
+	return ModelToJson(a)
 }
 
 func AppErrorFromJSon(data io.Reader) *AppError {
@@ -241,10 +240,12 @@ func IsValidId(value string) bool {
 	return err == nil
 }
 
+// check if s is lower-cased
 func IsLower(s string) bool {
 	return strings.ToLower(s) == s
 }
 
+// check if given email is valid email
 func IsValidEmail(email string) bool {
 	if addr, err := mail.ParseAddress(email); err != nil {
 		return false
@@ -416,14 +417,12 @@ func NewId() string {
 
 // MapToJson converts a map to a json string
 func MapToJson(objmap map[string]string) string {
-	b, _ := json.JSON.Marshal(objmap)
-	return string(b)
+	return ModelToJson(objmap)
 }
 
 // MapBoolToJson converts a map to a json string
 func MapBoolToJson(objmap map[string]bool) string {
-	b, _ := json.JSON.Marshal(objmap)
-	return string(b)
+	return ModelToJson(objmap)
 }
 
 // MapFromJson will decode the key/value pair map
@@ -439,8 +438,7 @@ func MapFromJson(data io.Reader) map[string]string {
 
 // Conserts Jsonify string aray
 func ArrayToJson(objmap []string) string {
-	b, _ := json.JSON.Marshal(objmap)
-	return string(b)
+	return ModelToJson(objmap)
 }
 
 func ArrayFromJson(data io.Reader) []string {
@@ -454,8 +452,7 @@ func ArrayFromJson(data io.Reader) []string {
 }
 
 func StringInterfaceToJson(objmap map[string]interface{}) string {
-	b, _ := json.JSON.Marshal(objmap)
-	return string(b)
+	return ModelToJson(objmap)
 }
 
 func Etag(parts ...interface{}) string {
@@ -555,6 +552,7 @@ func GetServerIpAddress(iface string) string {
 	return ""
 }
 
+// Translates AppError to user's locale
 func (er *AppError) Translate(T i18n.TranslateFunc) {
 	if T == nil {
 		er.Message = er.Id
@@ -581,6 +579,7 @@ func IsValidPhoneNumber(phone, countryCode string) bool {
 	return err == nil
 }
 
+// checkif username is valid
 func IsValidUsername(s string) bool {
 	if len(s) < USER_NAME_MIN_LENGTH || len(s) > USER_NAME_MAX_LENGTH {
 		return false
@@ -597,6 +596,7 @@ func NormalizeUsername(username string) string {
 	return strings.ToLower(username)
 }
 
+// makes sure uname does not violate system standard naming rules
 func CleanUsername(uname string) string {
 	s := NormalizeUsername(strings.Replace(uname, " ", "-", -1))
 	for _, value := range ReservedName {

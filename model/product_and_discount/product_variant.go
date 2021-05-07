@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
+	"golang.org/x/text/language"
 
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -93,12 +93,48 @@ func ProductVariantFromJson(data io.Reader) *ProductVariant {
 	return &prd
 }
 
-func (p *ProductVariant) GetPrice(
-	product *Product,
-	collection []*Collection,
-	channel *channel.Channel,
-	channelListing *ProductChannelListing,
-	// discounts *[]*discount.DiscountInfo,
-) {
+// func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *model.Money {
 
+// }
+
+// --------------------
+type ProductVariantTranslation struct {
+	Id               string `json:"id"`
+	LanguageCode     string `json:"language_code"`
+	ProductVariantID string `json:"product_variant_id"`
+	Name             string `json:"name"`
+}
+
+func (p *ProductVariantTranslation) String() string {
+	return p.Name
+}
+
+func (p *ProductVariantTranslation) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.product_variant_translation.is_valid.%s.app_error",
+		"product_variant_translation_id=",
+		"ProductVariantTranslation.IsValid",
+	)
+	if !model.IsValidId(p.Id) {
+		return outer("id", nil)
+	}
+	if !model.IsValidId(p.ProductVariantID) {
+		return outer("product_variant_id", &p.Id)
+	}
+	tag, err := language.Parse(p.LanguageCode)
+	if err != nil || !strings.EqualFold(tag.String(), p.LanguageCode) || model.Languages[strings.ToLower(p.LanguageCode)] == "" {
+		return outer("language_code", &p.Id)
+	}
+
+	return nil
+}
+
+func (p *ProductVariantTranslation) ToJson() string {
+	return model.ModelToJson(p)
+}
+
+func ProductVariantTranslationFromJson(data io.Reader) *ProductVariantTranslation {
+	var p ProductVariantTranslation
+	model.ModelFromJson(&p, data)
+	return &p
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/nyaruka/phonenumbers"
@@ -32,14 +33,14 @@ func TestModelToJson(t *testing.T) {
 		Id:       "jshd849034bnkjhruieyr",
 		CreateAt: GetMillis(),
 	}
-	res := ModelToJson(model)
+	res := ModelToJson(&model)
 	fmt.Println(res)
 }
 
 func TestModelFromJson(t *testing.T) {
-	// var text = `{"id":"jshd849034bnkjhruieyr","token":"","create_at":1620271145022,"expires_at":0,"last_activity_at":0,"user_id":"","device_id":"","roles":"","is_oauth":false,"expired_notify":false,"props":null,"local":false}`
-	// res := ModelFromJson(&Session{}, strings.NewReader(text))
+	// var text = `{"id":"jshd849034bnkjhruieyr","Token":"jhd97847546565","create_at":1620271145022,"expires_at":0,"last_activity_at":0,"user_id":"","device_id":"","roles":"","is_oauth":false,"expired_notify":false,"props":null,"local":false}`
+	var ses Session
+	ModelFromJson(&ses, strings.NewReader(""))
 
-	// r := res.(*Session)
-	// fmt.Println(r)
+	fmt.Println(ses)
 }

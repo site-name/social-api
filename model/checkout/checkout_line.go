@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 const (
@@ -11,10 +12,11 @@ const (
 )
 
 type CheckoutLine struct {
-	Id         string `json:"id"`
-	CheckoutID string `json:"checkout_id"`
-	VariantID  string `json:"variant_id"`
-	Quantity   uint   `json:"quantity"`
+	Id         string                               `json:"id"`
+	CheckoutID string                               `json:"checkout_id"`
+	VariantID  string                               `json:"variant_id"`
+	Quantity   uint                                 `json:"quantity"`
+	Variant    *product_and_discount.ProductVariant `json:"variant" db:"-"`
 }
 
 func (c *CheckoutLine) ToJson() string {
@@ -31,6 +33,10 @@ func (c *CheckoutLine) Equal(other *CheckoutLine) bool {
 	return c.VariantID == other.VariantID && c.Quantity == other.Quantity
 }
 
+func (c *CheckoutLine) NotEqual(other *CheckoutLine) bool {
+	return !c.Equal(other)
+}
+
 func (c *CheckoutLine) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.checkout_line.is_valid.%s.app_error",
@@ -40,10 +46,10 @@ func (c *CheckoutLine) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
-	if c.CheckoutID == "" {
+	if !model.IsValidId(c.CheckoutID) {
 		return outer("checkout_id", &c.Id)
 	}
-	if c.VariantID == "" {
+	if !model.IsValidId(c.VariantID) {
 		return outer("variant_id", &c.Id)
 	}
 	if c.Quantity < CHECKOUT_LINE_MIN_QUANTITY {

@@ -4,5 +4,6 @@ type DiscountInfo struct {
 	Sale            interface{} // either Sale || Voucher
 	ChannelListings map[string]*SaleChannelListing
 	ProductIDs      []string
+	CategoryIDs     []string
 	CollectionIDs   []string
 }

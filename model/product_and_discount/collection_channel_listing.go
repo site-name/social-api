@@ -21,10 +21,10 @@ func (c *CollectionChannelListing) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
-	if c.CollectionID == "" {
+	if !model.IsValidId(c.CollectionID) {
 		return outer("collection_id", &c.Id)
 	}
-	if c.ChannelID == "" {
+	if !model.IsValidId(c.ChannelID) {
 		return outer("channel_id", &c.Id)
 	}
 
@@ -39,4 +39,10 @@ func CollectionChannelListingFromJson(data io.Reader) *CollectionChannelListing 
 	var c CollectionChannelListing
 	model.ModelFromJson(&c, data)
 	return &c
+}
+
+func (c *CollectionChannelListing) PreSave() {
+	if c.Id == "" {
+		c.Id = model.NewId()
+	}
 }

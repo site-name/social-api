@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -74,7 +73,7 @@ func AddressFromJson(data io.Reader) *Address {
 // PreSave makes sure the address is perfectly processed before saving into the database
 func (add *Address) PreSave() {
 	if add.Id == "" {
-		add.Id = uuid.NewString()
+		add.Id = model.NewId()
 	}
 	if add.FirstName == "" {
 		add.FirstName = "first_name"
