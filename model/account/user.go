@@ -228,20 +228,6 @@ func (u *User) DeepCopy() *User {
 	return &copyUser
 }
 
-// Check if given locale is valid to use
-func (u *User) IsValidLocale() bool {
-	if u.Locale == "" || len(u.Locale) > USER_LOCALE_MAX_LENGTH {
-		return false
-	}
-
-	tag, err := language.Parse(u.Locale)
-	if err != nil {
-		return false
-	}
-
-	return tag.String() == u.Locale
-}
-
 // IsValid validates the user and returns an error if it isn't configured
 // correctly.
 func (u *User) IsValid() *model.AppError {
@@ -268,10 +254,10 @@ func (u *User) IsValid() *model.AppError {
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
 		return outer("nickname", &u.Id)
 	}
-	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES {
+	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES || !IsValidNamePart(u.FirstName, model.FirstName) {
 		return outer("first_name", &u.Id)
 	}
-	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES {
+	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES || IsValidNamePart(u.LastName, model.LastName) {
 		return outer("last_name", &u.Id)
 	}
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {
@@ -286,7 +272,8 @@ func (u *User) IsValid() *model.AppError {
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
 		return outer("password_limit", &u.Id)
 	}
-	if !u.IsValidLocale() {
+	// TODO: need investigate
+	if tag, err := language.Parse(u.Locale); err != nil || !strings.EqualFold(tag.String(), u.Locale) {
 		return outer("locale", &u.Id)
 	}
 	if len(u.Timezone) > 0 {

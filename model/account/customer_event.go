@@ -49,7 +49,7 @@ type CustomerEvent struct {
 	Id         string          `json:"id"`
 	Date       int64           `json:"date"`
 	Type       string          `json:"type"`
-	OrderID    string          `json:"order_id"`
+	OrderID    *string         `json:"order_id"`
 	UserID     string          `json:"user_id"`
 	Parameters model.StringMap `json:"parameters"`
 }
@@ -76,7 +76,7 @@ func (ce *CustomerEvent) IsValid() *model.AppError {
 	if !model.IsValidId(ce.UserID) {
 		return outer("usder_id", &ce.Id)
 	}
-	if !model.IsValidId(ce.OrderID) {
+	if ce.OrderID != nil && !model.IsValidId(*ce.OrderID) {
 		return outer("order_id", &ce.Id)
 	}
 	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !model.StringArray(CustomerEventTypes).Contains(ce.Type) {

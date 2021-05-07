@@ -54,7 +54,6 @@ func (cn *CustomerNote) PreSave() {
 		cn.Date = model.GetMillis()
 	}
 	if cn.IsPublic == nil {
-		a := true
-		cn.IsPublic = &a
+		cn.IsPublic = model.NewBool(true)
 	}
 }
