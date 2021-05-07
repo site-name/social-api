@@ -10,3 +10,8 @@ type Money struct {
 	Amount   *decimal.Decimal
 	Currency string
 }
+
+type Weight struct {
+	Weight     float32
+	WeightUnit string
+}

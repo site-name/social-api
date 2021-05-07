@@ -24,7 +24,7 @@ type ProductChannelListing struct {
 
 // Check if product is can be bought now
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
-	return p.AvailableForPurchase != nil && (*p.AvailableForPurchase).Before(time.Now())
+	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(time.Now())
 }
 
 func (p *ProductChannelListing) IsValid() *model.AppError {

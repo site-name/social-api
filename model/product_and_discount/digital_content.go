@@ -126,6 +126,11 @@ func (d *DigitalContentUrl) PreSave() {
 		d.CreateAt = model.GetMillis()
 	}
 	if d.Token == "" {
-		d.Token = model.NewId()
+		d.Token = strings.ReplaceAll(model.NewId(), "-", "")
 	}
+}
+
+// TODO: fixme
+func (d *DigitalContentUrl) GetAbsoluteUrl() string {
+	panic("not implemented")
 }

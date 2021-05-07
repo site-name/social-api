@@ -29,11 +29,12 @@ const (
 type ProductMedia struct {
 	Id          string                `json:"id"`
 	ProductID   string                `json:"product_id"`
-	Ppoi        string                `json:"ppoi"`
+	Ppoi        string                `json:"ppoi"` // NOTE: need investigation
 	Image       *model.FileInfo       `db:"-"`
 	Alt         string                `json:"alt"`
 	Type        string                `json:"type"`
 	ExternalUrl *string               `json:"external_url"`
+	Product     *Product              `json:"product" db:"-"`
 	OembedData  model.StringInterface `json:"oembed_data"`
 	*model.Sortable
 }
@@ -84,4 +85,8 @@ func (p *ProductMedia) PreSave() {
 	if p.Ppoi == "" {
 		p.Ppoi = "0.5x0.5"
 	}
+}
+
+func (p *ProductMedia) GetOrderingQueryset() []*ProductMedia {
+	return p.Product.Medias
 }

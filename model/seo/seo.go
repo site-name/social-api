@@ -23,7 +23,7 @@ func (s *Seo) IsValid() *model.AppError {
 		"model.seo.is_valid.%s.app_error",
 		"seo_id=",
 		"Seo.IsValid")
-	if s.Id == "" {
+	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
 	}
 	if s.SeoTitle != nil && utf8.RuneCountInString(*s.SeoTitle) > SEO_TITLE_MAX_LENGTH {

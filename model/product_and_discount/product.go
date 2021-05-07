@@ -18,20 +18,23 @@ const (
 
 // Product contains all fields a product contains
 type Product struct {
-	Id                   string   `json:"id"`
-	ProductTypeID        string   `json:"product_type_id"`
-	Name                 string   `json:"name"`
-	Slug                 string   `json:"slug"`
-	Description          *string  `json:"description"`
-	DescriptionPlainText string   `json:"description_plaintext"`
-	CategoryID           *string  `json:"category_id"`
-	CreateAt             int64    `json:"create_at"`
-	UpdateAt             int64    `json:"update_at"`
-	ChargeTaxes          *bool    `json:"charge_taxes"`
-	Weight               *float32 `json:"weight"`
-	WeightUnit           string   `json:"weight_unit"`
-	DefaultVariantID     *string  `json:"default_variant_id"`
-	Rating               *float32 `json:"rating"`
+	Id                   string            `json:"id"`
+	ProductTypeID        string            `json:"product_type_id"`
+	Name                 string            `json:"name"`
+	Slug                 string            `json:"slug"`
+	Description          *string           `json:"description"`
+	DescriptionPlainText string            `json:"description_plaintext"`
+	CategoryID           *string           `json:"category_id"`
+	CreateAt             int64             `json:"create_at"`
+	UpdateAt             int64             `json:"update_at"`
+	ChargeTaxes          *bool             `json:"charge_taxes"`
+	Weight               *float32          `json:"weight"`
+	WeightUnit           string            `json:"weight_unit"`
+	DefaultVariantID     *string           `json:"default_variant_id"`
+	Rating               *float32          `json:"rating"`
+	Medias               []*ProductMedia   `json:"medias" db:"-"`
+	ProductType          *ProductType      `json:"product_type" db:"-"`
+	Variants             []*ProductVariant `json:"variants" db:"-"`
 	*model.ModelMetadata
 	*seo.Seo
 }
@@ -110,4 +113,21 @@ func (p *Product) PreUpdate() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
+}
+
+func (p *Product) String() string {
+	return p.Name
+}
+
+// returns 1 ProductMedia if one of them is image type
+//
+// else return nil
+func (p *Product) GetFirstImage() *ProductMedia {
+	for _, media := range p.Medias {
+		if media.Type == IMAGE {
+			return media
+		}
+	}
+
+	return nil
 }

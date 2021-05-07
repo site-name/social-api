@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"golang.org/x/text/language"
 
 	"github.com/sitename/sitename/modules/measurement"
@@ -25,6 +26,7 @@ type ProductVariant struct {
 	WeightUnit           string          `json:"weight_unit"`
 	TrackInventory       *bool           `json:"track_inventory"`
 	Medias               []*ProductMedia `json:"medias" db:"-"`
+	Product              *Product        `json:"product" db:"-"`
 	*model.Sortable      `db:"-"`
 	*model.ModelMetadata `db:"-"`
 }
@@ -93,9 +95,47 @@ func ProductVariantFromJson(data io.Reader) *ProductVariant {
 	return &prd
 }
 
-// func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *model.Money {
+func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *model.Money {
+	panic("not impl")
+}
 
-// }
+func (p *ProductVariant) GetWeight() *model.Weight {
+	if p.Weight != nil {
+		return &model.Weight{
+			Weight:     *p.Weight,
+			WeightUnit: p.WeightUnit,
+		}
+	}
+
+	if p.Product != nil {
+		return &model.Weight{
+			Weight:     *p.Product.Weight,
+			WeightUnit: p.Product.WeightUnit,
+		}
+	}
+
+	return &model.Weight{
+		Weight:     *p.Product.ProductType.Weight,
+		WeightUnit: p.Product.ProductType.WeightUnit,
+	}
+}
+
+func (p *ProductVariant) IsShippingRequired() bool {
+	return *p.Product.ProductType.IsShippingRequired
+}
+
+func (p *ProductVariant) IsDigital() bool {
+	return !p.IsShippingRequired() && *p.Product.ProductType.IsDigital
+}
+
+// TODO: fixme
+func (p *ProductVariant) DisplayProduct() {
+	panic("not implemented")
+}
+
+func (p *ProductVariant) GetOrderingQuerySet() []*ProductVariant {
+	return p.Product.Variants
+}
 
 // --------------------
 type ProductVariantTranslation struct {

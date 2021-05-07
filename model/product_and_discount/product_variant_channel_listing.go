@@ -2,9 +2,11 @@ package product_and_discount
 
 import (
 	"io"
+	"strings"
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
+	"golang.org/x/text/currency"
 )
 
 type ProductVariantChannelListing struct {
@@ -33,11 +35,22 @@ func (p *ProductVariantChannelListing) IsValid() *model.AppError {
 	if !model.IsValidId(p.ChannelID) {
 		return outer("channel_id", &p.Id)
 	}
+	if unit, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(unit.String(), p.Currency) {
+		return outer("currency", &p.Id)
+	}
 
 	return nil
 }
 
 func (p *ProductVariantChannelListing) ToJson() string {
+	p.Price = &model.Money{
+		Amount:   p.PriceAmount,
+		Currency: p.Currency,
+	}
+	p.CostPrice = &model.Money{
+		Amount:   p.CostPriceAmount,
+		Currency: p.Currency,
+	}
 	return model.ModelToJson(p)
 }
 

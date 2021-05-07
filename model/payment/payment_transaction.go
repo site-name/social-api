@@ -3,6 +3,7 @@ package payment
 import (
 	"fmt"
 	"io"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
@@ -27,21 +28,18 @@ const (
 	CANCEL            = "cancel"
 )
 
-var validTransactionKinds = model.StringArray([]string{
-	EXTERNAL,
-	AUTH,
-	CAPTURE,
-	CAPTURE_FAILED,
-	ACTION_TO_CONFIRM,
-	VOID,
-	PENDING_,
-	REFUND,
-	REFUND_ONGOING,
-	REFUND_FAILED,
-	REFUND_REVERSED,
-	CONFIRM,
-	CANCEL,
-})
+var TransactionKindString = map[string]string{
+	EXTERNAL:          "External reference",
+	AUTH:              "Authorization",
+	PENDING:           "Pending",
+	ACTION_TO_CONFIRM: "Action to confirm",
+	REFUND:            "Refund",
+	REFUND_ONGOING:    "Refund in progress",
+	CAPTURE:           "Capture",
+	VOID:              "Void",
+	CONFIRM:           "Confirm",
+	CANCEL:            "Cancel",
+}
 
 const (
 	TRANSACTION_KIND_MAX_LENGTH  = 25
@@ -49,6 +47,10 @@ const (
 	TRANSACTION_ERROR_MAX_LENGTH = 256
 )
 
+// Represents a single payment operation.
+//
+// Transaction is an attempt to transfer money between your store
+// and your customers, with a chosen payment method.
 type PaymentTransaction struct {
 	Id                 string           `json:"id"`
 	CreateAt           int64            `json:"create_at"`
@@ -76,8 +78,11 @@ func (p *PaymentTransaction) String() string {
 	)
 }
 
-func (p *PaymentTransaction) GetAmount() {
-	panic("not implemented")
+func (p *PaymentTransaction) GetAmount() *model.Money {
+	return &model.Money{
+		Amount:   p.Amount,
+		Currency: p.Currency,
+	}
 }
 
 func (p *PaymentTransaction) IsValid() *model.AppError {
@@ -101,14 +106,8 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
 		return outer("token", &p.Id)
 	}
-	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH {
+	if TransactionKindString[strings.ToLower(p.Kind)] == "" {
 		return outer("kind", &p.Id)
-	}
-	if !validTransactionKinds.Contains(p.Kind) {
-		return outer("kind", &p.Id)
-	}
-	if len(p.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
-		return outer("currency", &p.Id)
 	}
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
 		return outer("error", &p.Id)
@@ -116,7 +115,7 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
 		return outer("searchable_key", &p.Id)
 	}
-	if un, err := currency.ParseISO(p.Currency); err != nil || un.String() != p.Currency {
+	if un, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(un.String(), p.Currency) {
 		return outer("currency", &p.Id)
 	}
 	if p.Amount == nil {

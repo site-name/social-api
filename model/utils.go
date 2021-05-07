@@ -611,7 +611,6 @@ func CleanUsername(uname string) string {
 			s = strings.Replace(s, char, "-", -1)
 		}
 	}
-
 	s = strings.Trim(s, "-")
 
 	if !IsValidUsername(s) {
