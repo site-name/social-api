@@ -8,11 +8,8 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/page"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"golang.org/x/text/language"
 )
-
-type BaseAssignedAttribute struct {
-	Assignment interface{}
-}
 
 // max lengths for some fields
 const (
@@ -145,4 +142,50 @@ func AttributeFromJson(data io.Reader) *Attribute {
 	var a Attribute
 	model.ModelFromJson(&a, data)
 	return &a
+}
+
+// -----------------
+
+const (
+	ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH = 100
+)
+
+type AttributeTranslation struct {
+	Id           string `json:"id"`
+	LanguageCode string `json:"language_code"`
+	Name         string `json:"name"`
+}
+
+func (a *AttributeTranslation) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.attribute_translation.is_valid.%s.app_error",
+		"attribute_translation_id=",
+		"AttributeTranslation.IsValid",
+	)
+	if !model.IsValidId(a.Id) {
+		return outer("id", nil)
+	}
+	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH {
+		return outer("name", &a.Id)
+	}
+	if tag, err := language.Parse(a.LanguageCode); err != nil || !strings.EqualFold(tag.String(), a.LanguageCode) {
+		return outer("language_code", &a.Id)
+	}
+
+	return nil
+}
+
+func (a *AttributeTranslation) PreSave() {
+	if a.Id == "" {
+		a.Id = model.NewId()
+	}
+	a.Name = model.SanitizeUnicode(a.Name)
+}
+
+func (a *AttributeTranslation) PreUpdate() {
+	a.Name = model.SanitizeUnicode(a.Name)
+}
+
+func (a *AttributeTranslation) String() string {
+	return a.Name
 }

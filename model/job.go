@@ -4,8 +4,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -113,34 +111,27 @@ func (j *Job) IsValid() *AppError {
 }
 
 func (j *Job) ToJson() string {
-	b, _ := json.JSON.Marshal(j)
-	return string(b)
+	return ModelToJson(j)
 }
 
 func JobFromJson(data io.Reader) *Job {
-	var job Job
-	if err := json.JSON.NewDecoder(data).Decode(&job); err == nil {
-		return &job
-	}
-	return nil
+	var job *Job
+	ModelFromJson(&job, data)
+	return job
 }
 
 func JobsToJson(jobs []*Job) string {
-	b, _ := json.JSON.Marshal(jobs)
-	return string(b)
+	return ModelToJson(&jobs)
 }
 
 func JobsFromJson(data io.Reader) []*Job {
-	var jobs []*Job
-	if err := json.JSON.NewDecoder(data).Decode(&jobs); err == nil {
-		return jobs
-	}
-	return nil
+	var jobs *[]*Job
+	ModelFromJson(&jobs, data)
+	return *jobs
 }
 
 func (j *Job) DataToJson() string {
-	b, _ := json.JSON.Marshal(j.Data)
-	return string(b)
+	return ModelToJson(j)
 }
 
 type Worker interface {
