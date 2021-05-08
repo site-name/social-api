@@ -9,6 +9,9 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -47,7 +50,9 @@ type Checkout struct {
 	TrackingCode           *string              `json:"tracking_code"`
 	LanguageCode           string               `json:"language_code"`
 	User                   *account.User        `db:"-" json:"-"`
-	CheckoutLines          []*CheckoutLine      `db:"-"`
+	CheckoutLines          []*CheckoutLine      `db:"-" json:"checkout_lines"`
+	Payments               []*payment.Payment   `json:"payments" db:"-"`
+	model.ModelMetadata    `db:"-"`
 }
 
 func (c *Checkout) IsValid() *model.AppError {
@@ -168,12 +173,47 @@ func (c *Checkout) IsShippingRequired() bool {
 
 // Return the total balance of the gift cards assigned to the checkout.
 func (c *Checkout) GetTotalGiftCardsBalance() *model.Money {
+	// TODO: fixme
 	panic("not impl")
 }
 
-// func (c *Checkout) GetTotalWeight(checkoutlinesInfos []*CheckoutLineInfo) *model.Weight {
-// 	weight := model.ZeroWeight(measurement.KG)
-// 	for _, checkoutLineInfo := range checkoutlinesInfos {
+func (c *Checkout) GetTotalWeight(checkoutlinesInfos []*CheckoutLineInfo) *measurement.Weight {
+	weight := measurement.ZeroWeight
+	for _, checkoutLineInfo := range checkoutlinesInfos {
+		weight = weight.Add(
+			checkoutLineInfo.Line.Variant.
+				GetWeight().
+				Mul(float32(checkoutLineInfo.Line.Quantity)),
+		)
+	}
 
-// 	}
-// }
+	return weight
+}
+
+// Return a line matching the given variant and data if any.
+func (c *Checkout) GetLine(variant *product_and_discount.ProductVariant) *CheckoutLine {
+	for _, line := range c.CheckoutLines {
+		if line.VariantID == variant.Id {
+			return line
+		}
+	}
+
+	return nil
+}
+
+// returns one payment that:
+//  1) Belongs to this checkout
+//  2) Has largest created time
+func (c *Checkout) GetLastActivePayment() *payment.Payment {
+	var neededPayment *payment.Payment
+	var maxCreateTime int64 = 0
+
+	for _, payment := range c.Payments {
+		if payment.IsActive && payment.CreateAt >= maxCreateTime {
+			neededPayment = payment
+			maxCreateTime = payment.CreateAt
+		}
+	}
+
+	return neededPayment
+}

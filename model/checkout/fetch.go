@@ -41,3 +41,22 @@ func (c *CheckoutInfo) GetCountry() string {
 
 	return add.Country
 }
+
+func (c *CheckoutInfo) GetCustomerEmail() string {
+	if c.User != nil {
+		return c.User.Email
+	}
+	return c.Checkout.Email
+}
+
+// Fetch checkout lines as CheckoutLineInfo objects.
+func FetchCheckoutLines(checkout *Checkout) []*CheckoutLineInfo {
+	// TODO: fixme
+	panic("not implemented")
+}
+
+// Fetch checkout as CheckoutInfo object.
+func FetchCheckoutInfo(checkout *Checkout, lines []*CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) *CheckoutInfo {
+	// TODO: fixme
+	panic("not implemented")
+}

@@ -2,7 +2,6 @@ package product_and_discount
 
 import (
 	"io"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -18,23 +17,23 @@ const (
 
 // Product contains all fields a product contains
 type Product struct {
-	Id                   string            `json:"id"`
-	ProductTypeID        string            `json:"product_type_id"`
-	Name                 string            `json:"name"`
-	Slug                 string            `json:"slug"`
-	Description          *string           `json:"description"`
-	DescriptionPlainText string            `json:"description_plaintext"`
-	CategoryID           *string           `json:"category_id"`
-	CreateAt             int64             `json:"create_at"`
-	UpdateAt             int64             `json:"update_at"`
-	ChargeTaxes          *bool             `json:"charge_taxes"`
-	Weight               *float32          `json:"weight"`
-	WeightUnit           string            `json:"weight_unit"`
-	DefaultVariantID     *string           `json:"default_variant_id"`
-	Rating               *float32          `json:"rating"`
-	Medias               []*ProductMedia   `json:"medias" db:"-"`
-	ProductType          *ProductType      `db:"-"`
-	Variants             []*ProductVariant `db:"-"`
+	Id                   string                 `json:"id"`
+	ProductTypeID        string                 `json:"product_type_id"`
+	Name                 string                 `json:"name"`
+	Slug                 string                 `json:"slug"`
+	Description          *string                `json:"description"`
+	DescriptionPlainText string                 `json:"description_plaintext"`
+	CategoryID           *string                `json:"category_id"`
+	CreateAt             int64                  `json:"create_at"`
+	UpdateAt             int64                  `json:"update_at"`
+	ChargeTaxes          *bool                  `json:"charge_taxes"`
+	Weight               *float32               `json:"weight"`
+	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
+	DefaultVariantID     *string                `json:"default_variant_id"`
+	Rating               *float32               `json:"rating"`
+	Medias               []*ProductMedia        `json:"medias" db:"-"`
+	ProductType          *ProductType           `db:"-"`
+	Variants             []*ProductVariant      `db:"-"`
 	*model.ModelMetadata `db:"-"`
 	*seo.Seo             `db:"-"`
 }
@@ -85,7 +84,7 @@ func (p *Product) IsValid() *model.AppError {
 		return outer("slug", &p.Id)
 	}
 	if p.Weight != nil {
-		if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
+		if _, ok := measurement.WEIGHT_UNIT_STRINGS[p.WeightUnit]; !ok {
 			return outer("weight_unit", &p.Id)
 		}
 	}

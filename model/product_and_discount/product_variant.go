@@ -18,15 +18,15 @@ const (
 )
 
 type ProductVariant struct {
-	Id                   string          `json:"id"`
-	Name                 string          `json:"name"`
-	ProductID            string          `json:"product_id"`
-	Sku                  string          `json:"sku"`
-	Weight               *float32        `json:"weight"`
-	WeightUnit           string          `json:"weight_unit"`
-	TrackInventory       *bool           `json:"track_inventory"`
-	Medias               []*ProductMedia `json:"medias" db:"-"`
-	Product              *Product        `json:"product" db:"-"`
+	Id                   string                 `json:"id"`
+	Name                 string                 `json:"name"`
+	ProductID            string                 `json:"product_id"`
+	Sku                  string                 `json:"sku"`
+	Weight               *float32               `json:"weight"`
+	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
+	TrackInventory       *bool                  `json:"track_inventory"`
+	Medias               []*ProductMedia        `json:"medias" db:"-"`
+	Product              *Product               `json:"product" db:"-"`
 	*model.Sortable      `db:"-"`
 	*model.ModelMetadata `db:"-"`
 }
@@ -53,7 +53,7 @@ func (p *ProductVariant) IsValid() *model.AppError {
 		return outer("weight", &p.Id)
 	}
 	if p.WeightUnit != "" {
-		if _, ok := measurement.WEIGHT_UNIT_CONVERSION[strings.ToLower(p.WeightUnit)]; !ok {
+		if _, ok := measurement.WEIGHT_UNIT_CONVERSION[p.WeightUnit]; !ok {
 			return outer("weight_unit", &p.Id)
 		}
 	}
@@ -100,24 +100,24 @@ func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, c
 	panic("not impl")
 }
 
-func (p *ProductVariant) GetWeight() *model.Weight {
+func (p *ProductVariant) GetWeight() *measurement.Weight {
 	if p.Weight != nil {
-		return &model.Weight{
-			Weight:     *p.Weight,
-			WeightUnit: p.WeightUnit,
+		return &measurement.Weight{
+			Amount: *p.Weight,
+			Unit:   p.WeightUnit,
 		}
 	}
 
 	if p.Product != nil {
-		return &model.Weight{
-			Weight:     *p.Product.Weight,
-			WeightUnit: p.Product.WeightUnit,
+		return &measurement.Weight{
+			Amount: *p.Product.Weight,
+			Unit:   p.Product.WeightUnit,
 		}
 	}
 
-	return &model.Weight{
-		Weight:     *p.Product.ProductType.Weight,
-		WeightUnit: p.Product.ProductType.WeightUnit,
+	return &measurement.Weight{
+		Amount: *p.Product.ProductType.Weight,
+		Unit:   p.Product.ProductType.WeightUnit,
 	}
 }
 

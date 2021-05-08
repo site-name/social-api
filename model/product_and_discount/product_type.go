@@ -2,7 +2,6 @@ package product_and_discount
 
 import (
 	"io"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -16,14 +15,14 @@ const (
 )
 
 type ProductType struct {
-	Id                   string   `json:"id"`
-	Name                 string   `json:"name"`
-	Slug                 string   `json:"slug"`
-	HasVariants          *bool    `json:"has_variants"`
-	IsShippingRequired   *bool    `json:"is_shipping_required"`
-	IsDigital            *bool    `json:"is_digital"`
-	Weight               *float32 `json:"weight"`
-	WeightUnit           string   `json:"weight_unit"`
+	Id                   string                 `json:"id"`
+	Name                 string                 `json:"name"`
+	Slug                 string                 `json:"slug"`
+	HasVariants          *bool                  `json:"has_variants"`
+	IsShippingRequired   *bool                  `json:"is_shipping_required"`
+	IsDigital            *bool                  `json:"is_digital"`
+	Weight               *float32               `json:"weight"`
+	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
 	*model.ModelMetadata `db:"-"`
 }
 
@@ -49,7 +48,7 @@ func (p *ProductType) IsValid() *model.AppError {
 	if p.Weight != nil && *p.Weight < 0 {
 		return outer("weight", &p.Id)
 	}
-	if _, ok := measurement.WEIGHT_UNIT_STRINGS[strings.ToLower(p.WeightUnit)]; !ok {
+	if _, ok := measurement.WEIGHT_UNIT_STRINGS[p.WeightUnit]; !ok {
 		return outer("weight_unit", &p.Id)
 	}
 
@@ -83,7 +82,6 @@ func (p *ProductType) PreUpdate() {
 	p.Slug = slug.Make(p.Name)
 
 	if p.Weight != nil && p.WeightUnit == "" {
-		// p.Weight = model.NewFloat32(0)
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 }

@@ -14,6 +14,7 @@ var (
 
 func init() {
 	initOnce.Do(func() {
+		MeasurementUnitMap = make(map[string]string)
 		for k := range DISTANCE_UNIT_STRINGS {
 			MeasurementUnitMap[strings.ToUpper(k)] = k
 		}
@@ -21,7 +22,7 @@ func init() {
 			MeasurementUnitMap[strings.ToUpper(k)] = k
 		}
 		for k := range WEIGHT_UNIT_STRINGS {
-			MeasurementUnitMap[strings.ToUpper(k)] = k
+			MeasurementUnitMap[strings.ToUpper(string(k))] = string(k)
 		}
 		for k := range VOLUME_UNIT_STRINGS {
 			MeasurementUnitMap[strings.ToUpper(k)] = k
