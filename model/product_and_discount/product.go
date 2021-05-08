@@ -33,10 +33,10 @@ type Product struct {
 	DefaultVariantID     *string           `json:"default_variant_id"`
 	Rating               *float32          `json:"rating"`
 	Medias               []*ProductMedia   `json:"medias" db:"-"`
-	ProductType          *ProductType      `json:"product_type" db:"-"`
-	Variants             []*ProductVariant `json:"variants" db:"-"`
-	*model.ModelMetadata
-	*seo.Seo
+	ProductType          *ProductType      `db:"-"`
+	Variants             []*ProductVariant `db:"-"`
+	*model.ModelMetadata `db:"-"`
+	*seo.Seo             `db:"-"`
 }
 
 func (p *Product) PlainTextDescription() string {

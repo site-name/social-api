@@ -24,7 +24,7 @@ var WEIGHT_UNIT_CONVERSION = map[string]float32{
 	G:     1000.0,
 	OZ:    35.27396195,
 	TONNE: 0.001,
-	LB:    2.2046226218,
+	LB:    2.20462262,
 }
 
 const STANDARD_WEIGHT_UNIT = KG

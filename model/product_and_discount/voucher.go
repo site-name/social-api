@@ -124,6 +124,11 @@ func (v *Voucher) IsValid() *model.AppError {
 	if len(v.Countries) > VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH {
 		return outer("countries", &v.Id)
 	}
+	for _, country := range strings.Fields(v.Countries) {
+		if model.Countries[strings.ToUpper(country)] == "" { // does not exist in map
+			return outer("countries", &v.Id)
+		}
+	}
 
 	return nil
 }

@@ -16,15 +16,15 @@ const (
 )
 
 type ProductType struct {
-	Id                 string   `json:"id"`
-	Name               string   `json:"name"`
-	Slug               string   `json:"slug"`
-	HasVariants        *bool    `json:"has_variants"`
-	IsShippingRequired *bool    `json:"is_shipping_required"`
-	IsDigital          *bool    `json:"is_digital"`
-	Weight             *float32 `json:"weight"`
-	WeightUnit         string   `json:"weight_unit"`
-	*model.ModelMetadata
+	Id                   string   `json:"id"`
+	Name                 string   `json:"name"`
+	Slug                 string   `json:"slug"`
+	HasVariants          *bool    `json:"has_variants"`
+	IsShippingRequired   *bool    `json:"is_shipping_required"`
+	IsDigital            *bool    `json:"is_digital"`
+	Weight               *float32 `json:"weight"`
+	WeightUnit           string   `json:"weight_unit"`
+	*model.ModelMetadata `db:"-"`
 }
 
 func (p *ProductType) String() string {

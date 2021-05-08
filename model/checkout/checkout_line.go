@@ -64,3 +64,8 @@ func (c *CheckoutLine) PreSave() {
 		c.Id = model.NewId()
 	}
 }
+
+// true if related product variant requires shipping.
+func (c *CheckoutLine) IsShippingRequired() bool {
+	return c.Variant.IsShippingRequired()
+}

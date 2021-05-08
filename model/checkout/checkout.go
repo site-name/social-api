@@ -7,6 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -35,7 +36,7 @@ type Checkout struct {
 	ShippingMethodID       *string              `json:"shipping_method_id,omitempty"`
 	Note                   string               `json:"note"`
 	Currency               string               `json:"currency"`
-	Country                string               `json:"country"`
+	Country                string               `json:"country"` // one country only
 	DiscountAmount         *decimal.Decimal     `json:"discount_amount"`
 	Discount               *model.Money         `db:"-" json:"discount,omitempty"`
 	DiscountName           *string              `json:"discount_name"`
@@ -45,6 +46,8 @@ type Checkout struct {
 	RedirectURL            *string              `json:"redirect_url"`
 	TrackingCode           *string              `json:"tracking_code"`
 	LanguageCode           string               `json:"language_code"`
+	User                   *account.User        `db:"-" json:"-"`
+	CheckoutLines          []*CheckoutLine      `db:"-"`
 }
 
 func (c *Checkout) IsValid() *model.AppError {
@@ -64,9 +67,6 @@ func (c *Checkout) IsValid() *model.AppError {
 	}
 	if c.ShippingAddressID != nil && !model.IsValidId(*c.ShippingAddressID) {
 		return outer("shipping_address", &c.Id)
-	}
-	if c.Currency == "" || len(c.Currency) > model.MAX_LENGTH_CURRENCY_CODE {
-		return outer("currency", &c.Id)
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
 		return outer("currency", &c.Id)
@@ -95,7 +95,7 @@ func (c *Checkout) IsValid() *model.AppError {
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
 		return outer("tracking_code", &c.Id)
 	}
-	if _, ok := model.Countries[strings.ToUpper(c.Country)]; !ok {
+	if _, ok := model.Countries[strings.ToUpper(c.Country)]; !ok { // since this model requires 1 country
 		return outer("country", &c.Id)
 	}
 
@@ -147,17 +147,33 @@ func (c *Checkout) PreUpdate() {
 }
 
 func (c *Checkout) GetCustomerEmail() string {
-	panic("not implemented")
+	if c.User != nil {
+		return c.User.Email
+	}
+
+	return c.Email
 }
 
+// true if any of lines belong to this checkout requires shipping.
+// otherwise return false
 func (c *Checkout) IsShippingRequired() bool {
-	panic("not implemented")
+	for _, line := range c.CheckoutLines {
+		if line.IsShippingRequired() {
+			return true
+		}
+	}
+
+	return false
 }
 
+// Return the total balance of the gift cards assigned to the checkout.
 func (c *Checkout) GetTotalGiftCardsBalance() *model.Money {
 	panic("not impl")
 }
 
-func (c *Checkout) GetTotalWeight() {
-	panic("not impl")
-}
+// func (c *Checkout) GetTotalWeight(checkoutlinesInfos []*CheckoutLineInfo) *model.Weight {
+// 	weight := model.ZeroWeight(measurement.KG)
+// 	for _, checkoutLineInfo := range checkoutlinesInfos {
+
+// 	}
+// }

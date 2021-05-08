@@ -95,6 +95,7 @@ func ProductVariantFromJson(data io.Reader) *ProductVariant {
 	return &prd
 }
 
+// TODO: fixme
 func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *model.Money {
 	panic("not impl")
 }

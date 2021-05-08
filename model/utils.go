@@ -622,3 +622,10 @@ func CleanUsername(uname string) string {
 
 	return s
 }
+
+func ZeroWeight(unit string) *Weight {
+	return &Weight{
+		Weight:     0,
+		WeightUnit: unit,
+	}
+}
