@@ -79,7 +79,7 @@ input AccountInput {
 
 type AccountRegister {
   requiresConfirmation: Boolean
-  accountErrors: [AccountError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
+  # accountErrors: [AccountError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
   errors: [AccountError!]!
   user: User
 }
