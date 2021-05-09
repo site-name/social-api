@@ -2,6 +2,11 @@ package app
 
 import (
 	"crypto/ecdsa"
+	"crypto/md5"
+	"crypto/x509"
+	"encoding/base64"
+	"fmt"
+
 	// "crypto/elliptic"
 	// "crypto/md5"
 	"crypto/rand"
@@ -446,4 +451,30 @@ func (s *Server) MailServiceConfig() *mail.SMTPConfig {
 		ReplyToAddress:                    *emailSettings.ReplyToAddress,
 	}
 	return &cfg
+}
+
+func (s *Server) regenerateClientConfig() {
+	clientConfig := config.GenerateClientConfig(s.Config())
+	limitedClientConfig := config.GenerateLimitedClientConfig(s.Config())
+
+	if clientConfig["EnableCustomTermsOfService"] == "true" {
+		termsOfService, err := s.Store.TermsOfService().GetLatest(true)
+		if err != nil {
+			slog.Err(err)
+		} else {
+			clientConfig["CustomTermsOfServiceId"] = termsOfService.Id
+			limitedClientConfig["CustomTermsOfServiceId"] = termsOfService.Id
+		}
+	}
+
+	if key := s.AsymmetricSigningKey(); key != nil {
+		der, _ := x509.MarshalPKIXPublicKey(&key.PublicKey)
+		clientConfig["AsymmetricSigningPublicKey"] = base64.StdEncoding.EncodeToString(der)
+		limitedClientConfig["AsymmetricSigningPublicKey"] = base64.StdEncoding.EncodeToString(der)
+	}
+
+	clientConfigJSON, _ := json.JSON.Marshal(clientConfig)
+	s.clientConfig.Store(clientConfig)
+	s.limitedClientConfig.Store(limitedClientConfig)
+	s.clientConfigHash.Store(fmt.Sprintf("%x", md5.Sum(clientConfigJSON)))
 }

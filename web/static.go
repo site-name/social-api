@@ -68,8 +68,14 @@ func (w *Web) InitStatic() {
 func root(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	if !CheckClientCompatibility(r.UserAgent()) {
-
+		renderUnsupportedBrowser(c.App, w, r)
+		return
 	}
+
+	w.Header().Set("Cache-Control", "no-cache, max-age=31556926, public")
+
+	staticDir, _ := fileutils.FindDir(model.CLIENT_DIR)
+	http.ServeFile(w, r, filepath.Join(staticDir, "root.html"))
 }
 
 func staticFilesHandler(handler http.Handler) http.Handler {

@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/web"
 	"github.com/spf13/cobra"
 )
 
@@ -91,6 +92,8 @@ func runServer(configStore *config.Store, usedPlatform bool, interruptChan chan 
 	if usedPlatform {
 		slog.Warn("The platform binary has been deprecated, please switch to using the mattermost binary.")
 	}
+
+	web.New(server, server.AppOptions, server.RootRouter)
 
 	serverErr := server.Start()
 	if serverErr != nil {

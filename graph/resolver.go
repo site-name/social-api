@@ -2,4 +2,10 @@ package graph
 
 //go:generate go run github.com/99designs/gqlgen
 
-type Resolver struct{}
+import (
+	"github.com/sitename/sitename/app"
+)
+
+type Resolver struct {
+	app *app.App
+}

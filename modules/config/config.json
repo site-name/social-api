@@ -101,7 +101,8 @@
         "CollapsedThreads": "disabled",
         "ManagedResourcePaths": "",
         "EnableLegacySidebar": false,
-        "EnableReliableWebSockets": false
+        "EnableReliableWebSockets": false,
+        "ApiCacheSize": 1000
     },
     "ClientRequirements": {
         "AndroidLatestVersion": "",
@@ -494,13 +495,11 @@
         "EnableHealthCheck": true,
         "Directory": "./plugins",
         "ClientDirectory": "./client/plugins",
-        "Plugins": {
-            
-        },
+        "Plugins": {},
         "PluginStates": {
             "com.mattermost.nps": {
-    "Enable": true
-}
+                "Enable": true
+            }
         },
         "EnableMarketplace": true,
         "EnableRemoteMarketplace": true,

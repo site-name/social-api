@@ -86,6 +86,12 @@ func RegisterElasticsearchInterface(f func(*Server) searchengine.SearchEngineInt
 	elasticsearchInterface = f
 }
 
+var dataRetentionInterface func(*Server) einterfaces.DataRetentionInterface
+
+func RegisterDataRetentionInterface(f func(*Server) einterfaces.DataRetentionInterface) {
+	dataRetentionInterface = f
+}
+
 func (s *Server) initEnterprise() {
 	if metricsInterface != nil {
 		s.Metrics = metricsInterface(s)
@@ -96,9 +102,9 @@ func (s *Server) initEnterprise() {
 	// if messageExportInterface != nil {
 	// 	s.MessageExport = messageExportInterface(s)
 	// }
-	// if dataRetentionInterface != nil {
-	// 	s.DataRetention = dataRetentionInterface(s)
-	// }
+	if dataRetentionInterface != nil {
+		s.DataRetention = dataRetentionInterface(s)
+	}
 	if clusterInterface != nil {
 		s.Cluster = clusterInterface(s)
 	}

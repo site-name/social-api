@@ -3,6 +3,7 @@ module github.com/sitename/sitename
 go 1.16
 
 require (
+	github.com/99designs/gqlgen v0.13.0
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/NYTimes/gziphandler v1.1.1
@@ -56,6 +57,7 @@ require (
 	github.com/tinylib/msgp v1.1.5
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
+	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/vmihailenco/msgpack/v5 v5.3.1
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1

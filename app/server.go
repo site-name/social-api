@@ -69,7 +69,10 @@ const (
 
 type Server struct {
 	// RootRouter is the starting point for all HTTP requests to the server.
-	RootRouter                         *mux.Router
+	RootRouter    *mux.Router
+	metricsRouter *mux.Router
+	LocalRouter   *mux.Router
+
 	sqlStore                           *sqlstore.SqlStore
 	Store                              store.Store
 	AppInitializedOnce                 sync.Once
@@ -79,7 +82,6 @@ type Server struct {
 	Busy                               *Busy
 	localModeServer                    *http.Server
 	metricsServer                      *http.Server
-	metricsRouter                      *mux.Router
 	metricsLock                        sync.Mutex
 	goroutineCount                     int32
 	hashSeed                           maphash.Seed
@@ -120,22 +122,24 @@ type Server struct {
 	statusCache                        cache.Cache
 	licenseValue                       atomic.Value
 	Jobs                               *jobs.JobServer
-	Metrics                            einterfaces.MetricsInterface
 	EmailService                       *EmailService
 	htmlTemplateWatcher                *templates.Container
-	Ldap                               einterfaces.LdapInterface
 	tracer                             *tracing.Tracer
 	HTTPService                        httpservice.HTTPService
 	ImageProxy                         *imageproxy.ImageProxy
 	SearchEngine                       *searchengine.Broker
 	CacheProvider                      cache.Provider
-	Cluster                            einterfaces.ClusterInterface
-	postActionCookieSecret             []byte
-	timezones                          *timezones.Timezones
-	Audit                              *audit.Audit
-	Compliance                         einterfaces.ComplianceInterface
-	LocalRouter                        *mux.Router
-	// telemetryService                   *telemetry.TelemetryService
+
+	Cluster       einterfaces.ClusterInterface
+	DataRetention einterfaces.DataRetentionInterface
+	Metrics       einterfaces.MetricsInterface
+	Compliance    einterfaces.ComplianceInterface
+	Ldap          einterfaces.LdapInterface
+
+	postActionCookieSecret []byte
+	timezones              *timezones.Timezones
+	Audit                  *audit.Audit
+	// telemetryService       *telemetry.TelemetryService
 }
 
 func NewServer(options ...Option) (*Server, error) {
@@ -145,9 +149,9 @@ func NewServer(options ...Option) (*Server, error) {
 	s := &Server{
 		goroutineExitSignal: make(chan struct{}, 1),
 		RootRouter:          rootRouter,
-		LocalRouter:         localRouter,
 		hashSeed:            maphash.MakeSeed(),
 		uploadLockMap:       map[string]bool{},
+		LocalRouter:         localRouter,
 	}
 
 	for _, option := range options {
@@ -399,7 +403,7 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrapf(err, "unable to ensure first run timestamp")
 	}
 
-	// s.regenerateClientConfig()
+	s.regenerateClientConfig()
 
 	subPath, err := util.GetSubpathFromConfig(s.Config())
 	if err != nil {
@@ -564,6 +568,13 @@ func (s *Server) initJobs() {
 		s.Jobs.Migrations = jobsMigrationsInterface(s)
 	}
 }
+
+// func (s *Server) TelemetryId() string {
+// 	if s.telemetryService == nil {
+// 		return ""
+// 	}
+// 	return s.telemetryService.TelemetryID
+// }
 
 // initLogging initializes and configures the logger. This may be called more than once.
 func (s *Server) initLogging() error {
