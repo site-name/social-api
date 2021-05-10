@@ -218,7 +218,6 @@ func (us *SqlUserStore) GetEtagForAllProfiles() string {
 }
 
 func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
-	// if user.Id != "" && !user
 	user.PreSave()
 	if err := user.IsValid(); err != nil {
 		return nil, err

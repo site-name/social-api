@@ -16,6 +16,7 @@ import (
 
 type OpenTracingLayer struct {
 	store.Store
+	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
 	PreferenceStore       store.PreferenceStore
@@ -27,6 +28,10 @@ type OpenTracingLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *OpenTracingLayer) Audit() store.AuditStore {
+	return s.AuditStore
 }
 
 func (s *OpenTracingLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
@@ -71,6 +76,11 @@ func (s *OpenTracingLayer) User() store.UserStore {
 
 func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type OpenTracingLayerAuditStore struct {
+	store.AuditStore
+	Root *OpenTracingLayer
 }
 
 type OpenTracingLayerClusterDiscoveryStore struct {
@@ -126,6 +136,60 @@ type OpenTracingLayerUserStore struct {
 type OpenTracingLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
 	Root *OpenTracingLayer
+}
+
+func (s *OpenTracingLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AuditStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AuditStore.Get(userID, offset, limit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAuditStore) PermanentDeleteByUser(userID string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AuditStore.PermanentDeleteByUser")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.AuditStore.PermanentDeleteByUser(userID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerAuditStore) Save(audit *audit.Audit) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AuditStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.AuditStore.Save(audit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerClusterDiscoveryStore) Cleanup() error {
@@ -2463,6 +2527,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 		Store: childStore,
 	}
 
+	newStore.AuditStore = &OpenTracingLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &OpenTracingLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.PreferenceStore = &OpenTracingLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}

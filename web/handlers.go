@@ -91,7 +91,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logFields := []slog.Field{
 			slog.String("method", r.Method),
 			slog.String("url", r.URL.Path),
-			// slog.String("request_id", requestID),
+			slog.String("request_id", requestID),
 		}
 		// Websockets are returning status code 0 to requests after closing the socket
 		if statusCode == "0" {

@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
-	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -186,10 +185,6 @@ func ModelToJson(model interface{}) string {
 //
 // If decoding process encounter error, model will be nil
 func ModelFromJson(model interface{}, data io.Reader) {
-	type_ := reflect.TypeOf(model)
-	if type_.Kind() != reflect.Ptr {
-		panic("must pass in pointer to type")
-	}
 	err := json.JSON.NewDecoder(data).Decode(&model)
 	if err != nil {
 		slog.Error("Error decoding json", slog.String("error", err.Error()))

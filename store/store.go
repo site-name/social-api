@@ -50,7 +50,7 @@ type ClusterDiscoveryStore interface {
 
 type AuditStore interface {
 	Save(audit *audit.Audit) error
-	Get(user_id string, offset int, limit int) (audit.Audits, error)
+	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 

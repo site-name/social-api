@@ -16,6 +16,7 @@ import (
 type TimerLayer struct {
 	store.Store
 	Metrics               einterfaces.MetricsInterface
+	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
 	PreferenceStore       store.PreferenceStore
@@ -27,6 +28,10 @@ type TimerLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *TimerLayer) Audit() store.AuditStore {
+	return s.AuditStore
 }
 
 func (s *TimerLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
@@ -71,6 +76,11 @@ func (s *TimerLayer) User() store.UserStore {
 
 func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type TimerLayerAuditStore struct {
+	store.AuditStore
+	Root *TimerLayer
 }
 
 type TimerLayerClusterDiscoveryStore struct {
@@ -126,6 +136,54 @@ type TimerLayerUserStore struct {
 type TimerLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
 	Root *TimerLayer
+}
+
+func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
+	start := timemodule.Now()
+
+	result, err := s.AuditStore.Get(userID, offset, limit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AuditStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAuditStore) PermanentDeleteByUser(userID string) error {
+	start := timemodule.Now()
+
+	err := s.AuditStore.PermanentDeleteByUser(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AuditStore.PermanentDeleteByUser", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
+	start := timemodule.Now()
+
+	err := s.AuditStore.Save(audit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AuditStore.Save", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
@@ -2230,6 +2288,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 		Metrics: metrics,
 	}
 
+	newStore.AuditStore = &TimerLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}

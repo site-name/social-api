@@ -4,7 +4,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/store"
 )
@@ -34,9 +33,10 @@ func (s SqlAuditStore) createIndexesIfNotExists() {
 }
 
 func (s SqlAuditStore) Save(audit *audit.Audit) error {
-	audit.Id = model.NewId()
-	audit.CreateAt = model.GetMillis()
-
+	audit.PreSave()
+	if err := audit.IsValid(); err != nil {
+		return err
+	}
 	if err := s.GetMaster().Insert(audit); err != nil {
 		return errors.Wrapf(err, "failed to save Audit with userId=%s and action=%s", audit.UserId, audit.Action)
 	}

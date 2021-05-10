@@ -31,8 +31,18 @@ func (a *Audit) IsValid() *model.AppError {
 	if !model.IsValidId(a.SessionId) {
 		return outer("session_id", &a.Id)
 	}
+	if a.CreateAt == 0 {
+		return outer("create_at", &a.Id)
+	}
 
 	return nil
+}
+
+func (a *Audit) PreSave() {
+	if a.Id == "" {
+		a.Id = model.NewId()
+	}
+	a.CreateAt = model.GetMillis()
 }
 
 func (a *Audit) ToJson() string {

@@ -15,6 +15,7 @@ import (
 
 type RetryLayer struct {
 	store.Store
+	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
 	PreferenceStore       store.PreferenceStore
@@ -26,6 +27,10 @@ type RetryLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *RetryLayer) Audit() store.AuditStore {
+	return s.AuditStore
 }
 
 func (s *RetryLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
@@ -70,6 +75,11 @@ func (s *RetryLayer) User() store.UserStore {
 
 func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type RetryLayerAuditStore struct {
+	store.AuditStore
+	Root *RetryLayer
 }
 
 type RetryLayerClusterDiscoveryStore struct {
@@ -136,6 +146,66 @@ func isRepeatableError(err error) bool {
 		}
 	}
 	return false
+}
+
+func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
+
+	tries := 0
+	for {
+		result, err := s.AuditStore.Get(userID, offset, limit)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAuditStore) PermanentDeleteByUser(userID string) error {
+
+	tries := 0
+	for {
+		err := s.AuditStore.PermanentDeleteByUser(userID)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
+
+	tries := 0
+	for {
+		err := s.AuditStore.Save(audit)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
 }
 
 func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
@@ -2679,6 +2749,7 @@ func New(childStore store.Store) *RetryLayer {
 		Store: childStore,
 	}
 
+	newStore.AuditStore = &RetryLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
