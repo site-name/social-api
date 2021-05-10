@@ -1,15 +1,15 @@
 package sqlstore
 
-import (
-	"github.com/sitename/sitename/store"
-)
+// import (
+// 	"github.com/sitename/sitename/store"
+// )
 
-type SqlCheckoutStore struct {
-	*SqlStore
-}
+// type SqlCheckoutStore struct {
+// 	*SqlStore
+// }
 
-func newSqlCheckoutStore(sqlStore *SqlStore) store.CheckoutStore {
-	cs := &SqlCheckoutStore{
-		SqlStore: sqlStore,
-	}
-}
+// func newSqlCheckoutStore(sqlStore *SqlStore) store.CheckoutStore {
+// 	cs := &SqlCheckoutStore{
+// 		SqlStore: sqlStore,
+// 	}
+// }

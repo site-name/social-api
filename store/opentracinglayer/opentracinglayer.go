@@ -10,6 +10,7 @@ import (
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
 )
