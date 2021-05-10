@@ -15,6 +15,8 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	modelAudit "github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -50,6 +52,12 @@ type AppIface interface {
 	IsUsernameTaken(name string) bool
 	// LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	LimitedClientConfigWithComputed() map[string]string
+	// LogAuditRec logs an audit record using default LvlAuditCLI.
+	LogAuditRec(rec *audit.Record, err error)
+	// LogAuditRecWithLevel logs an audit record using specified Level.
+	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
+	// MakeAuditRecord creates a audit record pre-populated with defaults.
+	MakeAuditRecord(event string, initialStatus string) *audit.Record
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) *model.AppError
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
@@ -99,6 +107,8 @@ type AppIface interface {
 	ExportPermissions(w io.Writer) error
 	FileBackend() (filestore.FileBackend, *model.AppError)
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
+	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
+	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetClusterId() string
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)

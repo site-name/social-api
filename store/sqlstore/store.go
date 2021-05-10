@@ -91,7 +91,7 @@ type SqlStoreStores struct {
 	// thread               store.ThreadStore
 	user store.UserStore
 	// bot                  store.BotStore
-	// audit                store.AuditStore
+	audit   store.AuditStore
 	cluster store.ClusterDiscoveryStore
 	// remoteCluster        store.RemoteClusterStore
 	// compliance           store.ComplianceStore
@@ -177,7 +177,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.retentionPolicy = newSqlRetentionPolicyStore(store, metrics)
 	store.stores.user = newSqlUserStore(store, metrics)
 	// store.stores.bot = newSqlBotStore(store, metrics)
-	// store.stores.audit = newSqlAuditStore(store)
+	store.stores.audit = newSqlAuditStore(store)
 	store.stores.cluster = newSqlClusterDiscoveryStore(store)
 	// store.stores.remoteCluster = newSqlRemoteClusterStore(store)
 	// store.stores.compliance = newSqlComplianceStore(store)
@@ -233,7 +233,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.thread.(*SqlThreadStore).createIndexesIfNotExists()
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
 	// store.stores.bot.(*SqlBotStore).createIndexesIfNotExists()
-	// store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
+	store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
 	// store.stores.compliance.(*SqlComplianceStore).createIndexesIfNotExists()
 	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
 	// store.stores.oauth.(*SqlOAuthStore).createIndexesIfNotExists()
@@ -964,9 +964,9 @@ func (ss *SqlStore) Session() store.SessionStore {
 	return ss.stores.session
 }
 
-// func (ss *SqlStore) Audit() store.AuditStore {
-// 	return ss.stores.audit
-// }
+func (ss *SqlStore) Audit() store.AuditStore {
+	return ss.stores.audit
+}
 
 func (ss *SqlStore) ClusterDiscovery() store.ClusterDiscoveryStore {
 	return ss.stores.cluster
