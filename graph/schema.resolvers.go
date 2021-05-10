@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/graph/generated"
 	"github.com/sitename/sitename/graph/model"
 )
@@ -336,11 +337,11 @@ func (r *mutationResolver) VariantMediaUnassign(ctx context.Context, mediaID str
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *string, paymentID string) (*model.PaymentCapture, error) {
+func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *decimal.Decimal, paymentID string) (*model.PaymentCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PaymentRefund(ctx context.Context, amount *string, paymentID string) (*model.PaymentRefund, error) {
+func (r *mutationResolver) PaymentRefund(ctx context.Context, amount *decimal.Decimal, paymentID string) (*model.PaymentRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -440,7 +441,7 @@ func (r *mutationResolver) OrderCancel(ctx context.Context, id string) (*model.O
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderCapture(ctx context.Context, amount string, id string) (*model.OrderCapture, error) {
+func (r *mutationResolver) OrderCapture(ctx context.Context, amount *decimal.Decimal, id string) (*model.OrderCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -504,7 +505,7 @@ func (r *mutationResolver) OrderMarkAsPaid(ctx context.Context, id string, trans
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderRefund(ctx context.Context, amount string, id string) (*model.OrderRefund, error) {
+func (r *mutationResolver) OrderRefund(ctx context.Context, amount *decimal.Decimal, id string) (*model.OrderRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

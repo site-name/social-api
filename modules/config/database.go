@@ -8,8 +8,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
-	// Load the MySQL driver
-	_ "github.com/go-sql-driver/mysql"
 	// Load the Postgres driver
 	_ "github.com/lib/pq"
 

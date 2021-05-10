@@ -8,14 +8,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graph/generated"
 )
 
-func NewHandler(app *app.App) http.Handler {
+func NewHandler(interface{}) http.Handler {
 	c := generated.Config{
 		Resolvers: &Resolver{
-			app: app,
+			// app: app,
 		},
 	}
 
@@ -25,7 +24,7 @@ func NewHandler(app *app.App) http.Handler {
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.MultipartForm{})
 
-	srv.SetQueryCache(lru.New(*app.Config().ServiceSettings.ApiCacheSize))
+	srv.SetQueryCache(lru.New(1000))
 
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New(100),

@@ -2,6 +2,7 @@ package measurement
 
 import (
 	"errors"
+	"fmt"
 )
 
 type WeightUnit string
@@ -36,8 +37,12 @@ var WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
 const STANDARD_WEIGHT_UNIT = KG
 
 type Weight struct {
-	Amount float32
-	Unit   WeightUnit
+	Amount float32    `json:"amount"`
+	Unit   WeightUnit `json:"unit"`
+}
+
+func (w *Weight) String() string {
+	return fmt.Sprintf("%.3f%s", w.Amount, w.Unit)
 }
 
 var (

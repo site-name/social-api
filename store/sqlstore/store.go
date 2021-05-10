@@ -195,7 +195,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.fileInfo = newSqlFileInfoStore(store, metrics)
 	// store.stores.uploadSession = newSqlUploadSessionStore(store)
 	// store.stores.thread = newSqlThreadStore(store)
-	// store.stores.job = newSqlJobStore(store)
+	store.stores.job = newSqlJobStore(store)
 	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
 	// store.stores.channelMemberHistory = newSqlChannelMemberHistoryStore(store)
 	// store.stores.plugin = newSqlPluginStore(store)
@@ -308,7 +308,12 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 	db.SetConnMaxLifetime(time.Duration(*settings.ConnMaxLifetimeMilliseconds) * time.Millisecond)
 	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
-	dbmap := &gorp.DbMap{Db: db, TypeConverter: mattermConverter{}, Dialect: gorp.PostgresDialect{}}
+	dbmap := &gorp.DbMap{
+		Db:            db,
+		TypeConverter: siteNameConverter{},
+		Dialect:       gorp.PostgresDialect{},
+		QueryTimeout:  time.Duration(*settings.QueryTimeout) * time.Second,
+	}
 
 	if settings.Trace != nil && *settings.Trace {
 		dbmap.TraceOn("sql-trace:", &TraceOnAdapter{})
@@ -325,6 +330,7 @@ func (ss *SqlStore) Context() context.Context {
 	return ss.context
 }
 
+// connect to postgresql server
 func (ss *SqlStore) initConnection() {
 	ss.master = setupConnection("master", *ss.settings.DataSource, ss.settings)
 
@@ -404,12 +410,10 @@ func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
 }
 
 func (ss *SqlStore) GetReplica() *gorp.DbMap {
-	// ss.licenseMutex.RLock()
-	// license := ss.license
-	// ss.licenseMutex.RUnlock()
-	// if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster || license == nil {
-	// 	return ss.GetMaster()
-	// }
+	// in case the system does not have slave data source, returns master data source instead
+	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
+		return ss.GetMaster()
+	}
 
 	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
 	return ss.Replicas[rrNum]
@@ -1085,11 +1089,7 @@ func (ss *SqlStore) DropAllTables() {
 }
 
 func (ss *SqlStore) getQueryBuilder() sq.StatementBuilderType {
-	builder := sq.StatementBuilder.PlaceholderFormat(sq.Question)
-	if ss.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		builder = builder.PlaceholderFormat(sq.Dollar)
-	}
-	return builder
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 }
 
 func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
@@ -1152,9 +1152,9 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 	return nil
 }
 
-type mattermConverter struct{}
+type siteNameConverter struct{}
 
-func (me mattermConverter) ToDb(val interface{}) (interface{}, error) {
+func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
 
 	switch t := val.(type) {
 	case model.StringMap:
@@ -1176,7 +1176,7 @@ func (me mattermConverter) ToDb(val interface{}) (interface{}, error) {
 	return val, nil
 }
 
-func (me mattermConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
+func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
 	switch target.(type) {
 	case *model.StringMap:
 		binder := func(holder, target interface{}) error {

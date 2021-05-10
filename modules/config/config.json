@@ -121,7 +121,7 @@
         "ConnMaxLifetimeMilliseconds": 3600000,
         "ConnMaxIdleTimeMilliseconds": 300000,
         "MaxOpenConns": 300,
-        "Trace": true,
+        "Trace": false,
         "AtRestEncryptKey": "5sspnqbmr433f8s8pzn9yarbtf37t565",
         "QueryTimeout": 30,
         "DisableDatabaseSearch": false,
@@ -495,11 +495,13 @@
         "EnableHealthCheck": true,
         "Directory": "./plugins",
         "ClientDirectory": "./client/plugins",
-        "Plugins": {},
+        "Plugins": {
+            
+        },
         "PluginStates": {
             "com.mattermost.nps": {
-                "Enable": true
-            }
+    "Enable": true
+}
         },
         "EnableMarketplace": true,
         "EnableRemoteMarketplace": true,

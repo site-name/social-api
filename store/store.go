@@ -7,6 +7,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/audit"
 )
 
 type StoreResult struct {
@@ -35,6 +36,7 @@ type Store interface {
 	UserAccessToken() UserAccessTokenStore
 	TermsOfService() TermsOfServiceStore
 	ClusterDiscovery() ClusterDiscoveryStore
+	Audit() AuditStore
 }
 
 type ClusterDiscoveryStore interface {
@@ -44,6 +46,12 @@ type ClusterDiscoveryStore interface {
 	GetAll(discoveryType, clusterName string) ([]*model.ClusterDiscovery, error)
 	SetLastPingAt(discovery *model.ClusterDiscovery) error
 	Cleanup() error
+}
+
+type AuditStore interface {
+	Save(audit *audit.Audit) error
+	Get(user_id string, offset int, limit int) (audit.Audits, error)
+	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {

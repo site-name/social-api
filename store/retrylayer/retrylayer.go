@@ -6,15 +6,12 @@ package retrylayer
 import (
 	"context"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
-
-const mySQLDeadlockCode = uint16(1213)
 
 type RetryLayer struct {
 	store.Store
@@ -132,14 +129,9 @@ type RetryLayerUserAccessTokenStore struct {
 
 func isRepeatableError(err error) bool {
 	var pqErr *pq.Error
-	var mysqlErr *mysql.MySQLError
 	switch {
 	case errors.As(errors.Cause(err), &pqErr):
 		if pqErr.Code == "40001" || pqErr.Code == "40P01" {
-			return true
-		}
-	case errors.As(errors.Cause(err), &mysqlErr):
-		if mysqlErr.Number == mySQLDeadlockCode {
 			return true
 		}
 	}
