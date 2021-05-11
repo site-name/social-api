@@ -71,7 +71,7 @@ func (a *App) InitServer() {
 		// 	a.registerAppClusterMessageHandlers()
 		// }
 
-		// a.DoAppMigrations()
+		a.DoAppMigrations()
 
 		// a.InitPostMetadata()
 

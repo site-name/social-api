@@ -17,12 +17,12 @@ func newSqlAuditStore(sqlStore *SqlStore) store.AuditStore {
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(audit.Audit{}, "Audits").SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(26)
-		table.ColMap("UserId").SetMaxSize(26)
+		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
+		table.ColMap("UserId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Action").SetMaxSize(512)
 		table.ColMap("ExtraInfo").SetMaxSize(1024)
 		table.ColMap("IpAddress").SetMaxSize(64)
-		table.ColMap("SessionId").SetMaxSize(26)
+		table.ColMap("SessionId").SetMaxSize(UUID_MAX_LENGTH)
 	}
 
 	return s

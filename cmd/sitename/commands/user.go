@@ -1,17 +1,18 @@
 package commands
 
-// import (
-// 	"errors"
-// 	"strings"
+import (
+	"errors"
+	"strings"
 
-// 	"github.com/sitename/sitename/model"
-// 	"github.com/spf13/cobra"
-// )
+	// "github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
+	"github.com/spf13/cobra"
+)
 
-// var UserCmd = &cobra.Command{
-// 	Use:   "user",
-// 	Short: "Management of users",
-// }
+var UserCmd = &cobra.Command{
+	Use:   "user",
+	Short: "Management of users",
+}
 
 // var UserActivateCmd = &cobra.Command{
 // 	Use:   "activate [emails, usernames, userIds]",
@@ -31,13 +32,13 @@ package commands
 // 	RunE: userDeactivateCmdF,
 // }
 
-// var UserCreateCmd = &cobra.Command{
-// 	Use:     "create",
-// 	Short:   "Create a user",
-// 	Long:    "Create a user",
-// 	Example: `  user create --email user@example.com --username userexample --password Password1`,
-// 	RunE:    userCreateCmdF,
-// }
+var UserCreateCmd = &cobra.Command{
+	Use:     "create",
+	Short:   "Create a user",
+	Long:    "Create a user",
+	Example: `  user create --email user@example.com --username userexample --password Password1`,
+	RunE:    userCreateCmdF,
+}
 
 // var ResetUserPasswordCmd = &cobra.Command{
 // 	Use:     "password [user] [password]",
@@ -133,6 +134,20 @@ package commands
 // 	Example: "  user search user1@mail.com user2@mail.com",
 // 	RunE:    searchUserCmdF,
 // }
+
+func init() {
+	UserCreateCmd.Flags().String("username", "", "Required. Username for the new user account.")
+	UserCreateCmd.Flags().String("email", "", "Required. The email address for the new user account.")
+	UserCreateCmd.Flags().String("password", "", "Required. The password for the new user account.")
+	UserCreateCmd.Flags().String("nickname", "", "Optional. The nickname for the new user account.")
+	UserCreateCmd.Flags().String("firstname", "", "Optional. The first name for the new user account.")
+	UserCreateCmd.Flags().String("lastname", "", "Optional. The last name for the new user account.")
+	UserCreateCmd.Flags().String("locale", "", "Optional. The locale (ex: en, fr) for the new user account.")
+	UserCreateCmd.Flags().Bool("system_admin", false, "Optional. If supplied, the new user will be a system administrator. Defaults to false.")
+
+	UserCmd.AddCommand(UserCreateCmd)
+	RootCmd.AddCommand(UserCmd)
+}
 
 // func init() {
 // 	UserCreateCmd.Flags().String("username", "", "Required. Username for the new user account.")
@@ -278,75 +293,75 @@ package commands
 // // 	return nil
 // // }
 
-// func userCreateCmdF(command *cobra.Command, args []string) error {
-// 	a, err := InitDBCommandContextCobra(command)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer a.Srv().Shutdown()
+func userCreateCmdF(command *cobra.Command, args []string) error {
+	a, err := InitDBCommandContextCobra(command)
+	if err != nil {
+		return err
+	}
+	defer a.Srv().Shutdown()
 
-// 	username, erru := command.Flags().GetString("username")
-// 	if erru != nil || username == "" {
-// 		return errors.New("Username is required")
-// 	}
-// 	email, erre := command.Flags().GetString("email")
-// 	if erre != nil || email == "" {
-// 		return errors.New("Email is required")
-// 	}
-// 	email = strings.ToLower((email))
-// 	password, errp := command.Flags().GetString("password")
-// 	if errp != nil || password == "" {
-// 		return errors.New("Password is required")
-// 	}
-// 	nickname, _ := command.Flags().GetString("nickname")
-// 	firstname, _ := command.Flags().GetString("firstname")
-// 	lastname, _ := command.Flags().GetString("lastname")
-// 	locale, _ := command.Flags().GetString("locale")
-// 	systemAdmin, _ := command.Flags().GetBool("system_admin")
+	username, erru := command.Flags().GetString("username")
+	if erru != nil || username == "" {
+		return errors.New("Username is required")
+	}
+	email, erre := command.Flags().GetString("email")
+	if erre != nil || email == "" {
+		return errors.New("Email is required")
+	}
+	email = strings.ToLower((email))
+	password, errp := command.Flags().GetString("password")
+	if errp != nil || password == "" {
+		return errors.New("Password is required")
+	}
+	nickname, _ := command.Flags().GetString("nickname")
+	firstname, _ := command.Flags().GetString("firstname")
+	lastname, _ := command.Flags().GetString("lastname")
+	locale, _ := command.Flags().GetString("locale")
+	systemAdmin, _ := command.Flags().GetBool("system_admin")
 
-// 	user := &model.User{
-// 		Username:  username,
-// 		Email:     email,
-// 		Password:  password,
-// 		Nickname:  nickname,
-// 		FirstName: firstname,
-// 		LastName:  lastname,
-// 		Locale:    locale,
-// 	}
+	user := &account.User{
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		Nickname:  nickname,
+		FirstName: firstname,
+		LastName:  lastname,
+		Locale:    locale,
+	}
 
-// 	ruser, err := a.CreateUser(user)
-// 	if ruser == nil {
-// 		return errors.New("Unable to create user. Error: " + err.Error())
-// 	}
+	ruser, err := a.CreateUser(user)
+	if ruser == nil {
+		return errors.New("Unable to create user. Error: " + err.Error())
+	}
 
-// 	if systemAdmin {
-// 		if _, err := a.UpdateUserRolesWithUser(ruser, "system_user system_admin", false); err != nil {
-// 			return errors.New("Unable to make user system admin. Error: " + err.Error())
-// 		}
-// 	} else {
-// 		// This else case exists to prevent the first user created from being
-// 		// created as a system admin unless explicitly specified.
-// 		if _, err := a.UpdateUserRolesWithUser(ruser, "system_user", false); err != nil {
-// 			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
-// 		}
-// 	}
+	if systemAdmin {
+		if _, err := a.UpdateUserRolesWithUser(ruser, "system_user system_admin", false); err != nil {
+			return errors.New("Unable to make user system admin. Error: " + err.Error())
+		}
+	} else {
+		// This else case exists to prevent the first user created from being
+		// created as a system admin unless explicitly specified.
+		if _, err := a.UpdateUserRolesWithUser(ruser, "system_user", false); err != nil {
+			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
+		}
+	}
 
-// 	CommandPrettyPrintln("id: " + ruser.Id)
-// 	CommandPrettyPrintln("username: " + ruser.Username)
-// 	CommandPrettyPrintln("nickname: " + ruser.Nickname)
-// 	// CommandPrettyPrintln("position: " + ruser.Position)
-// 	CommandPrettyPrintln("first_name: " + ruser.FirstName)
-// 	CommandPrettyPrintln("last_name: " + ruser.LastName)
-// 	CommandPrettyPrintln("email: " + ruser.Email)
-// 	CommandPrettyPrintln("auth_service: " + ruser.AuthService)
+	CommandPrettyPrintln("id: " + ruser.Id)
+	CommandPrettyPrintln("username: " + ruser.Username)
+	CommandPrettyPrintln("nickname: " + ruser.Nickname)
+	// CommandPrettyPrintln("position: " + ruser.Position)
+	CommandPrettyPrintln("first_name: " + ruser.FirstName)
+	CommandPrettyPrintln("last_name: " + ruser.LastName)
+	CommandPrettyPrintln("email: " + ruser.Email)
+	CommandPrettyPrintln("auth_service: " + ruser.AuthService)
 
-// 	// auditRec := a.MakeAuditRecord("userCreate", audit.Success)
-// 	// auditRec.AddMeta("user", ruser)
-// 	// auditRec.AddMeta("system_admin", systemAdmin)
-// 	// a.LogAuditRec(auditRec, nil)
+	// auditRec := a.MakeAuditRecord("userCreate", audit.Success)
+	// auditRec.AddMeta("user", ruser)
+	// auditRec.AddMeta("system_admin", systemAdmin)
+	// a.LogAuditRec(auditRec, nil)
 
-// 	return nil
-// }
+	return nil
+}
 
 // func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 // 	a, err := InitDBCommandContextCobra(command)

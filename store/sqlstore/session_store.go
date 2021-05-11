@@ -26,8 +26,8 @@ func newSqlSessionStore(sqlStore *SqlStore) store.SessionStore {
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(model.Session{}, "Sessions").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(26)
-		table.ColMap("UserId").SetMaxSize(26)
+		table.ColMap("Token").SetMaxSize(UUID_MAX_LENGTH) // since default token is google's uuid
+		table.ColMap("UserId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("DeviceId").SetMaxSize(512)
 		table.ColMap("Roles").SetMaxSize(64)
 		table.ColMap("Props").SetMaxSize(1000)

@@ -77,7 +77,7 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(account.User{}, "Users").SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH) // 16
+		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Username").SetMaxSize(model.USER_NAME_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Password").SetMaxSize(account.USER_HASH_PASSWORD_MAX_LENGTH)
 		table.ColMap("AuthData").SetMaxSize(account.USER_AUTH_DATA_MAX_LENGTH).SetUnique(true)
@@ -766,17 +766,17 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 		query = query.Where("u.DeleteAt = 0")
 	}
 
-	if options.IncludeBotAccounts {
-		if options.ExcludeRegularUsers {
-			query = query.Join("Bots ON u.Id = Bots.UserId")
-		}
-	} else {
-		query = query.LeftJoin("Bots ON u.Id = Bots.UserId").Where("Bots.UserId IS NULL")
-		if options.ExcludeRegularUsers {
-			// Currently this doesn't make sense because it will always return 0
-			return int64(0), errors.New("query with IncludeBotAccounts=false and excludeRegularUsers=true always return 0")
-		}
-	}
+	// if options.IncludeBotAccounts {
+	// 	if options.ExcludeRegularUsers {
+	// 		query = query.Join("Bots ON u.Id = Bots.UserId")
+	// 	}
+	// } else {
+	// 	query = query.LeftJoin("Bots ON u.Id = Bots.UserId").Where("Bots.UserId IS NULL")
+	// 	if options.ExcludeRegularUsers {
+	// 		// Currently this doesn't make sense because it will always return 0
+	// 		return int64(0), errors.New("query with IncludeBotAccounts=false and excludeRegularUsers=true always return 0")
+	// 	}
+	// }
 
 	query = applyViewRestrictionsFilter(query, true)
 	query = applyMultiRoleFilters(query, options.Roles, true)
@@ -797,9 +797,9 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.UserCountOptions) (int64, error) {
 	time := model.GetMillis() - timePeriod
 	query := us.getQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :Time", map[string]interface{}{"Time": time})
-	if !options.IncludeBotAccounts {
-		query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
-	}
+	// if !options.IncludeBotAccounts {
+	// 	query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
+	// }
 
 	if !options.IncludeDeleted {
 		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
@@ -819,9 +819,9 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.U
 
 func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
 	query := us.getQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :StartTime AND LastActivityAt <= :EndTime", map[string]interface{}{"StartTime": startTime, "EndTime": endTime})
-	if !options.IncludeBotAccounts {
-		query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
-	}
+	// if !options.IncludeBotAccounts {
+	// 	query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
+	// }
 	if !options.IncludeDeleted {
 		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
 	}

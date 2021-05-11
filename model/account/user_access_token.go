@@ -1,14 +1,9 @@
 package account
 
 import (
-	"fmt"
 	"io"
-	"net/http"
-	"strings"
 
-	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 type UserAccessToken struct {
@@ -20,66 +15,56 @@ type UserAccessToken struct {
 }
 
 const (
-	USER_ACCESS_TOKEN_MAX_LENGTH             = 26
 	USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH = 255
 )
 
+var USER_ACCESS_TOKEN_TOKEN_MAX_LENGTH = len(model.NewId())
+
 func (t *UserAccessToken) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.user_access_token.is_valid.%s.app_error",
+		"user_access_token_id=",
+		"UserAccessToken.IsValid",
+	)
 	if !model.IsValidId(t.Id) {
-		return t.createAppError("id")
+		return outer("id", nil)
 	}
-	if len(t.Token) != USER_ACCESS_TOKEN_MAX_LENGTH {
-		return t.createAppError("token")
+	if len(t.Token) != USER_ACCESS_TOKEN_TOKEN_MAX_LENGTH {
+		return outer("token", &t.Id)
 	}
 	if !model.IsValidId(t.UserId) {
-		return t.createAppError("user_id")
+		return outer("user_id", &t.Id)
 	}
 	if len(t.Description) > USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH {
-		return t.createAppError("description")
+		return outer("description", &t.Id)
 	}
 
 	return nil
 }
 
-func (u *UserAccessToken) createAppError(fieldName string) *model.AppError {
-	id := fmt.Sprintf("model.user_access_token.is_valid.%s.app_error", fieldName)
-	var details string
-	if !strings.EqualFold(fieldName, "id") {
-		details = "user_access_token_id=" + u.Id
-	}
-
-	return model.NewAppError("UserAccessToken.IsValid", id, nil, details, http.StatusBadRequest)
-}
-
 func (t *UserAccessToken) PreSave() {
-	t.Id = uuid.NewString()
+	if t.Id == "" {
+		t.Id = model.NewId()
+	}
 	t.IsActive = true
 }
 
 func (t *UserAccessToken) ToJson() string {
-	b, _ := json.JSON.Marshal(t)
-	return string(b)
+	return model.ModelToJson(t)
 }
 
 func UserAccessTokenFromJson(data io.Reader) *UserAccessToken {
 	var t UserAccessToken
-	err := json.JSON.NewDecoder(data).Decode(&t)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&t, data)
 	return &t
 }
 
 func UserAccessTokenListToJson(t []*UserAccessToken) string {
-	b, _ := json.JSON.Marshal(t)
-	return string(b)
+	return model.ModelToJson(&t)
 }
 
 func UserAccessTokenListFromJson(data io.Reader) []*UserAccessToken {
 	var t []*UserAccessToken
-	err := json.JSON.NewDecoder(data).Decode(&t)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&t, data)
 	return t
 }

@@ -21,7 +21,7 @@ func newSqlTermsOfServiceStore(sqlStore *SqlStore, metrics einterfaces.MetricsIn
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(model.TermsOfService{}, "TermsOfService").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("UserId").SetMaxSize(26)
+		table.ColMap("UserId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Text").SetMaxSize(model.POST_MESSAGE_MAX_BYTES_V2)
 	}
 

@@ -1,6 +1,12 @@
 package sqlstore
 
-const (
+import "github.com/google/uuid"
+
+var (
 	// Length for all model's id fields
-	UUID_MAX_LENGTH = 16 // google.uuid.Nil's length
+	UUID_MAX_LENGTH int
 )
+
+func init() {
+	UUID_MAX_LENGTH = len(uuid.New().String())
+}
