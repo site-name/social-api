@@ -227,13 +227,16 @@ func (jss SqlJobStore) GetNewestJobByStatusAndType(status string, jobType string
 	return jss.GetNewestJobByStatusesAndType([]string{status}, jobType)
 }
 
-func (jss SqlJobStore) GetNewestJobByStatusesAndType(status []string, jobType string) (*model.Job, error) {
+// GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType.
+// order by created time
+func (jss SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
 	query, args, err := jss.getQueryBuilder().
 		Select("*").
 		From("Jobs").
-		Where(sq.Eq{"Status": status, "Type": jobType}).
+		Where(sq.Eq{"Status": statuses, "Type": jobType}).
 		OrderBy("CreateAt DESC").
-		Limit(1).ToSql()
+		Limit(1).
+		ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "job_tosql")
 	}
@@ -241,9 +244,9 @@ func (jss SqlJobStore) GetNewestJobByStatusesAndType(status []string, jobType st
 	var job *model.Job
 	if err = jss.GetReplica().SelectOne(&job, query, args...); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("Job", fmt.Sprintf("<status, type>=<%s, %s>", strings.Join(status, ","), jobType))
+			return nil, store.NewErrNotFound("Job", fmt.Sprintf("<status, type>=<%s, %s>", strings.Join(statuses, ","), jobType))
 		}
-		return nil, errors.Wrapf(err, "failed to find Job with statuses=%s and type=%s", strings.Join(status, ","), jobType)
+		return nil, errors.Wrapf(err, "failed to find Job with statuses=%s and type=%s", strings.Join(statuses, ","), jobType)
 	}
 	return job, nil
 }

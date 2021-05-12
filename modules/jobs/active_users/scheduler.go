@@ -33,11 +33,12 @@ func (scheduler *Scheduler) Enabled(cfg *model.Config) bool {
 }
 
 func (scheduler *Scheduler) NextScheduleTime(cfg *model.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model.Job) *time.Time {
-	nextTime := time.Now().Add(SchedFreqMinutes * time.Minute)
+	nextTime := now.Add(SchedFreqMinutes * time.Minute)
 	return &nextTime
 }
 
-func (scheduler *Scheduler) ScheduleJob(cfg *model.Config, pendingJobs bool, lastSuccessfulJob *model.Job) (*model.Job, *model.AppError) {
+// ScheduleJob just create a new job with type of "active_users" and returns it
+func (scheduler *Scheduler) ScheduleJob(_ *model.Config, _ bool, _ *model.Job) (*model.Job, *model.AppError) {
 	data := map[string]string{}
 
 	job, err := scheduler.App.Srv().Jobs.CreateJob(model.JOB_TYPE_ACTIVE_USERS, data)

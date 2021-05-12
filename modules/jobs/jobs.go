@@ -15,6 +15,7 @@ const (
 	CancelWatcherPollingInterval = 5000
 )
 
+// CreateJob create new job in database with type of given jobType and Data of given jobData
 func (srv *JobServer) CreateJob(jobType string, jobData map[string]string) (*model.Job, *model.AppError) {
 	job := model.Job{
 		Id:       model.NewId(),
@@ -215,6 +216,7 @@ func GenerateNextStartDateTime(now time.Time, nextStartTime time.Time) *time.Tim
 	return &nextTime
 }
 
+// CheckForPendingJobsByType counts in database if there are jobs with PENDING status and have type of given jobType.
 func (srv *JobServer) CheckForPendingJobsByType(jobType string) (bool, *model.AppError) {
 	count, err := srv.Store.Job().GetCountByStatusAndType(model.JOB_STATUS_PENDING, jobType)
 	if err != nil {
@@ -223,11 +225,13 @@ func (srv *JobServer) CheckForPendingJobsByType(jobType string) (bool, *model.Ap
 	return count > 0, nil
 }
 
+// GetLastSuccessfulJobByType get 1 job that has status of SUCCESS, type of given jobType and most recently created.
 func (srv *JobServer) GetLastSuccessfulJobByType(jobType string) (*model.Job, *model.AppError) {
 	statuses := []string{model.JOB_STATUS_SUCCESS}
 	if jobType == model.JOB_TYPE_MESSAGE_EXPORT {
-		statuses = []string{model.JOB_STATUS_WARNING, model.JOB_STATUS_SUCCESS}
+		statuses = append(statuses, model.JOB_STATUS_WARNING)
 	}
+
 	job, err := srv.Store.Job().GetNewestJobByStatusesAndType(statuses, jobType)
 	var nfErr *store.ErrNotFound
 	if err != nil && !errors.As(err, &nfErr) {

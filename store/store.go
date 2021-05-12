@@ -84,6 +84,8 @@ type JobStore interface {
 	GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error)
 	GetAllByStatus(status string) ([]*model.Job, error)
 	GetNewestJobByStatusAndType(status string, jobType string) (*model.Job, error)
+	// GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType.
+	// order by created time
 	GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error)
 	GetCountByStatusAndType(status string, jobType string) (int64, error)
 	Delete(id string) (string, error)

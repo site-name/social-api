@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/services/configservice"
 )
 
+// Workers contains some works that can be ran
 type Workers struct {
 	ConfigService configservice.ConfigService
 	Watcher       *Watcher
@@ -128,15 +129,25 @@ func (workers *Workers) handleConfigChange(oldConfig *model.Config, newConfig *m
 	if workers.DataRetention != nil {
 		if (!*oldConfig.DataRetentionSettings.EnableMessageDeletion && !*oldConfig.DataRetentionSettings.EnableFileDeletion) &&
 			(*newConfig.DataRetentionSettings.EnableMessageDeletion || *newConfig.DataRetentionSettings.EnableFileDeletion) {
+			// check if:
+			// 1) old message deletion and file deletion configurations are false
+			// 2) new message deletion or file deletion configurations are true
+			// then allow the "DataRetension" worker to run:
 			go workers.DataRetention.Run()
 		} else if (*oldConfig.DataRetentionSettings.EnableMessageDeletion || *oldConfig.DataRetentionSettings.EnableFileDeletion) &&
 			(!*newConfig.DataRetentionSettings.EnableMessageDeletion && !*newConfig.DataRetentionSettings.EnableFileDeletion) {
+			// check if:
+			// 1) old message deletion or file deletion configurations are true
+			// 2) new message deletion and file deletion configurations are false
+			// then allow the "DataRetension" worker to run:
+			// old configurations are the same when start this worker but new configurations does now allow this worker to run
 			workers.DataRetention.Stop()
 		}
 	}
 
 	if workers.MessageExport != nil {
 		if !*oldConfig.MessageExportSettings.EnableExport && *newConfig.MessageExportSettings.EnableExport {
+			// check if new configuration allows this worker to continue running
 			go workers.MessageExport.Run()
 		} else if *oldConfig.MessageExportSettings.EnableExport && !*newConfig.MessageExportSettings.EnableExport {
 			workers.MessageExport.Stop()

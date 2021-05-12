@@ -63,16 +63,19 @@ func (srv *JobServer) MakeWatcher(workers *Workers, pollingInterval int) *Watche
 func (srv *JobServer) InitWorkers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
+	// check if workers are running. If true -> return
 	if srv.workers != nil && srv.workers.running {
 		return ErrWorkersRunning
 	}
 
 	slog.Debug("Initialising workers.")
 
+	// make new workers
 	workers := &Workers{
 		ConfigService: srv.ConfigService,
 	}
 	workers.Watcher = srv.MakeWatcher(workers, DefaultWatcherPollingInterval)
+
 	if srv.DataRetentionJob != nil {
 		workers.DataRetention = srv.DataRetentionJob.MakeWorker()
 	}
@@ -133,6 +136,7 @@ func (srv *JobServer) InitWorkers() error {
 func (srv *JobServer) InitSchedulers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
+
 	if srv.schedulers != nil && srv.schedulers.running {
 		return ErrSchedulersRunning
 	}
@@ -200,11 +204,15 @@ func (srv *JobServer) Config() *model.Config {
 func (srv *JobServer) StartWorkers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
+
+	// check if either workers are not initialized or they are already running. If true -> return
 	if srv.workers == nil {
 		return ErrWorkersUninitialized
 	} else if srv.workers.running {
 		return ErrWorkersRunning
 	}
+
+	// starts workers
 	srv.workers.Start()
 	return nil
 }
@@ -212,6 +220,7 @@ func (srv *JobServer) StartWorkers() error {
 func (srv *JobServer) StartSchedulers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
+
 	if srv.schedulers == nil {
 		return ErrSchedulersUninitialized
 	} else if srv.schedulers.running {
@@ -236,6 +245,7 @@ func (srv *JobServer) StopWorkers() error {
 func (srv *JobServer) StopSchedulers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
+
 	if srv.schedulers == nil {
 		return ErrSchedulersUninitialized
 	} else if !srv.schedulers.running {

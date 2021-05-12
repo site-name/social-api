@@ -2,10 +2,10 @@ package model
 
 import (
 	"io"
-	"net/http"
 	"time"
 )
 
+// job types
 const (
 	JOB_TYPE_DATA_RETENTION                 = "data_retention"
 	JOB_TYPE_MESSAGE_EXPORT                 = "message_export"
@@ -24,16 +24,20 @@ const (
 	JOB_TYPE_EXPORT_DELETE                  = "export_delete"
 	JOB_TYPE_CLOUD                          = "cloud"
 	JOB_TYPE_RESEND_INVITATION_EMAIL        = "resend_invitation_email"
-	JOB_STATUS_PENDING                      = "pending"
-	JOB_STATUS_IN_PROGRESS                  = "in_progress"
-	JOB_STATUS_SUCCESS                      = "success"
-	JOB_STATUS_ERROR                        = "error"
-	JOB_STATUS_CANCEL_REQUESTED             = "cancel_requested"
-	JOB_STATUS_CANCELED                     = "canceled"
-	JOB_STATUS_WARNING                      = "warning"
 )
 
-var ALL_JOB_TYPES = [...]string{
+// job statuses
+const (
+	JOB_STATUS_PENDING          = "pending"
+	JOB_STATUS_IN_PROGRESS      = "in_progress"
+	JOB_STATUS_SUCCESS          = "success"
+	JOB_STATUS_ERROR            = "error"
+	JOB_STATUS_CANCEL_REQUESTED = "cancel_requested"
+	JOB_STATUS_CANCELED         = "canceled"
+	JOB_STATUS_WARNING          = "warning"
+)
+
+var ALL_JOB_TYPES = []string{
 	JOB_TYPE_DATA_RETENTION,
 	JOB_TYPE_MESSAGE_EXPORT,
 	JOB_TYPE_ELASTICSEARCH_POST_INDEXING,
@@ -50,7 +54,18 @@ var ALL_JOB_TYPES = [...]string{
 	JOB_TYPE_EXPORT_PROCESS,
 	JOB_TYPE_EXPORT_DELETE,
 	JOB_TYPE_CLOUD,
-	// JOB_TYPE_RESEND_INVITATION_EMAIL,
+
+	JOB_TYPE_RESEND_INVITATION_EMAIL, // note
+}
+
+var ALL_JOB_STATUSES = []string{
+	JOB_STATUS_PENDING,
+	JOB_STATUS_IN_PROGRESS,
+	JOB_STATUS_SUCCESS,
+	JOB_STATUS_ERROR,
+	JOB_STATUS_CANCEL_REQUESTED,
+	JOB_STATUS_CANCELED,
+	JOB_STATUS_WARNING,
 }
 
 type Job struct {
@@ -66,45 +81,22 @@ type Job struct {
 }
 
 func (j *Job) IsValid() *AppError {
+	outer := CreateAppErrorForModel(
+		"model.job_is_valid.%s.app_error",
+		"job_id=",
+		"Job.IsValid",
+	)
 	if !IsValidId(j.Id) {
-		return NewAppError("Job.IsValid", "model.job.is_valid.id.app_error", nil, "id="+j.Id, http.StatusBadRequest)
+		return outer("id", nil)
 	}
-
 	if j.CreateAt == 0 {
-		return NewAppError("Job.IsValid", "model.job.is_valid.create_at.app_error", nil, "id="+j.Id, http.StatusBadRequest)
+		return outer("create_at", &j.Id)
 	}
-
-	switch j.Type {
-	case JOB_TYPE_DATA_RETENTION:
-	case JOB_TYPE_ELASTICSEARCH_POST_INDEXING:
-	case JOB_TYPE_ELASTICSEARCH_POST_AGGREGATION:
-	case JOB_TYPE_BLEVE_POST_INDEXING:
-	case JOB_TYPE_LDAP_SYNC:
-	case JOB_TYPE_MESSAGE_EXPORT:
-	case JOB_TYPE_MIGRATIONS:
-	case JOB_TYPE_PLUGINS:
-	case JOB_TYPE_PRODUCT_NOTICES:
-	case JOB_TYPE_EXPIRY_NOTIFY:
-	case JOB_TYPE_ACTIVE_USERS:
-	case JOB_TYPE_IMPORT_PROCESS:
-	case JOB_TYPE_IMPORT_DELETE:
-	case JOB_TYPE_EXPORT_PROCESS:
-	case JOB_TYPE_EXPORT_DELETE:
-	case JOB_TYPE_CLOUD:
-	case JOB_TYPE_RESEND_INVITATION_EMAIL:
-	default:
-		return NewAppError("Job.IsValid", "model.job.is_valid.type.app_error", nil, "id="+j.Id, http.StatusBadRequest)
+	if !StringArray(ALL_JOB_TYPES).Contains(j.Type) {
+		return outer("type", &j.Id)
 	}
-
-	switch j.Status {
-	case JOB_STATUS_PENDING:
-	case JOB_STATUS_IN_PROGRESS:
-	case JOB_STATUS_SUCCESS:
-	case JOB_STATUS_ERROR:
-	case JOB_STATUS_CANCEL_REQUESTED:
-	case JOB_STATUS_CANCELED:
-	default:
-		return NewAppError("Job.IsValid", "model.job.is_valid.status.app_error", nil, "id="+j.Id, http.StatusBadRequest)
+	if !StringArray(ALL_JOB_STATUSES).Contains(j.Status) {
+		return outer("status", &j.Id)
 	}
 
 	return nil
@@ -142,6 +134,7 @@ type Worker interface {
 
 type Scheduler interface {
 	Name() string
+	// JobType returns type of job
 	JobType() string
 	Enabled(cfg *Config) bool
 	NextScheduleTime(cfg *Config, now time.Time, pendingJobs bool, lastSuccessfulJob *Job) *time.Time

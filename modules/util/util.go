@@ -127,6 +127,7 @@ func MergeInto(dict map[string]interface{}, values ...interface{}) (map[string]i
 	return dict, nil
 }
 
+// check if given string a resides in given slice
 func StringInSlice(a string, slice []string) bool {
 	for _, b := range slice {
 		if b == a {

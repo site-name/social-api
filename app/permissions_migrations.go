@@ -168,16 +168,15 @@ func (a *App) doPermissionsMigration(key string, migrationMap permissionsMap, ro
 		}
 	}
 
-	for _, role := range roles {
+	for i, role := range roles {
 		role.Permissions = applyPermissionsMap(role, roleMap, migrationMap)
 		if _, err := a.Srv().Store.Role().Save(role); err != nil {
+			fmt.Printf("----------role permission: %s\n", role.Permissions)
 			var invErr *store.ErrInvalidInput
-			switch {
-			case errors.As(err, &invErr):
-				return model.NewAppError("doPermissionsMigration", "app.role.save.invalid_role.app_error", nil, invErr.Error(), http.StatusBadRequest)
-			default:
-				return model.NewAppError("doPermissionsMigration", "app.role.save.insert.app_error", nil, err.Error(), http.StatusInternalServerError)
+			if errors.As(err, &invErr) {
+				return model.NewAppError("doPermissionsMigration", "app.role.save.invalid_role.app_error", map[string]interface{}{"index": i}, invErr.Error(), http.StatusBadRequest)
 			}
+			return model.NewAppError("doPermissionsMigration", "app.role.save.insert.app_error", map[string]interface{}{"index": i}, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -940,12 +939,13 @@ func (a *App) DoPermissionsMigrations() error {
 	}
 
 	for i, migration := range PermissionsMigrations {
-		fmt.Printf("-migration number: %d---------mig: %s-----------\n", i, migration.Key)
 		migMap, err := migration.Migration()
 		if err != nil {
 			return err
 		}
 		if err := a.doPermissionsMigration(migration.Key, migMap, roles); err != nil {
+			fmt.Printf("doPermissionsMigration: migration number: %d---------migration key: %s-----------\n", i, migration.Key)
+
 			return err
 		}
 	}

@@ -9,6 +9,6 @@ import (
 )
 
 func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model.AppError) {
-	// var progress *
+	// TODO: fixme
 	panic("not implemented")
 }

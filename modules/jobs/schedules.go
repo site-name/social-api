@@ -33,6 +33,7 @@ var (
 func (schedulers *Schedulers) Start() {
 	schedulers.listenerId = schedulers.jobs.ConfigService.AddConfigListener(schedulers.handleConfigChange)
 
+	// start all schedulers in side 1 go-routine.
 	go func() {
 		slog.Info("Starting schedulers.")
 
@@ -43,7 +44,7 @@ func (schedulers *Schedulers) Start() {
 
 		now := time.Now()
 		for idx, scheduler := range schedulers.schedulers {
-			if !scheduler.Enabled(schedulers.jobs.Config()) {
+			if !scheduler.Enabled(schedulers.jobs.Config()) { // check if scheduler if not enabled, then dont assign next run-time to it
 				schedulers.nextRunTimes[idx] = nil
 			} else {
 				schedulers.setNextRunTime(schedulers.jobs.Config(), idx, now, false)
@@ -53,19 +54,20 @@ func (schedulers *Schedulers) Start() {
 		for {
 			timer := time.NewTimer(1 * time.Minute)
 			select {
-			case <-schedulers.stop:
+			case <-schedulers.stop: // schedulers's stop channel is closed
 				slog.Debug("Schedulers received stop signal.")
 				timer.Stop()
 				return
-			case now = <-timer.C:
+			case now = <-timer.C: // timer goes off
 				cfg := schedulers.jobs.Config()
 
+				// iterate over next runtimes
 				for idx, nextTime := range schedulers.nextRunTimes {
 					if nextTime == nil {
 						continue
 					}
 
-					if time.Now().After(*nextTime) {
+					if time.Now().After(*nextTime) { // checks if next runtime of scheduler at idx is bewfore now
 						scheduler := schedulers.schedulers[idx]
 						if scheduler == nil || !schedulers.isLeader || !scheduler.Enabled(cfg) {
 							continue
@@ -77,7 +79,7 @@ func (schedulers *Schedulers) Start() {
 						schedulers.setNextRunTime(cfg, idx, now, true)
 					}
 				}
-			case newCfg := <-schedulers.configChanged:
+			case newCfg := <-schedulers.configChanged: // new configuration received
 				for idx, scheduler := range schedulers.schedulers {
 					if !schedulers.isLeader || !scheduler.Enabled(newCfg) {
 						schedulers.nextRunTimes[idx] = nil
@@ -113,6 +115,13 @@ func (schedulers *Schedulers) Stop() {
 	schedulers.running = false
 }
 
+// scheduleJob do these works:
+//
+// 1) check if there are still some jobs that have PENDING status
+//
+// 2) Get the newest job that has status of SUCCESS
+//
+// 3) creates new job in database and returns it
 func (schedulers *Schedulers) scheduleJob(cfg *model.Config, scheduler model.Scheduler) (*model.Job, *model.AppError) {
 	pendingJobs, err := schedulers.jobs.CheckForPendingJobsByType(scheduler.JobType())
 	if err != nil {
@@ -127,11 +136,13 @@ func (schedulers *Schedulers) scheduleJob(cfg *model.Config, scheduler model.Sch
 	return scheduler.ScheduleJob(cfg, pendingJobs, lastSuccessfulJob)
 }
 
-func (schedulers *Schedulers) handleConfigChange(old, new *model.Config) {
+// handleConfigChange send new model.Config to schedulers's configChanged channel
+func (schedulers *Schedulers) handleConfigChange(_, new *model.Config) {
 	slog.Debug("Schedulers received config change.")
 	schedulers.configChanged <- new
 }
 
+// setNextRunTime set next run time for the scheduler at given idx
 func (schedulers *Schedulers) setNextRunTime(cfg *model.Config, idx int, now time.Time, pendingJobs bool) {
 	scheduler := schedulers.schedulers[idx]
 
