@@ -36,6 +36,8 @@ type AppIface interface {
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
 	CreateUser(user *account.User) (*account.User, *model.AppError)
+	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
+	DoPermissionsMigrations() error
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -64,6 +66,8 @@ type AppIface interface {
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
 	SetSessionExpireInDays(session *model.Session, days int)
+	// This function migrates the default built in roles from code/config to the database.
+	DoAdvancedPermissionsMigration()
 	// This to be used for places we check the users password when they are already logged in
 	DoubleCheckPassword(user *account.User, password string) *model.AppError
 	// func (a *App) DataRetention() einterfaces.DataRetentionInterface {
@@ -102,6 +106,7 @@ type AppIface interface {
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	DoAppMigrations()
+	DoSystemConsoleRolesCreationMigration()
 	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error

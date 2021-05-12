@@ -277,10 +277,10 @@ func (a *App) removeChannelManageDeleteFromTeamUser() (permissionsMap, error) {
 			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionManagePrivateChannelProperties)),
 			Remove: []string{PermissionManagePrivateChannelProperties},
 		},
-		permissionTransformation{
-			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionDeletePrivateChannel)),
-			Remove: []string{model.PERMISSION_DELETE_PRIVATE_CHANNEL.Id},
-		},
+		// permissionTransformation{
+		// 	On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionDeletePrivateChannel)),
+		// 	Remove: []string{model.PERMISSION_DELETE_PRIVATE_CHANNEL.Id},
+		// },
 		permissionTransformation{
 			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionManagePublicChannelProperties)),
 			Remove: []string{PermissionManagePublicChannelProperties},

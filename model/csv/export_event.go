@@ -53,6 +53,9 @@ func (e *ExportEvent) IsValid() *model.AppError {
 	if ExportTypeString[strings.ToLower(e.Type)] == "" {
 		return outer("type", &e.Id)
 	}
+	if e.Date == 0 {
+		return outer("date", &e.Id)
+	}
 
 	return nil
 }

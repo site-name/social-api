@@ -14,37 +14,41 @@ type Permission struct {
 }
 
 var PERMISSION_INVITE_USER *Permission
-var PERMISSION_ADD_USER_TO_TEAM *Permission
+
+// var PERMISSION_ADD_USER_TO_TEAM *Permission
 var PERMISSION_USE_SLASH_COMMANDS *Permission
 var PERMISSION_MANAGE_SLASH_COMMANDS *Permission
 var PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS *Permission
-var PERMISSION_CREATE_PUBLIC_CHANNEL *Permission
-var PERMISSION_CREATE_PRIVATE_CHANNEL *Permission
-var PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS *Permission
-var PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS *Permission
-var PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE *Permission
-var PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC *Permission
+
+// var PERMISSION_CREATE_PUBLIC_CHANNEL *Permission
+// var PERMISSION_CREATE_PRIVATE_CHANNEL *Permission
+// var PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS *Permission
+// var PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS *Permission
+// var PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE *Permission
+// var PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC *Permission
 var PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE *Permission
 var PERMISSION_MANAGE_ROLES *Permission
-var PERMISSION_MANAGE_TEAM_ROLES *Permission
-var PERMISSION_MANAGE_CHANNEL_ROLES *Permission
-var PERMISSION_CREATE_DIRECT_CHANNEL *Permission
-var PERMISSION_CREATE_GROUP_CHANNEL *Permission
-var PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES *Permission
-var PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES *Permission
-var PERMISSION_LIST_PUBLIC_TEAMS *Permission
-var PERMISSION_JOIN_PUBLIC_TEAMS *Permission
-var PERMISSION_LIST_PRIVATE_TEAMS *Permission
-var PERMISSION_JOIN_PRIVATE_TEAMS *Permission
-var PERMISSION_LIST_TEAM_CHANNELS *Permission
-var PERMISSION_JOIN_PUBLIC_CHANNELS *Permission
-var PERMISSION_DELETE_PUBLIC_CHANNEL *Permission
-var PERMISSION_DELETE_PRIVATE_CHANNEL *Permission
+
+// var PERMISSION_MANAGE_TEAM_ROLES *Permission
+// var PERMISSION_MANAGE_CHANNEL_ROLES *Permission
+// var PERMISSION_CREATE_DIRECT_CHANNEL *Permission
+// var PERMISSION_CREATE_GROUP_CHANNEL *Permission
+// var PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES *Permission
+// var PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES *Permission
+// var PERMISSION_LIST_PUBLIC_TEAMS *Permission
+// var PERMISSION_JOIN_PUBLIC_TEAMS *Permission
+// var PERMISSION_LIST_PRIVATE_TEAMS *Permission
+// var PERMISSION_JOIN_PRIVATE_TEAMS *Permission
+// var PERMISSION_LIST_TEAM_CHANNELS *Permission
+// var PERMISSION_JOIN_PUBLIC_CHANNELS *Permission
+// var PERMISSION_DELETE_PUBLIC_CHANNEL *Permission
+// var PERMISSION_DELETE_PRIVATE_CHANNEL *Permission
 var PERMISSION_EDIT_OTHER_USERS *Permission
-var PERMISSION_READ_CHANNEL *Permission
-var PERMISSION_READ_PUBLIC_CHANNEL_GROUPS *Permission
-var PERMISSION_READ_PRIVATE_CHANNEL_GROUPS *Permission
-var PERMISSION_READ_PUBLIC_CHANNEL *Permission
+
+// var PERMISSION_READ_CHANNEL *Permission
+// var PERMISSION_READ_PUBLIC_CHANNEL_GROUPS *Permission
+// var PERMISSION_READ_PRIVATE_CHANNEL_GROUPS *Permission
+// var PERMISSION_READ_PUBLIC_CHANNEL *Permission
 var PERMISSION_ADD_REACTION *Permission
 var PERMISSION_REMOVE_REACTION *Permission
 var PERMISSION_REMOVE_OTHERS_REACTIONS *Permission
@@ -71,11 +75,13 @@ var PERMISSION_EDIT_POST *Permission
 var PERMISSION_EDIT_OTHERS_POSTS *Permission
 var PERMISSION_DELETE_POST *Permission
 var PERMISSION_DELETE_OTHERS_POSTS *Permission
-var PERMISSION_REMOVE_USER_FROM_TEAM *Permission
-var PERMISSION_CREATE_TEAM *Permission
-var PERMISSION_MANAGE_TEAM *Permission
-var PERMISSION_IMPORT_TEAM *Permission
-var PERMISSION_VIEW_TEAM *Permission
+
+// var PERMISSION_REMOVE_USER_FROM_TEAM *Permission
+// var PERMISSION_CREATE_TEAM *Permission
+// var PERMISSION_MANAGE_TEAM *Permission
+// var PERMISSION_IMPORT_TEAM *Permission
+
+// var PERMISSION_VIEW_TEAM *Permission
 var PERMISSION_LIST_USERS_WITHOUT_TEAM *Permission
 var PERMISSION_READ_JOBS *Permission
 var PERMISSION_MANAGE_JOBS *Permission
@@ -88,7 +94,8 @@ var PERMISSION_READ_BOTS *Permission
 var PERMISSION_READ_OTHERS_BOTS *Permission
 var PERMISSION_MANAGE_BOTS *Permission
 var PERMISSION_MANAGE_OTHERS_BOTS *Permission
-var PERMISSION_VIEW_MEMBERS *Permission
+
+// var PERMISSION_VIEW_MEMBERS *Permission
 var PERMISSION_INVITE_GUEST *Permission
 var PERMISSION_PROMOTE_GUEST *Permission
 var PERMISSION_DEMOTE_TO_GUEST *Permission
@@ -349,12 +356,12 @@ func initializePermissions() {
 		"authentication.permissions.team_invite_user.description",
 		PermissionScopeTeam,
 	}
-	PERMISSION_ADD_USER_TO_TEAM = &Permission{
-		"add_user_to_team",
-		"authentication.permissions.add_user_to_team.name",
-		"authentication.permissions.add_user_to_team.description",
-		PermissionScopeTeam,
-	}
+	// PERMISSION_ADD_USER_TO_TEAM = &Permission{
+	// 	"add_user_to_team",
+	// 	"authentication.permissions.add_user_to_team.name",
+	// 	"authentication.permissions.add_user_to_team.description",
+	// 	PermissionScopeTeam,
+	// }
 	PERMISSION_USE_SLASH_COMMANDS = &Permission{
 		"use_slash_commands",
 		"authentication.permissions.team_use_slash_commands.name",
@@ -373,42 +380,42 @@ func initializePermissions() {
 		"authentication.permissions.manage_others_slash_commands.description",
 		PermissionScopeTeam,
 	}
-	PERMISSION_CREATE_PUBLIC_CHANNEL = &Permission{
-		"create_public_channel",
-		"authentication.permissions.create_public_channel.name",
-		"authentication.permissions.create_public_channel.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_CREATE_PRIVATE_CHANNEL = &Permission{
-		"create_private_channel",
-		"authentication.permissions.create_private_channel.name",
-		"authentication.permissions.create_private_channel.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS = &Permission{
-		"manage_public_channel_members",
-		"authentication.permissions.manage_public_channel_members.name",
-		"authentication.permissions.manage_public_channel_members.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS = &Permission{
-		"manage_private_channel_members",
-		"authentication.permissions.manage_private_channel_members.name",
-		"authentication.permissions.manage_private_channel_members.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE = &Permission{
-		"convert_public_channel_to_private",
-		"authentication.permissions.convert_public_channel_to_private.name",
-		"authentication.permissions.convert_public_channel_to_private.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC = &Permission{
-		"convert_private_channel_to_public",
-		"authentication.permissions.convert_private_channel_to_public.name",
-		"authentication.permissions.convert_private_channel_to_public.description",
-		PermissionScopeChannel,
-	}
+	// PERMISSION_CREATE_PUBLIC_CHANNEL = &Permission{
+	// 	"create_public_channel",
+	// 	"authentication.permissions.create_public_channel.name",
+	// 	"authentication.permissions.create_public_channel.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_CREATE_PRIVATE_CHANNEL = &Permission{
+	// 	"create_private_channel",
+	// 	"authentication.permissions.create_private_channel.name",
+	// 	"authentication.permissions.create_private_channel.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS = &Permission{
+	// 	"manage_public_channel_members",
+	// 	"authentication.permissions.manage_public_channel_members.name",
+	// 	"authentication.permissions.manage_public_channel_members.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS = &Permission{
+	// 	"manage_private_channel_members",
+	// 	"authentication.permissions.manage_private_channel_members.name",
+	// 	"authentication.permissions.manage_private_channel_members.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE = &Permission{
+	// 	"convert_public_channel_to_private",
+	// 	"authentication.permissions.convert_public_channel_to_private.name",
+	// 	"authentication.permissions.convert_public_channel_to_private.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC = &Permission{
+	// 	"convert_private_channel_to_public",
+	// 	"authentication.permissions.convert_private_channel_to_public.name",
+	// 	"authentication.permissions.convert_private_channel_to_public.description",
+	// 	PermissionScopeChannel,
+	// }
 	PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE = &Permission{
 		"assign_system_admin_role",
 		"authentication.permissions.assign_system_admin_role.name",
@@ -421,126 +428,126 @@ func initializePermissions() {
 		"authentication.permissions.manage_roles.description",
 		PermissionScopeSystem,
 	}
-	PERMISSION_MANAGE_TEAM_ROLES = &Permission{
-		"manage_team_roles",
-		"authentication.permissions.manage_team_roles.name",
-		"authentication.permissions.manage_team_roles.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_MANAGE_CHANNEL_ROLES = &Permission{
-		"manage_channel_roles",
-		"authentication.permissions.manage_channel_roles.name",
-		"authentication.permissions.manage_channel_roles.description",
-		PermissionScopeChannel,
-	}
+	// PERMISSION_MANAGE_TEAM_ROLES = &Permission{
+	// 	"manage_team_roles",
+	// 	"authentication.permissions.manage_team_roles.name",
+	// 	"authentication.permissions.manage_team_roles.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_MANAGE_CHANNEL_ROLES = &Permission{
+	// 	"manage_channel_roles",
+	// 	"authentication.permissions.manage_channel_roles.name",
+	// 	"authentication.permissions.manage_channel_roles.description",
+	// 	PermissionScopeChannel,
+	// }
 	PERMISSION_MANAGE_SYSTEM = &Permission{
 		"manage_system",
 		"authentication.permissions.manage_system.name",
 		"authentication.permissions.manage_system.description",
 		PermissionScopeSystem,
 	}
-	PERMISSION_CREATE_DIRECT_CHANNEL = &Permission{
-		"create_direct_channel",
-		"authentication.permissions.create_direct_channel.name",
-		"authentication.permissions.create_direct_channel.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_CREATE_GROUP_CHANNEL = &Permission{
-		"create_group_channel",
-		"authentication.permissions.create_group_channel.name",
-		"authentication.permissions.create_group_channel.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES = &Permission{
-		"manage_public_channel_properties",
-		"authentication.permissions.manage_public_channel_properties.name",
-		"authentication.permissions.manage_public_channel_properties.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES = &Permission{
-		"manage_private_channel_properties",
-		"authentication.permissions.manage_private_channel_properties.name",
-		"authentication.permissions.manage_private_channel_properties.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_LIST_PUBLIC_TEAMS = &Permission{
-		"list_public_teams",
-		"authentication.permissions.list_public_teams.name",
-		"authentication.permissions.list_public_teams.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_JOIN_PUBLIC_TEAMS = &Permission{
-		"join_public_teams",
-		"authentication.permissions.join_public_teams.name",
-		"authentication.permissions.join_public_teams.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_LIST_PRIVATE_TEAMS = &Permission{
-		"list_private_teams",
-		"authentication.permissions.list_private_teams.name",
-		"authentication.permissions.list_private_teams.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_JOIN_PRIVATE_TEAMS = &Permission{
-		"join_private_teams",
-		"authentication.permissions.join_private_teams.name",
-		"authentication.permissions.join_private_teams.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_LIST_TEAM_CHANNELS = &Permission{
-		"list_team_channels",
-		"authentication.permissions.list_team_channels.name",
-		"authentication.permissions.list_team_channels.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_JOIN_PUBLIC_CHANNELS = &Permission{
-		"join_public_channels",
-		"authentication.permissions.join_public_channels.name",
-		"authentication.permissions.join_public_channels.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_DELETE_PUBLIC_CHANNEL = &Permission{
-		"delete_public_channel",
-		"authentication.permissions.delete_public_channel.name",
-		"authentication.permissions.delete_public_channel.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_DELETE_PRIVATE_CHANNEL = &Permission{
-		"delete_private_channel",
-		"authentication.permissions.delete_private_channel.name",
-		"authentication.permissions.delete_private_channel.description",
-		PermissionScopeChannel,
-	}
+	// PERMISSION_CREATE_DIRECT_CHANNEL = &Permission{
+	// 	"create_direct_channel",
+	// 	"authentication.permissions.create_direct_channel.name",
+	// 	"authentication.permissions.create_direct_channel.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_CREATE_GROUP_CHANNEL = &Permission{
+	// 	"create_group_channel",
+	// 	"authentication.permissions.create_group_channel.name",
+	// 	"authentication.permissions.create_group_channel.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES = &Permission{
+	// 	"manage_public_channel_properties",
+	// 	"authentication.permissions.manage_public_channel_properties.name",
+	// 	"authentication.permissions.manage_public_channel_properties.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES = &Permission{
+	// 	"manage_private_channel_properties",
+	// 	"authentication.permissions.manage_private_channel_properties.name",
+	// 	"authentication.permissions.manage_private_channel_properties.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_LIST_PUBLIC_TEAMS = &Permission{
+	// 	"list_public_teams",
+	// 	"authentication.permissions.list_public_teams.name",
+	// 	"authentication.permissions.list_public_teams.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_JOIN_PUBLIC_TEAMS = &Permission{
+	// 	"join_public_teams",
+	// 	"authentication.permissions.join_public_teams.name",
+	// 	"authentication.permissions.join_public_teams.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_LIST_PRIVATE_TEAMS = &Permission{
+	// 	"list_private_teams",
+	// 	"authentication.permissions.list_private_teams.name",
+	// 	"authentication.permissions.list_private_teams.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_JOIN_PRIVATE_TEAMS = &Permission{
+	// 	"join_private_teams",
+	// 	"authentication.permissions.join_private_teams.name",
+	// 	"authentication.permissions.join_private_teams.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_LIST_TEAM_CHANNELS = &Permission{
+	// 	"list_team_channels",
+	// 	"authentication.permissions.list_team_channels.name",
+	// 	"authentication.permissions.list_team_channels.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_JOIN_PUBLIC_CHANNELS = &Permission{
+	// 	"join_public_channels",
+	// 	"authentication.permissions.join_public_channels.name",
+	// 	"authentication.permissions.join_public_channels.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_DELETE_PUBLIC_CHANNEL = &Permission{
+	// 	"delete_public_channel",
+	// 	"authentication.permissions.delete_public_channel.name",
+	// 	"authentication.permissions.delete_public_channel.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_DELETE_PRIVATE_CHANNEL = &Permission{
+	// 	"delete_private_channel",
+	// 	"authentication.permissions.delete_private_channel.name",
+	// 	"authentication.permissions.delete_private_channel.description",
+	// 	PermissionScopeChannel,
+	// }
 	PERMISSION_EDIT_OTHER_USERS = &Permission{
 		"edit_other_users",
 		"authentication.permissions.edit_other_users.name",
 		"authentication.permissions.edit_other_users.description",
 		PermissionScopeSystem,
 	}
-	PERMISSION_READ_CHANNEL = &Permission{
-		"read_channel",
-		"authentication.permissions.read_channel.name",
-		"authentication.permissions.read_channel.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_READ_PUBLIC_CHANNEL_GROUPS = &Permission{
-		"read_public_channel_groups",
-		"authentication.permissions.read_public_channel_groups.name",
-		"authentication.permissions.read_public_channel_groups.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_READ_PRIVATE_CHANNEL_GROUPS = &Permission{
-		"read_private_channel_groups",
-		"authentication.permissions.read_private_channel_groups.name",
-		"authentication.permissions.read_private_channel_groups.description",
-		PermissionScopeChannel,
-	}
-	PERMISSION_READ_PUBLIC_CHANNEL = &Permission{
-		"read_public_channel",
-		"authentication.permissions.read_public_channel.name",
-		"authentication.permissions.read_public_channel.description",
-		PermissionScopeTeam,
-	}
+	// PERMISSION_READ_CHANNEL = &Permission{
+	// 	"read_channel",
+	// 	"authentication.permissions.read_channel.name",
+	// 	"authentication.permissions.read_channel.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_READ_PUBLIC_CHANNEL_GROUPS = &Permission{
+	// 	"read_public_channel_groups",
+	// 	"authentication.permissions.read_public_channel_groups.name",
+	// 	"authentication.permissions.read_public_channel_groups.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_READ_PRIVATE_CHANNEL_GROUPS = &Permission{
+	// 	"read_private_channel_groups",
+	// 	"authentication.permissions.read_private_channel_groups.name",
+	// 	"authentication.permissions.read_private_channel_groups.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PERMISSION_READ_PUBLIC_CHANNEL = &Permission{
+	// 	"read_public_channel",
+	// 	"authentication.permissions.read_public_channel.name",
+	// 	"authentication.permissions.read_public_channel.description",
+	// 	PermissionScopeTeam,
+	// }
 	PERMISSION_ADD_REACTION = &Permission{
 		"add_reaction",
 		"authentication.permissions.add_reaction.name",
@@ -979,36 +986,36 @@ func initializePermissions() {
 		PermissionScopeSystem,
 	}
 
-	PERMISSION_REMOVE_USER_FROM_TEAM = &Permission{
-		"remove_user_from_team",
-		"authentication.permissions.remove_user_from_team.name",
-		"authentication.permissions.remove_user_from_team.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_CREATE_TEAM = &Permission{
-		"create_team",
-		"authentication.permissions.create_team.name",
-		"authentication.permissions.create_team.description",
-		PermissionScopeSystem,
-	}
-	PERMISSION_MANAGE_TEAM = &Permission{
-		"manage_team",
-		"authentication.permissions.manage_team.name",
-		"authentication.permissions.manage_team.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_IMPORT_TEAM = &Permission{
-		"import_team",
-		"authentication.permissions.import_team.name",
-		"authentication.permissions.import_team.description",
-		PermissionScopeTeam,
-	}
-	PERMISSION_VIEW_TEAM = &Permission{
-		"view_team",
-		"authentication.permissions.view_team.name",
-		"authentication.permissions.view_team.description",
-		PermissionScopeTeam,
-	}
+	// PERMISSION_REMOVE_USER_FROM_TEAM = &Permission{
+	// 	"remove_user_from_team",
+	// 	"authentication.permissions.remove_user_from_team.name",
+	// 	"authentication.permissions.remove_user_from_team.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_CREATE_TEAM = &Permission{
+	// 	"create_team",
+	// 	"authentication.permissions.create_team.name",
+	// 	"authentication.permissions.create_team.description",
+	// 	PermissionScopeSystem,
+	// }
+	// PERMISSION_MANAGE_TEAM = &Permission{
+	// 	"manage_team",
+	// 	"authentication.permissions.manage_team.name",
+	// 	"authentication.permissions.manage_team.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_IMPORT_TEAM = &Permission{
+	// 	"import_team",
+	// 	"authentication.permissions.import_team.name",
+	// 	"authentication.permissions.import_team.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PERMISSION_VIEW_TEAM = &Permission{
+	// 	"view_team",
+	// 	"authentication.permissions.view_team.name",
+	// 	"authentication.permissions.view_team.description",
+	// 	PermissionScopeTeam,
+	// }
 	PERMISSION_LIST_USERS_WITHOUT_TEAM = &Permission{
 		"list_users_without_team",
 		"authentication.permissions.list_users_without_team.name",
@@ -1081,12 +1088,12 @@ func initializePermissions() {
 		"authentication.permisssions.manage_jobs.description",
 		PermissionScopeSystem,
 	}
-	PERMISSION_VIEW_MEMBERS = &Permission{
-		"view_members",
-		"authentication.permisssions.view_members.name",
-		"authentication.permisssions.view_members.description",
-		PermissionScopeTeam,
-	}
+	// PERMISSION_VIEW_MEMBERS = &Permission{
+	// 	"view_members",
+	// 	"authentication.permisssions.view_members.name",
+	// 	"authentication.permisssions.view_members.description",
+	// 	PermissionScopeTeam,
+	// }
 	PERMISSION_INVITE_GUEST = &Permission{
 		"invite_guest",
 		"authentication.permissions.invite_guest.name",
@@ -2010,18 +2017,18 @@ func initializePermissions() {
 		PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE,
 		PERMISSION_MANAGE_ROLES,
 		PERMISSION_MANAGE_SYSTEM,
-		PERMISSION_CREATE_DIRECT_CHANNEL,
-		PERMISSION_CREATE_GROUP_CHANNEL,
-		PERMISSION_LIST_PUBLIC_TEAMS,
-		PERMISSION_JOIN_PUBLIC_TEAMS,
-		PERMISSION_LIST_PRIVATE_TEAMS,
-		PERMISSION_JOIN_PRIVATE_TEAMS,
+		// PERMISSION_CREATE_DIRECT_CHANNEL,
+		// PERMISSION_CREATE_GROUP_CHANNEL,
+		// PERMISSION_LIST_PUBLIC_TEAMS,
+		// PERMISSION_JOIN_PUBLIC_TEAMS,
+		// PERMISSION_LIST_PRIVATE_TEAMS,
+		// PERMISSION_JOIN_PRIVATE_TEAMS,
 		PERMISSION_EDIT_OTHER_USERS,
 		PERMISSION_READ_OTHER_USERS_TEAMS,
 		PERMISSION_GET_PUBLIC_LINK,
 		PERMISSION_MANAGE_OAUTH,
 		PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH,
-		PERMISSION_CREATE_TEAM,
+		// PERMISSION_CREATE_TEAM,
 		PERMISSION_LIST_USERS_WITHOUT_TEAM,
 		PERMISSION_CREATE_USER_ACCESS_TOKEN,
 		PERMISSION_READ_USER_ACCESS_TOKEN,
@@ -2083,15 +2090,15 @@ func initializePermissions() {
 
 	TeamScopedPermissions := []*Permission{
 		PERMISSION_INVITE_USER,
-		PERMISSION_ADD_USER_TO_TEAM,
+		// PERMISSION_ADD_USER_TO_TEAM,
 		PERMISSION_MANAGE_SLASH_COMMANDS,
 		PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS,
-		PERMISSION_CREATE_PUBLIC_CHANNEL,
-		PERMISSION_CREATE_PRIVATE_CHANNEL,
-		PERMISSION_MANAGE_TEAM_ROLES,
-		PERMISSION_LIST_TEAM_CHANNELS,
-		PERMISSION_JOIN_PUBLIC_CHANNELS,
-		PERMISSION_READ_PUBLIC_CHANNEL,
+		// PERMISSION_CREATE_PUBLIC_CHANNEL,
+		// PERMISSION_CREATE_PRIVATE_CHANNEL,
+		// PERMISSION_MANAGE_TEAM_ROLES,
+		// PERMISSION_LIST_TEAM_CHANNELS,
+		// PERMISSION_JOIN_PUBLIC_CHANNELS,
+		// PERMISSION_READ_PUBLIC_CHANNEL,
 		PERMISSION_MANAGE_INCOMING_WEBHOOKS,
 		PERMISSION_MANAGE_OUTGOING_WEBHOOKS,
 		PERMISSION_MANAGE_OTHERS_INCOMING_WEBHOOKS,
@@ -2099,28 +2106,28 @@ func initializePermissions() {
 		PERMISSION_CREATE_EMOJIS,
 		PERMISSION_DELETE_EMOJIS,
 		PERMISSION_DELETE_OTHERS_EMOJIS,
-		PERMISSION_REMOVE_USER_FROM_TEAM,
-		PERMISSION_MANAGE_TEAM,
-		PERMISSION_IMPORT_TEAM,
-		PERMISSION_VIEW_TEAM,
-		PERMISSION_VIEW_MEMBERS,
+		// PERMISSION_REMOVE_USER_FROM_TEAM,
+		// PERMISSION_MANAGE_TEAM,
+		// PERMISSION_IMPORT_TEAM,
+		// PERMISSION_VIEW_TEAM,
+		// PERMISSION_VIEW_MEMBERS,
 		PERMISSION_INVITE_GUEST,
 	}
 
 	ChannelScopedPermissions := []*Permission{
 		PERMISSION_USE_SLASH_COMMANDS,
-		PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
-		PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
-		PERMISSION_MANAGE_CHANNEL_ROLES,
-		PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
-		PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
-		PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
-		PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
-		PERMISSION_DELETE_PUBLIC_CHANNEL,
-		PERMISSION_DELETE_PRIVATE_CHANNEL,
-		PERMISSION_READ_CHANNEL,
-		PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
-		PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
+		// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
+		// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
+		// PERMISSION_MANAGE_CHANNEL_ROLES,
+		// PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+		// PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+		// PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+		// PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
+		// PERMISSION_DELETE_PUBLIC_CHANNEL,
+		// PERMISSION_DELETE_PRIVATE_CHANNEL,
+		// PERMISSION_READ_CHANNEL,
+		// PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
+		// PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
 		PERMISSION_ADD_REACTION,
 		PERMISSION_REMOVE_REACTION,
 		PERMISSION_REMOVE_OTHERS_REACTIONS,
@@ -2175,12 +2182,12 @@ func initializePermissions() {
 	}
 
 	ChannelModeratedPermissionsMap = map[string]string{
-		PERMISSION_CREATE_POST.Id:                    ChannelModeratedPermissions[0],
-		PERMISSION_ADD_REACTION.Id:                   ChannelModeratedPermissions[1],
-		PERMISSION_REMOVE_REACTION.Id:                ChannelModeratedPermissions[1],
-		PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id:  ChannelModeratedPermissions[2],
-		PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id: ChannelModeratedPermissions[2],
-		PERMISSION_USE_CHANNEL_MENTIONS.Id:           ChannelModeratedPermissions[3],
+		PERMISSION_CREATE_POST.Id:     ChannelModeratedPermissions[0],
+		PERMISSION_ADD_REACTION.Id:    ChannelModeratedPermissions[1],
+		PERMISSION_REMOVE_REACTION.Id: ChannelModeratedPermissions[1],
+		// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id:  ChannelModeratedPermissions[2],
+		// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id: ChannelModeratedPermissions[2],
+		PERMISSION_USE_CHANNEL_MENTIONS.Id: ChannelModeratedPermissions[3],
 	}
 }
 

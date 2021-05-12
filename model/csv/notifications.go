@@ -1,6 +1,9 @@
 package csv
 
-// func GetDefaultExportPayload(exportFile *ExportFile) {
-// 	userID := exportFile.UserID
-// 	userEmail := exportFile.
-// }
+func (e *ExportFile) GetDefaultExportPayload() {
+
+}
+
+func (e *ExportFile) SendExportDownloadLinkNotification() {
+
+}

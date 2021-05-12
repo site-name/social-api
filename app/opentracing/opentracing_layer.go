@@ -671,6 +671,21 @@ func (a *OpenTracingAppLayer) DisableUserAccessToken(token *account.UserAccessTo
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) DoAdvancedPermissionsMigration() {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoAdvancedPermissionsMigration")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	a.app.DoAdvancedPermissionsMigration()
+}
+
 func (a *OpenTracingAppLayer) DoAppMigrations() {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoAppMigrations")
@@ -684,6 +699,43 @@ func (a *OpenTracingAppLayer) DoAppMigrations() {
 
 	defer span.Finish()
 	a.app.DoAppMigrations()
+}
+
+func (a *OpenTracingAppLayer) DoPermissionsMigrations() error {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoPermissionsMigrations")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.DoPermissionsMigrations()
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) DoSystemConsoleRolesCreationMigration() {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoSystemConsoleRolesCreationMigration")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	a.app.DoSystemConsoleRolesCreationMigration()
 }
 
 func (a *OpenTracingAppLayer) DoubleCheckPassword(user *account.User, password string) *model.AppError {

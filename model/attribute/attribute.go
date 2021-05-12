@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/page"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -13,8 +14,8 @@ import (
 
 // max lengths for some fields
 const (
-	ATTRIBUTE_SLUG_MAX_LENGTH        = 250
-	ATTRIBUTE_NAME_MAX_LENGTH        = 255
+	ATTRIBUTE_SLUG_MAX_LENGTH        = 255
+	ATTRIBUTE_NAME_MAX_LENGTH        = 250
 	ATTRIBUTE_TYPE_MAX_LENGTH        = 50
 	ATTRIBUTE_UNIT_MAX_LENGTH        = 100
 	ATTRIBUTE_INPUT_TYPE_MAX_LENGTH  = 50
@@ -128,6 +129,13 @@ func (a *Attribute) PreSave() {
 	if a.AvailableInGrid == nil {
 		a.AvailableInGrid = model.NewBool(false)
 	}
+	a.Name = model.SanitizeUnicode(a.Name)
+	a.Slug = slug.Make(a.Name)
+}
+
+func (a *Attribute) PreUpdate() {
+	a.Name = model.SanitizeUnicode(a.Name)
+	a.Slug = slug.Make(a.Name)
 }
 
 func (a *Attribute) String() string {
@@ -152,6 +160,7 @@ const (
 
 type AttributeTranslation struct {
 	Id           string `json:"id"`
+	AttributeId  string `json:"attribute_id"`
 	LanguageCode string `json:"language_code"`
 	Name         string `json:"name"`
 }
@@ -164,6 +173,9 @@ func (a *AttributeTranslation) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(a.Id) {
 		return outer("id", nil)
+	}
+	if !model.IsValidId(a.AttributeId) {
+		return outer("attribute_id", nil)
 	}
 	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH {
 		return outer("name", &a.Id)

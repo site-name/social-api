@@ -5,10 +5,10 @@ import (
 )
 
 type AssignedPageAttributeValue struct {
-	Id           string `json:"id"`
-	ValueID      string `json:"value_id"`      // AttributeValue
-	AssignmentID string `json:"assignment_id"` // AssignedPageAttribute
-	*model.Sortable
+	Id             string `json:"id"`
+	ValueID        string `json:"value_id"`      // AttributeValue
+	AssignmentID   string `json:"assignment_id"` // AssignedPageAttribute
+	model.Sortable `db:"-"`
 }
 
 func (a *AssignedPageAttributeValue) IsValid() *model.AppError {
@@ -70,6 +70,10 @@ func (a *AssignedPageAttribute) IsValid() *model.AppError {
 	}
 
 	return nil
+}
+
+func (a *AssignedPageAttribute) ToJson() string {
+	return model.ModelToJson(a)
 }
 
 func (a *AssignedPageAttribute) PreSave() {

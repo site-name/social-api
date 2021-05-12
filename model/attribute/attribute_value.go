@@ -76,7 +76,6 @@ func (a *AttributeValue) PreSave() {
 
 func (a *AttributeValue) PreUpdate() {
 	a.Name = model.SanitizeUnicode(a.Name)
-	a.Slug = slug.Make(a.Name)
 }
 
 func (a *AttributeValue) ToJson() string {

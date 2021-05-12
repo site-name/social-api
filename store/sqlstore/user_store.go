@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/google/uuid"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
@@ -986,7 +985,7 @@ func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
 
 func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 	builtinRoles := model.MakeDefaultRoles()
-	lastUserId := strings.Repeat("0", len(uuid.Nil))
+	lastUserId := strings.Repeat("0", len(model.NewId()))
 
 	for {
 		var transaction *gorp.Transaction
