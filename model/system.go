@@ -4,8 +4,6 @@ import (
 	"io"
 
 	"math/big"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -55,16 +53,12 @@ type System struct {
 }
 
 func (o *System) ToJson() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(o)
 }
 
 func SystemFromJson(data io.Reader) *System {
 	var o System
-	err := json.JSON.NewDecoder(data).Decode(&o)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&o, data)
 	return &o
 }
 
@@ -114,16 +108,12 @@ type FileData struct {
 }
 
 func (sbs *ServerBusyState) ToJson() string {
-	b, _ := json.JSON.Marshal(sbs)
-	return string(b)
+	return ModelToJson(sbs)
 }
 
 func ServerBusyStateFromJson(r io.Reader) *ServerBusyState {
 	var sbs ServerBusyState
-	err := json.JSON.NewDecoder(r).Decode(&sbs)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&sbs, r)
 	return &sbs
 }
 
@@ -199,21 +189,17 @@ type WarnMetricStatus struct {
 }
 
 func (wms *WarnMetricStatus) ToJson() string {
-	b, _ := json.JSON.Marshal(wms)
-	return string(b)
+	return ModelToJson(wms)
 }
 
 func WarnMetricStatusFromJson(data io.Reader) *WarnMetricStatus {
 	var o WarnMetricStatus
-	if err := json.JSON.NewDecoder(data).Decode(&o); err != nil {
-		return nil
-	}
+	ModelFromJson(&o, data)
 	return &o
 }
 
 func MapWarnMetricStatusToJson(o map[string]*WarnMetricStatus) string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(&o)
 }
 
 type SendWarnMetricAck struct {
@@ -221,15 +207,11 @@ type SendWarnMetricAck struct {
 }
 
 func (swma *SendWarnMetricAck) ToJson() string {
-	b, _ := json.JSON.Marshal(swma)
-	return string(b)
+	return ModelToJson(swma)
 }
 
 func SendWarnMetricAckFromJson(r io.Reader) *SendWarnMetricAck {
 	var swma SendWarnMetricAck
-	err := json.JSON.NewDecoder(r).Decode(&swma)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&swma, r)
 	return &swma
 }

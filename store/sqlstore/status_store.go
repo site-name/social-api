@@ -21,7 +21,7 @@ func newSqlStatusStore(sqlStore *SqlStore) store.StatusStore {
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(model.Status{}, "Status").SetKeys(false, "UserId")
-		table.ColMap("UserId").SetMaxSize(26)
+		table.ColMap("UserId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Status").SetMaxSize(32)
 		table.ColMap("ActiveChannel").SetMaxSize(26)
 	}

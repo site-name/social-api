@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -938,7 +939,8 @@ func (a *App) DoPermissionsMigrations() error {
 		return err
 	}
 
-	for _, migration := range PermissionsMigrations {
+	for i, migration := range PermissionsMigrations {
+		fmt.Printf("-migration number: %d---------mig: %s-----------\n", i, migration.Key)
 		migMap, err := migration.Migration()
 		if err != nil {
 			return err
