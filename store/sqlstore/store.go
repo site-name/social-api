@@ -17,7 +17,6 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/db/migrations"
@@ -121,6 +120,7 @@ type SqlStoreStores struct {
 	// UserTermsOfService   store.UserTermsOfServiceStore
 	// linkMetadata         store.LinkMetadataStore
 	// sharedchannel        store.SharedChannelStore
+	address store.AddressStore
 }
 
 type SqlStore struct {
@@ -208,6 +208,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.scheme = newSqlSchemeStore(store)
 	// store.stores.group = newSqlGroupStore(store)
 	// store.stores.productNotices = newSqlProductNoticesStore(store)
+	store.stores.address = newSqlAddressStore(store)
 
 	err = store.GetMaster().CreateTablesIfNotExists()
 
@@ -260,6 +261,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.scheme.(*SqlSchemeStore).createIndexesIfNotExists()
 	// store.stores.remoteCluster.(*sqlRemoteClusterStore).createIndexesIfNotExists()
 	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
+	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -934,6 +936,10 @@ func (ss *SqlStore) LockToMaster() {
 
 func (ss *SqlStore) UnlockFromMaster() {
 	ss.lockedToMaster = false
+}
+
+func (ss *SqlStore) Address() store.AddressStore {
+	return ss.stores.address
 }
 
 // func (ss *SqlStore) Team() store.TeamStore {

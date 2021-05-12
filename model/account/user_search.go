@@ -3,7 +3,7 @@ package account
 import (
 	"io"
 
-	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/model"
 )
 
 const USER_SEARCH_MAX_LIMIT = 1000
@@ -30,17 +30,13 @@ type UserSearch struct {
 
 // ToJson convert a User to a json string
 func (u *UserSearch) ToJson() []byte {
-	b, _ := json.JSON.Marshal(u)
-	return b
+	return []byte(model.ModelToJson(u))
 }
 
 // UserSearchFromJson will decode the input and return a User
 func UserSearchFromJson(data io.Reader) *UserSearch {
 	var us UserSearch
-	err := json.JSON.NewDecoder(data).Decode(&us)
-	if err != nil {
-		return nil
-	}
+	model.ModelFromJson(&us, data)
 
 	if us.Limit == 0 {
 		us.Limit = USER_SEARCH_DEFAULT_LIMIT

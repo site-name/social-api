@@ -251,10 +251,10 @@ func (p *Payment) IsValid() *model.AppError {
 	if !model.IsValidEmail(p.BillingEmail) {
 		return outer("billing_email", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingFirstName) > account.FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
+	if utf8.RuneCountInString(p.BillingFirstName) > account.ADDRESS_FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
 		return outer("billing_first_name", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingLastName) > account.LAST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingLastName, model.LastName) {
+	if utf8.RuneCountInString(p.BillingLastName) > account.ADDRESS_LAST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingLastName, model.LastName) {
 		return outer("billing_last_name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {
@@ -269,10 +269,10 @@ func (p *Payment) IsValid() *model.AppError {
 	if utf8.RuneCountInString(p.BillingCity) > MAX_LENGTH_PAYMENT_COMMON_256 {
 		return outer("billing_city", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingCityArea) > account.CITY_AREA_MAX_LENGTH {
+	if utf8.RuneCountInString(p.BillingCityArea) > account.ADDRESS_CITY_AREA_MAX_LENGTH {
 		return outer("billing_city_area", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingPostalCode) > account.POSTAL_CODE_MAX_LENGTH {
+	if utf8.RuneCountInString(p.BillingPostalCode) > account.ADDRESS_POSTAL_CODE_MAX_LENGTH {
 		return outer("billing_postal_code", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCountryCode) > model.MAX_LENGTH_COUNTRY_CODE {

@@ -37,6 +37,12 @@ type Store interface {
 	TermsOfService() TermsOfServiceStore
 	ClusterDiscovery() ClusterDiscoveryStore
 	Audit() AuditStore
+
+	Address() AddressStore
+}
+
+type AddressStore interface {
+	Save(address *account.Address) (*account.Address, error)
 }
 
 type ClusterDiscoveryStore interface {

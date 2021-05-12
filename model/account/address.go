@@ -13,16 +13,16 @@ import (
 
 // length limits for address fields
 const (
-	FIRST_NAME_MAX_LENGTH     = 256
-	LAST_NAME_MAX_LENGTH      = 256
-	COMPANY_NAME_MAX_LENGTH   = 256
-	STREET_ADDRESS_MAX_LENGTH = 256
-	CITY_NAME_MAX_LENGTH      = 256
-	CITY_AREA_MAX_LENGTH      = 128
-	POSTAL_CODE_MAX_LENGTH    = 20
-	COUNTRY_MAX_LENGTH        = 3
-	COUNTRY_AREA_MAX_LENGTH   = 128
-	PHONE_MAX_LENGTH          = 20
+	ADDRESS_FIRST_NAME_MAX_LENGTH     = 256
+	ADDRESS_LAST_NAME_MAX_LENGTH      = 256
+	ADDRESS_COMPANY_NAME_MAX_LENGTH   = 256
+	ADDRESS_STREET_ADDRESS_MAX_LENGTH = 256
+	ADDRESS_CITY_NAME_MAX_LENGTH      = 256
+	ADDRESS_CITY_AREA_MAX_LENGTH      = 128
+	ADDRESS_POSTAL_CODE_MAX_LENGTH    = 20
+	ADDRESS_COUNTRY_MAX_LENGTH        = 3
+	ADDRESS_COUNTRY_AREA_MAX_LENGTH   = 128
+	ADDRESS_PHONE_MAX_LENGTH          = 20
 )
 
 // Address contains information belong to the address
@@ -41,7 +41,6 @@ type Address struct {
 	Phone          string  `json:"phone"`
 	CreateAt       int64   `json:"create_at,omitempty"`
 	UpdateAt       int64   `json:"update_at,omitempty"`
-	DeleteAt       int64   `json:"delete_at"`
 }
 
 func (add *Address) FullName() string {
@@ -114,31 +113,31 @@ func (a *Address) IsValid() *model.AppError {
 	if a.LastName == "" || !IsValidNamePart(a.LastName, model.LastName) {
 		return outer("last_name", &a.Id)
 	}
-	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > COMPANY_NAME_MAX_LENGTH {
+	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > ADDRESS_COMPANY_NAME_MAX_LENGTH {
 		return outer("company_name", &a.Id)
 	}
-	if a.StreetAddress1 != "" && utf8.RuneCountInString(a.StreetAddress1) > STREET_ADDRESS_MAX_LENGTH {
+	if a.StreetAddress1 != "" && utf8.RuneCountInString(a.StreetAddress1) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
 		return outer("street_address_1", &a.Id)
 	}
-	if a.StreetAddress2 != nil && utf8.RuneCountInString(*a.StreetAddress2) > STREET_ADDRESS_MAX_LENGTH {
+	if a.StreetAddress2 != nil && utf8.RuneCountInString(*a.StreetAddress2) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
 		return outer("street_address_2", &a.Id)
 	}
-	if utf8.RuneCountInString(a.City) > CITY_NAME_MAX_LENGTH {
+	if utf8.RuneCountInString(a.City) > ADDRESS_CITY_NAME_MAX_LENGTH {
 		return outer("city", &a.Id)
 	}
-	if a.CityArea != nil && utf8.RuneCountInString(*a.CityArea) > CITY_AREA_MAX_LENGTH {
+	if a.CityArea != nil && utf8.RuneCountInString(*a.CityArea) > ADDRESS_CITY_AREA_MAX_LENGTH {
 		return outer("city_area", &a.Id)
 	}
-	if utf8.RuneCountInString(a.PostalCode) > POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
+	if utf8.RuneCountInString(a.PostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
 		return outer("postal_code", &a.Id)
 	}
 	if _, ok := model.Countries[strings.ToUpper(a.Country)]; !ok {
 		return outer("country", &a.Id)
 	}
-	if utf8.RuneCountInString(a.CountryArea) > COUNTRY_AREA_MAX_LENGTH {
+	if utf8.RuneCountInString(a.CountryArea) > ADDRESS_COUNTRY_AREA_MAX_LENGTH {
 		return outer("country_area", &a.Id)
 	}
-	if utf8.RuneCountInString(a.Phone) > PHONE_MAX_LENGTH || !model.IsValidPhoneNumber(a.Phone, "") {
+	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH || !model.IsValidPhoneNumber(a.Phone, "") {
 		return outer("phone", &a.Id)
 	}
 
@@ -148,11 +147,11 @@ func (a *Address) IsValid() *model.AppError {
 // IsValidNamePart check if given first_name/last_name is valid or not
 func IsValidNamePart(s string, nameType model.NamePart) bool {
 	if nameType == model.FirstName {
-		if utf8.RuneCountInString(s) > FIRST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > ADDRESS_FIRST_NAME_MAX_LENGTH {
 			return false
 		}
 	} else if nameType == model.LastName {
-		if utf8.RuneCountInString(s) > LAST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > ADDRESS_LAST_NAME_MAX_LENGTH {
 			return false
 		}
 	}

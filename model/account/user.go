@@ -32,15 +32,11 @@ const (
 	USER_TIMEZONE_MAX_RUNES       = 256
 )
 
-type StringMap = map[string]string
-type ModelMetadata struct {
-	Id              string    `json:"string"`
-	Metadata        StringMap `json:"metadata"`
-	PrivateMetadata StringMap `json:"private_metadata"`
+// NOTE: don't delete this
+type StringMap map[string]string
 
-	// mutex is used for safe access concurrenly
-	mutex sync.RWMutex `db:"-"`
-}
+// Address contains information belong to the address
+// NOTE: don't delete this
 type Address_ struct {
 	Id             string  `json:"id"`
 	FirstName      string  `json:"first_name"`
@@ -51,12 +47,21 @@ type Address_ struct {
 	City           string  `json:"city"`
 	CityArea       *string `json:"city_area,omitempty"`
 	PostalCode     string  `json:"postal_code"`
-	Country        string  `json:"country"`
+	Country        string  `json:"country"` // one country name only
 	CountryArea    string  `json:"country_area"`
 	Phone          string  `json:"phone"`
 	CreateAt       int64   `json:"create_at,omitempty"`
 	UpdateAt       int64   `json:"update_at,omitempty"`
-	DeleteAt       int64   `json:"delete_at"`
+}
+
+// NOTE: don't delete this
+type ModelMetadata struct {
+	Id              string    `json:"string"`
+	Metadata        StringMap `json:"metadata"`
+	PrivateMetadata StringMap `json:"private_metadata"`
+
+	// mutex is used for safe access concurrenly
+	mutex sync.RWMutex `json:"-" db:"-"`
 }
 
 // User contains the details about the user.
@@ -97,7 +102,7 @@ type User struct {
 	TermsOfServiceId         string      `db:"-" json:"terms_of_service_id,omitempty"`
 	TermsOfServiceCreateAt   int64       `db:"-" json:"terms_of_service_create_at,omitempty"`
 	DisableWelcomeEmail      bool        `db:"-" json:"disable_welcome_email"`
-	*ModelMetadata           `db:"-"`    // user's ID will override model data's ID
+	ModelMetadata            `db:"-"`    // user's ID will override model data's ID
 }
 
 // UserMap is a map from a userId to a user object.

@@ -16,10 +16,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// const (
-// 	MaxGroupChannelsForProfiles = 50
-// )
-
 var (
 	UserSearchTypeNames_NO_FULL_NAME = []string{"Username", "Nickname"}
 	UserSearchTypeNames              = []string{"Username", "FirstName", "LastName", "Nickname"}

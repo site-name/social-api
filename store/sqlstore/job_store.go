@@ -228,7 +228,7 @@ func (jss SqlJobStore) GetNewestJobByStatusAndType(status string, jobType string
 }
 
 // GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType.
-// order by created time
+// order by creation time
 func (jss SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
 	query, args, err := jss.getQueryBuilder().
 		Select("*").
