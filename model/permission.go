@@ -13,6 +13,155 @@ type Permission struct {
 	Scope       string `json:"scope"`
 }
 
+// All permissions borrowed from saleor
+var (
+	PERMISSION_MANAGE_USERS                        *Permission
+	PERMISSION_MANAGE_STAFF                        *Permission
+	PERMISSION_MANAGE_APPS                         *Permission
+	PERMISSION_MANAGE_CHANNELS                     *Permission
+	PERMISSION_MANAGE_DISCOUNTS                    *Permission
+	PERMISSION_MANAGE_PLUGINS                      *Permission
+	PERMISSION_MANAGE_GIFT_CARD                    *Permission
+	PERMISSION_MANAGE_MENUS                        *Permission
+	PERMISSION_MANAGE_CHECKOUTS                    *Permission
+	PERMISSION_MANAGE_ORDERS                       *Permission
+	PERMISSION_MANAGE_PAGES                        *Permission
+	PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES    *Permission
+	PERMISSION_MANAGE_PRODUCTS                     *Permission
+	PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES *Permission
+	PERMISSION_MANAGE_SHIPPING                     *Permission
+	PERMISSION_MANAGE_SETTINGS                     *Permission
+	PERMISSION_MANAGE_TRANSLATIONS                 *Permission
+
+	SaleorPermissionEnumList []*Permission
+)
+
+// init all saleor's permissions
+func initializeSaleorPermission() {
+	PERMISSION_MANAGE_USERS = &Permission{
+		"MANAGE_USERS",
+		"account.manage_users.name",
+		"account.manage_users.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_STAFF = &Permission{
+		"MANAGE_STAFF",
+		"account.manage_staff.name",
+		"account.manage_staff.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_APPS = &Permission{
+		"MANAGE_APPS",
+		"app.manage_apps.name",
+		"app.manage_apps.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_CHANNELS = &Permission{
+		"MANAGE_CHANNELS",
+		"channel.manage_channels.name",
+		"channel.manage_channels.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_DISCOUNTS = &Permission{
+		"MANAGE_DISCOUNTS",
+		"discount.manage_discounts.name",
+		"discount.manage_discounts.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PLUGINS = &Permission{
+		"MANAGE_PLUGINS",
+		"plugins.manage_plugins.name",
+		"plugins.manage_plugins.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_GIFT_CARD = &Permission{
+		"MANAGE_GIFT_CARD",
+		"giftcard.manage_gift_card.name",
+		"giftcard.manage_gift_card.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_MENUS = &Permission{
+		"MANAGE_MENUS",
+		"menu.manage_menus.name",
+		"menu.manage_menus.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_CHECKOUTS = &Permission{
+		"MANAGE_CHECKOUTS",
+		"checkout.manage_checkouts.name",
+		"checkout.manage_checkouts.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_ORDERS = &Permission{
+		"MANAGE_ORDERS",
+		"orders.manage_orders.name",
+		"orders.manage_orders.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PAGES = &Permission{
+		"MANAGE_PAGES",
+		"page.manage_pages.name",
+		"page.manage_pages.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES = &Permission{
+		"MANAGE_PAGE_TYPES_AND_ATTRIBUTES",
+		"page.manage_page_types_and_attributes.name",
+		"page.manage_page_types_and_attributes.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PRODUCTS = &Permission{
+		"MANAGE_PRODUCTS",
+		"product.manage_products.name",
+		"product.manage_products.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES = &Permission{
+		"ANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+		"product.manage_product_types_and_attributes.name",
+		"product.manage_product_types_and_attributes.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_SHIPPING = &Permission{
+		"MANAGE_SHIPPING",
+		"shipping.manage_shipping.name",
+		"shipping.manage_shipping.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_SETTINGS = &Permission{
+		"MANAGE_SETTINGS",
+		"site.manage_settings.name",
+		"site.manage_settings.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_TRANSLATIONS = &Permission{
+		"MANAGE_TRANSLATIONS",
+		"site.manage_translations.name",
+		"site.manage_translations.description",
+		PermissionScopeSystem,
+	}
+
+	SaleorPermissionEnumList = []*Permission{
+		PERMISSION_MANAGE_USERS,
+		PERMISSION_MANAGE_STAFF,
+		PERMISSION_MANAGE_APPS,
+		PERMISSION_MANAGE_CHANNELS,
+		PERMISSION_MANAGE_DISCOUNTS,
+		PERMISSION_MANAGE_PLUGINS,
+		PERMISSION_MANAGE_GIFT_CARD,
+		PERMISSION_MANAGE_MENUS,
+		PERMISSION_MANAGE_CHECKOUTS,
+		PERMISSION_MANAGE_ORDERS,
+		PERMISSION_MANAGE_PAGES,
+		PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES,
+		PERMISSION_MANAGE_PRODUCTS,
+		PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES,
+		PERMISSION_MANAGE_SHIPPING,
+		PERMISSION_MANAGE_SETTINGS,
+		PERMISSION_MANAGE_TRANSLATIONS,
+	}
+}
+
 var PERMISSION_INVITE_USER *Permission
 
 // var PERMISSION_ADD_USER_TO_TEAM *Permission
@@ -2193,4 +2342,5 @@ func initializePermissions() {
 
 func init() {
 	initializePermissions()
+	initializeSaleorPermission()
 }
