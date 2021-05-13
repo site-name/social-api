@@ -7,6 +7,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/audit"
 )
 
@@ -38,7 +39,12 @@ type Store interface {
 	ClusterDiscovery() ClusterDiscoveryStore
 	Audit() AuditStore
 
+	App() App
 	Address() AddressStore
+}
+
+type App interface {
+	Save(app *app.App) (*app.App, error)
 }
 
 type AddressStore interface {
