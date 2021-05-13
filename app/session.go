@@ -184,6 +184,10 @@ func (a *App) RevokeSessionById(sessionID string) *model.AppError {
 	return a.RevokeSession(session)
 }
 
+// func (a *App) ClearSessionCacheForAllUsersSkipClusterSend() {
+// 	a.Srv().clearSessionCacheForAllUsersSkipClusterSend()
+// }
+
 func (a *App) RevokeSession(session *model.Session) *model.AppError {
 	// if session.IsOAuth {
 	// 	if err := a.RevokeAccessToken(session.Token); err != nil {

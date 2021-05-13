@@ -9,6 +9,7 @@ func (s *Server) invalidateCacheForUserSkipClusterSend(userID string) {
 
 func (s *Server) invalidateWebConnSessionCacheForUser(userID string) {
 	panic("not impl")
+	// TODO: fixme
 }
 
 func (s *Server) clearSessionCacheForUserSkipClusterSend(userID string) {

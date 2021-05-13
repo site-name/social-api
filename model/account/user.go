@@ -102,7 +102,7 @@ type User struct {
 	TermsOfServiceId         string      `db:"-" json:"terms_of_service_id,omitempty"`
 	TermsOfServiceCreateAt   int64       `db:"-" json:"terms_of_service_create_at,omitempty"`
 	DisableWelcomeEmail      bool        `db:"-" json:"disable_welcome_email"`
-	ModelMetadata            `db:"-"`    // user's ID will override model data's ID
+	ModelMetadata                        // user's ID will override model data's ID
 }
 
 // UserMap is a map from a userId to a user object.

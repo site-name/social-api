@@ -201,6 +201,7 @@ func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
 	// 	return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
 	// }
 	// return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
+	// TODO: fixme
 	panic("not implemented")
 }
 
