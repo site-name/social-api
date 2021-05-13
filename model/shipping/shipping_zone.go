@@ -1,6 +1,7 @@
 package shipping
 
 import (
+	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -14,13 +15,13 @@ const (
 )
 
 type ShippingZone struct {
-	Id                  string             `json:"id"`
-	Name                string             `json:"name"`
-	Contries            string             `json:"countries"` // multiple allowed
-	Default             *bool              `json:"default"`
-	Description         string             `json:"description"`
-	Channels            []*channel.Channel `json:"channels"`
-	model.ModelMetadata `db:"-"`
+	Id          string             `json:"id"`
+	Name        string             `json:"name"`
+	Contries    string             `json:"countries"` // multiple allowed
+	Default     *bool              `json:"default"`
+	Description string             `json:"description"`
+	Channels    []*channel.Channel `json:"channels" db:"-"`
+	model.ModelMetadata
 }
 
 func (s *ShippingZone) String() string {
@@ -57,12 +58,20 @@ func (s *ShippingZone) PreSave() {
 	if s.Default == nil {
 		s.Default = model.NewBool(false)
 	}
+	s.Description = model.SanitizeUnicode(s.Description)
 }
 
 func (s *ShippingZone) PreUpdate() {
 	s.Name = model.SanitizeUnicode(s.Name)
+	s.Description = model.SanitizeUnicode(s.Description)
 }
 
 func (s *ShippingZone) ToJson() string {
 	return model.ModelToJson(s)
+}
+
+func ShippingZoneFromJson(data io.Reader) *ShippingZone {
+	var s *ShippingZone
+	model.ModelFromJson(&s, data)
+	return s
 }

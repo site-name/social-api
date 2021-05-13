@@ -37,7 +37,7 @@ type ShippingMethod struct {
 	MaximumDeliveryDays *uint                           `json:"maximum_delivery_days"`
 	MinimumDeliveryDays *uint                           `json:"minimum_delivery_days"`
 	Description         *model.StringInterface          `json:"description"`
-	model.ModelMetadata `db:"-"`
+	model.ModelMetadata
 }
 
 func (s *ShippingMethod) String() string {

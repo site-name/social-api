@@ -16,6 +16,7 @@ import (
 
 type RetryLayer struct {
 	store.Store
+	AddressStore          store.AddressStore
 	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
@@ -28,6 +29,10 @@ type RetryLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *RetryLayer) Address() store.AddressStore {
+	return s.AddressStore
 }
 
 func (s *RetryLayer) Audit() store.AuditStore {
@@ -76,6 +81,11 @@ func (s *RetryLayer) User() store.UserStore {
 
 func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type RetryLayerAddressStore struct {
+	store.AddressStore
+	Root *RetryLayer
 }
 
 type RetryLayerAuditStore struct {
@@ -147,6 +157,26 @@ func isRepeatableError(err error) bool {
 		}
 	}
 	return false
+}
+
+func (s *RetryLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
+
+	tries := 0
+	for {
+		result, err := s.AddressStore.Save(address)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
 }
 
 func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
@@ -2750,6 +2780,7 @@ func New(childStore store.Store) *RetryLayer {
 		Store: childStore,
 	}
 
+	newStore.AddressStore = &RetryLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
 	newStore.AuditStore = &RetryLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

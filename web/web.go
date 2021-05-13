@@ -20,6 +20,7 @@ type Web struct {
 	MainRouter          *mux.Router
 }
 
+// New initializes web routes and returns web instance
 func New(config configservice.ConfigService, globalOptions app.AppOptionCreator, root *mux.Router) *Web {
 	slog.Debug("Initializing web routes")
 
@@ -33,7 +34,6 @@ func New(config configservice.ConfigService, globalOptions app.AppOptionCreator,
 	// web.InitWebhooks()
 	// web.InitSaml()
 	web.InitStatic()
-	web.InitGraphqlAPI()
 
 	return web
 }
@@ -43,7 +43,7 @@ func New(config configservice.ConfigService, globalOptions app.AppOptionCreator,
 // Map should be of minimum required browser version.
 // -1 means that the browser is not supported in any version.
 var browserMinimumSupported = map[string]int{
-	"BrowserIE":     12,
+	"BrowserIE":     11,
 	"BrowserSafari": 12,
 }
 

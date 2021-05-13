@@ -114,6 +114,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.Params = ParamsFromRquest(r)
 	c.Logger = c.App.Log()
 
+	// check if open tracing is enabled
 	if *c.App.Config().ServiceSettings.EnableOpenTracing {
 		span, ctx := tracing.StartRootSpanByContext(context.Background(), "web:ServeHTTP")
 		carrier := opentracing.HTTPHeadersCarrier(r.Header)
@@ -134,8 +135,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 
 		c.App.SetContext(ctx)
-		tmpSrv := app.Server{}
-		tmpSrv = *c.App.Srv()
+
+		tmpSrv := *c.App.Srv()
 		tmpSrv.Store = opentracinglayer.New(c.App.Srv().Store, ctx)
 		c.App.SetServer(&tmpSrv)
 		c.App = app_opentracing.NewOpenTracingAppLayer(c.App, ctx)

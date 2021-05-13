@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/api"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -93,7 +94,7 @@ func runServer(configStore *config.Store, usedPlatform bool, interruptChan chan 
 		slog.Warn("The platform binary has been deprecated, please switch to using the mattermost binary.")
 	}
 
-	// init static/api routes
+	api.Init(server, server.AppOptions, server.RootRouter)
 	web.New(server, server.AppOptions, server.RootRouter)
 
 	serverErr := server.Start()

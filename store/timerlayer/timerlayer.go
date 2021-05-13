@@ -17,6 +17,7 @@ import (
 type TimerLayer struct {
 	store.Store
 	Metrics               einterfaces.MetricsInterface
+	AddressStore          store.AddressStore
 	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
@@ -29,6 +30,10 @@ type TimerLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *TimerLayer) Address() store.AddressStore {
+	return s.AddressStore
 }
 
 func (s *TimerLayer) Audit() store.AuditStore {
@@ -77,6 +82,11 @@ func (s *TimerLayer) User() store.UserStore {
 
 func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type TimerLayerAddressStore struct {
+	store.AddressStore
+	Root *TimerLayer
 }
 
 type TimerLayerAuditStore struct {
@@ -137,6 +147,22 @@ type TimerLayerUserStore struct {
 type TimerLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
 	Root *TimerLayer
+}
+
+func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.Save(address)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
@@ -2289,6 +2315,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 		Metrics: metrics,
 	}
 
+	newStore.AddressStore = &TimerLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
 	newStore.AuditStore = &TimerLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

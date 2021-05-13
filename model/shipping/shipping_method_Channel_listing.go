@@ -13,11 +13,11 @@ type ShippingMethodChannelListing struct {
 	ShippingMethodID        string           `json:"shipping_method_id"`
 	ChannelID               string           `json:"channel_id"`
 	MinimumOrderPriceAmount *decimal.Decimal `json:"minimum_order_price_amount"`
-	MinimumOrderPrice       *model.Money     `db:"-"`
+	MinimumOrderPrice       *model.Money     `json:"minimum_order_price" db:"-"`
 	Currency                string           `json:"currency"`
 	MaximumOrderPriceAmount *decimal.Decimal `json:"maximum_order_price_amount"`
-	MaximumOrderPrice       *model.Money     `db:"-"`
-	Price                   *model.Money     `db:"-"`
+	MaximumOrderPrice       *model.Money     `json:"maximum_order_price" db:"-"`
+	Price                   *model.Money     `json:"price" db:"-"`
 	PriceAmount             *decimal.Decimal `json:"price_amount"`
 }
 

@@ -210,6 +210,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.productNotices = newSqlProductNoticesStore(store)
 	store.stores.address = newSqlAddressStore(store)
 
+	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
 
 	if err != nil {

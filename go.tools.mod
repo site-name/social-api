@@ -5,6 +5,7 @@ go 1.16
 require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.6.0 // indirect
 	git.apache.org/thrift.git v0.0.0-20180807212849-6e67faa92827 // indirect
+	github.com/99designs/gqlgen v0.13.0 // indirect
 	github.com/cznic/ql v1.2.0 // indirect
 	github.com/go-ini/ini v1.38.2 // indirect
 	github.com/golang-migrate/migrate/v4 v4.14.1 // indirect
@@ -21,6 +22,8 @@ require (
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
 	github.com/tinylib/msgp v1.1.5 // indirect
+	github.com/urfave/cli v1.20.0 // indirect
+	github.com/vektah/gqlparser v1.2.0 // indirect
 	github.com/vektra/mockery v1.1.2 // indirect
 	gopkg.in/ini.v1 v1.38.2 // indirect
 )

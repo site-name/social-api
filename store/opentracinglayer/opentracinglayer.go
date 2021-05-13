@@ -17,6 +17,7 @@ import (
 
 type OpenTracingLayer struct {
 	store.Store
+	AddressStore          store.AddressStore
 	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
@@ -29,6 +30,10 @@ type OpenTracingLayer struct {
 	TokenStore            store.TokenStore
 	UserStore             store.UserStore
 	UserAccessTokenStore  store.UserAccessTokenStore
+}
+
+func (s *OpenTracingLayer) Address() store.AddressStore {
+	return s.AddressStore
 }
 
 func (s *OpenTracingLayer) Audit() store.AuditStore {
@@ -77,6 +82,11 @@ func (s *OpenTracingLayer) User() store.UserStore {
 
 func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+type OpenTracingLayerAddressStore struct {
+	store.AddressStore
+	Root *OpenTracingLayer
 }
 
 type OpenTracingLayerAuditStore struct {
@@ -137,6 +147,24 @@ type OpenTracingLayerUserStore struct {
 type OpenTracingLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
 	Root *OpenTracingLayer
+}
+
+func (s *OpenTracingLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AddressStore.Save(address)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
@@ -2528,6 +2556,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 		Store: childStore,
 	}
 
+	newStore.AddressStore = &OpenTracingLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
 	newStore.AuditStore = &OpenTracingLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &OpenTracingLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

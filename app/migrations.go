@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	"github.com/sitename/sitename/model"
@@ -24,7 +23,6 @@ func (a *App) DoAdvancedPermissionsMigration() {
 
 	slog.Info("Migrating roles to database.")
 	roles := model.MakeDefaultRoles()
-	fmt.Println("roles:-------------", roles)
 
 	roles = util.SetRolePermissionsFromConfig(roles, a.Config(), true)
 

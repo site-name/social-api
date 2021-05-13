@@ -4,31 +4,17 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/extension"
-	"github.com/99designs/gqlgen/graphql/handler/lru"
-	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/sitename/sitename/graph/generated"
 )
 
 func NewHandler(interface{}) http.Handler {
-	c := generated.Config{
+	c := Config{
 		Resolvers: &Resolver{
 			// app: app,
 		},
 	}
 
-	srv := handler.New(generated.NewExecutableSchema(c))
-	srv.AddTransport(transport.Options{})
-	srv.AddTransport(transport.GET{})
-	srv.AddTransport(transport.POST{})
-	srv.AddTransport(transport.MultipartForm{})
-
-	srv.SetQueryCache(lru.New(1000))
-
-	srv.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New(100),
-	})
+	srv := handler.NewDefaultServer(NewExecutableSchema(c))
 
 	return srv
 }
