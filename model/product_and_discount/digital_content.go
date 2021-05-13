@@ -30,7 +30,7 @@ type DigitalContent struct {
 	ContentFile          string  `json:"content_file"`
 	MaxDownloads         *uint16 `json:"max_downloads"`
 	UrlValidDays         *uint16 `json:"url_valid_days"`
-	*model.ModelMetadata `db:"-"`
+	model.ModelMetadata
 }
 
 func (d *DigitalContent) IsValid() *model.AppError {

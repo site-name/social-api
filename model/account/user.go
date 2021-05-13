@@ -56,7 +56,7 @@ type Address_ struct {
 
 // NOTE: don't delete this
 type ModelMetadata struct {
-	Id              string    `json:"string"`
+	Id              string    `json:"string,omitempty"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
 
@@ -69,17 +69,17 @@ type ModelMetadata struct {
 // please run make gen-serialized.
 type User struct {
 	Id                       string      `json:"id"`
-	DefaultShippingAddressID string      `json:"default_shipping_address,omitempty"`
-	DefaultBillingAddressID  string      `json:"default_billing_address,omitempty"`
+	Email                    string      `json:"email"`
 	Username                 string      `json:"username"`
+	FirstName                string      `json:"first_name"`
+	LastName                 string      `json:"last_name"`
+	DefaultShippingAddressID *string     `json:"default_shipping_address,omitempty"`
+	DefaultBillingAddressID  *string     `json:"default_billing_address,omitempty"`
 	Password                 string      `json:"password,omitempty"`
 	AuthData                 *string     `json:"auth_data,omitempty"`
 	AuthService              string      `json:"auth_service"`
-	Email                    string      `json:"email"`
 	EmailVerified            bool        `json:"email_verified,omitempty"`
 	Nickname                 string      `json:"nickname"`
-	FirstName                string      `json:"first_name"`
-	LastName                 string      `json:"last_name"`
 	Roles                    string      `json:"roles"`
 	Props                    StringMap   `json:"props,omitempty"`
 	NotifyProps              StringMap   `json:"notify_props,omitempty"`
@@ -95,7 +95,7 @@ type User struct {
 	DeleteAt                 int64       `json:"delete_at"`
 	IsStaff                  bool        `json:"is_staff"`
 	IsActive                 bool        `json:"is_active"`
-	Note                     string      `json:"note"`
+	Note                     *string     `json:"note"`
 	Addresses                []*Address_ `json:"addresses" db:"-"`
 	JwtTokenKey              string      `json:"jwt_token_key"`
 	LastActivityAt           int64       `db:"-" json:"last_activity_at,omitempty"`

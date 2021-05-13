@@ -24,8 +24,8 @@ type Category struct {
 	ParentID           string  `json:"parent_id"`
 	BackgroundImage    *string `json:"background_image"`
 	BackgroundImageAlt string  `json:"background_image_alt"`
-	*seo.Seo
-	*model.ModelMetadata
+	seo.Seo
+	model.ModelMetadata
 }
 
 func (c *Category) String() string {

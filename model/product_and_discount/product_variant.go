@@ -18,17 +18,17 @@ const (
 )
 
 type ProductVariant struct {
-	Id                   string                 `json:"id"`
-	Name                 string                 `json:"name"`
-	ProductID            string                 `json:"product_id"`
-	Sku                  string                 `json:"sku"`
-	Weight               *float32               `json:"weight"`
-	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
-	TrackInventory       *bool                  `json:"track_inventory"`
-	Medias               []*ProductMedia        `json:"medias" db:"-"`
-	Product              *Product               `json:"product" db:"-"`
-	*model.Sortable      `db:"-"`
-	*model.ModelMetadata `db:"-"`
+	Id             string                 `json:"id"`
+	Name           string                 `json:"name"`
+	ProductID      string                 `json:"product_id"`
+	Sku            string                 `json:"sku"`
+	Weight         *float32               `json:"weight"`
+	WeightUnit     measurement.WeightUnit `json:"weight_unit"`
+	TrackInventory *bool                  `json:"track_inventory"`
+	Medias         []*ProductMedia        `json:"medias" db:"-"`
+	Product        *Product               `json:"product" db:"-"`
+	model.Sortable
+	model.ModelMetadata
 }
 
 func (p *ProductVariant) IsValid() *model.AppError {

@@ -26,8 +26,8 @@ type Collection struct {
 	BackgroundImage    *model.FileInfo `json:"background_image"`
 	BackgroundImageAlt string          `json:"background_image_alt"`
 	Description        *string         `json:"description"`
-	*model.ModelMetadata
-	*seo.Seo
+	model.ModelMetadata
+	seo.Seo
 }
 
 func (c *Collection) String() string {

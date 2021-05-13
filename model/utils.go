@@ -175,7 +175,6 @@ func CreateAppErrorForModel(format, detailKey, where string) func(fieldName stri
 func ModelToJson(model interface{}) string {
 	bytes, err := json.JSON.Marshal(&model)
 	if err != nil {
-		slog.Error("Error encoding model", slog.Any("type", fmt.Sprintf("%T", model)))
 		return ""
 	}
 	return string(bytes)
@@ -184,12 +183,9 @@ func ModelToJson(model interface{}) string {
 // Decodes json string into model.
 //
 // If decoding process encounter error, model will be nil
-func ModelFromJson(model interface{}, data io.Reader) {
+func ModelFromJson(model interface{}, data io.Reader) error {
 	err := json.JSON.NewDecoder(data).Decode(&model)
-	if err != nil {
-		slog.Error("Error decoding json", slog.String("error", err.Error()))
-		model = nil
-	}
+	return err
 }
 
 func (a *AppError) ToJson() string {

@@ -35,12 +35,25 @@ func TestModelToJson(t *testing.T) {
 	}
 	res := ModelToJson(&model)
 	fmt.Println(res)
+
+	m := map[string]string{
+		"one": "1",
+		"two": "2",
+	}
+	res = ModelToJson(&m)
+	fmt.Println(res)
 }
 
 func TestModelFromJson(t *testing.T) {
-	// var text = `{"id":"jshd849034bnkjhruieyr","Token":"jhd97847546565","create_at":1620271145022,"expires_at":0,"last_activity_at":0,"user_id":"","device_id":"","roles":"","is_oauth":false,"expired_notify":false,"props":null,"local":false}`
+	var text = `{"id":"jshd849034bnkjhruieyr","Token":"jhd97847546565","create_at":1620271145022,"expires_at":0,"last_activity_at":0,"user_id":"","device_id":"","roles":"","is_oauth":false,"expired_notify":false,"props":null,"local":false}`
 	var ses *Session
-	ModelFromJson(&ses, strings.NewReader("sidu3874@"))
+	ModelFromJson(&ses, strings.NewReader(text))
 
 	fmt.Println(ses)
+
+	text = `{"one":"1","two":"2"}`
+	var m map[string]string
+	ModelFromJson(&m, strings.NewReader(text))
+
+	fmt.Println(m)
 }

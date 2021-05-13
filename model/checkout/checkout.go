@@ -52,7 +52,7 @@ type Checkout struct {
 	User                   *account.User        `db:"-" json:"-"`
 	CheckoutLines          []*CheckoutLine      `db:"-" json:"checkout_lines"`
 	Payments               []*payment.Payment   `json:"payments" db:"-"`
-	model.ModelMetadata    `db:"-"`
+	model.ModelMetadata
 }
 
 func (c *Checkout) IsValid() *model.AppError {

@@ -70,7 +70,7 @@ type Attribute struct {
 	FilterableInDashboard    *bool                               `json:"filterable_in_dashboard"`
 	StorefrontSearchPosition int                                 `json:"storefront_search_position"`
 	AvailableInGrid          *bool                               `json:"available_in_grid"`
-	model.ModelMetadata      `db:"-"`
+	model.ModelMetadata
 }
 
 func (a *Attribute) IsValid() *model.AppError {

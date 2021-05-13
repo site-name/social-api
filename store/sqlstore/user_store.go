@@ -1,6 +1,7 @@
 package sqlstore
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -12,7 +13,6 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,33 +40,17 @@ func newSqlUserStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) s
 	}
 
 	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
-	us.usersQuery = us.getQueryBuilder().
-		Select(
-			"u.Id",
-			"u.CreateAt",
-			"u.UpdateAt",
-			"u.DeleteAt",
-			"u.Username",
-			"u.Password",
-			"u.AuthData",
-			"u.AuthService",
-			"u.Email",
-			"u.EmailVerified",
-			"u.Nickname",
-			"u.FirstName",
-			"u.LastName",
-			"u.Roles",
-			"u.Props",
-			"u.NotifyProps",
-			"u.LastPasswordUpdate",
-			"u.LastPictureUpdate",
-			"u.FailedAttempts",
-			"u.Locale",
-			"u.Timezone",
-			"u.MfaActive",
-			"u.MfaSecret",
-			"u.DefaultShippingAddressID",
-			"u.DefaultBillingAddressID",
+	us.usersQuery = us.
+		getQueryBuilder().
+		Select( // select all the fields of user model
+			"u.Id", "u.Email", "u.Username", "u.FirstName", "u.LastName",
+			"u.DefaultShippingAddressID", "u.DefaultBillingAddressID", "u.Password", "u.AuthData", "u.AuthService",
+			"u.EmailVerified", "u.Nickname", "u.Roles", "u.Props", "u.NotifyProps",
+			"u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts", "u.Locale", "u.Timezone",
+			"u.MfaActive", "u.MfaSecret", "u.CreateAt", "u.UpdateAt", "u.DeleteAt",
+			"u.IsStaff", "u.IsActive", "u.Note", "u.Addresses", "u.JwtTokenKey",
+			"u.LastActivityAt", "u.TermsOfServiceId", "u.TermsOfServiceCreateAt", "u.DisableWelcomeEmail",
+			"u.Metadata", "u.PrivateMetadata",
 		).
 		From("Users u")
 
@@ -449,31 +433,16 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 	var user account.User
 	var props, notifyProps, timezone []byte
 	err = row.Scan(
-		&user.Id,
-		&user.CreateAt,
-		&user.UpdateAt,
-		&user.DeleteAt,
-		&user.Username,
-		&user.Password,
-		&user.AuthData,
-		&user.AuthService,
-		&user.Email,
-		&user.EmailVerified,
-		&user.Nickname,
-		&user.FirstName,
-		&user.LastName,
-		&user.Roles,
-		&props,
-		&notifyProps,
-		&user.LastPasswordUpdate,
-		&user.LastPictureUpdate,
-		&user.FailedAttempts,
-		&user.Locale,
-		&timezone,
-		&user.MfaActive,
-		&user.MfaSecret,
-		&user.DefaultBillingAddressID,
-		&user.DefaultShippingAddressID,
+		&user.Id, &user.Email, &user.Username, &user.FirstName, &user.LastName,
+		&user.DefaultShippingAddressID, &user.DefaultBillingAddressID, &user.Password, &user.AuthData, &user.AuthService,
+		&user.EmailVerified, &user.Nickname, &user.Roles,
+		&props, &notifyProps, // non primitive types
+		&user.LastPasswordUpdate, &user.LastPictureUpdate, &user.FailedAttempts, &user.Locale,
+		&timezone, // non primitive types
+		&user.MfaActive, &user.MfaSecret, &user.CreateAt, &user.UpdateAt, &user.DeleteAt,
+		&user.IsStaff, &user.IsActive, &user.Note, &user.Addresses, &user.JwtTokenKey,
+		&user.LastActivityAt, &user.TermsOfServiceId, &user.TermsOfServiceCreateAt, &user.DisableWelcomeEmail,
+		&user.Metadata, &user.PrivateMetadata,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -481,13 +450,13 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 		}
 		return nil, errors.Wrapf(err, "failed to get User with userId=%s", id)
 	}
-	if err = json.JSON.Unmarshal(props, &user.Props); err != nil {
+	if err = model.ModelFromJson(&user.Props, bytes.NewReader(props)); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user props")
 	}
-	if err = json.JSON.Unmarshal(notifyProps, &user.NotifyProps); err != nil {
+	if err = model.ModelFromJson(&user.NotifyProps, bytes.NewReader(notifyProps)); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user notify props")
 	}
-	if err = json.JSON.Unmarshal(timezone, &user.Timezone); err != nil {
+	if err = model.ModelFromJson(&user.Timezone, bytes.NewReader(timezone)); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user timezone")
 	}
 

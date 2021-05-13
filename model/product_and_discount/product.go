@@ -34,8 +34,8 @@ type Product struct {
 	Medias               []*ProductMedia        `json:"medias" db:"-"`
 	ProductType          *ProductType           `db:"-"`
 	Variants             []*ProductVariant      `db:"-"`
-	*model.ModelMetadata `db:"-"`
-	*seo.Seo             `db:"-"`
+	model.ModelMetadata
+	seo.Seo
 }
 
 func (p *Product) PlainTextDescription() string {

@@ -33,6 +33,7 @@ func New(config configservice.ConfigService, globalOptions app.AppOptionCreator,
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
+	NewAPI(config, globalOptions, root) // api routes must be registered before static routes
 	web.InitStatic()
 
 	return web

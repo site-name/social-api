@@ -71,7 +71,7 @@ type Server struct {
 	// RootRouter is the starting point for all HTTP requests to the server.
 	RootRouter    *mux.Router
 	metricsRouter *mux.Router
-	LocalRouter   *mux.Router
+	// LocalRouter   *mux.Router
 
 	sqlStore                           *sqlstore.SqlStore
 	Store                              store.Store
@@ -144,14 +144,14 @@ type Server struct {
 
 func NewServer(options ...Option) (*Server, error) {
 	rootRouter := mux.NewRouter()
-	localRouter := mux.NewRouter()
+	// localRouter := mux.NewRouter()
 
 	s := &Server{
 		goroutineExitSignal: make(chan struct{}, 1),
 		RootRouter:          rootRouter,
 		hashSeed:            maphash.MakeSeed(),
 		uploadLockMap:       map[string]bool{},
-		LocalRouter:         localRouter,
+		// LocalRouter:         localRouter,
 	}
 
 	for _, option := range options {
@@ -891,7 +891,7 @@ func (s *Server) Shutdown() {
 	// }
 
 	s.StopHTTPServer()
-	s.stopLocalModeServer()
+	// s.stopLocalModeServer()
 
 	// Push notification hub needs to be shutdown after HTTP server
 	// to prevent stray requests from generating a push notification after it's shut down.
@@ -1203,48 +1203,48 @@ func (s *Server) Start() error {
 		close(s.didFinishListen)
 	}()
 
-	if *s.Config().ServiceSettings.EnableLocalMode {
-		if err := s.startLocalModeServer(); err != nil {
-			slog.Critical(err.Error())
-		}
-	}
+	// if *s.Config().ServiceSettings.EnableLocalMode {
+	// 	if err := s.startLocalModeServer(); err != nil {
+	// 		slog.Critical(err.Error())
+	// 	}
+	// }
 
 	return nil
 }
 
-func (s *Server) startLocalModeServer() error {
-	s.localModeServer = &http.Server{
-		Handler: s.LocalRouter,
-	}
+// func (s *Server) startLocalModeServer() error {
+// 	s.localModeServer = &http.Server{
+// 		Handler: s.LocalRouter,
+// 	}
 
-	socket := *s.Config().ServiceSettings.LocalModeSocketLocation
-	if err := os.RemoveAll(socket); err != nil {
-		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-	}
+// 	socket := *s.Config().ServiceSettings.LocalModeSocketLocation
+// 	if err := os.RemoveAll(socket); err != nil {
+// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+// 	}
 
-	unixListener, err := net.Listen("unix", socket)
-	if err != nil {
-		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-	}
-	if err = os.Chmod(socket, 0600); err != nil {
-		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-	}
+// 	unixListener, err := net.Listen("unix", socket)
+// 	if err != nil {
+// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+// 	}
+// 	if err = os.Chmod(socket, 0600); err != nil {
+// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
+// 	}
 
-	go func() {
-		err = s.localModeServer.Serve(unixListener)
-		if err != nil && err != http.ErrServerClosed {
-			slog.Critical("Error starting unix socket server", slog.Err(err))
-		}
-	}()
+// 	go func() {
+// 		err = s.localModeServer.Serve(unixListener)
+// 		if err != nil && err != http.ErrServerClosed {
+// 			slog.Critical("Error starting unix socket server", slog.Err(err))
+// 		}
+// 	}()
 
-	return nil
-}
+// 	return nil
+// }
 
-func (s *Server) stopLocalModeServer() {
-	if s.localModeServer != nil {
-		s.localModeServer.Close()
-	}
-}
+// func (s *Server) stopLocalModeServer() {
+// 	if s.localModeServer != nil {
+// 		s.localModeServer.Close()
+// 	}
+// }
 
 func (a *App) OriginChecker() func(*http.Request) bool {
 	if allowed := *a.Config().ServiceSettings.AllowCorsFrom; allowed != "" {
