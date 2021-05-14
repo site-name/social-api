@@ -39,11 +39,11 @@ type Store interface {
 	ClusterDiscovery() ClusterDiscoveryStore
 	Audit() AuditStore
 
-	App() App
+	App() AppStore
 	Address() AddressStore
 }
 
-type App interface {
+type AppStore interface {
 	Save(app *app.App) (*app.App, error)
 }
 

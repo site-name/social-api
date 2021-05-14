@@ -34,6 +34,9 @@ var (
 	PERMISSION_MANAGE_TRANSLATIONS                 *Permission
 
 	SaleorPermissionEnumList []*Permission
+	// SaleorPermissionEnumMap has keys of permission ids,
+	// values of permission names
+	SaleorPermissionEnumMap map[string]string
 )
 
 // init all saleor's permissions
@@ -159,6 +162,10 @@ func initializeSaleorPermission() {
 		PERMISSION_MANAGE_SHIPPING,
 		PERMISSION_MANAGE_SETTINGS,
 		PERMISSION_MANAGE_TRANSLATIONS,
+	}
+
+	for _, perm := range SaleorPermissionEnumList {
+		SaleorPermissionEnumMap[perm.Id] = perm.Name
 	}
 }
 

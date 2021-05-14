@@ -121,6 +121,7 @@ type SqlStoreStores struct {
 	// linkMetadata         store.LinkMetadataStore
 	// sharedchannel        store.SharedChannelStore
 	address store.AddressStore
+	app     store.AppStore
 }
 
 type SqlStore struct {
@@ -209,6 +210,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.group = newSqlGroupStore(store)
 	// store.stores.productNotices = newSqlProductNoticesStore(store)
 	store.stores.address = newSqlAddressStore(store)
+	store.stores.app = newAppSqlStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -263,6 +265,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// store.stores.remoteCluster.(*sqlRemoteClusterStore).createIndexesIfNotExists()
 	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
 	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
+	store.stores.app.(*AppSqlStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -941,6 +944,10 @@ func (ss *SqlStore) UnlockFromMaster() {
 
 func (ss *SqlStore) Address() store.AddressStore {
 	return ss.stores.address
+}
+
+func (ss *SqlStore) App() store.AppStore {
+	return ss.stores.app
 }
 
 // func (ss *SqlStore) Team() store.TeamStore {

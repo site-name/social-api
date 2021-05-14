@@ -9,8 +9,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/graph/generated"
 	"github.com/sitename/sitename/graph/model"
-	"github.com/sitename/sitename/graph/mutations"
 )
 
 func (r *mutationResolver) WebhookCreate(ctx context.Context, input model.WebhookCreateInput) (*model.WebhookCreate, error) {
@@ -850,7 +850,7 @@ func (r *mutationResolver) AppTokenVerify(ctx context.Context, token string) (*m
 }
 
 func (r *mutationResolver) AppInstall(ctx context.Context, input model.AppInstallInput) (*model.AppInstall, error) {
-	panic(fmt.Errorf("not implemented"))
+	return AppInstall(r.Resolver, ctx, input)
 }
 
 func (r *mutationResolver) AppRetryInstall(ctx context.Context, activateAfterInstallation *bool, id string) (*model.AppRetryInstall, error) {
@@ -862,7 +862,7 @@ func (r *mutationResolver) AppDeleteFailedInstallation(ctx context.Context, id s
 }
 
 func (r *mutationResolver) AppFetchManifest(ctx context.Context, manifestURL string) (*model.AppFetchManifest, error) {
-	return mutations.AppFetchManifest(ctx, manifestURL)
+	return AppFetchManifest(r.Resolver, ctx, manifestURL)
 }
 
 func (r *mutationResolver) AppActivate(ctx context.Context, id string) (*model.AppActivate, error) {
@@ -1118,7 +1118,7 @@ func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, c
 }
 
 func (r *queryResolver) Products(ctx context.Context, filter *model.ProductFilterInput, sortBy *model.ProductOrder, channel *string, before *string, after *string, first *int, last *int) (*model.ProductCountableConnection, error) {
-	panic("not implemented")
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) ProductType(ctx context.Context, id string) (*model.ProductType, error) {
@@ -1325,11 +1325,11 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*m
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

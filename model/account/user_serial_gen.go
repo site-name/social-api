@@ -579,88 +579,64 @@ func (z *ModelMetadata) DecodeMsg(dc *msgp.Reader) (err error) {
 				return
 			}
 		case "Metadata":
-			if dc.IsNil() {
-				err = dc.ReadNil()
-				if err != nil {
-					err = msgp.WrapError(err, "Metadata")
-					return
-				}
-				z.Metadata = nil
-			} else {
-				if z.Metadata == nil {
-					z.Metadata = new(StringMap)
-				}
-				var zb0002 uint32
-				zb0002, err = dc.ReadMapHeader()
-				if err != nil {
-					err = msgp.WrapError(err, "Metadata")
-					return
-				}
-				if *z.Metadata == nil {
-					*z.Metadata = make(StringMap, zb0002)
-				} else if len(*z.Metadata) > 0 {
-					for key := range *z.Metadata {
-						delete(*z.Metadata, key)
-					}
-				}
-				for zb0002 > 0 {
-					zb0002--
-					var za0001 string
-					var za0002 string
-					za0001, err = dc.ReadString()
-					if err != nil {
-						err = msgp.WrapError(err, "Metadata")
-						return
-					}
-					za0002, err = dc.ReadString()
-					if err != nil {
-						err = msgp.WrapError(err, "Metadata", za0001)
-						return
-					}
-					*z.Metadata[za0001] = za0002
+			var zb0002 uint32
+			zb0002, err = dc.ReadMapHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "Metadata")
+				return
+			}
+			if z.Metadata == nil {
+				z.Metadata = make(StringMap, zb0002)
+			} else if len(z.Metadata) > 0 {
+				for key := range z.Metadata {
+					delete(z.Metadata, key)
 				}
 			}
+			for zb0002 > 0 {
+				zb0002--
+				var za0001 string
+				var za0002 string
+				za0001, err = dc.ReadString()
+				if err != nil {
+					err = msgp.WrapError(err, "Metadata")
+					return
+				}
+				za0002, err = dc.ReadString()
+				if err != nil {
+					err = msgp.WrapError(err, "Metadata", za0001)
+					return
+				}
+				z.Metadata[za0001] = za0002
+			}
 		case "PrivateMetadata":
-			if dc.IsNil() {
-				err = dc.ReadNil()
+			var zb0003 uint32
+			zb0003, err = dc.ReadMapHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "PrivateMetadata")
+				return
+			}
+			if z.PrivateMetadata == nil {
+				z.PrivateMetadata = make(StringMap, zb0003)
+			} else if len(z.PrivateMetadata) > 0 {
+				for key := range z.PrivateMetadata {
+					delete(z.PrivateMetadata, key)
+				}
+			}
+			for zb0003 > 0 {
+				zb0003--
+				var za0003 string
+				var za0004 string
+				za0003, err = dc.ReadString()
 				if err != nil {
 					err = msgp.WrapError(err, "PrivateMetadata")
 					return
 				}
-				z.PrivateMetadata = nil
-			} else {
-				if z.PrivateMetadata == nil {
-					z.PrivateMetadata = new(StringMap)
-				}
-				var zb0003 uint32
-				zb0003, err = dc.ReadMapHeader()
+				za0004, err = dc.ReadString()
 				if err != nil {
-					err = msgp.WrapError(err, "PrivateMetadata")
+					err = msgp.WrapError(err, "PrivateMetadata", za0003)
 					return
 				}
-				if *z.PrivateMetadata == nil {
-					*z.PrivateMetadata = make(StringMap, zb0003)
-				} else if len(*z.PrivateMetadata) > 0 {
-					for key := range *z.PrivateMetadata {
-						delete(*z.PrivateMetadata, key)
-					}
-				}
-				for zb0003 > 0 {
-					zb0003--
-					var za0003 string
-					var za0004 string
-					za0003, err = dc.ReadString()
-					if err != nil {
-						err = msgp.WrapError(err, "PrivateMetadata")
-						return
-					}
-					za0004, err = dc.ReadString()
-					if err != nil {
-						err = msgp.WrapError(err, "PrivateMetadata", za0003)
-						return
-					}
-					*z.PrivateMetadata[za0003] = za0004
-				}
+				z.PrivateMetadata[za0003] = za0004
 			}
 		default:
 			err = dc.Skip()
@@ -691,28 +667,21 @@ func (z *ModelMetadata) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	if z.Metadata == nil {
-		err = en.WriteNil()
-		if err != nil {
-			return
-		}
-	} else {
-		err = en.WriteMapHeader(uint32(len(*z.Metadata)))
+	err = en.WriteMapHeader(uint32(len(z.Metadata)))
+	if err != nil {
+		err = msgp.WrapError(err, "Metadata")
+		return
+	}
+	for za0001, za0002 := range z.Metadata {
+		err = en.WriteString(za0001)
 		if err != nil {
 			err = msgp.WrapError(err, "Metadata")
 			return
 		}
-		for za0001, za0002 := range *z.Metadata {
-			err = en.WriteString(za0001)
-			if err != nil {
-				err = msgp.WrapError(err, "Metadata")
-				return
-			}
-			err = en.WriteString(za0002)
-			if err != nil {
-				err = msgp.WrapError(err, "Metadata", za0001)
-				return
-			}
+		err = en.WriteString(za0002)
+		if err != nil {
+			err = msgp.WrapError(err, "Metadata", za0001)
+			return
 		}
 	}
 	// write "PrivateMetadata"
@@ -720,28 +689,21 @@ func (z *ModelMetadata) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	if z.PrivateMetadata == nil {
-		err = en.WriteNil()
-		if err != nil {
-			return
-		}
-	} else {
-		err = en.WriteMapHeader(uint32(len(*z.PrivateMetadata)))
+	err = en.WriteMapHeader(uint32(len(z.PrivateMetadata)))
+	if err != nil {
+		err = msgp.WrapError(err, "PrivateMetadata")
+		return
+	}
+	for za0003, za0004 := range z.PrivateMetadata {
+		err = en.WriteString(za0003)
 		if err != nil {
 			err = msgp.WrapError(err, "PrivateMetadata")
 			return
 		}
-		for za0003, za0004 := range *z.PrivateMetadata {
-			err = en.WriteString(za0003)
-			if err != nil {
-				err = msgp.WrapError(err, "PrivateMetadata")
-				return
-			}
-			err = en.WriteString(za0004)
-			if err != nil {
-				err = msgp.WrapError(err, "PrivateMetadata", za0003)
-				return
-			}
+		err = en.WriteString(za0004)
+		if err != nil {
+			err = msgp.WrapError(err, "PrivateMetadata", za0003)
+			return
 		}
 	}
 	return
@@ -756,25 +718,17 @@ func (z *ModelMetadata) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.AppendString(o, z.Id)
 	// string "Metadata"
 	o = append(o, 0xa8, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
-	if z.Metadata == nil {
-		o = msgp.AppendNil(o)
-	} else {
-		o = msgp.AppendMapHeader(o, uint32(len(*z.Metadata)))
-		for za0001, za0002 := range *z.Metadata {
-			o = msgp.AppendString(o, za0001)
-			o = msgp.AppendString(o, za0002)
-		}
+	o = msgp.AppendMapHeader(o, uint32(len(z.Metadata)))
+	for za0001, za0002 := range z.Metadata {
+		o = msgp.AppendString(o, za0001)
+		o = msgp.AppendString(o, za0002)
 	}
 	// string "PrivateMetadata"
 	o = append(o, 0xaf, 0x50, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
-	if z.PrivateMetadata == nil {
-		o = msgp.AppendNil(o)
-	} else {
-		o = msgp.AppendMapHeader(o, uint32(len(*z.PrivateMetadata)))
-		for za0003, za0004 := range *z.PrivateMetadata {
-			o = msgp.AppendString(o, za0003)
-			o = msgp.AppendString(o, za0004)
-		}
+	o = msgp.AppendMapHeader(o, uint32(len(z.PrivateMetadata)))
+	for za0003, za0004 := range z.PrivateMetadata {
+		o = msgp.AppendString(o, za0003)
+		o = msgp.AppendString(o, za0004)
 	}
 	return
 }
@@ -804,86 +758,64 @@ func (z *ModelMetadata) UnmarshalMsg(bts []byte) (o []byte, err error) {
 				return
 			}
 		case "Metadata":
-			if msgp.IsNil(bts) {
-				bts, err = msgp.ReadNilBytes(bts)
-				if err != nil {
-					return
+			var zb0002 uint32
+			zb0002, bts, err = msgp.ReadMapHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Metadata")
+				return
+			}
+			if z.Metadata == nil {
+				z.Metadata = make(StringMap, zb0002)
+			} else if len(z.Metadata) > 0 {
+				for key := range z.Metadata {
+					delete(z.Metadata, key)
 				}
-				z.Metadata = nil
-			} else {
-				if z.Metadata == nil {
-					z.Metadata = new(StringMap)
-				}
-				var zb0002 uint32
-				zb0002, bts, err = msgp.ReadMapHeaderBytes(bts)
+			}
+			for zb0002 > 0 {
+				var za0001 string
+				var za0002 string
+				zb0002--
+				za0001, bts, err = msgp.ReadStringBytes(bts)
 				if err != nil {
 					err = msgp.WrapError(err, "Metadata")
 					return
 				}
-				if *z.Metadata == nil {
-					*z.Metadata = make(StringMap, zb0002)
-				} else if len(*z.Metadata) > 0 {
-					for key := range *z.Metadata {
-						delete(*z.Metadata, key)
-					}
-				}
-				for zb0002 > 0 {
-					var za0001 string
-					var za0002 string
-					zb0002--
-					za0001, bts, err = msgp.ReadStringBytes(bts)
-					if err != nil {
-						err = msgp.WrapError(err, "Metadata")
-						return
-					}
-					za0002, bts, err = msgp.ReadStringBytes(bts)
-					if err != nil {
-						err = msgp.WrapError(err, "Metadata", za0001)
-						return
-					}
-					*z.Metadata[za0001] = za0002
-				}
-			}
-		case "PrivateMetadata":
-			if msgp.IsNil(bts) {
-				bts, err = msgp.ReadNilBytes(bts)
+				za0002, bts, err = msgp.ReadStringBytes(bts)
 				if err != nil {
+					err = msgp.WrapError(err, "Metadata", za0001)
 					return
 				}
-				z.PrivateMetadata = nil
-			} else {
-				if z.PrivateMetadata == nil {
-					z.PrivateMetadata = new(StringMap)
+				z.Metadata[za0001] = za0002
+			}
+		case "PrivateMetadata":
+			var zb0003 uint32
+			zb0003, bts, err = msgp.ReadMapHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "PrivateMetadata")
+				return
+			}
+			if z.PrivateMetadata == nil {
+				z.PrivateMetadata = make(StringMap, zb0003)
+			} else if len(z.PrivateMetadata) > 0 {
+				for key := range z.PrivateMetadata {
+					delete(z.PrivateMetadata, key)
 				}
-				var zb0003 uint32
-				zb0003, bts, err = msgp.ReadMapHeaderBytes(bts)
+			}
+			for zb0003 > 0 {
+				var za0003 string
+				var za0004 string
+				zb0003--
+				za0003, bts, err = msgp.ReadStringBytes(bts)
 				if err != nil {
 					err = msgp.WrapError(err, "PrivateMetadata")
 					return
 				}
-				if *z.PrivateMetadata == nil {
-					*z.PrivateMetadata = make(StringMap, zb0003)
-				} else if len(*z.PrivateMetadata) > 0 {
-					for key := range *z.PrivateMetadata {
-						delete(*z.PrivateMetadata, key)
-					}
+				za0004, bts, err = msgp.ReadStringBytes(bts)
+				if err != nil {
+					err = msgp.WrapError(err, "PrivateMetadata", za0003)
+					return
 				}
-				for zb0003 > 0 {
-					var za0003 string
-					var za0004 string
-					zb0003--
-					za0003, bts, err = msgp.ReadStringBytes(bts)
-					if err != nil {
-						err = msgp.WrapError(err, "PrivateMetadata")
-						return
-					}
-					za0004, bts, err = msgp.ReadStringBytes(bts)
-					if err != nil {
-						err = msgp.WrapError(err, "PrivateMetadata", za0003)
-						return
-					}
-					*z.PrivateMetadata[za0003] = za0004
-				}
+				z.PrivateMetadata[za0003] = za0004
 			}
 		default:
 			bts, err = msgp.Skip(bts)
@@ -899,28 +831,18 @@ func (z *ModelMetadata) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *ModelMetadata) Msgsize() (s int) {
-	s = 1 + 3 + msgp.StringPrefixSize + len(z.Id) + 9
-	if z.Metadata == nil {
-		s += msgp.NilSize
-	} else {
-		s += msgp.MapHeaderSize
-		if *z.Metadata != nil {
-			for za0001, za0002 := range *z.Metadata {
-				_ = za0002
-				s += msgp.StringPrefixSize + len(za0001) + msgp.StringPrefixSize + len(za0002)
-			}
+	s = 1 + 3 + msgp.StringPrefixSize + len(z.Id) + 9 + msgp.MapHeaderSize
+	if z.Metadata != nil {
+		for za0001, za0002 := range z.Metadata {
+			_ = za0002
+			s += msgp.StringPrefixSize + len(za0001) + msgp.StringPrefixSize + len(za0002)
 		}
 	}
-	s += 16
-	if z.PrivateMetadata == nil {
-		s += msgp.NilSize
-	} else {
-		s += msgp.MapHeaderSize
-		if *z.PrivateMetadata != nil {
-			for za0003, za0004 := range *z.PrivateMetadata {
-				_ = za0004
-				s += msgp.StringPrefixSize + len(za0003) + msgp.StringPrefixSize + len(za0004)
-			}
+	s += 16 + msgp.MapHeaderSize
+	if z.PrivateMetadata != nil {
+		for za0003, za0004 := range z.PrivateMetadata {
+			_ = za0004
+			s += msgp.StringPrefixSize + len(za0003) + msgp.StringPrefixSize + len(za0004)
 		}
 	}
 	return
