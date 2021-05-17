@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/shopspring/decimal"
 )
 
 type Job interface {
@@ -1417,7 +1416,7 @@ type DraftOrderCreateInput struct {
 	BillingAddress  *AddressInput           `json:"billingAddress"`
 	User            *string                 `json:"user"`
 	UserEmail       *string                 `json:"userEmail"`
-	Discount        *decimal.Decimal        `json:"discount"`
+	Discount        *string                 `json:"discount"`
 	ShippingAddress *AddressInput           `json:"shippingAddress"`
 	ShippingMethod  *string                 `json:"shippingMethod"`
 	Voucher         *string                 `json:"voucher"`
@@ -1434,16 +1433,16 @@ type DraftOrderDelete struct {
 }
 
 type DraftOrderInput struct {
-	BillingAddress  *AddressInput    `json:"billingAddress"`
-	User            *string          `json:"user"`
-	UserEmail       *string          `json:"userEmail"`
-	Discount        *decimal.Decimal `json:"discount"`
-	ShippingAddress *AddressInput    `json:"shippingAddress"`
-	ShippingMethod  *string          `json:"shippingMethod"`
-	Voucher         *string          `json:"voucher"`
-	CustomerNote    *string          `json:"customerNote"`
-	Channel         *string          `json:"channel"`
-	RedirectURL     *string          `json:"redirectUrl"`
+	BillingAddress  *AddressInput `json:"billingAddress"`
+	User            *string       `json:"user"`
+	UserEmail       *string       `json:"userEmail"`
+	Discount        *string       `json:"discount"`
+	ShippingAddress *AddressInput `json:"shippingAddress"`
+	ShippingMethod  *string       `json:"shippingMethod"`
+	Voucher         *string       `json:"voucher"`
+	CustomerNote    *string       `json:"customerNote"`
+	Channel         *string       `json:"channel"`
+	RedirectURL     *string       `json:"redirectUrl"`
 }
 
 type DraftOrderLinesBulkDelete struct {
@@ -1697,11 +1696,11 @@ type GiftCardCreate struct {
 }
 
 type GiftCardCreateInput struct {
-	StartDate *string          `json:"startDate"`
-	EndDate   *string          `json:"endDate"`
-	Balance   *decimal.Decimal `json:"balance"`
-	UserEmail *string          `json:"userEmail"`
-	Code      *string          `json:"code"`
+	StartDate *string `json:"startDate"`
+	EndDate   *string `json:"endDate"`
+	Balance   *string `json:"balance"`
+	UserEmail *string `json:"userEmail"`
+	Code      *string `json:"code"`
 }
 
 type GiftCardDeactivate struct {
@@ -1723,10 +1722,10 @@ type GiftCardUpdate struct {
 }
 
 type GiftCardUpdateInput struct {
-	StartDate *string          `json:"startDate"`
-	EndDate   *string          `json:"endDate"`
-	Balance   *decimal.Decimal `json:"balance"`
-	UserEmail *string          `json:"userEmail"`
+	StartDate *string `json:"startDate"`
+	EndDate   *string `json:"endDate"`
+	Balance   *string `json:"balance"`
+	UserEmail *string `json:"userEmail"`
 }
 
 type Group struct {
@@ -2195,7 +2194,7 @@ type OrderDiscount struct {
 	ID             string                `json:"id"`
 	Type           OrderDiscountType     `json:"type"`
 	ValueType      DiscountValueTypeEnum `json:"valueType"`
-	Value          *decimal.Decimal      `json:"value"`
+	Value          string                `json:"value"`
 	Name           *string               `json:"name"`
 	TranslatedName *string               `json:"translatedName"`
 	Reason         *string               `json:"reason"`
@@ -2212,7 +2211,7 @@ type OrderDiscountAdd struct {
 
 type OrderDiscountCommonInput struct {
 	ValueType DiscountValueTypeEnum `json:"valueType"`
-	Value     *decimal.Decimal      `json:"value"`
+	Value     string                `json:"value"`
 	Reason    *string               `json:"reason"`
 }
 
@@ -2285,11 +2284,11 @@ type OrderEventCountableEdge struct {
 
 type OrderEventDiscountObject struct {
 	ValueType    DiscountValueTypeEnum  `json:"valueType"`
-	Value        *decimal.Decimal       `json:"value"`
+	Value        string                 `json:"value"`
 	Reason       *string                `json:"reason"`
 	Amount       *Money                 `json:"amount"`
 	OldValueType *DiscountValueTypeEnum `json:"oldValueType"`
-	OldValue     *decimal.Decimal       `json:"oldValue"`
+	OldValue     *string                `json:"oldValue"`
 	OldAmount    *Money                 `json:"oldAmount"`
 }
 
@@ -2347,7 +2346,7 @@ type OrderLine struct {
 	UnitPrice             *TaxedMoney            `json:"unitPrice"`
 	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
 	UnitDiscount          *Money                 `json:"unitDiscount"`
-	UnitDiscountValue     *decimal.Decimal       `json:"unitDiscountValue"`
+	UnitDiscountValue     string                 `json:"unitDiscountValue"`
 	TotalPrice            *TaxedMoney            `json:"totalPrice"`
 	Variant               *ProductVariant        `json:"variant"`
 	TranslatedProductName string                 `json:"translatedProductName"`
@@ -2427,7 +2426,7 @@ type OrderRefundLineInput struct {
 type OrderRefundProductsInput struct {
 	OrderLines           []OrderRefundLineInput            `json:"orderLines"`
 	FulfillmentLines     []OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *decimal.Decimal                  `json:"amountToRefund"`
+	AmountToRefund       *string                           `json:"amountToRefund"`
 	IncludeShippingCosts *bool                             `json:"includeShippingCosts"`
 }
 
@@ -2446,7 +2445,7 @@ type OrderReturnLineInput struct {
 type OrderReturnProductsInput struct {
 	OrderLines           []OrderReturnLineInput            `json:"orderLines"`
 	FulfillmentLines     []OrderReturnFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *decimal.Decimal                  `json:"amountToRefund"`
+	AmountToRefund       *string                           `json:"amountToRefund"`
 	IncludeShippingCosts *bool                             `json:"includeShippingCosts"`
 	Refund               *bool                             `json:"refund"`
 }
@@ -2822,10 +2821,10 @@ type PaymentInitialized struct {
 }
 
 type PaymentInput struct {
-	Gateway   string           `json:"gateway"`
-	Token     *string          `json:"token"`
-	Amount    *decimal.Decimal `json:"amount"`
-	ReturnURL *string          `json:"returnUrl"`
+	Gateway   string  `json:"gateway"`
+	Token     *string `json:"token"`
+	Amount    *string `json:"amount"`
+	ReturnURL *string `json:"returnUrl"`
 }
 
 type PaymentRefund struct {
@@ -3411,9 +3410,9 @@ type ProductVariantChannelListing struct {
 func (ProductVariantChannelListing) IsNode() {}
 
 type ProductVariantChannelListingAddInput struct {
-	ChannelID string           `json:"channelId"`
-	Price     *decimal.Decimal `json:"price"`
-	CostPrice *decimal.Decimal `json:"costPrice"`
+	ChannelID string  `json:"channelId"`
+	Price     string  `json:"price"`
+	CostPrice *string `json:"costPrice"`
 }
 
 type ProductVariantChannelListingUpdate struct {
@@ -3606,8 +3605,8 @@ type SaleChannelListing struct {
 func (SaleChannelListing) IsNode() {}
 
 type SaleChannelListingAddInput struct {
-	ChannelID     string           `json:"channelId"`
-	DiscountValue *decimal.Decimal `json:"discountValue"`
+	ChannelID     string `json:"channelId"`
+	DiscountValue string `json:"discountValue"`
 }
 
 type SaleChannelListingInput struct {
@@ -3654,7 +3653,7 @@ type SaleFilterInput struct {
 type SaleInput struct {
 	Name        *string                `json:"name"`
 	Type        *DiscountValueTypeEnum `json:"type"`
-	Value       *decimal.Decimal       `json:"value"`
+	Value       *string                `json:"value"`
 	Products    []*string              `json:"products"`
 	Categories  []*string              `json:"categories"`
 	Collections []*string              `json:"collections"`
@@ -3765,10 +3764,10 @@ type ShippingMethodChannelListing struct {
 func (ShippingMethodChannelListing) IsNode() {}
 
 type ShippingMethodChannelListingAddInput struct {
-	ChannelID         string           `json:"channelId"`
-	Price             *decimal.Decimal `json:"price"`
-	MinimumOrderPrice *decimal.Decimal `json:"minimumOrderPrice"`
-	MaximumOrderPrice *decimal.Decimal `json:"maximumOrderPrice"`
+	ChannelID         string  `json:"channelId"`
+	Price             *string `json:"price"`
+	MinimumOrderPrice *string `json:"minimumOrderPrice"`
+	MaximumOrderPrice *string `json:"maximumOrderPrice"`
 }
 
 type ShippingMethodChannelListingInput struct {
@@ -4437,9 +4436,9 @@ type VoucherChannelListing struct {
 func (VoucherChannelListing) IsNode() {}
 
 type VoucherChannelListingAddInput struct {
-	ChannelID      string           `json:"channelId"`
-	DiscountValue  *decimal.Decimal `json:"discountValue"`
-	MinAmountSpent *decimal.Decimal `json:"minAmountSpent"`
+	ChannelID      string  `json:"channelId"`
+	DiscountValue  *string `json:"discountValue"`
+	MinAmountSpent *string `json:"minAmountSpent"`
 }
 
 type VoucherChannelListingInput struct {
