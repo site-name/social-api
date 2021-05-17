@@ -83,45 +83,20 @@ const (
 )
 
 type SqlStoreStores struct {
-	// team                 store.TeamStore
-	// channel              store.ChannelStore
-	// post                 store.PostStore
-	// retentionPolicy      store.RetentionPolicyStore
-	// thread               store.ThreadStore
-	user store.UserStore
-	// bot                  store.BotStore
-	audit   store.AuditStore
-	cluster store.ClusterDiscoveryStore
-	// remoteCluster        store.RemoteClusterStore
-	// compliance           store.ComplianceStore
-	session store.SessionStore
-	// oauth                store.OAuthStore
-	system store.SystemStore
-	// webhook              store.WebhookStore
-	// command              store.CommandStore
-	// commandWebhook       store.CommandWebhookStore
-	preference store.PreferenceStore
-	// license              store.LicenseStore
-	token store.TokenStore
-	// emoji                store.EmojiStore
-	status store.StatusStore
-	// fileInfo             store.FileInfoStore
-	// uploadSession        store.UploadSessionStore
-	// reaction             store.ReactionStore
+	user            store.UserStore
+	audit           store.AuditStore
+	cluster         store.ClusterDiscoveryStore
+	session         store.SessionStore
+	system          store.SystemStore
+	preference      store.PreferenceStore
+	token           store.TokenStore
+	status          store.StatusStore
 	job             store.JobStore
 	userAccessToken store.UserAccessTokenStore
-	// plugin               store.PluginStore
-	// channelMemberHistory store.ChannelMemberHistoryStore
-	role store.RoleStore
-	// scheme               store.SchemeStore
-	TermsOfService store.TermsOfServiceStore
-	// productNotices       store.ProductNoticesStore
-	// group                store.GroupStore
-	// UserTermsOfService   store.UserTermsOfServiceStore
-	// linkMetadata         store.LinkMetadataStore
-	// sharedchannel        store.SharedChannelStore
-	address store.AddressStore
-	app     store.AppStore
+	role            store.RoleStore
+	TermsOfService  store.TermsOfServiceStore
+	address         store.AddressStore
+	app             store.AppStore
 }
 
 type SqlStore struct {
@@ -156,6 +131,8 @@ func (t *TraceOnAdapter) Printf(format string, v ...interface{}) {
 	slog.Debug(newString)
 }
 
+// New initializes connections to postgresql database
+// also migrates all the sql schema using gorp
 func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlStore {
 	store := &SqlStore{
 		rrCounter: 0,
@@ -172,43 +149,18 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		os.Exit(ExitGenericFailure)
 	}
 
-	// store.stores.team = newSqlTeamStore(store)
-	// store.stores.channel = newSqlChannelStore(store, metrics)
-	// store.stores.post = newSqlPostStore(store, metrics)
-	// store.stores.retentionPolicy = newSqlRetentionPolicyStore(store, metrics)
 	store.stores.user = newSqlUserStore(store, metrics)
-	// store.stores.bot = newSqlBotStore(store, metrics)
 	store.stores.audit = newSqlAuditStore(store)
 	store.stores.cluster = newSqlClusterDiscoveryStore(store)
-	// store.stores.remoteCluster = newSqlRemoteClusterStore(store)
-	// store.stores.compliance = newSqlComplianceStore(store)
 	store.stores.session = newSqlSessionStore(store)
-	// store.stores.oauth = newSqlOAuthStore(store)
 	store.stores.system = newSqlSystemStore(store)
-	// store.stores.webhook = newSqlWebhookStore(store, metrics)
-	// store.stores.command = newSqlCommandStore(store)
-	// store.stores.commandWebhook = newSqlCommandWebhookStore(store)
 	store.stores.preference = newSqlPreferenceStore(store)
-	// store.stores.license = newSqlLicenseStore(store)
 	store.stores.token = newSqlTokenStore(store)
-	// store.stores.emoji = newSqlEmojiStore(store, metrics)
 	store.stores.status = newSqlStatusStore(store)
-	// store.stores.fileInfo = newSqlFileInfoStore(store, metrics)
-	// store.stores.uploadSession = newSqlUploadSessionStore(store)
-	// store.stores.thread = newSqlThreadStore(store)
 	store.stores.job = newSqlJobStore(store)
 	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
-	// store.stores.channelMemberHistory = newSqlChannelMemberHistoryStore(store)
-	// store.stores.plugin = newSqlPluginStore(store)
 	store.stores.TermsOfService = newSqlTermsOfServiceStore(store, metrics)
-	// store.stores.UserTermsOfService = newSqlUserTermsOfServiceStore(store)
-	// store.stores.linkMetadata = newSqlLinkMetadataStore(store)
-	// store.stores.sharedchannel = newSqlSharedChannelStore(store)
-	// store.stores.reaction = newSqlReactionStore(store)
 	store.stores.role = newSqlRoleStore(store)
-	// store.stores.scheme = newSqlSchemeStore(store)
-	// store.stores.group = newSqlGroupStore(store)
-	// store.stores.productNotices = newSqlProductNoticesStore(store)
 	store.stores.address = newSqlAddressStore(store)
 	store.stores.app = newAppSqlStore(store)
 
@@ -231,41 +183,19 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		os.Exit(ExitGenericFailure)
 	}
 
-	// store.stores.channel.(*SqlChannelStore).createIndexesIfNotExists()
-	// store.stores.post.(*SqlPostStore).createIndexesIfNotExists()
-	// store.stores.retentionPolicy.(*SqlRetentionPolicyStore).createIndexesIfNotExists()
-	// store.stores.thread.(*SqlThreadStore).createIndexesIfNotExists()
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
-	// store.stores.bot.(*SqlBotStore).createIndexesIfNotExists()
 	store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
-	// store.stores.compliance.(*SqlComplianceStore).createIndexesIfNotExists()
 	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
-	// store.stores.oauth.(*SqlOAuthStore).createIndexesIfNotExists()
 	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
-	// store.stores.webhook.(*SqlWebhookStore).createIndexesIfNotExists()
-	// store.stores.command.(*SqlCommandStore).createIndexesIfNotExists()
-	// store.stores.commandWebhook.(*SqlCommandWebhookStore).createIndexesIfNotExists()
 	store.stores.preference.(*SqlPreferenceStore).createIndexesIfNotExists()
-	// store.stores.license.(*SqlLicenseStore).createIndexesIfNotExists()
 	store.stores.token.(*SqlTokenStore).createIndexesIfNotExists()
-	// store.stores.emoji.(*SqlEmojiStore).createIndexesIfNotExists()
 	store.stores.status.(*SqlStatusStore).createIndexesIfNotExists()
-	// store.stores.fileInfo.(*SqlFileInfoStore).createIndexesIfNotExists()
-	// store.stores.uploadSession.(*SqlUploadSessionStore).createIndexesIfNotExists()
 	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
 	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
-	// store.stores.plugin.(*SqlPluginStore).createIndexesIfNotExists()
 	store.stores.TermsOfService.(SqlTermsOfServiceStore).createIndexesIfNotExists()
-	// store.stores.productNotices.(SqlProductNoticesStore).createIndexesIfNotExists()
-	// store.stores.UserTermsOfService.(SqlUserTermsOfServiceStore).createIndexesIfNotExists()
-	// store.stores.linkMetadata.(*SqlLinkMetadataStore).createIndexesIfNotExists()
-	// store.stores.sharedchannel.(*SqlSharedChannelStore).createIndexesIfNotExists()
-	// store.stores.group.(*SqlGroupStore).createIndexesIfNotExists()
-	// store.stores.scheme.(*SqlSchemeStore).createIndexesIfNotExists()
-	// store.stores.remoteCluster.(*sqlRemoteClusterStore).createIndexesIfNotExists()
 	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
 	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
-	store.stores.app.(*AppSqlStore).createIndexesIfNotExists()
+	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -832,10 +762,7 @@ func (ss *SqlStore) createIndexIfNotExists(indexName string, tableName string, c
 	return true
 }
 
-func (ss *SqlStore) CreateForeignKeyIfNotExists(
-	tableName, columnName, refTableName, refColumnName string,
-	onDeleteCascade bool,
-) (err error) {
+func (ss *SqlStore) CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) (err error) {
 	deleteClause := ""
 	if onDeleteCascade {
 		deleteClause = "ON DELETE CASCADE"
@@ -934,10 +861,12 @@ func (ss *SqlStore) Close() {
 	}
 }
 
+// constraint db queries to call only master replica
 func (ss *SqlStore) LockToMaster() {
 	ss.lockedToMaster = true
 }
 
+// let db queries free to call any db replicas
 func (ss *SqlStore) UnlockFromMaster() {
 	ss.lockedToMaster = false
 }
@@ -945,158 +874,45 @@ func (ss *SqlStore) UnlockFromMaster() {
 func (ss *SqlStore) Address() store.AddressStore {
 	return ss.stores.address
 }
-
 func (ss *SqlStore) App() store.AppStore {
 	return ss.stores.app
 }
-
-// func (ss *SqlStore) Team() store.TeamStore {
-// 	return ss.stores.team
-// }
-
-// func (ss *SqlStore) Channel() store.ChannelStore {
-// 	return ss.stores.channel
-// }
-
-// func (ss *SqlStore) Post() store.PostStore {
-// 	return ss.stores.post
-// }
-
-// func (ss *SqlStore) RetentionPolicy() store.RetentionPolicyStore {
-// 	return ss.stores.retentionPolicy
-// }
-
 func (ss *SqlStore) User() store.UserStore {
 	return ss.stores.user
 }
-
-// func (ss *SqlStore) Bot() store.BotStore {
-// 	return ss.stores.bot
-// }
-
 func (ss *SqlStore) Session() store.SessionStore {
 	return ss.stores.session
 }
-
 func (ss *SqlStore) Audit() store.AuditStore {
 	return ss.stores.audit
 }
-
 func (ss *SqlStore) ClusterDiscovery() store.ClusterDiscoveryStore {
 	return ss.stores.cluster
 }
-
-// func (ss *SqlStore) RemoteCluster() store.RemoteClusterStore {
-// 	return ss.stores.remoteCluster
-// }
-
-// func (ss *SqlStore) Compliance() store.ComplianceStore {
-// 	return ss.stores.compliance
-// }
-
-// func (ss *SqlStore) OAuth() store.OAuthStore {
-// 	return ss.stores.oauth
-// }
-
 func (ss *SqlStore) System() store.SystemStore {
 	return ss.stores.system
 }
-
-// func (ss *SqlStore) Webhook() store.WebhookStore {
-// 	return ss.stores.webhook
-// }
-
-// func (ss *SqlStore) Command() store.CommandStore {
-// 	return ss.stores.command
-// }
-
-// func (ss *SqlStore) CommandWebhook() store.CommandWebhookStore {
-// 	return ss.stores.commandWebhook
-// }
-
 func (ss *SqlStore) Preference() store.PreferenceStore {
 	return ss.stores.preference
 }
-
-// func (ss *SqlStore) License() store.LicenseStore {
-// 	return ss.stores.license
-// }
-
 func (ss *SqlStore) Token() store.TokenStore {
 	return ss.stores.token
 }
-
-// func (ss *SqlStore) Emoji() store.EmojiStore {
-// 	return ss.stores.emoji
-// }
-
 func (ss *SqlStore) Status() store.StatusStore {
 	return ss.stores.status
 }
-
-// func (ss *SqlStore) FileInfo() store.FileInfoStore {
-// 	return ss.stores.fileInfo
-// }
-
-// func (ss *SqlStore) UploadSession() store.UploadSessionStore {
-// 	return ss.stores.uploadSession
-// }
-
-// func (ss *SqlStore) Reaction() store.ReactionStore {
-// 	return ss.stores.reaction
-// }
-
 func (ss *SqlStore) Job() store.JobStore {
 	return ss.stores.job
 }
-
 func (ss *SqlStore) UserAccessToken() store.UserAccessTokenStore {
 	return ss.stores.userAccessToken
 }
-
-// func (ss *SqlStore) ChannelMemberHistory() store.ChannelMemberHistoryStore {
-// 	return ss.stores.channelMemberHistory
-// }
-
-// func (ss *SqlStore) Plugin() store.PluginStore {
-// 	return ss.stores.plugin
-// }
-
-// func (ss *SqlStore) Thread() store.ThreadStore {
-// 	return ss.stores.thread
-// }
-
 func (ss *SqlStore) Role() store.RoleStore {
 	return ss.stores.role
 }
-
 func (ss *SqlStore) TermsOfService() store.TermsOfServiceStore {
 	return ss.stores.TermsOfService
 }
-
-// func (ss *SqlStore) ProductNotices() store.ProductNoticesStore {
-// 	return ss.stores.productNotices
-// }
-
-// func (ss *SqlStore) UserTermsOfService() store.UserTermsOfServiceStore {
-// 	return ss.stores.UserTermsOfService
-// }
-
-// func (ss *SqlStore) Scheme() store.SchemeStore {
-// 	return ss.stores.scheme
-// }
-
-// func (ss *SqlStore) Group() store.GroupStore {
-// 	return ss.stores.group
-// }
-
-// func (ss *SqlStore) LinkMetadata() store.LinkMetadataStore {
-// 	return ss.stores.linkMetadata
-// }
-
-// func (ss *SqlStore) SharedChannel() store.SharedChannelStore {
-// 	return ss.stores.sharedchannel
-// }
 
 func (ss *SqlStore) DropAllTables() {
 	ss.master.TruncateTables()

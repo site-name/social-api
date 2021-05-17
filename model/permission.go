@@ -164,6 +164,7 @@ func initializeSaleorPermission() {
 		PERMISSION_MANAGE_TRANSLATIONS,
 	}
 
+	SaleorPermissionEnumMap = make(map[string]string)
 	for _, perm := range SaleorPermissionEnumList {
 		SaleorPermissionEnumMap[perm.Id] = perm.Name
 	}

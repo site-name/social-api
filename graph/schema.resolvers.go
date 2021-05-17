@@ -850,7 +850,7 @@ func (r *mutationResolver) AppTokenVerify(ctx context.Context, token string) (*m
 }
 
 func (r *mutationResolver) AppInstall(ctx context.Context, input model.AppInstallInput) (*model.AppInstall, error) {
-	return AppInstall(r.Resolver, ctx, input)
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) AppRetryInstall(ctx context.Context, activateAfterInstallation *bool, id string) (*model.AppRetryInstall, error) {
@@ -862,7 +862,7 @@ func (r *mutationResolver) AppDeleteFailedInstallation(ctx context.Context, id s
 }
 
 func (r *mutationResolver) AppFetchManifest(ctx context.Context, manifestURL string) (*model.AppFetchManifest, error) {
-	return AppFetchManifest(r.Resolver, ctx, manifestURL)
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) AppActivate(ctx context.Context, id string) (*model.AppActivate, error) {

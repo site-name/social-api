@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/store"
 )
@@ -18,6 +19,7 @@ type TimerLayer struct {
 	store.Store
 	Metrics               einterfaces.MetricsInterface
 	AddressStore          store.AddressStore
+	AppStore              store.AppStore
 	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
@@ -34,6 +36,10 @@ type TimerLayer struct {
 
 func (s *TimerLayer) Address() store.AddressStore {
 	return s.AddressStore
+}
+
+func (s *TimerLayer) App() store.AppStore {
+	return s.AppStore
 }
 
 func (s *TimerLayer) Audit() store.AuditStore {
@@ -86,6 +92,11 @@ func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 
 type TimerLayerAddressStore struct {
 	store.AddressStore
+	Root *TimerLayer
+}
+
+type TimerLayerAppStore struct {
+	store.AppStore
 	Root *TimerLayer
 }
 
@@ -161,6 +172,22 @@ func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Addres
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
+	start := timemodule.Now()
+
+	result, err := s.AppStore.Save(app)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AppStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -2316,6 +2343,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	}
 
 	newStore.AddressStore = &TimerLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
+	newStore.AppStore = &TimerLayerAppStore{AppStore: childStore.App(), Root: &newStore}
 	newStore.AuditStore = &TimerLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

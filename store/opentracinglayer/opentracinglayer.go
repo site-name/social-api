@@ -10,6 +10,7 @@ import (
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
@@ -18,6 +19,7 @@ import (
 type OpenTracingLayer struct {
 	store.Store
 	AddressStore          store.AddressStore
+	AppStore              store.AppStore
 	AuditStore            store.AuditStore
 	ClusterDiscoveryStore store.ClusterDiscoveryStore
 	JobStore              store.JobStore
@@ -34,6 +36,10 @@ type OpenTracingLayer struct {
 
 func (s *OpenTracingLayer) Address() store.AddressStore {
 	return s.AddressStore
+}
+
+func (s *OpenTracingLayer) App() store.AppStore {
+	return s.AppStore
 }
 
 func (s *OpenTracingLayer) Audit() store.AuditStore {
@@ -86,6 +92,11 @@ func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 
 type OpenTracingLayerAddressStore struct {
 	store.AddressStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAppStore struct {
+	store.AppStore
 	Root *OpenTracingLayer
 }
 
@@ -159,6 +170,24 @@ func (s *OpenTracingLayerAddressStore) Save(address *account.Address) (*account.
 
 	defer span.Finish()
 	result, err := s.AddressStore.Save(address)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAppStore) Save(app *app.App) (*app.App, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AppStore.Save(app)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2557,6 +2586,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	}
 
 	newStore.AddressStore = &OpenTracingLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
+	newStore.AppStore = &OpenTracingLayerAppStore{AppStore: childStore.App(), Root: &newStore}
 	newStore.AuditStore = &OpenTracingLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
 	newStore.JobStore = &OpenTracingLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

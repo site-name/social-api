@@ -5,12 +5,12 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppSqlStore struct {
+type SqlAppStore struct {
 	*SqlStore
 }
 
 func newAppSqlStore(sqlStore *SqlStore) store.AppStore {
-	as := &AppSqlStore{sqlStore}
+	as := &SqlAppStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(app.App{}, "Apps").SetKeys(false, "id")
@@ -31,13 +31,13 @@ func newAppSqlStore(sqlStore *SqlStore) store.AppStore {
 	return as
 }
 
-func (as *AppSqlStore) createIndexesIfNotExists() {
+func (as *SqlAppStore) createIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_apps_name", "Apps", "Name")
 	as.CreateIndexIfNotExists("idx_apps_identifier", "Apps", "Identifier")
 	as.CreateIndexIfNotExists("idx_apps_name_lower_textpattern", "Apps", "lower(Name) text_pattern_ops")
 	as.CreateIndexIfNotExists("idx_apps_identifier_lower_textpattern", "Apps", "lower(Identifier) text_pattern_ops")
 }
 
-func (as *AppSqlStore) Save(app *app.App) (*app.App, error) {
+func (as *SqlAppStore) Save(app *app.App) (*app.App, error) {
 	panic("not implemented") // NOTE: fixme
 }
