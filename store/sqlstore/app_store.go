@@ -13,19 +13,11 @@ func newAppSqlStore(sqlStore *SqlStore) store.AppStore {
 	as := &SqlAppStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(app.App{}, "Apps").SetKeys(false, "id")
+		table := db.AddTableWithName(app.App{}, "Apps").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(app.APP_NAME_MAX_LENGTH)
 		table.ColMap("Identifier").SetMaxSize(app.APP_IDENTIFIER_MAX_LENGTH)
 		table.ColMap("Version").SetMaxSize(app.APP_VERSION_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 	}
 
 	return as
