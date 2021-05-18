@@ -97,6 +97,8 @@ type SqlStoreStores struct {
 	TermsOfService  store.TermsOfServiceStore
 	address         store.AddressStore
 	app             store.AppStore
+	appToken        store.AppTokenStore
+	channel         store.ChannelStore
 }
 
 type SqlStore struct {
@@ -163,6 +165,8 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.role = newSqlRoleStore(store)
 	store.stores.address = newSqlAddressStore(store)
 	store.stores.app = newAppSqlStore(store)
+	store.stores.appToken = newSqlAppTokenStore(store)
+	store.stores.channel = newSqlChannelStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -196,6 +200,8 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
 	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
 	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
+	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
+	store.stores.channel.(*SqlChannelStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -912,6 +918,12 @@ func (ss *SqlStore) Role() store.RoleStore {
 }
 func (ss *SqlStore) TermsOfService() store.TermsOfServiceStore {
 	return ss.stores.TermsOfService
+}
+func (ss *SqlStore) AppToken() store.AppTokenStore {
+	return ss.stores.appToken
+}
+func (ss *SqlStore) Channel() store.ChannelStore {
+	return ss.stores.channel
 }
 
 func (ss *SqlStore) DropAllTables() {

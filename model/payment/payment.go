@@ -275,10 +275,6 @@ func (p *Payment) IsValid() *model.AppError {
 	if utf8.RuneCountInString(p.BillingPostalCode) > account.ADDRESS_POSTAL_CODE_MAX_LENGTH {
 		return outer("billing_postal_code", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingCountryCode) > model.MAX_LENGTH_COUNTRY_CODE {
-		return outer("billing_country_code", &p.Id)
-	}
-
 	// make sure country code and currency code are match:
 	region, err := language.ParseRegion(p.BillingCountryCode)
 	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {

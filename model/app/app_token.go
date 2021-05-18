@@ -15,6 +15,7 @@ const (
 
 type AppToken struct {
 	Id        string `json:"id"`
+	AppId     string `json:"app_id"`
 	Name      string `json:"name"`
 	AuthToken string `json:"auth_token"`
 }
@@ -27,6 +28,9 @@ func (a *AppToken) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(a.Id) {
 		return outer("id", nil)
+	}
+	if !model.IsValidId(a.AppId) {
+		return outer("app_id", nil)
 	}
 	if utf8.RuneCountInString(a.Name) > APP_TOKEN_NAME_MAX_LENGTH {
 		return outer("name", &a.Id)

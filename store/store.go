@@ -40,7 +40,20 @@ type Store interface {
 	Audit() AuditStore
 
 	App() AppStore
+	AppToken() AppTokenStore
 	Address() AddressStore
+	Channel() ChannelStore
+	Checkout() CheckoutStore
+}
+
+type CheckoutStore interface {
+}
+
+type ChannelStore interface {
+}
+
+type AppTokenStore interface {
+	Save(appToken *app.AppToken) (*app.AppToken, error)
 }
 
 type AppStore interface {
