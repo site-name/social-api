@@ -7,10 +7,14 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
+// max lengths for checkout line table's fields
 const (
 	CHECKOUT_LINE_MIN_QUANTITY = 1
 )
 
+// A single checkout line.
+// Multiple lines in the same checkout can refer to the same product variant if
+// their `data` field is different.
 type CheckoutLine struct {
 	Id         string                               `json:"id"`
 	CheckoutID string                               `json:"checkout_id"`

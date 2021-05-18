@@ -16,6 +16,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+// max lengths for Checkout table
 const (
 	CHECKOUT_DISCOUNT_NAME_MAX_LENGTH            = 255
 	CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH = 255

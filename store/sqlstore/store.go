@@ -99,6 +99,10 @@ type SqlStoreStores struct {
 	app             store.AppStore
 	appToken        store.AppTokenStore
 	channel         store.ChannelStore
+	checkout        store.CheckoutStore
+	checkoutLine    store.CheckoutLineStore
+	csvExportEvent  store.CsvExportEventStore
+	discountVoucher store.DiscountVoucherStore
 }
 
 type SqlStore struct {
@@ -167,6 +171,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.app = newAppSqlStore(store)
 	store.stores.appToken = newSqlAppTokenStore(store)
 	store.stores.channel = newSqlChannelStore(store)
+	store.stores.checkout = newSqlCheckoutStore(store)
+	store.stores.checkoutLine = newSqlCheckoutLineStore(store)
+	store.stores.csvExportEvent = newSqlCsvExportEventStore(store)
+	store.stores.discountVoucher = newSqlVoucherStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -202,6 +210,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
 	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
 	store.stores.channel.(*SqlChannelStore).createIndexesIfNotExists()
+	store.stores.checkout.(*SqlCheckoutStore).createIndexesIfNotExists()
+	store.stores.checkoutLine.(*SqlCheckoutLineStore).createIndexesIfNotExists()
+	store.stores.csvExportEvent.(*SqlCsvExportEventStore).createIndexesIfNotExists()
+	store.stores.discountVoucher.(*SqlVoucherStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -336,13 +348,6 @@ func (ss *SqlStore) GetMaster() *gorp.DbMap {
 }
 
 func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
-	// ss.licenseMutex.RLock()
-	// license := ss.license
-	// ss.licenseMutex.RUnlock()
-	// if license == nil {
-	// 	return ss.GetMaster()
-	// }
-
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
 		return ss.GetReplica()
 	}
@@ -620,7 +625,7 @@ func (ss *SqlStore) GetMaxLengthOfColumnIfExists(tableName string, columnName st
 	return result
 }
 
-func (ss *SqlStore) AlterColumnTypeIfExists(tableName string, columnName string, mySqlColType string, postgresColType string) bool {
+func (ss *SqlStore) AlterColumnTypeIfExists(tableName string, columnName string, postgresColType string) bool {
 	if !ss.DoesColumnExist(tableName, columnName) {
 		return false
 	}
@@ -636,7 +641,7 @@ func (ss *SqlStore) AlterColumnTypeIfExists(tableName string, columnName string,
 	return true
 }
 
-func (ss *SqlStore) AlterColumnDefaultIfExists(tableName string, columnName string, mySqlColDefault *string, postgresColDefault *string) bool {
+func (ss *SqlStore) AlterColumnDefaultIfExists(tableName string, columnName string, postgresColDefault *string) bool {
 	if !ss.DoesColumnExist(tableName, columnName) {
 		return false
 	}
@@ -768,17 +773,14 @@ func (ss *SqlStore) createIndexIfNotExists(indexName string, tableName string, c
 	return true
 }
 
+// create foreign keys
 func (ss *SqlStore) CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) (err error) {
 	deleteClause := ""
 	if onDeleteCascade {
 		deleteClause = "ON DELETE CASCADE"
 	}
 	constraintName := "FK_" + tableName + "_" + refTableName
-	sQuery := `
-	ALTER TABLE ` + tableName + `
-	ADD CONSTRAINT ` + constraintName + `
-	FOREIGN KEY (` + columnName + `) REFERENCES ` + refTableName + ` (` + refColumnName + `)
-	` + deleteClause + `;`
+	sQuery := `ALTER TABLE ` + tableName + ` ADD CONSTRAINT ` + constraintName + ` FOREIGN KEY (` + columnName + `) REFERENCES ` + refTableName + ` (` + refColumnName + `) ` + deleteClause + `;`
 	_, err = ss.GetMaster().Exec(sQuery)
 	if IsConstraintAlreadyExistsError(err) {
 		err = nil
@@ -806,6 +808,7 @@ func (ss *SqlStore) RemoveIndexIfExists(indexName string, tableName string) bool
 	return true
 }
 
+// check if given err is postgres's duplicate error
 func IsConstraintAlreadyExistsError(err error) bool {
 	if dbErr, ok := err.(*pq.Error); ok {
 		if dbErr.Code == PGDuplicateObjectErrorCode {
@@ -815,6 +818,7 @@ func IsConstraintAlreadyExistsError(err error) bool {
 	return false
 }
 
+// check if given err is postgres's unique error
 func IsUniqueConstraintError(err error, indexName []string) bool {
 	unique := false
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
@@ -832,6 +836,7 @@ func IsUniqueConstraintError(err error, indexName []string) bool {
 	return unique && field
 }
 
+// Get all databases connections
 func (ss *SqlStore) GetAllConns() []*gorp.DbMap {
 	all := make([]*gorp.DbMap, len(ss.Replicas)+1)
 	copy(all, ss.Replicas)
@@ -856,6 +861,7 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	}
 }
 
+// close all database connections
 func (ss *SqlStore) Close() {
 	ss.master.Db.Close()
 	for _, replica := range ss.Replicas {
@@ -924,6 +930,18 @@ func (ss *SqlStore) AppToken() store.AppTokenStore {
 }
 func (ss *SqlStore) Channel() store.ChannelStore {
 	return ss.stores.channel
+}
+func (ss *SqlStore) Checkout() store.CheckoutStore {
+	return ss.stores.checkout
+}
+func (ss *SqlStore) CheckoutLine() store.CheckoutLineStore {
+	return ss.stores.checkoutLine
+}
+func (ss *SqlStore) CsvExportEvent() store.CsvExportEventStore {
+	return ss.stores.csvExportEvent
+}
+func (ss *SqlStore) VoucherStore() store.DiscountVoucherStore {
+	return ss.stores.discountVoucher
 }
 
 func (ss *SqlStore) DropAllTables() {
@@ -1113,4 +1131,11 @@ func VersionString(v int) string {
 	minor := v % 10000
 	major := v / 10000
 	return strconv.Itoa(major) + "." + strconv.Itoa(minor)
+}
+
+// indexing metadata fields for models
+func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
+	lowerTableName := strings.ToLower(tableName)
+	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_private_metadata", tableName, "PrivateMetadata")
+	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_metadata", tableName, "Metadata")
 }

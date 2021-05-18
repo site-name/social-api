@@ -44,6 +44,16 @@ type Store interface {
 	Address() AddressStore
 	Channel() ChannelStore
 	Checkout() CheckoutStore
+	CheckoutLine() CheckoutLineStore
+	CsvExportEvent() CsvExportEventStore
+	VoucherStore() DiscountVoucherStore
+}
+
+type DiscountVoucherStore interface{}
+
+type CsvExportEventStore interface{}
+
+type CheckoutLineStore interface {
 }
 
 type CheckoutStore interface {

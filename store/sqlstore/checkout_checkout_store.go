@@ -17,9 +17,10 @@ func newSqlCheckoutStore(sqlStore *SqlStore) store.CheckoutStore {
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(checkout.Checkout{}, "Checkouts").SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH).SetNotNull(true)
+		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(UUID_MAX_LENGTH)
+		table.ColMap("Token").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("BillingAddressID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("ShippingAddressID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(UUID_MAX_LENGTH)
@@ -31,4 +32,15 @@ func newSqlCheckoutStore(sqlStore *SqlStore) store.CheckoutStore {
 	}
 
 	return cs
+}
+
+func (cs *SqlCheckoutStore) createIndexesIfNotExists() {
+	cs.CreateIndexIfNotExists("idx_checkouts_userid", "Checkouts", "UserID")
+	cs.CreateIndexIfNotExists("idx_checkouts_token", "Checkouts", "Token")
+	cs.CreateIndexIfNotExists("idx_checkouts_channelid", "Checkouts", "ChannelID")
+	cs.CreateIndexIfNotExists("idx_checkouts_billing_address_id", "Checkouts", "BillingAddressID")
+	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", "Checkouts", "ShippingAddressID")
+	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", "Checkouts", "ShippingMethodID")
+
+	cs.CommonMetaDataIndex("Checkouts")
 }

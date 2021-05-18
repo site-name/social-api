@@ -90,6 +90,9 @@ func (us *SqlUserStore) createIndexesIfNotExists() {
 	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", "Users", strings.Join(UserSearchTypeAll_NO_FULL_NAME, ", "))
 	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", "Users", strings.Join(UserSearchTypeNames, ", "))
 	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", "Users", strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
+
+	// create indexes for metadata
+	us.SqlStore.CommonMetaDataIndex("Users")
 }
 
 // DeactivateGuests
