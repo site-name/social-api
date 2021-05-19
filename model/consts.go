@@ -4,7 +4,7 @@ import "regexp"
 
 const (
 	TimeZone                 = "UTC"
-	LanguageCode             = "en"
+	DEFAULT_LANGUAGE_CODE    = "en"
 	DEFAULT_LOCALE           = "en"
 	USER_AUTH_SERVICE_EMAIL  = "email"
 	DEFAULT_CURRENCY         = "USD"

@@ -48,6 +48,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/site-name/go-prices v0.0.0-20210519141850-80a0fd4a106e // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/splitio/go-client/v6 v6.1.0
