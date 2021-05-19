@@ -47,7 +47,31 @@ type Store interface {
 	CheckoutLine() CheckoutLineStore
 	CsvExportEvent() CsvExportEventStore
 	VoucherStore() DiscountVoucherStore
+	VoucherChannelListing() VoucherChannelListingStore
+	VoucherCustomer() DiscountVoucherCustomerStore
+	VoucherTranslation() VoucherTranslationStore
+	DiscountSale() DiscountSaleStore
+	DiscountSaleTranslation() DiscountSaleTranslationStore
+	DiscountSaleChannelListing() DiscountSaleChannelListingStore
+	OrderDiscount() OrderDiscountStore
+	GiftCard() GiftCardStore
 }
+
+type GiftCardStore interface{}
+
+type OrderDiscountStore interface{}
+
+type DiscountSaleTranslationStore interface{}
+
+type DiscountSaleChannelListingStore interface{}
+
+type DiscountSaleStore interface{}
+
+type VoucherTranslationStore interface{}
+
+type DiscountVoucherCustomerStore interface{}
+
+type VoucherChannelListingStore interface{}
 
 type DiscountVoucherStore interface{}
 

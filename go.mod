@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.40
+	github.com/aws/aws-sdk-go v1.38.42
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -57,7 +57,7 @@ require (
 	github.com/tinylib/msgp v1.1.5
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.2
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1

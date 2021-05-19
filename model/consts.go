@@ -3,13 +3,15 @@ package model
 import "regexp"
 
 const (
-	TimeZone                = "UTC"
-	LanguageCode            = "en"
-	DEFAULT_LOCALE          = "en"
-	USER_AUTH_SERVICE_EMAIL = "email"
-	USER_NAME_MAX_LENGTH    = 64
-	USER_EMAIL_MAX_LENGTH   = 128
-	USER_NAME_MIN_LENGTH    = 1
+	TimeZone                 = "UTC"
+	LanguageCode             = "en"
+	DEFAULT_LOCALE           = "en"
+	USER_AUTH_SERVICE_EMAIL  = "email"
+	DEFAULT_CURRENCY         = "USD"
+	USER_NAME_MAX_LENGTH     = 64
+	USER_EMAIL_MAX_LENGTH    = 128
+	USER_NAME_MIN_LENGTH     = 1
+	CURRENCY_CODE_MAX_LENGTH = 3
 )
 
 var (

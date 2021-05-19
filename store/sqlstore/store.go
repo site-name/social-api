@@ -83,26 +83,34 @@ const (
 )
 
 type SqlStoreStores struct {
-	user            store.UserStore
-	audit           store.AuditStore
-	cluster         store.ClusterDiscoveryStore
-	session         store.SessionStore
-	system          store.SystemStore
-	preference      store.PreferenceStore
-	token           store.TokenStore
-	status          store.StatusStore
-	job             store.JobStore
-	userAccessToken store.UserAccessTokenStore
-	role            store.RoleStore
-	TermsOfService  store.TermsOfServiceStore
-	address         store.AddressStore
-	app             store.AppStore
-	appToken        store.AppTokenStore
-	channel         store.ChannelStore
-	checkout        store.CheckoutStore
-	checkoutLine    store.CheckoutLineStore
-	csvExportEvent  store.CsvExportEventStore
-	discountVoucher store.DiscountVoucherStore
+	user                          store.UserStore                       // account models
+	address                       store.AddressStore                    //
+	audit                         store.AuditStore                      // common
+	cluster                       store.ClusterDiscoveryStore           //
+	session                       store.SessionStore                    //
+	system                        store.SystemStore                     //
+	preference                    store.PreferenceStore                 //
+	token                         store.TokenStore                      //
+	status                        store.StatusStore                     //
+	job                           store.JobStore                        //
+	userAccessToken               store.UserAccessTokenStore            //
+	role                          store.RoleStore                       //
+	TermsOfService                store.TermsOfServiceStore             //
+	app                           store.AppStore                        //
+	appToken                      store.AppTokenStore                   //
+	channel                       store.ChannelStore                    // channel models
+	checkout                      store.CheckoutStore                   // checkout models
+	checkoutLine                  store.CheckoutLineStore               //
+	csvExportEvent                store.CsvExportEventStore             // csv models
+	discountVoucher               store.DiscountVoucherStore            // product and discount models
+	discountVoucherChannelListing store.VoucherChannelListingStore      //
+	discountVoucherTranslation    store.VoucherTranslationStore         //
+	discountVoucherCustomer       store.DiscountVoucherCustomerStore    //
+	discountSale                  store.DiscountSaleStore               //
+	discountSaleTranslation       store.DiscountSaleTranslationStore    //
+	discountSaleChannelListing    store.DiscountSaleChannelListingStore //
+	orderDiscount                 store.OrderDiscountStore              //
+	giftCard                      store.GiftCardStore                   // gift card models
 }
 
 type SqlStore struct {
@@ -155,7 +163,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		os.Exit(ExitGenericFailure)
 	}
 
+	// account
 	store.stores.user = newSqlUserStore(store, metrics)
+	store.stores.address = newSqlAddressStore(store)
+	// common
 	store.stores.audit = newSqlAuditStore(store)
 	store.stores.cluster = newSqlClusterDiscoveryStore(store)
 	store.stores.session = newSqlSessionStore(store)
@@ -167,14 +178,26 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
 	store.stores.TermsOfService = newSqlTermsOfServiceStore(store, metrics)
 	store.stores.role = newSqlRoleStore(store)
-	store.stores.address = newSqlAddressStore(store)
 	store.stores.app = newAppSqlStore(store)
 	store.stores.appToken = newSqlAppTokenStore(store)
+	// channel
 	store.stores.channel = newSqlChannelStore(store)
+	// checkout
 	store.stores.checkout = newSqlCheckoutStore(store)
 	store.stores.checkoutLine = newSqlCheckoutLineStore(store)
+	// csv
 	store.stores.csvExportEvent = newSqlCsvExportEventStore(store)
+	// product and discount
 	store.stores.discountVoucher = newSqlVoucherStore(store)
+	store.stores.discountVoucherChannelListing = newSqlVoucherChannelListingStore(store)
+	store.stores.discountVoucherTranslation = newSqlVoucherTranslationStore(store)
+	store.stores.discountVoucherCustomer = newSqlVoucherCustomerStore(store)
+	store.stores.discountSale = newSqlDiscountSaleStore(store)
+	store.stores.discountSaleChannelListing = newSqlSaleChannelListingStore(store)
+	store.stores.discountSaleTranslation = newSqlDiscountSaleTranslationStore(store)
+	store.stores.orderDiscount = newSqlOrderDiscountStore(store)
+	// gift card
+	store.stores.giftCard = newSqlGiftCardStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -195,7 +218,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		os.Exit(ExitGenericFailure)
 	}
 
+	// account
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
+	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
+	// common
 	store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
 	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
 	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
@@ -206,14 +232,26 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
 	store.stores.TermsOfService.(SqlTermsOfServiceStore).createIndexesIfNotExists()
 	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
-	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
 	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
 	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
+	// channel
 	store.stores.channel.(*SqlChannelStore).createIndexesIfNotExists()
+	// checkout
 	store.stores.checkout.(*SqlCheckoutStore).createIndexesIfNotExists()
 	store.stores.checkoutLine.(*SqlCheckoutLineStore).createIndexesIfNotExists()
+	// csv
 	store.stores.csvExportEvent.(*SqlCsvExportEventStore).createIndexesIfNotExists()
+	// product and discount
 	store.stores.discountVoucher.(*SqlVoucherStore).createIndexesIfNotExists()
+	store.stores.discountVoucherChannelListing.(*SqlVoucherChannelListingStore).createIndexesIfNotExists()
+	store.stores.discountVoucherTranslation.(*SqlVoucherTranslationStore).createIndexesIfNotExists()
+	store.stores.discountSale.(*SqlDiscountSaleStore).createIndexesIfNotExists()
+	store.stores.discountSaleChannelListing.(*SqlSaleChannelListingStore).createIndexesIfNotExists()
+	store.stores.discountVoucherCustomer.(*SqlVoucherCustomerStore).createIndexesIfNotExists()
+	store.stores.discountSaleTranslation.(*SqlDiscountSaleTranslationStore).createIndexesIfNotExists()
+	store.stores.orderDiscount.(*SqlOrderDiscountStore).createIndexesIfNotExists()
+	// gift card
+	store.stores.giftCard.(*SqlGiftCardStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -883,15 +921,19 @@ func (ss *SqlStore) UnlockFromMaster() {
 	ss.lockedToMaster = false
 }
 
+// account
 func (ss *SqlStore) Address() store.AddressStore {
 	return ss.stores.address
-}
-func (ss *SqlStore) App() store.AppStore {
-	return ss.stores.app
 }
 func (ss *SqlStore) User() store.UserStore {
 	return ss.stores.user
 }
+
+func (ss *SqlStore) App() store.AppStore {
+	return ss.stores.app
+}
+
+// common
 func (ss *SqlStore) Session() store.SessionStore {
 	return ss.stores.session
 }
@@ -928,20 +970,54 @@ func (ss *SqlStore) TermsOfService() store.TermsOfServiceStore {
 func (ss *SqlStore) AppToken() store.AppTokenStore {
 	return ss.stores.appToken
 }
+
+// channel
 func (ss *SqlStore) Channel() store.ChannelStore {
 	return ss.stores.channel
 }
+
+// checkout
 func (ss *SqlStore) Checkout() store.CheckoutStore {
 	return ss.stores.checkout
 }
 func (ss *SqlStore) CheckoutLine() store.CheckoutLineStore {
 	return ss.stores.checkoutLine
 }
+
+// csv
 func (ss *SqlStore) CsvExportEvent() store.CsvExportEventStore {
 	return ss.stores.csvExportEvent
 }
+
+// product and discount
 func (ss *SqlStore) VoucherStore() store.DiscountVoucherStore {
 	return ss.stores.discountVoucher
+}
+func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
+	return ss.stores.discountVoucherChannelListing
+}
+func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {
+	return ss.stores.discountVoucherTranslation
+}
+func (ss *SqlStore) VoucherCustomer() store.DiscountVoucherCustomerStore {
+	return ss.stores.discountVoucherCustomer
+}
+func (ss *SqlStore) DiscountSale() store.DiscountSaleStore {
+	return ss.stores.discountSale
+}
+func (ss *SqlStore) DiscountSaleChannelListing() store.DiscountSaleChannelListingStore {
+	return ss.stores.discountSaleChannelListing
+}
+func (ss *SqlStore) OrderDiscount() store.OrderDiscountStore {
+	return ss.stores.orderDiscount
+}
+func (ss *SqlStore) DiscountSaleTranslation() store.DiscountSaleTranslationStore {
+	return ss.stores.discountSaleTranslation
+}
+
+// gift card
+func (ss *SqlStore) GiftCard() store.GiftCardStore {
+	return ss.stores.giftCard
 }
 
 func (ss *SqlStore) DropAllTables() {
