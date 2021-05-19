@@ -55,7 +55,16 @@ type Store interface {
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore
 	OrderDiscount() OrderDiscountStore
 	GiftCard() GiftCardStore
+	InvoiceEvent() InvoiceEventStore
+	Menu() MenuStore
+	MenuItemTranslation() MenuItemTranslationStore
 }
+
+type MenuItemTranslationStore interface{}
+
+type MenuStore interface{}
+
+type InvoiceEventStore interface{}
 
 type GiftCardStore interface{}
 

@@ -111,6 +111,9 @@ type SqlStoreStores struct {
 	discountSaleChannelListing    store.DiscountSaleChannelListingStore //
 	orderDiscount                 store.OrderDiscountStore              //
 	giftCard                      store.GiftCardStore                   // gift card models
+	invoiceEvent                  store.InvoiceEventStore               // invoice models
+	menu                          store.MenuStore                       // menu models
+	menuItemTranslation           store.MenuItemTranslationStore        //
 }
 
 type SqlStore struct {
@@ -198,6 +201,11 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.orderDiscount = newSqlOrderDiscountStore(store)
 	// gift card
 	store.stores.giftCard = newSqlGiftCardStore(store)
+	// invoice
+	store.stores.invoiceEvent = newSqlInvoiceEventStore(store)
+	// menu
+	store.stores.menu = newSqlMenuStore(store)
+	store.stores.menuItemTranslation = newSqlMenuItemTranslationStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -252,6 +260,11 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.orderDiscount.(*SqlOrderDiscountStore).createIndexesIfNotExists()
 	// gift card
 	store.stores.giftCard.(*SqlGiftCardStore).createIndexesIfNotExists()
+	// invoice
+	store.stores.invoiceEvent.(*SqlInvoiceEventStore).createIndexesIfNotExists()
+	// menu
+	store.stores.menu.(*SqlMenuStore).createIndexesIfNotExists()
+	store.stores.menuItemTranslation.(*SqlMenuItemTranslationStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -1018,6 +1031,19 @@ func (ss *SqlStore) DiscountSaleTranslation() store.DiscountSaleTranslationStore
 // gift card
 func (ss *SqlStore) GiftCard() store.GiftCardStore {
 	return ss.stores.giftCard
+}
+
+// menu
+func (ss *SqlStore) Menu() store.MenuStore {
+	return ss.stores.menu
+}
+func (ss *SqlStore) MenuItemTranslation() store.MenuItemTranslationStore {
+	return ss.stores.menuItemTranslation
+}
+
+// invoice
+func (ss *SqlStore) InvoiceEvent() store.InvoiceEventStore {
+	return ss.stores.invoiceEvent
 }
 
 func (ss *SqlStore) DropAllTables() {

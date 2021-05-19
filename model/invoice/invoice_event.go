@@ -6,6 +6,11 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+// max lengths for some invoice event's fields
+const (
+	INVOICE_EVENT_TYPE_MAX_LENGTH = 255
+)
+
 // events for invoice
 const (
 	REQUESTED          = "requested"
@@ -23,6 +28,7 @@ var InvoiceEventStrings = map[string]string{
 	SENT:               "The invoice has been sent",
 }
 
+// Model used to store events that happened during the invoice lifecycle.
 type InvoiceEvent struct {
 	Id         string          `json:"id"`
 	CreateAt   int64           `json:"create_at"`
