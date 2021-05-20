@@ -28,7 +28,7 @@ func newSqlCheckoutStore(sqlStore *SqlStore) store.CheckoutStore {
 		table.ColMap("TranslatedDiscountName").SetMaxSize(checkout.CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH)
 		table.ColMap("VoucherCode").SetMaxSize(checkout.CHECKOUT_VOUCHER_CODE_MAX_LENGTH)
 		table.ColMap("TrackingCode").SetMaxSize(checkout.CHECKOUT_TRACKING_CODE_MAX_LENGTH)
-		table.ColMap("Country").SetMaxSize(model.SingleCountryMaxLength)
+		table.ColMap("Country").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
 	}
 
 	return cs

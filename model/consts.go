@@ -4,23 +4,24 @@ import "regexp"
 
 // some default values for model fields
 const (
-	TimeZone                 = "UTC"
-	DEFAULT_LANGUAGE_CODE    = "en"
-	DEFAULT_LOCALE           = "en"
-	USER_AUTH_SERVICE_EMAIL  = "email"
-	DEFAULT_CURRENCY         = "USD"
-	USER_NAME_MAX_LENGTH     = 64
-	USER_EMAIL_MAX_LENGTH    = 128
-	USER_NAME_MIN_LENGTH     = 1
-	CURRENCY_CODE_MAX_LENGTH = 3
-	LANGUAGE_CODE_MAX_LENGTH = 5
-	URL_LINK_MAX_LENGTH      = 200
+	TimeZone                       = "UTC"
+	DEFAULT_LANGUAGE_CODE          = "en"
+	DEFAULT_LOCALE                 = "en"
+	USER_AUTH_SERVICE_EMAIL        = "email"
+	DEFAULT_CURRENCY               = "USD"
+	USER_NAME_MAX_LENGTH           = 64
+	USER_EMAIL_MAX_LENGTH          = 128
+	USER_NAME_MIN_LENGTH           = 1
+	CURRENCY_CODE_MAX_LENGTH       = 3
+	LANGUAGE_CODE_MAX_LENGTH       = 5
+	URL_LINK_MAX_LENGTH            = 200
+	SINGLE_COUNTRY_CODE_MAX_LENGTH = 2
+	IP_ADDRESS_MAX_LENGTH          = 39
 )
 
 var (
 	Countries                  map[string]string      // countries supported by app
 	Languages                  map[string]string      // Languages supported by app
-	SingleCountryMaxLength     int                    // single country max length
 	MultipleCountriesMaxLength int                    // some model's country fields contains multiple countries
 	ReservedName               []string               // usernames that can only be used by system
 	ValidUsernameChars         *regexp.Regexp         // regexp for username validation
@@ -357,7 +358,6 @@ func init() {
 		"system":   nil,
 	}
 
-	SingleCountryMaxLength = 2
 	for code := range Countries {
 		MultipleCountriesMaxLength += len(code)
 	}

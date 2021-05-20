@@ -2,6 +2,50 @@ package sqlstore
 
 import "github.com/sitename/sitename/store"
 
+type SqlStoreStores struct {
+	user                          store.UserStore                       // account models
+	address                       store.AddressStore                    //
+	audit                         store.AuditStore                      // common
+	cluster                       store.ClusterDiscoveryStore           //
+	session                       store.SessionStore                    //
+	system                        store.SystemStore                     //
+	preference                    store.PreferenceStore                 //
+	token                         store.TokenStore                      //
+	status                        store.StatusStore                     //
+	job                           store.JobStore                        //
+	userAccessToken               store.UserAccessTokenStore            //
+	role                          store.RoleStore                       //
+	TermsOfService                store.TermsOfServiceStore             //
+	app                           store.AppStore                        //
+	appToken                      store.AppTokenStore                   //
+	channel                       store.ChannelStore                    // channel models
+	checkout                      store.CheckoutStore                   // checkout models
+	checkoutLine                  store.CheckoutLineStore               //
+	csvExportEvent                store.CsvExportEventStore             // csv models
+	discountVoucher               store.DiscountVoucherStore            // product and discount models
+	discountVoucherChannelListing store.VoucherChannelListingStore      //
+	discountVoucherTranslation    store.VoucherTranslationStore         //
+	discountVoucherCustomer       store.DiscountVoucherCustomerStore    //
+	discountSale                  store.DiscountSaleStore               //
+	discountSaleTranslation       store.DiscountSaleTranslationStore    //
+	discountSaleChannelListing    store.DiscountSaleChannelListingStore //
+	orderDiscount                 store.OrderDiscountStore              //
+	giftCard                      store.GiftCardStore                   // gift card models
+	invoiceEvent                  store.InvoiceEventStore               // invoice models
+	menu                          store.MenuStore                       // menu models
+	menuItemTranslation           store.MenuItemTranslationStore        //
+	order                         store.OrderStore                      // order models
+	orderLine                     store.OrderLineStore                  //
+	fulfillment                   store.FulfillmentStore                //
+	fulfillmentLine               store.FulfillmentLineStore            //
+	orderEvent                    store.OrderEventStore                 //
+	page                          store.PageStore                       // page models
+	pageType                      store.PageTypeStore                   //
+	pageTranslation               store.PageTranslationStore            //
+	payment                       store.PaymentStore                    // payment models
+	transaction                   store.PaymentTransactionStore         //
+}
+
 func (store *SqlStore) setupTables() {
 	// account
 	store.stores.user = newSqlUserStore(store, store.metrics) // metrics is already set in caller
@@ -53,6 +97,9 @@ func (store *SqlStore) setupTables() {
 	store.stores.page = newSqlPageStore(store)
 	store.stores.pageTranslation = newSqlPageTranslationStore(store)
 	store.stores.pageType = newSqlPageTypeStore(store)
+	// payment
+	store.stores.payment = newSqlPaymentStore(store)
+	store.stores.transaction = newSqlPaymentTransactionStore(store)
 }
 
 func (store *SqlStore) indexingTableFields() {
@@ -105,6 +152,9 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.page.(*SqlPageStore).createIndexesIfNotExists()
 	store.stores.pageTranslation.(*SqlPageTranslationStore).createIndexesIfNotExists()
 	store.stores.pageType.(*SqlPageTypeStore).createIndexesIfNotExists()
+	// payment
+	store.stores.transaction.(*SqlPaymentTransactionStore).createIndexesIfNotExists()
+	store.stores.payment.(*SqlPaymentStore).createIndexesIfNotExists()
 }
 
 // account
@@ -245,4 +295,12 @@ func (ss *SqlStore) PageType() store.PageTypeStore {
 }
 func (ss *SqlStore) PageTranslation() store.PageTranslationStore {
 	return ss.stores.pageTranslation
+}
+
+// payment
+func (ss *SqlStore) Payment() store.PaymentStore {
+	return ss.stores.payment
+}
+func (ss *SqlStore) PaymentTransaction() store.PaymentTransactionStore {
+	return ss.stores.transaction
 }

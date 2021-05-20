@@ -21,7 +21,7 @@ const (
 	MAX_LENGTH_PAYMENT_TOKEN         = 512
 	MAX_LENGTH_CC_FIRST_DIGITS       = 6
 	MAX_LENGTH_CC_LAST_DIGITS        = 4
-	MAX_LENGTHCC_BRAND               = 40
+	MAX_LENGTH_CC_BRAND              = 40
 	MIN_CC_EXP_MONTH                 = 1
 	MAX_CC_EXP_MONTH                 = 12
 	MIN_CC_EXP_YEAR                  = 1000
@@ -86,7 +86,7 @@ type Payment struct {
 	BillingCountryArea string                `json:"billing_country_area"`
 	CcFirstDigits      string                `json:"cc_first_digits"`
 	CcLastDigits       string                `json:"cc_last_digits"`
-	CcBranh            string                `json:"cc_brand"`
+	CcBrand            string                `json:"cc_brand"`
 	CcExpMonth         *uint8                `json:"cc_exp_month"`
 	CcExpYear          *uint16               `json:"cc_exp_year"`
 	PaymentMethodType  string                `json:"payment_method_type"`
@@ -283,7 +283,6 @@ func (p *Payment) IsValid() *model.AppError {
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {
 		return outer("currency", &p.Id)
 	}
-
 	if utf8.RuneCountInString(p.BillingCountryArea) > MAX_LENGTH_PAYMENT_COMMON_256 {
 		return outer("billing_country_area", &p.Id)
 	}
@@ -301,6 +300,9 @@ func (p *Payment) IsValid() *model.AppError {
 	}
 	if len(p.PaymentMethodType) > MAX_LENGTH_PAYMENT_COMMON_256 {
 		return outer("payment_method_type", &p.Id)
+	}
+	if len(p.CcBrand) > MAX_LENGTH_CC_BRAND {
+		return outer("cc_brand", &p.Id)
 	}
 
 	return nil

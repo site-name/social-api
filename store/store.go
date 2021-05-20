@@ -66,7 +66,13 @@ type Store interface {
 	Page() PageStore
 	PageType() PageTypeStore
 	PageTranslation() PageTranslationStore
+	Payment() PaymentStore
+	PaymentTransaction() PaymentTransactionStore
 }
+
+type PaymentStore interface{}
+
+type PaymentTransactionStore interface{}
 
 type PageTypeStore interface{}
 

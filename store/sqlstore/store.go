@@ -26,7 +26,6 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/store"
 )
 
 type migrationDirection string
@@ -82,48 +81,6 @@ const (
 	ExitRemoveTable              = 134
 	ExitAlterPrimaryKey          = 139
 )
-
-type SqlStoreStores struct {
-	user                          store.UserStore                       // account models
-	address                       store.AddressStore                    //
-	audit                         store.AuditStore                      // common
-	cluster                       store.ClusterDiscoveryStore           //
-	session                       store.SessionStore                    //
-	system                        store.SystemStore                     //
-	preference                    store.PreferenceStore                 //
-	token                         store.TokenStore                      //
-	status                        store.StatusStore                     //
-	job                           store.JobStore                        //
-	userAccessToken               store.UserAccessTokenStore            //
-	role                          store.RoleStore                       //
-	TermsOfService                store.TermsOfServiceStore             //
-	app                           store.AppStore                        //
-	appToken                      store.AppTokenStore                   //
-	channel                       store.ChannelStore                    // channel models
-	checkout                      store.CheckoutStore                   // checkout models
-	checkoutLine                  store.CheckoutLineStore               //
-	csvExportEvent                store.CsvExportEventStore             // csv models
-	discountVoucher               store.DiscountVoucherStore            // product and discount models
-	discountVoucherChannelListing store.VoucherChannelListingStore      //
-	discountVoucherTranslation    store.VoucherTranslationStore         //
-	discountVoucherCustomer       store.DiscountVoucherCustomerStore    //
-	discountSale                  store.DiscountSaleStore               //
-	discountSaleTranslation       store.DiscountSaleTranslationStore    //
-	discountSaleChannelListing    store.DiscountSaleChannelListingStore //
-	orderDiscount                 store.OrderDiscountStore              //
-	giftCard                      store.GiftCardStore                   // gift card models
-	invoiceEvent                  store.InvoiceEventStore               // invoice models
-	menu                          store.MenuStore                       // menu models
-	menuItemTranslation           store.MenuItemTranslationStore        //
-	order                         store.OrderStore                      // order models
-	orderLine                     store.OrderLineStore                  //
-	fulfillment                   store.FulfillmentStore                //
-	fulfillmentLine               store.FulfillmentLineStore            //
-	orderEvent                    store.OrderEventStore                 //
-	page                          store.PageStore                       // page models
-	pageType                      store.PageTypeStore                   //
-	pageTranslation               store.PageTranslationStore            //
-}
 
 type SqlStore struct {
 	// rrCounter and srCounter should be kept first.
