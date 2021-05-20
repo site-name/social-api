@@ -19,6 +19,7 @@ const (
 	MAX_LENGTH_PAYMENT_GATEWAY       = 255
 	MAX_LENGTH_PAYMENT_CHARGE_STATUS = 20
 	MAX_LENGTH_PAYMENT_TOKEN         = 512
+	PAYMENT_PSP_REFERENCE_MAX_LENGTH = 512
 	MAX_LENGTH_CC_FIRST_DIGITS       = 6
 	MAX_LENGTH_CC_LAST_DIGITS        = 4
 	MAX_LENGTH_CC_BRAND              = 40
@@ -94,6 +95,7 @@ type Payment struct {
 	ExtraData          string                `json:"extra_data"`
 	ReturnUrl          *string               `json:"return_url_url"`
 	Transactions       []*PaymentTransaction `json:"transactions" db:"-"`
+	PspReference       *string               `json:"psp_reference"` // db index
 }
 
 func (p *Payment) String() string {
@@ -303,6 +305,9 @@ func (p *Payment) IsValid() *model.AppError {
 	}
 	if len(p.CcBrand) > MAX_LENGTH_CC_BRAND {
 		return outer("cc_brand", &p.Id)
+	}
+	if p.PspReference != nil && len(*p.PspReference) > PAYMENT_PSP_REFERENCE_MAX_LENGTH {
+		return outer("psp_reference", &p.Id)
 	}
 
 	return nil

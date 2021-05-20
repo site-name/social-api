@@ -58,26 +58,66 @@ type Store interface {
 	InvoiceEvent() InvoiceEventStore
 	Menu() MenuStore
 	MenuItemTranslation() MenuItemTranslationStore
-	Order() OrderStore
-	OrderLine() OrderLineStore
+
 	Fulfillment() FulfillmentStore
 	FulfillmentLine() FulfillmentLineStore
+	// order
 	OrderEvent() OrderEventStore
+	Order() OrderStore
+	OrderLine() OrderLineStore
+	// page
 	Page() PageStore
 	PageType() PageTypeStore
 	PageTranslation() PageTranslationStore
+	// payment
 	Payment() PaymentStore
 	PaymentTransaction() PaymentTransactionStore
+	// product
+	Category() CategoryStore
+	CategoryTranslation() CategoryTranslationStore
+	ProductType() ProductTypeStore
+	Product() ProductStore
+	ProductTranslation() ProductTranslationStore
+	ProductChannelListing() ProductChannelListingStore
+	ProductVariant() ProductVariantStore
+	ProductVariantTranslation() ProductVariantTranslationStore
+	ProductVariantChannelListing() ProductVariantChannelListingStore
+	DigitalContent() DigitalContentStore
+	DigitalContentUrl() DigitalContentUrlStore
+	ProductMedia() ProductMediaStore
+	VariantMedia() VariantMediaStore
+	CollectionProduct() CollectionProductStore
+	Collection() CollectionStore
+	CollectionChannelListing() CollectionChannelListingStore
+	CollectionTranslation() CollectionTranslationStore
 }
 
-type PaymentStore interface{}
+// product----------
+type CollectionTranslationStore interface{}
+type CollectionChannelListingStore interface{}
+type CollectionStore interface{}
+type CollectionProductStore interface{}
+type VariantMediaStore interface{}
+type ProductMediaStore interface{}
+type DigitalContentUrlStore interface{}
+type DigitalContentStore interface{}
+type ProductVariantChannelListingStore interface{}
+type ProductVariantTranslationStore interface{}
+type ProductVariantStore interface{}
+type ProductChannelListingStore interface{}
+type ProductTranslationStore interface{}
+type ProductTypeStore interface{}
+type CategoryTranslationStore interface{}
+type CategoryStore interface{}
+type ProductStore interface{}
 
+// payment
+type PaymentStore interface{}
 type PaymentTransactionStore interface{}
 
+// page
 type PageTypeStore interface{}
-
 type PageTranslationStore interface{}
-
 type PageStore interface{}
 
 type OrderEventStore interface{}

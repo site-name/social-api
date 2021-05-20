@@ -27,8 +27,5 @@ func newSqlPaymentTransactionStore(s *SqlStore) store.PaymentTransactionStore {
 }
 
 func (ps *SqlPaymentTransactionStore) createIndexesIfNotExists() {
-	// ps.CreateIndexIfNotExists("idx_pages_title", "Transactions", "Title")
-	// ps.CreateIndexIfNotExists("idx_pages_slug", "Transactions", "Slug")
 
-	// ps.CreateIndexIfNotExists("idx_pages_title_lower_textpattern", "Transactions", "lower(Title) text_pattern_ops")
 }

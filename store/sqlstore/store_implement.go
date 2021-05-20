@@ -3,47 +3,64 @@ package sqlstore
 import "github.com/sitename/sitename/store"
 
 type SqlStoreStores struct {
-	user                          store.UserStore                       // account models
-	address                       store.AddressStore                    //
-	audit                         store.AuditStore                      // common
-	cluster                       store.ClusterDiscoveryStore           //
-	session                       store.SessionStore                    //
-	system                        store.SystemStore                     //
-	preference                    store.PreferenceStore                 //
-	token                         store.TokenStore                      //
-	status                        store.StatusStore                     //
-	job                           store.JobStore                        //
-	userAccessToken               store.UserAccessTokenStore            //
-	role                          store.RoleStore                       //
-	TermsOfService                store.TermsOfServiceStore             //
-	app                           store.AppStore                        //
-	appToken                      store.AppTokenStore                   //
-	channel                       store.ChannelStore                    // channel models
-	checkout                      store.CheckoutStore                   // checkout models
-	checkoutLine                  store.CheckoutLineStore               //
-	csvExportEvent                store.CsvExportEventStore             // csv models
-	discountVoucher               store.DiscountVoucherStore            // product and discount models
-	discountVoucherChannelListing store.VoucherChannelListingStore      //
-	discountVoucherTranslation    store.VoucherTranslationStore         //
-	discountVoucherCustomer       store.DiscountVoucherCustomerStore    //
-	discountSale                  store.DiscountSaleStore               //
-	discountSaleTranslation       store.DiscountSaleTranslationStore    //
-	discountSaleChannelListing    store.DiscountSaleChannelListingStore //
-	orderDiscount                 store.OrderDiscountStore              //
-	giftCard                      store.GiftCardStore                   // gift card models
-	invoiceEvent                  store.InvoiceEventStore               // invoice models
-	menu                          store.MenuStore                       // menu models
-	menuItemTranslation           store.MenuItemTranslationStore        //
-	order                         store.OrderStore                      // order models
-	orderLine                     store.OrderLineStore                  //
-	fulfillment                   store.FulfillmentStore                //
-	fulfillmentLine               store.FulfillmentLineStore            //
-	orderEvent                    store.OrderEventStore                 //
-	page                          store.PageStore                       // page models
-	pageType                      store.PageTypeStore                   //
-	pageTranslation               store.PageTranslationStore            //
-	payment                       store.PaymentStore                    // payment models
-	transaction                   store.PaymentTransactionStore         //
+	user                          store.UserStore                         // account models
+	address                       store.AddressStore                      //
+	audit                         store.AuditStore                        // common
+	cluster                       store.ClusterDiscoveryStore             //
+	session                       store.SessionStore                      //
+	system                        store.SystemStore                       //
+	preference                    store.PreferenceStore                   //
+	token                         store.TokenStore                        //
+	status                        store.StatusStore                       //
+	job                           store.JobStore                          //
+	userAccessToken               store.UserAccessTokenStore              //
+	role                          store.RoleStore                         //
+	TermsOfService                store.TermsOfServiceStore               //
+	app                           store.AppStore                          //
+	appToken                      store.AppTokenStore                     //
+	channel                       store.ChannelStore                      // channel models
+	checkout                      store.CheckoutStore                     // checkout models
+	checkoutLine                  store.CheckoutLineStore                 //
+	csvExportEvent                store.CsvExportEventStore               // csv models
+	discountVoucher               store.DiscountVoucherStore              // product and discount models
+	discountVoucherChannelListing store.VoucherChannelListingStore        //
+	discountVoucherTranslation    store.VoucherTranslationStore           //
+	discountVoucherCustomer       store.DiscountVoucherCustomerStore      //
+	discountSale                  store.DiscountSaleStore                 //
+	discountSaleTranslation       store.DiscountSaleTranslationStore      //
+	discountSaleChannelListing    store.DiscountSaleChannelListingStore   //
+	orderDiscount                 store.OrderDiscountStore                //
+	giftCard                      store.GiftCardStore                     // gift card models
+	invoiceEvent                  store.InvoiceEventStore                 // invoice models
+	menu                          store.MenuStore                         // menu models
+	menuItemTranslation           store.MenuItemTranslationStore          //
+	order                         store.OrderStore                        // order models
+	orderLine                     store.OrderLineStore                    //
+	fulfillment                   store.FulfillmentStore                  //
+	fulfillmentLine               store.FulfillmentLineStore              //
+	orderEvent                    store.OrderEventStore                   //
+	page                          store.PageStore                         // page models
+	pageType                      store.PageTypeStore                     //
+	pageTranslation               store.PageTranslationStore              //
+	payment                       store.PaymentStore                      // payment models
+	transaction                   store.PaymentTransactionStore           //
+	category                      store.CategoryStore                     // product
+	categoryTranslation           store.CategoryTranslationStore          //
+	productType                   store.ProductTypeStore                  //
+	product                       store.ProductStore                      //
+	productTranslation            store.ProductTranslationStore           //
+	productChannelListing         store.ProductChannelListingStore        //
+	productVariant                store.ProductVariantStore               //
+	productVariantTranslation     store.ProductVariantTranslationStore    //
+	productVariantChannelListing  store.ProductVariantChannelListingStore //
+	digitalContent                store.DigitalContentStore               //
+	digitalContentUrl             store.DigitalContentUrlStore            //
+	productMedia                  store.ProductMediaStore                 //
+	variantMedia                  store.VariantMediaStore                 //
+	collectionProduct             store.CollectionProductStore            //
+	collection                    store.CollectionStore                   //
+	collectionChannelListing      store.CollectionChannelListingStore     //
+	collectionTranslation         store.CollectionTranslationStore        //
 }
 
 // setup tables before performing database migration
@@ -101,6 +118,24 @@ func (store *SqlStore) setupTables() {
 	// payment
 	store.stores.payment = newSqlPaymentStore(store)
 	store.stores.transaction = newSqlPaymentTransactionStore(store)
+	// product
+	store.stores.category = newSqlCategoryStore(store)
+	store.stores.categoryTranslation = newSqlCategoryTranslationStore(store)
+	store.stores.productType = newSqlProductTypeStore(store)
+	store.stores.product = newSqlProductStore(store)
+	store.stores.productTranslation = newSqlProductTranslationStore(store)
+	store.stores.productChannelListing = newSqlProductChannelListingStore(store)
+	store.stores.productVariant = newSqlProductVariantStore(store)
+	store.stores.productVariantTranslation = newSqlProductVariantTranslationStore(store)
+	store.stores.productVariantChannelListing = newSqlProductVariantChannelListingStore(store)
+	store.stores.digitalContent = newSqlDigitalContentStore(store)
+	store.stores.digitalContentUrl = newSqlDigitalContentUrlStore(store)
+	store.stores.productMedia = newSqlProductMediaStore(store)
+	store.stores.variantMedia = newSqlVariantMediaStore(store)
+	store.stores.collectionProduct = newSqlCollectionProductStore(store)
+	store.stores.collection = newSqlCollectionStore(store)
+	store.stores.collectionChannelListing = newSqlCollectionChannelListingStore(store)
+	store.stores.collectionTranslation = newSqlCollectionTranslationStore(store)
 }
 
 // performs database indexing
@@ -120,7 +155,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.status.(*SqlStatusStore).createIndexesIfNotExists()
 	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
 	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
-	store.stores.TermsOfService.(SqlTermsOfServiceStore).createIndexesIfNotExists()
+	store.stores.TermsOfService.(*SqlTermsOfServiceStore).createIndexesIfNotExists()
 	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
 	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
 	// channel
@@ -159,6 +194,24 @@ func (store *SqlStore) indexingTableFields() {
 	// payment
 	store.stores.transaction.(*SqlPaymentTransactionStore).createIndexesIfNotExists()
 	store.stores.payment.(*SqlPaymentStore).createIndexesIfNotExists()
+	// product
+	store.stores.category.(*SqlCategoryStore).createIndexesIfNotExists()
+	store.stores.categoryTranslation.(*SqlCategoryTranslationStore).createIndexesIfNotExists()
+	store.stores.productType.(*SqlProductTypeStore).createIndexesIfNotExists()
+	store.stores.product.(*SqlProductStore).createIndexesIfNotExists()
+	store.stores.productTranslation.(*SqlProductTranslationStore).createIndexesIfNotExists()
+	store.stores.productChannelListing.(*SqlProductChannelListingStore).createIndexesIfNotExists()
+	store.stores.productVariant.(*SqlProductVariantStore).createIndexesIfNotExists()
+	store.stores.productVariantTranslation.(*SqlProductVariantTranslationStore).createIndexesIfNotExists()
+	store.stores.productVariantChannelListing.(*SqlProductVariantChannelListingStore).createIndexesIfNotExists()
+	store.stores.digitalContent.(*SqlDigitalContentStore).createIndexesIfNotExists()
+	store.stores.digitalContentUrl.(*SqlDigitalContentUrlStore).createIndexesIfNotExists()
+	store.stores.productMedia.(*SqlProductMediaStore).createIndexesIfNotExists()
+	store.stores.variantMedia.(*SqlVariantMediaStore).createIndexesIfNotExists()
+	store.stores.collectionProduct.(*SqlCollectionProductStore).createIndexesIfNotExists()
+	store.stores.collection.(*SqlCollectionStore).createIndexesIfNotExists()
+	store.stores.collectionChannelListing.(*SqlCollectionChannelListingStore).createIndexesIfNotExists()
+	store.stores.collectionTranslation.(*SqlCollectionTranslationStore).createIndexesIfNotExists()
 }
 
 // account
@@ -307,4 +360,57 @@ func (ss *SqlStore) Payment() store.PaymentStore {
 }
 func (ss *SqlStore) PaymentTransaction() store.PaymentTransactionStore {
 	return ss.stores.transaction
+}
+
+// product
+func (ss *SqlStore) Category() store.CategoryStore {
+	return ss.stores.category
+}
+func (ss *SqlStore) CategoryTranslation() store.CategoryTranslationStore {
+	return ss.stores.categoryTranslation
+}
+func (ss *SqlStore) ProductType() store.ProductTypeStore {
+	return ss.stores.productType
+}
+func (ss *SqlStore) Product() store.ProductStore {
+	return ss.stores.product
+}
+func (ss *SqlStore) ProductTranslation() store.ProductTranslationStore {
+	return ss.stores.productTranslation
+}
+func (ss *SqlStore) ProductChannelListing() store.ProductChannelListingStore {
+	return ss.stores.productChannelListing
+}
+func (ss *SqlStore) ProductVariant() store.ProductVariantStore {
+	return ss.stores.productVariant
+}
+func (ss *SqlStore) ProductVariantTranslation() store.ProductVariantTranslationStore {
+	return ss.stores.productVariantTranslation
+}
+func (ss *SqlStore) ProductVariantChannelListing() store.ProductVariantChannelListingStore {
+	return ss.stores.productVariantChannelListing
+}
+func (ss *SqlStore) DigitalContent() store.DigitalContentStore {
+	return ss.stores.digitalContent
+}
+func (ss *SqlStore) DigitalContentUrl() store.DigitalContentUrlStore {
+	return ss.stores.digitalContentUrl
+}
+func (ss *SqlStore) ProductMedia() store.ProductMediaStore {
+	return ss.stores.productMedia
+}
+func (ss *SqlStore) VariantMedia() store.VariantMediaStore {
+	return ss.stores.variantMedia
+}
+func (ss *SqlStore) CollectionProduct() store.CollectionProductStore {
+	return ss.stores.collectionProduct
+}
+func (ss *SqlStore) Collection() store.CollectionStore {
+	return ss.stores.collection
+}
+func (ss *SqlStore) CollectionChannelListing() store.CollectionChannelListingStore {
+	return ss.stores.collectionChannelListing
+}
+func (ss *SqlStore) CollectionTranslation() store.CollectionTranslationStore {
+	return ss.stores.collectionTranslation
 }
