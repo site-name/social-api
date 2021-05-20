@@ -35,7 +35,7 @@ func (f *Fulfillment) IsValid() *model.AppError {
 		"Fulfillment.IsValid",
 	)
 	if !model.IsValidId(f.Id) {
-		return outer("Id", nil)
+		return outer("id", nil)
 	}
 	if f.CreateAt == 0 {
 		return outer("create_at", &f.Id)

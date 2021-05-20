@@ -69,7 +69,7 @@ func (o *OrderLine) IsValid() *model.AppError {
 		"OrderLine.IsValid",
 	)
 	if !model.IsValidId(o.Id) {
-		return outer("Id", nil)
+		return outer("id", nil)
 	}
 	if !model.IsValidId(o.OrderID) {
 		return outer("order_id", &o.Id)

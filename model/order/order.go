@@ -134,7 +134,7 @@ func (o *Order) IsValid() *model.AppError {
 		"Order.IsValid",
 	)
 	if !model.IsValidId(o.Id) {
-		return outer("Id", nil)
+		return outer("id", nil)
 	}
 	if o.UserID != nil && !model.IsValidId(*o.UserID) {
 		return outer("user_id", &o.Id)

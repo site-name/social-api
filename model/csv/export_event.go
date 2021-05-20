@@ -27,12 +27,12 @@ var ExportTypeString = map[string]string{
 
 // Model used to store events that happened during the export file lifecycle.
 type ExportEvent struct {
-	Id           string          `json:"id"`
-	Date         int64           `json:"date"`
-	Type         string          `json:"type"`
-	Parameters   model.StringMap `json:"parameters"`
-	ExportFileID string          `json:"export_file_id"`
-	UserID       *string         `json:"user_id"`
+	Id           string           `json:"id"`
+	Date         int64            `json:"date"`
+	Type         string           `json:"type"`
+	Parameters   *model.StringMap `json:"parameters"`
+	ExportFileID string           `json:"export_file_id"`
+	UserID       *string          `json:"user_id"`
 }
 
 func (e *ExportEvent) IsValid() *model.AppError {
@@ -62,4 +62,11 @@ func (e *ExportEvent) IsValid() *model.AppError {
 
 func (e *ExportEvent) ToJson() string {
 	return model.ModelToJson(e)
+}
+
+func (e *ExportEvent) PreSave() {
+	if e.Id == "" {
+		e.Id = model.NewId()
+	}
+	e.Date = model.GetMillis()
 }

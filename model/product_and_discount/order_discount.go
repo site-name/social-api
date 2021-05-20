@@ -53,7 +53,7 @@ func (o *OrderDiscount) IsValid() *model.AppError {
 	)
 
 	if !model.IsValidId(o.Id) {
-		return outer("Id", nil)
+		return outer("id", nil)
 	}
 	if o.OrderID != nil && !model.IsValidId(*o.OrderID) {
 		return outer("order_id", &o.Id)

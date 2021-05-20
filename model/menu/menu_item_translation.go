@@ -23,7 +23,7 @@ func (m *MenuItemTranslation) IsValid() *model.AppError {
 		"MenuItemTranslation.IsValid",
 	)
 	if !model.IsValidId(m.Id) {
-		return outer("Id", nil)
+		return outer("id", nil)
 	}
 	if !model.IsValidId(m.MenuItemID) {
 		return outer("menu_item_id", &m.Id)
