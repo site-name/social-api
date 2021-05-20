@@ -277,7 +277,6 @@ func (u *User) IsValid() *model.AppError {
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
 		return outer("password_limit", &u.Id)
 	}
-	// TODO: need investigate
 	if tag, err := language.Parse(u.Locale); err != nil || !strings.EqualFold(tag.String(), u.Locale) {
 		return outer("locale", &u.Id)
 	}

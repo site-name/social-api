@@ -2,6 +2,7 @@ package model
 
 import "regexp"
 
+// some default values for model fields
 const (
 	TimeZone                 = "UTC"
 	DEFAULT_LANGUAGE_CODE    = "en"
@@ -12,6 +13,7 @@ const (
 	USER_EMAIL_MAX_LENGTH    = 128
 	USER_NAME_MIN_LENGTH     = 1
 	CURRENCY_CODE_MAX_LENGTH = 3
+	URL_LINK_MAX_LENGTH      = 200
 )
 
 var (

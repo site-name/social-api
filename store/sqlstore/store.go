@@ -114,6 +114,11 @@ type SqlStoreStores struct {
 	invoiceEvent                  store.InvoiceEventStore               // invoice models
 	menu                          store.MenuStore                       // menu models
 	menuItemTranslation           store.MenuItemTranslationStore        //
+	order                         store.OrderStore                      // order models
+	orderLine                     store.OrderLineStore                  //
+	fulfillment                   store.FulfillmentStore                //
+	fulfillmentLine               store.FulfillmentLineStore            //
+	orderEvent                    store.OrderEventStore                 //
 }
 
 type SqlStore struct {
@@ -206,6 +211,12 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// menu
 	store.stores.menu = newSqlMenuStore(store)
 	store.stores.menuItemTranslation = newSqlMenuItemTranslationStore(store)
+	// order
+	store.stores.order = newSqlOrderStore(store)
+	store.stores.orderLine = newSqlOrderLineStore(store)
+	store.stores.fulfillment = newSqlFulfillmentStore(store)
+	store.stores.fulfillmentLine = newSqlFulfillmentLineStore(store)
+	store.stores.orderEvent = newSqlOrderEventStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -265,6 +276,12 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// menu
 	store.stores.menu.(*SqlMenuStore).createIndexesIfNotExists()
 	store.stores.menuItemTranslation.(*SqlMenuItemTranslationStore).createIndexesIfNotExists()
+	// order
+	store.stores.order.(*SqlOrderStore).createIndexesIfNotExists()
+	store.stores.orderLine.(*SqlOrderLineStore).createIndexesIfNotExists()
+	store.stores.fulfillment.(*SqlFulfillmentStore).createIndexesIfNotExists()
+	store.stores.fulfillmentLine.(*SqlFulfillmentLineStore).createIndexesIfNotExists()
+	store.stores.orderEvent.(*SqlOrderEventStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -1044,6 +1061,23 @@ func (ss *SqlStore) MenuItemTranslation() store.MenuItemTranslationStore {
 // invoice
 func (ss *SqlStore) InvoiceEvent() store.InvoiceEventStore {
 	return ss.stores.invoiceEvent
+}
+
+// order
+func (ss *SqlStore) Order() store.OrderStore {
+	return ss.stores.order
+}
+func (ss *SqlStore) OrderLine() store.OrderLineStore {
+	return ss.stores.orderLine
+}
+func (ss *SqlStore) Fulfillment() store.FulfillmentStore {
+	return ss.stores.fulfillment
+}
+func (ss *SqlStore) FulfillmentLine() store.FulfillmentLineStore {
+	return ss.stores.fulfillmentLine
+}
+func (ss *SqlStore) OrderEvent() store.OrderEventStore {
+	return ss.stores.orderEvent
 }
 
 func (ss *SqlStore) DropAllTables() {

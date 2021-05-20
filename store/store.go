@@ -58,7 +58,22 @@ type Store interface {
 	InvoiceEvent() InvoiceEventStore
 	Menu() MenuStore
 	MenuItemTranslation() MenuItemTranslationStore
+	Order() OrderStore
+	OrderLine() OrderLineStore
+	Fulfillment() FulfillmentStore
+	FulfillmentLine() FulfillmentLineStore
+	OrderEvent() OrderEventStore
 }
+
+type OrderEventStore interface{}
+
+type FulfillmentLineStore interface{}
+
+type FulfillmentStore interface{}
+
+type OrderLineStore interface{}
+
+type OrderStore interface{}
 
 type MenuItemTranslationStore interface{}
 
