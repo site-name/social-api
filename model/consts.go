@@ -20,12 +20,12 @@ const (
 )
 
 var (
-	Countries                  map[string]string      // countries supported by app
-	Languages                  map[string]string      // Languages supported by app
-	MultipleCountriesMaxLength int                    // some model's country fields contains multiple countries
-	ReservedName               []string               // usernames that can only be used by system
-	ValidUsernameChars         *regexp.Regexp         // regexp for username validation
-	RestrictedUsernames        map[string]interface{} // usernames that cannot be used
+	Countries                     map[string]string      // countries supported by app
+	Languages                     map[string]string      // Languages supported by app
+	MULTIPLE_COUNTRIES_MAX_LENGTH int                    // some model's country fields contains multiple countries
+	ReservedName                  []string               // usernames that can only be used by system
+	ValidUsernameChars            *regexp.Regexp         // regexp for username validation
+	RestrictedUsernames           map[string]interface{} // usernames that cannot be used
 )
 
 func init() {
@@ -359,9 +359,9 @@ func init() {
 	}
 
 	for code := range Countries {
-		MultipleCountriesMaxLength += len(code)
+		MULTIPLE_COUNTRIES_MAX_LENGTH += len(code)
 	}
-	MultipleCountriesMaxLength += len(Countries) - 1
+	MULTIPLE_COUNTRIES_MAX_LENGTH += len(Countries) - 1
 }
 
 // NamePart is an Enum

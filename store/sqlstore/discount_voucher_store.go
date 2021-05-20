@@ -23,7 +23,7 @@ func newSqlVoucherStore(sqlStore *SqlStore) store.DiscountVoucherStore {
 		table.ColMap("Name").SetMaxSize(product_and_discount.VOUCHER_NAME_MAX_LENGTH)
 		table.ColMap("DiscountValueType").SetMaxSize(product_and_discount.VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH).
 			SetDefaultConstraint(model.NewString(product_and_discount.FIXED))
-		table.ColMap("Countries").SetMaxSize(model.MultipleCountriesMaxLength)
+		table.ColMap("Countries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
 		// table.ColMap("StartDate").SetDefaultConstraint(model.NewString("NOW()"))
 		// table.ColMap("Used").SetDefaultConstraint(model.NewString("0"))
 
