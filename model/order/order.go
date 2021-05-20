@@ -1,6 +1,7 @@
 package order
 
 import (
+	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -123,6 +124,7 @@ type Order struct {
 	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`
 	Weight                       *measurement.Weight    `json:"weight" db:"-"`
 	RedirectUrl                  *string                `json:"redirect_url"`
+	model.ModelMetadata
 }
 
 func (o *Order) IsValid() *model.AppError {
@@ -266,6 +268,12 @@ func (o *Order) ToJson() string {
 	return model.ModelToJson(o)
 }
 
+func OrderFromJson(data io.Reader) *Order {
+	var o Order
+	model.ModelFromJson(&o, data)
+	return &o
+}
+
 func (o *Order) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
@@ -326,4 +334,38 @@ func (o *Order) IsPartlyPaid() bool {
 
 func (o *Order) GetCustomerEmail() string {
 	panic("not implemented") // TODO: fixme
+}
+
+func (o *Order) String() string {
+	return "#" + o.Id
+}
+
+func (o *Order) IsDraft() bool {
+	return o.Status == DRAFT
+}
+
+func (o *Order) IsUnconfirmed() bool {
+	return o.Status == UNCONFIRMED
+}
+
+func (o *Order) IsOpen() bool {
+	return o.Status == DRAFT || o.Status == PARTIALLY_FULFILLED
+}
+
+func (o *Order) TotalCaptured() *goprices.Money {
+	return o.TotalPaid
+}
+
+func (o *Order) TotalBalance() (*goprices.Money, error) {
+	return o.TotalCaptured().Sub(o.Total.Gross)
+}
+
+func (o *Order) GetTotalWeight() *measurement.Weight {
+	if o.Weight != nil {
+		return o.Weight
+	}
+	return &measurement.Weight{
+		Amount: o.WeightAmount,
+		Unit:   o.WeightUnit,
+	}
 }
