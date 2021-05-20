@@ -46,6 +46,7 @@ type SqlStoreStores struct {
 	transaction                   store.PaymentTransactionStore         //
 }
 
+// setup tables before performing database migration
 func (store *SqlStore) setupTables() {
 	// account
 	store.stores.user = newSqlUserStore(store, store.metrics) // metrics is already set in caller
@@ -102,6 +103,7 @@ func (store *SqlStore) setupTables() {
 	store.stores.transaction = newSqlPaymentTransactionStore(store)
 }
 
+// performs database indexing
 func (store *SqlStore) indexingTableFields() {
 	// account
 	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
@@ -110,13 +112,15 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
 	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
 	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
+	// preference
 	store.stores.preference.(*SqlPreferenceStore).createIndexesIfNotExists()
+	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
+
 	store.stores.token.(*SqlTokenStore).createIndexesIfNotExists()
 	store.stores.status.(*SqlStatusStore).createIndexesIfNotExists()
 	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
 	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
 	store.stores.TermsOfService.(SqlTermsOfServiceStore).createIndexesIfNotExists()
-	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
 	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
 	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
 	// channel

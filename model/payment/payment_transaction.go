@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -42,13 +42,13 @@ var TransactionKindString = map[string]string{
 }
 
 const (
-	TRANSACTION_KIND_MAX_LENGTH  = 25
-	SEARCHABLE_KEY_MAX_LENGTH    = 512
-	TRANSACTION_ERROR_MAX_LENGTH = 256
+	TRANSACTION_KIND_MAX_LENGTH        = 25
+	TRANSACTION_ERROR_MAX_LENGTH       = 256
+	TRANSACTION_CUSTOMER_ID_MAX_LENGTH = 256
+	// SEARCHABLE_KEY_MAX_LENGTH    = 512
 )
 
 // Represents a single payment operation.
-//
 // Transaction is an attempt to transfer money between your store
 // and your customers, with a chosen payment method.
 type PaymentTransaction struct {
@@ -66,7 +66,7 @@ type PaymentTransaction struct {
 	CustomerID         *string          `json:"customer_id"`
 	GatewayResponse    model.StringMap  `json:"gateway_response"`
 	AlreadyProcessed   bool             `json:"already_processed"`
-	SearchableKey      *string          `json:"searchable_key"`
+	// SearchableKey      *string          `json:"searchable_key"`
 }
 
 func (p *PaymentTransaction) String() string {
@@ -78,8 +78,8 @@ func (p *PaymentTransaction) String() string {
 	)
 }
 
-func (p *PaymentTransaction) GetAmount() *model.Money {
-	return &model.Money{
+func (p *PaymentTransaction) GetAmount() *goprices.Money {
+	return &goprices.Money{
 		Amount:   p.Amount,
 		Currency: p.Currency,
 	}
@@ -97,7 +97,7 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if !model.IsValidId(p.PaymentID) {
 		return outer("payment_id", &p.Id)
 	}
-	if p.CustomerID != nil && !model.IsValidId(*p.CustomerID) {
+	if p.CustomerID != nil && len(*p.CustomerID) > TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
 		return outer("customer_id", &p.Id)
 	}
 	if p.CreateAt == 0 {
@@ -112,9 +112,9 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
 		return outer("error", &p.Id)
 	}
-	if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
-		return outer("searchable_key", &p.Id)
-	}
+	// if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
+	// 	return outer("searchable_key", &p.Id)
+	// }
 	if un, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(un.String(), p.Currency) {
 		return outer("currency", &p.Id)
 	}
@@ -129,11 +129,9 @@ func (p *PaymentTransaction) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
-
 	if p.Amount == nil {
 		p.Amount = &decimal.Zero
 	}
-
 	p.CreateAt = model.GetMillis()
 }
 
