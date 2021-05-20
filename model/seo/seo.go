@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+// max lengths for seo's fields
 const (
 	SEO_TITLE_MAX_LENGTH       = 70
 	SEO_DESCRIPTION_MAX_LENGTH = 300

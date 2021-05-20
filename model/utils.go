@@ -162,7 +162,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
 	var id, details string
 	return func(fieldName string, typeId *string) *AppError {
-		id = fmt.Sprintf(format, fieldName)
+		id = fmt.Sprintf(format, strings.ToLower(fieldName))
 		if !strings.EqualFold(fieldName, "id") && typeId != nil {
 			details = detailKey + *typeId
 		}
