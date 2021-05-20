@@ -63,7 +63,16 @@ type Store interface {
 	Fulfillment() FulfillmentStore
 	FulfillmentLine() FulfillmentLineStore
 	OrderEvent() OrderEventStore
+	Page() PageStore
+	PageType() PageTypeStore
+	PageTranslation() PageTranslationStore
 }
+
+type PageTypeStore interface{}
+
+type PageTranslationStore interface{}
+
+type PageStore interface{}
 
 type OrderEventStore interface{}
 

@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/seo"
 	"golang.org/x/text/language"
 )
 
@@ -21,6 +22,7 @@ type PageTranslation struct {
 	PageID       string                 `json:"page_id"`
 	Title        string                 `json:"title"` // unique
 	Content      *model.StringInterface `json:"content"`
+	seo.SeoTranslation
 }
 
 func (p *PageTranslation) IsValid() *model.AppError {

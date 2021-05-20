@@ -22,6 +22,7 @@ import (
 	"github.com/sitename/sitename/db/migrations"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
@@ -119,6 +120,9 @@ type SqlStoreStores struct {
 	fulfillment                   store.FulfillmentStore                //
 	fulfillmentLine               store.FulfillmentLineStore            //
 	orderEvent                    store.OrderEventStore                 //
+	page                          store.PageStore                       // page models
+	pageType                      store.PageTypeStore                   //
+	pageTranslation               store.PageTranslationStore            //
 }
 
 type SqlStore struct {
@@ -217,6 +221,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.fulfillment = newSqlFulfillmentStore(store)
 	store.stores.fulfillmentLine = newSqlFulfillmentLineStore(store)
 	store.stores.orderEvent = newSqlOrderEventStore(store)
+	// page
+	store.stores.page = newSqlPageStore(store)
+	store.stores.pageTranslation = newSqlPageTranslationStore(store)
+	store.stores.pageType = newSqlPageTypeStore(store)
 
 	// this call is actually do database migration work
 	err = store.GetMaster().CreateTablesIfNotExists()
@@ -282,6 +290,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	store.stores.fulfillment.(*SqlFulfillmentStore).createIndexesIfNotExists()
 	store.stores.fulfillmentLine.(*SqlFulfillmentLineStore).createIndexesIfNotExists()
 	store.stores.orderEvent.(*SqlOrderEventStore).createIndexesIfNotExists()
+	// page
+	store.stores.page.(*SqlPageStore).createIndexesIfNotExists()
+	store.stores.pageTranslation.(*SqlPageTranslationStore).createIndexesIfNotExists()
+	store.stores.pageType.(*SqlPageTypeStore).createIndexesIfNotExists()
 
 	return store
 }
@@ -1080,6 +1092,17 @@ func (ss *SqlStore) OrderEvent() store.OrderEventStore {
 	return ss.stores.orderEvent
 }
 
+// page
+func (ss *SqlStore) Page() store.PageStore {
+	return ss.stores.page
+}
+func (ss *SqlStore) PageType() store.PageTypeStore {
+	return ss.stores.pageType
+}
+func (ss *SqlStore) PageTranslation() store.PageTranslationStore {
+	return ss.stores.pageTranslation
+}
+
 func (ss *SqlStore) DropAllTables() {
 	ss.master.TruncateTables()
 }
@@ -1274,4 +1297,10 @@ func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
 	lowerTableName := strings.ToLower(tableName)
 	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_private_metadata", tableName, "PrivateMetadata")
 	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_metadata", tableName, "Metadata")
+}
+
+// common method, set max size for seo model's fields
+func (ss *SqlStore) commonSeoMaxLength(table *gorp.TableMap) {
+	table.ColMap("SeoTitle").SetMaxSize(seo.SEO_TITLE_MAX_LENGTH)
+	table.ColMap("SeoDescription").SetMaxSize(seo.SEO_DESCRIPTION_MAX_LENGTH)
 }
