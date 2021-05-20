@@ -4,8 +4,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 type Sortable struct {
@@ -14,16 +12,12 @@ type Sortable struct {
 }
 
 func (s *Sortable) ToJson() string {
-	b, _ := json.JSON.Marshal(s)
-	return string(b)
+	return ModelToJson(s)
 }
 
 func SortableFromJson(data io.Reader) *Sortable {
 	var st Sortable
-	err := json.JSON.NewDecoder(data).Decode(&st)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&st, data)
 	return &st
 }
 
@@ -52,16 +46,12 @@ func (p *Publishable) IsVisible() bool {
 }
 
 func (p *Publishable) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return ModelToJson(p)
 }
 
 func PublishableFromJson(data io.Reader) *Publishable {
 	var st Publishable
-	err := json.JSON.NewDecoder(data).Decode(&st)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&st, data)
 	return &st
 }
 

@@ -3,10 +3,9 @@ package model
 import (
 	"io"
 	"sync"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
+// Common abstract model for other models to inherit from
 type ModelMetadata struct {
 	Id              string    `json:"string"`
 	Metadata        StringMap `json:"metadata"`
@@ -23,23 +22,18 @@ func (m *ModelMetadata) PreSave() {
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
 	}
-
 	if m.Metadata == nil {
 		m.Metadata = make(map[string]string)
 	}
 }
 
 func (p *ModelMetadata) ToJson() string {
-	b, _ := json.JSON.Marshal(p)
-	return string(b)
+	return ModelToJson(p)
 }
 
 func ModelMetadataFromJson(data io.Reader) *ModelMetadata {
 	var mdt ModelMetadata
-	err := json.JSON.NewDecoder(data).Decode(&mdt)
-	if err != nil {
-		return nil
-	}
+	ModelFromJson(&mdt, data)
 	return &mdt
 }
 
