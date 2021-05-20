@@ -25,6 +25,7 @@ type Fulfillment struct {
 	Status           string `json:"status"`
 	TrackingNumber   string `json:"tracking_numdber"`
 	CreateAt         int64  `json:"create_at"`
+	model.ModelMetadata
 }
 
 func (f *Fulfillment) IsValid() *model.AppError {
