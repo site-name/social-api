@@ -96,7 +96,16 @@ type Store interface {
 	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore
 	ShippingMethod() ShippingMethodStore
 	ShippingZone() ShippingZoneStore
+	// warehouse
+	Warehouse() WarehouseStore
+	Stock() StockStore
+	Allocation() AllocationStore
 }
+
+// warehouse
+type WarehouseStore interface{}
+type StockStore interface{}
+type AllocationStore interface{}
 
 // shipping
 type ShippingZoneStore interface{}

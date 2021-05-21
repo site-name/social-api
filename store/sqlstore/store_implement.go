@@ -66,6 +66,9 @@ type SqlStoreStores struct {
 	shippingMethodPostalCodeRule  store.ShippingMethodPostalCodeRuleStore //
 	shippingMethod                store.ShippingMethodStore               //
 	shippingZone                  store.ShippingZoneStore                 //
+	warehouse                     store.WarehouseStore                    // warehouse
+	stock                         store.StockStore                        //
+	allocation                    store.AllocationStore                   //
 }
 
 // setup tables before performing database migration
@@ -147,6 +150,10 @@ func (store *SqlStore) setupTables() {
 	store.stores.shippingMethodPostalCodeRule = newSqlShippingMethodPostalCodeRuleStore(store)
 	store.stores.shippingMethod = newSqlShippingMethodStore(store)
 	store.stores.shippingZone = newSqlShippingZoneStore(store)
+	// warehouse
+	store.stores.warehouse = newSqlWareHouseStore(store)
+	store.stores.stock = newSqlStockStore(store)
+	store.stores.allocation = newSqlAllocationStore(store)
 }
 
 // performs database indexing
@@ -229,6 +236,10 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.shippingMethodPostalCodeRule.(*SqlShippingMethodPostalCodeRuleStore).createIndexesIfNotExists()
 	store.stores.shippingMethod.(*SqlShippingMethodStore).createIndexesIfNotExists()
 	store.stores.shippingZone.(*SqlShippingZoneStore).createIndexesIfNotExists()
+	// warehouse
+	store.stores.warehouse.(*SqlWareHouseStore).createIndexesIfNotExists()
+	store.stores.stock.(*SqlStockStore).createIndexesIfNotExists()
+	store.stores.allocation.(*SqlAllocationStore).createIndexesIfNotExists()
 }
 
 // account
@@ -447,4 +458,15 @@ func (ss *SqlStore) ShippingMethod() store.ShippingMethodStore {
 }
 func (ss *SqlStore) ShippingZone() store.ShippingZoneStore {
 	return ss.stores.shippingZone
+}
+
+// warehouse
+func (ss *SqlStore) Allocation() store.AllocationStore {
+	return ss.stores.allocation
+}
+func (ss *SqlStore) Warehouse() store.WarehouseStore {
+	return ss.stores.warehouse
+}
+func (ss *SqlStore) Stock() store.StockStore {
+	return ss.stores.stock
 }
