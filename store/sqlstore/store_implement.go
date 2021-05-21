@@ -492,6 +492,6 @@ func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
 }
 
 // plugin
-func (ss *SqlStore) Plugin() store.PluginConfigurationStore {
+func (ss *SqlStore) PluginConfiguration() store.PluginConfigurationStore {
 	return ss.stores.pluginConfig
 }
