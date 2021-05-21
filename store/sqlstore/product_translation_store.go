@@ -18,7 +18,7 @@ func newSqlProductTranslationStore(s *SqlStore) store.ProductTranslationStore {
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_NAME_MAX_LENGTH)
+		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_NAME_MAX_LENGTH).SetUnique(true)
 
 		table.SetUniqueTogether("LanguageCode", "ProductID")
 		s.commonSeoMaxLength(table)

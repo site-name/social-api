@@ -26,5 +26,6 @@ func newSqlCategoryTranslationStore(s *SqlStore) store.CategoryTranslationStore 
 }
 
 func (ps *SqlCategoryTranslationStore) createIndexesIfNotExists() {
-
+	ps.CreateIndexIfNotExists("idx_category_translations_name", "CategoryTranslations", "Name")
+	ps.CreateIndexIfNotExists("idx_category_translations_name_lower_textpattern", "CategoryTranslations", "lower(Name) text_pattern_ops")
 }

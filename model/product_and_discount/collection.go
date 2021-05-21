@@ -82,6 +82,7 @@ type CollectionTranslation struct {
 	CollectionID string  `json:"collection_id"`
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
+	seo.SeoTranslation
 }
 
 func (c *CollectionTranslation) IsValid() *model.AppError {

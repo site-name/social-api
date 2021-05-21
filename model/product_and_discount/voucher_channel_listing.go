@@ -10,23 +10,23 @@ import (
 )
 
 type VoucherChannelListing struct {
-	Id            string           `json:"id"`
-	VoucherID     string           `json:"voucher_id"`
-	ChannelID     string           `json:"channel_id"`
-	DiscountValue *decimal.Decimal `json:"discount_value"`
-	Discount      *model.Money     `json:"discount,omitempty" db:"_"`
-	MinSpent      *model.Money     `json:"min_spent,omitempty" db:"_"`
-	Currency      string           `json:"currency"`
-	MinSpenAmount *decimal.Decimal `json:"min_spent_amount"`
+	Id            string               `json:"id"`
+	VoucherID     string               `json:"voucher_id"`
+	ChannelID     string               `json:"channel_id"`
+	DiscountValue *decimal.NullDecimal `json:"discount_value"`
+	Discount      *model.Money         `json:"discount,omitempty" db:"-"`
+	MinSpent      *model.Money         `json:"min_spent,omitempty" db:"-"`
+	Currency      string               `json:"currency"`
+	MinSpenAmount *decimal.NullDecimal `json:"min_spent_amount"`
 }
 
 func (v *VoucherChannelListing) ToJson() string {
 	v.Discount = &model.Money{
-		Amount:   v.DiscountValue,
+		Amount:   &v.DiscountValue.Decimal,
 		Currency: v.Currency,
 	}
 	v.MinSpent = &model.Money{
-		Amount:   v.MinSpenAmount,
+		Amount:   &v.MinSpenAmount.Decimal,
 		Currency: v.Currency,
 	}
 	return model.ModelToJson(v)

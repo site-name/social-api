@@ -15,7 +15,7 @@ type ProductTranslation struct {
 	ProductID    string                 `json:"product_id"`
 	Name         string                 `json:"name"`
 	Description  *model.StringInterface `json:"description"`
-	*seo.SeoTranslation
+	seo.SeoTranslation
 }
 
 func (p *ProductTranslation) String() string {

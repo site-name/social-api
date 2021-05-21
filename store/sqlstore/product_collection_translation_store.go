@@ -18,10 +18,10 @@ func newSqlCollectionTranslationStore(s *SqlStore) store.CollectionTranslationSt
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("CollectionID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH)
+		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH).SetUnique(true)
 
-		table.SetUniqueTogether("LanguageCode", "CollectionID")
 		s.commonSeoMaxLength(table)
+		table.SetUniqueTogether("LanguageCode", "CollectionID")
 	}
 	return cts
 }

@@ -30,5 +30,5 @@ func newSqlCategoryStore(s *SqlStore) store.CategoryStore {
 func (ps *SqlCategoryStore) createIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_categories_name", "Categories", "Name")
 	ps.CreateIndexIfNotExists("idx_categories_slug", "Categories", "Slug")
-	ps.CreateIndexIfNotExists("idx_categories_name_lower_textpattern", "Users", "lower(Name) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_categories_name_lower_textpattern", "Categories", "lower(Name) text_pattern_ops")
 }

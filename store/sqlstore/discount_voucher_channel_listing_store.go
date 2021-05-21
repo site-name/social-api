@@ -1,6 +1,7 @@
 package sqlstore
 
 import (
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -15,9 +16,11 @@ func newSqlVoucherChannelListingStore(sqlStore *SqlStore) store.VoucherChannelLi
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.VoucherChannelListing{}, "VoucherChannelListings").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(UUID_MAX_LENGTH)
+		table.ColMap("VoucherID").SetMaxSize(UUID_MAX_LENGTH).SetNotNull(true)
 		table.ColMap("ChannelID").SetMaxSize(UUID_MAX_LENGTH).SetNotNull(true)
+		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 
+		table.SetUniqueTogether("VoucherID", "ChannelID")
 	}
 
 	return vcls

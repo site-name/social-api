@@ -28,6 +28,6 @@ func newSqlShippingMethodPostalCodeRuleStore(s *SqlStore) store.ShippingMethodPo
 
 func (s *SqlShippingMethodPostalCodeRuleStore) createIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_start", "ShippingMethodPostalCodeRules", "Start")
-	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_end", "ShippingMethodPostalCodeRules", "End")
+	// s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_end", "ShippingMethodPostalCodeRules", "End")
 	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_inclusion_type", "ShippingMethodPostalCodeRules", "InclusionType")
 }

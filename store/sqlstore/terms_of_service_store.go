@@ -16,10 +16,10 @@ type SqlTermsOfServiceStore struct {
 }
 
 func newSqlTermsOfServiceStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterface) store.TermsOfServiceStore {
-	s := SqlTermsOfServiceStore{sqlStore, metrics}
+	s := &SqlTermsOfServiceStore{sqlStore, metrics}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.TermsOfService{}, "TermsOfService").SetKeys(false, "Id")
+		table := db.AddTableWithName(model.TermsOfService{}, "TermsOfServices").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("UserId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Text").SetMaxSize(model.POST_MESSAGE_MAX_BYTES_V2)
@@ -28,10 +28,10 @@ func newSqlTermsOfServiceStore(sqlStore *SqlStore, metrics einterfaces.MetricsIn
 	return s
 }
 
-func (s SqlTermsOfServiceStore) createIndexesIfNotExists() {
+func (s *SqlTermsOfServiceStore) createIndexesIfNotExists() {
 }
 
-func (s SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
+func (s *SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
 	if termsOfService.Id != "" {
 		return nil, store.NewErrInvalidInput("TermsOfService", "Id", termsOfService.Id)
 	}
@@ -49,7 +49,7 @@ func (s SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*mod
 	return termsOfService, nil
 }
 
-func (s SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
+func (s *SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
 	var termsOfService *model.TermsOfService
 
 	query := s.getQueryBuilder().
@@ -73,7 +73,7 @@ func (s SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfSe
 	return termsOfService, nil
 }
 
-func (s SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
+func (s *SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 	obj, err := s.GetReplica().Get(model.TermsOfService{}, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not find TermsOfService with id=%s", id)

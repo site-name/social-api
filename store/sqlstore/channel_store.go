@@ -16,7 +16,7 @@ func newSqlChannelStore(sqlStore *SqlStore) store.ChannelStore {
 		table := db.AddTableWithName(channel.Channel{}, "Channels").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(channel.CHANNEL_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH)
 	}
 
 	return cs

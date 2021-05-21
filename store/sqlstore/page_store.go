@@ -16,8 +16,8 @@ func newSqlPageStore(s *SqlStore) store.PageStore {
 		table := db.AddTableWithName(page.Page{}, "Pages").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("PageTypeID").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Title").SetMaxSize(page.PAGE_TITLE_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(page.PAGE_SLUG_MAX_LENGTH)
+		table.ColMap("Title").SetMaxSize(page.PAGE_TITLE_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Slug").SetMaxSize(page.PAGE_SLUG_MAX_LENGTH).SetUnique(true)
 
 		s.commonSeoMaxLength(table)
 	}
