@@ -1021,7 +1021,7 @@ func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
 	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_metadata", tableName, "Metadata")
 }
 
-// common method, set max size for seo model's fields
+// common method, set max size for model's sep fields
 func (ss *SqlStore) commonSeoMaxLength(table *gorp.TableMap) {
 	table.ColMap("SeoTitle").SetMaxSize(seo.SEO_TITLE_MAX_LENGTH)
 	table.ColMap("SeoDescription").SetMaxSize(seo.SEO_DESCRIPTION_MAX_LENGTH)

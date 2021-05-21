@@ -18,8 +18,8 @@ const (
 
 type Category struct {
 	Id                 string  `json:"id"`
-	Name               string  `json:"name"`
-	Slug               string  `json:"slug"`
+	Name               string  `json:"name"` // unique
+	Slug               string  `json:"slug"` // unique
 	Description        *string `json:"description"`
 	ParentID           string  `json:"parent_id"`
 	BackgroundImage    *string `json:"background_image"`
@@ -67,7 +67,7 @@ func (c *Category) PreSave() {
 
 func (c *Category) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
-	c.Slug = slug.Make(c.Slug)
+	// c.Slug = slug.Make(c.Slug)
 }
 
 func (c *Category) ToJson() string {

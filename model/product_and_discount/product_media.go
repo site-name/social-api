@@ -19,7 +19,7 @@ var ProductMediaTypeChoices = map[string]string{
 
 // max lengths limits for some fields
 const (
-	// PRODUCT_MEDIA_TYPE_MAX_LENGTH         = 32
+	PRODUCT_MEDIA_TYPE_MAX_LENGTH         = 32
 	PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH = 256
 	PRODUCT_MEDIA_ALT_MAX_LENGTH          = 128
 	PRODUCT_MEDIA_PPOI_MAX_LENGTH         = 20
@@ -58,7 +58,7 @@ func (p *ProductMedia) IsValid() *model.AppError {
 	if len(p.Alt) > PRODUCT_MEDIA_ALT_MAX_LENGTH {
 		return outer("alt", &p.Id)
 	}
-	if ProductMediaTypeChoices[strings.ToUpper(p.Type)] == "" {
+	if ProductMediaTypeChoices[strings.ToUpper(p.Type)] == "" || len(p.Type) > PRODUCT_MEDIA_TYPE_MAX_LENGTH {
 		return outer("type", &p.Id)
 	}
 	if p.ExternalUrl != nil && len(*p.ExternalUrl) > PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH {

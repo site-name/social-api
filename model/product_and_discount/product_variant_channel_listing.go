@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -15,9 +16,9 @@ type ProductVariantChannelListing struct {
 	ChannelID       string           `json:"channel_id"`
 	Currency        string           `json:"currency"`
 	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"`
-	Price           *model.Money     `json:"price,omitempty" db:"-"`
+	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
 	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"`
-	CostPrice       *model.Money     `json:"cost_price,omitempty" db:"-"`
+	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
 }
 
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {
@@ -43,11 +44,11 @@ func (p *ProductVariantChannelListing) IsValid() *model.AppError {
 }
 
 func (p *ProductVariantChannelListing) ToJson() string {
-	p.Price = &model.Money{
+	p.Price = &goprices.Money{
 		Amount:   p.PriceAmount,
 		Currency: p.Currency,
 	}
-	p.CostPrice = &model.Money{
+	p.CostPrice = &goprices.Money{
 		Amount:   p.CostPriceAmount,
 		Currency: p.Currency,
 	}
