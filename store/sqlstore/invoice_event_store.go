@@ -25,5 +25,5 @@ func newSqlInvoiceEventStore(sqlStore *SqlStore) store.InvoiceEventStore {
 }
 
 func (ies *SqlInvoiceEventStore) createIndexesIfNotExists() {
-
+	ies.CreateIndexIfNotExists("idx_invoice_events_type", "InvoiceEvents", "Type")
 }

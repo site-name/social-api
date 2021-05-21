@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/csv"
 )
 
 type StoreResult struct {
@@ -45,7 +46,9 @@ type Store interface {
 	Channel() ChannelStore
 	Checkout() CheckoutStore
 	CheckoutLine() CheckoutLineStore
+	// csv
 	CsvExportEvent() CsvExportEventStore
+
 	VoucherStore() DiscountVoucherStore
 	VoucherChannelListing() VoucherChannelListingStore
 	VoucherCustomer() DiscountVoucherCustomerStore
@@ -200,7 +203,10 @@ type VoucherChannelListingStore interface{}
 
 type DiscountVoucherStore interface{}
 
-type CsvExportEventStore interface{}
+// csv
+type CsvExportEventStore interface {
+	Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
+}
 
 type CheckoutLineStore interface {
 }
