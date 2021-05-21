@@ -44,7 +44,7 @@ type SqlStoreStores struct {
 	pageTranslation               store.PageTranslationStore              //
 	payment                       store.PaymentStore                      // payment models
 	transaction                   store.PaymentTransactionStore           //
-	category                      store.CategoryStore                     // product
+	category                      store.CategoryStore                     // product models
 	categoryTranslation           store.CategoryTranslationStore          //
 	productType                   store.ProductTypeStore                  //
 	product                       store.ProductStore                      //
@@ -61,6 +61,11 @@ type SqlStoreStores struct {
 	collection                    store.CollectionStore                   //
 	collectionChannelListing      store.CollectionChannelListingStore     //
 	collectionTranslation         store.CollectionTranslationStore        //
+	shippingMethodTranslation     store.ShippingMethodTranslationStore    // shipping models
+	shippingMethodChannelListing  store.ShippingMethodChannelListingStore //
+	shippingMethodPostalCodeRule  store.ShippingMethodPostalCodeRuleStore //
+	shippingMethod                store.ShippingMethodStore               //
+	shippingZone                  store.ShippingZoneStore                 //
 }
 
 // setup tables before performing database migration
@@ -136,6 +141,12 @@ func (store *SqlStore) setupTables() {
 	store.stores.collection = newSqlCollectionStore(store)
 	store.stores.collectionChannelListing = newSqlCollectionChannelListingStore(store)
 	store.stores.collectionTranslation = newSqlCollectionTranslationStore(store)
+	// shipping
+	store.stores.shippingMethodTranslation = newSqlShippingMethodTranslationStore(store)
+	store.stores.shippingMethodChannelListing = newSqlShippingMethodChannelListingStore(store)
+	store.stores.shippingMethodPostalCodeRule = newSqlShippingMethodPostalCodeRuleStore(store)
+	store.stores.shippingMethod = newSqlShippingMethodStore(store)
+	store.stores.shippingZone = newSqlShippingZoneStore(store)
 }
 
 // performs database indexing
@@ -212,6 +223,12 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.collection.(*SqlCollectionStore).createIndexesIfNotExists()
 	store.stores.collectionChannelListing.(*SqlCollectionChannelListingStore).createIndexesIfNotExists()
 	store.stores.collectionTranslation.(*SqlCollectionTranslationStore).createIndexesIfNotExists()
+	// shipping
+	store.stores.shippingMethodTranslation.(*SqlShippingMethodTranslationStore).createIndexesIfNotExists()
+	store.stores.shippingMethodChannelListing.(*SqlShippingMethodChannelListingStore).createIndexesIfNotExists()
+	store.stores.shippingMethodPostalCodeRule.(*SqlShippingMethodPostalCodeRuleStore).createIndexesIfNotExists()
+	store.stores.shippingMethod.(*SqlShippingMethodStore).createIndexesIfNotExists()
+	store.stores.shippingZone.(*SqlShippingZoneStore).createIndexesIfNotExists()
 }
 
 // account
@@ -413,4 +430,21 @@ func (ss *SqlStore) CollectionChannelListing() store.CollectionChannelListingSto
 }
 func (ss *SqlStore) CollectionTranslation() store.CollectionTranslationStore {
 	return ss.stores.collectionTranslation
+}
+
+// shipping
+func (ss *SqlStore) ShippingMethodTranslation() store.ShippingMethodTranslationStore {
+	return ss.stores.shippingMethodTranslation
+}
+func (ss *SqlStore) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
+	return ss.stores.shippingMethodChannelListing
+}
+func (ss *SqlStore) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
+	return ss.stores.shippingMethodPostalCodeRule
+}
+func (ss *SqlStore) ShippingMethod() store.ShippingMethodStore {
+	return ss.stores.shippingMethod
+}
+func (ss *SqlStore) ShippingZone() store.ShippingZoneStore {
+	return ss.stores.shippingZone
 }
