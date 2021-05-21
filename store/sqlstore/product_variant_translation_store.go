@@ -19,6 +19,8 @@ func newSqlProductVariantTranslationStore(s *SqlStore) store.ProductVariantTrans
 		table.ColMap("ProductVariantID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_VARIANT_NAME_MAX_LENGTH)
+
+		table.SetUniqueTogether("LanguageCode", "ProductVariantID")
 	}
 	return pvts
 }
