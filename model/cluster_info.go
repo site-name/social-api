@@ -2,8 +2,6 @@ package model
 
 import (
 	"io"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 type ClusterInfo struct {
@@ -15,27 +13,21 @@ type ClusterInfo struct {
 }
 
 func (ci *ClusterInfo) ToJson() string {
-	b, _ := json.JSON.Marshal(ci)
-	return string(b)
+	return ModelToJson(ci)
 }
 
 func ClusterInfoFromJson(data io.Reader) *ClusterInfo {
 	var ci *ClusterInfo
-	json.JSON.NewDecoder(data).Decode(&ci)
+	ModelFromJson(&ci, data)
 	return ci
 }
 
 func ClusterInfosToJson(objmap []*ClusterInfo) string {
-	b, _ := json.JSON.Marshal(objmap)
-	return string(b)
+	return ModelToJson(&objmap)
 }
 
 func ClusterInfosFromJson(data io.Reader) []*ClusterInfo {
-	decoder := json.JSON.NewDecoder(data)
-
 	var objmap []*ClusterInfo
-	if err := decoder.Decode(&objmap); err != nil {
-		return make([]*ClusterInfo, 0)
-	}
+	ModelFromJson(&objmap, data)
 	return objmap
 }

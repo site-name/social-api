@@ -103,51 +103,68 @@ type Store interface {
 	// wishlist
 	Wishlist() WishlistStore
 	WishlistItem() WishlistItemStore
+	// plugin
+	PluginConfiguration() PluginConfigurationStore
 }
 
+//plugin
+type PluginConfigurationStore interface{}
+
 // wishlist
-type WishlistStore interface{}
-type WishlistItemStore interface{}
+type (
+	WishlistStore     interface{}
+	WishlistItemStore interface{}
+)
 
 // warehouse
-type WarehouseStore interface{}
-type StockStore interface{}
-type AllocationStore interface{}
+type (
+	WarehouseStore  interface{}
+	StockStore      interface{}
+	AllocationStore interface{}
+)
 
 // shipping
-type ShippingZoneStore interface{}
-type ShippingMethodStore interface{}
-type ShippingMethodPostalCodeRuleStore interface{}
-type ShippingMethodChannelListingStore interface{}
-type ShippingMethodTranslationStore interface{}
+type (
+	ShippingZoneStore                 interface{}
+	ShippingMethodStore               interface{}
+	ShippingMethodPostalCodeRuleStore interface{}
+	ShippingMethodChannelListingStore interface{}
+	ShippingMethodTranslationStore    interface{}
+)
 
-// product----------
-type CollectionTranslationStore interface{}
-type CollectionChannelListingStore interface{}
-type CollectionStore interface{}
-type CollectionProductStore interface{}
-type VariantMediaStore interface{}
-type ProductMediaStore interface{}
-type DigitalContentUrlStore interface{}
-type DigitalContentStore interface{}
-type ProductVariantChannelListingStore interface{}
-type ProductVariantTranslationStore interface{}
-type ProductVariantStore interface{}
-type ProductChannelListingStore interface{}
-type ProductTranslationStore interface{}
-type ProductTypeStore interface{}
-type CategoryTranslationStore interface{}
-type CategoryStore interface{}
-type ProductStore interface{}
+// product
+type (
+	CollectionTranslationStore        interface{}
+	CollectionChannelListingStore     interface{}
+	CollectionStore                   interface{}
+	CollectionProductStore            interface{}
+	VariantMediaStore                 interface{}
+	ProductMediaStore                 interface{}
+	DigitalContentUrlStore            interface{}
+	DigitalContentStore               interface{}
+	ProductVariantChannelListingStore interface{}
+	ProductVariantTranslationStore    interface{}
+	ProductVariantStore               interface{}
+	ProductChannelListingStore        interface{}
+	ProductTranslationStore           interface{}
+	ProductTypeStore                  interface{}
+	CategoryTranslationStore          interface{}
+	CategoryStore                     interface{}
+	ProductStore                      interface{}
+)
 
 // payment
-type PaymentStore interface{}
-type PaymentTransactionStore interface{}
+type (
+	PaymentStore            interface{}
+	PaymentTransactionStore interface{}
+)
 
 // page
-type PageTypeStore interface{}
-type PageTranslationStore interface{}
-type PageStore interface{}
+type (
+	PageTypeStore        interface{}
+	PageTranslationStore interface{}
+	PageStore            interface{}
+)
 
 type OrderEventStore interface{}
 
