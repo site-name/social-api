@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -13,11 +14,11 @@ type ShippingMethodChannelListing struct {
 	ShippingMethodID        string           `json:"shipping_method_id"`
 	ChannelID               string           `json:"channel_id"`
 	MinimumOrderPriceAmount *decimal.Decimal `json:"minimum_order_price_amount"`
-	MinimumOrderPrice       *model.Money     `json:"minimum_order_price" db:"-"`
+	MinimumOrderPrice       *goprices.Money  `json:"minimum_order_price" db:"-"`
 	Currency                string           `json:"currency"`
 	MaximumOrderPriceAmount *decimal.Decimal `json:"maximum_order_price_amount"`
-	MaximumOrderPrice       *model.Money     `json:"maximum_order_price" db:"-"`
-	Price                   *model.Money     `json:"price" db:"-"`
+	MaximumOrderPrice       *goprices.Money  `json:"maximum_order_price" db:"-"`
+	Price                   *goprices.Money  `json:"price" db:"-"`
 	PriceAmount             *decimal.Decimal `json:"price_amount"`
 }
 
@@ -55,6 +56,29 @@ func (s *ShippingMethodChannelListing) PreSave() {
 	}
 }
 
-func (s *ShippingMethodChannelListing) GetTotal() *model.Money {
+func (s *ShippingMethodChannelListing) GetTotal() *goprices.Money {
 	return s.Price
+}
+
+func (s *ShippingMethodChannelListing) ToJson() string {
+	if s.MinimumOrderPrice == nil {
+		s.MinimumOrderPrice = &goprices.Money{
+			Amount:   s.MinimumOrderPriceAmount,
+			Currency: s.Currency,
+		}
+	}
+	if s.MaximumOrderPrice == nil {
+		s.MaximumOrderPrice = &goprices.Money{
+			Amount:   s.MaximumOrderPriceAmount,
+			Currency: s.Currency,
+		}
+	}
+	if s.Price == nil {
+		s.Price = &goprices.Money{
+			Amount:   s.PriceAmount,
+			Currency: s.Currency,
+		}
+	}
+
+	return model.ModelToJson(s)
 }

@@ -12,6 +12,7 @@ import (
 // max lengths for some fields
 const (
 	SHIPPING_METHOD_NAME_MAX_LENGTH = 100
+	SHIPPING_METHOD_TYPE_MAX_LENGTH = 30
 )
 
 // shipping method valid types
@@ -60,7 +61,7 @@ func (s *ShippingMethod) IsValid() *model.AppError {
 	if utf8.RuneCountInString(s.Name) > SHIPPING_METHOD_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
 	}
-	if ShippingMethodTypeString[strings.ToLower(s.Type)] == "" {
+	if ShippingMethodTypeString[strings.ToLower(s.Type)] == "" || len(s.Type) > SHIPPING_METHOD_TYPE_MAX_LENGTH {
 		return outer("type", &s.Id)
 	}
 	return nil

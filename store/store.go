@@ -90,7 +90,20 @@ type Store interface {
 	Collection() CollectionStore
 	CollectionChannelListing() CollectionChannelListingStore
 	CollectionTranslation() CollectionTranslationStore
+	// shipping
+	ShippingMethodTranslation() ShippingMethodTranslationStore
+	ShippingMethodChannelListing() ShippingMethodChannelListingStore
+	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore
+	ShippingMethod() ShippingMethodStore
+	ShippingZone() ShippingZoneStore
 }
+
+// shipping
+type ShippingZoneStore interface{}
+type ShippingMethodStore interface{}
+type ShippingMethodPostalCodeRuleStore interface{}
+type ShippingMethodChannelListingStore interface{}
+type ShippingMethodTranslationStore interface{}
 
 // product----------
 type CollectionTranslationStore interface{}
