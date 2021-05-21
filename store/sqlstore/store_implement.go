@@ -69,6 +69,8 @@ type SqlStoreStores struct {
 	warehouse                     store.WarehouseStore                    // warehouse
 	stock                         store.StockStore                        //
 	allocation                    store.AllocationStore                   //
+	wishlist                      store.WishlistStore                     // wishlist models
+	wishlistItem                  store.WishlistItemStore                 //
 }
 
 // setup tables before performing database migration
@@ -154,6 +156,9 @@ func (store *SqlStore) setupTables() {
 	store.stores.warehouse = newSqlWareHouseStore(store)
 	store.stores.stock = newSqlStockStore(store)
 	store.stores.allocation = newSqlAllocationStore(store)
+	// wishlist
+	store.stores.wishlist = newSqlWishlistStore(store)
+	store.stores.wishlistItem = newSqlWishlistItemStore(store)
 }
 
 // performs database indexing
@@ -240,6 +245,9 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.warehouse.(*SqlWareHouseStore).createIndexesIfNotExists()
 	store.stores.stock.(*SqlStockStore).createIndexesIfNotExists()
 	store.stores.allocation.(*SqlAllocationStore).createIndexesIfNotExists()
+	// wishlist
+	store.stores.wishlist.(*SqlWishlistStore).createIndexesIfNotExists()
+	store.stores.wishlistItem.(*SqlWishlistItemStore).createIndexesIfNotExists()
 }
 
 // account
@@ -469,4 +477,12 @@ func (ss *SqlStore) Warehouse() store.WarehouseStore {
 }
 func (ss *SqlStore) Stock() store.StockStore {
 	return ss.stores.stock
+}
+
+// wishlist
+func (ss *SqlStore) Wishlist() store.WishlistStore {
+	return ss.stores.wishlist
+}
+func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
+	return ss.stores.wishlistItem
 }

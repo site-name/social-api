@@ -100,7 +100,14 @@ type Store interface {
 	Warehouse() WarehouseStore
 	Stock() StockStore
 	Allocation() AllocationStore
+	// wishlist
+	Wishlist() WishlistStore
+	WishlistItem() WishlistItemStore
 }
+
+// wishlist
+type WishlistStore interface{}
+type WishlistItemStore interface{}
 
 // warehouse
 type WarehouseStore interface{}
