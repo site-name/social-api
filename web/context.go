@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -14,6 +15,7 @@ import (
 
 type Context struct {
 	App           app.AppIface
+	AppContext    *request.Context
 	Logger        *slog.Logger
 	Params        *Params
 	Err           *model.AppError

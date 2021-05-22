@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graph"
-	"github.com/sitename/sitename/services/configservice"
 )
 
 const (
@@ -19,23 +18,29 @@ type Routes struct {
 }
 
 type API struct {
-	ConfigService       configservice.ConfigService
-	GetGlobalAppOptions app.AppOptionCreator
-	BaseRoutes          *Routes
+	app        app.AppIface
+	BaseRoutes *Routes
 }
 
 // init graphql and other api routes
-func NewAPI(configservice configservice.ConfigService, globalOptionsFunc app.AppOptionCreator, root *mux.Router) *API {
+func (w *Web) InitAPI(root *mux.Router) *API {
 	api := &API{
-		ConfigService:       configservice,
-		GetGlobalAppOptions: globalOptionsFunc,
-		BaseRoutes:          &Routes{},
+		app:        w.app,
+		BaseRoutes: &Routes{},
 	}
 
 	// register routes to graphql api
 	api.BaseRoutes.GraphqlAPI = root.PathPrefix(rootApiPath).Subrouter()
-	api.BaseRoutes.GraphqlAPI.Handle("", graph.NewPlaygroundHandler(graphqlPath)).Methods(http.MethodGet)
-	api.BaseRoutes.GraphqlAPI.Handle(graphqlPath, graph.NewHandler(nil)).Methods(http.MethodPost, http.MethodPut, http.MethodOptions)
+	api.
+		BaseRoutes.
+		GraphqlAPI.
+		Handle("", graph.NewPlaygroundHandler(graphqlPath)).
+		Methods(http.MethodGet, http.MethodOptions)
+	api.
+		BaseRoutes.
+		GraphqlAPI.
+		Handle(graphqlPath, graph.NewHandler(w.app)).
+		Methods(http.MethodPost, http.MethodOptions)
 
 	return api
 }

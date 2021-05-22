@@ -5,12 +5,15 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graph/generated"
 )
 
-func NewHandler(interface{}) http.Handler {
+func NewHandler(app app.AppIface) http.Handler {
 	c := &generated.Config{
-		Resolvers: &Resolver{},
+		Resolvers: &Resolver{
+			app: app,
+		},
 	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(*c))

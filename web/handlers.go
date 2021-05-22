@@ -17,6 +17,7 @@ import (
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/app"
 	app_opentracing "github.com/sitename/sitename/app/opentracing"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -38,36 +39,36 @@ func GetHandlerName(h func(*Context, http.ResponseWriter, *http.Request)) string
 
 func (w *Web) NewHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	return &Handler{
-		GetGlobalAppOptions: w.GetGlobalAppOptions,
-		HandleFunc:          h,
-		HandlerName:         GetHandlerName(h),
-		RequireSession:      false,
-		TrustRequester:      false,
-		RequireMfa:          false,
-		IsStatic:            false,
-		IsLocal:             false,
+		App:            w.app,
+		HandleFunc:     h,
+		HandlerName:    GetHandlerName(h),
+		RequireSession: false,
+		TrustRequester: false,
+		RequireMfa:     false,
+		IsStatic:       false,
+		IsLocal:        false,
 	}
 }
 
 func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	// Determine the CSP SHA directive needed for subpath support, if any. This value is fixed
 	// on server start and intentionally requires a restart to take effect.
-	subpath, _ := util.GetSubpathFromConfig(w.ConfigService.Config())
+	subpath, _ := util.GetSubpathFromConfig(w.app.Config())
 
 	return &Handler{
-		GetGlobalAppOptions: w.GetGlobalAppOptions,
-		HandleFunc:          h,
-		HandlerName:         GetHandlerName(h),
-		RequireSession:      false,
-		TrustRequester:      false,
-		RequireMfa:          false,
-		IsStatic:            true,
-		cspShaDirective:     util.GetSubpathScriptHash(subpath),
+		App:             w.app,
+		HandleFunc:      h,
+		HandlerName:     GetHandlerName(h),
+		RequireSession:  false,
+		TrustRequester:  false,
+		RequireMfa:      false,
+		IsStatic:        true,
+		cspShaDirective: util.GetSubpathScriptHash(subpath),
 	}
 }
 
 type Handler struct {
-	GetGlobalAppOptions       app.AppOptionCreator
+	App                       app.AppIface
 	HandleFunc                func(*Context, http.ResponseWriter, *http.Request)
 	HandlerName               string
 	RequireSession            bool
@@ -88,21 +89,22 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := model.NewId()
 	var statusCode string
 	defer func() {
-		logFields := []slog.Field{
+		responseLogFields := []slog.Field{
 			slog.String("method", r.Method),
 			slog.String("url", r.URL.Path),
 			slog.String("request_id", requestID),
 		}
 		// Websockets are returning status code 0 to requests after closing the socket
 		if statusCode == "0" {
-			logFields = append(logFields, slog.String("status_code", statusCode))
+			responseLogFields = append(responseLogFields, slog.String("status_code", statusCode))
 		}
-		slog.Debug("Received HTTP request", logFields...)
+		slog.Debug("Received HTTP request", responseLogFields...)
 	}()
 
-	c := new(Context)
-	c.App = app.New(h.GetGlobalAppOptions()...)
-	c.App.InitServer()
+	c := &Context{
+		AppContext: &request.Context{},
+		App:        h.App,
+	}
 
 	t, _ := i18n.GetTranslationsAndLocaleFromRequest(r)
 	c.App.SetT(t)
@@ -364,16 +366,16 @@ func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, toke
 // be granted.
 func (w *Web) ApiSessionRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	handler := &Handler{
-		GetGlobalAppOptions: w.GetGlobalAppOptions,
-		HandleFunc:          h,
-		HandlerName:         GetHandlerName(h),
-		RequireSession:      true,
-		TrustRequester:      false,
-		RequireMfa:          true,
-		IsStatic:            false,
-		IsLocal:             false,
+		App:            w.app,
+		HandleFunc:     h,
+		HandlerName:    GetHandlerName(h),
+		RequireSession: true,
+		TrustRequester: false,
+		RequireMfa:     true,
+		IsStatic:       false,
+		IsLocal:        false,
 	}
-	if *w.ConfigService.Config().ServiceSettings.WebserverMode == "gzip" {
+	if *w.app.Config().ServiceSettings.WebserverMode == "gzip" {
 		return gziphandler.GzipHandler(handler)
 	}
 	return handler

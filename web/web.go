@@ -15,25 +15,23 @@ import (
 )
 
 type Web struct {
-	GetGlobalAppOptions app.AppOptionCreator
-	ConfigService       configservice.ConfigService
-	MainRouter          *mux.Router
+	app        app.AppIface
+	MainRouter *mux.Router
 }
 
 // New initializes web routes and returns web instance
-func New(config configservice.ConfigService, globalOptions app.AppOptionCreator, root *mux.Router) *Web {
+func New(a app.AppIface, root *mux.Router) *Web {
 	slog.Debug("Initializing web routes")
 
 	web := &Web{
-		GetGlobalAppOptions: globalOptions,
-		ConfigService:       config,
-		MainRouter:          root,
+		app:        a,
+		MainRouter: root,
 	}
 
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
-	NewAPI(config, globalOptions, root) // api routes must be registered before static routes
+	web.InitAPI(root) // api routes must be registered before static routes
 	web.InitStatic()
 
 	return web

@@ -93,7 +93,8 @@ func runServer(configStore *config.Store, usedPlatform bool, interruptChan chan 
 		slog.Warn("The platform binary has been deprecated, please switch to using the mattermost binary.")
 	}
 
-	web.New(server, server.AppOptions, server.RootRouter)
+	a := app.New(app.ServerConnector(server))
+	web.New(a, server.RootRouter)
 
 	serverErr := server.Start()
 	if serverErr != nil {
