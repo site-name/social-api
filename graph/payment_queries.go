@@ -6,10 +6,14 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/graph/model"
+	"github.com/sitename/sitename/modules/consts"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *queryResolver) payment(ctx context.Context, id string) (*model.Payment, error) {
-	fmt.Println(ctx.Value(ApiContextKey))
+
+	fmt.Println(ctx.Value(consts.ApiContextKey).(*web.Context))
+
 	now := time.Now()
 	return &model.Payment{
 		ID:                     id,

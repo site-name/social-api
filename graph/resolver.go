@@ -8,12 +8,6 @@ import "github.com/sitename/sitename/app"
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-type ContextKey string
-
-const (
-	ApiContextKey ContextKey = "thisIsContextKey"
-)
-
 type Resolver struct {
 	app app.AppIface
 }

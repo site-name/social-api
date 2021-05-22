@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graph"
+	"github.com/sitename/sitename/modules/consts"
 )
 
 const (
@@ -52,8 +53,8 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 	return api
 }
 
-func graphqlHanlerWrapper(playgroundHandler http.Handler) func(c *Context, w http.ResponseWriter, r *http.Request) {
+func graphqlHanlerWrapper(handler http.Handler) func(c *Context, w http.ResponseWriter, r *http.Request) {
 	return func(c *Context, w http.ResponseWriter, r *http.Request) {
-		playgroundHandler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), graph.ApiContextKey, c)))
+		handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), consts.ApiContextKey, c)))
 	}
 }
