@@ -3,12 +3,15 @@ package app
 import (
 	"context"
 	"errors"
+	"math"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -65,13 +68,14 @@ func (a *App) RevokeAllSessions(userID string) *model.AppError {
 		return model.NewAppError("RevokeAllSessions", "app.session.get_sessions.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	for _, session := range sessions {
-		// if session.IsOAuth {
-		// 	a.RevokeAccessToken(session.Token)
-		// } else {
-		// 	if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
-		// 		return model.NewAppError("RevokeAllSessions", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
-		// 	}
-		// }
+		if session.IsOAuth {
+			// TODO: fixme
+			// a.RevokeAccessToken(session.Token)
+		} else {
+			if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
+				return model.NewAppError("RevokeAllSessions", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+		}
 		a.RevokeSession(session)
 	}
 
@@ -189,15 +193,16 @@ func (a *App) RevokeSessionById(sessionID string) *model.AppError {
 // }
 
 func (a *App) RevokeSession(session *model.Session) *model.AppError {
-	// if session.IsOAuth {
-	// 	if err := a.RevokeAccessToken(session.Token); err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
-	// 		return model.NewAppError("RevokeSession", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
-	// 	}
-	// }
+	if session.IsOAuth {
+		// TODO: fixme
+		// if err := a.RevokeAccessToken(session.Token); err != nil {
+		// 	return err
+		// }
+	} else {
+		if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
+			return model.NewAppError("RevokeSession", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
 
 	if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
 		return model.NewAppError("RevokeSession", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -329,6 +334,7 @@ func (a *App) AttachDeviceId(sessionID string, deviceID string, expiresAt int64)
 func (a *App) UpdateLastActivityAtIfNeeded(session model.Session) {
 	now := model.GetMillis()
 
+	// TODO: studyme
 	// a.UpdateWebConnUserActivity(session, now)
 
 	if now-session.LastActivityAt < model.SESSION_ACTIVITY_TIMEOUT {
@@ -498,3 +504,89 @@ func (a *App) SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *
 	}
 	return tokens, nil
 }
+
+// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
+// A new ExpiresAt is only written if enough time has elapsed since last update.
+// Returns true only if the session was extended.
+func (a *App) ExtendSessionExpiryIfNeeded(session *model.Session) bool {
+	if !*a.Srv().Config().ServiceSettings.ExtendSessionLengthWithActivity {
+		return false
+	}
+
+	if session == nil || session.IsExpired() {
+		return false
+	}
+
+	sessionLength := a.GetSessionLengthInMillis(session)
+
+	// Only extend the expiry if the lessor of 1% or 1 day has elapsed within the
+	// current session duration.
+	threshold := int64(math.Min(float64(sessionLength)*0.01, float64(24*60*60*1000)))
+	// Minimum session length is 1 day as of this writing, therefore a minimum ~14 minutes threshold.
+	// However we'll add a sanity check here in case that changes. Minimum 5 minute threshold,
+	// meaning we won't write a new expiry more than every 5 minutes.
+	if threshold < 5*60*1000 {
+		threshold = 5 * 60 * 1000
+	}
+
+	now := model.GetMillis()
+	elapsed := now - (session.ExpiresAt - sessionLength)
+	if elapsed < threshold {
+		return false
+	}
+
+	auditRec := a.MakeAuditRecord("extendSessionExpiry", audit.Fail)
+	defer a.LogAuditRec(auditRec, nil)
+	auditRec.AddMeta("session", session)
+
+	newExpiry := now + sessionLength
+	if err := a.Srv().Store.Session().UpdateExpiresAt(session.Id, newExpiry); err != nil {
+		slog.Error("Failed to update ExpiresAt", slog.String("user_id", session.UserId), slog.String("session_id", session.Id), slog.Err(err))
+		auditRec.AddMeta("err", err.Error())
+		return false
+	}
+
+	// Update local cache. No need to invalidate cache for cluster as the session cache timeout
+	// ensures each node will get an extended expiry within the next 10 minutes.
+	// Worst case is another node may generate a redundant expiry update.
+	session.ExpiresAt = newExpiry
+	a.AddSessionToCache(session)
+
+	slog.Debug("Session extended", slog.String("user_id", session.UserId), slog.String("session_id", session.Id),
+		slog.Int64("newExpiry", newExpiry), slog.Int64("session_length", sessionLength))
+
+	auditRec.Success()
+	auditRec.AddMeta("extended_session", session)
+	return true
+}
+
+func (a *App) GetCloudSession(token string) (*model.Session, *model.AppError) {
+	apiKey := os.Getenv("SN_CLOUD_API_KEY")
+	if apiKey != "" && apiKey == token {
+		// Need a bare-bones session object for later checks
+		session := &model.Session{
+			Token:   token,
+			IsOAuth: false,
+		}
+
+		session.AddProp(model.SESSION_PROP_TYPE, model.SESSION_TYPE_CLOUD_KEY)
+		return session, nil
+	}
+
+	return nil, model.NewAppError("GetCloudSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
+}
+
+// func (a *App) GetRemoteClusterSession(token string, remoteId string) (*model.Session, *model.AppError) {
+// 	rc, appErr := a.GetRemoteCluster(remoteId)
+// 	if appErr == nil && rc.Token == token {
+// 		// Need a bare-bones session object for later checks
+// 		session := &model.Session{
+// 			Token:   token,
+// 			IsOAuth: false,
+// 		}
+
+// 		session.AddProp(model.SESSION_PROP_TYPE, model.SESSION_TYPE_REMOTECLUSTER_TOKEN)
+// 		return session, nil
+// 	}
+// 	return nil, model.NewAppError("GetRemoteClusterSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
+// }

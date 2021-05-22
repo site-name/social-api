@@ -2,12 +2,14 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/sitename/sitename/graph/model"
 )
 
 func (r *queryResolver) payment(ctx context.Context, id string) (*model.Payment, error) {
+	fmt.Println(ctx.Value(ApiContextKey))
 	now := time.Now()
 	return &model.Payment{
 		ID:                     id,

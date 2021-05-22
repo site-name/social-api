@@ -821,6 +821,23 @@ func (a *OpenTracingAppLayer) ExportPermissions(w io.Writer) error {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) ExtendSessionExpiryIfNeeded(session *model.Session) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ExtendSessionExpiryIfNeeded")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.ExtendSessionExpiryIfNeeded(session)
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) FileBackend() (filestore.FileBackend, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.FileBackend")
@@ -900,6 +917,28 @@ func (a *OpenTracingAppLayer) GetAuditsPage(userID string, page int, perPage int
 
 	defer span.Finish()
 	resultVar0, resultVar1 := a.app.GetAuditsPage(userID, page, perPage)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) GetCloudSession(token string) (*model.Session, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetCloudSession")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetCloudSession(token)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))

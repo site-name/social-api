@@ -121,3 +121,7 @@ func (c *Context) LogErrorByCode(err *model.AppError) {
 		c.Logger.Error(msg, fields...)
 	}
 }
+
+func (c *Context) GetRemoteID(r *http.Request) string {
+	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
+}

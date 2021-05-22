@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -9,8 +10,8 @@ import (
 )
 
 const (
-	rootApiPath = "/api"
-	graphqlPath = "/graphql"
+	rootApiPath string = "/api"
+	graphqlPath string = "/graphql"
 )
 
 type Routes struct {
@@ -29,18 +30,30 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 		BaseRoutes: &Routes{},
 	}
 
+	playgroundHandler := graph.NewPlaygroundHandler(graphqlPath)
+	logicHandler := graph.NewHandler(w.app)
+
 	// register routes to graphql api
 	api.BaseRoutes.GraphqlAPI = root.PathPrefix(rootApiPath).Subrouter()
+	// playground handler
 	api.
 		BaseRoutes.
 		GraphqlAPI.
-		Handle("", graph.NewPlaygroundHandler(graphqlPath)).
+		Handle("", w.NewHandler(graphqlHanlerWrapper(playgroundHandler))).
 		Methods(http.MethodGet, http.MethodOptions)
+
+	// api request handler
 	api.
 		BaseRoutes.
 		GraphqlAPI.
-		Handle(graphqlPath, graph.NewHandler(w.app)).
+		Handle(graphqlPath, w.NewHandler(graphqlHanlerWrapper(logicHandler))).
 		Methods(http.MethodPost, http.MethodOptions)
 
 	return api
+}
+
+func graphqlHanlerWrapper(playgroundHandler http.Handler) func(c *Context, w http.ResponseWriter, r *http.Request) {
+	return func(c *Context, w http.ResponseWriter, r *http.Request) {
+		playgroundHandler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), graph.ApiContextKey, c)))
+	}
 }

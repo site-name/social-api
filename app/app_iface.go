@@ -38,6 +38,10 @@ type AppIface interface {
 	CreateUser(user *account.User) (*account.User, *model.AppError)
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
+	// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
+	// A new ExpiresAt is only written if enough time has elapsed since last update.
+	// Returns true only if the session was extended.
+	ExtendSessionExpiryIfNeeded(session *model.Session) bool
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -114,6 +118,7 @@ type AppIface interface {
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
+	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetClusterId() string
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
