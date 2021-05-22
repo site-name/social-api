@@ -52,6 +52,7 @@ const (
 	replicaLagPrefix = "replica-lag"
 )
 
+// os exit codes when error occures
 const (
 	ExitGenericFailure           = 1
 	ExitCreateTable              = 100
@@ -160,6 +161,7 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	return store
 }
 
+// setupConnection opens connection to database, check if it works by ping
 func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *gorp.DbMap {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
@@ -308,6 +310,7 @@ func (ss *SqlStore) GetReplica() *gorp.DbMap {
 	return ss.Replicas[rrNum]
 }
 
+// returns number of connections to master database
 func (ss *SqlStore) TotalMasterDbConnections() int {
 	return ss.GetMaster().Db.Stats().OpenConnections
 }
@@ -363,6 +366,7 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	return count
 }
 
+// counts all connections to replica source
 func (ss *SqlStore) TotalSearchDbConnections() int {
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
 		return 0
@@ -389,6 +393,7 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 	}
 }
 
+// checks if table does exist in database
 func (ss *SqlStore) DoesTableExist(tableName string) bool {
 	count, err := ss.GetMaster().SelectInt(
 		`SELECT count(relname) FROM pg_class WHERE relname=$1`,
@@ -839,6 +844,8 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
+// migrate performs database migration with go-migrate. Make sure to add .sql schemas to /db/migrations folder so it can work.
+// If you don't add .sql schemas, still migration can be done using gorp
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	// When WithInstance is used in golang-migrate, the underlying driver connections are not tracked.
 	// So we will have to open a fresh connection for migrations and explicitly close it when all is done.
