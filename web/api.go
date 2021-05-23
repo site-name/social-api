@@ -4,16 +4,19 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/graph"
-	"github.com/sitename/sitename/modules/consts"
 )
 
 const (
-	rootApiPath string = "/api"
-	graphqlPath string = "/graphql"
+	rootApiPath   string     = "/api"
+	graphqlPath   string     = "/graphql"
+	ApiContextKey ContextKey = "thisIsContextKey"
 )
+
+type ContextKey string
 
 type Routes struct {
 	GraphqlAPI *mux.Router
@@ -31,8 +34,12 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 		BaseRoutes: &Routes{},
 	}
 
-	playgroundHandler := graph.NewPlaygroundHandler(graphqlPath)
-	logicHandler := graph.NewHandler(w.app)
+	playgroundHandler := playground.Handler("GraphQL Playground", graphqlPath)
+	logicHandler := handler.NewDefaultServer(NewExecutableSchema(Config{
+		Resolvers: &Resolver{
+			app: w.app,
+		},
+	}))
 
 	// register routes to graphql api
 	api.BaseRoutes.GraphqlAPI = root.PathPrefix(rootApiPath).Subrouter()
@@ -55,6 +62,6 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 
 func graphqlHanlerWrapper(handler http.Handler) func(c *Context, w http.ResponseWriter, r *http.Request) {
 	return func(c *Context, w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), consts.ApiContextKey, c)))
+		handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ApiContextKey, c)))
 	}
 }

@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.43
+	github.com/aws/aws-sdk-go v1.38.45
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -17,7 +17,7 @@ require (
 	github.com/dyatlov/go-opengraph v0.0.0-20210112100619-dae8665a5b09
 	github.com/francoispqt/gojay v1.2.13
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/getsentry/sentry-go v0.10.0
+	github.com/getsentry/sentry-go v0.11.0
 	github.com/go-redis/redis/v8 v8.8.3 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
@@ -56,7 +56,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/throttled/throttled v2.2.5+incompatible
 	github.com/tinylib/msgp v1.1.5
-	github.com/uber/jaeger-client-go v2.28.0+incompatible
+	github.com/uber/jaeger-client-go v2.29.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.2
@@ -64,7 +64,7 @@ require (
 	github.com/wiggin77/srslog v1.0.1
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
+	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.1
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
