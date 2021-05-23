@@ -51,6 +51,7 @@ func (srv *JobServer) GetJob(id string) (*model.Job, *model.AppError) {
 	return job, nil
 }
 
+// ClaimJob change status of given job from PENDING to IN_PROGRESS
 func (srv *JobServer) ClaimJob(job *model.Job) (bool, *model.AppError) {
 	updated, err := srv.Store.Job().UpdateStatusOptimistically(job.Id, model.JOB_STATUS_PENDING, model.JOB_STATUS_IN_PROGRESS)
 	if err != nil {

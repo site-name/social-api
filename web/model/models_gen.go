@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/google/uuid"
 )
 
 type Job interface {
@@ -54,9 +55,10 @@ type AccountDelete struct {
 }
 
 type AccountError struct {
-	Field   *string          `json:"field"`
-	Message *string          `json:"message"`
-	Code    AccountErrorCode `json:"code"`
+	Field       *string          `json:"field"`
+	Message     *string          `json:"message"`
+	Code        AccountErrorCode `json:"code"`
+	AddressType *AddressTypeEnum `json:"addressType"`
 }
 
 type AccountInput struct {
@@ -69,6 +71,7 @@ type AccountInput struct {
 
 type AccountRegister struct {
 	RequiresConfirmation *bool          `json:"requiresConfirmation"`
+	AccountErrors        []AccountError `json:"accountErrors"`
 	Errors               []AccountError `json:"errors"`
 	User                 *User          `json:"user"`
 }
@@ -79,6 +82,7 @@ type AccountRegisterInput struct {
 	RedirectURL  *string           `json:"redirectUrl"`
 	LanguageCode *LanguageCodeEnum `json:"languageCode"`
 	Metadata     []MetadataInput   `json:"metadata"`
+	Channel      *string           `json:"channel"`
 }
 
 type AccountRequestDeletion struct {
@@ -369,6 +373,7 @@ type Attribute struct {
 	Name                     *string                         `json:"name"`
 	Slug                     *string                         `json:"slug"`
 	Type                     *AttributeTypeEnum              `json:"type"`
+	Unit                     *MeasurementUnitsEnum           `json:"unit"`
 	Values                   []*AttributeValue               `json:"values"`
 	ValueRequired            bool                            `json:"valueRequired"`
 	VisibleInStorefront      bool                            `json:"visibleInStorefront"`
@@ -411,6 +416,7 @@ type AttributeCreateInput struct {
 	Name                     string                       `json:"name"`
 	Slug                     *string                      `json:"slug"`
 	Type                     AttributeTypeEnum            `json:"type"`
+	Unit                     *MeasurementUnitsEnum        `json:"unit"`
 	Values                   []*AttributeValueCreateInput `json:"values"`
 	ValueRequired            *bool                        `json:"valueRequired"`
 	IsVariantOnly            *bool                        `json:"isVariantOnly"`
@@ -450,8 +456,9 @@ type AttributeFilterInput struct {
 }
 
 type AttributeInput struct {
-	Slug   string    `json:"slug"`
-	Values []*string `json:"values"`
+	Slug        string         `json:"slug"`
+	Values      []*string      `json:"values"`
+	ValuesRange *IntRangeInput `json:"valuesRange"`
 }
 
 type AttributeReorderValues struct {
@@ -498,6 +505,7 @@ type AttributeUpdate struct {
 type AttributeUpdateInput struct {
 	Name                     *string                      `json:"name"`
 	Slug                     *string                      `json:"slug"`
+	Unit                     *MeasurementUnitsEnum        `json:"unit"`
 	RemoveValues             []*string                    `json:"removeValues"`
 	AddValues                []*AttributeValueCreateInput `json:"addValues"`
 	ValueRequired            *bool                        `json:"valueRequired"`
@@ -627,9 +635,9 @@ type CatalogueInput struct {
 }
 
 type Category struct {
+	ID              string                       `json:"id"`
 	SeoTitle        *string                      `json:"seoTitle"`
 	SeoDescription  *string                      `json:"seoDescription"`
-	ID              string                       `json:"id"`
 	Name            string                       `json:"name"`
 	Description     *string                      `json:"description"`
 	Slug            string                       `json:"slug"`
@@ -699,9 +707,9 @@ type CategorySortingInput struct {
 }
 
 type CategoryTranslatableContent struct {
+	ID              string               `json:"id"`
 	SeoTitle        *string              `json:"seoTitle"`
 	SeoDescription  *string              `json:"seoDescription"`
-	ID              string               `json:"id"`
 	Name            string               `json:"name"`
 	Description     *string              `json:"description"`
 	DescriptionJSON *string              `json:"descriptionJson"`
@@ -719,10 +727,10 @@ type CategoryTranslate struct {
 }
 
 type CategoryTranslation struct {
+	ID              string           `json:"id"`
 	SeoTitle        *string          `json:"seoTitle"`
 	SeoDescription  *string          `json:"seoDescription"`
-	ID              string           `json:"id"`
-	Name            string           `json:"name"`
+	Name            *string          `json:"name"`
 	Description     *string          `json:"description"`
 	Language        *LanguageDisplay `json:"language"`
 	DescriptionJSON *string          `json:"descriptionJson"`
@@ -737,13 +745,12 @@ type CategoryUpdate struct {
 }
 
 type Channel struct {
-	ID            string         `json:"id"`
-	Name          string         `json:"name"`
-	IsActive      bool           `json:"isActive"`
-	Slug          string         `json:"slug"`
-	CurrencyCode  string         `json:"currencyCode"`
-	HasOrders     bool           `json:"hasOrders"`
-	ShippingZones []ShippingZone `json:"shippingZones"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	IsActive     bool   `json:"isActive"`
+	Slug         string `json:"slug"`
+	CurrencyCode string `json:"currencyCode"`
+	HasOrders    bool   `json:"hasOrders"`
 }
 
 func (Channel) IsNode() {}
@@ -809,7 +816,6 @@ type Checkout struct {
 	Created                  string            `json:"created"`
 	LastChange               string            `json:"lastChange"`
 	User                     *User             `json:"user"`
-	Quantity                 int               `json:"quantity"`
 	Channel                  *Channel          `json:"channel"`
 	BillingAddress           *Address          `json:"billingAddress"`
 	ShippingAddress          *Address          `json:"shippingAddress"`
@@ -826,11 +832,12 @@ type Checkout struct {
 	AvailablePaymentGateways []PaymentGateway  `json:"availablePaymentGateways"`
 	Email                    string            `json:"email"`
 	IsShippingRequired       bool              `json:"isShippingRequired"`
+	Quantity                 int               `json:"quantity"`
 	Lines                    []*CheckoutLine   `json:"lines"`
 	ShippingPrice            *TaxedMoney       `json:"shippingPrice"`
 	ShippingMethod           *ShippingMethod   `json:"shippingMethod"`
 	SubtotalPrice            *TaxedMoney       `json:"subtotalPrice"`
-	Token                    string            `json:"token"`
+	Token                    uuid.UUID         `json:"token"`
 	TotalPrice               *TaxedMoney       `json:"totalPrice"`
 	LanguageCode             LanguageCodeEnum  `json:"languageCode"`
 }
@@ -904,10 +911,11 @@ type CheckoutEmailUpdate struct {
 }
 
 type CheckoutError struct {
-	Field    *string           `json:"field"`
-	Message  *string           `json:"message"`
-	Code     CheckoutErrorCode `json:"code"`
-	Variants []string          `json:"variants"`
+	Field       *string           `json:"field"`
+	Message     *string           `json:"message"`
+	Code        CheckoutErrorCode `json:"code"`
+	Variants    []string          `json:"variants"`
+	AddressType *AddressTypeEnum  `json:"addressType"`
 }
 
 type CheckoutLanguageCodeUpdate struct {
@@ -991,9 +999,9 @@ type ChoiceValue struct {
 }
 
 type Collection struct {
+	ID              string                      `json:"id"`
 	SeoTitle        *string                     `json:"seoTitle"`
 	SeoDescription  *string                     `json:"seoDescription"`
-	ID              string                      `json:"id"`
 	Name            string                      `json:"name"`
 	Description     *string                     `json:"description"`
 	Slug            string                      `json:"slug"`
@@ -1022,9 +1030,9 @@ type CollectionBulkDelete struct {
 }
 
 type CollectionChannelListing struct {
+	ID              string   `json:"id"`
 	PublicationDate *string  `json:"publicationDate"`
 	IsPublished     bool     `json:"isPublished"`
-	ID              string   `json:"id"`
 	Channel         *Channel `json:"channel"`
 }
 
@@ -1130,9 +1138,9 @@ type CollectionSortingInput struct {
 }
 
 type CollectionTranslatableContent struct {
+	ID              string                 `json:"id"`
 	SeoTitle        *string                `json:"seoTitle"`
 	SeoDescription  *string                `json:"seoDescription"`
-	ID              string                 `json:"id"`
 	Name            string                 `json:"name"`
 	Description     *string                `json:"description"`
 	DescriptionJSON *string                `json:"descriptionJson"`
@@ -1150,10 +1158,10 @@ type CollectionTranslate struct {
 }
 
 type CollectionTranslation struct {
+	ID              string           `json:"id"`
 	SeoTitle        *string          `json:"seoTitle"`
 	SeoDescription  *string          `json:"seoDescription"`
-	ID              string           `json:"id"`
-	Name            string           `json:"name"`
+	Name            *string          `json:"name"`
 	Description     *string          `json:"description"`
 	Language        *LanguageDisplay `json:"language"`
 	DescriptionJSON *string          `json:"descriptionJson"`
@@ -1365,7 +1373,7 @@ type DigitalContentURL struct {
 	DownloadNum int             `json:"downloadNum"`
 	ID          string          `json:"id"`
 	URL         *string         `json:"url"`
-	Token       string          `json:"token"`
+	Token       uuid.UUID       `json:"token"`
 }
 
 func (DigitalContentURL) IsNode() {}
@@ -2118,6 +2126,8 @@ type Order struct {
 	AvailableShippingMethods []*ShippingMethod       `json:"availableShippingMethods"`
 	Invoices                 []*Invoice              `json:"invoices"`
 	Number                   *string                 `json:"number"`
+	Original                 *string                 `json:"original"`
+	Origin                   OrderOriginEnum         `json:"origin"`
 	IsPaid                   bool                    `json:"isPaid"`
 	PaymentStatus            PaymentChargeStatusEnum `json:"paymentStatus"`
 	PaymentStatusDisplay     string                  `json:"paymentStatusDisplay"`
@@ -2236,12 +2246,13 @@ type OrderDraftFilterInput struct {
 }
 
 type OrderError struct {
-	Field     *string        `json:"field"`
-	Message   *string        `json:"message"`
-	Code      OrderErrorCode `json:"code"`
-	Warehouse *string        `json:"warehouse"`
-	OrderLine *string        `json:"orderLine"`
-	Variants  []string       `json:"variants"`
+	Field       *string          `json:"field"`
+	Message     *string          `json:"message"`
+	Code        OrderErrorCode   `json:"code"`
+	Warehouse   *string          `json:"warehouse"`
+	OrderLine   *string          `json:"orderLine"`
+	Variants    []string         `json:"variants"`
+	AddressType *AddressTypeEnum `json:"addressType"`
 }
 
 type OrderEvent struct {
@@ -2504,9 +2515,9 @@ type OrderVoid struct {
 }
 
 type Page struct {
+	ID              string              `json:"id"`
 	SeoTitle        *string             `json:"seoTitle"`
 	SeoDescription  *string             `json:"seoDescription"`
-	ID              string              `json:"id"`
 	Title           string              `json:"title"`
 	Content         *string             `json:"content"`
 	PublicationDate *string             `json:"publicationDate"`
@@ -2591,8 +2602,9 @@ type PageError struct {
 }
 
 type PageFilterInput struct {
-	Search   *string          `json:"search"`
-	Metadata []*MetadataInput `json:"metadata"`
+	Search    *string          `json:"search"`
+	Metadata  []*MetadataInput `json:"metadata"`
+	PageTypes []*string        `json:"pageTypes"`
 }
 
 type PageInfo struct {
@@ -2624,9 +2636,9 @@ type PageSortingInput struct {
 }
 
 type PageTranslatableContent struct {
+	ID             string           `json:"id"`
 	SeoTitle       *string          `json:"seoTitle"`
 	SeoDescription *string          `json:"seoDescription"`
-	ID             string           `json:"id"`
 	Title          string           `json:"title"`
 	Content        *string          `json:"content"`
 	ContentJSON    *string          `json:"contentJson"`
@@ -2644,10 +2656,10 @@ type PageTranslate struct {
 }
 
 type PageTranslation struct {
+	ID             string           `json:"id"`
 	SeoTitle       *string          `json:"seoTitle"`
 	SeoDescription *string          `json:"seoDescription"`
-	ID             string           `json:"id"`
-	Title          string           `json:"title"`
+	Title          *string          `json:"title"`
 	Content        *string          `json:"content"`
 	Language       *LanguageDisplay `json:"language"`
 	ContentJSON    *string          `json:"contentJson"`
@@ -2899,14 +2911,18 @@ type PermissionGroupUpdateInput struct {
 }
 
 type Plugin struct {
-	ID            string               `json:"id"`
-	Name          string               `json:"name"`
-	Description   string               `json:"description"`
-	Active        bool                 `json:"active"`
-	Configuration []*ConfigurationItem `json:"configuration"`
+	ID                    string                `json:"id"`
+	Name                  string                `json:"name"`
+	Description           string                `json:"description"`
+	GlobalConfiguration   *PluginConfiguration  `json:"globalConfiguration"`
+	ChannelConfigurations []PluginConfiguration `json:"channelConfigurations"`
 }
 
-func (Plugin) IsNode() {}
+type PluginConfiguration struct {
+	Active        bool                 `json:"active"`
+	Channel       *Channel             `json:"channel"`
+	Configuration []*ConfigurationItem `json:"configuration"`
+}
 
 type PluginCountableConnection struct {
 	PageInfo   *PageInfo             `json:"pageInfo"`
@@ -2926,13 +2942,19 @@ type PluginError struct {
 }
 
 type PluginFilterInput struct {
-	Active *bool   `json:"active"`
-	Search *string `json:"search"`
+	StatusInChannels *PluginStatusInChannelsInput `json:"statusInChannels"`
+	Search           *string                      `json:"search"`
+	Type             *PluginConfigurationType     `json:"type"`
 }
 
 type PluginSortingInput struct {
 	Direction OrderDirection  `json:"direction"`
 	Field     PluginSortField `json:"field"`
+}
+
+type PluginStatusInChannelsInput struct {
+	Active   bool     `json:"active"`
+	Channels []string `json:"channels"`
 }
 
 type PluginUpdate struct {
@@ -3250,7 +3272,7 @@ type ProductTranslation struct {
 	ID              string           `json:"id"`
 	SeoTitle        *string          `json:"seoTitle"`
 	SeoDescription  *string          `json:"seoDescription"`
-	Name            string           `json:"name"`
+	Name            *string          `json:"name"`
 	Description     *string          `json:"description"`
 	Language        *LanguageDisplay `json:"language"`
 	DescriptionJSON *string          `json:"descriptionJson"`
@@ -3939,7 +3961,8 @@ type ShippingZoneDelete struct {
 }
 
 type ShippingZoneFilterInput struct {
-	Search *string `json:"search"`
+	Search   *string   `json:"search"`
+	Channels []*string `json:"channels"`
 }
 
 type ShippingZoneUpdate struct {
@@ -4093,6 +4116,7 @@ type StaffError struct {
 	Field       *string          `json:"field"`
 	Message     *string          `json:"message"`
 	Code        AccountErrorCode `json:"code"`
+	AddressType *AddressTypeEnum `json:"addressType"`
 	Permissions []PermissionEnum `json:"permissions"`
 	Groups      []string         `json:"groups"`
 	Users       []string         `json:"users"`
@@ -4283,7 +4307,7 @@ type User struct {
 	Metadata               []*MetadataItem              `json:"metadata"`
 	Addresses              []*Address                   `json:"addresses"`
 	Checkout               *Checkout                    `json:"checkout"`
-	CheckoutTokens         []string                     `json:"checkoutTokens"`
+	CheckoutTokens         []uuid.UUID                  `json:"checkoutTokens"`
 	GiftCards              *GiftCardCountableConnection `json:"giftCards"`
 	Orders                 *OrderCountableConnection    `json:"orders"`
 	UserPermissions        []*UserPermission            `json:"userPermissions"`
@@ -4337,6 +4361,7 @@ type UserCreateInput struct {
 	Note                   *string           `json:"note"`
 	LanguageCode           *LanguageCodeEnum `json:"languageCode"`
 	RedirectURL            *string           `json:"redirectUrl"`
+	Channel                *string           `json:"channel"`
 }
 
 type UserPermission struct {
@@ -4739,6 +4764,8 @@ const (
 	AccountErrorCodeJwtDecodeError              AccountErrorCode = "JWT_DECODE_ERROR"
 	AccountErrorCodeJwtMissingToken             AccountErrorCode = "JWT_MISSING_TOKEN"
 	AccountErrorCodeJwtInvalidCsrfToken         AccountErrorCode = "JWT_INVALID_CSRF_TOKEN"
+	AccountErrorCodeChannelInactive             AccountErrorCode = "CHANNEL_INACTIVE"
+	AccountErrorCodeMissingChannelSlug          AccountErrorCode = "MISSING_CHANNEL_SLUG"
 )
 
 var AllAccountErrorCode = []AccountErrorCode{
@@ -4772,11 +4799,13 @@ var AllAccountErrorCode = []AccountErrorCode{
 	AccountErrorCodeJwtDecodeError,
 	AccountErrorCodeJwtMissingToken,
 	AccountErrorCodeJwtInvalidCsrfToken,
+	AccountErrorCodeChannelInactive,
+	AccountErrorCodeMissingChannelSlug,
 }
 
 func (e AccountErrorCode) IsValid() bool {
 	switch e {
-	case AccountErrorCodeActivateOwnAccount, AccountErrorCodeActivateSuperuserAccount, AccountErrorCodeDuplicatedInputItem, AccountErrorCodeDeactivateOwnAccount, AccountErrorCodeDeactivateSuperuserAccount, AccountErrorCodeDeleteNonStaffUser, AccountErrorCodeDeleteOwnAccount, AccountErrorCodeDeleteStaffAccount, AccountErrorCodeDeleteSuperuserAccount, AccountErrorCodeGraphqlError, AccountErrorCodeInactive, AccountErrorCodeInvalid, AccountErrorCodeInvalidPassword, AccountErrorCodeLeftNotManageablePermission, AccountErrorCodeInvalidCredentials, AccountErrorCodeNotFound, AccountErrorCodeOutOfScopeUser, AccountErrorCodeOutOfScopeGroup, AccountErrorCodeOutOfScopePermission, AccountErrorCodePasswordEntirelyNumeric, AccountErrorCodePasswordTooCommon, AccountErrorCodePasswordTooShort, AccountErrorCodePasswordTooSimilar, AccountErrorCodeRequired, AccountErrorCodeUnique, AccountErrorCodeJwtSignatureExpired, AccountErrorCodeJwtInvalidToken, AccountErrorCodeJwtDecodeError, AccountErrorCodeJwtMissingToken, AccountErrorCodeJwtInvalidCsrfToken:
+	case AccountErrorCodeActivateOwnAccount, AccountErrorCodeActivateSuperuserAccount, AccountErrorCodeDuplicatedInputItem, AccountErrorCodeDeactivateOwnAccount, AccountErrorCodeDeactivateSuperuserAccount, AccountErrorCodeDeleteNonStaffUser, AccountErrorCodeDeleteOwnAccount, AccountErrorCodeDeleteStaffAccount, AccountErrorCodeDeleteSuperuserAccount, AccountErrorCodeGraphqlError, AccountErrorCodeInactive, AccountErrorCodeInvalid, AccountErrorCodeInvalidPassword, AccountErrorCodeLeftNotManageablePermission, AccountErrorCodeInvalidCredentials, AccountErrorCodeNotFound, AccountErrorCodeOutOfScopeUser, AccountErrorCodeOutOfScopeGroup, AccountErrorCodeOutOfScopePermission, AccountErrorCodePasswordEntirelyNumeric, AccountErrorCodePasswordTooCommon, AccountErrorCodePasswordTooShort, AccountErrorCodePasswordTooSimilar, AccountErrorCodeRequired, AccountErrorCodeUnique, AccountErrorCodeJwtSignatureExpired, AccountErrorCodeJwtInvalidToken, AccountErrorCodeJwtDecodeError, AccountErrorCodeJwtMissingToken, AccountErrorCodeJwtInvalidCsrfToken, AccountErrorCodeChannelInactive, AccountErrorCodeMissingChannelSlug:
 		return true
 	}
 	return false
@@ -4989,6 +5018,55 @@ func (e AppTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type AreaUnitsEnum string
+
+const (
+	AreaUnitsEnumSqCm   AreaUnitsEnum = "SQ_CM"
+	AreaUnitsEnumSqM    AreaUnitsEnum = "SQ_M"
+	AreaUnitsEnumSqKm   AreaUnitsEnum = "SQ_KM"
+	AreaUnitsEnumSqFt   AreaUnitsEnum = "SQ_FT"
+	AreaUnitsEnumSqYd   AreaUnitsEnum = "SQ_YD"
+	AreaUnitsEnumSqInch AreaUnitsEnum = "SQ_INCH"
+)
+
+var AllAreaUnitsEnum = []AreaUnitsEnum{
+	AreaUnitsEnumSqCm,
+	AreaUnitsEnumSqM,
+	AreaUnitsEnumSqKm,
+	AreaUnitsEnumSqFt,
+	AreaUnitsEnumSqYd,
+	AreaUnitsEnumSqInch,
+}
+
+func (e AreaUnitsEnum) IsValid() bool {
+	switch e {
+	case AreaUnitsEnumSqCm, AreaUnitsEnumSqM, AreaUnitsEnumSqKm, AreaUnitsEnumSqFt, AreaUnitsEnumSqYd, AreaUnitsEnumSqInch:
+		return true
+	}
+	return false
+}
+
+func (e AreaUnitsEnum) String() string {
+	return string(e)
+}
+
+func (e *AreaUnitsEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AreaUnitsEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AreaUnitsEnum", str)
+	}
+	return nil
+}
+
+func (e AreaUnitsEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type AttributeEntityTypeEnum string
 
 const (
@@ -5086,6 +5164,7 @@ const (
 	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = "MULTISELECT"
 	AttributeInputTypeEnumFile        AttributeInputTypeEnum = "FILE"
 	AttributeInputTypeEnumReference   AttributeInputTypeEnum = "REFERENCE"
+	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = "NUMERIC"
 	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = "RICH_TEXT"
 )
 
@@ -5094,12 +5173,13 @@ var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
 	AttributeInputTypeEnumMultiselect,
 	AttributeInputTypeEnumFile,
 	AttributeInputTypeEnumReference,
+	AttributeInputTypeEnumNumeric,
 	AttributeInputTypeEnumRichText,
 }
 
 func (e AttributeInputTypeEnum) IsValid() bool {
 	switch e {
-	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumRichText:
+	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText:
 		return true
 	}
 	return false
@@ -5551,6 +5631,7 @@ const (
 	ConfigurationTypeFieldEnumSecret          ConfigurationTypeFieldEnum = "SECRET"
 	ConfigurationTypeFieldEnumPassword        ConfigurationTypeFieldEnum = "PASSWORD"
 	ConfigurationTypeFieldEnumSecretmultiline ConfigurationTypeFieldEnum = "SECRETMULTILINE"
+	ConfigurationTypeFieldEnumOutput          ConfigurationTypeFieldEnum = "OUTPUT"
 )
 
 var AllConfigurationTypeFieldEnum = []ConfigurationTypeFieldEnum{
@@ -5560,11 +5641,12 @@ var AllConfigurationTypeFieldEnum = []ConfigurationTypeFieldEnum{
 	ConfigurationTypeFieldEnumSecret,
 	ConfigurationTypeFieldEnumPassword,
 	ConfigurationTypeFieldEnumSecretmultiline,
+	ConfigurationTypeFieldEnumOutput,
 }
 
 func (e ConfigurationTypeFieldEnum) IsValid() bool {
 	switch e {
-	case ConfigurationTypeFieldEnumString, ConfigurationTypeFieldEnumMultiline, ConfigurationTypeFieldEnumBoolean, ConfigurationTypeFieldEnumSecret, ConfigurationTypeFieldEnumPassword, ConfigurationTypeFieldEnumSecretmultiline:
+	case ConfigurationTypeFieldEnumString, ConfigurationTypeFieldEnumMultiline, ConfigurationTypeFieldEnumBoolean, ConfigurationTypeFieldEnumSecret, ConfigurationTypeFieldEnumPassword, ConfigurationTypeFieldEnumSecretmultiline, ConfigurationTypeFieldEnumOutput:
 		return true
 	}
 	return false
@@ -6328,6 +6410,55 @@ func (e DiscountValueTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type DistanceUnitsEnum string
+
+const (
+	DistanceUnitsEnumCm   DistanceUnitsEnum = "CM"
+	DistanceUnitsEnumM    DistanceUnitsEnum = "M"
+	DistanceUnitsEnumKm   DistanceUnitsEnum = "KM"
+	DistanceUnitsEnumFt   DistanceUnitsEnum = "FT"
+	DistanceUnitsEnumYd   DistanceUnitsEnum = "YD"
+	DistanceUnitsEnumInch DistanceUnitsEnum = "INCH"
+)
+
+var AllDistanceUnitsEnum = []DistanceUnitsEnum{
+	DistanceUnitsEnumCm,
+	DistanceUnitsEnumM,
+	DistanceUnitsEnumKm,
+	DistanceUnitsEnumFt,
+	DistanceUnitsEnumYd,
+	DistanceUnitsEnumInch,
+}
+
+func (e DistanceUnitsEnum) IsValid() bool {
+	switch e {
+	case DistanceUnitsEnumCm, DistanceUnitsEnumM, DistanceUnitsEnumKm, DistanceUnitsEnumFt, DistanceUnitsEnumYd, DistanceUnitsEnumInch:
+		return true
+	}
+	return false
+}
+
+func (e DistanceUnitsEnum) String() string {
+	return string(e)
+}
+
+func (e *DistanceUnitsEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DistanceUnitsEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DistanceUnitsEnum", str)
+	}
+	return nil
+}
+
+func (e DistanceUnitsEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type ExportErrorCode string
 
 const (
@@ -6873,6 +7004,103 @@ func (e *LanguageCodeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LanguageCodeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type MeasurementUnitsEnum string
+
+const (
+	MeasurementUnitsEnumCm              MeasurementUnitsEnum = "CM"
+	MeasurementUnitsEnumM               MeasurementUnitsEnum = "M"
+	MeasurementUnitsEnumKm              MeasurementUnitsEnum = "KM"
+	MeasurementUnitsEnumFt              MeasurementUnitsEnum = "FT"
+	MeasurementUnitsEnumYd              MeasurementUnitsEnum = "YD"
+	MeasurementUnitsEnumInch            MeasurementUnitsEnum = "INCH"
+	MeasurementUnitsEnumSqCm            MeasurementUnitsEnum = "SQ_CM"
+	MeasurementUnitsEnumSqM             MeasurementUnitsEnum = "SQ_M"
+	MeasurementUnitsEnumSqKm            MeasurementUnitsEnum = "SQ_KM"
+	MeasurementUnitsEnumSqFt            MeasurementUnitsEnum = "SQ_FT"
+	MeasurementUnitsEnumSqYd            MeasurementUnitsEnum = "SQ_YD"
+	MeasurementUnitsEnumSqInch          MeasurementUnitsEnum = "SQ_INCH"
+	MeasurementUnitsEnumCubicMillimeter MeasurementUnitsEnum = "CUBIC_MILLIMETER"
+	MeasurementUnitsEnumCubicCentimeter MeasurementUnitsEnum = "CUBIC_CENTIMETER"
+	MeasurementUnitsEnumCubicDecimeter  MeasurementUnitsEnum = "CUBIC_DECIMETER"
+	MeasurementUnitsEnumCubicMeter      MeasurementUnitsEnum = "CUBIC_METER"
+	MeasurementUnitsEnumLiter           MeasurementUnitsEnum = "LITER"
+	MeasurementUnitsEnumCubicFoot       MeasurementUnitsEnum = "CUBIC_FOOT"
+	MeasurementUnitsEnumCubicInch       MeasurementUnitsEnum = "CUBIC_INCH"
+	MeasurementUnitsEnumCubicYard       MeasurementUnitsEnum = "CUBIC_YARD"
+	MeasurementUnitsEnumQt              MeasurementUnitsEnum = "QT"
+	MeasurementUnitsEnumPint            MeasurementUnitsEnum = "PINT"
+	MeasurementUnitsEnumFlOz            MeasurementUnitsEnum = "FL_OZ"
+	MeasurementUnitsEnumAcreIn          MeasurementUnitsEnum = "ACRE_IN"
+	MeasurementUnitsEnumAcreFt          MeasurementUnitsEnum = "ACRE_FT"
+	MeasurementUnitsEnumG               MeasurementUnitsEnum = "G"
+	MeasurementUnitsEnumLb              MeasurementUnitsEnum = "LB"
+	MeasurementUnitsEnumOz              MeasurementUnitsEnum = "OZ"
+	MeasurementUnitsEnumKg              MeasurementUnitsEnum = "KG"
+	MeasurementUnitsEnumTonne           MeasurementUnitsEnum = "TONNE"
+)
+
+var AllMeasurementUnitsEnum = []MeasurementUnitsEnum{
+	MeasurementUnitsEnumCm,
+	MeasurementUnitsEnumM,
+	MeasurementUnitsEnumKm,
+	MeasurementUnitsEnumFt,
+	MeasurementUnitsEnumYd,
+	MeasurementUnitsEnumInch,
+	MeasurementUnitsEnumSqCm,
+	MeasurementUnitsEnumSqM,
+	MeasurementUnitsEnumSqKm,
+	MeasurementUnitsEnumSqFt,
+	MeasurementUnitsEnumSqYd,
+	MeasurementUnitsEnumSqInch,
+	MeasurementUnitsEnumCubicMillimeter,
+	MeasurementUnitsEnumCubicCentimeter,
+	MeasurementUnitsEnumCubicDecimeter,
+	MeasurementUnitsEnumCubicMeter,
+	MeasurementUnitsEnumLiter,
+	MeasurementUnitsEnumCubicFoot,
+	MeasurementUnitsEnumCubicInch,
+	MeasurementUnitsEnumCubicYard,
+	MeasurementUnitsEnumQt,
+	MeasurementUnitsEnumPint,
+	MeasurementUnitsEnumFlOz,
+	MeasurementUnitsEnumAcreIn,
+	MeasurementUnitsEnumAcreFt,
+	MeasurementUnitsEnumG,
+	MeasurementUnitsEnumLb,
+	MeasurementUnitsEnumOz,
+	MeasurementUnitsEnumKg,
+	MeasurementUnitsEnumTonne,
+}
+
+func (e MeasurementUnitsEnum) IsValid() bool {
+	switch e {
+	case MeasurementUnitsEnumCm, MeasurementUnitsEnumM, MeasurementUnitsEnumKm, MeasurementUnitsEnumFt, MeasurementUnitsEnumYd, MeasurementUnitsEnumInch, MeasurementUnitsEnumSqCm, MeasurementUnitsEnumSqM, MeasurementUnitsEnumSqKm, MeasurementUnitsEnumSqFt, MeasurementUnitsEnumSqYd, MeasurementUnitsEnumSqInch, MeasurementUnitsEnumCubicMillimeter, MeasurementUnitsEnumCubicCentimeter, MeasurementUnitsEnumCubicDecimeter, MeasurementUnitsEnumCubicMeter, MeasurementUnitsEnumLiter, MeasurementUnitsEnumCubicFoot, MeasurementUnitsEnumCubicInch, MeasurementUnitsEnumCubicYard, MeasurementUnitsEnumQt, MeasurementUnitsEnumPint, MeasurementUnitsEnumFlOz, MeasurementUnitsEnumAcreIn, MeasurementUnitsEnumAcreFt, MeasurementUnitsEnumG, MeasurementUnitsEnumLb, MeasurementUnitsEnumOz, MeasurementUnitsEnumKg, MeasurementUnitsEnumTonne:
+		return true
+	}
+	return false
+}
+
+func (e MeasurementUnitsEnum) String() string {
+	return string(e)
+}
+
+func (e *MeasurementUnitsEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MeasurementUnitsEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MeasurementUnitsEnum", str)
+	}
+	return nil
+}
+
+func (e MeasurementUnitsEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -7489,6 +7717,49 @@ func (e OrderEventsEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type OrderOriginEnum string
+
+const (
+	OrderOriginEnumCheckout OrderOriginEnum = "CHECKOUT"
+	OrderOriginEnumDraft    OrderOriginEnum = "DRAFT"
+	OrderOriginEnumReissue  OrderOriginEnum = "REISSUE"
+)
+
+var AllOrderOriginEnum = []OrderOriginEnum{
+	OrderOriginEnumCheckout,
+	OrderOriginEnumDraft,
+	OrderOriginEnumReissue,
+}
+
+func (e OrderOriginEnum) IsValid() bool {
+	switch e {
+	case OrderOriginEnumCheckout, OrderOriginEnumDraft, OrderOriginEnumReissue:
+		return true
+	}
+	return false
+}
+
+func (e OrderOriginEnum) String() string {
+	return string(e)
+}
+
+func (e *OrderOriginEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = OrderOriginEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid OrderOriginEnum", str)
+	}
+	return nil
+}
+
+func (e OrderOriginEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type OrderSettingsErrorCode string
 
 const (
@@ -7886,6 +8157,7 @@ const (
 	PaymentErrorCodeShippingMethodNotSet     PaymentErrorCode = "SHIPPING_METHOD_NOT_SET"
 	PaymentErrorCodePaymentError             PaymentErrorCode = "PAYMENT_ERROR"
 	PaymentErrorCodeNotSupportedGateway      PaymentErrorCode = "NOT_SUPPORTED_GATEWAY"
+	PaymentErrorCodeChannelInactive          PaymentErrorCode = "CHANNEL_INACTIVE"
 )
 
 var AllPaymentErrorCode = []PaymentErrorCode{
@@ -7901,11 +8173,12 @@ var AllPaymentErrorCode = []PaymentErrorCode{
 	PaymentErrorCodeShippingMethodNotSet,
 	PaymentErrorCodePaymentError,
 	PaymentErrorCodeNotSupportedGateway,
+	PaymentErrorCodeChannelInactive,
 }
 
 func (e PaymentErrorCode) IsValid() bool {
 	switch e {
-	case PaymentErrorCodeBillingAddressNotSet, PaymentErrorCodeGraphqlError, PaymentErrorCodeInvalid, PaymentErrorCodeNotFound, PaymentErrorCodeRequired, PaymentErrorCodeUnique, PaymentErrorCodePartialPaymentNotAllowed, PaymentErrorCodeShippingAddressNotSet, PaymentErrorCodeInvalidShippingMethod, PaymentErrorCodeShippingMethodNotSet, PaymentErrorCodePaymentError, PaymentErrorCodeNotSupportedGateway:
+	case PaymentErrorCodeBillingAddressNotSet, PaymentErrorCodeGraphqlError, PaymentErrorCodeInvalid, PaymentErrorCodeNotFound, PaymentErrorCodeRequired, PaymentErrorCodeUnique, PaymentErrorCodePartialPaymentNotAllowed, PaymentErrorCodeShippingAddressNotSet, PaymentErrorCodeInvalidShippingMethod, PaymentErrorCodeShippingMethodNotSet, PaymentErrorCodePaymentError, PaymentErrorCodeNotSupportedGateway, PaymentErrorCodeChannelInactive:
 		return true
 	}
 	return false
@@ -8092,6 +8365,47 @@ func (e *PermissionGroupSortField) UnmarshalGQL(v interface{}) error {
 }
 
 func (e PermissionGroupSortField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type PluginConfigurationType string
+
+const (
+	PluginConfigurationTypePerChannel PluginConfigurationType = "PER_CHANNEL"
+	PluginConfigurationTypeGlobal     PluginConfigurationType = "GLOBAL"
+)
+
+var AllPluginConfigurationType = []PluginConfigurationType{
+	PluginConfigurationTypePerChannel,
+	PluginConfigurationTypeGlobal,
+}
+
+func (e PluginConfigurationType) IsValid() bool {
+	switch e {
+	case PluginConfigurationTypePerChannel, PluginConfigurationTypeGlobal:
+		return true
+	}
+	return false
+}
+
+func (e PluginConfigurationType) String() string {
+	return string(e)
+}
+
+func (e *PluginConfigurationType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PluginConfigurationType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PluginConfigurationType", str)
+	}
+	return nil
+}
+
+func (e PluginConfigurationType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -9398,6 +9712,69 @@ func (e VariantAttributeScope) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type VolumeUnitsEnum string
+
+const (
+	VolumeUnitsEnumCubicMillimeter VolumeUnitsEnum = "CUBIC_MILLIMETER"
+	VolumeUnitsEnumCubicCentimeter VolumeUnitsEnum = "CUBIC_CENTIMETER"
+	VolumeUnitsEnumCubicDecimeter  VolumeUnitsEnum = "CUBIC_DECIMETER"
+	VolumeUnitsEnumCubicMeter      VolumeUnitsEnum = "CUBIC_METER"
+	VolumeUnitsEnumLiter           VolumeUnitsEnum = "LITER"
+	VolumeUnitsEnumCubicFoot       VolumeUnitsEnum = "CUBIC_FOOT"
+	VolumeUnitsEnumCubicInch       VolumeUnitsEnum = "CUBIC_INCH"
+	VolumeUnitsEnumCubicYard       VolumeUnitsEnum = "CUBIC_YARD"
+	VolumeUnitsEnumQt              VolumeUnitsEnum = "QT"
+	VolumeUnitsEnumPint            VolumeUnitsEnum = "PINT"
+	VolumeUnitsEnumFlOz            VolumeUnitsEnum = "FL_OZ"
+	VolumeUnitsEnumAcreIn          VolumeUnitsEnum = "ACRE_IN"
+	VolumeUnitsEnumAcreFt          VolumeUnitsEnum = "ACRE_FT"
+)
+
+var AllVolumeUnitsEnum = []VolumeUnitsEnum{
+	VolumeUnitsEnumCubicMillimeter,
+	VolumeUnitsEnumCubicCentimeter,
+	VolumeUnitsEnumCubicDecimeter,
+	VolumeUnitsEnumCubicMeter,
+	VolumeUnitsEnumLiter,
+	VolumeUnitsEnumCubicFoot,
+	VolumeUnitsEnumCubicInch,
+	VolumeUnitsEnumCubicYard,
+	VolumeUnitsEnumQt,
+	VolumeUnitsEnumPint,
+	VolumeUnitsEnumFlOz,
+	VolumeUnitsEnumAcreIn,
+	VolumeUnitsEnumAcreFt,
+}
+
+func (e VolumeUnitsEnum) IsValid() bool {
+	switch e {
+	case VolumeUnitsEnumCubicMillimeter, VolumeUnitsEnumCubicCentimeter, VolumeUnitsEnumCubicDecimeter, VolumeUnitsEnumCubicMeter, VolumeUnitsEnumLiter, VolumeUnitsEnumCubicFoot, VolumeUnitsEnumCubicInch, VolumeUnitsEnumCubicYard, VolumeUnitsEnumQt, VolumeUnitsEnumPint, VolumeUnitsEnumFlOz, VolumeUnitsEnumAcreIn, VolumeUnitsEnumAcreFt:
+		return true
+	}
+	return false
+}
+
+func (e VolumeUnitsEnum) String() string {
+	return string(e)
+}
+
+func (e *VolumeUnitsEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = VolumeUnitsEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid VolumeUnitsEnum", str)
+	}
+	return nil
+}
+
+func (e VolumeUnitsEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type VoucherDiscountType string
 
 const (
@@ -9845,22 +10222,24 @@ func (e WebhookSampleEventTypeEnum) MarshalGQL(w io.Writer) {
 type WeightUnitsEnum string
 
 const (
-	WeightUnitsEnumKg WeightUnitsEnum = "KG"
-	WeightUnitsEnumLb WeightUnitsEnum = "LB"
-	WeightUnitsEnumOz WeightUnitsEnum = "OZ"
-	WeightUnitsEnumG  WeightUnitsEnum = "G"
+	WeightUnitsEnumG     WeightUnitsEnum = "G"
+	WeightUnitsEnumLb    WeightUnitsEnum = "LB"
+	WeightUnitsEnumOz    WeightUnitsEnum = "OZ"
+	WeightUnitsEnumKg    WeightUnitsEnum = "KG"
+	WeightUnitsEnumTonne WeightUnitsEnum = "TONNE"
 )
 
 var AllWeightUnitsEnum = []WeightUnitsEnum{
-	WeightUnitsEnumKg,
+	WeightUnitsEnumG,
 	WeightUnitsEnumLb,
 	WeightUnitsEnumOz,
-	WeightUnitsEnumG,
+	WeightUnitsEnumKg,
+	WeightUnitsEnumTonne,
 }
 
 func (e WeightUnitsEnum) IsValid() bool {
 	switch e {
-	case WeightUnitsEnumKg, WeightUnitsEnumLb, WeightUnitsEnumOz, WeightUnitsEnumG:
+	case WeightUnitsEnumG, WeightUnitsEnumLb, WeightUnitsEnumOz, WeightUnitsEnumKg, WeightUnitsEnumTonne:
 		return true
 	}
 	return false

@@ -50,6 +50,7 @@ func (watcher *Watcher) Stop() {
 	<-watcher.stopped
 }
 
+// sitting there waiting for new
 func (watcher *Watcher) PollAndNotify() {
 	jobs, err := watcher.srv.Store.Job().GetAllByStatus(model.JOB_STATUS_PENDING)
 	if err != nil {
@@ -175,6 +176,14 @@ func (watcher *Watcher) PollAndNotify() {
 			if watcher.workers.ResendInvitationEmail != nil {
 				select {
 				case watcher.workers.ResendInvitationEmail.JobChannel() <- *job:
+				default:
+				}
+			}
+		// csv export job received
+		case model.JOB_TYPE_EXPOR_CSV:
+			if watcher.workers.CsvExport != nil {
+				select {
+				case watcher.workers.CsvExport.JobChannel() <- *job:
 				default:
 				}
 			}

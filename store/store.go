@@ -48,7 +48,8 @@ type Store interface {
 	CheckoutLine() CheckoutLineStore
 	// csv
 	CsvExportEvent() CsvExportEventStore
-
+	CsvExportFile() CsvExportFileStore
+	// discount
 	VoucherStore() DiscountVoucherStore
 	VoucherChannelListing() VoucherChannelListingStore
 	VoucherCustomer() DiscountVoucherCustomerStore
@@ -57,8 +58,11 @@ type Store interface {
 	DiscountSaleTranslation() DiscountSaleTranslationStore
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore
 	OrderDiscount() OrderDiscountStore
+	// giftcard
 	GiftCard() GiftCardStore
+	// invoice
 	InvoiceEvent() InvoiceEventStore
+	// menu
 	Menu() MenuStore
 	MenuItemTranslation() MenuItemTranslationStore
 
@@ -204,9 +208,14 @@ type VoucherChannelListingStore interface{}
 type DiscountVoucherStore interface{}
 
 // csv
-type CsvExportEventStore interface {
-	Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
-}
+type (
+	CsvExportEventStore interface {
+		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
+	}
+	CsvExportFileStore interface {
+		Save(file *csv.ExportFile) (*csv.ExportFile, error)
+	}
+)
 
 type CheckoutLineStore interface {
 }
@@ -266,7 +275,7 @@ type JobStore interface {
 	Save(job *model.Job) (*model.Job, error)
 	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
 	UpdateStatus(id string, status string) (*model.Job, error)
-	UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error)
+	UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) // update job status from current status to new status
 	Get(id string) (*model.Job, error)
 	GetAllPage(offset int, limit int) ([]*model.Job, error)
 	GetAllByType(jobType string) ([]*model.Job, error)

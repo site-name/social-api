@@ -7,90 +7,94 @@ import (
 	"github.com/sitename/sitename/services/searchengine"
 )
 
-var accountMigrationInterface func(*App) einterfaces.AccountMigrationInterface
+// normal job
+var (
+	accountMigrationInterface            func(*App) einterfaces.AccountMigrationInterface     //
+	jobsLdapSyncInterface                func(*App) ejobs.LdapSyncInterface                   //
+	jobsDataRetentionJobInterface        func(*Server) ejobs.DataRetentionJobInterface        //
+	jobsMessageExportJobInterface        func(*Server) ejobs.MessageExportJobInterface        //
+	jobsElasticsearchAggregatorInterface func(*Server) ejobs.ElasticsearchAggregatorInterface //
+	jobsElasticsearchIndexerInterface    func(*Server) tjobs.IndexerJobInterface              //
+	jobsBleveIndexerInterface            func(*Server) tjobs.IndexerJobInterface              //
+	jobsMigrationsInterface              func(*Server) tjobs.MigrationsJobInterface           //
+	jobsResendInvitationEmailInterface   func(*App) ejobs.ResendInvitationEmailJobInterface   //
+	csvExportInterface                   func(*Server) tjobs.CsvExportInterface               // csv export work
+)
 
 func RegisterAccountMigrationInterface(f func(*App) einterfaces.AccountMigrationInterface) {
 	accountMigrationInterface = f
 }
 
-var clusterInterface func(*Server) einterfaces.ClusterInterface
-
-func RegisterClusterInterface(f func(*Server) einterfaces.ClusterInterface) {
-	clusterInterface = f
-}
-
-var complianceInterface func(*Server) einterfaces.ComplianceInterface
-
-func RegisterComplianceInterface(f func(*Server) einterfaces.ComplianceInterface) {
-	complianceInterface = f
-}
-
-var jobsLdapSyncInterface func(*App) ejobs.LdapSyncInterface
-
 func RegisterJobsLdapSyncInterface(f func(*App) ejobs.LdapSyncInterface) {
 	jobsLdapSyncInterface = f
 }
-
-var jobsDataRetentionJobInterface func(*Server) ejobs.DataRetentionJobInterface
 
 func RegisterJobsDataRetentionJobInterface(f func(*Server) ejobs.DataRetentionJobInterface) {
 	jobsDataRetentionJobInterface = f
 }
 
-var jobsMessageExportJobInterface func(*Server) ejobs.MessageExportJobInterface
-
 func RegisterJobsMessageExportJobInterface(f func(*Server) ejobs.MessageExportJobInterface) {
 	jobsMessageExportJobInterface = f
 }
-
-var jobsElasticsearchAggregatorInterface func(*Server) ejobs.ElasticsearchAggregatorInterface
 
 func RegisterJobsElasticsearchAggregatorInterface(f func(*Server) ejobs.ElasticsearchAggregatorInterface) {
 	jobsElasticsearchAggregatorInterface = f
 }
 
-var jobsElasticsearchIndexerInterface func(*Server) tjobs.IndexerJobInterface
-
 func RegisterJobsElasticsearchIndexerInterface(f func(*Server) tjobs.IndexerJobInterface) {
 	jobsElasticsearchIndexerInterface = f
 }
-
-var jobsBleveIndexerInterface func(*Server) tjobs.IndexerJobInterface
 
 func RegisterJobsBleveIndexerInterface(f func(*Server) tjobs.IndexerJobInterface) {
 	jobsBleveIndexerInterface = f
 }
 
-var jobsMigrationsInterface func(*Server) tjobs.MigrationsJobInterface
-
 func RegisterJobsMigrationsJobInterface(f func(*Server) tjobs.MigrationsJobInterface) {
 	jobsMigrationsInterface = f
 }
-
-var jobsResendInvitationEmailInterface func(*App) ejobs.ResendInvitationEmailJobInterface
 
 // RegisterJobsResendInvitationEmailInterface is used to register or initialize the jobsResendInvitationEmailInterface
 func RegisterJobsResendInvitationEmailInterface(f func(*App) ejobs.ResendInvitationEmailJobInterface) {
 	jobsResendInvitationEmailInterface = f
 }
 
-var metricsInterface func(*Server) einterfaces.MetricsInterface
-
-func RegisterMetricsInterface(f func(*Server) einterfaces.MetricsInterface) {
-	metricsInterface = f
+func RegisterCsvExportInterface(f func(*Server) tjobs.CsvExportInterface) {
+	csvExportInterface = f
 }
 
-var elasticsearchInterface func(*Server) searchengine.SearchEngineInterface
+// --------------------------------------------------
+
+// enterprise jobs -----------------
+
+var (
+	complianceInterface    func(*Server) einterfaces.ComplianceInterface
+	elasticsearchInterface func(*Server) searchengine.SearchEngineInterface
+	clusterInterface       func(*Server) einterfaces.ClusterInterface
+	dataRetentionInterface func(*Server) einterfaces.DataRetentionInterface
+	metricsInterface       func(*Server) einterfaces.MetricsInterface
+)
+
+func RegisterComplianceInterface(f func(*Server) einterfaces.ComplianceInterface) {
+	complianceInterface = f
+}
 
 func RegisterElasticsearchInterface(f func(*Server) searchengine.SearchEngineInterface) {
 	elasticsearchInterface = f
 }
 
-var dataRetentionInterface func(*Server) einterfaces.DataRetentionInterface
+func RegisterClusterInterface(f func(*Server) einterfaces.ClusterInterface) {
+	clusterInterface = f
+}
 
 func RegisterDataRetentionInterface(f func(*Server) einterfaces.DataRetentionInterface) {
 	dataRetentionInterface = f
 }
+
+func RegisterMetricsInterface(f func(*Server) einterfaces.MetricsInterface) {
+	metricsInterface = f
+}
+
+// ------------------------------
 
 func (s *Server) initEnterprise() {
 	if metricsInterface != nil {

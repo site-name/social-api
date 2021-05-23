@@ -69,10 +69,8 @@ const (
 
 type Server struct {
 	// RootRouter is the starting point for all HTTP requests to the server.
-	RootRouter    *mux.Router
-	metricsRouter *mux.Router
-	// LocalRouter   *mux.Router
-
+	RootRouter                         *mux.Router
+	metricsRouter                      *mux.Router
 	sqlStore                           *sqlstore.SqlStore
 	Store                              store.Store
 	AppInitializedOnce                 sync.Once
@@ -129,29 +127,25 @@ type Server struct {
 	ImageProxy                         *imageproxy.ImageProxy
 	SearchEngine                       *searchengine.Broker
 	CacheProvider                      cache.Provider
-
-	Cluster       einterfaces.ClusterInterface
-	DataRetention einterfaces.DataRetentionInterface
-	Metrics       einterfaces.MetricsInterface
-	Compliance    einterfaces.ComplianceInterface
-	Ldap          einterfaces.LdapInterface
-
-	postActionCookieSecret []byte
-	timezones              *timezones.Timezones
-	Audit                  *audit.Audit
+	Cluster                            einterfaces.ClusterInterface
+	DataRetention                      einterfaces.DataRetentionInterface
+	Metrics                            einterfaces.MetricsInterface
+	Compliance                         einterfaces.ComplianceInterface
+	Ldap                               einterfaces.LdapInterface
+	postActionCookieSecret             []byte
+	timezones                          *timezones.Timezones
+	Audit                              *audit.Audit
 	// telemetryService       *telemetry.TelemetryService
 }
 
 func NewServer(options ...Option) (*Server, error) {
 	rootRouter := mux.NewRouter()
-	// localRouter := mux.NewRouter()
 
 	s := &Server{
 		goroutineExitSignal: make(chan struct{}, 1),
 		RootRouter:          rootRouter,
 		hashSeed:            maphash.MakeSeed(),
 		uploadLockMap:       map[string]bool{},
-		// LocalRouter:         localRouter,
 	}
 
 	for _, option := range options {
@@ -550,6 +544,7 @@ func (s *Server) ClientConfigHash() string {
 
 func (s *Server) initJobs() {
 	s.Jobs = jobs.NewJobServer(s, s.Store, s.Metrics)
+
 	if jobsDataRetentionJobInterface != nil {
 		s.Jobs.DataRetentionJob = jobsDataRetentionJobInterface(s)
 	}
@@ -568,6 +563,14 @@ func (s *Server) initJobs() {
 	if jobsMigrationsInterface != nil {
 		s.Jobs.Migrations = jobsMigrationsInterface(s)
 	}
+
+	// csv export
+	if csvExportInterface != nil {
+		s.Jobs.CsvExport = csvExportInterface(s)
+	}
+
+	s.Jobs.InitWorkers()
+	s.Jobs.InitSchedulers()
 }
 
 // func (s *Server) TelemetryId() string {

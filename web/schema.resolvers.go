@@ -8,6 +8,8 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/google/uuid"
+	"github.com/sitename/sitename/web/generated"
 	"github.com/sitename/sitename/web/model"
 )
 
@@ -347,7 +349,7 @@ func (r *mutationResolver) PaymentVoid(ctx context.Context, paymentID string) (*
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PaymentInitialize(ctx context.Context, gateway string, paymentData *string) (*model.PaymentInitialize, error) {
+func (r *mutationResolver) PaymentInitialize(ctx context.Context, channel *string, gateway string, paymentData *string) (*model.PaymentInitialize, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -623,7 +625,7 @@ func (r *mutationResolver) GiftCardUpdate(ctx context.Context, id string, input 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PluginUpdate(ctx context.Context, id string, input model.PluginUpdateInput) (*model.PluginUpdate, error) {
+func (r *mutationResolver) PluginUpdate(ctx context.Context, channel *string, id string, input model.PluginUpdateInput) (*model.PluginUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -692,7 +694,7 @@ func (r *mutationResolver) VoucherChannelListingUpdate(ctx context.Context, id s
 }
 
 func (r *mutationResolver) ExportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.exportProducts(ctx, input)
 }
 
 func (r *mutationResolver) FileUpload(ctx context.Context, file graphql.Upload) (*model.FileUpload, error) {
@@ -907,7 +909,7 @@ func (r *mutationResolver) ExternalVerify(ctx context.Context, input string, plu
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) RequestPasswordReset(ctx context.Context, email string, redirectURL string) (*model.RequestPasswordReset, error) {
+func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *string, email string, redirectURL string) (*model.RequestPasswordReset, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -923,11 +925,11 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) RequestEmailChange(ctx context.Context, newEmail string, password string, redirectURL string) (*model.RequestEmailChange, error) {
+func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *string, newEmail string, password string, redirectURL string) (*model.RequestEmailChange, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, token string) (*model.ConfirmEmailChange, error) {
+func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, channel *string, token string) (*model.ConfirmEmailChange, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -955,7 +957,7 @@ func (r *mutationResolver) AccountUpdate(ctx context.Context, input model.Accoun
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, redirectURL string) (*model.AccountRequestDeletion, error) {
+func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *string, redirectURL string) (*model.AccountRequestDeletion, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1183,7 +1185,7 @@ func (r *queryResolver) OrdersTotal(ctx context.Context, period *model.Reporting
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) OrderByToken(ctx context.Context, token string) (*model.Order, error) {
+func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*model.Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1247,7 +1249,7 @@ func (r *queryResolver) TaxTypes(ctx context.Context) ([]*model.TaxType, error) 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Checkout(ctx context.Context, token *string) (*model.Checkout, error) {
+func (r *queryResolver) Checkout(ctx context.Context, token *uuid.UUID) (*model.Checkout, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1323,11 +1325,11 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*m
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

@@ -24,7 +24,7 @@ type Worker struct {
 }
 
 func init() {
-
+	// TODO: fixme
 }
 
 type ActiveUsersJobInterfaceImpl struct {

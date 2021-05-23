@@ -22,6 +22,7 @@ type SqlStoreStores struct {
 	checkout                      store.CheckoutStore                     // checkout models
 	checkoutLine                  store.CheckoutLineStore                 //
 	csvExportEvent                store.CsvExportEventStore               // csv models
+	csvExportFile                 store.CsvExportFileStore                //
 	discountVoucher               store.DiscountVoucherStore              // product and discount models
 	discountVoucherChannelListing store.VoucherChannelListingStore        //
 	discountVoucherTranslation    store.VoucherTranslationStore           //
@@ -100,6 +101,7 @@ func (store *SqlStore) setupTables() {
 	store.stores.checkoutLine = newSqlCheckoutLineStore(store)
 	// csv
 	store.stores.csvExportEvent = newSqlCsvExportEventStore(store)
+	store.stores.csvExportFile = newSqlCsvExportFileStore(store)
 	// product and discount
 	store.stores.discountVoucher = newSqlVoucherStore(store)
 	store.stores.discountVoucherChannelListing = newSqlVoucherChannelListingStore(store)
@@ -191,6 +193,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.checkoutLine.(*SqlCheckoutLineStore).createIndexesIfNotExists()
 	// csv
 	store.stores.csvExportEvent.(*SqlCsvExportEventStore).createIndexesIfNotExists()
+	store.stores.csvExportFile.(*SqlCsvExportFileStore).createIndexesIfNotExists()
 	// product and discount
 	store.stores.discountVoucher.(*SqlVoucherStore).createIndexesIfNotExists()
 	store.stores.discountVoucherChannelListing.(*SqlVoucherChannelListingStore).createIndexesIfNotExists()
@@ -320,6 +323,9 @@ func (ss *SqlStore) CheckoutLine() store.CheckoutLineStore {
 // csv
 func (ss *SqlStore) CsvExportEvent() store.CsvExportEventStore {
 	return ss.stores.csvExportEvent
+}
+func (ss *SqlStore) CsvExportFile() store.CsvExportFileStore {
+	return ss.stores.csvExportFile
 }
 
 // product and discount

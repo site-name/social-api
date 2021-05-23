@@ -28,6 +28,71 @@ var (
 	ErrSchedulersUninitialized = errors.New("job schedulers are not initialized")
 )
 
+// InitSchedulers inits all job schedulers
+func (srv *JobServer) InitSchedulers() error {
+	srv.mut.Lock()
+	defer srv.mut.Unlock()
+
+	if srv.schedulers != nil && srv.schedulers.running {
+		return ErrSchedulersRunning
+	}
+	slog.Debug("Initialising schedulers.")
+
+	schedulers := &Schedulers{
+		stop:                 make(chan bool),
+		stopped:              make(chan bool),
+		configChanged:        make(chan *model.Config),
+		clusterLeaderChanged: make(chan bool),
+		jobs:                 srv,
+		isLeader:             true,
+	}
+
+	if srv.DataRetentionJob != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.DataRetentionJob.MakeScheduler())
+	}
+	if srv.MessageExportJob != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.MessageExportJob.MakeScheduler())
+	}
+	if srv.ElasticsearchAggregator != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ElasticsearchAggregator.MakeScheduler())
+	}
+	if srv.LdapSync != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.LdapSync.MakeScheduler())
+	}
+	if srv.Migrations != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.Migrations.MakeScheduler())
+	}
+	if srv.Plugins != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.Plugins.MakeScheduler())
+	}
+	if srv.ExpiryNotify != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ExpiryNotify.MakeScheduler())
+	}
+	if srv.ActiveUsers != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ActiveUsers.MakeScheduler())
+	}
+	if srv.ProductNotices != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ProductNotices.MakeScheduler())
+	}
+	if srv.Cloud != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.Cloud.MakeScheduler())
+	}
+	if srv.ResendInvitationEmails != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ResendInvitationEmails.MakeScheduler())
+	}
+	if srv.ImportDelete != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ImportDelete.MakeScheduler())
+	}
+	if srv.ExportDelete != nil {
+		schedulers.schedulers = append(schedulers.schedulers, srv.ExportDelete.MakeScheduler())
+	}
+
+	schedulers.nextRunTimes = make([]*time.Time, len(schedulers.schedulers))
+	srv.schedulers = schedulers
+
+	return nil
+}
+
 // Start starts the schedulers. This call is not safe for concurrent use.
 // Synchronization should be implemented by the caller.
 func (schedulers *Schedulers) Start() {

@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/web/generated"
 )
 
 const (
@@ -35,7 +36,7 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 	}
 
 	playgroundHandler := playground.Handler("GraphQL Playground", graphqlPath)
-	logicHandler := handler.NewDefaultServer(NewExecutableSchema(Config{
+	logicHandler := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &Resolver{
 			app: w.app,
 		},

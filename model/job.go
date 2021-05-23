@@ -24,6 +24,8 @@ const (
 	JOB_TYPE_EXPORT_DELETE                  = "export_delete"
 	JOB_TYPE_CLOUD                          = "cloud"
 	JOB_TYPE_RESEND_INVITATION_EMAIL        = "resend_invitation_email"
+
+	JOB_TYPE_EXPOR_CSV = "export_csv"
 )
 
 // job statuses
@@ -54,8 +56,8 @@ var ALL_JOB_TYPES = []string{
 	JOB_TYPE_EXPORT_PROCESS,
 	JOB_TYPE_EXPORT_DELETE,
 	JOB_TYPE_CLOUD,
-
-	JOB_TYPE_RESEND_INVITATION_EMAIL, // note
+	JOB_TYPE_RESEND_INVITATION_EMAIL,
+	JOB_TYPE_EXPOR_CSV,
 }
 
 var ALL_JOB_STATUSES = []string{

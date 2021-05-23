@@ -21,6 +21,6 @@ func (s *S) IsRepeatable(ctx context.Context, obj *introspection.Directive) (boo
 	return false, nil
 }
 
-func (r *Resolver) __Directive() __DirectiveResolver {
+func (r *Resolver) __Directive() generated.__DirectiveResolver {
 	return new(S)
 }
