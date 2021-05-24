@@ -9,7 +9,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
-	"github.com/sitename/sitename/web/generated"
 	"github.com/sitename/sitename/web/model"
 )
 
@@ -694,6 +693,7 @@ func (r *mutationResolver) VoucherChannelListingUpdate(ctx context.Context, id s
 }
 
 func (r *mutationResolver) ExportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
+	// done
 	return r.exportProducts(ctx, input)
 }
 
@@ -1325,11 +1325,11 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*m
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Query returns QueryResolver implementation.
+func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

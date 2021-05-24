@@ -17,6 +17,10 @@ import (
 )
 
 const (
+	ME = "me"
+)
+
+const (
 	PUSH_NOTIFY_PROP              = "push"
 	EMAIL_NOTIFY_PROP             = "email"
 	USER_NOTIFY_MENTION           = "mention"

@@ -2,13 +2,16 @@ package web
 
 import (
 	"context"
-
+	"encoding/json"
+	"fmt"
 	dbmodel "github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/web/model"
 )
 
 func (m *mutationResolver) exportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
+	embedContext := ctx.Value(ApiContextKey).(*Context)
+	b, _ := json.Marshal(embedContext)
+	fmt.Println(string(b))
 
 	// check export scope:
 	scope := make(map[string]interface{})
@@ -25,7 +28,7 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 				},
 			}, nil
 		}
-		scope["ids"] = input.Ids
+		scope["ids"] = input.Ids // these ids are product id values
 	case model.ExportScopeFilter:
 		if input.Filter == nil {
 			return &model.ExportProducts{
@@ -40,7 +43,7 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 		}
 		scope["filter"] = input.Filter
 	case model.ExportScopeAll:
-		scope["all"] = nil
+		scope["all"] = ""
 	}
 
 	// check export info
@@ -49,18 +52,18 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 		if len(input.ExportInfo.Fields) > 0 {
 			exportInfo["fields"] = input.ExportInfo.Fields
 		}
+		if len(input.ExportInfo.Attributes) > 0 {
+			exportInfo["attributes"] = input.ExportInfo.Attributes
+		}
+		if len(input.ExportInfo.Warehouses) > 0 {
+			exportInfo["warehouses"] = input.ExportInfo.Warehouses
+		}
+		if len(input.ExportInfo.Channels) > 0 {
+			exportInfo["channels"] = input.ExportInfo.Channels
+		}
 	}
-
-	if len(input.ExportInfo.Attributes) > 0 {
-		exportInfo["attributes"] = input.ExportInfo.Attributes
-	}
-	if len(input.ExportInfo.Warehouses) > 0 {
-		exportInfo["warehouses"] = input.ExportInfo.Warehouses
-	}
-	if len(input.ExportInfo.Channels) > 0 {
-		exportInfo["channels"] = input.ExportInfo.Channels
-	}
-
 	// create exfport file in database
-	exportFile := &csv.ExportFile{}
+	//exportFile := &csv.ExportFile{}
+
+	return nil, nil
 }

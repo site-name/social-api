@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/spf13/cobra"
@@ -35,8 +36,6 @@ func jobServerCmdF(command *cobra.Command, args []string) error {
 
 	defer a.Srv().Shutdown()
 
-	a.InitServer()
-
 	// Run jobs
 	slog.Info("Starting Sitename job server")
 	defer slog.Info("Stopped Sitename job server")
@@ -50,10 +49,10 @@ func jobServerCmdF(command *cobra.Command, args []string) error {
 		defer a.Srv().Jobs.StopSchedulers()
 	}
 
-	// if !noJobs || !noSchedule {
-	// 	auditRec := a.MakeAuditRecord("jobServer", audit.Success)
-	// 	a.LogAuditRec(auditRec, nil)
-	// }
+	if !noJobs || !noSchedule {
+		auditRec := a.MakeAuditRecord("jobServer", audit.Success)
+		a.LogAuditRec(auditRec, nil)
+	}
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

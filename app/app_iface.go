@@ -5,20 +5,19 @@ package app
 
 import (
 	"bytes"
-	"context"
 	"crypto/ecdsa"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"reflect"
 
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/services/httpservice"
@@ -74,17 +73,28 @@ type AppIface interface {
 	DoAdvancedPermissionsMigration()
 	// This to be used for places we check the users password when they are already logged in
 	DoubleCheckPassword(user *account.User, password string) *model.AppError
-	// func (a *App) DataRetention() einterfaces.DataRetentionInterface {
-	// 	return a.srv.DataRetention
+	// func (a *App) MessageExport() einterfaces.MessageExportInterface {
+	// 	return a.srv.MessageExport
 	// }
 	Metrics() einterfaces.MetricsInterface
-	AcceptLanguage() string
+	// func (a *App) Notification() einterfaces.NotificationInterface {
+	// 	return a.srv.Notification
+	// }
+	// func (a *App) Saml() einterfaces.SamlInterface {
+	// 	return a.srv.Saml
+	// }
+	// func (a *App) Cloud() einterfaces.CloudInterface {
+	// 	return a.srv.Cloud
+	// }
+	HTTPService() httpservice.HTTPService
+	AccountMigration() einterfaces.AccountMigrationInterface
 	ActivateMfa(userID, token string) *model.AppError
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
 	AddSessionToCache(s *model.Session)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
+	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
@@ -98,13 +108,13 @@ type AppIface interface {
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
 	Config() *model.Config
-	Context() context.Context
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
+	DataRetention() einterfaces.DataRetentionInterface
 	DeactivateGuests() *model.AppError
 	DeactivateMfa(userID string) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
@@ -131,7 +141,6 @@ type AppIface interface {
 	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
-	GetT() i18n.TranslateFunc
 	GetUser(userID string) (*account.User, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
@@ -140,13 +149,13 @@ type AppIface interface {
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	GetUserByUsername(username string) (*account.User, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
-	HTTPService() httpservice.HTTPService
+	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
+	HasPermissionTo(askingUserId string, permission *model.Permission) bool
+	HasPermissionToUser(askingUserId string, userID string) bool
 	ImageProxy() *imageproxy.ImageProxy
-	InitServer()
 	InvalidateCacheForUser(userID string)
-	IpAddress() string
 	IsFirstUserAccount() bool
 	IsLeader() bool
 	IsPasswordValid(password string) *model.AppError
@@ -154,50 +163,43 @@ type AppIface interface {
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
 	Log() *slog.Logger
+	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotificationsLog() *slog.Logger
+	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
-	Path() string
 	PostActionCookieSecret() []byte
 	Publish(message *model.WebSocketEvent)
 	ReadFile(path string) ([]byte, *model.AppError)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
-	RequestId() string
 	ResetPermissionsSystem() *model.AppError
 	RevokeAllSessions(userID string) *model.AppError
 	RevokeSession(session *model.Session) *model.AppError
 	RevokeSessionById(sessionID string) *model.AppError
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
+	RolesGrantPermission(roleNames []string, permissionId string) bool
 	SanitizeProfile(user *account.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
 	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
-	Session() *model.Session
 	SessionCacheLength() int
-	SetAcceptLanguage(s string)
-	SetContext(c context.Context)
+	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
+	SessionHasPermissionToUser(session model.Session, userID string) bool
 	SetDefaultProfileImage(user *account.User) *model.AppError
-	SetIpAddress(s string)
-	SetPath(s string)
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
 	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
 	SetProfileImageFromMultiPartFile(userID string, file multipart.File) *model.AppError
-	SetRequestId(s string)
 	SetServer(srv *Server)
-	SetSession(s *model.Session)
-	SetT(t i18n.TranslateFunc)
-	SetUserAgent(s string)
 	Srv() *Server
-	T(translationID string, args ...interface{}) string
 	Timezones() *timezones.Timezones
 	UpdateActive(user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
 	UpdateLastActivityAtIfNeeded(session model.Session)
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
-	UserAgent() string
 	VerifyUserEmail(userID, email string) *model.AppError
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

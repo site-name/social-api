@@ -102,6 +102,11 @@ func runServer(configStore *config.Store, usedPlatform bool, interruptChan chan 
 		return serverErr
 	}
 
+	// If we allow testing then listen for manual testing URL hits
+	// if *server.Config().ServiceSettings.EnableTesting {
+	// 	manualtesting.Init(api)
+	// }
+
 	notifyReady()
 
 	// wait for kill signal before attempting to gracefully shutdown

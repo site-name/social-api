@@ -35,6 +35,7 @@ const (
 	USER_LIMIT_OVERAGE_CYCLE_END_DATE             = "UserLimitOverageCycleEndDate"
 	OVER_USER_LIMIT_FORGIVEN_COUNT                = "OverUserLimitForgivenCount"
 	OVER_USER_LIMIT_LAST_EMAIL_SENT               = "OverUserLimitLastEmailSent"
+	SYSTEM_METRIC_SUPPORT_EMAIL_NOT_CONFIGURED    = "warn_metric_support_email_not_configured"
 )
 
 const (

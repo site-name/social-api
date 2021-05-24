@@ -12,13 +12,13 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/services/httpservice"
@@ -35,31 +35,21 @@ type OpenTracingAppLayer struct {
 	log              *slog.Logger
 	notificationsLog *slog.Logger
 
-	t              i18n.TranslateFunc
-	session        model.Session
-	requestId      string
-	ipAddress      string
-	path           string
-	userAgent      string
-	acceptLanguage string
-
-	// accountMigration einterfaces.AccountMigrationInterface
-	cluster    einterfaces.ClusterInterface
-	compliance einterfaces.ComplianceInterface
-	// dataRetention    einterfaces.DataRetentionInterface
+	cluster      einterfaces.ClusterInterface
+	compliance   einterfaces.ComplianceInterface
 	searchEngine *searchengine.Broker
 	ldap         einterfaces.LdapInterface
-	// messageExport    einterfaces.MessageExportInterface
-	metrics einterfaces.MetricsInterface
+	metrics      einterfaces.MetricsInterface
+	httpService  httpservice.HTTPService
+	imageProxy   *imageproxy.ImageProxy
+	timezones    *timezones.Timezones
 	// notification     einterfaces.NotificationInterface
 	// saml             einterfaces.SamlInterface
+	// messageExport    einterfaces.MessageExportInterface
+	dataRetention    einterfaces.DataRetentionInterface
+	accountMigration einterfaces.AccountMigrationInterface
 
-	httpService httpservice.HTTPService
-	imageProxy  *imageproxy.ImageProxy
-	timezones   *timezones.Timezones
-
-	context context.Context
-	ctx     context.Context
+	ctx context.Context
 }
 
 func (a *OpenTracingAppLayer) ActivateMfa(userID string, token string) *model.AppError {
@@ -175,6 +165,21 @@ func (a *OpenTracingAppLayer) AttachDeviceId(sessionID string, deviceID string, 
 	}
 
 	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AttachSessionCookies")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	a.app.AttachSessionCookies(c, w, r)
 }
 
 func (a *OpenTracingAppLayer) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
@@ -1436,6 +1441,28 @@ func (a *OpenTracingAppLayer) GetUsers(options *account.UserGetOptions) ([]*acco
 	return resultVar0, resultVar1
 }
 
+func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetWarnMetricsStatus")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetWarnMetricsStatus()
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
 func (a *OpenTracingAppLayer) Handle404(w http.ResponseWriter, r *http.Request) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Handle404")
@@ -1466,9 +1493,9 @@ func (a *OpenTracingAppLayer) HandleMessageExportConfig(cfg *model.Config, appCf
 	a.app.HandleMessageExportConfig(cfg, appCfg)
 }
 
-func (a *OpenTracingAppLayer) InitServer() {
+func (a *OpenTracingAppLayer) HasPermissionTo(askingUserId string, permission *model.Permission) bool {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.InitServer")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.HasPermissionTo")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -1478,7 +1505,26 @@ func (a *OpenTracingAppLayer) InitServer() {
 	}()
 
 	defer span.Finish()
-	a.app.InitServer()
+	resultVar0 := a.app.HasPermissionTo(askingUserId, permission)
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) HasPermissionToUser(askingUserId string, userID string) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.HasPermissionToUser")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.HasPermissionToUser(askingUserId, userID)
+
+	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) InvalidateCacheForUser(userID string) {
@@ -1694,6 +1740,28 @@ func (a *OpenTracingAppLayer) MakeAuditRecord(event string, initialStatus string
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.MakePermissionError")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.MakePermissionError(s, permissions)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) NewClusterDiscoveryService() *app.ClusterDiscoveryService {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.NewClusterDiscoveryService")
@@ -1707,6 +1775,28 @@ func (a *OpenTracingAppLayer) NewClusterDiscoveryService() *app.ClusterDiscovery
 
 	defer span.Finish()
 	resultVar0 := a.app.NewClusterDiscoveryService()
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.NotifyAndSetWarnMetricAck")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.NotifyAndSetWarnMetricAck(warnMetricId, sender, forceAck, isBot)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
 
 	return resultVar0
 }
@@ -1951,6 +2041,23 @@ func (a *OpenTracingAppLayer) RevokeUserAccessToken(token *account.UserAccessTok
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) RolesGrantPermission(roleNames []string, permissionId string) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.RolesGrantPermission")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.RolesGrantPermission(roleNames, permissionId)
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) SanitizeProfile(user *account.User, asAdmin bool) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SanitizeProfile")
@@ -2062,6 +2169,57 @@ func (a *OpenTracingAppLayer) SessionCacheLength() int {
 
 	defer span.Finish()
 	resultVar0 := a.app.SessionCacheLength()
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) SessionHasPermissionTo(session model.Session, permission *model.Permission) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionTo")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.SessionHasPermissionTo(session, permission)
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionToAny")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.SessionHasPermissionToAny(session, permissions)
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) SessionHasPermissionToUser(session model.Session, userID string) bool {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionToUser")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.SessionHasPermissionToUser(session, userID)
 
 	return resultVar0
 }
@@ -2318,29 +2476,19 @@ func NewOpenTracingAppLayer(childApp app.AppIface, ctx context.Context) *OpenTra
 	newApp.srv = childApp.Srv()
 	newApp.log = childApp.Log()
 	newApp.notificationsLog = childApp.NotificationsLog()
-	newApp.t = childApp.GetT()
-	if childApp.Session() != nil {
-		newApp.session = *childApp.Session()
-	}
-	newApp.requestId = childApp.RequestId()
-	newApp.ipAddress = childApp.IpAddress()
-	newApp.path = childApp.Path()
-	newApp.userAgent = childApp.UserAgent()
-	newApp.acceptLanguage = childApp.AcceptLanguage()
-	//newApp.accountMigration = childApp.AccountMigration()
+	newApp.accountMigration = childApp.AccountMigration()
 	newApp.cluster = childApp.Cluster()
 	newApp.compliance = childApp.Compliance()
-	//newApp.dataRetention = childApp.DataRetention()
+	newApp.dataRetention = childApp.DataRetention()
 	newApp.searchEngine = childApp.SearchEngine()
 	newApp.ldap = childApp.Ldap()
-	//newApp.messageExport = childApp.MessageExport()
+	// newApp.messageExport = childApp.MessageExport()
 	newApp.metrics = childApp.Metrics()
-	//newApp.notification = childApp.Notification()
-	//newApp.saml = childApp.Saml()
+	// newApp.notification = childApp.Notification()
+	// newApp.saml = childApp.Saml()
 	newApp.httpService = childApp.HTTPService()
 	newApp.imageProxy = childApp.ImageProxy()
 	newApp.timezones = childApp.Timezones()
-	newApp.context = childApp.Context()
 
 	return &newApp
 }
@@ -2354,58 +2502,35 @@ func (a *OpenTracingAppLayer) Log() *slog.Logger {
 func (a *OpenTracingAppLayer) NotificationsLog() *slog.Logger {
 	return a.notificationsLog
 }
-func (a *OpenTracingAppLayer) T(translationID string, args ...interface{}) string {
-	return a.t(translationID, args...)
+func (a *OpenTracingAppLayer) AccountMigration() einterfaces.AccountMigrationInterface {
+	return a.accountMigration
 }
-func (a *OpenTracingAppLayer) Session() *model.Session {
-	return &a.session
-}
-func (a *OpenTracingAppLayer) RequestId() string {
-	return a.requestId
-}
-func (a *OpenTracingAppLayer) IpAddress() string {
-	return a.ipAddress
-}
-func (a *OpenTracingAppLayer) Path() string {
-	return a.path
-}
-func (a *OpenTracingAppLayer) UserAgent() string {
-	return a.userAgent
-}
-func (a *OpenTracingAppLayer) AcceptLanguage() string {
-	return a.acceptLanguage
-}
-
-//func (a *OpenTracingAppLayer) AccountMigration() einterfaces.AccountMigrationInterface {
-//	return a.accountMigration
-//}
 func (a *OpenTracingAppLayer) Cluster() einterfaces.ClusterInterface {
 	return a.cluster
 }
 func (a *OpenTracingAppLayer) Compliance() einterfaces.ComplianceInterface {
 	return a.compliance
 }
-
-//func (a *OpenTracingAppLayer) DataRetention() einterfaces.DataRetentionInterface {
-//	return a.dataRetention
-//}
+func (a *OpenTracingAppLayer) DataRetention() einterfaces.DataRetentionInterface {
+	return a.dataRetention
+}
 func (a *OpenTracingAppLayer) Ldap() einterfaces.LdapInterface {
 	return a.ldap
 }
 
-//func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
-//	return a.messageExport
-//}
+// func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
+// 	return a.messageExport
+// }
 func (a *OpenTracingAppLayer) Metrics() einterfaces.MetricsInterface {
 	return a.metrics
 }
 
-//func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
-//	return a.notification
-//}
-//func (a *OpenTracingAppLayer) Saml() einterfaces.SamlInterface {
-//	return a.saml
-//}
+// func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
+// 	return a.notification
+// }
+// func (a *OpenTracingAppLayer) Saml() einterfaces.SamlInterface {
+// 	return a.saml
+// }
 func (a *OpenTracingAppLayer) HTTPService() httpservice.HTTPService {
 	return a.httpService
 }
@@ -2415,36 +2540,6 @@ func (a *OpenTracingAppLayer) ImageProxy() *imageproxy.ImageProxy {
 func (a *OpenTracingAppLayer) Timezones() *timezones.Timezones {
 	return a.timezones
 }
-func (a *OpenTracingAppLayer) Context() context.Context {
-	return a.context
-}
-func (a *OpenTracingAppLayer) SetSession(sess *model.Session) {
-	a.session = *sess
-}
-func (a *OpenTracingAppLayer) SetT(t i18n.TranslateFunc) {
-	a.t = t
-}
-func (a *OpenTracingAppLayer) SetRequestId(str string) {
-	a.requestId = str
-}
-func (a *OpenTracingAppLayer) SetIpAddress(str string) {
-	a.ipAddress = str
-}
-func (a *OpenTracingAppLayer) SetUserAgent(str string) {
-	a.userAgent = str
-}
-func (a *OpenTracingAppLayer) SetAcceptLanguage(str string) {
-	a.acceptLanguage = str
-}
-func (a *OpenTracingAppLayer) SetPath(str string) {
-	a.path = str
-}
-func (a *OpenTracingAppLayer) SetContext(c context.Context) {
-	a.context = c
-}
 func (a *OpenTracingAppLayer) SetServer(srv *app.Server) {
 	a.srv = srv
-}
-func (a *OpenTracingAppLayer) GetT() i18n.TranslateFunc {
-	return a.t
 }

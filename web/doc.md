@@ -1,7 +1,6 @@
-1) After modifying /schemas/*.grapohqls, remember to run `make gqlgen`
+1) After modifying `/schemas/*.graphqls`, remember to run `make gqlgen` for new implemented code to be generated.
 
-2) After running `make gqlgen` <br />
-If there is a file named `prelude.resolvers.go`, delete it <br />
+2) After running `make gqlgen`, if there is a file named `prelude.resolvers.go`, delete it. Since the implementation is defined in `resolver.go` already.
 
-**NOTE**: all resolver files must be prefixed with `resolvers_`, followed by model name <br />
+**NOTE**: all resolver files **MUST BE** prefixed with `resolvers_`, followed by model name. <br />
 *E.g*: `resolver_csv.go`, `resolvers_payment.go`

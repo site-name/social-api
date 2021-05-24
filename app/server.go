@@ -68,74 +68,125 @@ const (
 )
 
 type Server struct {
+	sqlStore *sqlstore.SqlStore
+	Store    store.Store
+	// WebSocketRouter *WebSocketRouter
+
 	// RootRouter is the starting point for all HTTP requests to the server.
-	RootRouter                         *mux.Router
-	metricsRouter                      *mux.Router
-	sqlStore                           *sqlstore.SqlStore
-	Store                              store.Store
-	AppInitializedOnce                 sync.Once
-	Server                             *http.Server
-	ListenAddr                         *net.TCPAddr
-	RateLimiter                        *RateLimiter
-	Busy                               *Busy
-	localModeServer                    *http.Server
-	metricsServer                      *http.Server
-	metricsLock                        sync.Mutex
-	goroutineCount                     int32
-	hashSeed                           maphash.Seed
-	goroutineExitSignal                chan struct{}
-	didFinishListen                    chan struct{}
-	pushNotificationClient             *http.Client // TODO: move this to it's own package
-	runEssentialJobs                   bool
-	clusterLeaderListeners             sync.Map
-	newStore                           func() (store.Store, error)
-	configListenerId                   string
-	licenseListenerId                  string
-	logListenerId                      string
-	clusterLeaderListenerId            string
-	searchConfigListenerId             string
-	searchLicenseListenerId            string
-	loggerLicenseListenerId            string
-	configStore                        *config.Store
-	advancedLogListenerCleanup         func()
-	pluginCommandsLock                 sync.RWMutex
-	asymmetricSigningKey               atomic.Value
-	clientConfig                       atomic.Value
-	clientConfigHash                   atomic.Value
-	limitedClientConfig                atomic.Value
+	RootRouter *mux.Router
+
+	Server      *http.Server
+	ListenAddr  *net.TCPAddr
+	RateLimiter *RateLimiter
+	Busy        *Busy
+
+	metricsServer *http.Server
+	metricsRouter *mux.Router
+	metricsLock   sync.Mutex
+
+	didFinishListen chan struct{}
+
+	goroutineCount      int32
+	goroutineExitSignal chan struct{}
+
+	// PluginsEnvironment     *plugin.Environment
+	// PluginConfigListenerId string
+	// PluginsLock            sync.RWMutex
+
+	EmailService *EmailService
+
+	// hubs     []*Hub
+	hashSeed maphash.Seed
+
+	// PushNotificationsHub   PushNotificationsHub
+	pushNotificationClient *http.Client // TODO: move this to it's own package
+
+	runEssentialJobs bool
+	Jobs             *jobs.JobServer
+
+	clusterLeaderListeners sync.Map
+
+	timezones *timezones.Timezones
+
+	newStore func() (store.Store, error)
+
+	htmlTemplateWatcher     *templates.Container
+	sessionCache            cache.Cache
+	seenPendingPostIdsCache cache.Cache
+	statusCache             cache.Cache
+	configListenerId        string
+	licenseListenerId       string
+	logListenerId           string
+	clusterLeaderListenerId string
+	searchConfigListenerId  string
+	searchLicenseListenerId string
+	loggerLicenseListenerId string
+	configStore             *config.Store
+	postActionCookieSecret  []byte
+
+	advancedLogListenerCleanup func()
+
+	// pluginCommands     []*PluginCommand
+	pluginCommandsLock sync.RWMutex
+
+	asymmetricSigningKey atomic.Value
+	clientConfig         atomic.Value
+	clientConfigHash     atomic.Value
+	limitedClientConfig  atomic.Value
+
+	// telemetryService *telemetry.TelemetryService
+
+	serviceMux sync.RWMutex
+	// remoteClusterService remotecluster.RemoteClusterServiceIFace
+	// sharedChannelService SharedChannelServiceIFace
+
 	phase2PermissionsMigrationComplete bool
-	joinCluster                        bool
-	startMetrics                       bool
-	startSearchEngine                  bool
-	uploadLockMapMut                   sync.Mutex // These are used to prevent concurrent upload requests
-	uploadLockMap                      map[string]bool
-	featureFlagSynchronizer            *config.FeatureFlagSynchronizer
-	featureFlagStop                    chan struct{}
-	featureFlagStopped                 chan struct{}
-	featureFlagSynchronizerMutex       sync.Mutex
-	Log                                *slog.Logger
-	NotificationsLog                   *slog.Logger
-	sessionCache                       cache.Cache
-	seenPendingPostIdsCache            cache.Cache
-	statusCache                        cache.Cache
-	licenseValue                       atomic.Value
-	Jobs                               *jobs.JobServer
-	EmailService                       *EmailService
-	htmlTemplateWatcher                *templates.Container
-	tracer                             *tracing.Tracer
-	HTTPService                        httpservice.HTTPService
-	ImageProxy                         *imageproxy.ImageProxy
-	SearchEngine                       *searchengine.Broker
-	CacheProvider                      cache.Provider
-	Cluster                            einterfaces.ClusterInterface
-	DataRetention                      einterfaces.DataRetentionInterface
-	Metrics                            einterfaces.MetricsInterface
-	Compliance                         einterfaces.ComplianceInterface
-	Ldap                               einterfaces.LdapInterface
-	postActionCookieSecret             []byte
-	timezones                          *timezones.Timezones
-	Audit                              *audit.Audit
-	// telemetryService       *telemetry.TelemetryService
+
+	HTTPService httpservice.HTTPService
+
+	ImageProxy *imageproxy.ImageProxy
+
+	Audit            *audit.Audit
+	Log              *slog.Logger
+	NotificationsLog *slog.Logger
+
+	joinCluster       bool
+	startMetrics      bool
+	startSearchEngine bool
+	skipPostInit      bool
+
+	SearchEngine *searchengine.Broker
+
+	AccountMigration einterfaces.AccountMigrationInterface
+	Cluster          einterfaces.ClusterInterface
+	Compliance       einterfaces.ComplianceInterface
+	DataRetention    einterfaces.DataRetentionInterface
+	Ldap             einterfaces.LdapInterface
+	Metrics          einterfaces.MetricsInterface
+	// MessageExport    einterfaces.MessageExportInterface
+	// Cloud            einterfaces.CloudInterface
+	// Notification     einterfaces.NotificationInterface
+	// Saml             einterfaces.SamlInterface
+
+	CacheProvider cache.Provider
+
+	tracer *tracing.Tracer
+
+	// These are used to prevent concurrent upload requests
+	// for a given upload session which could cause inconsistencies
+	// and data corruption.
+	uploadLockMapMut sync.Mutex
+	uploadLockMap    map[string]bool
+
+	AppInitializedOnce sync.Once
+	localModeServer    *http.Server
+
+	// featureFlagSynchronizer      *featureflag.Synchronizer
+	featureFlagStop              chan struct{}
+	featureFlagStopped           chan struct{}
+	featureFlagSynchronizerMutex sync.Mutex
+
+	licenseValue atomic.Value
 }
 
 func NewServer(options ...Option) (*Server, error) {
@@ -811,6 +862,19 @@ func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
 	value, err := strconv.ParseInt(systemData.Value, 10, 64)
 	if err != nil {
 		return 0, model.NewAppError("getFirstServerRunTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return value, nil
+}
+
+//nolint:golint,unused,deadcode
+func (s *Server) getLastWarnMetricTimestamp() (int64, *model.AppError) {
+	systemData, err := s.Store.System().GetByName(model.SYSTEM_WARN_METRIC_LAST_RUN_TIMESTAMP_KEY)
+	if err != nil {
+		return 0, model.NewAppError("getLastWarnMetricTimestamp", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	value, err := strconv.ParseInt(systemData.Value, 10, 64)
+	if err != nil {
+		return 0, model.NewAppError("getLastWarnMetricTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return value, nil
 }

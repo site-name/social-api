@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-// ustom Decimal implementation.
+// Custom Decimal implementation.
 //
 // Returns Decimal as a float in the API,
 // parses float to the Decimal on the way back

@@ -8,13 +8,12 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/web/generated"
 )
 
 const (
-	rootApiPath   string     = "/api"
-	graphqlPath   string     = "/graphql"
-	ApiContextKey ContextKey = "thisIsContextKey"
+	rootApiPath   string     = "/api"             // api endpoint
+	graphqlPath   string     = "/graphql"         // graphql endpoint
+	ApiContextKey ContextKey = "thisIsContextKey" // use this key to get context value
 )
 
 type ContextKey string
@@ -28,7 +27,7 @@ type API struct {
 	BaseRoutes *Routes
 }
 
-// init graphql and other api routes
+// InitAPI setups graphql and other api routes
 func (w *Web) InitAPI(root *mux.Router) *API {
 	api := &API{
 		app:        w.app,
@@ -36,7 +35,7 @@ func (w *Web) InitAPI(root *mux.Router) *API {
 	}
 
 	playgroundHandler := playground.Handler("GraphQL Playground", graphqlPath)
-	logicHandler := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+	logicHandler := handler.NewDefaultServer(NewExecutableSchema(Config{
 		Resolvers: &Resolver{
 			app: w.app,
 		},

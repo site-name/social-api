@@ -8,7 +8,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/avct/uasurfer"
-	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
@@ -68,7 +68,15 @@ func (w *Web) InitStatic() {
 func root(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	if !CheckClientCompatibility(r.UserAgent()) {
-		renderUnsupportedBrowser(c.App, w, r)
+		w.Header().Set("Cache-Control", "no-store")
+		data := renderUnsupportedBrowser(c.AppContext, r)
+
+		c.App.Srv().TemplatesContainer().Render(w, "unsupported_browser", data)
+		return
+	}
+
+	if IsApiCall(c.App, r) {
+		Handle404(c.App, w, r)
 		return
 	}
 
@@ -144,13 +152,12 @@ type SystemBrowser struct {
 	MakeDefaultString      string
 }
 
-func renderUnsupportedBrowser(app app.AppIface, w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-store")
+func renderUnsupportedBrowser(ctx *request.Context, r *http.Request) templates.Data {
 
 	data := templates.Data{
 		Props: map[string]interface{}{
-			"DownloadAppOrUpgradeBrowserString": app.T("web.error.unsupported_browser.download_app_or_upgrade_browser"),
-			"LearnMoreString":                   app.T("web.error.unsupported_browser.learn_more"),
+			"DownloadAppOrUpgradeBrowserString": ctx.T("web.error.unsupported_browser.download_app_or_upgrade_browser"),
+			"LearnMoreString":                   ctx.T("web.error.unsupported_browser.learn_more"),
 		},
 	}
 
@@ -163,74 +170,75 @@ func renderUnsupportedBrowser(app app.AppIface, w http.ResponseWriter, r *http.R
 
 	// Basic heading translations
 	if isSafari {
-		data.Props["NoLongerSupportString"] = app.T("web.error.unsupported_browser.no_longer_support_version")
+		data.Props["NoLongerSupportString"] = ctx.T("web.error.unsupported_browser.no_longer_support_version")
 	} else {
-		data.Props["NoLongerSupportString"] = app.T("web.error.unsupported_browser.no_longer_support")
+		data.Props["NoLongerSupportString"] = ctx.T("web.error.unsupported_browser.no_longer_support")
 	}
 
-	// Mattermost app version
+	// // Mattermost app version
 	// if isWindows {
-	// 	data.Props["App"] = renderMattermostAppWindows(app)
+	// 	data.Props["App"] = renderMattermostAppWindows(ctx)
 	// } else if isMacOSX {
-	// 	data.Props["App"] = renderMattermostAppMac(app)
+	// 	data.Props["App"] = renderMattermostAppMac(ctx)
 	// }
 
 	// Browsers to download
 	// Show a link to Safari if you're using safari and it's outdated
 	// Can't show on Mac all the time because there's no way to open it via URI
-	browsers := []Browser{renderBrowserChrome(app), renderBrowserFirefox(app)}
+	browsers := []Browser{renderBrowserChrome(ctx), renderBrowserFirefox(ctx)}
 	if isSafari {
-		browsers = append(browsers, renderBrowserSafari(app))
+		browsers = append(browsers, renderBrowserSafari(ctx))
 	}
 	data.Props["Browsers"] = browsers
 
 	// If on Windows 10, show link to Edge
 	if isWindows10 {
-		data.Props["SystemBrowser"] = renderSystemBrowserEdge(app, r)
+		data.Props["SystemBrowser"] = renderSystemBrowserEdge(ctx, r)
 	}
 
-	app.Srv().TemplatesContainer().Render(w, "unsupported_browser", data)
+	return data
+
 }
 
-func renderBrowserChrome(app app.AppIface) Browser {
+func renderBrowserChrome(ctx *request.Context) Browser {
 	return Browser{
 		"/static/images/browser-icons/chrome.svg",
-		app.T("web.error.unsupported_browser.browser_title.chrome"),
-		app.T("web.error.unsupported_browser.min_browser_version.chrome"),
+		ctx.T("web.error.unsupported_browser.browser_title.chrome"),
+		ctx.T("web.error.unsupported_browser.min_browser_version.chrome"),
 		"http://www.google.com/chrome",
-		app.T("web.error.unsupported_browser.browser_get_latest.chrome"),
+		ctx.T("web.error.unsupported_browser.browser_get_latest.chrome"),
 	}
 }
 
-func renderBrowserFirefox(app app.AppIface) Browser {
+func renderBrowserFirefox(ctx *request.Context) Browser {
 	return Browser{
 		"/static/images/browser-icons/firefox.svg",
-		app.T("web.error.unsupported_browser.browser_title.firefox"),
-		app.T("web.error.unsupported_browser.min_browser_version.firefox"),
+		ctx.T("web.error.unsupported_browser.browser_title.firefox"),
+		ctx.T("web.error.unsupported_browser.min_browser_version.firefox"),
 		"https://www.mozilla.org/firefox/new/",
-		app.T("web.error.unsupported_browser.browser_get_latest.firefox"),
+		ctx.T("web.error.unsupported_browser.browser_get_latest.firefox"),
 	}
 }
 
-func renderBrowserSafari(app app.AppIface) Browser {
+func renderBrowserSafari(ctx *request.Context) Browser {
 	return Browser{
 		"/static/images/browser-icons/safari.svg",
-		app.T("web.error.unsupported_browser.browser_title.safari"),
-		app.T("web.error.unsupported_browser.min_browser_version.safari"),
+		ctx.T("web.error.unsupported_browser.browser_title.safari"),
+		ctx.T("web.error.unsupported_browser.min_browser_version.safari"),
 		"macappstore://showUpdatesPage",
-		app.T("web.error.unsupported_browser.browser_get_latest.safari"),
+		ctx.T("web.error.unsupported_browser.browser_get_latest.safari"),
 	}
 }
 
-func renderSystemBrowserEdge(app app.AppIface, r *http.Request) SystemBrowser {
+func renderSystemBrowserEdge(ctx *request.Context, r *http.Request) SystemBrowser {
 	return SystemBrowser{
 		"/static/images/browser-icons/edge.svg",
-		app.T("web.error.unsupported_browser.browser_title.edge"),
-		app.T("web.error.unsupported_browser.min_browser_version.edge"),
-		app.T("web.error.unsupported_browser.open_system_browser.edge"),
+		ctx.T("web.error.unsupported_browser.browser_title.edge"),
+		ctx.T("web.error.unsupported_browser.min_browser_version.edge"),
+		ctx.T("web.error.unsupported_browser.open_system_browser.edge"),
 		"microsoft-edge:http://" + r.Host + r.RequestURI, //TODO: Can we get HTTP or HTTPS? If someone's server doesn't have a redirect this won't work
 		"ms-settings:defaultapps",
-		app.T("web.error.unsupported_browser.system_browser_or"),
-		app.T("web.error.unsupported_browser.system_browser_make_default"),
+		ctx.T("web.error.unsupported_browser.system_browser_or"),
+		ctx.T("web.error.unsupported_browser.system_browser_make_default"),
 	}
 }

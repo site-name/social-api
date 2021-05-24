@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/sitename/sitename/app"
+	// "github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
@@ -12,10 +13,11 @@ import (
 func initDBCommandContextCobra(command *cobra.Command, readOnlyConfigStore bool) (*app.App, error) {
 	a, err := initDBCommandContext(getConfigDSN(command, config.GetEnvironment()), readOnlyConfigStore)
 	if err != nil {
+		// Returning an error just prints the usage message, so actually panic
 		panic(err)
 	}
 
-	// a.InitPlugins(*a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
+	// a.InitPlugins(&request.Context{}, *a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
 	a.DoAppMigrations()
 
 	return a, nil
@@ -33,7 +35,6 @@ func initDBCommandContext(configDSN string, readOnlyConfigStore bool) (*app.App,
 	if err := util.TranslationsPreInit(); err != nil {
 		return nil, err
 	}
-
 	model.AppErrorInit(i18n.T)
 
 	s, err := app.NewServer(
@@ -45,7 +46,10 @@ func initDBCommandContext(configDSN string, readOnlyConfigStore bool) (*app.App,
 	}
 
 	a := app.New(app.ServerConnector(s))
-	a.InitServer()
+
+	// if model.BuildEnterpriseReady == "true" {
+	// 	a.Srv().LoadLicense()
+	// }
 
 	return a, nil
 }
