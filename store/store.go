@@ -214,6 +214,7 @@ type (
 	}
 	CsvExportFileStore interface {
 		Save(file *csv.ExportFile) (*csv.ExportFile, error)
+		Get(id string) (*csv.ExportFile, error)
 	}
 )
 

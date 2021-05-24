@@ -35,6 +35,11 @@ func (jss SqlJobStore) createIndexesIfNotExists() {
 }
 
 func (jss SqlJobStore) Save(job *model.Job) (*model.Job, error) {
+	job.PreSave()
+	if err := job.IsValid(); err != nil {
+		return nil, err
+	}
+
 	if err := jss.GetMaster().Insert(job); err != nil {
 		return nil, errors.Wrap(err, "failed to save Job")
 	}
@@ -46,7 +51,7 @@ func (jss SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus string
 		Update("Jobs").
 		Set("LastActivityAt", model.GetMillis()).
 		Set("Status", job.Status).
-		Set("Data", job.DataToJson()).
+		Set("Data", job.ToJson()).
 		Set("Progress", job.Progress).
 		Where(sq.Eq{"Id": job.Id, "Status": currentStatus}).ToSql()
 	if err != nil {

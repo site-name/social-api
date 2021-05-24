@@ -180,7 +180,7 @@ func (watcher *Watcher) PollAndNotify() {
 				}
 			}
 		// csv export job received
-		case model.JOB_TYPE_EXPOR_CSV:
+		case model.JOB_TYPE_EXPORT_CSV:
 			if watcher.workers.CsvExport != nil {
 				select {
 				case watcher.workers.CsvExport.JobChannel() <- *job:

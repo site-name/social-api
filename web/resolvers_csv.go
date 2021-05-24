@@ -2,16 +2,16 @@ package web
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+	"net/http"
+
 	dbmodel "github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/web/model"
 )
 
 func (m *mutationResolver) exportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
-	embedContext := ctx.Value(ApiContextKey).(*Context)
-	b, _ := json.Marshal(embedContext)
-	fmt.Println(string(b))
+	embedCtx := ctx.Value(ApiContextKey).(*Context)
+	session := embedCtx.AppContext.Session()
 
 	// check export scope:
 	scope := make(map[string]interface{})
@@ -43,7 +43,6 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 		}
 		scope["filter"] = input.Filter
 	case model.ExportScopeAll:
-		scope["all"] = ""
 	}
 
 	// check export info
@@ -62,8 +61,45 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 			exportInfo["channels"] = input.ExportInfo.Channels
 		}
 	}
-	// create exfport file in database
-	//exportFile := &csv.ExportFile{}
+	// create export file in database
+	exportFile := &csv.ExportFile{
+		UserID: &session.UserId,
+		Data: dbmodel.StringInterface{ // job server worker need this field
+			"scope":      scope,
+			"exportInfo": exportInfo,
+			"fileType":   input.FileType,
+		},
+	}
+	savedExportFile, err := m.app.Srv().Store.CsvExportFile().Save(exportFile)
+	if err != nil {
+		embedCtx.Err = dbmodel.NewAppError("ExportProducts", "api.csv.export_products.create_export_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, err
+	}
+
+	// create export pending event
+	newExportEvent := &csv.ExportEvent{
+		Type:         csv.EXPORT_PENDING,
+		ExportFileID: savedExportFile.Id,
+		UserID:       &session.UserId,
+	}
+	_, err = m.app.Srv().Store.CsvExportEvent().Save(newExportEvent)
+	if err != nil {
+		embedCtx.Err = dbmodel.NewAppError("ExportProducts", "api.csv.export_products.create_export_event.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, err
+	}
+
+	// create new job with type of csv export
+	csvExportJob := &dbmodel.Job{
+		Type: dbmodel.JOB_TYPE_EXPORT_CSV,
+		Data: map[string]string{
+			"exportFileID": savedExportFile.Id,
+		},
+	}
+	_, err = m.app.CreateJob(csvExportJob)
+	if err != nil {
+		embedCtx.Err = dbmodel.NewAppError("ExportProducts", "api.csv.export_products.create_csv_export_job.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, err
+	}
 
 	return nil, nil
 }

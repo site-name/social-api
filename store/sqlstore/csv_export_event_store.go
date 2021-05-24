@@ -10,19 +10,6 @@ type SqlCsvExportEventStore struct {
 	*SqlStore
 }
 
-func (s *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
-	event.PreSave()
-	if err := event.IsValid(); err != nil {
-		return nil, err
-	}
-
-	if err := s.GetMaster().Insert(event); err != nil {
-		return nil, errors.Wrapf(err, "failed to save ExportEvent with ExportEventId=%s", event.Id)
-	}
-
-	return event, nil
-}
-
 func newSqlCsvExportEventStore(sqlStore *SqlStore) store.CsvExportEventStore {
 	cs := &SqlCsvExportEventStore{sqlStore}
 
@@ -37,6 +24,17 @@ func newSqlCsvExportEventStore(sqlStore *SqlStore) store.CsvExportEventStore {
 	return cs
 }
 
-func (cs *SqlCsvExportEventStore) createIndexesIfNotExists() {
+func (cs *SqlCsvExportEventStore) createIndexesIfNotExists() {}
 
+func (s *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+	event.PreSave()
+	if err := event.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if err := s.GetMaster().Insert(event); err != nil {
+		return nil, errors.Wrapf(err, "failed to save ExportEvent with ExportEventId=%s", event.Id)
+	}
+
+	return event, nil
 }

@@ -693,8 +693,7 @@ func (r *mutationResolver) VoucherChannelListingUpdate(ctx context.Context, id s
 }
 
 func (r *mutationResolver) ExportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
-	// done
-	return r.exportProducts(ctx, input)
+	return r.exportProducts(ctx, input) // done
 }
 
 func (r *mutationResolver) FileUpload(ctx context.Context, file graphql.Upload) (*model.FileUpload, error) {

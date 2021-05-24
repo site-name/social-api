@@ -1,6 +1,8 @@
 package csv_export
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/jobs"
@@ -69,6 +71,7 @@ func (worker *Worker) Stop() {
 	<-worker.stopped
 }
 
+// worker recieves job because of this function
 func (worker *Worker) JobChannel() chan<- model.Job {
 	return worker.jobs
 }
@@ -85,6 +88,19 @@ func (worker *Worker) DoJob(job *model.Job) {
 	} else if !claimed {
 		return
 	}
+
+	exportFile, err := worker.app.Srv().Store.CsvExportFile().Get(job.Data["exportInfo"]) // "exportInfo" is set in csv resolvers file.
+	if err != nil {
+		slog.Error(
+			"Worker failed to acquire csv export file",
+			slog.String("worker", worker.name),
+			slog.String("job_id", job.Id),
+			slog.String("error", err.Error()),
+		)
+		worker.setJobError(job, model.NewAppError("DoJob", "app.csv.get_export_file.app_error", nil, err.Error(), http.StatusInternalServerError))
+		return
+	}
+
 }
 
 func (worker *Worker) setJobSuccess(job *model.Job) {
@@ -102,7 +118,7 @@ func (worker *Worker) setJobSuccess(job *model.Job) {
 func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
 	if err := worker.app.Srv().Jobs.SetJobError(job, appError); err != nil {
 		slog.Error(
-			"Worker: Failed to sert job error",
+			"Worker: Failed to set job error",
 			slog.String("worker", worker.name),
 			slog.String("job_id", job.Id),
 			slog.String("error", err.Error()),

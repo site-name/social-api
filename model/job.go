@@ -25,7 +25,7 @@ const (
 	JOB_TYPE_CLOUD                          = "cloud"
 	JOB_TYPE_RESEND_INVITATION_EMAIL        = "resend_invitation_email"
 
-	JOB_TYPE_EXPOR_CSV = "export_csv"
+	JOB_TYPE_EXPORT_CSV = "export_csv"
 )
 
 // job statuses
@@ -57,7 +57,7 @@ var ALL_JOB_TYPES = []string{
 	JOB_TYPE_EXPORT_DELETE,
 	JOB_TYPE_CLOUD,
 	JOB_TYPE_RESEND_INVITATION_EMAIL,
-	JOB_TYPE_EXPOR_CSV,
+	JOB_TYPE_EXPORT_CSV,
 }
 
 var ALL_JOB_STATUSES = []string{
@@ -114,6 +114,15 @@ func JobFromJson(data io.Reader) *Job {
 	return job
 }
 
+func (j *Job) PreSave() {
+	if j.Id == "" {
+		j.Id = NewId()
+	}
+	if j.CreateAt == 0 {
+		j.CreateAt = GetMillis()
+	}
+}
+
 func JobsToJson(jobs []*Job) string {
 	return ModelToJson(&jobs)
 }
@@ -122,10 +131,6 @@ func JobsFromJson(data io.Reader) []*Job {
 	var jobs *[]*Job
 	ModelFromJson(&jobs, data)
 	return *jobs
-}
-
-func (j *Job) DataToJson() string {
-	return ModelToJson(j)
 }
 
 type Worker interface {

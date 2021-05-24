@@ -17,6 +17,7 @@ func newSqlCsvExportFileStore(s *SqlStore) store.CsvExportFileStore {
 		table := db.AddTableWithName(csv.ExportFile{}, "ExportFiles").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(UUID_MAX_LENGTH)
+		table.ColMap("Data").SetMaxSize(csv.EXPORT_FILE_DATA_MAX_LENGTH)
 	}
 	return cs
 }
@@ -35,4 +36,13 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 		return nil, errors.Wrapf(err, "failed to save ExportFile with ExportFileId=", file.Id)
 	}
 	return file, nil
+}
+
+func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+	inface, err := cs.GetMaster().Get(csv.ExportFile{}, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)
+	}
+
+	return inface.(*csv.ExportFile), nil
 }
