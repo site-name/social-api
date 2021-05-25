@@ -72,7 +72,8 @@ type SqlStoreStores struct {
 	allocation                    store.AllocationStore                   //
 	wishlist                      store.WishlistStore                     // wishlist models
 	wishlistItem                  store.WishlistItemStore                 //
-	pluginConfig                  store.PluginConfigurationStore          // plugion models
+	pluginConfig                  store.PluginConfigurationStore          // plugin models
+	compliance                    store.ComplianceStore                   // compliance models
 }
 
 // setup tables before performing database migration
@@ -164,6 +165,8 @@ func (store *SqlStore) setupTables() {
 	store.stores.wishlistItem = newSqlWishlistItemStore(store)
 	// plugin
 	store.stores.pluginConfig = newSqlPluginConfigurationStore(store)
+	// compliance
+	store.stores.compliance = newSqlComplianceStore(store)
 }
 
 // performs database indexing
@@ -256,6 +259,8 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.wishlistItem.(*SqlWishlistItemStore).createIndexesIfNotExists()
 	// plugin
 	store.stores.pluginConfig.(*SqlPluginConfigurationStore).createIndexesIfNotExists()
+	// compliance
+	store.stores.compliance.(*SqlComplianceStore).createIndexesIfNotExists()
 }
 
 // account
@@ -500,4 +505,9 @@ func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
 // plugin
 func (ss *SqlStore) PluginConfiguration() store.PluginConfigurationStore {
 	return ss.stores.pluginConfig
+}
+
+// compliance
+func (ss *SqlStore) Compliance() store.ComplianceStore {
+	return ss.stores.compliance
 }

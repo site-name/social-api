@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
 )
 
@@ -112,6 +113,18 @@ type Store interface {
 	WishlistItem() WishlistItemStore
 	// plugin
 	PluginConfiguration() PluginConfigurationStore
+	// Compliance
+	Compliance() ComplianceStore
+}
+
+// compliance
+type ComplianceStore interface {
+	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
+	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
+	Get(id string) (*compliance.Compliance, error)
+	GetAll(offset, limit int) (compliance.Compliances, error)
+	ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error)
+	MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error)
 }
 
 //plugin
