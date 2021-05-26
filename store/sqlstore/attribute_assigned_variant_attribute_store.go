@@ -25,4 +25,7 @@ func newSqlAssignedVariantAttributeStore(s *SqlStore) store.AssignedVariantAttri
 	return as
 }
 
-func (as *SqlAssignedVariantAttributeStore) createIndexesIfNotExists() {}
+func (as *SqlAssignedVariantAttributeStore) createIndexesIfNotExists() {
+	as.CreateForeignKeyIfNotExists("AssignedVariantAttributes", "VariantID", "ProductVariants", "Id", true)
+	as.CreateForeignKeyIfNotExists("AssignedVariantAttributes", "AssignmentID", "AttributeVariants", "Id", true)
+}

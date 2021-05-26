@@ -124,7 +124,6 @@ type (
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
 		Get(id string) (*attribute.Attribute, error)
 		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
-		GetQueryBuilder() squirrel.SelectBuilder
 	}
 	AttributeTranslationStore          interface{}
 	AttributeValueStore                interface{}

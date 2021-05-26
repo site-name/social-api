@@ -12,14 +12,12 @@ import (
 
 type SqlAttributeStore struct {
 	*SqlStore
-	attributeQueryBuilder squirrel.SelectBuilder
 }
 
 func newSqlAttributeStore(s *SqlStore) store.AttributeStore {
 	as := &SqlAttributeStore{
 		SqlStore: s,
 	}
-	as.attributeQueryBuilder = s.getQueryBuilder().Select("*").From("Attributes")
 
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(attribute.Attribute{}, "Attributes").SetKeys(false, "Id")
@@ -70,7 +68,7 @@ func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
 }
 
 func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	query, args, err := as.attributeQueryBuilder.Where(squirrel.Eq{"Id": ids}).ToSql()
+	query, args, err := as.getQueryBuilder().Select("*").From("Attributes").Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "get_attributes_by_ids")
 	}
@@ -82,6 +80,14 @@ func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attr
 	return attrs, nil
 }
 
-func (as *SqlAttributeStore) GetQueryBuilder() squirrel.SelectBuilder {
-	return as.attributeQueryBuilder
-}
+// func (as *SqlAttributeStore) GetAttributesBy(filterColumn string, argList interface{}, distinct bool, orderBy string) ([]*attribute.Attribute, error) {
+// 	query := as.getQueryBuilder().
+// 		Select("CONCAT(a.Slug, (product attribute)) as header").
+// 		From("Attributes as a").
+// 		InnerJoin("AttributeProducts ON AttributeProducts.AttributeID = a.Id").
+// 		Where(squirrel.And{
+// 			squirrel.Eq{"Id": []string{}},
+// 			squirrel.NotEq{"AttributeProducts.ProductTypeID": nil},
+// 		}).
+// 		Distinct()
+// }

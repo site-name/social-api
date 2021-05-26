@@ -21,8 +21,12 @@ func newSqlAttributeProductStore(s *SqlStore) store.AttributeProductStore {
 		table.ColMap("ProductTypeID").SetMaxSize(UUID_MAX_LENGTH)
 
 		table.SetUniqueTogether("ProductTypeID", "AttributeID")
+
 	}
 	return as
 }
 
-func (as *SqlAttributeProductStore) createIndexesIfNotExists() {}
+func (as *SqlAttributeProductStore) createIndexesIfNotExists() {
+	as.CreateForeignKeyIfNotExists("AttributeProducts", "AttributeID", "Attributes", "Id", true)
+	as.CreateForeignKeyIfNotExists("AttributeProducts", "ProductTypeID", "ProductTypes", "Id", true)
+}

@@ -51,9 +51,16 @@ type BackingStore interface {
 	Close() error
 }
 
-// NewStore creates a database or file store given a data source name by which to connect.
-func NewStore(dsn string, watch, readOnly bool, customDefaults *model.Config) (*Store, error) {
-	backingStore, err := getBackingStore(dsn, watch)
+// NewStoreFromDSN creates and returns a new config store backed by either a database or file store
+// depending on the value of the given data source name string.
+func NewStoreFromDSN(dsn string, watch, readOnly bool, customDefaults *model.Config) (*Store, error) {
+	var err error
+	var backingStore BackingStore
+	if IsDatabaseDSN(dsn) {
+		backingStore, err = NewDatabaseStore(dsn)
+	} else {
+		backingStore, err = NewFileStore(dsn, watch)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -35,4 +35,6 @@ func (as *SqlAttributeValueStore) createIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributevalues_name_lower_textpattern", "AttributeValues", "lower(Name) text_pattern_ops")
 	as.CreateIndexIfNotExists("idx_attributevalues_slug", "AttributeValues", "Slug")
 	as.CreateIndexIfNotExists("idx_attributevalues_value", "AttributeValues", "Value")
+
+	as.CreateForeignKeyIfNotExists("AttributeValues", "AttributeID", "Attributes", "Id", true)
 }

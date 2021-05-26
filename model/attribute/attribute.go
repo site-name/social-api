@@ -63,13 +63,13 @@ type Attribute struct {
 	ProductVariantTypes      []*product_and_discount.ProductType `json:"product_variant_types" db:"-"`
 	PageTypes                []*page.PageType                    `json:"page_types" db:"-"`
 	Unit                     *string                             `json:"unit"`
-	ValueRequired            *bool                               `json:"value_required"`
-	IsVariantOnly            *bool                               `json:"is_variant_only"`
-	VisibleInStoreFront      *bool                               `json:"visible_in_storefront"`
-	FilterableInStorefront   *bool                               `json:"filterable_in_storefront"`
-	FilterableInDashboard    *bool                               `json:"filterable_in_dashboard"`
+	ValueRequired            bool                                `json:"value_required"`
+	IsVariantOnly            bool                                `json:"is_variant_only"`
+	VisibleInStoreFront      bool                                `json:"visible_in_storefront"`
+	FilterableInStorefront   bool                                `json:"filterable_in_storefront"`
+	FilterableInDashboard    bool                                `json:"filterable_in_dashboard"`
 	StorefrontSearchPosition int                                 `json:"storefront_search_position"`
-	AvailableInGrid          *bool                               `json:"available_in_grid"`
+	AvailableInGrid          bool                                `json:"available_in_grid"`
 	model.ModelMetadata
 }
 
@@ -111,31 +111,13 @@ func (a *Attribute) PreSave() {
 	if a.InputType == "" {
 		a.InputType = DROPDOWN
 	}
-	if a.ValueRequired == nil {
-		a.ValueRequired = model.NewBool(false)
-	}
-	if a.IsVariantOnly == nil {
-		a.IsVariantOnly = model.NewBool(false)
-	}
-	if a.VisibleInStoreFront == nil {
-		a.VisibleInStoreFront = model.NewBool(true)
-	}
-	if a.FilterableInStorefront == nil {
-		a.FilterableInStorefront = model.NewBool(false)
-	}
-	if a.FilterableInDashboard == nil {
-		a.FilterableInDashboard = model.NewBool(false)
-	}
-	if a.AvailableInGrid == nil {
-		a.AvailableInGrid = model.NewBool(false)
-	}
 	a.Name = model.SanitizeUnicode(a.Name)
 	a.Slug = slug.Make(a.Name)
 }
 
 func (a *Attribute) PreUpdate() {
 	a.Name = model.SanitizeUnicode(a.Name)
-	a.Slug = slug.Make(a.Name)
+	// a.Slug = slug.Make(a.Name)
 }
 
 func (a *Attribute) String() string {

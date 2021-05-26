@@ -25,4 +25,7 @@ func newSqlAssignedPageAttributeStore(s *SqlStore) store.AssignedPageAttributeSt
 	return as
 }
 
-func (as *SqlAssignedPageAttributeStore) createIndexesIfNotExists() {}
+func (as *SqlAssignedPageAttributeStore) createIndexesIfNotExists() {
+	as.CreateForeignKeyIfNotExists("AssignedPageAttributes", "AssignmentID", "AttributePages", "Id", true)
+	as.CreateForeignKeyIfNotExists("AssignedPageAttributes", "PageID", "Pages", "Id", true)
+}

@@ -25,4 +25,7 @@ func newSqlAssignedProductAttributeValueStore(s *SqlStore) store.AssignedProduct
 	return as
 }
 
-func (as *SqlAssignedProductAttributeValueStore) createIndexesIfNotExists() {}
+func (as *SqlAssignedProductAttributeValueStore) createIndexesIfNotExists() {
+	as.CreateForeignKeyIfNotExists("AssignedProductAttributeValues", "ValueID", "AttributeValues", "Id", true)
+	as.CreateForeignKeyIfNotExists("AssignedProductAttributeValues", "AssignmentID", "AssignedProductAttributes", "Id", true)
+}

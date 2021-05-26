@@ -14,7 +14,7 @@ func GetEnvironment() map[string]string {
 	for _, env := range os.Environ() {
 		kv := strings.SplitN(env, "=", 2)
 		key := strings.ToUpper(kv[0])
-		if strings.HasPrefix(key, "MM") {
+		if strings.HasPrefix(key, "SN") {
 			mmenv[key] = kv[1]
 		}
 	}
