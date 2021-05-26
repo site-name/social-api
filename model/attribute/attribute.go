@@ -160,7 +160,7 @@ const (
 
 type AttributeTranslation struct {
 	Id           string `json:"id"`
-	AttributeId  string `json:"attribute_id"`
+	AttributeID  string `json:"attribute_id"`
 	LanguageCode string `json:"language_code"`
 	Name         string `json:"name"`
 }
@@ -174,7 +174,7 @@ func (a *AttributeTranslation) IsValid() *model.AppError {
 	if !model.IsValidId(a.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(a.AttributeId) {
+	if !model.IsValidId(a.AttributeID) {
 		return outer("attribute_id", nil)
 	}
 	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH {

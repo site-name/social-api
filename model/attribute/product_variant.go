@@ -2,6 +2,7 @@ package attribute
 
 import "github.com/sitename/sitename/model"
 
+// ValueID unique together with AssignmentID
 type AssignedVariantAttributeValue struct {
 	Id           string `json:"id"`
 	ValueID      string `json:"value_id"`      // unique together
