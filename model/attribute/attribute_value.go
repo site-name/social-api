@@ -94,6 +94,7 @@ const (
 	ATTRIBUTE_VALUE_TRANSLATION_NAME_MAX_LENGTH = 100
 )
 
+// LanguageCode unique together AttributeValueID
 type AttributeValueTranslation struct {
 	Id               string                 `json:"id"`
 	LanguageCode     string                 `json:"language_code"`

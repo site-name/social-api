@@ -15,7 +15,7 @@ func newSqlAttributeVariantStore(s *SqlStore) store.AttributeVariantStore {
 	}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeVariant{}, "Attributes").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AttributeVariant{}, "AttributeVariants").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("AttributeID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("ProductTypeID").SetMaxSize(UUID_MAX_LENGTH)

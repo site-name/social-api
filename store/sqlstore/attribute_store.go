@@ -37,6 +37,7 @@ func newSqlAttributeStore(s *SqlStore) store.AttributeStore {
 
 func (as *SqlAttributeStore) createIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributes_name", "Attributes", "Name")
+	as.CreateIndexIfNotExists("idx_attributes_name_lower_textpattern", "Attributes", "lower(Name) text_pattern_ops")
 	as.CreateIndexIfNotExists("idx_attributes_slug", "Attributes", "Slug")
 }
 
