@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/sitename/sitename/web/model"
@@ -10,16 +9,16 @@ import (
 
 func (r *queryResolver) payment(ctx context.Context, id string) (*model.Payment, error) {
 
-	_, ok := ctx.Value(ApiContextKey).(*Context)
-	fmt.Println("It is", ok)
+	// _, ok := ctx.Value(ApiContextKey).(*Context)
+	// fmt.Println("It is", ok)
 
 	now := time.Now()
 	return &model.Payment{
 		ID:                     id,
 		Gateway:                "ahihi",
 		IsActive:               true,
-		Created:                now.String(),
-		Modified:               now.String(),
+		Created:                now,
+		Modified:               now,
 		Token:                  "ThisistheToken",
 		Checkout:               nil,
 		Order:                  nil,

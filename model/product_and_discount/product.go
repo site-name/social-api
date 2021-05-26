@@ -108,7 +108,7 @@ func (p *Product) PreSave() {
 func (p *Product) PreUpdate() {
 	p.UpdateAt = model.GetMillis()
 	p.Name = model.SanitizeUnicode(p.Name)
-	p.Slug = slug.Make(p.Name)
+	// p.Slug = slug.Make(p.Name)
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}

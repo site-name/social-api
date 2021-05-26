@@ -5,12 +5,12 @@ import (
 	"github.com/sitename/sitename/model/page"
 )
 
-// TODO: fixme
+// AttributeID unique with PageTypeID
 type AttributePage struct {
 	Id            string       `json:"id"`
-	AttributeID   string       `json:"attribute_id"`
-	PageTypeID    string       `json:"page_type_id"`
-	AssignedPages []*page.Page `json:"assigned_pages" db:"-"`
+	AttributeID   string       `json:"attribute_id"`          // to attribute.Attribute
+	PageTypeID    string       `json:"page_type_id"`          // to page.PageType
+	AssignedPages []*page.Page `json:"assigned_pages" db:"-"` // through attribute.AssignedPageAttribute
 	model.Sortable
 }
 

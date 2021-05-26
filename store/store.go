@@ -5,12 +5,15 @@ package store
 import (
 	"context"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 type StoreResult struct {
@@ -21,101 +24,121 @@ type StoreResult struct {
 }
 
 type Store interface {
-	User() UserStore
-	System() SystemStore
-	Job() JobStore
-	Session() SessionStore
-	Preference() PreferenceStore
-	Token() TokenStore
 	Context() context.Context
-	Status() StatusStore
 	Close()
 	LockToMaster()
 	UnlockFromMaster()
 	DropAllTables()
 	SetContext(context context.Context)
-	Role() RoleStore
 	GetDbVersion(numerical bool) (string, error)
-	UserAccessToken() UserAccessTokenStore
-	TermsOfService() TermsOfServiceStore
-	ClusterDiscovery() ClusterDiscoveryStore
-	Audit() AuditStore
 
-	App() AppStore
-	AppToken() AppTokenStore
-	Address() AddressStore
-	Channel() ChannelStore
-	Checkout() CheckoutStore
-	CheckoutLine() CheckoutLineStore
-	// csv
-	CsvExportEvent() CsvExportEventStore
-	CsvExportFile() CsvExportFileStore
-	// discount
-	VoucherStore() DiscountVoucherStore
-	VoucherChannelListing() VoucherChannelListingStore
-	VoucherCustomer() DiscountVoucherCustomerStore
-	VoucherTranslation() VoucherTranslationStore
-	DiscountSale() DiscountSaleStore
-	DiscountSaleTranslation() DiscountSaleTranslationStore
-	DiscountSaleChannelListing() DiscountSaleChannelListingStore
-	OrderDiscount() OrderDiscountStore
-	// giftcard
-	GiftCard() GiftCardStore
-	// invoice
-	InvoiceEvent() InvoiceEventStore
-	// menu
-	Menu() MenuStore
-	MenuItemTranslation() MenuItemTranslationStore
-
-	Fulfillment() FulfillmentStore
-	FulfillmentLine() FulfillmentLineStore
-	// order
-	OrderEvent() OrderEventStore
-	Order() OrderStore
-	OrderLine() OrderLineStore
-	// page
-	Page() PageStore
-	PageType() PageTypeStore
-	PageTranslation() PageTranslationStore
-	// payment
-	Payment() PaymentStore
-	PaymentTransaction() PaymentTransactionStore
-	// product
-	Category() CategoryStore
-	CategoryTranslation() CategoryTranslationStore
-	ProductType() ProductTypeStore
-	Product() ProductStore
-	ProductTranslation() ProductTranslationStore
-	ProductChannelListing() ProductChannelListingStore
-	ProductVariant() ProductVariantStore
-	ProductVariantTranslation() ProductVariantTranslationStore
-	ProductVariantChannelListing() ProductVariantChannelListingStore
-	DigitalContent() DigitalContentStore
-	DigitalContentUrl() DigitalContentUrlStore
-	ProductMedia() ProductMediaStore
-	VariantMedia() VariantMediaStore
-	CollectionProduct() CollectionProductStore
-	Collection() CollectionStore
-	CollectionChannelListing() CollectionChannelListingStore
-	CollectionTranslation() CollectionTranslationStore
-	// shipping
-	ShippingMethodTranslation() ShippingMethodTranslationStore
-	ShippingMethodChannelListing() ShippingMethodChannelListingStore
-	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore
-	ShippingMethod() ShippingMethodStore
-	ShippingZone() ShippingZoneStore
-	// warehouse
-	Warehouse() WarehouseStore
-	Stock() StockStore
-	Allocation() AllocationStore
-	// wishlist
-	Wishlist() WishlistStore
-	WishlistItem() WishlistItemStore
-	// plugin
-	PluginConfiguration() PluginConfigurationStore
-	// Compliance
-	Compliance() ComplianceStore
+	User() UserStore                                                   // account
+	Address() AddressStore                                             //
+	System() SystemStore                                               // system
+	Job() JobStore                                                     // job
+	Session() SessionStore                                             // session
+	Preference() PreferenceStore                                       // preference
+	Token() TokenStore                                                 // token
+	Status() StatusStore                                               // status
+	Role() RoleStore                                                   // role
+	UserAccessToken() UserAccessTokenStore                             // user access token
+	TermsOfService() TermsOfServiceStore                               // term of service
+	ClusterDiscovery() ClusterDiscoveryStore                           // cluster
+	Audit() AuditStore                                                 // audit
+	App() AppStore                                                     // app
+	AppToken() AppTokenStore                                           //
+	Channel() ChannelStore                                             // channel
+	Checkout() CheckoutStore                                           // checkout
+	CheckoutLine() CheckoutLineStore                                   //
+	CsvExportEvent() CsvExportEventStore                               // csv
+	CsvExportFile() CsvExportFileStore                                 //
+	VoucherStore() DiscountVoucherStore                                // discount
+	VoucherChannelListing() VoucherChannelListingStore                 //
+	VoucherCustomer() DiscountVoucherCustomerStore                     //
+	VoucherTranslation() VoucherTranslationStore                       //
+	DiscountSale() DiscountSaleStore                                   //
+	DiscountSaleTranslation() DiscountSaleTranslationStore             //
+	DiscountSaleChannelListing() DiscountSaleChannelListingStore       //
+	OrderDiscount() OrderDiscountStore                                 //
+	GiftCard() GiftCardStore                                           // giftcard
+	InvoiceEvent() InvoiceEventStore                                   // invoice
+	Menu() MenuStore                                                   // menu
+	MenuItemTranslation() MenuItemTranslationStore                     //
+	Fulfillment() FulfillmentStore                                     // order
+	FulfillmentLine() FulfillmentLineStore                             //
+	OrderEvent() OrderEventStore                                       //
+	Order() OrderStore                                                 //
+	OrderLine() OrderLineStore                                         //
+	Page() PageStore                                                   // page
+	PageType() PageTypeStore                                           //
+	PageTranslation() PageTranslationStore                             //
+	Payment() PaymentStore                                             // payment
+	PaymentTransaction() PaymentTransactionStore                       //
+	Category() CategoryStore                                           // product
+	CategoryTranslation() CategoryTranslationStore                     //
+	ProductType() ProductTypeStore                                     //
+	Product() ProductStore                                             //
+	ProductTranslation() ProductTranslationStore                       //
+	ProductChannelListing() ProductChannelListingStore                 //
+	ProductVariant() ProductVariantStore                               //
+	ProductVariantTranslation() ProductVariantTranslationStore         //
+	ProductVariantChannelListing() ProductVariantChannelListingStore   //
+	DigitalContent() DigitalContentStore                               //
+	DigitalContentUrl() DigitalContentUrlStore                         //
+	ProductMedia() ProductMediaStore                                   //
+	VariantMedia() VariantMediaStore                                   //
+	CollectionProduct() CollectionProductStore                         //
+	Collection() CollectionStore                                       //
+	CollectionChannelListing() CollectionChannelListingStore           //
+	CollectionTranslation() CollectionTranslationStore                 //
+	ShippingMethodTranslation() ShippingMethodTranslationStore         // shipping
+	ShippingMethodChannelListing() ShippingMethodChannelListingStore   //
+	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore   //
+	ShippingMethod() ShippingMethodStore                               //
+	ShippingZone() ShippingZoneStore                                   //
+	Warehouse() WarehouseStore                                         // warehouse
+	Stock() StockStore                                                 //
+	Allocation() AllocationStore                                       //
+	Wishlist() WishlistStore                                           // wishlist
+	WishlistItem() WishlistItemStore                                   //
+	PluginConfiguration() PluginConfigurationStore                     // plugin
+	Compliance() ComplianceStore                                       // Compliance
+	Attribute() AttributeStore                                         // attribute
+	AttributeTranslation() AttributeTranslationStore                   //
+	AttributeValue() AttributeValueStore                               //
+	AttributeValueTranslation() AttributeValueTranslationStore         //
+	AssignedPageAttributeValue() AssignedPageAttributeValueStore       //
+	AssignedPageAttribute() AssignedPageAttributeStore                 //
+	AttributePage() AttributePageStore                                 //
+	AssignedVariantAttributeValue() AssignedVariantAttributeValueStore //
+	AssignedVariantAttribute() AssignedVariantAttributeStore           //
+	AttributeVariant() AttributeVariantStore                           //
+	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
+	AssignedProductAttribute() AssignedProductAttributeStore           //
+	AttributeProduct() AttributeProductStore                           //
 }
+
+// attribute
+type (
+	AttributeStore interface {
+		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
+		Get(id string) (*attribute.Attribute, error)
+		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
+		GetQueryBuilder() squirrel.SelectBuilder
+	}
+	AttributeTranslationStore          interface{}
+	AttributeValueStore                interface{}
+	AttributeValueTranslationStore     interface{}
+	AssignedPageAttributeValueStore    interface{}
+	AssignedPageAttributeStore         interface{}
+	AttributePageStore                 interface{}
+	AssignedVariantAttributeValueStore interface{}
+	AssignedVariantAttributeStore      interface{}
+	AttributeVariantStore              interface{}
+	AssignedProductAttributeValueStore interface{}
+	AssignedProductAttributeStore      interface{}
+	AttributeProductStore              interface{}
+)
 
 // compliance
 type ComplianceStore interface {
@@ -170,7 +193,12 @@ type (
 	ProductTypeStore                  interface{}
 	CategoryTranslationStore          interface{}
 	CategoryStore                     interface{}
-	ProductStore                      interface{}
+	ProductStore                      interface {
+		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
+		Get(id string) (*product_and_discount.Product, error)
+		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
+		GetSelectBuilder() squirrel.SelectBuilder
+	}
 )
 
 // payment

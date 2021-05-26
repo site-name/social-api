@@ -54,7 +54,7 @@ var AttributeTypeStrings = map[string]string{
 
 type Attribute struct {
 	Id                       string                              `json:"id"`
-	Slug                     string                              `json:"slug"`
+	Slug                     string                              `json:"slug"` // unique
 	Name                     string                              `json:"name"`
 	Type                     string                              `json:"type"`
 	InputType                string                              `json:"input_type"`

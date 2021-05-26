@@ -1141,7 +1141,7 @@ func (r *queryResolver) ReportProductSales(ctx context.Context, period model.Rep
 }
 
 func (r *queryResolver) Payment(ctx context.Context, id string) (*model.Payment, error) {
-	return r.payment(ctx, id)
+	return r.payment(ctx, id) // done
 }
 
 func (r *queryResolver) Payments(ctx context.Context, filter *model.PaymentFilterInput, before *string, after *string, first *int, last *int) (*model.PaymentCountableConnection, error) {

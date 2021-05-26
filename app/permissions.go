@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	// "github.com/sitename/sitename/modules/json"
 )
 
 const permissionsExportBatchSize = 100

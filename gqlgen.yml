@@ -62,3 +62,9 @@ models:
   UUID:
     model:
       - github.com/sitename/sitename/web/scalars.UUID
+  Date:
+    model:
+      - github.com/sitename/sitename/web/scalars.Date
+  DateTime:
+    model:
+      - github.com/sitename/sitename/web/scalars.DateTime

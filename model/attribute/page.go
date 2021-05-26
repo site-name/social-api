@@ -4,16 +4,17 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+// ValueID unique together with AssignmentID
 type AssignedPageAttributeValue struct {
-	Id             string `json:"id"`
-	ValueID        string `json:"value_id"`      // AttributeValue
-	AssignmentID   string `json:"assignment_id"` // AssignedPageAttribute
-	model.Sortable `db:"-"`
+	Id           string `json:"id"`
+	ValueID      string `json:"value_id"`      // AttributeValue
+	AssignmentID string `json:"assignment_id"` // AssignedPageAttribute
+	model.Sortable
 }
 
 func (a *AssignedPageAttributeValue) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
-		"model.assigned_page_sttribute_value.is_valid.%s.app_error",
+		"model.assigned_page_attribute_value.is_valid.%s.app_error",
 		"assigned_page_sttribute_value_id=",
 		"AssignedPageAttributeValue.IsValid",
 	)
@@ -43,6 +44,7 @@ func (a *AssignedPageAttributeValue) PreSave() {
 // ---------------
 
 // Associate a page type attribute and selected values to a given page.
+// PageID unique together with AssignmentID
 type AssignedPageAttribute struct {
 	Id                    string            `json:"id"`
 	PageID                string            `json:"page_id"`

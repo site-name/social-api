@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
@@ -193,7 +194,7 @@ func (Allocation) IsNode() {}
 type App struct {
 	ID               string          `json:"id"`
 	Name             *string         `json:"name"`
-	Created          *string         `json:"created"`
+	Created          *time.Time      `json:"created"`
 	IsActive         *bool           `json:"isActive"`
 	Permissions      []*Permission   `json:"permissions"`
 	Tokens           []*AppToken     `json:"tokens"`
@@ -299,8 +300,8 @@ type AppInstallation struct {
 	ManifestURL string        `json:"manifestUrl"`
 	ID          string        `json:"id"`
 	Status      JobStatusEnum `json:"status"`
-	CreatedAt   string        `json:"createdAt"`
-	UpdatedAt   string        `json:"updatedAt"`
+	CreatedAt   time.Time     `json:"createdAt"`
+	UpdatedAt   time.Time     `json:"updatedAt"`
 	Message     *string       `json:"message"`
 }
 
@@ -813,8 +814,8 @@ type ChannelUpdateInput struct {
 }
 
 type Checkout struct {
-	Created                  string            `json:"created"`
-	LastChange               string            `json:"lastChange"`
+	Created                  time.Time         `json:"created"`
+	LastChange               time.Time         `json:"lastChange"`
 	User                     *User             `json:"user"`
 	Channel                  *Channel          `json:"channel"`
 	BillingAddress           *Address          `json:"billingAddress"`
@@ -1030,10 +1031,10 @@ type CollectionBulkDelete struct {
 }
 
 type CollectionChannelListing struct {
-	ID              string   `json:"id"`
-	PublicationDate *string  `json:"publicationDate"`
-	IsPublished     bool     `json:"isPublished"`
-	Channel         *Channel `json:"channel"`
+	ID              string     `json:"id"`
+	PublicationDate *time.Time `json:"publicationDate"`
+	IsPublished     bool       `json:"isPublished"`
+	Channel         *Channel   `json:"channel"`
 }
 
 func (CollectionChannelListing) IsNode() {}
@@ -1083,7 +1084,7 @@ type CollectionCreateInput struct {
 	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
 	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
 	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *string         `json:"publicationDate"`
+	PublicationDate    *time.Time      `json:"publicationDate"`
 	Products           []*string       `json:"products"`
 }
 
@@ -1116,7 +1117,7 @@ type CollectionInput struct {
 	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
 	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
 	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *string         `json:"publicationDate"`
+	PublicationDate    *time.Time      `json:"publicationDate"`
 }
 
 type CollectionRemoveProducts struct {
@@ -1243,7 +1244,7 @@ type CustomerDelete struct {
 
 type CustomerEvent struct {
 	ID        string              `json:"id"`
-	Date      *string             `json:"date"`
+	Date      *time.Time          `json:"date"`
 	Type      *CustomerEventsEnum `json:"type"`
 	User      *User               `json:"user"`
 	Message   *string             `json:"message"`
@@ -1279,13 +1280,13 @@ type CustomerUpdate struct {
 }
 
 type DateRangeInput struct {
-	Gte *string `json:"gte"`
-	Lte *string `json:"lte"`
+	Gte *time.Time `json:"gte"`
+	Lte *time.Time `json:"lte"`
 }
 
 type DateTimeRangeInput struct {
-	Gte *string `json:"gte"`
-	Lte *string `json:"lte"`
+	Gte *time.Time `json:"gte"`
+	Lte *time.Time `json:"lte"`
 }
 
 type DeactivateAllUserTokens struct {
@@ -1369,7 +1370,7 @@ type DigitalContentUploadInput struct {
 
 type DigitalContentURL struct {
 	Content     *DigitalContent `json:"content"`
-	Created     string          `json:"created"`
+	Created     time.Time       `json:"created"`
 	DownloadNum int             `json:"downloadNum"`
 	ID          string          `json:"id"`
 	URL         *string         `json:"url"`
@@ -1473,7 +1474,7 @@ type ExportError struct {
 
 type ExportEvent struct {
 	ID      string           `json:"id"`
-	Date    string           `json:"date"`
+	Date    time.Time        `json:"date"`
 	Type    ExportEventsEnum `json:"type"`
 	User    *User            `json:"user"`
 	App     *App             `json:"app"`
@@ -1487,8 +1488,8 @@ type ExportFile struct {
 	User      *User         `json:"user"`
 	App       *App          `json:"app"`
 	Status    JobStatusEnum `json:"status"`
-	CreatedAt string        `json:"createdAt"`
-	UpdatedAt string        `json:"updatedAt"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
 	Message   *string       `json:"message"`
 	URL       *string       `json:"url"`
 	Events    []ExportEvent `json:"events"`
@@ -1601,7 +1602,7 @@ type Fulfillment struct {
 	FulfillmentOrder int                `json:"fulfillmentOrder"`
 	Status           FulfillmentStatus  `json:"status"`
 	TrackingNumber   string             `json:"trackingNumber"`
-	Created          string             `json:"created"`
+	Created          time.Time          `json:"created"`
 	PrivateMetadata  []*MetadataItem    `json:"privateMetadata"`
 	Metadata         []*MetadataItem    `json:"metadata"`
 	Lines            []*FulfillmentLine `json:"lines"`
@@ -1665,17 +1666,17 @@ type GatewayConfigLine struct {
 }
 
 type GiftCard struct {
-	Code           *string `json:"code"`
-	User           *User   `json:"user"`
-	Created        string  `json:"created"`
-	StartDate      string  `json:"startDate"`
-	EndDate        *string `json:"endDate"`
-	LastUsedOn     *string `json:"lastUsedOn"`
-	IsActive       bool    `json:"isActive"`
-	InitialBalance *Money  `json:"initialBalance"`
-	CurrentBalance *Money  `json:"currentBalance"`
-	ID             string  `json:"id"`
-	DisplayCode    *string `json:"displayCode"`
+	Code           *string    `json:"code"`
+	User           *User      `json:"user"`
+	Created        time.Time  `json:"created"`
+	StartDate      time.Time  `json:"startDate"`
+	EndDate        *time.Time `json:"endDate"`
+	LastUsedOn     *time.Time `json:"lastUsedOn"`
+	IsActive       bool       `json:"isActive"`
+	InitialBalance *Money     `json:"initialBalance"`
+	CurrentBalance *Money     `json:"currentBalance"`
+	ID             string     `json:"id"`
+	DisplayCode    *string    `json:"displayCode"`
 }
 
 func (GiftCard) IsNode() {}
@@ -1704,11 +1705,11 @@ type GiftCardCreate struct {
 }
 
 type GiftCardCreateInput struct {
-	StartDate *string `json:"startDate"`
-	EndDate   *string `json:"endDate"`
-	Balance   *string `json:"balance"`
-	UserEmail *string `json:"userEmail"`
-	Code      *string `json:"code"`
+	StartDate *time.Time `json:"startDate"`
+	EndDate   *time.Time `json:"endDate"`
+	Balance   *string    `json:"balance"`
+	UserEmail *string    `json:"userEmail"`
+	Code      *string    `json:"code"`
 }
 
 type GiftCardDeactivate struct {
@@ -1730,10 +1731,10 @@ type GiftCardUpdate struct {
 }
 
 type GiftCardUpdateInput struct {
-	StartDate *string `json:"startDate"`
-	EndDate   *string `json:"endDate"`
-	Balance   *string `json:"balance"`
-	UserEmail *string `json:"userEmail"`
+	StartDate *time.Time `json:"startDate"`
+	EndDate   *time.Time `json:"endDate"`
+	Balance   *string    `json:"balance"`
+	UserEmail *string    `json:"userEmail"`
 }
 
 type Group struct {
@@ -1774,8 +1775,8 @@ type Invoice struct {
 	Number          *string         `json:"number"`
 	ExternalURL     *string         `json:"externalUrl"`
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
-	CreatedAt       string          `json:"createdAt"`
-	UpdatedAt       string          `json:"updatedAt"`
+	CreatedAt       time.Time       `json:"createdAt"`
+	UpdatedAt       time.Time       `json:"updatedAt"`
 	Message         *string         `json:"message"`
 	URL             *string         `json:"url"`
 }
@@ -2100,7 +2101,7 @@ type NameTranslationInput struct {
 
 type Order struct {
 	ID                       string                  `json:"id"`
-	Created                  string                  `json:"created"`
+	Created                  time.Time               `json:"created"`
 	Status                   OrderStatus             `json:"status"`
 	User                     *User                   `json:"user"`
 	TrackingClientID         string                  `json:"trackingClientId"`
@@ -2257,7 +2258,7 @@ type OrderError struct {
 
 type OrderEvent struct {
 	ID                    string                       `json:"id"`
-	Date                  *string                      `json:"date"`
+	Date                  *time.Time                   `json:"date"`
 	Type                  *OrderEventsEnum             `json:"type"`
 	User                  *User                        `json:"user"`
 	Message               *string                      `json:"message"`
@@ -2520,11 +2521,11 @@ type Page struct {
 	SeoDescription  *string             `json:"seoDescription"`
 	Title           string              `json:"title"`
 	Content         *string             `json:"content"`
-	PublicationDate *string             `json:"publicationDate"`
+	PublicationDate *time.Time          `json:"publicationDate"`
 	IsPublished     bool                `json:"isPublished"`
 	Slug            string              `json:"slug"`
 	PageType        *PageType           `json:"pageType"`
-	Created         string              `json:"created"`
+	Created         time.Time           `json:"created"`
 	PrivateMetadata []*MetadataItem     `json:"privateMetadata"`
 	Metadata        []*MetadataItem     `json:"metadata"`
 	ContentJSON     string              `json:"contentJson"`
@@ -2767,8 +2768,8 @@ type Payment struct {
 	ID                     string                  `json:"id"`
 	Gateway                string                  `json:"gateway"`
 	IsActive               bool                    `json:"isActive"`
-	Created                string                  `json:"created"`
-	Modified               string                  `json:"modified"`
+	Created                time.Time               `json:"created"`
+	Modified               time.Time               `json:"modified"`
 	Token                  string                  `json:"token"`
 	Checkout               *Checkout               `json:"checkout"`
 	Order                  *Order                  `json:"order"`
@@ -2982,7 +2983,7 @@ type Product struct {
 	ProductType            *ProductType            `json:"productType"`
 	Slug                   string                  `json:"slug"`
 	Category               *Category               `json:"category"`
-	UpdatedAt              *string                 `json:"updatedAt"`
+	UpdatedAt              *time.Time              `json:"updatedAt"`
 	ChargeTaxes            bool                    `json:"chargeTaxes"`
 	Weight                 *Weight                 `json:"weight"`
 	DefaultVariant         *ProductVariant         `json:"defaultVariant"`
@@ -3003,7 +3004,7 @@ type Product struct {
 	Images                 []*ProductImage         `json:"images"`
 	Collections            []*Collection           `json:"collections"`
 	Translation            *ProductTranslation     `json:"translation"`
-	AvailableForPurchase   *string                 `json:"availableForPurchase"`
+	AvailableForPurchase   *time.Time              `json:"availableForPurchase"`
 	IsAvailableForPurchase *bool                   `json:"isAvailableForPurchase"`
 }
 
@@ -3035,11 +3036,11 @@ type ProductBulkDelete struct {
 
 type ProductChannelListing struct {
 	ID                     string              `json:"id"`
-	PublicationDate        *string             `json:"publicationDate"`
+	PublicationDate        *time.Time          `json:"publicationDate"`
 	IsPublished            bool                `json:"isPublished"`
 	Channel                *Channel            `json:"channel"`
 	VisibleInListings      bool                `json:"visibleInListings"`
-	AvailableForPurchase   *string             `json:"availableForPurchase"`
+	AvailableForPurchase   *time.Time          `json:"availableForPurchase"`
 	DiscountedPrice        *Money              `json:"discountedPrice"`
 	PurchaseCost           *MoneyRange         `json:"purchaseCost"`
 	Margin                 *Margin             `json:"margin"`
@@ -3050,14 +3051,14 @@ type ProductChannelListing struct {
 func (ProductChannelListing) IsNode() {}
 
 type ProductChannelListingAddInput struct {
-	ChannelID                string   `json:"channelId"`
-	IsPublished              *bool    `json:"isPublished"`
-	PublicationDate          *string  `json:"publicationDate"`
-	VisibleInListings        *bool    `json:"visibleInListings"`
-	IsAvailableForPurchase   *bool    `json:"isAvailableForPurchase"`
-	AvailableForPurchaseDate *string  `json:"availableForPurchaseDate"`
-	AddVariants              []string `json:"addVariants"`
-	RemoveVariants           []string `json:"removeVariants"`
+	ChannelID                string     `json:"channelId"`
+	IsPublished              *bool      `json:"isPublished"`
+	PublicationDate          *time.Time `json:"publicationDate"`
+	VisibleInListings        *bool      `json:"visibleInListings"`
+	IsAvailableForPurchase   *bool      `json:"isAvailableForPurchase"`
+	AvailableForPurchaseDate *time.Time `json:"availableForPurchaseDate"`
+	AddVariants              []string   `json:"addVariants"`
+	RemoveVariants           []string   `json:"removeVariants"`
 }
 
 type ProductChannelListingError struct {
@@ -3555,9 +3556,9 @@ type ProductVariantUpdate struct {
 }
 
 type PublishableChannelListingInput struct {
-	ChannelID       string  `json:"channelId"`
-	IsPublished     *bool   `json:"isPublished"`
-	PublicationDate *string `json:"publicationDate"`
+	ChannelID       string     `json:"channelId"`
+	IsPublished     *bool      `json:"isPublished"`
+	PublicationDate *time.Time `json:"publicationDate"`
 }
 
 type ReducedRate struct {
@@ -3592,8 +3593,8 @@ type Sale struct {
 	ID              string                         `json:"id"`
 	Name            string                         `json:"name"`
 	Type            SaleType                       `json:"type"`
-	StartDate       string                         `json:"startDate"`
-	EndDate         *string                        `json:"endDate"`
+	StartDate       time.Time                      `json:"startDate"`
+	EndDate         *time.Time                     `json:"endDate"`
 	Categories      *CategoryCountableConnection   `json:"categories"`
 	Collections     *CollectionCountableConnection `json:"collections"`
 	Products        *ProductCountableConnection    `json:"products"`
@@ -3679,8 +3680,8 @@ type SaleInput struct {
 	Products    []*string              `json:"products"`
 	Categories  []*string              `json:"categories"`
 	Collections []*string              `json:"collections"`
-	StartDate   *string                `json:"startDate"`
-	EndDate     *string                `json:"endDate"`
+	StartDate   *time.Time             `json:"startDate"`
+	EndDate     *time.Time             `json:"endDate"`
 }
 
 type SaleRemoveCatalogues struct {
@@ -4232,7 +4233,7 @@ type TaxedMoneyRange struct {
 
 type Transaction struct {
 	ID              string          `json:"id"`
-	Created         string          `json:"created"`
+	Created         time.Time       `json:"created"`
 	Payment         *Payment        `json:"payment"`
 	Token           string          `json:"token"`
 	Kind            TransactionKind `json:"kind"`
@@ -4293,14 +4294,14 @@ type UploadError struct {
 
 type User struct {
 	ID                     string                       `json:"id"`
-	LastLogin              *string                      `json:"lastLogin"`
+	LastLogin              *time.Time                   `json:"lastLogin"`
 	Email                  string                       `json:"email"`
 	FirstName              string                       `json:"firstName"`
 	LastName               string                       `json:"lastName"`
 	IsStaff                bool                         `json:"isStaff"`
 	IsActive               bool                         `json:"isActive"`
 	Note                   *string                      `json:"note"`
-	DateJoined             string                       `json:"dateJoined"`
+	DateJoined             time.Time                    `json:"dateJoined"`
 	DefaultShippingAddress *Address                     `json:"defaultShippingAddress"`
 	DefaultBillingAddress  *Address                     `json:"defaultBillingAddress"`
 	PrivateMetadata        []*MetadataItem              `json:"privateMetadata"`
@@ -4419,8 +4420,8 @@ type Voucher struct {
 	Code                     string                         `json:"code"`
 	UsageLimit               *int                           `json:"usageLimit"`
 	Used                     int                            `json:"used"`
-	StartDate                string                         `json:"startDate"`
-	EndDate                  *string                        `json:"endDate"`
+	StartDate                time.Time                      `json:"startDate"`
+	EndDate                  *time.Time                     `json:"endDate"`
 	ApplyOncePerOrder        bool                           `json:"applyOncePerOrder"`
 	ApplyOncePerCustomer     bool                           `json:"applyOncePerCustomer"`
 	DiscountValueType        DiscountValueTypeEnum          `json:"discountValueType"`
@@ -4512,8 +4513,8 @@ type VoucherInput struct {
 	Type                     *VoucherTypeEnum       `json:"type"`
 	Name                     *string                `json:"name"`
 	Code                     *string                `json:"code"`
-	StartDate                *string                `json:"startDate"`
-	EndDate                  *string                `json:"endDate"`
+	StartDate                *time.Time             `json:"startDate"`
+	EndDate                  *time.Time             `json:"endDate"`
 	DiscountValueType        *DiscountValueTypeEnum `json:"discountValueType"`
 	Products                 []*string              `json:"products"`
 	Collections              []*string              `json:"collections"`

@@ -1,6 +1,8 @@
 package sqlstore
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/store"
@@ -41,6 +43,9 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 	inface, err := cs.GetMaster().Get(csv.ExportFile{}, id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound("ExportFile", id)
+		}
 		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)
 	}
 

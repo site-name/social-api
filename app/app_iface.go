@@ -95,7 +95,6 @@ type AppIface interface {
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
-	CancelJob(jobId string) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
@@ -109,7 +108,6 @@ type AppIface interface {
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
 	Config() *model.Config
-	CreateJob(job *model.Job) (*model.Job, *model.AppError)
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError)
@@ -134,13 +132,6 @@ type AppIface interface {
 	GetClusterId() string
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
-	GetJob(id string) (*model.Job, *model.AppError)
-	GetJobs(offset int, limit int) ([]*model.Job, *model.AppError)
-	GetJobsByType(jobType string, offset int, limit int) ([]*model.Job, *model.AppError)
-	GetJobsByTypePage(jobType string, page int, perPage int) ([]*model.Job, *model.AppError)
-	GetJobsByTypes(jobTypes []string, offset int, limit int) ([]*model.Job, *model.AppError)
-	GetJobsByTypesPage(jobType []string, page int, perPage int) ([]*model.Job, *model.AppError)
-	GetJobsPage(page int, perPage int) ([]*model.Job, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
@@ -196,8 +187,6 @@ type AppIface interface {
 	SessionCacheLength() int
 	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool
 	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
-	SessionHasPermissionToCreateJob(session model.Session, job *model.Job) (bool, *model.Permission)
-	SessionHasPermissionToReadJob(session model.Session, jobType string) (bool, *model.Permission)
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	SetDefaultProfileImage(user *account.User) *model.AppError
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError

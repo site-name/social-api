@@ -4,8 +4,8 @@ import "github.com/sitename/sitename/model"
 
 type AssignedVariantAttributeValue struct {
 	Id           string `json:"id"`
-	ValueID      string `json:"value_id"`
-	AssignmentID string `json:"assignment_id"`
+	ValueID      string `json:"value_id"`      // unique together
+	AssignmentID string `json:"assignment_id"` // unique together
 	model.Sortable
 }
 
@@ -35,10 +35,11 @@ func (a *AssignedVariantAttributeValue) PreSave() {
 	}
 }
 
+// Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
 	Id                    string            `json:"id"`
-	VariantID             string            `json:"variant_id"`
-	AssignmentID          string            `json:"assignment_id"`
+	VariantID             string            `json:"variant_id"`    // to product.ProductVariant
+	AssignmentID          string            `json:"assignment_id"` // to attribute.AttributeVariant
 	Values                []*AttributeValue `json:"values"`
 	BaseAssignedAttribute `db:"-"`
 }

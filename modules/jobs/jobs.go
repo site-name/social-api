@@ -23,10 +23,6 @@ func (srv *JobServer) CreateJob(jobType string, jobData map[string]string) (*mod
 		Data:   jobData,
 	}
 
-	if err := job.IsValid(); err != nil {
-		return nil, err
-	}
-
 	if _, err := srv.Store.Job().Save(&job); err != nil {
 		return nil, model.NewAppError("CreateJob", "app.job.save.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -34,6 +30,7 @@ func (srv *JobServer) CreateJob(jobType string, jobData map[string]string) (*mod
 	return &job, nil
 }
 
+// Get job with given id
 func (srv *JobServer) GetJob(id string) (*model.Job, *model.AppError) {
 	job, err := srv.Store.Job().Get(id)
 	if err != nil {
@@ -80,6 +77,7 @@ func (srv *JobServer) SetJobWarning(job *model.Job) *model.AppError {
 	return nil
 }
 
+// update status of given job to success
 func (srv *JobServer) SetJobSuccess(job *model.Job) *model.AppError {
 	if _, err := srv.Store.Job().UpdateStatus(job.Id, model.JOB_STATUS_SUCCESS); err != nil {
 		return model.NewAppError("SetJobSuccess", "app.job.update.app_error", nil, err.Error(), http.StatusInternalServerError)

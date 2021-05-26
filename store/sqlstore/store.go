@@ -765,7 +765,11 @@ func IsConstraintAlreadyExistsError(err error) bool {
 	return false
 }
 
-// check if given err is postgres's unique error
+// check if given err is postgres's unique error if it satisfy the following:
+//
+// 1) given error's type is pq.Error and err's code is "23505"
+//
+// 2) error's string contains at least one value in given indexName
 func IsUniqueConstraintError(err error, indexName []string) bool {
 	unique := false
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
