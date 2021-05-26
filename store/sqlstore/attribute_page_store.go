@@ -20,7 +20,7 @@ func newSqlAttributePageStore(s *SqlStore) store.AttributePageStore {
 		table.ColMap("AttributeID").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("PageTypeID").SetMaxSize(UUID_MAX_LENGTH)
 
-		table.SetUniqueTogether("ProductTypeID", "PageTypeID")
+		table.SetUniqueTogether("AttributeID", "PageTypeID")
 	}
 	return as
 }
