@@ -144,7 +144,3 @@ func GetProductExportFieldsAndHeaders(exportInfo *model.ExportInfoInput) (export
 
 	return
 }
-
-func (worker *Worker) ExportProducts(exportInfo *model.ExportInfoInput) {
-
-}

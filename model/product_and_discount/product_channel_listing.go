@@ -19,7 +19,7 @@ type ProductChannelListing struct {
 	Currency              string           `json:"currency"`
 	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`
 	DiscountedPrice       *model.Money     `json:"discounted_price,omitempty" db:"-"`
-	*model.Publishable    `db:"-"`
+	model.Publishable
 }
 
 // Check if product is can be bought now

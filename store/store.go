@@ -11,9 +11,11 @@ import (
 	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 )
 
 type StoreResult struct {
@@ -124,6 +126,7 @@ type (
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
 		Get(id string) (*attribute.Attribute, error)
 		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
+		GetProductAndVariantHeaders(ids []string) ([]string, error)
 	}
 	AttributeTranslationStore          interface{}
 	AttributeValueStore                interface{}
@@ -160,7 +163,11 @@ type (
 
 // warehouse
 type (
-	WarehouseStore  interface{}
+	WarehouseStore interface {
+		Save(*warehouse.WareHouse) (*warehouse.WareHouse, error)
+		Get(id string) (*warehouse.WareHouse, error)
+		GetWarehousesHeaders(ids []string) ([]string, error)
+	}
 	StockStore      interface{}
 	AllocationStore interface{}
 )
@@ -265,6 +272,9 @@ type CheckoutStore interface {
 }
 
 type ChannelStore interface {
+	Save(*channel.Channel) (*channel.Channel, error)
+	// Get(id string) (*channel.Channel, error)
+	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error)
 }
 
 type AppTokenStore interface {

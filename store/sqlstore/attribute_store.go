@@ -80,14 +80,65 @@ func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attr
 	return attrs, nil
 }
 
-// func (as *SqlAttributeStore) GetAttributesBy(filterColumn string, argList interface{}, distinct bool, orderBy string) ([]*attribute.Attribute, error) {
-// 	query := as.getQueryBuilder().
-// 		Select("CONCAT(a.Slug, (product attribute)) as header").
-// 		From("Attributes as a").
-// 		InnerJoin("AttributeProducts ON AttributeProducts.AttributeID = a.Id").
-// 		Where(squirrel.And{
-// 			squirrel.Eq{"Id": []string{}},
-// 			squirrel.NotEq{"AttributeProducts.ProductTypeID": nil},
-// 		}).
-// 		Distinct()
-// }
+// GetProductAndVariantHeaders is used for get headers for csv export preparation.
+func (as *SqlAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
+	tx, err := as.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "begin_transaction")
+	}
+	defer finalizeTransaction(tx)
+
+	var productHeaders []string
+	_, err = tx.Select(
+		&productHeaders,
+		`SELECT DISTINCT
+		CONCAT(a.Slug, ' (product attribute)')
+		AS
+			header
+		FROM
+			Attributes AS a
+		INNER JOIN
+			AttributeProducts AS ap
+		ON
+			(ap.AttributeID = a.Id)
+		WHERE
+			a.Id IN :IDS
+		AND 
+			ap.ProductTypeID IS NOT NULL
+		ORDER BY
+			a.Slug`,
+		map[string]interface{}{"IDS": ids},
+	)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product attributes")
+	}
+
+	var variantHeaders []string
+	_, err = tx.Select(
+		&variantHeaders,
+		`SELECT DISTINCT
+		CONCAT(a.Slug, ' (variant attribute)') 
+		AS 
+			header 
+		FROM 
+			Attributes AS a 
+		INNER JOIN 
+			AttributeVariants AS av
+		ON 
+			(av.AttributeID = a.Id)
+		WHERE
+			a.Id IN :IDS
+		AND 
+			av.ProductTypeID IS NOT NULL
+		ORDER BY
+			a.Slug`,
+		map[string]interface{}{"IDS": ids},
+	)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find variant attributes")
+	}
+
+	return append(productHeaders, variantHeaders...), nil
+}

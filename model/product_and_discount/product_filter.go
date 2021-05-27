@@ -1,4 +1,4 @@
-package types
+package product_and_discount
 
 import (
 	"github.com/sitename/sitename/web/model"
