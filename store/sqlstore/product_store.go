@@ -7,18 +7,17 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web/model"
 )
 
 type SqlProductStore struct {
 	*SqlStore
-	productsQuery squirrel.SelectBuilder
 }
 
 func newSqlProductStore(s *SqlStore) store.ProductStore {
 	ps := &SqlProductStore{
 		SqlStore: s,
 	}
-	ps.productsQuery = ps.getQueryBuilder().Select("*").From("Products")
 
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.Product{}, "Products").SetKeys(false, "Id")
@@ -40,10 +39,6 @@ func (ps *SqlProductStore) createIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_products_name_lower_textpattern", "Products", "lower(Name) text_pattern_ops")
 
 	ps.CommonMetaDataIndex("Products")
-}
-
-func (ps *SqlProductStore) GetSelectBuilder() squirrel.SelectBuilder {
-	return ps.productsQuery
 }
 
 func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
@@ -78,7 +73,11 @@ func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error)
 }
 
 func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
-	sqlQuery, args, err := ps.productsQuery.Where(squirrel.Eq{"Id": ids}).ToSql()
+	sqlQuery, args, err := ps.getQueryBuilder().
+		Select("*").
+		From("Products").
+		Where(squirrel.Eq{"Id": ids}).
+		ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "get_products_by_ids")
 	}
@@ -89,4 +88,28 @@ func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discou
 	}
 
 	return products, nil
+}
+
+func (ps *SqlProductStore) FilterProducts(filter *model.ProductFilterInput) ([]*product_and_discount.Product, error) {
+	// table names
+	const (
+		TABLE_products               = "Products"
+		TABLE_collectionProducts     = "CollectionProducts"
+		TABLE_productChannelListings = "ProductChannelListings"
+		TABLE_channels               = "Channels"
+		TABLE_productVariants        = "ProductVariants"
+	)
+
+	const (
+		INNER_JOIN = " INNER JOIN "
+	)
+
+	query := "SELECT * FROM Products"
+
+	if len(filter.Collections) > 0 {
+		query += " INNER JOIN CollectionProducts ON (Products.Id = CollectionProducts.ProductID)"
+	}
+
+	// TODO: fixme
+	panic("not implemented")
 }

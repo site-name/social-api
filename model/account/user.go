@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -65,7 +64,7 @@ type ModelMetadata struct {
 	PrivateMetadata StringMap `json:"private_metadata"`
 
 	// mutex is used for safe access concurrenly
-	mutex sync.RWMutex `json:"-" db:"-"`
+	// mutex sync.RWMutex `json:"-" db:"-"`
 }
 
 // User contains the details about the user.
@@ -674,7 +673,7 @@ func HashPassword(password string) string {
 	return string(hash)
 }
 
-// ComparePassword compares the hash
+// ComparePassword compares the hash and given password
 func ComparePassword(hash string, password string) bool {
 
 	if password == "" || hash == "" {

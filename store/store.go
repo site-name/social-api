@@ -5,7 +5,6 @@ package store
 import (
 	"context"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -16,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type StoreResult struct {
@@ -203,7 +203,8 @@ type (
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
-		GetSelectBuilder() squirrel.SelectBuilder
+		// GetSelectBuilder() squirrel.SelectBuilder
+		FilterProducts(*webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
 	}
 )
 

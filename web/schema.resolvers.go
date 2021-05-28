@@ -949,7 +949,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 }
 
 func (r *mutationResolver) AccountRegister(ctx context.Context, input model.AccountRegisterInput) (*model.AccountRegister, error) {
-	panic(fmt.Errorf("not implemented"))
+	return accountRegister(r, ctx, input) // done
 }
 
 func (r *mutationResolver) AccountUpdate(ctx context.Context, input model.AccountInput) (*model.AccountUpdate, error) {
@@ -1237,11 +1237,11 @@ func (r *queryResolver) Vouchers(ctx context.Context, filter *model.VoucherFilte
 }
 
 func (r *queryResolver) ExportFile(ctx context.Context, id string) (*model.ExportFile, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.exportFile(ctx, id) // done
 }
 
 func (r *queryResolver) ExportFiles(ctx context.Context, filter *model.ExportFileFilterInput, sortBy *model.ExportFileSortingInput, before *string, after *string, first *int, last *int) (*model.ExportFileCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.exportFiles(ctx, filter, sortBy, before, after, first, last) // done
 }
 
 func (r *queryResolver) TaxTypes(ctx context.Context) ([]*model.TaxType, error) {

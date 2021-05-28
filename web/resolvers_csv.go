@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/web/model"
 )
 
+// TODO: fix me
 func (m *mutationResolver) exportProducts(ctx context.Context, input model.ExportProductsInput) (*model.ExportProducts, error) {
 	embedCtx := ctx.Value(ApiContextKey).(*Context)
 	session := embedCtx.AppContext.Session()
@@ -80,4 +81,12 @@ func (m *mutationResolver) exportProducts(ctx context.Context, input model.Expor
 	}
 
 	return nil, nil
+}
+
+func (q *queryResolver) exportFile(ctx context.Context, id string) (*model.ExportFile, error) {
+	panic("not implemented")
+}
+
+func (q *queryResolver) exportFiles(ctx context.Context, filter *model.ExportFileFilterInput, sortBy *model.ExportFileSortingInput, before *string, after *string, first *int, last *int) (*model.ExportFileCountableConnection, error) {
+	panic("not implemented")
 }

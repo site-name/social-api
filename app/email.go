@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -130,8 +131,61 @@ func (es *EmailService) SendSignInChangeEmail(email, method, locale, siteURL str
 }
 
 func (es *EmailService) sendWelcomeEmail(userID string, email string, verified bool, disableWelcomeEmail bool, locale, siteURL, redirect string) *model.AppError {
-	panic("not implemented")
+	if disableWelcomeEmail {
+		return nil
+	}
+	if !*es.srv.Config().EmailSettings.SendEmailNotifications && !*es.srv.Config().EmailSettings.RequireEmailVerification {
+		return model.NewAppError("SendWelcomeEmail", "api.user.send_welcome_email_and_forget.failed>error", nil, "Send Email Notifications and Require Email Verification is disabled", http.StatusInternalServerError)
+	}
 
+	T := i18n.GetUserTranslations(locale)
+
+	serverURL := condenseSiteURL(siteURL)
+
+	subject := T("api.templates.welcopme_subject", map[string]interface{}{
+		"SiteName":  model.TEAM_SETTINGS_DEFAULT_SITE_NAME,
+		"ServerURL": serverURL,
+	})
+
+	data := es.newEmailTemplateData(locale)
+	data.Props["SiteURL"] = siteURL
+	data.Props["Title"] = T("api.templates.welcome_body.title")
+	data.Props["SubTitle1"] = T("api.templates.welcome_body.subTitle1")
+	data.Props["ServerURL"] = T("api.templates.welcome_body.serverURL", map[string]interface{}{"ServerURL": serverURL})
+	data.Props["SubTitle2"] = T("api.templates.welcome_body.subTitle2")
+	data.Props["Button"] = T("api.templates.welcome_body.button")
+	data.Props["Info"] = T("api.templates.welcome_body.info")
+	data.Props["Info1"] = T("api.templates.welcome_body.info1")
+
+	if *es.srv.Config().NativeAppSettings.AppDownloadLink != "" {
+		data.Props["AppDownloadTitle"] = T("api.templates.welcome_body.app_download_title")
+		data.Props["AppDownloadInfo"] = T("api.templates.welcome_body.app_download_info")
+		data.Props["AppDownloadButton"] = T("api.templates.welcome_body.app_download_button")
+		data.Props["AppDownloadLink"] = *es.srv.Config().NativeAppSettings.AppDownloadLink
+	}
+
+	if !verified && *es.srv.Config().EmailSettings.RequireEmailVerification {
+		token, err := es.CreateVerifyEmailToken(userID, email)
+		if err != nil {
+			return err
+		}
+		link := fmt.Sprintf("%s/do_verify_email?token=%s&email=%s", siteURL, token.Token, url.QueryEscape(email))
+		if redirect != "" {
+			link += fmt.Sprintf("&redirect_to=%s", redirect)
+		}
+		data.Props["ButtonURL"] = link
+	}
+
+	body, err := es.srv.TemplatesContainer().RenderToString("welcome_body", data)
+	if err != nil {
+		return model.NewAppError("sendWelcomeEmail", "api.user.send_welcome_email_and_forget.failed.error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if err := es.sendMail(email, subject, body); err != nil {
+		return model.NewAppError("sendWelcomeEmail", "api.user.send_welcome_email_and_forget.failed.error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 func (es *EmailService) sendPasswordChangeEmail(email, method, locale, siteURL string) *model.AppError {
@@ -210,11 +264,13 @@ func (es *EmailService) sendMailWithEmbeddedFiles(to, subject, htmlBody string, 
 
 }
 
+type tokenExtra struct {
+	UserId string
+	Email  string
+}
+
 func (es *EmailService) CreateVerifyEmailToken(userID string, newEmail string) (*model.Token, *model.AppError) {
-	tokenExtra := struct {
-		UserId string
-		Email  string
-	}{
+	tokenExtra := tokenExtra{
 		userID,
 		newEmail,
 	}
