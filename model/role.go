@@ -691,6 +691,9 @@ func CleanRoleNames(roleNames []string) ([]string, bool) {
 	return cleanedRoleNames, true
 }
 
+// IsValidRoleName checks if roleName's length is valid ( > 0 && <= 64) AND
+//
+// contains no character other than English's 26 letters, 10 digits and underscore
 func IsValidRoleName(roleName string) bool {
 	if roleName == "" || len(roleName) > ROLE_NAME_MAX_LENGTH {
 		return false

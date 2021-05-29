@@ -24,6 +24,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -36,7 +37,6 @@ const MissingAuthAccountError = "app.user.get_by_auth.missing_account.app_error"
 const (
 	TokenTypePasswordRecovery  = "password_recovery"
 	TokenTypeVerifyEmail       = "verify_email"
-	TokenTypeTeamInvitation    = "team_invitation"
 	TokenTypeGuestInvitation   = "guest_invitation"
 	TokenTypeCWSAccess         = "cws_access_token"
 	PasswordRecoverExpiryTime  = 1000 * 60 * 60      // 1 hour
@@ -44,25 +44,32 @@ const (
 	ImageProfilePixelDimension = 128
 )
 
-// func (a *App) CreateUserWithToken(user *model.User, token *model.Token) (*model.User, *model.AppError) {
-// 	if err := a.IsUserSignupAllowed(); err != nil {
-// 		return nil, err
-// 	}
+func (a *App) CreateUserWithToken(user *account.User, token *model.Token) (*account.User, *model.AppError) {
+	if err := a.IsUserSignupAllowed(); err != nil {
+		return nil, err
+	}
 
-// 	if model.GetMillis()-token.CreateAt >= InvitationExpiryTime {
-// 		a.DeleteToken(token)
-// 		return nil, model.NewAppError("CreateUserWithToken", "api.user.create_user.signup_link_expired.app_error", nil, "", http.StatusBadRequest)
-// 	}
+	if model.GetMillis()-token.CreateAt >= InvitationExpiryTime {
+		a.DeleteToken(token)
+		return nil, model.NewAppError("CreateUserWithToken", "api.user.create_user.signup_link_expired.app_error", nil, "", http.StatusBadRequest)
+	}
 
-// 	tokenData := model.MapFromJson(strings.NewReader(token.Extra))
+	tokenData := model.MapFromJson(strings.NewReader(token.Extra))
 
-// 	user.Email = tokenData["email"]
-// 	user.EmailVerified = true
+	user.Email = tokenData["email"]
+	user.EmailVerified = true
 
-// 	var ruser *model.User
-// 	var err *model.AppError
+	ruser, err := a.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
 
-// }
+	if err := a.DeleteToken(token); err != nil {
+		slog.Warn("Error while deleting token", slog.Err(err))
+	}
+
+	return ruser, nil
+}
 
 func (a *App) CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError) {
 	ruser, err := a.CreateUser(user)
@@ -82,11 +89,6 @@ func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*accoun
 		return nil, err
 	}
 
-	if !a.IsFirstUserAccount() {
-		err := model.NewAppError("CreateUserFromSignup", "api.user.create_user.no_open_server", nil, "email="+user.Email, http.StatusForbidden)
-		return nil, err
-	}
-
 	user.EmailVerified = false
 
 	ruser, err := a.CreateUser(user)
@@ -94,13 +96,73 @@ func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*accoun
 		return nil, err
 	}
 
-	if err := a.Srv().EmailService.sendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale, a.GetSiteURL(), redirect); err != nil {
+	if err := a.Srv().EmailService.sendWelcomeEmail(
+		ruser.Id,
+		ruser.Email,
+		ruser.EmailVerified,
+		ruser.DisableWelcomeEmail,
+		ruser.Locale,
+		a.GetSiteURL(),
+		redirect,
+	); err != nil {
 		slog.Warn("Failed to send welcome email on create user from signup", slog.Err(err))
 	}
 
 	return ruser, nil
 }
 
+func (a *App) GetVerifyEmailToken(token string) (*model.Token, *model.AppError) {
+	rtoken, err := a.Srv().Store.Token().GetByToken(token)
+	if err != nil {
+		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.bad_link.app_error", nil, err.Error(), http.StatusBadRequest)
+	}
+	if rtoken.Type != TokenTypeVerifyEmail {
+		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.broken_token.app_error", nil, "", http.StatusBadRequest)
+	}
+	return rtoken, nil
+}
+
+func (a *App) VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError {
+	token, err := a.GetVerifyEmailToken(userSuppliedTokenString)
+	if err != nil {
+		return err
+	}
+	if model.GetMillis()-token.CreateAt >= PasswordRecoverExpiryTime {
+		return model.NewAppError("VerifyEmailFromToken", "api.user.verify_email.link_expired.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	var tokenData tokenExtra
+	err2 := json.JSON.NewDecoder(strings.NewReader(token.Extra)).Decode(&tokenData)
+	if err2 != nil {
+		return model.NewAppError("VerifyEmailFromToken", "api.user.verify_email.token_parse.error", nil, "", http.StatusInternalServerError)
+	}
+
+	user, err := a.GetUser(tokenData.UserId)
+	if err != nil {
+		return err
+	}
+
+	tokenData.Email = strings.ToLower(tokenData.Email)
+	if err := a.VerifyUserEmail(tokenData.UserId, tokenData.Email); err != nil {
+		return err
+	}
+
+	if user.Email != tokenData.Email {
+		a.Srv().Go(func() {
+			if err := a.Srv().EmailService.sendEmailChangeEmail(user.Email, tokenData.Email, user.Locale, a.GetSiteURL()); err != nil {
+				slog.Error("Failed to send email change email", slog.Err(err))
+			}
+		})
+	}
+
+	if err := a.DeleteToken(token); err != nil {
+		slog.Warn("Failed to delete token", slog.Err(err))
+	}
+
+	return nil
+}
+
+// IsUserSignUpAllowed checks if system's signing up with email is allowed
 func (a *App) IsUserSignUpAllowed() *model.AppError {
 	if !*a.Config().EmailSettings.EnableSignUpWithEmail {
 		err := model.NewAppError("IsUserSignUpAllowed", "api.user.create_user.signup_email_disabled.app_error", nil, "", http.StatusNotImplemented)
@@ -109,6 +171,7 @@ func (a *App) IsUserSignUpAllowed() *model.AppError {
 	return nil
 }
 
+// IsFirstUserAccount checks if this is first user in system
 func (s *Server) IsFirstUserAccount() bool {
 	cachedSessions, err := s.sessionCache.Len()
 	if err != nil {
@@ -192,7 +255,16 @@ func CheckEmailDomain(email string, domains string) bool {
 		return true
 	}
 
-	domainArray := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(strings.Replace(domains, "@", " ", -1), ",", " ", -1))))
+	domainArray := strings.Fields(
+		strings.TrimSpace(
+			strings.ToLower(
+				strings.Replace(
+					strings.Replace(domains, "@", " ", -1),
+					",", " ", -1,
+				),
+			),
+		),
+	)
 
 	for _, d := range domainArray {
 		if strings.HasSuffix(strings.ToLower(email), "@"+d) {
@@ -242,15 +314,15 @@ func (a *App) createUser(user *account.User) (*account.User, *model.AppError) {
 		}
 	}
 
-	pref := model.Preference{
-		UserId:   ruser.Id,
-		Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
-		Name:     ruser.Id,
-		Value:    "0",
-	}
-	if err := a.Srv().Store.Preference().Save(&model.Preferences{pref}); err != nil {
-		slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
-	}
+	// pref := model.Preference{
+	// 	UserId:   ruser.Id,
+	// 	Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
+	// 	Name:     ruser.Id,
+	// 	Value:    "0",
+	// }
+	// if err := a.Srv().Store.Preference().Save(&model.Preferences{pref}); err != nil {
+	// 	slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
+	// }
 
 	// go a.UpdateViewedProductNoticesForNewUser(ruser.Id)
 	ruser.Sanitize(map[string]bool{})
@@ -263,6 +335,7 @@ func (a *App) createUser(user *account.User) (*account.User, *model.AppError) {
 
 const MissingAccountError = "app.user.missing_account.const"
 
+// GetUser get user with given userID
 func (a *App) GetUser(userID string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().Get(context.Background(), userID)
 	if err != nil {
@@ -747,7 +820,11 @@ func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppE
 // }
 
 func (a *App) userDeactivated(userID string) *model.AppError {
-	panic("not implemented")
+	if err := a.RevokeAllSessions(userID); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (a *App) UpdateActive(user *account.User, active bool) (*account.User, *model.AppError) {

@@ -357,10 +357,12 @@ func (u *User) PreUpdate() {
 	}
 }
 
+// IsLDAPUser checks if user's AuthService is "ldap"
 func (u *User) IsLDAPUser() bool {
 	return u.AuthService == model.USER_AUTH_SERVICE_LDAP
 }
 
+// IsSAMLUser checks if user's AuthService is "saml"
 func (u *User) IsSAMLUser() bool {
 	return u.AuthService == model.USER_AUTH_SERVICE_SAML
 }
@@ -418,6 +420,8 @@ func (u *User) Etag(showFullName, showEmail bool) string {
 }
 
 // Remove any private data from the user object
+//
+// options's keys can be "email", "fullname", "passwordupdate", "authservice" OR Nothing
 func (u *User) Sanitize(options map[string]bool) {
 	u.Password = ""
 	u.AuthData = model.NewString("")
@@ -546,13 +550,14 @@ func (u *User) GetRoles() []string {
 	return strings.Fields(u.Roles)
 }
 
+// GetRawRoles return user's raw roles
 func (u *User) GetRawRoles() string {
 	return u.Roles
 }
 
+// IsValidUserRoles checks if user's roles are both valid
 func IsValidUserRoles(userRoles string) bool {
-
-	roles := strings.Fields(userRoles)
+	roles := strings.Fields(strings.TrimSpace(userRoles))
 
 	for _, r := range roles {
 		if !model.IsValidRoleName(r) {
@@ -569,16 +574,21 @@ func IsValidUserRoles(userRoles string) bool {
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
+//
 // This function should not be used to check permissions.
+//
+// IsGuest checks if user's roles contains "system_guest"
 func (u *User) IsGuest() bool {
 	return IsInRole(u.Roles, model.SYSTEM_GUEST_ROLE_ID)
 }
 
+// IsSystemAdmin checks if user's roles contains "system_admin"
 func (u *User) IsSystemAdmin() bool {
 	return IsInRole(u.Roles, model.SYSTEM_ADMIN_ROLE_ID)
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
+//
 // This function should not be used to check permissions.
 func IsInRole(userRoles string, inRole string) bool {
 	roles := strings.Split(userRoles, " ")
@@ -592,6 +602,7 @@ func IsInRole(userRoles string, inRole string) bool {
 	return false
 }
 
+// IsOAuthUser checks if user is authenticated via google or open oauth systems
 func (u *User) IsOAuthUser() bool {
 	return u.AuthService == model.SERVICE_GOOGLE || u.AuthService == model.SERVICE_OPENID
 }
@@ -609,6 +620,9 @@ func (u *User) ToPatch() *UserPatch {
 	}
 }
 
+// set value for user's given fieldName.
+//
+// fieldName can be either: "FirstName" | "LastName" | "Nickname" | "Email" | "Username"
 func (u *UserPatch) SetField(fieldName string, fieldValue string) {
 	switch fieldName {
 	case "FirstName":
@@ -673,7 +687,7 @@ func HashPassword(password string) string {
 	return string(hash)
 }
 
-// ComparePassword compares the hash and given password
+// ComparePassword checks if the hash and given password are matches
 func ComparePassword(hash string, password string) bool {
 
 	if password == "" || hash == "" {
@@ -684,6 +698,7 @@ func ComparePassword(hash string, password string) bool {
 	return err == nil
 }
 
+// MakeNonNil sets empty value for user's Props and NotifyProps fields
 func (u *User) MakeNonNil() {
 	if u.Props == nil {
 		u.Props = make(map[string]string)

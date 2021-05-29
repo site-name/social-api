@@ -949,7 +949,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 }
 
 func (r *mutationResolver) AccountRegister(ctx context.Context, input model.AccountRegisterInput) (*model.AccountRegister, error) {
-	return accountRegister(r, ctx, input) // done
+	return r.accountRegister(ctx, input) // done
 }
 
 func (r *mutationResolver) AccountUpdate(ctx context.Context, input model.AccountInput) (*model.AccountUpdate, error) {

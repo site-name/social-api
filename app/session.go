@@ -76,7 +76,6 @@ func (a *App) RevokeAllSessions(userID string) *model.AppError {
 				return model.NewAppError("RevokeAllSessions", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
-		a.RevokeSession(session)
 	}
 
 	a.ClearSessionCacheForUser(userID)
@@ -202,10 +201,6 @@ func (a *App) RevokeSession(session *model.Session) *model.AppError {
 		if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
 			return model.NewAppError("RevokeSession", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
-	}
-
-	if err := a.Srv().Store.Session().Remove(session.Id); err != nil {
-		return model.NewAppError("RevokeSession", "app.session.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	a.ClearSessionCacheForUser(session.UserId)

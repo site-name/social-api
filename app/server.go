@@ -111,7 +111,7 @@ type Server struct {
 	newStore func() (store.Store, error)
 
 	htmlTemplateWatcher     *templates.Container
-	sessionCache            cache.Cache
+	sessionCache            cache.Cache // cache for storing sessions
 	seenPendingPostIdsCache cache.Cache
 	statusCache             cache.Cache
 	configListenerId        string
@@ -433,9 +433,9 @@ func NewServer(options ...Option) (*Server, error) {
 	// 	s.Cluster.StartInterNodeCommunication()
 	// }
 
-	// if err = s.ensureAsymmetricSigningKey(); err != nil {
-	// 	return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
-	// }
+	if err = s.ensureAsymmetricSigningKey(); err != nil {
+		return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
+	}
 
 	if err = s.ensurePostActionCookieSecret(); err != nil {
 		return nil, errors.Wrapf(err, "unable to ensure PostAction cookie secret")

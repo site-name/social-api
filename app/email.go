@@ -33,6 +33,7 @@ func condenseSiteURL(siteURL string) string {
 	return path.Join(parsedSiteURL.Host, parsedSiteURL.Path)
 }
 
+// server's email service
 type EmailService struct {
 	srv                     *Server
 	PerHourEmailRateLimiter *throttled.GCRARateLimiter
@@ -116,8 +117,32 @@ func (es *EmailService) sendEmailChangeVerifyEmail(newUserEmail, locale, siteURL
 }
 
 func (es *EmailService) sendEmailChangeEmail(oldEmail, newEmail, locale, siteURL string) *model.AppError {
-	panic("not implemented")
+	T := i18n.GetUserTranslations(locale)
 
+	subject := T("api.templates.email_change_subject",
+		map[string]interface{}{
+			"SiteName": model.TEAM_SETTINGS_DEFAULT_SITE_NAME,
+		})
+
+	data := es.newEmailTemplateData(locale)
+	data.Props["SiteURL"] = siteURL
+	data.Props["Title"] = T("api.templates.email_change_body.title")
+	data.Props["Info"] = T("api.templates.email_change_body.info",
+		map[string]interface{}{
+			"NewEmail": newEmail,
+		})
+	data.Props["Warning"] = T("api.templates.email_warning")
+
+	body, err := es.srv.TemplatesContainer().RenderToString("email_change_body", data)
+	if err != nil {
+		return model.NewAppError("sendEmailChangeEmail", "api.user.send_email_change_email_and_forget.error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if err := es.sendMail(oldEmail, subject, body); err != nil {
+		return model.NewAppError("sendEmailChangeEmail", "api.user.send_email_change_email_and_forget.error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 func (es *EmailService) sendVerifyEmail(userEmail, locale, siteURL, token, redirect string) *model.AppError {
@@ -130,6 +155,7 @@ func (es *EmailService) SendSignInChangeEmail(email, method, locale, siteURL str
 
 }
 
+// after an user has signed up, send them an welcome email
 func (es *EmailService) sendWelcomeEmail(userID string, email string, verified bool, disableWelcomeEmail bool, locale, siteURL, redirect string) *model.AppError {
 	if disableWelcomeEmail {
 		return nil
