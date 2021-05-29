@@ -89,7 +89,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 		return
 	}
 
-	exportFile, err := worker.app.Srv().Store.CsvExportFile().Get(job.Data["exportFileID"]) // "exportFileID" is set in csv resolvers file.
+	_, err := worker.app.Srv().Store.CsvExportFile().Get(job.Data["exportFileID"]) // "exportFileID" is set in csv resolvers file.
 	if err != nil {
 		slog.Error(
 			"Worker failed to acquire csv export file",

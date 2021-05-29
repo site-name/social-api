@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"image"
 	"image/color"
@@ -85,6 +86,7 @@ func (a *App) CreateUserAsAdmin(user *account.User, redirect string) (*account.U
 }
 
 func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError) {
+
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
 	}
@@ -96,17 +98,19 @@ func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*accoun
 		return nil, err
 	}
 
-	if err := a.Srv().EmailService.sendWelcomeEmail(
-		ruser.Id,
-		ruser.Email,
-		ruser.EmailVerified,
-		ruser.DisableWelcomeEmail,
-		ruser.Locale,
-		a.GetSiteURL(),
-		redirect,
-	); err != nil {
-		slog.Warn("Failed to send welcome email on create user from signup", slog.Err(err))
-	}
+	a.Srv().Go(func() {
+		if err := a.Srv().EmailService.sendWelcomeEmail(
+			ruser.Id,
+			ruser.Email,
+			ruser.EmailVerified,
+			ruser.DisableWelcomeEmail,
+			ruser.Locale,
+			a.GetSiteURL(),
+			redirect,
+		); err != nil {
+			slog.Warn("Failed to send welcome email on create user from signup", slog.Err(err))
+		}
+	})
 
 	return ruser, nil
 }
@@ -203,6 +207,8 @@ func (a *App) CreateGuest(user *account.User) (*account.User, *model.AppError) {
 }
 
 func (a *App) createUserOrGuest(user *account.User, guest bool) (*account.User, *model.AppError) {
+	fmt.Println("------------------")
+
 	user.Roles = model.SYSTEM_USER_ROLE_ID
 	if guest {
 		user.Roles = model.SYSTEM_GUEST_ROLE_ID

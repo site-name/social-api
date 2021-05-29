@@ -59,7 +59,7 @@ type Address_ struct {
 
 // NOTE: don't delete this
 type ModelMetadata struct {
-	Id              string    `json:"string,omitempty"`
+	// Id              string    `json:"string,omitempty"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
 

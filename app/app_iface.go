@@ -51,6 +51,10 @@ type AppIface interface {
 	// GetSessionLengthInMillis returns the session length, in milliseconds,
 	// based on the type of session (Mobile, SSO, Web/LDAP).
 	GetSessionLengthInMillis(session *model.Session) int64
+	// GetUser get user with given userID
+	GetUser(userID string) (*account.User, *model.AppError)
+	// IsUserSignUpAllowed checks if system's signing up with email is allowed
+	IsUserSignUpAllowed() *model.AppError
 	// IsUserSignupAllowed checks email settings if signing up with email is allowed
 	IsUserSignupAllowed() *model.AppError
 	// IsUsernameTaken checks if the username is already used by another user. Return false if the username is invalid.
@@ -112,6 +116,7 @@ type AppIface interface {
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError)
+	CreateUserWithToken(user *account.User, token *model.Token) (*account.User, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
@@ -141,7 +146,6 @@ type AppIface interface {
 	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
-	GetUser(userID string) (*account.User, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
@@ -149,6 +153,7 @@ type AppIface interface {
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	GetUserByUsername(username string) (*account.User, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
+	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
@@ -159,7 +164,6 @@ type AppIface interface {
 	IsFirstUserAccount() bool
 	IsLeader() bool
 	IsPasswordValid(password string) *model.AppError
-	IsUserSignUpAllowed() *model.AppError
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
 	Log() *slog.Logger
@@ -200,6 +204,7 @@ type AppIface interface {
 	UpdateLastActivityAtIfNeeded(session model.Session)
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
+	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

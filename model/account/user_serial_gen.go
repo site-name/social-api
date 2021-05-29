@@ -572,12 +572,6 @@ func (z *ModelMetadata) DecodeMsg(dc *msgp.Reader) (err error) {
 			return
 		}
 		switch msgp.UnsafeString(field) {
-		case "Id":
-			z.Id, err = dc.ReadString()
-			if err != nil {
-				err = msgp.WrapError(err, "Id")
-				return
-			}
 		case "Metadata":
 			var zb0002 uint32
 			zb0002, err = dc.ReadMapHeader()
@@ -651,19 +645,9 @@ func (z *ModelMetadata) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *ModelMetadata) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 3
-	// write "Id"
-	err = en.Append(0x83, 0xa2, 0x49, 0x64)
-	if err != nil {
-		return
-	}
-	err = en.WriteString(z.Id)
-	if err != nil {
-		err = msgp.WrapError(err, "Id")
-		return
-	}
+	// map header, size 2
 	// write "Metadata"
-	err = en.Append(0xa8, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
+	err = en.Append(0x82, 0xa8, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
 	if err != nil {
 		return
 	}
@@ -712,12 +696,9 @@ func (z *ModelMetadata) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *ModelMetadata) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 3
-	// string "Id"
-	o = append(o, 0x83, 0xa2, 0x49, 0x64)
-	o = msgp.AppendString(o, z.Id)
+	// map header, size 2
 	// string "Metadata"
-	o = append(o, 0xa8, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
+	o = append(o, 0x82, 0xa8, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61)
 	o = msgp.AppendMapHeader(o, uint32(len(z.Metadata)))
 	for za0001, za0002 := range z.Metadata {
 		o = msgp.AppendString(o, za0001)
@@ -751,12 +732,6 @@ func (z *ModelMetadata) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			return
 		}
 		switch msgp.UnsafeString(field) {
-		case "Id":
-			z.Id, bts, err = msgp.ReadStringBytes(bts)
-			if err != nil {
-				err = msgp.WrapError(err, "Id")
-				return
-			}
 		case "Metadata":
 			var zb0002 uint32
 			zb0002, bts, err = msgp.ReadMapHeaderBytes(bts)
@@ -831,7 +806,7 @@ func (z *ModelMetadata) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *ModelMetadata) Msgsize() (s int) {
-	s = 1 + 3 + msgp.StringPrefixSize + len(z.Id) + 9 + msgp.MapHeaderSize
+	s = 1 + 9 + msgp.MapHeaderSize
 	if z.Metadata != nil {
 		for za0001, za0002 := range z.Metadata {
 			_ = za0002

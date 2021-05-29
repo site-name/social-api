@@ -92,7 +92,7 @@ func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
 
 // GetMillis is a convenience method to get milliseconds since epoch.
 func GetMillis() int64 {
-	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 // GetMillisForTime is a convenience method to get milliseconds since epoch for provided Time.
@@ -145,7 +145,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 	appErr.DetailedError = details
 	appErr.StatusCode = status
 	appErr.IsOAuth = false
-
+	appErr.Translate(translateFunc)
 	return appErr
 }
 
