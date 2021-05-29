@@ -25,6 +25,11 @@ type Context struct {
 	siteURLHeader string
 }
 
+// LogAuditRec logs an audit record using default LevelAPI.
+func (c *Context) LogAuditRec(rec *audit.Record) {
+	c.LogAuditRecWithLevel(rec, app.LevelAPI)
+}
+
 // LogAuditRec logs an audit record using specified Level.
 // If the context is flagged with a permissions error then `level`
 // is ignored and the audit record is emitted with `LevelPerms`.
@@ -214,6 +219,10 @@ func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWrite
 	}
 
 	return false
+}
+
+func (c *Context) IsSystemAdmin() bool {
+	return c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM)
 }
 
 func NewInvalidParamError(parameter string) *model.AppError {

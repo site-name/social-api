@@ -34,7 +34,7 @@ type AppIface interface {
 	CreateGuest(user *account.User) (*account.User, *model.AppError)
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
-	CreateUser(user *account.User) (*account.User, *model.AppError)
+	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
 	// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
@@ -114,9 +114,9 @@ type AppIface interface {
 	Config() *model.Config
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
-	CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError)
-	CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError)
-	CreateUserWithToken(user *account.User, token *model.Token) (*account.User, *model.AppError)
+	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface

@@ -21,6 +21,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/filestore"
@@ -45,9 +46,13 @@ const (
 	ImageProfilePixelDimension = 128
 )
 
-func (a *App) CreateUserWithToken(user *account.User, token *model.Token) (*account.User, *model.AppError) {
+func (a *App) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
+	}
+
+	if token.Type != TokenTypeGuestInvitation {
+		return nil, model.NewAppError("CreateUserWithToken", "api.user.create_user.signup_link_invalid.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	if model.GetMillis()-token.CreateAt >= InvitationExpiryTime {
@@ -60,7 +65,7 @@ func (a *App) CreateUserWithToken(user *account.User, token *model.Token) (*acco
 	user.Email = tokenData["email"]
 	user.EmailVerified = true
 
-	ruser, err := a.CreateUser(user)
+	ruser, err := a.CreateUser(c, user)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +77,8 @@ func (a *App) CreateUserWithToken(user *account.User, token *model.Token) (*acco
 	return ruser, nil
 }
 
-func (a *App) CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError) {
-	ruser, err := a.CreateUser(user)
+func (a *App) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
+	ruser, err := a.CreateUser(c, user)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +90,7 @@ func (a *App) CreateUserAsAdmin(user *account.User, redirect string) (*account.U
 	return ruser, nil
 }
 
-func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *App) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
@@ -93,7 +98,7 @@ func (a *App) CreateUserFromSignup(user *account.User, redirect string) (*accoun
 
 	user.EmailVerified = false
 
-	ruser, err := a.CreateUser(user)
+	ruser, err := a.CreateUser(c, user)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +201,7 @@ func (s *Server) IsFirstUserAccount() bool {
 
 // CreateUser creates a user and sets several fields of the returned User struct to
 // their zero values.
-func (a *App) CreateUser(user *account.User) (*account.User, *model.AppError) {
+func (a *App) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
 	return a.createUserOrGuest(user, false)
 }
 

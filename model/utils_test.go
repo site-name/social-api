@@ -44,16 +44,16 @@ func TestModelToJson(t *testing.T) {
 	fmt.Println(res)
 }
 
+type Person struct {
+	Name string `json:"name"`
+	Age  uint8  `json:"age"`
+}
+
 func TestModelFromJson(t *testing.T) {
-	var text = `{"id":"jshd849034bnkjhruieyr","Token":"jhd97847546565","create_at":1620271145022,"expires_at":0,"last_activity_at":0,"user_id":"","device_id":"","roles":"","is_oauth":false,"expired_notify":false,"props":null,"local":false}`
-	var ses *Session
-	ModelFromJson(&ses, strings.NewReader(text))
+	text := `{"name": "minh", "age": 23}`
+	var per *Person
 
-	fmt.Println(ses)
+	ModelFromJson(&per, strings.NewReader(text))
 
-	text = `{"one":"1","two":"2"}`
-	var m map[string]string
-	ModelFromJson(&m, strings.NewReader(text))
-
-	fmt.Println(m)
+	fmt.Println(per)
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	// "github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model/account"
 	"github.com/spf13/cobra"
 )
@@ -329,7 +330,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		Locale:    locale,
 	}
 
-	ruser, err := a.CreateUser(user)
+	ruser, err := a.CreateUser(&request.Context{}, user)
 	if ruser == nil {
 		return errors.New("Unable to create user. Error: " + err.Error())
 	}

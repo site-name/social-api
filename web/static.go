@@ -35,21 +35,11 @@ func (w *Web) InitStatic() {
 				http.FileServer(http.Dir(staticDir)),
 			),
 		)
-		// pluginHandler := staticFilesHandler(
-		// 	http.StripPrefix(
-		// 		path.Join(subpath, "static", "plugins"),
-		// 		http.FileServer(
-		// 			http.Dir(*w.app.Config().PluginSettings.ClientDirectory),
-		// 		),
-		// 	),
-		// )
 
 		if *w.app.Config().ServiceSettings.WebserverMode == "gzip" {
 			staticHandler = gziphandler.GzipHandler(staticHandler)
-			// pluginHandler = gziphandler.GzipHandler(pluginHandler)
 		}
 
-		// w.MainRouter.PathPrefix("/static/plugins/").Handler(pluginHandler)
 		w.MainRouter.PathPrefix("/static/").Handler(staticHandler)
 		w.MainRouter.Handle("/robots.txt", http.HandlerFunc(robotsHandler))
 		w.MainRouter.Handle("/unsupported_browser.js", http.HandlerFunc(unsupportedBrowserScriptHandler))
@@ -66,7 +56,6 @@ func (w *Web) InitStatic() {
 }
 
 func root(c *Context, w http.ResponseWriter, r *http.Request) {
-
 	if !CheckClientCompatibility(r.UserAgent()) {
 		w.Header().Set("Cache-Control", "no-store")
 		data := renderUnsupportedBrowser(c.AppContext, r)

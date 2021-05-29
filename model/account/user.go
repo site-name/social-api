@@ -640,9 +640,9 @@ func (u *UserPatch) SetField(fieldName string, fieldValue string) {
 
 // UserFromJson will decode the input and return a User
 func UserFromJson(data io.Reader) *User {
-	var user User
+	var user *User
 	model.ModelFromJson(&user, data)
-	return &user
+	return user
 }
 
 func UserPatchFromJson(data io.Reader) *UserPatch {

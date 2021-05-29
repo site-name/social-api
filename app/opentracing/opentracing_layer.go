@@ -456,7 +456,7 @@ func (a *OpenTracingAppLayer) CreateSession(session *model.Session) (*model.Sess
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUser(user *account.User) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUser")
 
@@ -468,7 +468,7 @@ func (a *OpenTracingAppLayer) CreateUser(user *account.User) (*account.User, *mo
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateUser(user)
+	resultVar0, resultVar1 := a.app.CreateUser(c, user)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -500,7 +500,7 @@ func (a *OpenTracingAppLayer) CreateUserAccessToken(token *account.UserAccessTok
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserAsAdmin")
 
@@ -512,7 +512,7 @@ func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *account.User, redirect str
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateUserAsAdmin(user, redirect)
+	resultVar0, resultVar1 := a.app.CreateUserAsAdmin(c, user, redirect)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -522,7 +522,7 @@ func (a *OpenTracingAppLayer) CreateUserAsAdmin(user *account.User, redirect str
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserFromSignup(user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserFromSignup")
 
@@ -534,7 +534,7 @@ func (a *OpenTracingAppLayer) CreateUserFromSignup(user *account.User, redirect 
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateUserFromSignup(user, redirect)
+	resultVar0, resultVar1 := a.app.CreateUserFromSignup(c, user, redirect)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -544,7 +544,7 @@ func (a *OpenTracingAppLayer) CreateUserFromSignup(user *account.User, redirect 
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateUserWithToken(user *account.User, token *model.Token) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateUserWithToken")
 
@@ -556,7 +556,7 @@ func (a *OpenTracingAppLayer) CreateUserWithToken(user *account.User, token *mod
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateUserWithToken(user, token)
+	resultVar0, resultVar1 := a.app.CreateUserWithToken(c, user, token)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
