@@ -110,6 +110,36 @@ func (s LocalCacheStore) DropAllTables() {
 	s.Store.DropAllTables()
 }
 
+func (s *LocalCacheStore) doInvalidateCacheCluster(cache cache.Cache, key string) {
+	cache.Remove(key)
+	if s.cluster != nil {
+		msg := &model.ClusterMessage{
+			Event:    cache.GetInvalidateClusterEvent(),
+			SendType: model.CLUSTER_SEND_BEST_EFFORT,
+			Data:     key,
+		}
+		s.cluster.SendClusterMessage(msg)
+	}
+}
+
+func (s *LocalCacheStore) doStandardAddToCache(cache cache.Cache, key string, value interface{}) {
+	cache.SetWithDefaultExpiry(key, value)
+}
+
+func (s *LocalCacheStore) doStandardReadCache(cache cache.Cache, key string, value interface{}) error {
+	err := cache.Get(key, value)
+	if err == nil {
+		if s.metrics != nil {
+			s.metrics.IncrementMemCacheHitCounter(cache.Name())
+		}
+		return nil
+	}
+	if s.metrics != nil {
+		s.metrics.IncrementMemCacheMissCounter(cache.Name())
+	}
+	return err
+}
+
 func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 	cache.Purge()
 	if s.cluster != nil {

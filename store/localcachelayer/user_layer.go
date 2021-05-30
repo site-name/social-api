@@ -24,3 +24,5 @@ func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *model.ClusterMe
 		s.rootStore.userProfileByIdsCache.Remove(msg.Data)
 	}
 }
+
+// func (s *LocalCacheUserStore)
