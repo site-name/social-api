@@ -187,3 +187,67 @@ func deleteUser(c *Context, w http.ResponseWriter, r *http.Request) {
 	auditRec.Success()
 	ReturnStatusOK(w)
 }
+
+func updatePassword(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	props := model.MapFromJson(r.Body)
+	newPassword := props["new_password"]
+
+	auditRec := c.MakeAuditRecord("updatePassword", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	c.LogAudit("attempted")
+
+	var canUpdatePassword bool
+	if user, err := c.App.GetUser(c.Params.UserId); err == nil {
+		auditRec.AddMeta("user", user)
+
+		if user.IsSystemAdmin() {
+			canUpdatePassword = c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM)
+		} else {
+			canUpdatePassword = c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS)
+		}
+	}
+
+	var err *model.AppError
+
+	// There are two main update flows depending on whether the provided password
+	// is already hashed or not.
+	if props["already_hashed"] == "true" {
+		if canUpdatePassword {
+			err = c.App.UpdateHashedPasswordByUserId(c.Params.UserId, newPassword)
+		} else if c.Params.UserId == c.AppContext.Session().UserId {
+			err = model.NewAppError("updatePassword", "api.user.update_password.user_and_hashed.app_error", nil, "", http.StatusUnauthorized)
+		} else {
+			err = model.NewAppError("updatePassword", "api.user.update_password.context.app_error", nil, "", http.StatusForbidden)
+		}
+	} else {
+		if c.Params.UserId == c.AppContext.Session().UserId {
+			currentPassword := props["current_password"]
+			if currentPassword == "" {
+				c.SetInvalidParam("current_password")
+				return
+			}
+
+			err = c.App.UpdatePasswordAsUser(c.Params.UserId, currentPassword, newPassword)
+		} else if canUpdatePassword {
+			err = c.App.UpdatePasswordByUserIdSendEmail(c.Params.UserId, newPassword, c.AppContext.T("api.user.reset_password.method"))
+		} else {
+			err = model.NewAppError("updatePassword", "api.user.update_password.context.app_error", nil, "", http.StatusForbidden)
+		}
+	}
+
+	if err != nil {
+		c.LogAudit("failed")
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("completed")
+
+	ReturnStatusOK(w)
+}

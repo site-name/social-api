@@ -875,6 +875,25 @@ func (a *App) UpdateActive(c *request.Context, user *account.User, active bool) 
 	return ruser, nil
 }
 
+func (a *App) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError {
+	user, err := a.GetUser(userID)
+	if err != nil {
+		return err
+	}
+
+	return a.UpdateHashedPassword(user, newHashedPassword)
+}
+
+func (a *App) UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError {
+	if err := a.Srv().Store.User().UpdatePassword(user.Id, newHashedPassword); err != nil {
+		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	a.InvalidateCacheForUser(user.Id)
+
+	return nil
+}
+
 // mergeChannelHigherScopedPermissions updates the permissions based on the role type, whether the permission is
 // moderated, and the value of the permission on the higher-scoped scheme.
 func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
