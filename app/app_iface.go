@@ -187,6 +187,7 @@ type AppIface interface {
 	SanitizeProfile(user *account.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
 	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
+	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
 	SessionCacheLength() int
 	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool

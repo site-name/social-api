@@ -35,14 +35,14 @@ func (u *UserSearch) ToJson() []byte {
 
 // UserSearchFromJson will decode the input and return a User
 func UserSearchFromJson(data io.Reader) *UserSearch {
-	var us UserSearch
+	var us *UserSearch
 	model.ModelFromJson(&us, data)
 
 	if us.Limit == 0 {
 		us.Limit = USER_SEARCH_DEFAULT_LIMIT
 	}
 
-	return &us
+	return us
 }
 
 // UserSearchOptions captures internal parameters derived from the user's permissions and a
@@ -57,7 +57,7 @@ type UserSearchOptions struct {
 	// AllowInactive configures whether or not to return inactive users in the search results.
 	AllowInactive bool
 	// Narrows the search to the group constrained users
-	GroupConstrained bool
+	// GroupConstrained bool
 	// Limit limits the total number of results returned.
 	Limit int
 	// Filters for the given role
@@ -71,5 +71,5 @@ type UserSearchOptions struct {
 	// Restrict to search in a list of teams and channels
 	// ViewRestrictions *ViewUsersRestrictions
 	// List of allowed channels
-	ListOfAllowedChannels []string
+	// ListOfAllowedChannels []string
 }

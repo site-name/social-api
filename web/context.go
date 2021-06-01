@@ -265,6 +265,13 @@ func (c *Context) GetSiteURLHeader() string {
 	return c.siteURLHeader
 }
 
+// RequireUserId checks if:
+//
+// 1) If c.Err != nil => return c
+//
+// 2) If c.Params.UserId == "me" => c.Params.UserId = session.UserId
+//
+// 3) If c.Params.UserId is not valid => set invalid params
 func (c *Context) RequireUserId() *Context {
 	if c.Err != nil {
 		return c

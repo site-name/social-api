@@ -574,6 +574,12 @@ func IsValidUserRoles(userRoles string) bool {
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions
+// This function should not be used to check permissions.
+func (u *User) IsInRole(inRole string) bool {
+	return IsInRole(u.Roles, inRole)
+}
+
+// Make sure you acually want to use this function. In context.go there are functions to check permissions
 //
 // This function should not be used to check permissions.
 //

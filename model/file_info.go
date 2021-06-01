@@ -21,12 +21,18 @@ const (
 )
 
 // GetFileInfosOptions contains options for getting FileInfos
-type GetFileInfoOptions struct {
+type GetFileInfosOptions struct {
 	UserIds        []string `json:"user_ids"`
 	Since          int64    `json:"since"`
 	IncludeDeleted bool     `json:"include_deleted"`
 	SortBy         string   `json:"sort_by"`
 	SortDescending bool     `json:"sort_descending"`
+}
+
+type FileForIndexing struct {
+	FileInfo
+	// ChannelId string `json:"channel_id"`
+	Content string `json:"content"`
 }
 
 type FileInfo struct {

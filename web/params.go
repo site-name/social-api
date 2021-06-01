@@ -35,6 +35,7 @@ type Params struct {
 	Filename  string
 	ReportId  string
 	RoleId    string
+	Permanent bool
 
 	// cloud
 	InvoiceId string
@@ -105,6 +106,10 @@ func ParamsFromRquest(r *http.Request) *Params {
 	}
 	if val, ok := props["role_id"]; ok {
 		params.RoleId = val
+	}
+
+	if val, err := strconv.ParseBool(query.Get("permanent")); err == nil {
+		params.Permanent = val
 	}
 
 	return params

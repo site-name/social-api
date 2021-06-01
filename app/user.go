@@ -1129,3 +1129,7 @@ func (a *App) DeactivateGuests() *model.AppError {
 
 	return nil
 }
+
+func (a *App) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
+	panic("not implemented")
+}
