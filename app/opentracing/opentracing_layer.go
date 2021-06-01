@@ -610,7 +610,7 @@ func (a *OpenTracingAppLayer) DBHealthCheckWrite() error {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) DeactivateGuests() *model.AppError {
+func (a *OpenTracingAppLayer) DeactivateGuests(c *request.Context) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DeactivateGuests")
 
@@ -622,7 +622,7 @@ func (a *OpenTracingAppLayer) DeactivateGuests() *model.AppError {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.DeactivateGuests()
+	resultVar0 := a.app.DeactivateGuests(c)
 
 	if resultVar0 != nil {
 		span.LogFields(spanlog.Error(resultVar0))
@@ -878,6 +878,28 @@ func (a *OpenTracingAppLayer) FileBackend() (filestore.FileBackend, *model.AppEr
 
 	defer span.Finish()
 	resultVar0, resultVar1 := a.app.FileBackend()
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) FileExists(path string) (bool, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.FileExists")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.FileExists(path)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -1862,6 +1884,28 @@ func (a *OpenTracingAppLayer) OriginChecker() func(*http.Request) bool {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PermanentDeleteUser")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.PermanentDeleteUser(c, user)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PostActionCookieSecret")
@@ -1951,6 +1995,28 @@ func (a *OpenTracingAppLayer) RemoveConfigListener(id string) {
 
 	defer span.Finish()
 	a.app.RemoveConfigListener(id)
+}
+
+func (a *OpenTracingAppLayer) RemoveFile(path string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.RemoveFile")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.RemoveFile(path)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) ResetPermissionsSystem() *model.AppError {
@@ -2393,7 +2459,7 @@ func (a *OpenTracingAppLayer) SetSessionExpireInDays(session *model.Session, day
 	a.app.SetSessionExpireInDays(session, days)
 }
 
-func (a *OpenTracingAppLayer) UpdateActive(user *account.User, active bool) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateActive")
 
@@ -2405,7 +2471,7 @@ func (a *OpenTracingAppLayer) UpdateActive(user *account.User, active bool) (*ac
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.UpdateActive(user, active)
+	resultVar0, resultVar1 := a.app.UpdateActive(c, user, active)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))

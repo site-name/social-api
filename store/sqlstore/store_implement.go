@@ -87,6 +87,7 @@ type SqlStoreStores struct {
 	assignedProductAttributeValue store.AssignedProductAttributeValueStore //
 	assignedProductAttribute      store.AssignedProductAttributeStore      //
 	attributeProduct              store.AttributeProductStore              //
+	fileInfo                      store.FileInfoStore                      // file info models
 }
 
 // setup tables before performing database migration
@@ -194,6 +195,8 @@ func (store *SqlStore) setupTables() {
 	store.stores.assignedProductAttributeValue = newSqlAssignedProductAttributeValueStore(store)
 	store.stores.assignedProductAttribute = newSqlAssignedProductAttributeStore(store)
 	store.stores.attributeProduct = newSqlAttributeProductStore(store)
+	// file info
+	store.stores.fileInfo = newSqlFileInfoStore(store, store.metrics)
 }
 
 // performs database indexing
@@ -302,6 +305,8 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.assignedProductAttributeValue.(*SqlAssignedProductAttributeValueStore).createIndexesIfNotExists()
 	store.stores.assignedProductAttribute.(*SqlAssignedProductAttributeStore).createIndexesIfNotExists()
 	store.stores.attributeProduct.(*SqlAttributeProductStore).createIndexesIfNotExists()
+	// file info
+	store.stores.fileInfo.(*SqlFileInfoStore).createIndexesIfNotExists()
 }
 
 // account
@@ -592,4 +597,9 @@ func (ss *SqlStore) AssignedProductAttribute() store.AssignedProductAttributeSto
 }
 func (ss *SqlStore) AttributeProduct() store.AttributeProductStore {
 	return ss.stores.attributeProduct
+}
+
+// file info
+func (ss *SqlStore) FileInfo() store.FileInfoStore {
+	return ss.stores.fileInfo
 }

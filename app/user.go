@@ -830,7 +830,7 @@ func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppE
 // 	a.Srv().Store.User().ClearCaches()
 // }
 
-func (a *App) userDeactivated(userID string) *model.AppError {
+func (a *App) userDeactivated(c *request.Context, userID string) *model.AppError {
 	if err := a.RevokeAllSessions(userID); err != nil {
 		return err
 	}
@@ -838,7 +838,7 @@ func (a *App) userDeactivated(userID string) *model.AppError {
 	return nil
 }
 
-func (a *App) UpdateActive(user *account.User, active bool) (*account.User, *model.AppError) {
+func (a *App) UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError) {
 	user.UpdateAt = model.GetMillis()
 	if active {
 		user.DeleteAt = 0
@@ -862,7 +862,7 @@ func (a *App) UpdateActive(user *account.User, active bool) (*account.User, *mod
 	ruser := userUpdate.New
 
 	if !active {
-		if err := a.userDeactivated(ruser.Id); err != nil {
+		if err := a.userDeactivated(c, ruser.Id); err != nil {
 			return nil, err
 		}
 	}
@@ -1109,14 +1109,14 @@ func (a *App) GetStatusFromCache(userID string) *model.Status {
 	return nil
 }
 
-func (a *App) DeactivateGuests() *model.AppError {
+func (a *App) DeactivateGuests(c *request.Context) *model.AppError {
 	userIDs, err := a.Srv().Store.User().DeactivateGuests()
 	if err != nil {
 		return model.NewAppError("DeactivateGuests", "app.user.update_active_for_multiple_users.updating.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	for _, userID := range userIDs {
-		if err := a.userDeactivated(userID); err != nil {
+		if err := a.userDeactivated(c, userID); err != nil {
 			return err
 		}
 	}
@@ -1132,4 +1132,62 @@ func (a *App) DeactivateGuests() *model.AppError {
 
 func (a *App) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
 	panic("not implemented")
+}
+
+func (a *App) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
+	slog.Warn("Attempting to permanently delete account", slog.String("user_id", user.Id), slog.String("user_email", user.Email))
+	if user.IsInRole(model.SYSTEM_ADMIN_ROLE_ID) {
+		slog.Warn("You are deleting a user that is a system administrator.  You may need to set another account as the system administrator using the command line tools.", slog.String("user_email", user.Email))
+	}
+
+	if _, err := a.UpdateActive(c, user, false); err != nil {
+		return err
+	}
+	if err := a.Srv().Store.Session().PermanentDeleteSessionsByUser(user.Id); err != nil {
+		return model.NewAppError("PermanentDeleteUser", "app.session.permanent_delete_sessions_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if err := a.Srv().Store.UserAccessToken().DeleteAllForUser(user.Id); err != nil {
+		return model.NewAppError("PermanentDeleteUser", "app.user_access_token.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	infos, err := a.Srv().Store.FileInfo().GetForUser(user.Id)
+	if err != nil {
+		slog.Warn("Error getting file list for user from FileInfoStore", slog.Err(err))
+	}
+
+	for _, info := range infos {
+		res, err := a.FileExists(info.Path)
+		if err != nil {
+			slog.Warn(
+				"Error checking existance of file",
+				slog.String("path", info.Path),
+				slog.Err(err),
+			)
+			continue
+		}
+
+		if !res {
+			slog.Warn("File not found", slog.String("path", info.Path))
+			continue
+		}
+
+		err = a.RemoveFile(info.Path)
+		if err != nil {
+			slog.Warn("Unable to remove file", slog.String("path", info.Path), slog.Err(err))
+		}
+	}
+
+	if _, err := a.Srv().Store.FileInfo().PermanentDeleteByUser(user.Id); err != nil {
+		return model.NewAppError("PermanentDeleteUser", "app.file_info.permanent_delete_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if err := a.Srv().Store.User().PermanentDelete(user.Id); err != nil {
+		return model.NewAppError("PermanentDeleteUser", "app.user.permanent_delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if err := a.Srv().Store.Audit().PermanentDeleteByUser(user.Id); err != nil {
+		return model.NewAppError("PermanentDeleteUser", "app.audit.permanent_delete_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	slog.Warn("Permanently deleted account", slog.String("user_email", user.Email), slog.String("user_id", user.Id))
+
+	return nil
 }

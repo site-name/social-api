@@ -120,7 +120,7 @@ type AppIface interface {
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
-	DeactivateGuests() *model.AppError
+	DeactivateGuests(c *request.Context) *model.AppError
 	DeactivateMfa(userID string) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
@@ -130,6 +130,7 @@ type AppIface interface {
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
 	FileBackend() (filestore.FileBackend, *model.AppError)
+	FileExists(path string) (bool, *model.AppError)
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
@@ -172,11 +173,13 @@ type AppIface interface {
 	NotificationsLog() *slog.Logger
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
+	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	PostActionCookieSecret() []byte
 	Publish(message *model.WebSocketEvent)
 	ReadFile(path string) ([]byte, *model.AppError)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
+	RemoveFile(path string) *model.AppError
 	ResetPermissionsSystem() *model.AppError
 	RevokeAllSessions(userID string) *model.AppError
 	RevokeSession(session *model.Session) *model.AppError
@@ -200,7 +203,7 @@ type AppIface interface {
 	SetServer(srv *Server)
 	Srv() *Server
 	Timezones() *timezones.Timezones
-	UpdateActive(user *account.User, active bool) (*account.User, *model.AppError)
+	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
 	UpdateLastActivityAtIfNeeded(session model.Session)
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
