@@ -90,7 +90,13 @@ func (a *App) CheckPasswordAndAllCriteria(user *account.User, password string, m
 	return nil
 }
 
-// This to be used for places we check the users password when they are already logged in
+// DoubleCheckPassword performs:
+//
+// 1) check if number of failed login is not exceed the limit. If yes returns an error
+//
+// 2) check if user's password and given password don't match, update number of attempts failed in database, return an error
+//
+// otherwise: set number of failed attempts to 0
 func (a *App) DoubleCheckPassword(user *account.User, password string) *model.AppError {
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
@@ -115,6 +121,7 @@ func (a *App) DoubleCheckPassword(user *account.User, password string) *model.Ap
 	return nil
 }
 
+// checkUserPassword compares user's password to given password. If they dont match, return an error
 func (a *App) checkUserPassword(user *account.User, password string) *model.AppError {
 	if !account.ComparePassword(user.Password, password) {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)

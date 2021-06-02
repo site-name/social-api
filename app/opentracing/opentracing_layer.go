@@ -2496,6 +2496,50 @@ func (a *OpenTracingAppLayer) UpdateConfig(f func(*model.Config)) {
 	a.app.UpdateConfig(f)
 }
 
+func (a *OpenTracingAppLayer) UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateHashedPassword")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdateHashedPassword(user, newHashedPassword)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) UpdateHashedPasswordByUserId(userID string, newHashedPassword string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateHashedPasswordByUserId")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdateHashedPasswordByUserId(userID, newHashedPassword)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) UpdateLastActivityAtIfNeeded(session model.Session) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateLastActivityAtIfNeeded")
@@ -2509,6 +2553,94 @@ func (a *OpenTracingAppLayer) UpdateLastActivityAtIfNeeded(session model.Session
 
 	defer span.Finish()
 	a.app.UpdateLastActivityAtIfNeeded(session)
+}
+
+func (a *OpenTracingAppLayer) UpdatePassword(user *account.User, newPassword string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdatePassword")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdatePassword(user, newPassword)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) UpdatePasswordAsUser(userID string, currentPassword string, newPassword string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdatePasswordAsUser")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdatePasswordAsUser(userID, currentPassword, newPassword)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) UpdatePasswordByUserIdSendEmail(userID string, newPassword string, method string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdatePasswordByUserIdSendEmail")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdatePasswordByUserIdSendEmail(userID, newPassword, method)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) UpdatePasswordSendEmail(user *account.User, newPassword string, method string) *model.AppError {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdatePasswordSendEmail")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.UpdatePasswordSendEmail(user, newPassword, method)
+
+	if resultVar0 != nil {
+		span.LogFields(spanlog.Error(resultVar0))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {

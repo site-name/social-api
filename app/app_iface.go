@@ -37,6 +37,14 @@ type AppIface interface {
 	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
+	// DoubleCheckPassword performs:
+	//
+	// 1) check if number of failed login is not exceed the limit. If yes returns an error
+	//
+	// 2) check if user's password and given password don't match, update number of attempts failed in database, return an error
+	//
+	// otherwise: set number of failed attempts to 0
+	DoubleCheckPassword(user *account.User, password string) *model.AppError
 	// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
 	// A new ExpiresAt is only written if enough time has elapsed since last update.
 	// Returns true only if the session was extended.
@@ -75,8 +83,6 @@ type AppIface interface {
 	SetSessionExpireInDays(session *model.Session, days int)
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
-	// This to be used for places we check the users password when they are already logged in
-	DoubleCheckPassword(user *account.User, password string) *model.AppError
 	// func (a *App) MessageExport() einterfaces.MessageExportInterface {
 	// 	return a.srv.MessageExport
 	// }
@@ -205,7 +211,13 @@ type AppIface interface {
 	Timezones() *timezones.Timezones
 	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
+	UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError
+	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError
 	UpdateLastActivityAtIfNeeded(session model.Session)
+	UpdatePassword(user *account.User, newPassword string) *model.AppError
+	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
+	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
+	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError

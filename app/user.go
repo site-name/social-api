@@ -1210,3 +1210,69 @@ func (a *App) PermanentDeleteUser(c *request.Context, user *account.User) *model
 
 	return nil
 }
+
+func (a *App) UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError {
+	user, err := a.GetUser(userID)
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		err = model.NewAppError("updatePassword", "api.user.update_password.valid_account.app_error", nil, "", http.StatusBadRequest)
+		return err
+	}
+
+	if user.AuthData != nil && *user.AuthData != "" {
+		err = model.NewAppError("updatePassword", "api.user.update_password.oauth.app_error", nil, "auth_service="+user.AuthService, http.StatusBadRequest)
+		return err
+	}
+
+	if err := a.DoubleCheckPassword(user, currentPassword); err != nil {
+		if err.Id == "api.user.check_user_password.invalid.app_error" {
+			err = model.NewAppError("updatePassword", "api.user.update_password.incorrect.app_error", nil, "", http.StatusBadRequest)
+		}
+		return err
+	}
+
+	T := i18n.GetUserTranslations(user.Locale)
+
+	return a.UpdatePasswordSendEmail(user, newPassword, T("api.user.update_password.menu"))
+}
+
+func (a *App) UpdatePassword(user *account.User, newPassword string) *model.AppError {
+	if err := a.IsPasswordValid(newPassword); err != nil {
+		return err
+	}
+	hashedPassword := account.HashPassword(newPassword)
+
+	if err := a.Srv().Store.User().UpdatePassword(user.Id, hashedPassword); err != nil {
+		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	a.InvalidateCacheForUser(user.Id)
+
+	return nil
+}
+
+func (a *App) UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError {
+	if err := a.UpdatePassword(user, newPassword); err != nil {
+		return err
+	}
+
+	a.Srv().Go(func() {
+		if err := a.Srv().EmailService.sendPasswordChangeEmail(user.Email, method, user.Locale, a.GetSiteURL()); err != nil {
+			slog.Error("Failed to send password change email", slog.Err(err))
+		}
+	})
+
+	return nil
+}
+
+func (a *App) UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError {
+	user, err := a.GetUser(userID)
+	if err != nil {
+		return err
+	}
+
+	return a.UpdatePasswordSendEmail(user, newPassword, method)
+}
