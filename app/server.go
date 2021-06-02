@@ -32,6 +32,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/filestore"
@@ -1500,4 +1501,12 @@ func (s *Server) StartSearchEngine() string {
 	})
 
 	return configListenerId
+}
+
+func (s *Server) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
+	img, appErr := CreateProfileImage(user.Username, user.Id, *s.Config().FileSettings.InitialFont)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return img, nil
 }

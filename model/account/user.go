@@ -24,6 +24,7 @@ const (
 	EMAIL_NOTIFY_PROP             = "email"
 	USER_NOTIFY_MENTION           = "mention"
 	MENTION_KEYS_NOTIFY_PROP      = "mention_keys"
+	USER_AUTH_SERVICE_EMAIL       = "email"
 	USER_NICKNAME_MAX_RUNES       = 64
 	USER_POSITION_MAX_RUNES       = 128
 	USER_FIRST_NAME_MAX_RUNES     = 64
@@ -355,6 +356,10 @@ func (u *User) PreUpdate() {
 		}
 		u.NotifyProps[MENTION_KEYS_NOTIFY_PROP] = strings.Join(goodKeys, ",")
 	}
+}
+
+func (u *User) IsSSOUser() bool {
+	return u.AuthService != "" && u.AuthService != USER_AUTH_SERVICE_EMAIL
 }
 
 // IsLDAPUser checks if user's AuthService is "ldap"

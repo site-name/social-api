@@ -18,44 +18,351 @@ import (
 
 type OpenTracingLayer struct {
 	store.Store
-	AddressStore          store.AddressStore
-	AppStore              store.AppStore
-	AuditStore            store.AuditStore
-	ClusterDiscoveryStore store.ClusterDiscoveryStore
-	JobStore              store.JobStore
-	PreferenceStore       store.PreferenceStore
-	RoleStore             store.RoleStore
-	SessionStore          store.SessionStore
-	StatusStore           store.StatusStore
-	SystemStore           store.SystemStore
-	TermsOfServiceStore   store.TermsOfServiceStore
-	TokenStore            store.TokenStore
-	UserStore             store.UserStore
-	UserAccessTokenStore  store.UserAccessTokenStore
+	AddressStore                       store.AddressStore
+	AllocationStore                    store.AllocationStore
+	AppStore                           store.AppStore
+	AppTokenStore                      store.AppTokenStore
+	AssignedPageAttributeStore         store.AssignedPageAttributeStore
+	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
+	AssignedProductAttributeStore      store.AssignedProductAttributeStore
+	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
+	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
+	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
+	AttributeStore                     store.AttributeStore
+	AttributePageStore                 store.AttributePageStore
+	AttributeProductStore              store.AttributeProductStore
+	AttributeTranslationStore          store.AttributeTranslationStore
+	AttributeValueStore                store.AttributeValueStore
+	AttributeValueTranslationStore     store.AttributeValueTranslationStore
+	AttributeVariantStore              store.AttributeVariantStore
+	AuditStore                         store.AuditStore
+	CategoryStore                      store.CategoryStore
+	CategoryTranslationStore           store.CategoryTranslationStore
+	ChannelStore                       store.ChannelStore
+	CheckoutStore                      store.CheckoutStore
+	CheckoutLineStore                  store.CheckoutLineStore
+	ClusterDiscoveryStore              store.ClusterDiscoveryStore
+	CollectionStore                    store.CollectionStore
+	CollectionChannelListingStore      store.CollectionChannelListingStore
+	CollectionProductStore             store.CollectionProductStore
+	CollectionTranslationStore         store.CollectionTranslationStore
+	ComplianceStore                    store.ComplianceStore
+	CsvExportEventStore                store.CsvExportEventStore
+	CsvExportFileStore                 store.CsvExportFileStore
+	DigitalContentStore                store.DigitalContentStore
+	DigitalContentUrlStore             store.DigitalContentUrlStore
+	DiscountSaleStore                  store.DiscountSaleStore
+	DiscountSaleChannelListingStore    store.DiscountSaleChannelListingStore
+	DiscountSaleTranslationStore       store.DiscountSaleTranslationStore
+	DiscountVoucherStore               store.DiscountVoucherStore
+	DiscountVoucherCustomerStore       store.DiscountVoucherCustomerStore
+	FileInfoStore                      store.FileInfoStore
+	FulfillmentStore                   store.FulfillmentStore
+	FulfillmentLineStore               store.FulfillmentLineStore
+	GiftCardStore                      store.GiftCardStore
+	InvoiceEventStore                  store.InvoiceEventStore
+	JobStore                           store.JobStore
+	MenuStore                          store.MenuStore
+	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OrderStore                         store.OrderStore
+	OrderDiscountStore                 store.OrderDiscountStore
+	OrderEventStore                    store.OrderEventStore
+	OrderLineStore                     store.OrderLineStore
+	PageStore                          store.PageStore
+	PageTranslationStore               store.PageTranslationStore
+	PageTypeStore                      store.PageTypeStore
+	PaymentStore                       store.PaymentStore
+	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginConfigurationStore           store.PluginConfigurationStore
+	PreferenceStore                    store.PreferenceStore
+	ProductStore                       store.ProductStore
+	ProductChannelListingStore         store.ProductChannelListingStore
+	ProductMediaStore                  store.ProductMediaStore
+	ProductTranslationStore            store.ProductTranslationStore
+	ProductTypeStore                   store.ProductTypeStore
+	ProductVariantStore                store.ProductVariantStore
+	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
+	ProductVariantTranslationStore     store.ProductVariantTranslationStore
+	RoleStore                          store.RoleStore
+	SessionStore                       store.SessionStore
+	ShippingMethodStore                store.ShippingMethodStore
+	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
+	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
+	ShippingZoneStore                  store.ShippingZoneStore
+	StatusStore                        store.StatusStore
+	StockStore                         store.StockStore
+	SystemStore                        store.SystemStore
+	TermsOfServiceStore                store.TermsOfServiceStore
+	TokenStore                         store.TokenStore
+	UserStore                          store.UserStore
+	UserAccessTokenStore               store.UserAccessTokenStore
+	VariantMediaStore                  store.VariantMediaStore
+	VoucherChannelListingStore         store.VoucherChannelListingStore
+	VoucherTranslationStore            store.VoucherTranslationStore
+	WarehouseStore                     store.WarehouseStore
+	WishlistStore                      store.WishlistStore
+	WishlistItemStore                  store.WishlistItemStore
 }
 
 func (s *OpenTracingLayer) Address() store.AddressStore {
 	return s.AddressStore
 }
 
+func (s *OpenTracingLayer) Allocation() store.AllocationStore {
+	return s.AllocationStore
+}
+
 func (s *OpenTracingLayer) App() store.AppStore {
 	return s.AppStore
+}
+
+func (s *OpenTracingLayer) AppToken() store.AppTokenStore {
+	return s.AppTokenStore
+}
+
+func (s *OpenTracingLayer) AssignedPageAttribute() store.AssignedPageAttributeStore {
+	return s.AssignedPageAttributeStore
+}
+
+func (s *OpenTracingLayer) AssignedPageAttributeValue() store.AssignedPageAttributeValueStore {
+	return s.AssignedPageAttributeValueStore
+}
+
+func (s *OpenTracingLayer) AssignedProductAttribute() store.AssignedProductAttributeStore {
+	return s.AssignedProductAttributeStore
+}
+
+func (s *OpenTracingLayer) AssignedProductAttributeValue() store.AssignedProductAttributeValueStore {
+	return s.AssignedProductAttributeValueStore
+}
+
+func (s *OpenTracingLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
+	return s.AssignedVariantAttributeStore
+}
+
+func (s *OpenTracingLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
+	return s.AssignedVariantAttributeValueStore
+}
+
+func (s *OpenTracingLayer) Attribute() store.AttributeStore {
+	return s.AttributeStore
+}
+
+func (s *OpenTracingLayer) AttributePage() store.AttributePageStore {
+	return s.AttributePageStore
+}
+
+func (s *OpenTracingLayer) AttributeProduct() store.AttributeProductStore {
+	return s.AttributeProductStore
+}
+
+func (s *OpenTracingLayer) AttributeTranslation() store.AttributeTranslationStore {
+	return s.AttributeTranslationStore
+}
+
+func (s *OpenTracingLayer) AttributeValue() store.AttributeValueStore {
+	return s.AttributeValueStore
+}
+
+func (s *OpenTracingLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
+	return s.AttributeValueTranslationStore
+}
+
+func (s *OpenTracingLayer) AttributeVariant() store.AttributeVariantStore {
+	return s.AttributeVariantStore
 }
 
 func (s *OpenTracingLayer) Audit() store.AuditStore {
 	return s.AuditStore
 }
 
+func (s *OpenTracingLayer) Category() store.CategoryStore {
+	return s.CategoryStore
+}
+
+func (s *OpenTracingLayer) CategoryTranslation() store.CategoryTranslationStore {
+	return s.CategoryTranslationStore
+}
+
+func (s *OpenTracingLayer) Channel() store.ChannelStore {
+	return s.ChannelStore
+}
+
+func (s *OpenTracingLayer) Checkout() store.CheckoutStore {
+	return s.CheckoutStore
+}
+
+func (s *OpenTracingLayer) CheckoutLine() store.CheckoutLineStore {
+	return s.CheckoutLineStore
+}
+
 func (s *OpenTracingLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
 	return s.ClusterDiscoveryStore
+}
+
+func (s *OpenTracingLayer) Collection() store.CollectionStore {
+	return s.CollectionStore
+}
+
+func (s *OpenTracingLayer) CollectionChannelListing() store.CollectionChannelListingStore {
+	return s.CollectionChannelListingStore
+}
+
+func (s *OpenTracingLayer) CollectionProduct() store.CollectionProductStore {
+	return s.CollectionProductStore
+}
+
+func (s *OpenTracingLayer) CollectionTranslation() store.CollectionTranslationStore {
+	return s.CollectionTranslationStore
+}
+
+func (s *OpenTracingLayer) Compliance() store.ComplianceStore {
+	return s.ComplianceStore
+}
+
+func (s *OpenTracingLayer) CsvExportEvent() store.CsvExportEventStore {
+	return s.CsvExportEventStore
+}
+
+func (s *OpenTracingLayer) CsvExportFile() store.CsvExportFileStore {
+	return s.CsvExportFileStore
+}
+
+func (s *OpenTracingLayer) DigitalContent() store.DigitalContentStore {
+	return s.DigitalContentStore
+}
+
+func (s *OpenTracingLayer) DigitalContentUrl() store.DigitalContentUrlStore {
+	return s.DigitalContentUrlStore
+}
+
+func (s *OpenTracingLayer) DiscountSale() store.DiscountSaleStore {
+	return s.DiscountSaleStore
+}
+
+func (s *OpenTracingLayer) DiscountSaleChannelListing() store.DiscountSaleChannelListingStore {
+	return s.DiscountSaleChannelListingStore
+}
+
+func (s *OpenTracingLayer) DiscountSaleTranslation() store.DiscountSaleTranslationStore {
+	return s.DiscountSaleTranslationStore
+}
+
+func (s *OpenTracingLayer) DiscountVoucher() store.DiscountVoucherStore {
+	return s.DiscountVoucherStore
+}
+
+func (s *OpenTracingLayer) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
+	return s.DiscountVoucherCustomerStore
+}
+
+func (s *OpenTracingLayer) FileInfo() store.FileInfoStore {
+	return s.FileInfoStore
+}
+
+func (s *OpenTracingLayer) Fulfillment() store.FulfillmentStore {
+	return s.FulfillmentStore
+}
+
+func (s *OpenTracingLayer) FulfillmentLine() store.FulfillmentLineStore {
+	return s.FulfillmentLineStore
+}
+
+func (s *OpenTracingLayer) GiftCard() store.GiftCardStore {
+	return s.GiftCardStore
+}
+
+func (s *OpenTracingLayer) InvoiceEvent() store.InvoiceEventStore {
+	return s.InvoiceEventStore
 }
 
 func (s *OpenTracingLayer) Job() store.JobStore {
 	return s.JobStore
 }
 
+func (s *OpenTracingLayer) Menu() store.MenuStore {
+	return s.MenuStore
+}
+
+func (s *OpenTracingLayer) MenuItemTranslation() store.MenuItemTranslationStore {
+	return s.MenuItemTranslationStore
+}
+
+func (s *OpenTracingLayer) Order() store.OrderStore {
+	return s.OrderStore
+}
+
+func (s *OpenTracingLayer) OrderDiscount() store.OrderDiscountStore {
+	return s.OrderDiscountStore
+}
+
+func (s *OpenTracingLayer) OrderEvent() store.OrderEventStore {
+	return s.OrderEventStore
+}
+
+func (s *OpenTracingLayer) OrderLine() store.OrderLineStore {
+	return s.OrderLineStore
+}
+
+func (s *OpenTracingLayer) Page() store.PageStore {
+	return s.PageStore
+}
+
+func (s *OpenTracingLayer) PageTranslation() store.PageTranslationStore {
+	return s.PageTranslationStore
+}
+
+func (s *OpenTracingLayer) PageType() store.PageTypeStore {
+	return s.PageTypeStore
+}
+
+func (s *OpenTracingLayer) Payment() store.PaymentStore {
+	return s.PaymentStore
+}
+
+func (s *OpenTracingLayer) PaymentTransaction() store.PaymentTransactionStore {
+	return s.PaymentTransactionStore
+}
+
+func (s *OpenTracingLayer) PluginConfiguration() store.PluginConfigurationStore {
+	return s.PluginConfigurationStore
+}
+
 func (s *OpenTracingLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *OpenTracingLayer) Product() store.ProductStore {
+	return s.ProductStore
+}
+
+func (s *OpenTracingLayer) ProductChannelListing() store.ProductChannelListingStore {
+	return s.ProductChannelListingStore
+}
+
+func (s *OpenTracingLayer) ProductMedia() store.ProductMediaStore {
+	return s.ProductMediaStore
+}
+
+func (s *OpenTracingLayer) ProductTranslation() store.ProductTranslationStore {
+	return s.ProductTranslationStore
+}
+
+func (s *OpenTracingLayer) ProductType() store.ProductTypeStore {
+	return s.ProductTypeStore
+}
+
+func (s *OpenTracingLayer) ProductVariant() store.ProductVariantStore {
+	return s.ProductVariantStore
+}
+
+func (s *OpenTracingLayer) ProductVariantChannelListing() store.ProductVariantChannelListingStore {
+	return s.ProductVariantChannelListingStore
+}
+
+func (s *OpenTracingLayer) ProductVariantTranslation() store.ProductVariantTranslationStore {
+	return s.ProductVariantTranslationStore
 }
 
 func (s *OpenTracingLayer) Role() store.RoleStore {
@@ -66,8 +373,32 @@ func (s *OpenTracingLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
 
+func (s *OpenTracingLayer) ShippingMethod() store.ShippingMethodStore {
+	return s.ShippingMethodStore
+}
+
+func (s *OpenTracingLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
+	return s.ShippingMethodChannelListingStore
+}
+
+func (s *OpenTracingLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
+	return s.ShippingMethodPostalCodeRuleStore
+}
+
+func (s *OpenTracingLayer) ShippingMethodTranslation() store.ShippingMethodTranslationStore {
+	return s.ShippingMethodTranslationStore
+}
+
+func (s *OpenTracingLayer) ShippingZone() store.ShippingZoneStore {
+	return s.ShippingZoneStore
+}
+
 func (s *OpenTracingLayer) Status() store.StatusStore {
 	return s.StatusStore
+}
+
+func (s *OpenTracingLayer) Stock() store.StockStore {
+	return s.StockStore
 }
 
 func (s *OpenTracingLayer) System() store.SystemStore {
@@ -90,8 +421,37 @@ func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
 }
 
+func (s *OpenTracingLayer) VariantMedia() store.VariantMediaStore {
+	return s.VariantMediaStore
+}
+
+func (s *OpenTracingLayer) VoucherChannelListing() store.VoucherChannelListingStore {
+	return s.VoucherChannelListingStore
+}
+
+func (s *OpenTracingLayer) VoucherTranslation() store.VoucherTranslationStore {
+	return s.VoucherTranslationStore
+}
+
+func (s *OpenTracingLayer) Warehouse() store.WarehouseStore {
+	return s.WarehouseStore
+}
+
+func (s *OpenTracingLayer) Wishlist() store.WishlistStore {
+	return s.WishlistStore
+}
+
+func (s *OpenTracingLayer) WishlistItem() store.WishlistItemStore {
+	return s.WishlistItemStore
+}
+
 type OpenTracingLayerAddressStore struct {
 	store.AddressStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAllocationStore struct {
+	store.AllocationStore
 	Root *OpenTracingLayer
 }
 
@@ -100,8 +460,103 @@ type OpenTracingLayerAppStore struct {
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerAppTokenStore struct {
+	store.AppTokenStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedPageAttributeStore struct {
+	store.AssignedPageAttributeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedPageAttributeValueStore struct {
+	store.AssignedPageAttributeValueStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedProductAttributeStore struct {
+	store.AssignedProductAttributeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedProductAttributeValueStore struct {
+	store.AssignedProductAttributeValueStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedVariantAttributeStore struct {
+	store.AssignedVariantAttributeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAssignedVariantAttributeValueStore struct {
+	store.AssignedVariantAttributeValueStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeStore struct {
+	store.AttributeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributePageStore struct {
+	store.AttributePageStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeProductStore struct {
+	store.AttributeProductStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeTranslationStore struct {
+	store.AttributeTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeValueStore struct {
+	store.AttributeValueStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeValueTranslationStore struct {
+	store.AttributeValueTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerAttributeVariantStore struct {
+	store.AttributeVariantStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerAuditStore struct {
 	store.AuditStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCategoryStore struct {
+	store.CategoryStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCategoryTranslationStore struct {
+	store.CategoryTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerChannelStore struct {
+	store.ChannelStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCheckoutStore struct {
+	store.CheckoutStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCheckoutLineStore struct {
+	store.CheckoutLineStore
 	Root *OpenTracingLayer
 }
 
@@ -110,13 +565,208 @@ type OpenTracingLayerClusterDiscoveryStore struct {
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerCollectionStore struct {
+	store.CollectionStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCollectionChannelListingStore struct {
+	store.CollectionChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCollectionProductStore struct {
+	store.CollectionProductStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCollectionTranslationStore struct {
+	store.CollectionTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerComplianceStore struct {
+	store.ComplianceStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCsvExportEventStore struct {
+	store.CsvExportEventStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerCsvExportFileStore struct {
+	store.CsvExportFileStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDigitalContentStore struct {
+	store.DigitalContentStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDigitalContentUrlStore struct {
+	store.DigitalContentUrlStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDiscountSaleStore struct {
+	store.DiscountSaleStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDiscountSaleChannelListingStore struct {
+	store.DiscountSaleChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDiscountSaleTranslationStore struct {
+	store.DiscountSaleTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDiscountVoucherStore struct {
+	store.DiscountVoucherStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerDiscountVoucherCustomerStore struct {
+	store.DiscountVoucherCustomerStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerFileInfoStore struct {
+	store.FileInfoStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerFulfillmentStore struct {
+	store.FulfillmentStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerFulfillmentLineStore struct {
+	store.FulfillmentLineStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerGiftCardStore struct {
+	store.GiftCardStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerInvoiceEventStore struct {
+	store.InvoiceEventStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerJobStore struct {
 	store.JobStore
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerMenuStore struct {
+	store.MenuStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerMenuItemTranslationStore struct {
+	store.MenuItemTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerOrderStore struct {
+	store.OrderStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerOrderDiscountStore struct {
+	store.OrderDiscountStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerOrderEventStore struct {
+	store.OrderEventStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerOrderLineStore struct {
+	store.OrderLineStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPageStore struct {
+	store.PageStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPageTranslationStore struct {
+	store.PageTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPageTypeStore struct {
+	store.PageTypeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPaymentStore struct {
+	store.PaymentStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPaymentTransactionStore struct {
+	store.PaymentTransactionStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPluginConfigurationStore struct {
+	store.PluginConfigurationStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductStore struct {
+	store.ProductStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductChannelListingStore struct {
+	store.ProductChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductMediaStore struct {
+	store.ProductMediaStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductTranslationStore struct {
+	store.ProductTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductTypeStore struct {
+	store.ProductTypeStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductVariantStore struct {
+	store.ProductVariantStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductVariantChannelListingStore struct {
+	store.ProductVariantChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerProductVariantTranslationStore struct {
+	store.ProductVariantTranslationStore
 	Root *OpenTracingLayer
 }
 
@@ -130,8 +780,38 @@ type OpenTracingLayerSessionStore struct {
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerShippingMethodStore struct {
+	store.ShippingMethodStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShippingMethodChannelListingStore struct {
+	store.ShippingMethodChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShippingMethodPostalCodeRuleStore struct {
+	store.ShippingMethodPostalCodeRuleStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShippingMethodTranslationStore struct {
+	store.ShippingMethodTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShippingZoneStore struct {
+	store.ShippingZoneStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerStatusStore struct {
 	store.StatusStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerStockStore struct {
+	store.StockStore
 	Root *OpenTracingLayer
 }
 
@@ -157,6 +837,36 @@ type OpenTracingLayerUserStore struct {
 
 type OpenTracingLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVariantMediaStore struct {
+	store.VariantMediaStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVoucherChannelListingStore struct {
+	store.VoucherChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVoucherTranslationStore struct {
+	store.VoucherTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerWarehouseStore struct {
+	store.WarehouseStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerWishlistStore struct {
+	store.WishlistStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerWishlistItemStore struct {
+	store.WishlistItemStore
 	Root *OpenTracingLayer
 }
 
@@ -188,6 +898,96 @@ func (s *OpenTracingLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 	defer span.Finish()
 	result, err := s.AppStore.Save(app)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppTokenStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AppTokenStore.Save(appToken)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetAttributesByIds")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.GetAttributesByIds(ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetProductAndVariantHeaders")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.GetProductAndVariantHeaders(ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.Save(attr)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -248,6 +1048,42 @@ func (s *OpenTracingLayerAuditStore) Save(audit *audit.Audit) error {
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.GetChannelsByIdsAndOrder")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerChannelStore) Save() (*channel.Channel, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ChannelStore.Save()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerClusterDiscoveryStore) Cleanup() error {
@@ -356,6 +1192,428 @@ func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.C
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.ComplianceExport")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1, err := s.ComplianceStore.ComplianceExport(compliance, cursor, limit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, resultVar1, err
+}
+
+func (s *OpenTracingLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ComplianceStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerComplianceStore) GetAll(offset int, limit int) (compliance.Compliances, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.GetAll")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ComplianceStore.GetAll(offset, limit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.MessageExport")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1, err := s.ComplianceStore.MessageExport(cursor, limit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, resultVar1, err
+}
+
+func (s *OpenTracingLayerComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ComplianceStore.Save(compliance)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.Update")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ComplianceStore.Update(compliance)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportEventStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CsvExportEventStore.Save(event)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportFileStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CsvExportFileStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportFileStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CsvExportFileStore.Save(file)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) ClearCaches() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.ClearCaches")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.FileInfoStore.ClearCaches()
+
+}
+
+func (s *OpenTracingLayerFileInfoStore) CountAll() (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.CountAll")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.CountAll()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByIds")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.GetByIds(ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByPath")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.GetByPath(path)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetForUser")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.GetForUser(userID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetFromMaster")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.GetFromMaster(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetWithOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) InvalidateFileInfosForPostCache(postID string, deleted bool) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.InvalidateFileInfosForPostCache")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.FileInfoStore.InvalidateFileInfosForPostCache(postID, deleted)
+
+}
+
+func (s *OpenTracingLayerFileInfoStore) PermanentDelete(fileID string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.PermanentDelete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.FileInfoStore.PermanentDelete(fileID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.PermanentDeleteBatch")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.PermanentDeleteBatch(endTime, limit)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.PermanentDeleteByUser")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.PermanentDeleteByUser(userID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.Save(info)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerFileInfoStore) SetContent(fileID string, content string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.SetContent")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.FileInfoStore.SetContent(fileID, content)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.FileInfoStore.Upsert(info)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerJobStore) Delete(id string) (string, error) {
@@ -770,6 +2028,78 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterProducts")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.FilterProducts()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.GetProductsByIds")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.GetProductsByIds(ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.Save(prd)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error) {
@@ -2025,6 +3355,42 @@ func (s *OpenTracingLayerUserStore) GetMany(ctx context.Context, ids []string) (
 	return result, err
 }
 
+func (s *OpenTracingLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.GetProfileByIds")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.GetProfilesByUsernames")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.UserStore.GetProfilesByUsernames(usernames)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.GetSystemAdminProfiles")
@@ -2200,7 +3566,7 @@ func (s *OpenTracingLayerUserStore) Save(user *account.User) (*account.User, err
 	return result, err
 }
 
-func (s *OpenTracingLayerUserStore) Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (s *OpenTracingLayerUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.Search")
 	s.Root.Store.SetContext(newCtx)
@@ -2209,7 +3575,7 @@ func (s *OpenTracingLayerUserStore) Search(teamID string, term string, options *
 	}()
 
 	defer span.Finish()
-	result, err := s.UserStore.Search(teamID, term, options)
+	result, err := s.UserStore.Search(term, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2560,6 +3926,60 @@ func (s *OpenTracingLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string)
 	return err
 }
 
+func (s *OpenTracingLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.GetWarehousesHeaders")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.GetWarehousesHeaders(ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.Save()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayer) Close() {
 	s.Store.Close()
 }
@@ -2586,18 +4006,89 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	}
 
 	newStore.AddressStore = &OpenTracingLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
+	newStore.AllocationStore = &OpenTracingLayerAllocationStore{AllocationStore: childStore.Allocation(), Root: &newStore}
 	newStore.AppStore = &OpenTracingLayerAppStore{AppStore: childStore.App(), Root: &newStore}
+	newStore.AppTokenStore = &OpenTracingLayerAppTokenStore{AppTokenStore: childStore.AppToken(), Root: &newStore}
+	newStore.AssignedPageAttributeStore = &OpenTracingLayerAssignedPageAttributeStore{AssignedPageAttributeStore: childStore.AssignedPageAttribute(), Root: &newStore}
+	newStore.AssignedPageAttributeValueStore = &OpenTracingLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
+	newStore.AssignedProductAttributeStore = &OpenTracingLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
+	newStore.AssignedProductAttributeValueStore = &OpenTracingLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
+	newStore.AssignedVariantAttributeStore = &OpenTracingLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
+	newStore.AssignedVariantAttributeValueStore = &OpenTracingLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
+	newStore.AttributeStore = &OpenTracingLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
+	newStore.AttributePageStore = &OpenTracingLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
+	newStore.AttributeProductStore = &OpenTracingLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
+	newStore.AttributeTranslationStore = &OpenTracingLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
+	newStore.AttributeValueStore = &OpenTracingLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
+	newStore.AttributeValueTranslationStore = &OpenTracingLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
+	newStore.AttributeVariantStore = &OpenTracingLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &OpenTracingLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
+	newStore.CategoryStore = &OpenTracingLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
+	newStore.CategoryTranslationStore = &OpenTracingLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
+	newStore.ChannelStore = &OpenTracingLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.CheckoutStore = &OpenTracingLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
+	newStore.CheckoutLineStore = &OpenTracingLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
+	newStore.CollectionStore = &OpenTracingLayerCollectionStore{CollectionStore: childStore.Collection(), Root: &newStore}
+	newStore.CollectionChannelListingStore = &OpenTracingLayerCollectionChannelListingStore{CollectionChannelListingStore: childStore.CollectionChannelListing(), Root: &newStore}
+	newStore.CollectionProductStore = &OpenTracingLayerCollectionProductStore{CollectionProductStore: childStore.CollectionProduct(), Root: &newStore}
+	newStore.CollectionTranslationStore = &OpenTracingLayerCollectionTranslationStore{CollectionTranslationStore: childStore.CollectionTranslation(), Root: &newStore}
+	newStore.ComplianceStore = &OpenTracingLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
+	newStore.CsvExportEventStore = &OpenTracingLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
+	newStore.CsvExportFileStore = &OpenTracingLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.DigitalContentStore = &OpenTracingLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}
+	newStore.DigitalContentUrlStore = &OpenTracingLayerDigitalContentUrlStore{DigitalContentUrlStore: childStore.DigitalContentUrl(), Root: &newStore}
+	newStore.DiscountSaleStore = &OpenTracingLayerDiscountSaleStore{DiscountSaleStore: childStore.DiscountSale(), Root: &newStore}
+	newStore.DiscountSaleChannelListingStore = &OpenTracingLayerDiscountSaleChannelListingStore{DiscountSaleChannelListingStore: childStore.DiscountSaleChannelListing(), Root: &newStore}
+	newStore.DiscountSaleTranslationStore = &OpenTracingLayerDiscountSaleTranslationStore{DiscountSaleTranslationStore: childStore.DiscountSaleTranslation(), Root: &newStore}
+	newStore.DiscountVoucherStore = &OpenTracingLayerDiscountVoucherStore{DiscountVoucherStore: childStore.DiscountVoucher(), Root: &newStore}
+	newStore.DiscountVoucherCustomerStore = &OpenTracingLayerDiscountVoucherCustomerStore{DiscountVoucherCustomerStore: childStore.DiscountVoucherCustomer(), Root: &newStore}
+	newStore.FileInfoStore = &OpenTracingLayerFileInfoStore{FileInfoStore: childStore.FileInfo(), Root: &newStore}
+	newStore.FulfillmentStore = &OpenTracingLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
+	newStore.FulfillmentLineStore = &OpenTracingLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
+	newStore.GiftCardStore = &OpenTracingLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
+	newStore.InvoiceEventStore = &OpenTracingLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &OpenTracingLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
+	newStore.MenuStore = &OpenTracingLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemTranslationStore = &OpenTracingLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OrderStore = &OpenTracingLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
+	newStore.OrderDiscountStore = &OpenTracingLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
+	newStore.OrderEventStore = &OpenTracingLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}
+	newStore.OrderLineStore = &OpenTracingLayerOrderLineStore{OrderLineStore: childStore.OrderLine(), Root: &newStore}
+	newStore.PageStore = &OpenTracingLayerPageStore{PageStore: childStore.Page(), Root: &newStore}
+	newStore.PageTranslationStore = &OpenTracingLayerPageTranslationStore{PageTranslationStore: childStore.PageTranslation(), Root: &newStore}
+	newStore.PageTypeStore = &OpenTracingLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
+	newStore.PaymentStore = &OpenTracingLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
+	newStore.PaymentTransactionStore = &OpenTracingLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginConfigurationStore = &OpenTracingLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &OpenTracingLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.ProductStore = &OpenTracingLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
+	newStore.ProductChannelListingStore = &OpenTracingLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
+	newStore.ProductMediaStore = &OpenTracingLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}
+	newStore.ProductTranslationStore = &OpenTracingLayerProductTranslationStore{ProductTranslationStore: childStore.ProductTranslation(), Root: &newStore}
+	newStore.ProductTypeStore = &OpenTracingLayerProductTypeStore{ProductTypeStore: childStore.ProductType(), Root: &newStore}
+	newStore.ProductVariantStore = &OpenTracingLayerProductVariantStore{ProductVariantStore: childStore.ProductVariant(), Root: &newStore}
+	newStore.ProductVariantChannelListingStore = &OpenTracingLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
+	newStore.ProductVariantTranslationStore = &OpenTracingLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &OpenTracingLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
 	newStore.SessionStore = &OpenTracingLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
+	newStore.ShippingMethodStore = &OpenTracingLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
+	newStore.ShippingMethodChannelListingStore = &OpenTracingLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodPostalCodeRuleStore = &OpenTracingLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
+	newStore.ShippingMethodTranslationStore = &OpenTracingLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
+	newStore.ShippingZoneStore = &OpenTracingLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.StatusStore = &OpenTracingLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
+	newStore.StockStore = &OpenTracingLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
 	newStore.SystemStore = &OpenTracingLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
 	newStore.TermsOfServiceStore = &OpenTracingLayerTermsOfServiceStore{TermsOfServiceStore: childStore.TermsOfService(), Root: &newStore}
 	newStore.TokenStore = &OpenTracingLayerTokenStore{TokenStore: childStore.Token(), Root: &newStore}
 	newStore.UserStore = &OpenTracingLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &OpenTracingLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
+	newStore.VariantMediaStore = &OpenTracingLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VoucherChannelListingStore = &OpenTracingLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
+	newStore.VoucherTranslationStore = &OpenTracingLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
+	newStore.WarehouseStore = &OpenTracingLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
+	newStore.WishlistStore = &OpenTracingLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
+	newStore.WishlistItemStore = &OpenTracingLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
 	return &newStore
 }

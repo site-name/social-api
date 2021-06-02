@@ -1,7 +1,12 @@
 package api
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -13,8 +18,21 @@ import (
 func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("", api.ApiHandler(createUser)).Methods(http.MethodPost)
 	// api.BaseRoutes.Users.Handle("", api.ApiSessionRequired(getUsers)).Methods(http.MethodGet)
-	// api.BaseRoutes.Users.Handle("/ids", api.ApiSessionRequired(getUsersByIds)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/ids", api.ApiSessionRequired(getUsersByIds)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/usernames", api.ApiSessionRequired(getUsersByNames)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/search", api.ApiSessionRequiredDisableWhenBusy(searchUsers)).Methods("POST")
+	// api.BaseRoutes.Users.Handle("/autocomplete", api.ApiSessionRequired(autocompleteUsers)).Methods("GET")
+	api.BaseRoutes.Users.Handle("/stats", api.ApiSessionRequired(getTotalUsersStats)).Methods("GET")
+	api.BaseRoutes.Users.Handle("/stats/filtered", api.ApiSessionRequired(getFilteredUsersStats)).Methods("GET")
+
+	api.BaseRoutes.User.Handle("/image/default", api.ApiSessionRequiredTrustRequester(getDefaultProfileImage)).Methods("GET")
+	api.BaseRoutes.User.Handle("/image", api.ApiSessionRequiredTrustRequester(getProfileImage)).Methods("GET")
+	api.BaseRoutes.User.Handle("/image", api.ApiSessionRequired(setProfileImage)).Methods("POST")
+	api.BaseRoutes.User.Handle("/image", api.ApiSessionRequired(setDefaultProfileImage)).Methods("DELETE")
+	api.BaseRoutes.User.Handle("/password", api.ApiSessionRequired(updatePassword)).Methods("PUT")
+	api.BaseRoutes.Users.Handle("/password/reset", api.ApiHandler(resetPassword)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/password/reset/send", api.ApiHandler(sendPasswordReset)).Methods("POST")
+	api.BaseRoutes.User.Handle("/roles", api.ApiSessionRequired(updateUserRoles)).Methods("PUT")
 
 	api.BaseRoutes.User.Handle("", api.ApiSessionRequired(deleteUser)).Methods("DELETE")
 }
@@ -86,53 +104,75 @@ func createUser(c *Context, w http.ResponseWriter, r *http.Request) {
 
 // }
 
-// func getUsersByIds(c *Context, w http.ResponseWriter, r *http.Request) {
-// 	userIds := model.ArrayFromJson(r.Body)
+func getUsersByIds(c *Context, w http.ResponseWriter, r *http.Request) {
+	userIds := model.ArrayFromJson(r.Body)
 
-// 	if len(userIds) == 0 {
-// 		c.SetInvalidParam("user_ids")
-// 		return
-// 	}
+	if len(userIds) == 0 {
+		c.SetInvalidParam("user_ids")
+		return
+	}
 
-// 	sinceString := r.URL.Query().Get("since")
+	sinceString := r.URL.Query().Get("since")
 
-// 	options := &store.UserGetByIdsOpts{
-// 		IsAdmin: c.IsSystemAdmin(),
-// 	}
-// }
+	options := &store.UserGetByIdsOpts{
+		IsAdmin: c.IsSystemAdmin(),
+	}
+
+	if sinceString != "" {
+		since, parseErr := strconv.ParseInt(sinceString, 10, 64)
+		if parseErr != nil {
+			c.SetInvalidParam("since")
+			return
+		}
+		options.Since = since
+	}
+
+	users, err := c.App.GetUsersByIds(userIds, options)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserListToJson(users)))
+}
 
 func searchUsers(ctx *Context, w http.ResponseWriter, r *http.Request) {
-	// props := account.UserSearchFromJson(r.Body)
-	// if props == nil {
-	// 	ctx.SetInvalidParam("")
-	// 	return
-	// }
-	// if props.Term == "" {
-	// 	ctx.SetInvalidParam("term")
-	// }
-	// if props.Limit <= 0 || props.Limit > account.USER_SEARCH_MAX_LIMIT {
-	// 	ctx.SetInvalidParam("limit")
-	// 	return
-	// }
+	props := account.UserSearchFromJson(r.Body)
+	if props == nil {
+		ctx.SetInvalidParam("")
+		return
+	}
+	if props.Term == "" {
+		ctx.SetInvalidParam("term")
+	}
+	if props.Limit <= 0 || props.Limit > account.USER_SEARCH_MAX_LIMIT {
+		ctx.SetInvalidParam("limit")
+		return
+	}
 
-	// options := &account.UserSearchOptions{
-	// 	IsAdmin:       ctx.IsSystemAdmin(),
-	// 	AllowInactive: props.AllowInactive,
-	// 	Limit:         props.Limit,
-	// 	Role:          props.Role,
-	// 	Roles:         props.Roles,
-	// }
+	options := &account.UserSearchOptions{
+		IsAdmin:       ctx.IsSystemAdmin(),
+		AllowInactive: props.AllowInactive,
+		Limit:         props.Limit,
+		Role:          props.Role,
+		Roles:         props.Roles,
+	}
 
-	// if ctx.App.SessionHasPermissionTo(*ctx.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
-	// 	options.AllowEmails = true
-	// 	options.AllowFullNames = true
-	// } else {
-	// 	options.AllowEmails = *ctx.App.Config().PrivacySettings.ShowEmailAddress
-	// 	options.AllowFullNames = *ctx.App.Config().PrivacySettings.ShowFullName
-	// }
+	if ctx.App.SessionHasPermissionTo(*ctx.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+		options.AllowEmails = true
+		options.AllowFullNames = true
+	} else {
+		options.AllowEmails = *ctx.App.Config().PrivacySettings.ShowEmailAddress
+		options.AllowFullNames = *ctx.App.Config().PrivacySettings.ShowFullName
+	}
 
-	// profiles, err := ctx.App.SearchUsers
-	panic("not implemented")
+	profiles, err := ctx.App.SearchUsers(props, options)
+	if err != nil {
+		ctx.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserListToJson(profiles)))
 }
 
 func deleteUser(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -249,5 +289,358 @@ func updatePassword(c *Context, w http.ResponseWriter, r *http.Request) {
 	auditRec.Success()
 	c.LogAudit("completed")
 
+	ReturnStatusOK(w)
+}
+
+func resetPassword(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+
+	token := props["token"]
+	if len(token) != model.TOKEN_SIZE {
+		c.SetInvalidParam("token")
+		return
+	}
+
+	newPassword := props["new_password"]
+
+	auditRec := c.MakeAuditRecord("resetPassword", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("token", token)
+	c.LogAudit("attempt - token=" + token)
+
+	if err := c.App.ResetPasswordFromToken(token, newPassword); err != nil {
+		c.LogAudit("fail - token=" + token)
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("success - token=" + token)
+
+	ReturnStatusOK(w)
+}
+
+func getUsersByNames(c *Context, w http.ResponseWriter, r *http.Request) {
+	usernames := model.ArrayFromJson(r.Body)
+
+	if len(usernames) == 0 {
+		c.SetInvalidParam("usernames")
+		return
+	}
+
+	users, err := c.App.GetUsersByUsernames(usernames, c.IsSystemAdmin())
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserListToJson(users)))
+}
+
+// func autocompleteUsers(c *Context, w http.ResponseWriter, r *http.Request) {
+// 	name := r.URL.Query().Get("name")
+// 	limitStr := r.URL.Query().Get("limit")
+// 	limit, _ := strconv.Atoi(limitStr)
+
+// 	if limitStr == "" {
+// 		limit = account.USER_SEARCH_DEFAULT_LIMIT
+// 	} else if limit > account.USER_SEARCH_MAX_LIMIT {
+// 		limit = account.USER_SEARCH_MAX_LIMIT
+// 	}
+
+// 	options := &account.UserSearchOptions{
+// 		IsAdmin:     c.IsSystemAdmin(),
+// 		AllowEmails: false,
+// 		Limit:       limit,
+// 	}
+
+// 	if c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+// 		options.AllowFullNames = true
+// 	} else {
+// 		options.AllowFullNames = *c.App.Config().PrivacySettings.ShowFullName
+// 	}
+
+// 	var autocomplete model.
+// }
+
+func getTotalUsersStats(c *Context, w http.ResponseWriter, r *http.Request) {
+	if c.Err != nil {
+		return
+	}
+
+	stats, err := c.App.GetTotalUsersStats()
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(stats.ToJson()))
+}
+
+func getFilteredUsersStats(c *Context, w http.ResponseWriter, r *http.Request) {
+	includeDeleted := r.URL.Query().Get("include_deleted")
+	rolesString := r.URL.Query().Get("roles")
+
+	includeDeletedBool, _ := strconv.ParseBool(includeDeleted)
+
+	roles := []string{}
+	var rolesValid bool
+	if rolesString != "" {
+		roles, rolesValid = model.CleanRoleNames(strings.Split(rolesString, ","))
+		if !rolesValid {
+			c.SetInvalidParam("roles")
+			return
+		}
+	}
+
+	options := &account.UserCountOptions{
+		IncludeDeleted: includeDeletedBool,
+		Roles:          roles,
+	}
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS) {
+		c.SetPermissionError(model.PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS)
+		return
+	}
+
+	stats, err := c.App.GetFilteredUsersStats(options)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(stats.ToJson()))
+}
+
+func getDefaultProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	user, err := c.App.GetUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	img, err := c.App.GetDefaultProfileImage(user)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%v, private", 24*60*60)) // 24 hrs
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(img)
+}
+
+func getProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	user, err := c.App.GetUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	etag := strconv.FormatInt(user.LastPictureUpdate, 10)
+	if c.HandleEtag(etag, "Get Profile Image", w, r) {
+		return
+	}
+
+	img, readFailed, err := c.App.GetProfileImage(user)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	if readFailed {
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%v, private", 5*60)) // 5 mins
+	} else {
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%v, private", 24*60*60)) // 24 hrs
+		w.Header().Set(model.HEADER_ETAG_SERVER, etag)
+	}
+
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(img)
+}
+
+func setProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
+	defer io.Copy(ioutil.Discard, r.Body)
+
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if *c.App.Config().FileSettings.DriverName == "" {
+		c.Err = model.NewAppError("uploadProfileImage", "api.user.upload_profile_user.storage.app_error", nil, "", http.StatusNotImplemented)
+		return
+	}
+
+	if r.ContentLength > *c.App.Config().FileSettings.MaxFileSize {
+		c.Err = model.NewAppError("uploadProfileImage", "api.user.upload_profile_user.too_large.app_error", nil, "", http.StatusRequestEntityTooLarge)
+		return
+	}
+
+	if err := r.ParseMultipartForm(*c.App.Config().FileSettings.MaxFileSize); err != nil {
+		c.Err = model.NewAppError("uploadProfileImage", "api.user.upload_profile_user.parse.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	m := r.MultipartForm
+	imageArray, ok := m.File["image"]
+	if !ok {
+		c.Err = model.NewAppError("uploadProfileImage", "api.user.upload_profile_user.no_file.app_error", nil, "", http.StatusBadRequest)
+		return
+	}
+
+	if len(imageArray) <= 0 {
+		c.Err = model.NewAppError("uploadProfileImage", "api.user.upload_profile_user.array.app_error", nil, "", http.StatusBadRequest)
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("setProfileImage", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	if imageArray[0] != nil {
+		auditRec.AddMeta("filename", imageArray[0].Filename)
+	}
+
+	user, err := c.App.GetUser(c.Params.UserId)
+	if err != nil {
+		c.SetInvalidUrlParam("user_id")
+		return
+	}
+	auditRec.AddMeta("user", user)
+
+	if (user.IsLDAPUser() || (user.IsSAMLUser() && *c.App.Config().SamlSettings.EnableSyncWithLdap)) &&
+		*c.App.Config().LdapSettings.PictureAttribute != "" {
+		c.Err = model.NewAppError(
+			"uploadProfileImage", "api.user.upload_profile_user.login_provider_attribute_set.app_error",
+			nil, "", http.StatusConflict)
+		return
+	}
+
+	imageData := imageArray[0]
+	if err := c.App.SetProfileImage(c.Params.UserId, imageData); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("")
+
+	ReturnStatusOK(w)
+}
+
+func setDefaultProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if *c.App.Config().FileSettings.DriverName == "" {
+		c.Err = model.NewAppError("setDefaultProfileImage", "api.user.upload_profile_user.storage.app_error", nil, "", http.StatusNotImplemented)
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("setDefaultProfileImage", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+
+	user, err := c.App.GetUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+	auditRec.AddMeta("user", user)
+
+	if err := c.App.SetDefaultProfileImage(user); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("")
+
+	ReturnStatusOK(w)
+}
+
+func updateUserRoles(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	props := model.MapFromJson(r.Body)
+	newRoles := props["roles"]
+	if !account.IsValidUserRoles(newRoles) {
+		c.SetInvalidParam("roles")
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("updateUserRoles", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("roles", newRoles)
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_ROLES) {
+		c.SetPermissionError(model.PERMISSION_MANAGE_ROLES)
+		return
+	}
+
+	user, err := c.App.UpdateUserRoles(c.Params.UserId, newRoles, true)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	auditRec.AddMeta("user", user)
+	c.LogAudit(fmt.Sprintf("user=%s roles=%s", c.Params.UserId, newRoles))
+
+	ReturnStatusOK(w)
+}
+
+func sendPasswordReset(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+
+	email := props["email"]
+	email = strings.ToLower(email)
+	if email == "" {
+		c.SetInvalidParam("email")
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("sendPasswordReset", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("email", email)
+
+	sent, err := c.App.SendPasswordReset(email, c.App.GetSiteURL())
+	if err != nil {
+		if *c.App.Config().ServiceSettings.ExperimentalEnableHardenedMode {
+			ReturnStatusOK(w)
+		} else {
+			c.Err = err
+		}
+		return
+	}
+
+	if sent {
+		auditRec.Success()
+		c.LogAudit("sent=" + email)
+	}
 	ReturnStatusOK(w)
 }

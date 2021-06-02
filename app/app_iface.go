@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/services/httpservice"
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
+	"github.com/sitename/sitename/store"
 )
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
@@ -54,6 +55,8 @@ type AppIface interface {
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
+	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
+	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model.Config
 	// GetSessionLengthInMillis returns the session length, in milliseconds,
@@ -118,6 +121,7 @@ type AppIface interface {
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
 	Config() *model.Config
+	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
@@ -144,6 +148,7 @@ type AppIface interface {
 	GetClusterId() string
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
+	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
@@ -153,6 +158,7 @@ type AppIface interface {
 	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
+	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
@@ -160,6 +166,8 @@ type AppIface interface {
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	GetUserByUsername(username string) (*account.User, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
+	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
+	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
 	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
@@ -186,6 +194,7 @@ type AppIface interface {
 	ReloadConfig() error
 	RemoveConfigListener(id string)
 	RemoveFile(path string) *model.AppError
+	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
 	ResetPermissionsSystem() *model.AppError
 	RevokeAllSessions(userID string) *model.AppError
 	RevokeSession(session *model.Session) *model.AppError
@@ -198,6 +207,7 @@ type AppIface interface {
 	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
 	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
+	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
 	SessionCacheLength() int
 	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool
 	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
@@ -219,6 +229,7 @@ type AppIface interface {
 	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
 	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
+	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError

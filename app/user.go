@@ -682,6 +682,7 @@ func (a *App) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError
 
 	return data, false, nil
 }
+
 func (a *App) FileBackend() (filestore.FileBackend, *model.AppError) {
 	return a.Srv().FileBackend()
 }
@@ -699,15 +700,7 @@ func (a *App) ReadFile(path string) ([]byte, *model.AppError) {
 }
 
 func (a *App) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
-	var img []byte
-	var appErr *model.AppError
-
-	img, appErr = CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return img, nil
+	return a.srv.GetDefaultProfileImage(user)
 }
 
 func (a *App) SetDefaultProfileImage(user *account.User) *model.AppError {
@@ -1150,7 +1143,18 @@ func (a *App) DeactivateGuests(c *request.Context) *model.AppError {
 }
 
 func (a *App) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
-	panic("not implemented")
+	term := strings.TrimSpace(props.Term)
+
+	users, err := a.Srv().Store.User().Search(term, options)
+	if err != nil {
+		return nil, model.NewAppError("SearchUsersInTeam", "app.user.search.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	for _, user := range users {
+		a.SanitizeProfile(user, options.IsAdmin)
+	}
+
+	return users, nil
 }
 
 func (a *App) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
@@ -1275,4 +1279,159 @@ func (a *App) UpdatePasswordByUserIdSendEmail(userID, newPassword, method string
 	}
 
 	return a.UpdatePasswordSendEmail(user, newPassword, method)
+}
+
+func (a *App) GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError) {
+	rtoken, err := a.Srv().Store.Token().GetByToken(token)
+	if err != nil {
+		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.invalid_link.app_error", nil, err.Error(), http.StatusBadRequest)
+	}
+	if rtoken.Type != TokenTypePasswordRecovery {
+		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.broken_token.app_error", nil, "", http.StatusBadRequest)
+	}
+	return rtoken, nil
+}
+
+func (a *App) ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError {
+	token, err := a.GetPasswordRecoveryToken(userSuppliedTokenString)
+	if err != nil {
+		return err
+	}
+	if model.GetMillis()-token.CreateAt >= PasswordRecoverExpiryTime {
+		return model.NewAppError("resetPassword", "api.user.reset_password.link_expired.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	tokenData := tokenExtra{}
+	err2 := json.JSON.Unmarshal([]byte(token.Extra), &tokenData)
+	if err2 != nil {
+		return model.NewAppError("resetPassword", "api.user.reset_password.token_parse.error", nil, "", http.StatusInternalServerError)
+	}
+
+	user, err := a.GetUser(tokenData.UserId)
+	if err != nil {
+		return err
+	}
+
+	if user.Email != tokenData.Email {
+		return model.NewAppError("resetPassword", "api.user.reset_password.link_expired.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	if user.IsSSOUser() {
+		return model.NewAppError("ResetPasswordFromCode", "api.user.reset_password.sso.app_error", nil, "userId="+user.Id, http.StatusBadRequest)
+	}
+
+	T := i18n.GetUserTranslations(user.Locale)
+
+	if err := a.UpdatePasswordSendEmail(user, newPassword, T("api.user.reset_password.method")); err != nil {
+		return err
+	}
+
+	if err := a.DeleteToken(token); err != nil {
+		slog.Warn("Failed to delete token", slog.Err(err))
+	}
+
+	return nil
+}
+
+func (a *App) sanitizeProfiles(users []*account.User, asAdmin bool) []*account.User {
+	for _, u := range users {
+		a.SanitizeProfile(u, asAdmin)
+	}
+
+	return users
+}
+
+func (a *App) GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError) {
+	users, err := a.Srv().Store.User().GetProfileByIds(context.Background(), userIDs, options, true)
+	if err != nil {
+		return nil, model.NewAppError("GetUsersByIds", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return a.sanitizeProfiles(users, options.IsAdmin), nil
+}
+
+func (a *App) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError) {
+	users, err := a.Srv().Store.User().GetProfilesByUsernames(usernames)
+	if err != nil {
+		return nil, model.NewAppError("GetUsersByUsernames", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return a.sanitizeProfiles(users, asAdmin), nil
+}
+
+func (a *App) GetTotalUsersStats() (*account.UsersStats, *model.AppError) {
+	count, err := a.Srv().Store.User().Count(account.UserCountOptions{})
+	if err != nil {
+		return nil, model.NewAppError("GetTotalUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	stats := &account.UsersStats{
+		TotalUsersCount: count,
+	}
+	return stats, nil
+}
+
+// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
+func (a *App) GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError) {
+	count, err := a.Srv().Store.User().Count(*options)
+	if err != nil {
+		return nil, model.NewAppError("GetFilteredUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	stats := &account.UsersStats{
+		TotalUsersCount: count,
+	}
+	return stats, nil
+}
+
+func (a *App) UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
+	user, err := a.GetUser(userID)
+	if err != nil {
+		err.StatusCode = http.StatusBadRequest
+		return nil, err
+	}
+
+	return a.UpdateUserRolesWithUser(user, newRoles, sendWebSocketEvent)
+}
+
+func (a *App) SendPasswordReset(email string, siteURL string) (bool, *model.AppError) {
+	user, err := a.GetUserByEmail(email)
+	if err != nil {
+		return false, nil
+	}
+
+	if user.AuthData != nil && *user.AuthData != "" {
+		return false, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.sso.app_error", nil, "userId="+user.Id, http.StatusBadRequest)
+	}
+
+	token, err := a.CreatePasswordRecoveryToken(user.Id, user.Email)
+	if err != nil {
+		return false, err
+	}
+
+	return a.Srv().EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
+}
+
+func (a *App) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError) {
+
+	tokenExtra := tokenExtra{
+		UserId: userID,
+		Email:  email,
+	}
+	jsonData, err := json.JSON.Marshal(tokenExtra)
+
+	if err != nil {
+		return nil, model.NewAppError("CreatePasswordRecoveryToken", "api.user.create_password_token.error", nil, "", http.StatusInternalServerError)
+	}
+
+	token := model.NewToken(TokenTypePasswordRecovery, string(jsonData))
+
+	if err := a.Srv().Store.Token().Save(token); err != nil {
+		var appErr *model.AppError
+		switch {
+		case errors.As(err, &appErr):
+			return nil, appErr
+		default:
+			return nil, model.NewAppError("CreatePasswordRecoveryToken", "app.recover.save.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	return token, nil
 }

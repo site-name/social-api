@@ -508,7 +508,7 @@ func (us *SqlUserStore) GetProfiles(options *account.UserGetOptions) ([]*account
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) GetProfilesByUsernames(usernames []string /*, viewRestrictions *account.ViewUsersRestrictions */) ([]*account.User, error) {
+func (us *SqlUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
 	query := us.usersQuery.Where(squirrel.Eq{"Username": usernames}).OrderBy("u.Username ASC")
 
 	queryString, args, err := query.ToSql()
@@ -850,14 +850,10 @@ func generateSearchQuery(query squirrel.SelectBuilder, terms []string, fields []
 	return query
 }
 
-func (us *SqlUserStore) Search(teamId string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (us *SqlUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
 	query := us.usersQuery.
 		OrderBy("Username ASC").
 		Limit(uint64(options.Limit))
-
-	// if teamId != "" {
-	// 	query = query.Join("TeamMembers tm ON ( tm.UserId = u.Id AND tm.DeleteAt = 0 AND tm.TeamId = ? )", teamId)
-	// }
 	return us.performSearch(query, term, options)
 }
 

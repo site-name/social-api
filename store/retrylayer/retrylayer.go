@@ -17,44 +17,351 @@ import (
 
 type RetryLayer struct {
 	store.Store
-	AddressStore          store.AddressStore
-	AppStore              store.AppStore
-	AuditStore            store.AuditStore
-	ClusterDiscoveryStore store.ClusterDiscoveryStore
-	JobStore              store.JobStore
-	PreferenceStore       store.PreferenceStore
-	RoleStore             store.RoleStore
-	SessionStore          store.SessionStore
-	StatusStore           store.StatusStore
-	SystemStore           store.SystemStore
-	TermsOfServiceStore   store.TermsOfServiceStore
-	TokenStore            store.TokenStore
-	UserStore             store.UserStore
-	UserAccessTokenStore  store.UserAccessTokenStore
+	AddressStore                       store.AddressStore
+	AllocationStore                    store.AllocationStore
+	AppStore                           store.AppStore
+	AppTokenStore                      store.AppTokenStore
+	AssignedPageAttributeStore         store.AssignedPageAttributeStore
+	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
+	AssignedProductAttributeStore      store.AssignedProductAttributeStore
+	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
+	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
+	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
+	AttributeStore                     store.AttributeStore
+	AttributePageStore                 store.AttributePageStore
+	AttributeProductStore              store.AttributeProductStore
+	AttributeTranslationStore          store.AttributeTranslationStore
+	AttributeValueStore                store.AttributeValueStore
+	AttributeValueTranslationStore     store.AttributeValueTranslationStore
+	AttributeVariantStore              store.AttributeVariantStore
+	AuditStore                         store.AuditStore
+	CategoryStore                      store.CategoryStore
+	CategoryTranslationStore           store.CategoryTranslationStore
+	ChannelStore                       store.ChannelStore
+	CheckoutStore                      store.CheckoutStore
+	CheckoutLineStore                  store.CheckoutLineStore
+	ClusterDiscoveryStore              store.ClusterDiscoveryStore
+	CollectionStore                    store.CollectionStore
+	CollectionChannelListingStore      store.CollectionChannelListingStore
+	CollectionProductStore             store.CollectionProductStore
+	CollectionTranslationStore         store.CollectionTranslationStore
+	ComplianceStore                    store.ComplianceStore
+	CsvExportEventStore                store.CsvExportEventStore
+	CsvExportFileStore                 store.CsvExportFileStore
+	DigitalContentStore                store.DigitalContentStore
+	DigitalContentUrlStore             store.DigitalContentUrlStore
+	DiscountSaleStore                  store.DiscountSaleStore
+	DiscountSaleChannelListingStore    store.DiscountSaleChannelListingStore
+	DiscountSaleTranslationStore       store.DiscountSaleTranslationStore
+	DiscountVoucherStore               store.DiscountVoucherStore
+	DiscountVoucherCustomerStore       store.DiscountVoucherCustomerStore
+	FileInfoStore                      store.FileInfoStore
+	FulfillmentStore                   store.FulfillmentStore
+	FulfillmentLineStore               store.FulfillmentLineStore
+	GiftCardStore                      store.GiftCardStore
+	InvoiceEventStore                  store.InvoiceEventStore
+	JobStore                           store.JobStore
+	MenuStore                          store.MenuStore
+	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OrderStore                         store.OrderStore
+	OrderDiscountStore                 store.OrderDiscountStore
+	OrderEventStore                    store.OrderEventStore
+	OrderLineStore                     store.OrderLineStore
+	PageStore                          store.PageStore
+	PageTranslationStore               store.PageTranslationStore
+	PageTypeStore                      store.PageTypeStore
+	PaymentStore                       store.PaymentStore
+	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginConfigurationStore           store.PluginConfigurationStore
+	PreferenceStore                    store.PreferenceStore
+	ProductStore                       store.ProductStore
+	ProductChannelListingStore         store.ProductChannelListingStore
+	ProductMediaStore                  store.ProductMediaStore
+	ProductTranslationStore            store.ProductTranslationStore
+	ProductTypeStore                   store.ProductTypeStore
+	ProductVariantStore                store.ProductVariantStore
+	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
+	ProductVariantTranslationStore     store.ProductVariantTranslationStore
+	RoleStore                          store.RoleStore
+	SessionStore                       store.SessionStore
+	ShippingMethodStore                store.ShippingMethodStore
+	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
+	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
+	ShippingZoneStore                  store.ShippingZoneStore
+	StatusStore                        store.StatusStore
+	StockStore                         store.StockStore
+	SystemStore                        store.SystemStore
+	TermsOfServiceStore                store.TermsOfServiceStore
+	TokenStore                         store.TokenStore
+	UserStore                          store.UserStore
+	UserAccessTokenStore               store.UserAccessTokenStore
+	VariantMediaStore                  store.VariantMediaStore
+	VoucherChannelListingStore         store.VoucherChannelListingStore
+	VoucherTranslationStore            store.VoucherTranslationStore
+	WarehouseStore                     store.WarehouseStore
+	WishlistStore                      store.WishlistStore
+	WishlistItemStore                  store.WishlistItemStore
 }
 
 func (s *RetryLayer) Address() store.AddressStore {
 	return s.AddressStore
 }
 
+func (s *RetryLayer) Allocation() store.AllocationStore {
+	return s.AllocationStore
+}
+
 func (s *RetryLayer) App() store.AppStore {
 	return s.AppStore
+}
+
+func (s *RetryLayer) AppToken() store.AppTokenStore {
+	return s.AppTokenStore
+}
+
+func (s *RetryLayer) AssignedPageAttribute() store.AssignedPageAttributeStore {
+	return s.AssignedPageAttributeStore
+}
+
+func (s *RetryLayer) AssignedPageAttributeValue() store.AssignedPageAttributeValueStore {
+	return s.AssignedPageAttributeValueStore
+}
+
+func (s *RetryLayer) AssignedProductAttribute() store.AssignedProductAttributeStore {
+	return s.AssignedProductAttributeStore
+}
+
+func (s *RetryLayer) AssignedProductAttributeValue() store.AssignedProductAttributeValueStore {
+	return s.AssignedProductAttributeValueStore
+}
+
+func (s *RetryLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
+	return s.AssignedVariantAttributeStore
+}
+
+func (s *RetryLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
+	return s.AssignedVariantAttributeValueStore
+}
+
+func (s *RetryLayer) Attribute() store.AttributeStore {
+	return s.AttributeStore
+}
+
+func (s *RetryLayer) AttributePage() store.AttributePageStore {
+	return s.AttributePageStore
+}
+
+func (s *RetryLayer) AttributeProduct() store.AttributeProductStore {
+	return s.AttributeProductStore
+}
+
+func (s *RetryLayer) AttributeTranslation() store.AttributeTranslationStore {
+	return s.AttributeTranslationStore
+}
+
+func (s *RetryLayer) AttributeValue() store.AttributeValueStore {
+	return s.AttributeValueStore
+}
+
+func (s *RetryLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
+	return s.AttributeValueTranslationStore
+}
+
+func (s *RetryLayer) AttributeVariant() store.AttributeVariantStore {
+	return s.AttributeVariantStore
 }
 
 func (s *RetryLayer) Audit() store.AuditStore {
 	return s.AuditStore
 }
 
+func (s *RetryLayer) Category() store.CategoryStore {
+	return s.CategoryStore
+}
+
+func (s *RetryLayer) CategoryTranslation() store.CategoryTranslationStore {
+	return s.CategoryTranslationStore
+}
+
+func (s *RetryLayer) Channel() store.ChannelStore {
+	return s.ChannelStore
+}
+
+func (s *RetryLayer) Checkout() store.CheckoutStore {
+	return s.CheckoutStore
+}
+
+func (s *RetryLayer) CheckoutLine() store.CheckoutLineStore {
+	return s.CheckoutLineStore
+}
+
 func (s *RetryLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
 	return s.ClusterDiscoveryStore
+}
+
+func (s *RetryLayer) Collection() store.CollectionStore {
+	return s.CollectionStore
+}
+
+func (s *RetryLayer) CollectionChannelListing() store.CollectionChannelListingStore {
+	return s.CollectionChannelListingStore
+}
+
+func (s *RetryLayer) CollectionProduct() store.CollectionProductStore {
+	return s.CollectionProductStore
+}
+
+func (s *RetryLayer) CollectionTranslation() store.CollectionTranslationStore {
+	return s.CollectionTranslationStore
+}
+
+func (s *RetryLayer) Compliance() store.ComplianceStore {
+	return s.ComplianceStore
+}
+
+func (s *RetryLayer) CsvExportEvent() store.CsvExportEventStore {
+	return s.CsvExportEventStore
+}
+
+func (s *RetryLayer) CsvExportFile() store.CsvExportFileStore {
+	return s.CsvExportFileStore
+}
+
+func (s *RetryLayer) DigitalContent() store.DigitalContentStore {
+	return s.DigitalContentStore
+}
+
+func (s *RetryLayer) DigitalContentUrl() store.DigitalContentUrlStore {
+	return s.DigitalContentUrlStore
+}
+
+func (s *RetryLayer) DiscountSale() store.DiscountSaleStore {
+	return s.DiscountSaleStore
+}
+
+func (s *RetryLayer) DiscountSaleChannelListing() store.DiscountSaleChannelListingStore {
+	return s.DiscountSaleChannelListingStore
+}
+
+func (s *RetryLayer) DiscountSaleTranslation() store.DiscountSaleTranslationStore {
+	return s.DiscountSaleTranslationStore
+}
+
+func (s *RetryLayer) DiscountVoucher() store.DiscountVoucherStore {
+	return s.DiscountVoucherStore
+}
+
+func (s *RetryLayer) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
+	return s.DiscountVoucherCustomerStore
+}
+
+func (s *RetryLayer) FileInfo() store.FileInfoStore {
+	return s.FileInfoStore
+}
+
+func (s *RetryLayer) Fulfillment() store.FulfillmentStore {
+	return s.FulfillmentStore
+}
+
+func (s *RetryLayer) FulfillmentLine() store.FulfillmentLineStore {
+	return s.FulfillmentLineStore
+}
+
+func (s *RetryLayer) GiftCard() store.GiftCardStore {
+	return s.GiftCardStore
+}
+
+func (s *RetryLayer) InvoiceEvent() store.InvoiceEventStore {
+	return s.InvoiceEventStore
 }
 
 func (s *RetryLayer) Job() store.JobStore {
 	return s.JobStore
 }
 
+func (s *RetryLayer) Menu() store.MenuStore {
+	return s.MenuStore
+}
+
+func (s *RetryLayer) MenuItemTranslation() store.MenuItemTranslationStore {
+	return s.MenuItemTranslationStore
+}
+
+func (s *RetryLayer) Order() store.OrderStore {
+	return s.OrderStore
+}
+
+func (s *RetryLayer) OrderDiscount() store.OrderDiscountStore {
+	return s.OrderDiscountStore
+}
+
+func (s *RetryLayer) OrderEvent() store.OrderEventStore {
+	return s.OrderEventStore
+}
+
+func (s *RetryLayer) OrderLine() store.OrderLineStore {
+	return s.OrderLineStore
+}
+
+func (s *RetryLayer) Page() store.PageStore {
+	return s.PageStore
+}
+
+func (s *RetryLayer) PageTranslation() store.PageTranslationStore {
+	return s.PageTranslationStore
+}
+
+func (s *RetryLayer) PageType() store.PageTypeStore {
+	return s.PageTypeStore
+}
+
+func (s *RetryLayer) Payment() store.PaymentStore {
+	return s.PaymentStore
+}
+
+func (s *RetryLayer) PaymentTransaction() store.PaymentTransactionStore {
+	return s.PaymentTransactionStore
+}
+
+func (s *RetryLayer) PluginConfiguration() store.PluginConfigurationStore {
+	return s.PluginConfigurationStore
+}
+
 func (s *RetryLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *RetryLayer) Product() store.ProductStore {
+	return s.ProductStore
+}
+
+func (s *RetryLayer) ProductChannelListing() store.ProductChannelListingStore {
+	return s.ProductChannelListingStore
+}
+
+func (s *RetryLayer) ProductMedia() store.ProductMediaStore {
+	return s.ProductMediaStore
+}
+
+func (s *RetryLayer) ProductTranslation() store.ProductTranslationStore {
+	return s.ProductTranslationStore
+}
+
+func (s *RetryLayer) ProductType() store.ProductTypeStore {
+	return s.ProductTypeStore
+}
+
+func (s *RetryLayer) ProductVariant() store.ProductVariantStore {
+	return s.ProductVariantStore
+}
+
+func (s *RetryLayer) ProductVariantChannelListing() store.ProductVariantChannelListingStore {
+	return s.ProductVariantChannelListingStore
+}
+
+func (s *RetryLayer) ProductVariantTranslation() store.ProductVariantTranslationStore {
+	return s.ProductVariantTranslationStore
 }
 
 func (s *RetryLayer) Role() store.RoleStore {
@@ -65,8 +372,32 @@ func (s *RetryLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
 
+func (s *RetryLayer) ShippingMethod() store.ShippingMethodStore {
+	return s.ShippingMethodStore
+}
+
+func (s *RetryLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
+	return s.ShippingMethodChannelListingStore
+}
+
+func (s *RetryLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
+	return s.ShippingMethodPostalCodeRuleStore
+}
+
+func (s *RetryLayer) ShippingMethodTranslation() store.ShippingMethodTranslationStore {
+	return s.ShippingMethodTranslationStore
+}
+
+func (s *RetryLayer) ShippingZone() store.ShippingZoneStore {
+	return s.ShippingZoneStore
+}
+
 func (s *RetryLayer) Status() store.StatusStore {
 	return s.StatusStore
+}
+
+func (s *RetryLayer) Stock() store.StockStore {
+	return s.StockStore
 }
 
 func (s *RetryLayer) System() store.SystemStore {
@@ -89,8 +420,37 @@ func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
 }
 
+func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
+	return s.VariantMediaStore
+}
+
+func (s *RetryLayer) VoucherChannelListing() store.VoucherChannelListingStore {
+	return s.VoucherChannelListingStore
+}
+
+func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
+	return s.VoucherTranslationStore
+}
+
+func (s *RetryLayer) Warehouse() store.WarehouseStore {
+	return s.WarehouseStore
+}
+
+func (s *RetryLayer) Wishlist() store.WishlistStore {
+	return s.WishlistStore
+}
+
+func (s *RetryLayer) WishlistItem() store.WishlistItemStore {
+	return s.WishlistItemStore
+}
+
 type RetryLayerAddressStore struct {
 	store.AddressStore
+	Root *RetryLayer
+}
+
+type RetryLayerAllocationStore struct {
+	store.AllocationStore
 	Root *RetryLayer
 }
 
@@ -99,8 +459,103 @@ type RetryLayerAppStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerAppTokenStore struct {
+	store.AppTokenStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedPageAttributeStore struct {
+	store.AssignedPageAttributeStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedPageAttributeValueStore struct {
+	store.AssignedPageAttributeValueStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedProductAttributeStore struct {
+	store.AssignedProductAttributeStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedProductAttributeValueStore struct {
+	store.AssignedProductAttributeValueStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedVariantAttributeStore struct {
+	store.AssignedVariantAttributeStore
+	Root *RetryLayer
+}
+
+type RetryLayerAssignedVariantAttributeValueStore struct {
+	store.AssignedVariantAttributeValueStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeStore struct {
+	store.AttributeStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributePageStore struct {
+	store.AttributePageStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeProductStore struct {
+	store.AttributeProductStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeTranslationStore struct {
+	store.AttributeTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeValueStore struct {
+	store.AttributeValueStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeValueTranslationStore struct {
+	store.AttributeValueTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerAttributeVariantStore struct {
+	store.AttributeVariantStore
+	Root *RetryLayer
+}
+
 type RetryLayerAuditStore struct {
 	store.AuditStore
+	Root *RetryLayer
+}
+
+type RetryLayerCategoryStore struct {
+	store.CategoryStore
+	Root *RetryLayer
+}
+
+type RetryLayerCategoryTranslationStore struct {
+	store.CategoryTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerChannelStore struct {
+	store.ChannelStore
+	Root *RetryLayer
+}
+
+type RetryLayerCheckoutStore struct {
+	store.CheckoutStore
+	Root *RetryLayer
+}
+
+type RetryLayerCheckoutLineStore struct {
+	store.CheckoutLineStore
 	Root *RetryLayer
 }
 
@@ -109,13 +564,208 @@ type RetryLayerClusterDiscoveryStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerCollectionStore struct {
+	store.CollectionStore
+	Root *RetryLayer
+}
+
+type RetryLayerCollectionChannelListingStore struct {
+	store.CollectionChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerCollectionProductStore struct {
+	store.CollectionProductStore
+	Root *RetryLayer
+}
+
+type RetryLayerCollectionTranslationStore struct {
+	store.CollectionTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerComplianceStore struct {
+	store.ComplianceStore
+	Root *RetryLayer
+}
+
+type RetryLayerCsvExportEventStore struct {
+	store.CsvExportEventStore
+	Root *RetryLayer
+}
+
+type RetryLayerCsvExportFileStore struct {
+	store.CsvExportFileStore
+	Root *RetryLayer
+}
+
+type RetryLayerDigitalContentStore struct {
+	store.DigitalContentStore
+	Root *RetryLayer
+}
+
+type RetryLayerDigitalContentUrlStore struct {
+	store.DigitalContentUrlStore
+	Root *RetryLayer
+}
+
+type RetryLayerDiscountSaleStore struct {
+	store.DiscountSaleStore
+	Root *RetryLayer
+}
+
+type RetryLayerDiscountSaleChannelListingStore struct {
+	store.DiscountSaleChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerDiscountSaleTranslationStore struct {
+	store.DiscountSaleTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerDiscountVoucherStore struct {
+	store.DiscountVoucherStore
+	Root *RetryLayer
+}
+
+type RetryLayerDiscountVoucherCustomerStore struct {
+	store.DiscountVoucherCustomerStore
+	Root *RetryLayer
+}
+
+type RetryLayerFileInfoStore struct {
+	store.FileInfoStore
+	Root *RetryLayer
+}
+
+type RetryLayerFulfillmentStore struct {
+	store.FulfillmentStore
+	Root *RetryLayer
+}
+
+type RetryLayerFulfillmentLineStore struct {
+	store.FulfillmentLineStore
+	Root *RetryLayer
+}
+
+type RetryLayerGiftCardStore struct {
+	store.GiftCardStore
+	Root *RetryLayer
+}
+
+type RetryLayerInvoiceEventStore struct {
+	store.InvoiceEventStore
+	Root *RetryLayer
+}
+
 type RetryLayerJobStore struct {
 	store.JobStore
 	Root *RetryLayer
 }
 
+type RetryLayerMenuStore struct {
+	store.MenuStore
+	Root *RetryLayer
+}
+
+type RetryLayerMenuItemTranslationStore struct {
+	store.MenuItemTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerOrderStore struct {
+	store.OrderStore
+	Root *RetryLayer
+}
+
+type RetryLayerOrderDiscountStore struct {
+	store.OrderDiscountStore
+	Root *RetryLayer
+}
+
+type RetryLayerOrderEventStore struct {
+	store.OrderEventStore
+	Root *RetryLayer
+}
+
+type RetryLayerOrderLineStore struct {
+	store.OrderLineStore
+	Root *RetryLayer
+}
+
+type RetryLayerPageStore struct {
+	store.PageStore
+	Root *RetryLayer
+}
+
+type RetryLayerPageTranslationStore struct {
+	store.PageTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerPageTypeStore struct {
+	store.PageTypeStore
+	Root *RetryLayer
+}
+
+type RetryLayerPaymentStore struct {
+	store.PaymentStore
+	Root *RetryLayer
+}
+
+type RetryLayerPaymentTransactionStore struct {
+	store.PaymentTransactionStore
+	Root *RetryLayer
+}
+
+type RetryLayerPluginConfigurationStore struct {
+	store.PluginConfigurationStore
+	Root *RetryLayer
+}
+
 type RetryLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductStore struct {
+	store.ProductStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductChannelListingStore struct {
+	store.ProductChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductMediaStore struct {
+	store.ProductMediaStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductTranslationStore struct {
+	store.ProductTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductTypeStore struct {
+	store.ProductTypeStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductVariantStore struct {
+	store.ProductVariantStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductVariantChannelListingStore struct {
+	store.ProductVariantChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerProductVariantTranslationStore struct {
+	store.ProductVariantTranslationStore
 	Root *RetryLayer
 }
 
@@ -129,8 +779,38 @@ type RetryLayerSessionStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerShippingMethodStore struct {
+	store.ShippingMethodStore
+	Root *RetryLayer
+}
+
+type RetryLayerShippingMethodChannelListingStore struct {
+	store.ShippingMethodChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerShippingMethodPostalCodeRuleStore struct {
+	store.ShippingMethodPostalCodeRuleStore
+	Root *RetryLayer
+}
+
+type RetryLayerShippingMethodTranslationStore struct {
+	store.ShippingMethodTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerShippingZoneStore struct {
+	store.ShippingZoneStore
+	Root *RetryLayer
+}
+
 type RetryLayerStatusStore struct {
 	store.StatusStore
+	Root *RetryLayer
+}
+
+type RetryLayerStockStore struct {
+	store.StockStore
 	Root *RetryLayer
 }
 
@@ -156,6 +836,36 @@ type RetryLayerUserStore struct {
 
 type RetryLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
+	Root *RetryLayer
+}
+
+type RetryLayerVariantMediaStore struct {
+	store.VariantMediaStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherChannelListingStore struct {
+	store.VoucherChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherTranslationStore struct {
+	store.VoucherTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerWarehouseStore struct {
+	store.WarehouseStore
+	Root *RetryLayer
+}
+
+type RetryLayerWishlistStore struct {
+	store.WishlistStore
+	Root *RetryLayer
+}
+
+type RetryLayerWishlistItemStore struct {
+	store.WishlistItemStore
 	Root *RetryLayer
 }
 
@@ -195,6 +905,106 @@ func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 	tries := 0
 	for {
 		result, err := s.AppStore.Save(app)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+
+	tries := 0
+	for {
+		result, err := s.AppTokenStore.Save(appToken)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.GetAttributesByIds(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.GetProductAndVariantHeaders(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.Save(attr)
 		if err == nil {
 			return result, nil
 		}
@@ -265,6 +1075,46 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelStore) Save() (*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.Save()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 
@@ -385,6 +1235,458 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.ComplianceStore.ComplianceExport(compliance, cursor, limit)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
+
+	tries := 0
+	for {
+		result, err := s.ComplianceStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (compliance.Compliances, error) {
+
+	tries := 0
+	for {
+		result, err := s.ComplianceStore.GetAll(offset, limit)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.ComplianceStore.MessageExport(cursor, limit)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+
+	tries := 0
+	for {
+		result, err := s.ComplianceStore.Save(compliance)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+
+	tries := 0
+	for {
+		result, err := s.ComplianceStore.Update(compliance)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.CsvExportEventStore.Save(event)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+
+	tries := 0
+	for {
+		result, err := s.CsvExportFileStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+
+	tries := 0
+	for {
+		result, err := s.CsvExportFileStore.Save(file)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) ClearCaches() {
+
+	s.FileInfoStore.ClearCaches()
+
+}
+
+func (s *RetryLayerFileInfoStore) CountAll() (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.CountAll()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.GetByIds(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.GetByPath(path)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.GetForUser(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.GetFromMaster(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) InvalidateFileInfosForPostCache(postID string, deleted bool) {
+
+	s.FileInfoStore.InvalidateFileInfosForPostCache(postID, deleted)
+
+}
+
+func (s *RetryLayerFileInfoStore) PermanentDelete(fileID string) error {
+
+	tries := 0
+	for {
+		err := s.FileInfoStore.PermanentDelete(fileID)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.PermanentDeleteBatch(endTime, limit)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.PermanentDeleteByUser(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.Save(info)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) SetContent(fileID string, content string) error {
+
+	tries := 0
+	for {
+		err := s.FileInfoStore.SetContent(fileID, content)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.FileInfoStore.Upsert(info)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 
@@ -845,6 +2147,86 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.FilterProducts()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.GetProductsByIds(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.Save(prd)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 
@@ -2200,6 +3582,46 @@ func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*acc
 
 }
 
+func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.GetProfilesByUsernames(usernames)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
 
 	tries := 0
@@ -2386,11 +3808,11 @@ func (s *RetryLayerUserStore) Save(user *account.User) (*account.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (s *RetryLayerUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.Search(teamID, term, options)
+		result, err := s.UserStore.Search(term, options)
 		if err == nil {
 			return result, nil
 		}
@@ -2786,6 +4208,66 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
+func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.GetWarehousesHeaders(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.Save()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayer) Close() {
 	s.Store.Close()
 }
@@ -2812,18 +4294,89 @@ func New(childStore store.Store) *RetryLayer {
 	}
 
 	newStore.AddressStore = &RetryLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
+	newStore.AllocationStore = &RetryLayerAllocationStore{AllocationStore: childStore.Allocation(), Root: &newStore}
 	newStore.AppStore = &RetryLayerAppStore{AppStore: childStore.App(), Root: &newStore}
+	newStore.AppTokenStore = &RetryLayerAppTokenStore{AppTokenStore: childStore.AppToken(), Root: &newStore}
+	newStore.AssignedPageAttributeStore = &RetryLayerAssignedPageAttributeStore{AssignedPageAttributeStore: childStore.AssignedPageAttribute(), Root: &newStore}
+	newStore.AssignedPageAttributeValueStore = &RetryLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
+	newStore.AssignedProductAttributeStore = &RetryLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
+	newStore.AssignedProductAttributeValueStore = &RetryLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
+	newStore.AssignedVariantAttributeStore = &RetryLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
+	newStore.AssignedVariantAttributeValueStore = &RetryLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
+	newStore.AttributeStore = &RetryLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
+	newStore.AttributePageStore = &RetryLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
+	newStore.AttributeProductStore = &RetryLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
+	newStore.AttributeTranslationStore = &RetryLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
+	newStore.AttributeValueStore = &RetryLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
+	newStore.AttributeValueTranslationStore = &RetryLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
+	newStore.AttributeVariantStore = &RetryLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &RetryLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
+	newStore.CategoryStore = &RetryLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
+	newStore.CategoryTranslationStore = &RetryLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
+	newStore.ChannelStore = &RetryLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.CheckoutStore = &RetryLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
+	newStore.CheckoutLineStore = &RetryLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
+	newStore.CollectionStore = &RetryLayerCollectionStore{CollectionStore: childStore.Collection(), Root: &newStore}
+	newStore.CollectionChannelListingStore = &RetryLayerCollectionChannelListingStore{CollectionChannelListingStore: childStore.CollectionChannelListing(), Root: &newStore}
+	newStore.CollectionProductStore = &RetryLayerCollectionProductStore{CollectionProductStore: childStore.CollectionProduct(), Root: &newStore}
+	newStore.CollectionTranslationStore = &RetryLayerCollectionTranslationStore{CollectionTranslationStore: childStore.CollectionTranslation(), Root: &newStore}
+	newStore.ComplianceStore = &RetryLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
+	newStore.CsvExportEventStore = &RetryLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
+	newStore.CsvExportFileStore = &RetryLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.DigitalContentStore = &RetryLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}
+	newStore.DigitalContentUrlStore = &RetryLayerDigitalContentUrlStore{DigitalContentUrlStore: childStore.DigitalContentUrl(), Root: &newStore}
+	newStore.DiscountSaleStore = &RetryLayerDiscountSaleStore{DiscountSaleStore: childStore.DiscountSale(), Root: &newStore}
+	newStore.DiscountSaleChannelListingStore = &RetryLayerDiscountSaleChannelListingStore{DiscountSaleChannelListingStore: childStore.DiscountSaleChannelListing(), Root: &newStore}
+	newStore.DiscountSaleTranslationStore = &RetryLayerDiscountSaleTranslationStore{DiscountSaleTranslationStore: childStore.DiscountSaleTranslation(), Root: &newStore}
+	newStore.DiscountVoucherStore = &RetryLayerDiscountVoucherStore{DiscountVoucherStore: childStore.DiscountVoucher(), Root: &newStore}
+	newStore.DiscountVoucherCustomerStore = &RetryLayerDiscountVoucherCustomerStore{DiscountVoucherCustomerStore: childStore.DiscountVoucherCustomer(), Root: &newStore}
+	newStore.FileInfoStore = &RetryLayerFileInfoStore{FileInfoStore: childStore.FileInfo(), Root: &newStore}
+	newStore.FulfillmentStore = &RetryLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
+	newStore.FulfillmentLineStore = &RetryLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
+	newStore.GiftCardStore = &RetryLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
+	newStore.InvoiceEventStore = &RetryLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
+	newStore.MenuStore = &RetryLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemTranslationStore = &RetryLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OrderStore = &RetryLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
+	newStore.OrderDiscountStore = &RetryLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
+	newStore.OrderEventStore = &RetryLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}
+	newStore.OrderLineStore = &RetryLayerOrderLineStore{OrderLineStore: childStore.OrderLine(), Root: &newStore}
+	newStore.PageStore = &RetryLayerPageStore{PageStore: childStore.Page(), Root: &newStore}
+	newStore.PageTranslationStore = &RetryLayerPageTranslationStore{PageTranslationStore: childStore.PageTranslation(), Root: &newStore}
+	newStore.PageTypeStore = &RetryLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
+	newStore.PaymentStore = &RetryLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
+	newStore.PaymentTransactionStore = &RetryLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginConfigurationStore = &RetryLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.ProductStore = &RetryLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
+	newStore.ProductChannelListingStore = &RetryLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
+	newStore.ProductMediaStore = &RetryLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}
+	newStore.ProductTranslationStore = &RetryLayerProductTranslationStore{ProductTranslationStore: childStore.ProductTranslation(), Root: &newStore}
+	newStore.ProductTypeStore = &RetryLayerProductTypeStore{ProductTypeStore: childStore.ProductType(), Root: &newStore}
+	newStore.ProductVariantStore = &RetryLayerProductVariantStore{ProductVariantStore: childStore.ProductVariant(), Root: &newStore}
+	newStore.ProductVariantChannelListingStore = &RetryLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
+	newStore.ProductVariantTranslationStore = &RetryLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &RetryLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
+	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
+	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodPostalCodeRuleStore = &RetryLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
+	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
+	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
+	newStore.StockStore = &RetryLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
 	newStore.SystemStore = &RetryLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
 	newStore.TermsOfServiceStore = &RetryLayerTermsOfServiceStore{TermsOfServiceStore: childStore.TermsOfService(), Root: &newStore}
 	newStore.TokenStore = &RetryLayerTokenStore{TokenStore: childStore.Token(), Root: &newStore}
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
+	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
+	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
+	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
+	newStore.WishlistStore = &RetryLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
+	newStore.WishlistItemStore = &RetryLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
 	return &newStore
 }

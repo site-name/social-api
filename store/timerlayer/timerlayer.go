@@ -17,45 +17,352 @@ import (
 
 type TimerLayer struct {
 	store.Store
-	Metrics               einterfaces.MetricsInterface
-	AddressStore          store.AddressStore
-	AppStore              store.AppStore
-	AuditStore            store.AuditStore
-	ClusterDiscoveryStore store.ClusterDiscoveryStore
-	JobStore              store.JobStore
-	PreferenceStore       store.PreferenceStore
-	RoleStore             store.RoleStore
-	SessionStore          store.SessionStore
-	StatusStore           store.StatusStore
-	SystemStore           store.SystemStore
-	TermsOfServiceStore   store.TermsOfServiceStore
-	TokenStore            store.TokenStore
-	UserStore             store.UserStore
-	UserAccessTokenStore  store.UserAccessTokenStore
+	Metrics                            einterfaces.MetricsInterface
+	AddressStore                       store.AddressStore
+	AllocationStore                    store.AllocationStore
+	AppStore                           store.AppStore
+	AppTokenStore                      store.AppTokenStore
+	AssignedPageAttributeStore         store.AssignedPageAttributeStore
+	AssignedPageAttributeValueStore    store.AssignedPageAttributeValueStore
+	AssignedProductAttributeStore      store.AssignedProductAttributeStore
+	AssignedProductAttributeValueStore store.AssignedProductAttributeValueStore
+	AssignedVariantAttributeStore      store.AssignedVariantAttributeStore
+	AssignedVariantAttributeValueStore store.AssignedVariantAttributeValueStore
+	AttributeStore                     store.AttributeStore
+	AttributePageStore                 store.AttributePageStore
+	AttributeProductStore              store.AttributeProductStore
+	AttributeTranslationStore          store.AttributeTranslationStore
+	AttributeValueStore                store.AttributeValueStore
+	AttributeValueTranslationStore     store.AttributeValueTranslationStore
+	AttributeVariantStore              store.AttributeVariantStore
+	AuditStore                         store.AuditStore
+	CategoryStore                      store.CategoryStore
+	CategoryTranslationStore           store.CategoryTranslationStore
+	ChannelStore                       store.ChannelStore
+	CheckoutStore                      store.CheckoutStore
+	CheckoutLineStore                  store.CheckoutLineStore
+	ClusterDiscoveryStore              store.ClusterDiscoveryStore
+	CollectionStore                    store.CollectionStore
+	CollectionChannelListingStore      store.CollectionChannelListingStore
+	CollectionProductStore             store.CollectionProductStore
+	CollectionTranslationStore         store.CollectionTranslationStore
+	ComplianceStore                    store.ComplianceStore
+	CsvExportEventStore                store.CsvExportEventStore
+	CsvExportFileStore                 store.CsvExportFileStore
+	DigitalContentStore                store.DigitalContentStore
+	DigitalContentUrlStore             store.DigitalContentUrlStore
+	DiscountSaleStore                  store.DiscountSaleStore
+	DiscountSaleChannelListingStore    store.DiscountSaleChannelListingStore
+	DiscountSaleTranslationStore       store.DiscountSaleTranslationStore
+	DiscountVoucherStore               store.DiscountVoucherStore
+	DiscountVoucherCustomerStore       store.DiscountVoucherCustomerStore
+	FileInfoStore                      store.FileInfoStore
+	FulfillmentStore                   store.FulfillmentStore
+	FulfillmentLineStore               store.FulfillmentLineStore
+	GiftCardStore                      store.GiftCardStore
+	InvoiceEventStore                  store.InvoiceEventStore
+	JobStore                           store.JobStore
+	MenuStore                          store.MenuStore
+	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OrderStore                         store.OrderStore
+	OrderDiscountStore                 store.OrderDiscountStore
+	OrderEventStore                    store.OrderEventStore
+	OrderLineStore                     store.OrderLineStore
+	PageStore                          store.PageStore
+	PageTranslationStore               store.PageTranslationStore
+	PageTypeStore                      store.PageTypeStore
+	PaymentStore                       store.PaymentStore
+	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginConfigurationStore           store.PluginConfigurationStore
+	PreferenceStore                    store.PreferenceStore
+	ProductStore                       store.ProductStore
+	ProductChannelListingStore         store.ProductChannelListingStore
+	ProductMediaStore                  store.ProductMediaStore
+	ProductTranslationStore            store.ProductTranslationStore
+	ProductTypeStore                   store.ProductTypeStore
+	ProductVariantStore                store.ProductVariantStore
+	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
+	ProductVariantTranslationStore     store.ProductVariantTranslationStore
+	RoleStore                          store.RoleStore
+	SessionStore                       store.SessionStore
+	ShippingMethodStore                store.ShippingMethodStore
+	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
+	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
+	ShippingZoneStore                  store.ShippingZoneStore
+	StatusStore                        store.StatusStore
+	StockStore                         store.StockStore
+	SystemStore                        store.SystemStore
+	TermsOfServiceStore                store.TermsOfServiceStore
+	TokenStore                         store.TokenStore
+	UserStore                          store.UserStore
+	UserAccessTokenStore               store.UserAccessTokenStore
+	VariantMediaStore                  store.VariantMediaStore
+	VoucherChannelListingStore         store.VoucherChannelListingStore
+	VoucherTranslationStore            store.VoucherTranslationStore
+	WarehouseStore                     store.WarehouseStore
+	WishlistStore                      store.WishlistStore
+	WishlistItemStore                  store.WishlistItemStore
 }
 
 func (s *TimerLayer) Address() store.AddressStore {
 	return s.AddressStore
 }
 
+func (s *TimerLayer) Allocation() store.AllocationStore {
+	return s.AllocationStore
+}
+
 func (s *TimerLayer) App() store.AppStore {
 	return s.AppStore
+}
+
+func (s *TimerLayer) AppToken() store.AppTokenStore {
+	return s.AppTokenStore
+}
+
+func (s *TimerLayer) AssignedPageAttribute() store.AssignedPageAttributeStore {
+	return s.AssignedPageAttributeStore
+}
+
+func (s *TimerLayer) AssignedPageAttributeValue() store.AssignedPageAttributeValueStore {
+	return s.AssignedPageAttributeValueStore
+}
+
+func (s *TimerLayer) AssignedProductAttribute() store.AssignedProductAttributeStore {
+	return s.AssignedProductAttributeStore
+}
+
+func (s *TimerLayer) AssignedProductAttributeValue() store.AssignedProductAttributeValueStore {
+	return s.AssignedProductAttributeValueStore
+}
+
+func (s *TimerLayer) AssignedVariantAttribute() store.AssignedVariantAttributeStore {
+	return s.AssignedVariantAttributeStore
+}
+
+func (s *TimerLayer) AssignedVariantAttributeValue() store.AssignedVariantAttributeValueStore {
+	return s.AssignedVariantAttributeValueStore
+}
+
+func (s *TimerLayer) Attribute() store.AttributeStore {
+	return s.AttributeStore
+}
+
+func (s *TimerLayer) AttributePage() store.AttributePageStore {
+	return s.AttributePageStore
+}
+
+func (s *TimerLayer) AttributeProduct() store.AttributeProductStore {
+	return s.AttributeProductStore
+}
+
+func (s *TimerLayer) AttributeTranslation() store.AttributeTranslationStore {
+	return s.AttributeTranslationStore
+}
+
+func (s *TimerLayer) AttributeValue() store.AttributeValueStore {
+	return s.AttributeValueStore
+}
+
+func (s *TimerLayer) AttributeValueTranslation() store.AttributeValueTranslationStore {
+	return s.AttributeValueTranslationStore
+}
+
+func (s *TimerLayer) AttributeVariant() store.AttributeVariantStore {
+	return s.AttributeVariantStore
 }
 
 func (s *TimerLayer) Audit() store.AuditStore {
 	return s.AuditStore
 }
 
+func (s *TimerLayer) Category() store.CategoryStore {
+	return s.CategoryStore
+}
+
+func (s *TimerLayer) CategoryTranslation() store.CategoryTranslationStore {
+	return s.CategoryTranslationStore
+}
+
+func (s *TimerLayer) Channel() store.ChannelStore {
+	return s.ChannelStore
+}
+
+func (s *TimerLayer) Checkout() store.CheckoutStore {
+	return s.CheckoutStore
+}
+
+func (s *TimerLayer) CheckoutLine() store.CheckoutLineStore {
+	return s.CheckoutLineStore
+}
+
 func (s *TimerLayer) ClusterDiscovery() store.ClusterDiscoveryStore {
 	return s.ClusterDiscoveryStore
+}
+
+func (s *TimerLayer) Collection() store.CollectionStore {
+	return s.CollectionStore
+}
+
+func (s *TimerLayer) CollectionChannelListing() store.CollectionChannelListingStore {
+	return s.CollectionChannelListingStore
+}
+
+func (s *TimerLayer) CollectionProduct() store.CollectionProductStore {
+	return s.CollectionProductStore
+}
+
+func (s *TimerLayer) CollectionTranslation() store.CollectionTranslationStore {
+	return s.CollectionTranslationStore
+}
+
+func (s *TimerLayer) Compliance() store.ComplianceStore {
+	return s.ComplianceStore
+}
+
+func (s *TimerLayer) CsvExportEvent() store.CsvExportEventStore {
+	return s.CsvExportEventStore
+}
+
+func (s *TimerLayer) CsvExportFile() store.CsvExportFileStore {
+	return s.CsvExportFileStore
+}
+
+func (s *TimerLayer) DigitalContent() store.DigitalContentStore {
+	return s.DigitalContentStore
+}
+
+func (s *TimerLayer) DigitalContentUrl() store.DigitalContentUrlStore {
+	return s.DigitalContentUrlStore
+}
+
+func (s *TimerLayer) DiscountSale() store.DiscountSaleStore {
+	return s.DiscountSaleStore
+}
+
+func (s *TimerLayer) DiscountSaleChannelListing() store.DiscountSaleChannelListingStore {
+	return s.DiscountSaleChannelListingStore
+}
+
+func (s *TimerLayer) DiscountSaleTranslation() store.DiscountSaleTranslationStore {
+	return s.DiscountSaleTranslationStore
+}
+
+func (s *TimerLayer) DiscountVoucher() store.DiscountVoucherStore {
+	return s.DiscountVoucherStore
+}
+
+func (s *TimerLayer) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
+	return s.DiscountVoucherCustomerStore
+}
+
+func (s *TimerLayer) FileInfo() store.FileInfoStore {
+	return s.FileInfoStore
+}
+
+func (s *TimerLayer) Fulfillment() store.FulfillmentStore {
+	return s.FulfillmentStore
+}
+
+func (s *TimerLayer) FulfillmentLine() store.FulfillmentLineStore {
+	return s.FulfillmentLineStore
+}
+
+func (s *TimerLayer) GiftCard() store.GiftCardStore {
+	return s.GiftCardStore
+}
+
+func (s *TimerLayer) InvoiceEvent() store.InvoiceEventStore {
+	return s.InvoiceEventStore
 }
 
 func (s *TimerLayer) Job() store.JobStore {
 	return s.JobStore
 }
 
+func (s *TimerLayer) Menu() store.MenuStore {
+	return s.MenuStore
+}
+
+func (s *TimerLayer) MenuItemTranslation() store.MenuItemTranslationStore {
+	return s.MenuItemTranslationStore
+}
+
+func (s *TimerLayer) Order() store.OrderStore {
+	return s.OrderStore
+}
+
+func (s *TimerLayer) OrderDiscount() store.OrderDiscountStore {
+	return s.OrderDiscountStore
+}
+
+func (s *TimerLayer) OrderEvent() store.OrderEventStore {
+	return s.OrderEventStore
+}
+
+func (s *TimerLayer) OrderLine() store.OrderLineStore {
+	return s.OrderLineStore
+}
+
+func (s *TimerLayer) Page() store.PageStore {
+	return s.PageStore
+}
+
+func (s *TimerLayer) PageTranslation() store.PageTranslationStore {
+	return s.PageTranslationStore
+}
+
+func (s *TimerLayer) PageType() store.PageTypeStore {
+	return s.PageTypeStore
+}
+
+func (s *TimerLayer) Payment() store.PaymentStore {
+	return s.PaymentStore
+}
+
+func (s *TimerLayer) PaymentTransaction() store.PaymentTransactionStore {
+	return s.PaymentTransactionStore
+}
+
+func (s *TimerLayer) PluginConfiguration() store.PluginConfigurationStore {
+	return s.PluginConfigurationStore
+}
+
 func (s *TimerLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *TimerLayer) Product() store.ProductStore {
+	return s.ProductStore
+}
+
+func (s *TimerLayer) ProductChannelListing() store.ProductChannelListingStore {
+	return s.ProductChannelListingStore
+}
+
+func (s *TimerLayer) ProductMedia() store.ProductMediaStore {
+	return s.ProductMediaStore
+}
+
+func (s *TimerLayer) ProductTranslation() store.ProductTranslationStore {
+	return s.ProductTranslationStore
+}
+
+func (s *TimerLayer) ProductType() store.ProductTypeStore {
+	return s.ProductTypeStore
+}
+
+func (s *TimerLayer) ProductVariant() store.ProductVariantStore {
+	return s.ProductVariantStore
+}
+
+func (s *TimerLayer) ProductVariantChannelListing() store.ProductVariantChannelListingStore {
+	return s.ProductVariantChannelListingStore
+}
+
+func (s *TimerLayer) ProductVariantTranslation() store.ProductVariantTranslationStore {
+	return s.ProductVariantTranslationStore
 }
 
 func (s *TimerLayer) Role() store.RoleStore {
@@ -66,8 +373,32 @@ func (s *TimerLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
 
+func (s *TimerLayer) ShippingMethod() store.ShippingMethodStore {
+	return s.ShippingMethodStore
+}
+
+func (s *TimerLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
+	return s.ShippingMethodChannelListingStore
+}
+
+func (s *TimerLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
+	return s.ShippingMethodPostalCodeRuleStore
+}
+
+func (s *TimerLayer) ShippingMethodTranslation() store.ShippingMethodTranslationStore {
+	return s.ShippingMethodTranslationStore
+}
+
+func (s *TimerLayer) ShippingZone() store.ShippingZoneStore {
+	return s.ShippingZoneStore
+}
+
 func (s *TimerLayer) Status() store.StatusStore {
 	return s.StatusStore
+}
+
+func (s *TimerLayer) Stock() store.StockStore {
+	return s.StockStore
 }
 
 func (s *TimerLayer) System() store.SystemStore {
@@ -90,8 +421,37 @@ func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
 }
 
+func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
+	return s.VariantMediaStore
+}
+
+func (s *TimerLayer) VoucherChannelListing() store.VoucherChannelListingStore {
+	return s.VoucherChannelListingStore
+}
+
+func (s *TimerLayer) VoucherTranslation() store.VoucherTranslationStore {
+	return s.VoucherTranslationStore
+}
+
+func (s *TimerLayer) Warehouse() store.WarehouseStore {
+	return s.WarehouseStore
+}
+
+func (s *TimerLayer) Wishlist() store.WishlistStore {
+	return s.WishlistStore
+}
+
+func (s *TimerLayer) WishlistItem() store.WishlistItemStore {
+	return s.WishlistItemStore
+}
+
 type TimerLayerAddressStore struct {
 	store.AddressStore
+	Root *TimerLayer
+}
+
+type TimerLayerAllocationStore struct {
+	store.AllocationStore
 	Root *TimerLayer
 }
 
@@ -100,8 +460,103 @@ type TimerLayerAppStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerAppTokenStore struct {
+	store.AppTokenStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedPageAttributeStore struct {
+	store.AssignedPageAttributeStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedPageAttributeValueStore struct {
+	store.AssignedPageAttributeValueStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedProductAttributeStore struct {
+	store.AssignedProductAttributeStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedProductAttributeValueStore struct {
+	store.AssignedProductAttributeValueStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedVariantAttributeStore struct {
+	store.AssignedVariantAttributeStore
+	Root *TimerLayer
+}
+
+type TimerLayerAssignedVariantAttributeValueStore struct {
+	store.AssignedVariantAttributeValueStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeStore struct {
+	store.AttributeStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributePageStore struct {
+	store.AttributePageStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeProductStore struct {
+	store.AttributeProductStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeTranslationStore struct {
+	store.AttributeTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeValueStore struct {
+	store.AttributeValueStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeValueTranslationStore struct {
+	store.AttributeValueTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerAttributeVariantStore struct {
+	store.AttributeVariantStore
+	Root *TimerLayer
+}
+
 type TimerLayerAuditStore struct {
 	store.AuditStore
+	Root *TimerLayer
+}
+
+type TimerLayerCategoryStore struct {
+	store.CategoryStore
+	Root *TimerLayer
+}
+
+type TimerLayerCategoryTranslationStore struct {
+	store.CategoryTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerChannelStore struct {
+	store.ChannelStore
+	Root *TimerLayer
+}
+
+type TimerLayerCheckoutStore struct {
+	store.CheckoutStore
+	Root *TimerLayer
+}
+
+type TimerLayerCheckoutLineStore struct {
+	store.CheckoutLineStore
 	Root *TimerLayer
 }
 
@@ -110,13 +565,208 @@ type TimerLayerClusterDiscoveryStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerCollectionStore struct {
+	store.CollectionStore
+	Root *TimerLayer
+}
+
+type TimerLayerCollectionChannelListingStore struct {
+	store.CollectionChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerCollectionProductStore struct {
+	store.CollectionProductStore
+	Root *TimerLayer
+}
+
+type TimerLayerCollectionTranslationStore struct {
+	store.CollectionTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerComplianceStore struct {
+	store.ComplianceStore
+	Root *TimerLayer
+}
+
+type TimerLayerCsvExportEventStore struct {
+	store.CsvExportEventStore
+	Root *TimerLayer
+}
+
+type TimerLayerCsvExportFileStore struct {
+	store.CsvExportFileStore
+	Root *TimerLayer
+}
+
+type TimerLayerDigitalContentStore struct {
+	store.DigitalContentStore
+	Root *TimerLayer
+}
+
+type TimerLayerDigitalContentUrlStore struct {
+	store.DigitalContentUrlStore
+	Root *TimerLayer
+}
+
+type TimerLayerDiscountSaleStore struct {
+	store.DiscountSaleStore
+	Root *TimerLayer
+}
+
+type TimerLayerDiscountSaleChannelListingStore struct {
+	store.DiscountSaleChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerDiscountSaleTranslationStore struct {
+	store.DiscountSaleTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerDiscountVoucherStore struct {
+	store.DiscountVoucherStore
+	Root *TimerLayer
+}
+
+type TimerLayerDiscountVoucherCustomerStore struct {
+	store.DiscountVoucherCustomerStore
+	Root *TimerLayer
+}
+
+type TimerLayerFileInfoStore struct {
+	store.FileInfoStore
+	Root *TimerLayer
+}
+
+type TimerLayerFulfillmentStore struct {
+	store.FulfillmentStore
+	Root *TimerLayer
+}
+
+type TimerLayerFulfillmentLineStore struct {
+	store.FulfillmentLineStore
+	Root *TimerLayer
+}
+
+type TimerLayerGiftCardStore struct {
+	store.GiftCardStore
+	Root *TimerLayer
+}
+
+type TimerLayerInvoiceEventStore struct {
+	store.InvoiceEventStore
+	Root *TimerLayer
+}
+
 type TimerLayerJobStore struct {
 	store.JobStore
 	Root *TimerLayer
 }
 
+type TimerLayerMenuStore struct {
+	store.MenuStore
+	Root *TimerLayer
+}
+
+type TimerLayerMenuItemTranslationStore struct {
+	store.MenuItemTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerOrderStore struct {
+	store.OrderStore
+	Root *TimerLayer
+}
+
+type TimerLayerOrderDiscountStore struct {
+	store.OrderDiscountStore
+	Root *TimerLayer
+}
+
+type TimerLayerOrderEventStore struct {
+	store.OrderEventStore
+	Root *TimerLayer
+}
+
+type TimerLayerOrderLineStore struct {
+	store.OrderLineStore
+	Root *TimerLayer
+}
+
+type TimerLayerPageStore struct {
+	store.PageStore
+	Root *TimerLayer
+}
+
+type TimerLayerPageTranslationStore struct {
+	store.PageTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerPageTypeStore struct {
+	store.PageTypeStore
+	Root *TimerLayer
+}
+
+type TimerLayerPaymentStore struct {
+	store.PaymentStore
+	Root *TimerLayer
+}
+
+type TimerLayerPaymentTransactionStore struct {
+	store.PaymentTransactionStore
+	Root *TimerLayer
+}
+
+type TimerLayerPluginConfigurationStore struct {
+	store.PluginConfigurationStore
+	Root *TimerLayer
+}
+
 type TimerLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductStore struct {
+	store.ProductStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductChannelListingStore struct {
+	store.ProductChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductMediaStore struct {
+	store.ProductMediaStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductTranslationStore struct {
+	store.ProductTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductTypeStore struct {
+	store.ProductTypeStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductVariantStore struct {
+	store.ProductVariantStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductVariantChannelListingStore struct {
+	store.ProductVariantChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerProductVariantTranslationStore struct {
+	store.ProductVariantTranslationStore
 	Root *TimerLayer
 }
 
@@ -130,8 +780,38 @@ type TimerLayerSessionStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerShippingMethodStore struct {
+	store.ShippingMethodStore
+	Root *TimerLayer
+}
+
+type TimerLayerShippingMethodChannelListingStore struct {
+	store.ShippingMethodChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerShippingMethodPostalCodeRuleStore struct {
+	store.ShippingMethodPostalCodeRuleStore
+	Root *TimerLayer
+}
+
+type TimerLayerShippingMethodTranslationStore struct {
+	store.ShippingMethodTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerShippingZoneStore struct {
+	store.ShippingZoneStore
+	Root *TimerLayer
+}
+
 type TimerLayerStatusStore struct {
 	store.StatusStore
+	Root *TimerLayer
+}
+
+type TimerLayerStockStore struct {
+	store.StockStore
 	Root *TimerLayer
 }
 
@@ -157,6 +837,36 @@ type TimerLayerUserStore struct {
 
 type TimerLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
+	Root *TimerLayer
+}
+
+type TimerLayerVariantMediaStore struct {
+	store.VariantMediaStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherChannelListingStore struct {
+	store.VoucherChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherTranslationStore struct {
+	store.VoucherTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerWarehouseStore struct {
+	store.WarehouseStore
+	Root *TimerLayer
+}
+
+type TimerLayerWishlistStore struct {
+	store.WishlistStore
+	Root *TimerLayer
+}
+
+type TimerLayerWishlistItemStore struct {
+	store.WishlistItemStore
 	Root *TimerLayer
 }
 
@@ -188,6 +898,86 @@ func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AppStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+	start := timemodule.Now()
+
+	result, err := s.AppTokenStore.Save(appToken)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AppTokenStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.GetAttributesByIds(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetAttributesByIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.GetProductAndVariantHeaders(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetProductAndVariantHeaders", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.Save(attr)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -238,6 +1028,38 @@ func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("AuditStore.Save", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetChannelsByIdsAndOrder", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelStore) Save() (*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.Save()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
@@ -334,6 +1156,388 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.SetLastPingAt", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.ComplianceStore.ComplianceExport(compliance, cursor, limit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.ComplianceExport", success, elapsed)
+	}
+	return result, resultVar1, err
+}
+
+func (s *TimerLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
+	start := timemodule.Now()
+
+	result, err := s.ComplianceStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (compliance.Compliances, error) {
+	start := timemodule.Now()
+
+	result, err := s.ComplianceStore.GetAll(offset, limit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.GetAll", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.ComplianceStore.MessageExport(cursor, limit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.MessageExport", success, elapsed)
+	}
+	return result, resultVar1, err
+}
+
+func (s *TimerLayerComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+	start := timemodule.Now()
+
+	result, err := s.ComplianceStore.Save(compliance)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+	start := timemodule.Now()
+
+	result, err := s.ComplianceStore.Update(compliance)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CsvExportEventStore.Save(event)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportEventStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+	start := timemodule.Now()
+
+	result, err := s.CsvExportFileStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportFileStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+	start := timemodule.Now()
+
+	result, err := s.CsvExportFileStore.Save(file)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportFileStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) ClearCaches() {
+	start := timemodule.Now()
+
+	s.FileInfoStore.ClearCaches()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.ClearCaches", success, elapsed)
+	}
+}
+
+func (s *TimerLayerFileInfoStore) CountAll() (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.CountAll()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.CountAll", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.GetByIds(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetByIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.GetByPath(path)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetByPath", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.GetForUser(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetForUser", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.GetFromMaster(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetFromMaster", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetWithOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) InvalidateFileInfosForPostCache(postID string, deleted bool) {
+	start := timemodule.Now()
+
+	s.FileInfoStore.InvalidateFileInfosForPostCache(postID, deleted)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.InvalidateFileInfosForPostCache", success, elapsed)
+	}
+}
+
+func (s *TimerLayerFileInfoStore) PermanentDelete(fileID string) error {
+	start := timemodule.Now()
+
+	err := s.FileInfoStore.PermanentDelete(fileID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.PermanentDelete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.PermanentDeleteBatch(endTime, limit)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.PermanentDeleteBatch", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.PermanentDeleteByUser(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.PermanentDeleteByUser", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.Save(info)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) SetContent(fileID string, content string) error {
+	start := timemodule.Now()
+
+	err := s.FileInfoStore.SetContent(fileID, content)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.SetContent", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.FileInfoStore.Upsert(info)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.Upsert", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerJobStore) Delete(id string) (string, error) {
@@ -702,6 +1906,70 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.Save", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.FilterProducts()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.FilterProducts", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.GetProductsByIds(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.GetProductsByIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.Save(prd)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error) {
@@ -1837,6 +3105,38 @@ func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*acc
 	return result, err
 }
 
+func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfileByIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.GetProfilesByUsernames(usernames)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfilesByUsernames", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
 	start := timemodule.Now()
 
@@ -1996,10 +3296,10 @@ func (s *TimerLayerUserStore) Save(user *account.User) (*account.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Search(teamID string, term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (s *TimerLayerUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.Search(teamID, term, options)
+	result, err := s.UserStore.Search(term, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2316,6 +3616,54 @@ func (s *TimerLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 	return err
 }
 
+func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.GetWarehousesHeaders(ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.GetWarehousesHeaders", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.Save()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayer) Close() {
 	s.Store.Close()
 }
@@ -2343,18 +3691,89 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	}
 
 	newStore.AddressStore = &TimerLayerAddressStore{AddressStore: childStore.Address(), Root: &newStore}
+	newStore.AllocationStore = &TimerLayerAllocationStore{AllocationStore: childStore.Allocation(), Root: &newStore}
 	newStore.AppStore = &TimerLayerAppStore{AppStore: childStore.App(), Root: &newStore}
+	newStore.AppTokenStore = &TimerLayerAppTokenStore{AppTokenStore: childStore.AppToken(), Root: &newStore}
+	newStore.AssignedPageAttributeStore = &TimerLayerAssignedPageAttributeStore{AssignedPageAttributeStore: childStore.AssignedPageAttribute(), Root: &newStore}
+	newStore.AssignedPageAttributeValueStore = &TimerLayerAssignedPageAttributeValueStore{AssignedPageAttributeValueStore: childStore.AssignedPageAttributeValue(), Root: &newStore}
+	newStore.AssignedProductAttributeStore = &TimerLayerAssignedProductAttributeStore{AssignedProductAttributeStore: childStore.AssignedProductAttribute(), Root: &newStore}
+	newStore.AssignedProductAttributeValueStore = &TimerLayerAssignedProductAttributeValueStore{AssignedProductAttributeValueStore: childStore.AssignedProductAttributeValue(), Root: &newStore}
+	newStore.AssignedVariantAttributeStore = &TimerLayerAssignedVariantAttributeStore{AssignedVariantAttributeStore: childStore.AssignedVariantAttribute(), Root: &newStore}
+	newStore.AssignedVariantAttributeValueStore = &TimerLayerAssignedVariantAttributeValueStore{AssignedVariantAttributeValueStore: childStore.AssignedVariantAttributeValue(), Root: &newStore}
+	newStore.AttributeStore = &TimerLayerAttributeStore{AttributeStore: childStore.Attribute(), Root: &newStore}
+	newStore.AttributePageStore = &TimerLayerAttributePageStore{AttributePageStore: childStore.AttributePage(), Root: &newStore}
+	newStore.AttributeProductStore = &TimerLayerAttributeProductStore{AttributeProductStore: childStore.AttributeProduct(), Root: &newStore}
+	newStore.AttributeTranslationStore = &TimerLayerAttributeTranslationStore{AttributeTranslationStore: childStore.AttributeTranslation(), Root: &newStore}
+	newStore.AttributeValueStore = &TimerLayerAttributeValueStore{AttributeValueStore: childStore.AttributeValue(), Root: &newStore}
+	newStore.AttributeValueTranslationStore = &TimerLayerAttributeValueTranslationStore{AttributeValueTranslationStore: childStore.AttributeValueTranslation(), Root: &newStore}
+	newStore.AttributeVariantStore = &TimerLayerAttributeVariantStore{AttributeVariantStore: childStore.AttributeVariant(), Root: &newStore}
 	newStore.AuditStore = &TimerLayerAuditStore{AuditStore: childStore.Audit(), Root: &newStore}
+	newStore.CategoryStore = &TimerLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
+	newStore.CategoryTranslationStore = &TimerLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
+	newStore.ChannelStore = &TimerLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.CheckoutStore = &TimerLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
+	newStore.CheckoutLineStore = &TimerLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
+	newStore.CollectionStore = &TimerLayerCollectionStore{CollectionStore: childStore.Collection(), Root: &newStore}
+	newStore.CollectionChannelListingStore = &TimerLayerCollectionChannelListingStore{CollectionChannelListingStore: childStore.CollectionChannelListing(), Root: &newStore}
+	newStore.CollectionProductStore = &TimerLayerCollectionProductStore{CollectionProductStore: childStore.CollectionProduct(), Root: &newStore}
+	newStore.CollectionTranslationStore = &TimerLayerCollectionTranslationStore{CollectionTranslationStore: childStore.CollectionTranslation(), Root: &newStore}
+	newStore.ComplianceStore = &TimerLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
+	newStore.CsvExportEventStore = &TimerLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
+	newStore.CsvExportFileStore = &TimerLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.DigitalContentStore = &TimerLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}
+	newStore.DigitalContentUrlStore = &TimerLayerDigitalContentUrlStore{DigitalContentUrlStore: childStore.DigitalContentUrl(), Root: &newStore}
+	newStore.DiscountSaleStore = &TimerLayerDiscountSaleStore{DiscountSaleStore: childStore.DiscountSale(), Root: &newStore}
+	newStore.DiscountSaleChannelListingStore = &TimerLayerDiscountSaleChannelListingStore{DiscountSaleChannelListingStore: childStore.DiscountSaleChannelListing(), Root: &newStore}
+	newStore.DiscountSaleTranslationStore = &TimerLayerDiscountSaleTranslationStore{DiscountSaleTranslationStore: childStore.DiscountSaleTranslation(), Root: &newStore}
+	newStore.DiscountVoucherStore = &TimerLayerDiscountVoucherStore{DiscountVoucherStore: childStore.DiscountVoucher(), Root: &newStore}
+	newStore.DiscountVoucherCustomerStore = &TimerLayerDiscountVoucherCustomerStore{DiscountVoucherCustomerStore: childStore.DiscountVoucherCustomer(), Root: &newStore}
+	newStore.FileInfoStore = &TimerLayerFileInfoStore{FileInfoStore: childStore.FileInfo(), Root: &newStore}
+	newStore.FulfillmentStore = &TimerLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
+	newStore.FulfillmentLineStore = &TimerLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
+	newStore.GiftCardStore = &TimerLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
+	newStore.InvoiceEventStore = &TimerLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
+	newStore.MenuStore = &TimerLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemTranslationStore = &TimerLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OrderStore = &TimerLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
+	newStore.OrderDiscountStore = &TimerLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
+	newStore.OrderEventStore = &TimerLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}
+	newStore.OrderLineStore = &TimerLayerOrderLineStore{OrderLineStore: childStore.OrderLine(), Root: &newStore}
+	newStore.PageStore = &TimerLayerPageStore{PageStore: childStore.Page(), Root: &newStore}
+	newStore.PageTranslationStore = &TimerLayerPageTranslationStore{PageTranslationStore: childStore.PageTranslation(), Root: &newStore}
+	newStore.PageTypeStore = &TimerLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
+	newStore.PaymentStore = &TimerLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
+	newStore.PaymentTransactionStore = &TimerLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginConfigurationStore = &TimerLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.ProductStore = &TimerLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
+	newStore.ProductChannelListingStore = &TimerLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
+	newStore.ProductMediaStore = &TimerLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}
+	newStore.ProductTranslationStore = &TimerLayerProductTranslationStore{ProductTranslationStore: childStore.ProductTranslation(), Root: &newStore}
+	newStore.ProductTypeStore = &TimerLayerProductTypeStore{ProductTypeStore: childStore.ProductType(), Root: &newStore}
+	newStore.ProductVariantStore = &TimerLayerProductVariantStore{ProductVariantStore: childStore.ProductVariant(), Root: &newStore}
+	newStore.ProductVariantChannelListingStore = &TimerLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
+	newStore.ProductVariantTranslationStore = &TimerLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &TimerLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
+	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
+	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodPostalCodeRuleStore = &TimerLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
+	newStore.ShippingMethodTranslationStore = &TimerLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
+	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.StatusStore = &TimerLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
+	newStore.StockStore = &TimerLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
 	newStore.SystemStore = &TimerLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
 	newStore.TermsOfServiceStore = &TimerLayerTermsOfServiceStore{TermsOfServiceStore: childStore.TermsOfService(), Root: &newStore}
 	newStore.TokenStore = &TimerLayerTokenStore{TokenStore: childStore.Token(), Root: &newStore}
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
+	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
+	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
+	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
+	newStore.WishlistStore = &TimerLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
+	newStore.WishlistItemStore = &TimerLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
 	return &newStore
 }
