@@ -73,6 +73,18 @@ func (c *Context) LogAudit(extraInfo string) {
 	}
 }
 
+func (c *Context) LogAuditWithUserId(userId, extraInfo string) {
+	if c.AppContext.Session().UserId != "" {
+		extraInfo = strings.TrimSpace(extraInfo + " session_user=" + c.AppContext.Session().UserId)
+	}
+
+	audit := &modelAudit.Audit{UserId: userId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
+	if err := c.App.Srv().Store.Audit().Save(audit); err != nil {
+		appErr := model.NewAppError("LogAuditWithUserId", "app.audit.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
+		c.LogErrorByCode(appErr)
+	}
+}
+
 func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens &&
 		c.AppContext.Session().Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN &&

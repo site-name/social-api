@@ -28,6 +28,10 @@ import (
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
+	// CheckProviderAttributes returns the empty string if the patch can be applied without
+	// overriding attributes set by the user's login provider; otherwise, the name of the offending
+	// field is returned.
+	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
 	// CreateGuest creates a guest and sets several fields of the returned User struct to
@@ -108,6 +112,7 @@ type AppIface interface {
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
+	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
@@ -202,6 +207,7 @@ type AppIface interface {
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
 	RolesGrantPermission(roleNames []string, permissionId string) bool
+	Saml() einterfaces.SamlInterface
 	SanitizeProfile(user *account.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
 	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
@@ -229,6 +235,7 @@ type AppIface interface {
 	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
 	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
+	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError

@@ -12,12 +12,14 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
 func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("", api.ApiHandler(createUser)).Methods(http.MethodPost)
 	// api.BaseRoutes.Users.Handle("", api.ApiSessionRequired(getUsers)).Methods(http.MethodGet)
+	api.BaseRoutes.User.Handle("", api.ApiSessionRequired(updateUser)).Methods("PUT")
 	api.BaseRoutes.Users.Handle("/ids", api.ApiSessionRequired(getUsersByIds)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/usernames", api.ApiSessionRequired(getUsersByNames)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/search", api.ApiSessionRequiredDisableWhenBusy(searchUsers)).Methods("POST")
@@ -643,4 +645,173 @@ func sendPasswordReset(c *Context, w http.ResponseWriter, r *http.Request) {
 		c.LogAudit("sent=" + email)
 	}
 	ReturnStatusOK(w)
+}
+
+func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	user := account.UserFromJson(r.Body)
+	if user == nil {
+		c.SetInvalidParam("user")
+		return
+	}
+
+	// The user being updated in the payload must be the same one as indicated in the URL.
+	if user.Id != c.Params.UserId {
+		c.SetInvalidParam("user_id")
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("updateUser", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+
+	// Cannot update a system admin unless user making request is a systemadmin also.
+	if user.IsSystemAdmin() && !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+		c.SetPermissionError(model.PERMISSION_MANAGE_SYSTEM)
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), user.Id) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	ouser, err := c.App.GetUser(user.Id)
+	if err != nil {
+		c.Err = err
+		return
+	}
+	auditRec.AddMeta("user", ouser)
+
+	if c.AppContext.Session().IsOAuth {
+		if ouser.Email != user.Email {
+			c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+			c.Err.DetailedError += ", attempted email update by oauth app"
+			return
+		}
+	}
+
+	// Check that the fields being updated are not set by the login provider
+	conflictField := c.App.CheckProviderAttributes(ouser, user.ToPatch())
+	if conflictField != "" {
+		c.Err = model.NewAppError(
+			"updateUser", "api.user.update_user.login_provider_attribute_set.app_error",
+			map[string]interface{}{"Field": conflictField}, "", http.StatusConflict)
+		return
+	}
+
+	// If eMail update is attempted by the currently logged in user, check if correct password was provided
+	if user.Email != "" && ouser.Email != user.Email && c.AppContext.Session().UserId == c.Params.UserId {
+		err = c.App.DoubleCheckPassword(ouser, user.Password)
+		if err != nil {
+			c.SetInvalidParam("password")
+			return
+		}
+	}
+
+	ruser, err := c.App.UpdateUserAsUser(user, c.IsSystemAdmin())
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	auditRec.AddMeta("update", ruser)
+	c.LogAudit("")
+
+	w.Write([]byte(ruser.ToJson()))
+}
+
+func login(c *Context, w http.ResponseWriter, r *http.Request) {
+	// Mask all sensitive errors, with the exception of the following
+	defer func() {
+		if c.Err == nil {
+			return
+		}
+
+		unmaskedErrors := []string{
+			"mfa.validate_token.authenticate.app_error",
+			"api.user.check_user_mfa.bad_code.app_error",
+			"api.user.login.blank_pwd.app_error",
+			"api.user.login.bot_login_forbidden.app_error",
+			"api.user.login.client_side_cert.certificate.app_error",
+			"api.user.login.inactive.app_error",
+			"api.user.login.not_verified.app_error",
+			"api.user.check_user_login_attempts.too_many.app_error",
+			"app.team.join_user_to_team.max_accounts.app_error",
+			"store.sql_user.save.max_accounts.app_error",
+		}
+
+		maskError := true
+
+		for _, unmaskedError := range unmaskedErrors {
+			if c.Err.Id == unmaskedError {
+				maskError = false
+			}
+		}
+
+		if !maskError {
+			return
+		}
+
+		config := c.App.Config()
+		enableUsername := *config.EmailSettings.EnableSignInWithUsername
+		enableEmail := *config.EmailSettings.EnableSignInWithEmail
+		samlEnabled := *config.SamlSettings.Enable
+		gitlabEnabled := *config.GitLabSettings.Enable
+		openidEnabled := *config.OpenIdSettings.Enable
+		googleEnabled := *config.GoogleSettings.Enable
+
+		if samlEnabled || gitlabEnabled || googleEnabled || openidEnabled {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_sso", nil, "", http.StatusUnauthorized)
+			return
+		}
+
+		if enableUsername && !enableEmail {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_username", nil, "", http.StatusUnauthorized)
+			return
+		}
+
+		if !enableUsername && enableEmail {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email", nil, "", http.StatusUnauthorized)
+			return
+		}
+
+		c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email_username", nil, "", http.StatusUnauthorized)
+	}()
+
+	props := model.MapFromJson(r.Body)
+	id := props["id"]
+	loginId := props["login_id"]
+	password := props["password"]
+	mfaToken := props["token"]
+	deviceId := props["device_id"]
+	ldapOnly := props["ldap_only"] == "true"
+
+	if *c.App.Config().ExperimentalSettings.ClientSideCertEnable {
+		certPem, certSubject, certEmail := c.App.CheckForClientSideCert(r)
+		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
+
+		if certPem == "" || certEmail == "" {
+			c.Err = model.NewAppError("ClientSideCertMissing", "api.user.login.client_side_cert.certificate.app_error", nil, "", http.StatusBadRequest)
+			return
+		}
+
+		if *c.App.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+			loginId = certEmail
+			password = "certificate"
+		}
+	}
+
+	auditRec := c.MakeAuditRecord("login", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("login_id", loginId)
+	auditRec.AddMeta("device_id", deviceId)
+
+	c.LogAuditWithUserId(id, "attempt - login_id="+loginId)
+
+	user, err := c.App.
 }

@@ -167,7 +167,7 @@ type Server struct {
 	// MessageExport    einterfaces.MessageExportInterface
 	// Cloud            einterfaces.CloudInterface
 	// Notification     einterfaces.NotificationInterface
-	// Saml             einterfaces.SamlInterface
+	Saml einterfaces.SamlInterface
 
 	CacheProvider cache.Provider
 

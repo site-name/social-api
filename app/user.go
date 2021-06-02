@@ -1410,7 +1410,6 @@ func (a *App) SendPasswordReset(email string, siteURL string) (bool, *model.AppE
 }
 
 func (a *App) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError) {
-
 	tokenExtra := tokenExtra{
 		UserId: userID,
 		Email:  email,
@@ -1434,4 +1433,44 @@ func (a *App) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *
 	}
 
 	return token, nil
+}
+
+// CheckProviderAttributes returns the empty string if the patch can be applied without
+// overriding attributes set by the user's login provider; otherwise, the name of the offending
+// field is returned.
+func (a *App) CheckProviderAttributes(user *account.User, patch *account.UserPatch) string {
+	tryingToChange := func(userValue, patchValue *string) bool {
+		return patchValue != nil && *patchValue != *userValue
+	}
+
+	// If any login provider is used, then the username may not be changed
+	if user.AuthService != "" && tryingToChange(&user.Username, patch.Username) {
+		return "username"
+	}
+
+	LdapSettings := &a.Config().LdapSettings
+	SamlSettings := &a.Config().SamlSettings
+
+	conflictField := ""
+	if a.Ldap() != nil &&
+		(user.IsLDAPUser() || (user.IsSAMLUser() && *SamlSettings.EnableSyncWithLdap)) {
+		conflictField = a.Ldap().CheckProviderAttributes(LdapSettings, user, patch)
+	} else if a.Saml() != nil && user.IsSAMLUser() {
+		conflictField = a.Saml().CheckProviderAttributes(SamlSettings, user, patch)
+	} else if user.IsOAuthUser() {
+		if tryingToChange(&user.FirstName, patch.FirstName) || tryingToChange(&user.LastName, patch.LastName) {
+			conflictField = "full name"
+		}
+	}
+
+	return conflictField
+}
+
+func (a *App) UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError) {
+	updatedUser, err := a.UpdateUser(user, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedUser, nil
 }

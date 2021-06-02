@@ -225,8 +225,34 @@ func (es *EmailService) sendUserAccessTokenAddedEmail(email, locale, siteURL str
 }
 
 func (es *EmailService) SendPasswordResetEmail(email string, token *model.Token, locale, siteURL string) (bool, *model.AppError) {
-	panic("not implemented")
+	T := i18n.GetUserTranslations(locale)
 
+	link := fmt.Sprintf("%s/reset_password_complete?token=%s", siteURL, url.QueryEscape(token.Token))
+
+	subject := T("api.templates.reset_subject", map[string]interface{}{
+		"Sitename": model.TEAM_SETTINGS_DEFAULT_SITE_NAME,
+	})
+
+	data := es.newEmailTemplateData(locale)
+	data.Props["SiteURL"] = siteURL
+	data.Props["Title"] = T("api.templates.reset_body.title")
+	data.Props["SubTitle"] = T("api.templates.reset_body.subTitle")
+	data.Props["Info"] = T("api.templates.reset_body.info")
+	data.Props["ButtonURL"] = link
+	data.Props["Button"] = T("api.templates.reset_body.button")
+	data.Props["QuestionTitle"] = T("api.templates.questions_footer.title")
+	data.Props["QuestionInfo"] = T("api.templates.questions_footer.info")
+
+	body, err := es.srv.TemplatesContainer().RenderToString("reset_body", data)
+	if err != nil {
+		return false, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.send.app_error", nil, "err="+err.Error(), http.StatusInternalServerError)
+	}
+
+	if err := es.sendMail(email, subject, body); err != nil {
+		return false, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.send.app_error", nil, "err="+err.Error(), http.StatusInternalServerError)
+	}
+
+	return true, nil
 }
 
 func (es *EmailService) sendMfaChangeEmail(email string, activated bool, locale, siteURL string) *model.AppError {

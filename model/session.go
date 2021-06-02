@@ -26,11 +26,6 @@ const (
 	SESSION_PROP_IS_GUEST             = "is_guest"
 	SESSION_ACTIVITY_TIMEOUT          = 1000 * 60 * 5 // 5 minutes
 	SESSION_USER_ACCESS_TOKEN_EXPIRY  = 100 * 365     // 100 years
-	USER_AUTH_SERVICE_SAML            = "saml"
-	USER_AUTH_SERVICE_SAML_TEXT       = "SAML"
-	USER_AUTH_SERVICE_IS_SAML         = "isSaml"
-	USER_AUTH_SERVICE_IS_MOBILE       = "isMobile"
-	USER_AUTH_SERVICE_IS_OAUTH        = "isOAuthUser"
 )
 
 // Session contains the user session details.

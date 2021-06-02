@@ -499,6 +499,9 @@ func (a *App) SearchEngine() *searchengine.Broker {
 func (a *App) Ldap() einterfaces.LdapInterface {
 	return a.srv.Ldap
 }
+func (a *App) Saml() einterfaces.SamlInterface {
+	return a.srv.Saml
+}
 
 // func (a *App) MessageExport() einterfaces.MessageExportInterface {
 // 	return a.srv.MessageExport
