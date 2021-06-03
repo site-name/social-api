@@ -164,6 +164,7 @@ func UpdateAssetsSubpathFromConfig(config *model.Config) error {
 	return UpdateAssetsSubpath(subpath)
 }
 
+// GetSubpathFromConfig returns subpath from given config's ServiceSettings.SiteURL
 func GetSubpathFromConfig(config *model.Config) (string, error) {
 	if config == nil {
 		return "", errors.New("no config provided")

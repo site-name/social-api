@@ -119,6 +119,15 @@ type Store interface {
 	AssignedProductAttribute() AssignedProductAttributeStore           //
 	AttributeProduct() AttributeProductStore                           //
 	FileInfo() FileInfoStore                                           //
+	UploadSession() UploadSessionStore                                 // upload session
+}
+
+type UploadSessionStore interface {
+	Save(session *model.UploadSession) (*model.UploadSession, error)
+	Update(session *model.UploadSession) error
+	Get(id string) (*model.UploadSession, error)
+	GetForUser(userID string) ([]*model.UploadSession, error)
+	Delete(id string) error
 }
 
 // fileinfo

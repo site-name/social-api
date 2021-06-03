@@ -82,6 +82,10 @@ type AppIface interface {
 	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
+	// RevokeSession removes session from database
+	RevokeSession(session *model.Session) *model.AppError
+	// RevokeSessionById gets session with given sessionID then revokes it
+	RevokeSessionById(sessionID string) *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) *model.AppError
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
@@ -112,6 +116,7 @@ type AppIface interface {
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
+	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
@@ -164,12 +169,14 @@ type AppIface interface {
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
 	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
+	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	GetUserByUsername(username string) (*account.User, *model.AppError)
+	GetUserForLogin(id, loginId string) (*account.User, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
 	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
 	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
@@ -202,8 +209,6 @@ type AppIface interface {
 	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
 	ResetPermissionsSystem() *model.AppError
 	RevokeAllSessions(userID string) *model.AppError
-	RevokeSession(session *model.Session) *model.AppError
-	RevokeSessionById(sessionID string) *model.AppError
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
 	RolesGrantPermission(roleNames []string, permissionId string) bool

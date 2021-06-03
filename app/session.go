@@ -179,6 +179,7 @@ func (a *App) GetSession(token string) (*model.Session, *model.AppError) {
 	return session, nil
 }
 
+// RevokeSessionById gets session with given sessionID then revokes it
 func (a *App) RevokeSessionById(sessionID string) *model.AppError {
 	session, err := a.Srv().Store.Session().Get(context.Background(), sessionID)
 	if err != nil {
@@ -191,6 +192,7 @@ func (a *App) RevokeSessionById(sessionID string) *model.AppError {
 // 	a.Srv().clearSessionCacheForAllUsersSkipClusterSend()
 // }
 
+// RevokeSession removes session from database
 func (a *App) RevokeSession(session *model.Session) *model.AppError {
 	if session.IsOAuth {
 		// TODO: fixme
@@ -363,7 +365,6 @@ func (a *App) GetSessionLengthInMillis(session *model.Session) int64 {
 }
 
 func (a *App) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
-
 	user, nErr := a.Srv().Store.User().Get(context.Background(), token.UserId)
 	if nErr != nil {
 		var nfErr *store.ErrNotFound

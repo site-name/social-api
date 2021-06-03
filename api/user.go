@@ -12,7 +12,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,6 +34,19 @@ func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("/password/reset", api.ApiHandler(resetPassword)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/password/reset/send", api.ApiHandler(sendPasswordReset)).Methods("POST")
 	api.BaseRoutes.User.Handle("/roles", api.ApiSessionRequired(updateUserRoles)).Methods("PUT")
+
+	api.BaseRoutes.User.Handle("/sessions", api.ApiSessionRequired(getSessions)).Methods("GET")
+	api.BaseRoutes.User.Handle("/sessions/revoke", api.ApiSessionRequired(revokeSession)).Methods("POST")
+	api.BaseRoutes.User.Handle("/sessions/revoke/all", api.ApiSessionRequired(revokeAllSessionsForUser)).Methods("POST")
+
+	api.BaseRoutes.User.Handle("/uploads", api.ApiSessionRequired(getUploadsForUser)).Methods("GET")
+
+	api.BaseRoutes.User.Handle("/tokens", api.ApiSessionRequired(createUserAccessToken)).Methods("POST")
+	api.BaseRoutes.User.Handle("/tokens", api.ApiSessionRequired(getUserAccessTokensForUser)).Methods("GET")
+	api.BaseRoutes.Users.Handle("/tokens", api.ApiSessionRequired(getUserAccessTokens)).Methods("GET")
+
+	// api.BaseRoutes.Users.Handle("/login", api.ApiHandler(login)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/logout", api.ApiHandler(logout)).Methods("POST")
 
 	api.BaseRoutes.User.Handle("", api.ApiSessionRequired(deleteUser)).Methods("DELETE")
 }
@@ -725,93 +737,324 @@ func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(ruser.ToJson()))
 }
 
-func login(c *Context, w http.ResponseWriter, r *http.Request) {
-	// Mask all sensitive errors, with the exception of the following
-	defer func() {
-		if c.Err == nil {
+// func login(c *Context, w http.ResponseWriter, r *http.Request) {
+// 	// Mask all sensitive errors, with the exception of the following
+// 	defer func() {
+// 		if c.Err == nil {
+// 			return
+// 		}
+
+// 		unmaskedErrors := []string{
+// 			"mfa.validate_token.authenticate.app_error",
+// 			"api.user.check_user_mfa.bad_code.app_error",
+// 			"api.user.login.blank_pwd.app_error",
+// 			"api.user.login.bot_login_forbidden.app_error",
+// 			"api.user.login.client_side_cert.certificate.app_error",
+// 			"api.user.login.inactive.app_error",
+// 			"api.user.login.not_verified.app_error",
+// 			"api.user.check_user_login_attempts.too_many.app_error",
+// 			"app.team.join_user_to_team.max_accounts.app_error",
+// 			"store.sql_user.save.max_accounts.app_error",
+// 		}
+
+// 		maskError := true
+
+// 		for _, unmaskedError := range unmaskedErrors {
+// 			if c.Err.Id == unmaskedError {
+// 				maskError = false
+// 			}
+// 		}
+
+// 		if !maskError {
+// 			return
+// 		}
+
+// 		config := c.App.Config()
+// 		enableUsername := *config.EmailSettings.EnableSignInWithUsername
+// 		enableEmail := *config.EmailSettings.EnableSignInWithEmail
+// 		samlEnabled := *config.SamlSettings.Enable
+// 		gitlabEnabled := *config.GitLabSettings.Enable
+// 		openidEnabled := *config.OpenIdSettings.Enable
+// 		googleEnabled := *config.GoogleSettings.Enable
+
+// 		if samlEnabled || gitlabEnabled || googleEnabled || openidEnabled {
+// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_sso", nil, "", http.StatusUnauthorized)
+// 			return
+// 		}
+
+// 		if enableUsername && !enableEmail {
+// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_username", nil, "", http.StatusUnauthorized)
+// 			return
+// 		}
+
+// 		if !enableUsername && enableEmail {
+// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email", nil, "", http.StatusUnauthorized)
+// 			return
+// 		}
+
+// 		c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email_username", nil, "", http.StatusUnauthorized)
+// 	}()
+
+// 	props := model.MapFromJson(r.Body)
+// 	id := props["id"]
+// 	loginId := props["login_id"]
+// 	password := props["password"]
+// 	mfaToken := props["token"]
+// 	deviceId := props["device_id"]
+// 	ldapOnly := props["ldap_only"] == "true"
+
+// 	if *c.App.Config().ExperimentalSettings.ClientSideCertEnable {
+// 		certPem, certSubject, certEmail := c.App.CheckForClientSideCert(r)
+// 		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
+
+// 		if certPem == "" || certEmail == "" {
+// 			c.Err = model.NewAppError("ClientSideCertMissing", "api.user.login.client_side_cert.certificate.app_error", nil, "", http.StatusBadRequest)
+// 			return
+// 		}
+
+// 		if *c.App.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+// 			loginId = certEmail
+// 			password = "certificate"
+// 		}
+// 	}
+
+// 	auditRec := c.MakeAuditRecord("login", audit.Fail)
+// 	defer c.LogAuditRec(auditRec)
+// 	auditRec.AddMeta("login_id", loginId)
+// 	auditRec.AddMeta("device_id", deviceId)
+
+// 	c.LogAuditWithUserId(id, "attempt - login_id="+loginId)
+
+// 	user, err := c.App.
+// }
+
+func logout(c *Context, w http.ResponseWriter, r *http.Request) {
+	Logout(c, w, r)
+}
+
+func Logout(c *Context, w http.ResponseWriter, r *http.Request) {
+	auditRec := c.MakeAuditRecord("Logout", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	c.LogAudit("")
+
+	c.RemoveSessionCookie(w, r)
+	if sessionId := c.AppContext.Session().Id; sessionId != "" {
+		if err := c.App.RevokeSessionById(sessionId); err != nil {
+			c.Err = err
 			return
-		}
-
-		unmaskedErrors := []string{
-			"mfa.validate_token.authenticate.app_error",
-			"api.user.check_user_mfa.bad_code.app_error",
-			"api.user.login.blank_pwd.app_error",
-			"api.user.login.bot_login_forbidden.app_error",
-			"api.user.login.client_side_cert.certificate.app_error",
-			"api.user.login.inactive.app_error",
-			"api.user.login.not_verified.app_error",
-			"api.user.check_user_login_attempts.too_many.app_error",
-			"app.team.join_user_to_team.max_accounts.app_error",
-			"store.sql_user.save.max_accounts.app_error",
-		}
-
-		maskError := true
-
-		for _, unmaskedError := range unmaskedErrors {
-			if c.Err.Id == unmaskedError {
-				maskError = false
-			}
-		}
-
-		if !maskError {
-			return
-		}
-
-		config := c.App.Config()
-		enableUsername := *config.EmailSettings.EnableSignInWithUsername
-		enableEmail := *config.EmailSettings.EnableSignInWithEmail
-		samlEnabled := *config.SamlSettings.Enable
-		gitlabEnabled := *config.GitLabSettings.Enable
-		openidEnabled := *config.OpenIdSettings.Enable
-		googleEnabled := *config.GoogleSettings.Enable
-
-		if samlEnabled || gitlabEnabled || googleEnabled || openidEnabled {
-			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_sso", nil, "", http.StatusUnauthorized)
-			return
-		}
-
-		if enableUsername && !enableEmail {
-			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_username", nil, "", http.StatusUnauthorized)
-			return
-		}
-
-		if !enableUsername && enableEmail {
-			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email", nil, "", http.StatusUnauthorized)
-			return
-		}
-
-		c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email_username", nil, "", http.StatusUnauthorized)
-	}()
-
-	props := model.MapFromJson(r.Body)
-	id := props["id"]
-	loginId := props["login_id"]
-	password := props["password"]
-	mfaToken := props["token"]
-	deviceId := props["device_id"]
-	ldapOnly := props["ldap_only"] == "true"
-
-	if *c.App.Config().ExperimentalSettings.ClientSideCertEnable {
-		certPem, certSubject, certEmail := c.App.CheckForClientSideCert(r)
-		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
-
-		if certPem == "" || certEmail == "" {
-			c.Err = model.NewAppError("ClientSideCertMissing", "api.user.login.client_side_cert.certificate.app_error", nil, "", http.StatusBadRequest)
-			return
-		}
-
-		if *c.App.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
-			loginId = certEmail
-			password = "certificate"
 		}
 	}
 
-	auditRec := c.MakeAuditRecord("login", audit.Fail)
+	auditRec.Success()
+	ReturnStatusOK(w)
+}
+
+func getSessions(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	sessions, err := c.App.GetSessions(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	for _, session := range sessions {
+		session.Sanitize()
+	}
+
+	w.Write([]byte(model.SessionsToJson(sessions)))
+}
+
+func revokeSession(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("revokeSession", audit.Fail)
 	defer c.LogAuditRec(auditRec)
-	auditRec.AddMeta("login_id", loginId)
-	auditRec.AddMeta("device_id", deviceId)
 
-	c.LogAuditWithUserId(id, "attempt - login_id="+loginId)
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
 
-	user, err := c.App.
+	props := model.MapFromJson(r.Body)
+	sessionId := props["session_id"]
+	if sessionId == "" {
+		c.SetInvalidParam("session_id")
+		return
+	}
+
+	session, err := c.App.GetSessionById(sessionId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+	auditRec.AddMeta("session", session)
+
+	if session.UserId != c.Params.UserId {
+		c.SetInvalidUrlParam("user_id")
+		return
+	}
+
+	if err := c.App.RevokeSession(session); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("")
+	ReturnStatusOK(w)
+}
+
+func revokeAllSessionsForUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	auditRect := c.MakeAuditRecord("revokeAllSessionsForUser", audit.Fail)
+	defer c.LogAuditRec(auditRect)
+	auditRect.AddMeta("user_id", c.Params.UserId)
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if err := c.App.RevokeAllSessions(c.Params.UserId); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRect.Success()
+	c.LogAudit("")
+
+	ReturnStatusOK(w)
+}
+
+func getUploadsForUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if c.Params.UserId != c.AppContext.Session().UserId {
+		c.Err = model.NewAppError("getUploadsForUser", "api.user.get_uploads_for_user.forbidden.app_error", nil, "", http.StatusForbidden)
+		return
+	}
+
+	uss, err := c.App.GetUploadSessionsForUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(model.UploadSessionsToJson(uss)))
+}
+
+func createUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("createUserAccessToken", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+
+	if user, err := c.App.GetUser(c.Params.UserId); err == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	if c.AppContext.Session().IsOAuth {
+		c.SetPermissionError(model.PERMISSION_CREATE_USER_ACCESS_TOKEN)
+		c.Err.DetailedError += ", attempted access by oauth app"
+		return
+	}
+
+	accessToken := account.UserAccessTokenFromJson(r.Body)
+	if accessToken == nil {
+		c.SetInvalidParam("user_access_token")
+		return
+	}
+
+	if accessToken.Description == "" {
+		c.SetInvalidParam("description")
+		return
+	}
+	c.LogAudit("")
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_CREATE_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_CREATE_USER_ACCESS_TOKEN)
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	accessToken.UserId = c.Params.UserId
+	accessToken.Token = ""
+
+	accessToken, err := c.App.CreateUserAccessToken(accessToken)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	auditRec.AddMeta("token_id", accessToken.Id)
+	c.LogAudit("success - token_id=" + accessToken.Id)
+
+	w.Write([]byte(accessToken.ToJson()))
+}
+
+func getUserAccessTokensForUser(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_READ_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_READ_USER_ACCESS_TOKEN)
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	accessTokens, err := c.App.GetUserAccessTokensForUser(c.Params.UserId, c.Params.Page, c.Params.PerPage)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserAccessTokenListToJson(accessTokens)))
+}
+
+func getUserAccessTokens(c *Context, w http.ResponseWriter, r *http.Request) {
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+		c.SetPermissionError(model.PERMISSION_MANAGE_SYSTEM)
+		return
+	}
+
+	accessTokens, err := c.App.GetUserAccessTokens(c.Params.Page, c.Params.PerPage)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserAccessTokenListToJson(accessTokens)))
 }

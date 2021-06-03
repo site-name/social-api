@@ -171,6 +171,7 @@ func (c *Context) ExtendSessionExpiryIfNeeded(w http.ResponseWriter, r *http.Req
 	}
 }
 
+// RemoveSessionCookie deletes cookie from subpath route
 func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
 	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
 

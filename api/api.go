@@ -52,4 +52,5 @@ func (api *API) Handle404(w http.ResponseWriter, r *http.Request) {
 	web.Handle404(api.app, w, r)
 }
 
+// ReturnStatusOK is shortcut for returning status "OK" to client
 var ReturnStatusOK = web.ReturnStatusOK

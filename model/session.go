@@ -87,6 +87,7 @@ func (s *Session) PreSave() {
 	}
 }
 
+// Sanitize sets session's Token to empty string
 func (s *Session) Sanitize() {
 	s.Token = ""
 }

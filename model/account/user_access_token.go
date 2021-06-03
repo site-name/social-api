@@ -18,8 +18,6 @@ const (
 	USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH = 255
 )
 
-var USER_ACCESS_TOKEN_TOKEN_MAX_LENGTH = len(model.NewId())
-
 func (t *UserAccessToken) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.user_access_token.is_valid.%s.app_error",
@@ -29,7 +27,7 @@ func (t *UserAccessToken) IsValid() *model.AppError {
 	if !model.IsValidId(t.Id) {
 		return outer("id", nil)
 	}
-	if len(t.Token) != USER_ACCESS_TOKEN_TOKEN_MAX_LENGTH {
+	if !model.IsValidId(t.Token) {
 		return outer("token", &t.Id)
 	}
 	if !model.IsValidId(t.UserId) {
@@ -45,6 +43,9 @@ func (t *UserAccessToken) IsValid() *model.AppError {
 func (t *UserAccessToken) PreSave() {
 	if t.Id == "" {
 		t.Id = model.NewId()
+	}
+	if t.Token == "" {
+		t.Token = model.NewId()
 	}
 	t.IsActive = true
 }

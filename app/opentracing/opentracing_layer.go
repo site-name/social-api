@@ -183,6 +183,28 @@ func (a *OpenTracingAppLayer) AttachSessionCookies(c *request.Context, w http.Re
 	a.app.AttachSessionCookies(c, w, r)
 }
 
+func (a *OpenTracingAppLayer) AuthenticateUserForLogin(c *request.Context, id string, loginId string, password string, mfaToken string, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AuthenticateUserForLogin")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.AuthenticateUserForLogin(c, id, loginId, password, mfaToken, cwsToken, ldapOnly)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
 func (a *OpenTracingAppLayer) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckForClientSideCert")
@@ -1432,6 +1454,28 @@ func (a *OpenTracingAppLayer) GetTotalUsersStats() (*account.UsersStats, *model.
 	return resultVar0, resultVar1
 }
 
+func (a *OpenTracingAppLayer) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUploadSessionsForUser")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetUploadSessionsForUser(userID)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
 func (a *OpenTracingAppLayer) GetUser(userID string) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUser")
@@ -1577,6 +1621,28 @@ func (a *OpenTracingAppLayer) GetUserByUsername(username string) (*account.User,
 
 	defer span.Finish()
 	resultVar0, resultVar1 := a.app.GetUserByUsername(username)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) GetUserForLogin(id string, loginId string) (*account.User, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetUserForLogin")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetUserForLogin(id, loginId)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
