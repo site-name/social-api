@@ -380,7 +380,7 @@ func (ss *SqlStore) CsvExportFile() store.CsvExportFileStore {
 }
 
 // product and discount
-func (ss *SqlStore) VoucherStore() store.DiscountVoucherStore {
+func (ss *SqlStore) DiscountVoucher() store.DiscountVoucherStore {
 	return ss.stores.discountVoucher
 }
 func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
@@ -389,7 +389,7 @@ func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
 func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {
 	return ss.stores.discountVoucherTranslation
 }
-func (ss *SqlStore) VoucherCustomer() store.DiscountVoucherCustomerStore {
+func (ss *SqlStore) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
 	return ss.stores.discountVoucherCustomer
 }
 func (ss *SqlStore) DiscountSale() store.DiscountSaleStore {

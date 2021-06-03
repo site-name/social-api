@@ -11,8 +11,15 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/compliance"
+	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type TimerLayer struct {
@@ -1046,10 +1053,10 @@ func (s *TimerLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order st
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Save() (*channel.Channel, error) {
+func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	start := timemodule.Now()
 
-	result, err := s.ChannelStore.Save()
+	result, err := s.ChannelStore.Save(ch)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1908,10 +1915,10 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
-func (s *TimerLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.FilterProducts()
+	result, err := s.ProductStore.FilterProducts(filterInput)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3648,10 +3655,10 @@ func (s *TimerLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string,
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
-	result, err := s.WarehouseStore.Save()
+	result, err := s.WarehouseStore.Save(wh)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

@@ -11,8 +11,15 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/compliance"
+	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type RetryLayer struct {
@@ -1100,11 +1107,11 @@ func (s *RetryLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order st
 
 }
 
-func (s *RetryLayerChannelStore) Save() (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.Save()
+		result, err := s.ChannelStore.Save(ch)
 		if err == nil {
 			return result, nil
 		}
@@ -2152,11 +2159,11 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
-func (s *RetryLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.FilterProducts()
+		result, err := s.ProductStore.FilterProducts(filterInput)
 		if err == nil {
 			return result, nil
 		}
@@ -4248,11 +4255,11 @@ func (s *RetryLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string,
 
 }
 
-func (s *RetryLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.Save()
+		result, err := s.WarehouseStore.Save(wh)
 		if err == nil {
 			return result, nil
 		}

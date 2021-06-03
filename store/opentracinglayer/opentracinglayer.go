@@ -11,9 +11,16 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/compliance"
+	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
+	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type OpenTracingLayer struct {
@@ -1068,7 +1075,7 @@ func (s *OpenTracingLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, or
 	return result, err
 }
 
-func (s *OpenTracingLayerChannelStore) Save() (*channel.Channel, error) {
+func (s *OpenTracingLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -1077,7 +1084,7 @@ func (s *OpenTracingLayerChannelStore) Save() (*channel.Channel, error) {
 	}()
 
 	defer span.Finish()
-	result, err := s.ChannelStore.Save()
+	result, err := s.ChannelStore.Save(ch)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2030,7 +2037,7 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	return err
 }
 
-func (s *OpenTracingLayerProductStore) FilterProducts() ([]*product_and_discount.Product, error) {
+func (s *OpenTracingLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterProducts")
 	s.Root.Store.SetContext(newCtx)
@@ -2039,7 +2046,7 @@ func (s *OpenTracingLayerProductStore) FilterProducts() ([]*product_and_discount
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.FilterProducts()
+	result, err := s.ProductStore.FilterProducts(filterInput)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3962,7 +3969,7 @@ func (s *OpenTracingLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]s
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
+func (s *OpenTracingLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -3971,7 +3978,7 @@ func (s *OpenTracingLayerWarehouseStore) Save() (*warehouse.WareHouse, error) {
 	}()
 
 	defer span.Finish()
-	result, err := s.WarehouseStore.Save()
+	result, err := s.WarehouseStore.Save(wh)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

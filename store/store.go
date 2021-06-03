@@ -54,9 +54,9 @@ type Store interface {
 	CheckoutLine() CheckoutLineStore                                   //
 	CsvExportEvent() CsvExportEventStore                               // csv
 	CsvExportFile() CsvExportFileStore                                 //
-	VoucherStore() DiscountVoucherStore                                // discount
+	DiscountVoucher() DiscountVoucherStore                             // discount
 	VoucherChannelListing() VoucherChannelListingStore                 //
-	VoucherCustomer() DiscountVoucherCustomerStore                     //
+	DiscountVoucherCustomer() DiscountVoucherCustomerStore             //
 	VoucherTranslation() VoucherTranslationStore                       //
 	DiscountSale() DiscountSaleStore                                   //
 	DiscountSaleTranslation() DiscountSaleTranslationStore             //
@@ -189,7 +189,7 @@ type (
 // warehouse
 type (
 	WarehouseStore interface {
-		Save(*warehouse.WareHouse) (*warehouse.WareHouse, error)
+		Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error)
 		Get(id string) (*warehouse.WareHouse, error)
 		GetWarehousesHeaders(ids []string) ([]string, error)
 	}
@@ -229,7 +229,7 @@ type (
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
 		// GetSelectBuilder() squirrel.SelectBuilder
-		FilterProducts(*webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
+		FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
 	}
 )
 
@@ -298,7 +298,7 @@ type CheckoutStore interface {
 }
 
 type ChannelStore interface {
-	Save(*channel.Channel) (*channel.Channel, error)
+	Save(ch *channel.Channel) (*channel.Channel, error)
 	// Get(id string) (*channel.Channel, error)
 	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error)
 }
