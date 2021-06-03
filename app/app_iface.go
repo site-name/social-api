@@ -145,6 +145,7 @@ type AppIface interface {
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	DoAppMigrations()
+	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
 	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
@@ -235,12 +236,14 @@ type AppIface interface {
 	UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError
 	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError
 	UpdateLastActivityAtIfNeeded(session model.Session)
+	UpdateMfa(activate bool, userID, token string) *model.AppError
 	UpdatePassword(user *account.User, newPassword string) *model.AppError
 	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
 	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
 	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
+	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError

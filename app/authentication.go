@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/mfa"
@@ -233,7 +234,7 @@ func checkUserNotDisabled(user *account.User) *model.AppError {
 // 	return nil
 // }
 
-func (a *App) authenticateUser(user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
+func (a *App) authenticateUser(c *request.Context, user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap() != nil
 
 	if user.AuthService == model.USER_AUTH_SERVICE_LDAP {

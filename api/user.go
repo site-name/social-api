@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -34,6 +35,12 @@ func (api *API) InitUser() {
 	api.BaseRoutes.Users.Handle("/password/reset", api.ApiHandler(resetPassword)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/password/reset/send", api.ApiHandler(sendPasswordReset)).Methods("POST")
 	api.BaseRoutes.User.Handle("/roles", api.ApiSessionRequired(updateUserRoles)).Methods("PUT")
+	api.BaseRoutes.User.Handle("/active", api.ApiSessionRequired(updateUserActive)).Methods("PUT")
+
+	api.BaseRoutes.User.Handle("/auth", api.ApiSessionRequiredTrustRequester(updateUserAuth)).Methods("PUT")
+
+	api.BaseRoutes.User.Handle("/mfa", api.ApiSessionRequiredMfa(updateUserMfa)).Methods("PUT")
+	api.BaseRoutes.User.Handle("/mfa/generate", api.ApiSessionRequiredMfa(generateMfaSecret)).Methods("POST")
 
 	api.BaseRoutes.User.Handle("/sessions", api.ApiSessionRequired(getSessions)).Methods("GET")
 	api.BaseRoutes.User.Handle("/sessions/revoke", api.ApiSessionRequired(revokeSession)).Methods("POST")
@@ -44,8 +51,13 @@ func (api *API) InitUser() {
 	api.BaseRoutes.User.Handle("/tokens", api.ApiSessionRequired(createUserAccessToken)).Methods("POST")
 	api.BaseRoutes.User.Handle("/tokens", api.ApiSessionRequired(getUserAccessTokensForUser)).Methods("GET")
 	api.BaseRoutes.Users.Handle("/tokens", api.ApiSessionRequired(getUserAccessTokens)).Methods("GET")
+	api.BaseRoutes.Users.Handle("/tokens/search", api.ApiSessionRequired(searchUserAccessTokens)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/tokens/{token_id:[A-Za-z0-9]+}", api.ApiSessionRequired(getUserAccessToken)).Methods("GET")
+	api.BaseRoutes.Users.Handle("/tokens/revoke", api.ApiSessionRequired(revokeUserAccessToken)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/tokens/disable", api.ApiSessionRequired(disableUserAccessToken)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/tokens/enable", api.ApiSessionRequired(enableUserAccessToken)).Methods("POST")
 
-	// api.BaseRoutes.Users.Handle("/login", api.ApiHandler(login)).Methods("POST")
+	api.BaseRoutes.Users.Handle("/login", api.ApiHandler(login)).Methods("POST")
 	api.BaseRoutes.Users.Handle("/logout", api.ApiHandler(logout)).Methods("POST")
 
 	api.BaseRoutes.User.Handle("", api.ApiSessionRequired(deleteUser)).Methods("DELETE")
@@ -737,96 +749,139 @@ func updateUser(c *Context, w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(ruser.ToJson()))
 }
 
-// func login(c *Context, w http.ResponseWriter, r *http.Request) {
-// 	// Mask all sensitive errors, with the exception of the following
-// 	defer func() {
-// 		if c.Err == nil {
-// 			return
-// 		}
+func login(c *Context, w http.ResponseWriter, r *http.Request) {
+	// Mask all sensitive errors, with the exception of the following
+	defer func() {
+		if c.Err == nil {
+			return
+		}
 
-// 		unmaskedErrors := []string{
-// 			"mfa.validate_token.authenticate.app_error",
-// 			"api.user.check_user_mfa.bad_code.app_error",
-// 			"api.user.login.blank_pwd.app_error",
-// 			"api.user.login.bot_login_forbidden.app_error",
-// 			"api.user.login.client_side_cert.certificate.app_error",
-// 			"api.user.login.inactive.app_error",
-// 			"api.user.login.not_verified.app_error",
-// 			"api.user.check_user_login_attempts.too_many.app_error",
-// 			"app.team.join_user_to_team.max_accounts.app_error",
-// 			"store.sql_user.save.max_accounts.app_error",
-// 		}
+		unmaskedErrors := []string{
+			"mfa.validate_token.authenticate.app_error",
+			"api.user.check_user_mfa.bad_code.app_error",
+			"api.user.login.blank_pwd.app_error",
+			"api.user.login.bot_login_forbidden.app_error",
+			"api.user.login.client_side_cert.certificate.app_error",
+			"api.user.login.inactive.app_error",
+			"api.user.login.not_verified.app_error",
+			"api.user.check_user_login_attempts.too_many.app_error",
+			"app.team.join_user_to_team.max_accounts.app_error",
+			"store.sql_user.save.max_accounts.app_error",
+		}
 
-// 		maskError := true
+		maskError := true
 
-// 		for _, unmaskedError := range unmaskedErrors {
-// 			if c.Err.Id == unmaskedError {
-// 				maskError = false
-// 			}
-// 		}
+		for _, unmaskedError := range unmaskedErrors {
+			if c.Err.Id == unmaskedError {
+				maskError = false
+			}
+		}
 
-// 		if !maskError {
-// 			return
-// 		}
+		if !maskError {
+			return
+		}
 
-// 		config := c.App.Config()
-// 		enableUsername := *config.EmailSettings.EnableSignInWithUsername
-// 		enableEmail := *config.EmailSettings.EnableSignInWithEmail
-// 		samlEnabled := *config.SamlSettings.Enable
-// 		gitlabEnabled := *config.GitLabSettings.Enable
-// 		openidEnabled := *config.OpenIdSettings.Enable
-// 		googleEnabled := *config.GoogleSettings.Enable
+		config := c.App.Config()
+		enableUsername := *config.EmailSettings.EnableSignInWithUsername
+		enableEmail := *config.EmailSettings.EnableSignInWithEmail
+		samlEnabled := *config.SamlSettings.Enable
+		gitlabEnabled := *config.GitLabSettings.Enable
+		openidEnabled := *config.OpenIdSettings.Enable
+		googleEnabled := *config.GoogleSettings.Enable
 
-// 		if samlEnabled || gitlabEnabled || googleEnabled || openidEnabled {
-// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_sso", nil, "", http.StatusUnauthorized)
-// 			return
-// 		}
+		if samlEnabled || gitlabEnabled || googleEnabled || openidEnabled {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_sso", nil, "", http.StatusUnauthorized)
+			return
+		}
 
-// 		if enableUsername && !enableEmail {
-// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_username", nil, "", http.StatusUnauthorized)
-// 			return
-// 		}
+		if enableUsername && !enableEmail {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_username", nil, "", http.StatusUnauthorized)
+			return
+		}
 
-// 		if !enableUsername && enableEmail {
-// 			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email", nil, "", http.StatusUnauthorized)
-// 			return
-// 		}
+		if !enableUsername && enableEmail {
+			c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email", nil, "", http.StatusUnauthorized)
+			return
+		}
 
-// 		c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email_username", nil, "", http.StatusUnauthorized)
-// 	}()
+		c.Err = model.NewAppError("login", "api.user.login.invalid_credentials_email_username", nil, "", http.StatusUnauthorized)
+	}()
 
-// 	props := model.MapFromJson(r.Body)
-// 	id := props["id"]
-// 	loginId := props["login_id"]
-// 	password := props["password"]
-// 	mfaToken := props["token"]
-// 	deviceId := props["device_id"]
-// 	ldapOnly := props["ldap_only"] == "true"
+	props := model.MapFromJson(r.Body)
+	id := props["id"]
+	loginId := props["login_id"]
+	password := props["password"]
+	mfaToken := props["token"]
+	deviceId := props["device_id"]
+	ldapOnly := props["ldap_only"] == "true"
 
-// 	if *c.App.Config().ExperimentalSettings.ClientSideCertEnable {
-// 		certPem, certSubject, certEmail := c.App.CheckForClientSideCert(r)
-// 		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
+	if *c.App.Config().ExperimentalSettings.ClientSideCertEnable {
+		certPem, certSubject, certEmail := c.App.CheckForClientSideCert(r)
+		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
 
-// 		if certPem == "" || certEmail == "" {
-// 			c.Err = model.NewAppError("ClientSideCertMissing", "api.user.login.client_side_cert.certificate.app_error", nil, "", http.StatusBadRequest)
-// 			return
-// 		}
+		if certPem == "" || certEmail == "" {
+			c.Err = model.NewAppError("ClientSideCertMissing", "api.user.login.client_side_cert.certificate.app_error", nil, "", http.StatusBadRequest)
+			return
+		}
 
-// 		if *c.App.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
-// 			loginId = certEmail
-// 			password = "certificate"
-// 		}
-// 	}
+		if *c.App.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+			loginId = certEmail
+			password = "certificate"
+		}
+	}
 
-// 	auditRec := c.MakeAuditRecord("login", audit.Fail)
-// 	defer c.LogAuditRec(auditRec)
-// 	auditRec.AddMeta("login_id", loginId)
-// 	auditRec.AddMeta("device_id", deviceId)
+	auditRec := c.MakeAuditRecord("login", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("login_id", loginId)
+	auditRec.AddMeta("device_id", deviceId)
 
-// 	c.LogAuditWithUserId(id, "attempt - login_id="+loginId)
+	c.LogAuditWithUserId(id, "attempt - login_id="+loginId)
 
-// 	user, err := c.App.
-// }
+	user, err := c.App.AuthenticateUserForLogin(c.AppContext, id, loginId, password, mfaToken, "", ldapOnly)
+	if err != nil {
+		c.LogAuditWithUserId(id, "failure - login_id="+loginId)
+		c.Err = err
+		return
+	}
+	auditRec.AddMeta("user", user)
+
+	if user.IsGuest() {
+		if !*c.App.Config().GuestAccountsSettings.Enable {
+			c.Err = model.NewAppError("login", "api.user.login.guest_accounts.disabled.error", nil, "", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	c.LogAuditWithUserId(user.Id, "authenticated")
+
+	err = c.App.DoLogin(c.AppContext, w, r, user, deviceId, false, false, false)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	c.LogAuditWithUserId(user.Id, "success")
+
+	if r.Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
+		c.App.AttachSessionCookies(c.AppContext, w, r)
+	}
+
+	// userTermsOfService, err := c.App.GetUserTermsOfService(user.Id)
+	// if err != nil && err.StatusCode != http.StatusNotFound {
+	// 	c.Err = err
+	// 	return
+	// }
+
+	// if userTermsOfService != nil {
+	// 	user.TermsOfServiceId = userTermsOfService.TermsOfServiceId
+	// 	user.TermsOfServiceCreateAt = userTermsOfService.CreateAt
+	// }
+
+	user.Sanitize(map[string]bool{})
+
+	auditRec.Success()
+	w.Write([]byte(user.ToJson()))
+}
 
 func logout(c *Context, w http.ResponseWriter, r *http.Request) {
 	Logout(c, w, r)
@@ -1057,4 +1112,393 @@ func getUserAccessTokens(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(account.UserAccessTokenListToJson(accessTokens)))
+}
+
+func searchUserAccessTokens(c *Context, w http.ResponseWriter, r *http.Request) {
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+		c.SetPermissionError(model.PERMISSION_MANAGE_SYSTEM)
+		return
+	}
+
+	props := account.UserAccessTokenSearchFromJson(r.Body)
+	if props == nil {
+		c.SetInvalidParam("user_access_token_search")
+		return
+	}
+
+	if props.Term == "" {
+		c.SetInvalidParam("term")
+		return
+	}
+
+	accessTokens, err := c.App.SearchUserAccessTokens(props.Term)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Write([]byte(account.UserAccessTokenListToJson(accessTokens)))
+}
+
+func getUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireTokenId()
+	if c.Err != nil {
+		return
+	}
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_READ_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_READ_USER_ACCESS_TOKEN)
+		return
+	}
+
+	accessToken, err := c.App.GetUserAccessToken(c.Params.TokenId, true)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), accessToken.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	w.Write([]byte(accessToken.ToJson()))
+}
+
+func revokeUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+
+	tokenId := props["token_id"]
+	if tokenId == "" {
+		c.SetInvalidParam("token_id")
+	}
+
+	auditRec := c.MakeAuditRecord("revokeUserAccessToken", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("token_id", tokenId)
+	c.LogAudit("")
+
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_REVOKE_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN)
+		return
+	}
+
+	accessToken, err := c.App.GetUserAccessToken(tokenId, false)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	if user, errGet := c.App.GetUser(accessToken.UserId); errGet == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), accessToken.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if err = c.App.RevokeUserAccessToken(accessToken); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("success - token_id=" + accessToken.Id)
+
+	ReturnStatusOK(w)
+}
+
+func disableUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+	tokenId := props["token_id"]
+
+	if tokenId == "" {
+		c.SetInvalidParam("token_id")
+	}
+
+	auditRec := c.MakeAuditRecord("disableUserAccessToken", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("token_id", tokenId)
+	c.LogAudit("")
+
+	// No separate permission for this action for now
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_REVOKE_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_REVOKE_USER_ACCESS_TOKEN)
+		return
+	}
+
+	accessToken, err := c.App.GetUserAccessToken(tokenId, false)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	if user, errGet := c.App.GetUser(accessToken.UserId); errGet == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), accessToken.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if err = c.App.DisableUserAccessToken(accessToken); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("success - token_id=" + accessToken.Id)
+
+	ReturnStatusOK(w)
+}
+
+func enableUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
+	props := model.MapFromJson(r.Body)
+
+	tokenId := props["token_id"]
+	if tokenId == "" {
+		c.SetInvalidParam("token_id")
+	}
+
+	auditRec := c.MakeAuditRecord("enableUserAccessToken", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("token_id", tokenId)
+	c.LogAudit("")
+
+	// No separate permission for this action for now
+	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_CREATE_USER_ACCESS_TOKEN) {
+		c.SetPermissionError(model.PERMISSION_CREATE_USER_ACCESS_TOKEN)
+		return
+	}
+
+	accessToken, err := c.App.GetUserAccessToken(tokenId, false)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	if user, errGet := c.App.GetUser(accessToken.UserId); errGet == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), accessToken.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if err = c.App.EnableUserAccessToken(accessToken); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	c.LogAudit("success - token_id=" + accessToken.Id)
+
+	ReturnStatusOK(w)
+}
+
+func updateUserAuth(c *Context, w http.ResponseWriter, r *http.Request) {
+	if !c.IsSystemAdmin() {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("updateUserAuth", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+
+	userAuth := account.UserAuthFromJson(r.Body)
+	if userAuth == nil {
+		c.SetInvalidParam("user")
+		return
+	}
+
+	if userAuth.AuthData == nil || *userAuth.AuthData == "" || userAuth.AuthService == "" {
+		c.Err = model.NewAppError("updateUserAuth", "api.user.update_user_auth.invalid_request", nil, "", http.StatusBadRequest)
+		return
+	}
+
+	if user, err := c.App.GetUser(c.Params.UserId); err == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	user, err := c.App.UpdateUserAuth(c.Params.UserId, userAuth)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	auditRec.AddMeta("auth_service", user.AuthService)
+	c.LogAudit(fmt.Sprintf("updated user %s auth to service=%v", c.Params.UserId, user.AuthService))
+
+	w.Write([]byte(user.ToJson()))
+}
+
+func updateUserActive(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	props := model.StringInterfaceFromJson(r.Body)
+
+	active, ok := props["active"].(bool)
+	if !ok {
+		c.SetInvalidParam("active")
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("updateUserActive", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+	auditRec.AddMeta("active", active)
+
+	// true when you're trying to de-activate yourself
+	isSelfDeactive := !active && c.Params.UserId == c.AppContext.Session().UserId
+
+	if !isSelfDeactive && !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS) {
+		c.Err = model.NewAppError("updateUserActive", "api.user.update_active.permissions.app_error", nil, "userId="+c.Params.UserId, http.StatusForbidden)
+		return
+	}
+
+	// if EnableUserDeactivation flag is disabled the user cannot deactivate himself.
+	if isSelfDeactive {
+		c.Err = model.NewAppError("updateUserActive", "api.user.update_active.not_enable.app_error", nil, "userId="+c.Params.UserId, http.StatusUnauthorized)
+		return
+	}
+
+	user, err := c.App.GetUser(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+	auditRec.AddMeta("user", user)
+
+	if user.IsSystemAdmin() && !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM) {
+		c.SetPermissionError(model.PERMISSION_MANAGE_SYSTEM)
+		return
+	}
+
+	if active && user.IsGuest() && !*c.App.Config().GuestAccountsSettings.Enable {
+		c.Err = model.NewAppError("updateUserActive", "api.user.update_active.cannot_enable_guest_when_guest_feature_is_disabled.app_error", nil, "userId="+c.Params.UserId, http.StatusUnauthorized)
+		return
+	}
+
+	if _, err = c.App.UpdateActive(c.AppContext, user, active); err != nil {
+		c.Err = err
+	}
+
+	auditRec.Success()
+	c.LogAudit(fmt.Sprintf("user_id=%s active=%v", user.Id, active))
+
+	if isSelfDeactive {
+		c.App.Srv().Go(func() {
+			if err = c.App.Srv().EmailService.SendDeactivateAccountEmail(user.Email, user.Locale, c.App.GetSiteURL()); err != nil {
+				c.LogErrorByCode(err)
+			}
+		})
+	}
+
+	// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ACTIVATION_STATUS_CHANGE, "", "", "", nil)
+	// c.App.Publish(message)
+
+	// If activating, run cloud check for limit overages
+	// if active {
+	// 	emailErr := c.App.CheckAndSendUserLimitWarningEmails(c.AppContext)
+	// 	if emailErr != nil {
+	// 		c.Err = emailErr
+	// 		return
+	// 	}
+	// }
+
+	ReturnStatusOK(w)
+}
+
+func updateUserMfa(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	auditRec := c.MakeAuditRecord("updateUserMfa", audit.Fail)
+	defer c.LogAuditRec(auditRec)
+
+	if c.AppContext.Session().IsOAuth {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		c.Err.DetailedError += ", attempted access by oauth app"
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	if user, err := c.App.GetUser(c.Params.UserId); err == nil {
+		auditRec.AddMeta("user", user)
+	}
+
+	props := model.StringInterfaceFromJson(r.Body)
+	activate, ok := props["activate"].(bool)
+	if !ok {
+		c.SetInvalidParam("activate")
+		return
+	}
+
+	code := ""
+	if activate {
+		code, ok = props["code"].(string)
+		if !ok || code == "" {
+			c.SetInvalidParam("code")
+			return
+		}
+	}
+
+	c.LogAudit("attempt")
+
+	if err := c.App.UpdateMfa(activate, c.Params.UserId, code); err != nil {
+		c.Err = err
+		return
+	}
+
+	auditRec.Success()
+	auditRec.AddMeta("activate", activate)
+	c.LogAudit("success - mfa updated")
+
+	ReturnStatusOK(w)
+}
+
+func generateMfaSecret(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireUserId()
+	if c.Err != nil {
+		return
+	}
+
+	if c.AppContext.Session().IsOAuth {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		c.Err.DetailedError += ", attempted access by oauth app"
+		return
+	}
+
+	if !c.App.SessionHasPermissionToUser(*c.AppContext.Session(), c.Params.UserId) {
+		c.SetPermissionError(model.PERMISSION_EDIT_OTHER_USERS)
+		return
+	}
+
+	secret, err := c.App.GenerateMfaSecret(c.Params.UserId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+	w.Write([]byte(secret.ToJson()))
 }

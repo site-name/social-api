@@ -1474,3 +1474,44 @@ func (a *App) UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User,
 
 	return updatedUser, nil
 }
+
+func (a *App) UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError) {
+	userAuth.Password = ""
+	if _, err := a.Srv().Store.User().UpdateAuthData(userID, userAuth.AuthService, userAuth.AuthData, "", false); err != nil {
+		var invErr *store.ErrInvalidInput
+		switch {
+		case errors.As(err, &invErr):
+			return nil, model.NewAppError("UpdateUserAuth", "app.user.update_auth_data.email_exists.app_error", nil, invErr.Error(), http.StatusBadRequest)
+		default:
+			return nil, model.NewAppError("UpdateUserAuth", "app.user.update_auth_data.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	return userAuth, nil
+}
+
+func (a *App) UpdateMfa(activate bool, userID, token string) *model.AppError {
+	if activate {
+		if err := a.ActivateMfa(userID, token); err != nil {
+			return err
+		}
+	} else {
+		if err := a.DeactivateMfa(userID); err != nil {
+			return err
+		}
+	}
+
+	a.Srv().Go(func() {
+		user, err := a.GetUser(userID)
+		if err != nil {
+			slog.Error("Failed to get user", slog.Err(err))
+			return
+		}
+
+		if err := a.Srv().EmailService.sendMfaChangeEmail(user.Email, activate, user.Locale, a.GetSiteURL()); err != nil {
+			slog.Error("Failed to send mfa change email", slog.Err(err))
+		}
+	})
+
+	return nil
+}

@@ -333,6 +333,7 @@ func (c *Context) RequireUserId() *Context {
 // 	return c
 // }
 
+// RequireTokenId make sure the TokenId is valid in c's Params
 func (c *Context) RequireTokenId() *Context {
 	if c.Err != nil {
 		return c

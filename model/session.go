@@ -115,6 +115,7 @@ func (s *Session) SetExpireInDays(days int) {
 	}
 }
 
+// AddProp adds given value to session's Props with key of given key
 func (s *Session) AddProp(key string, value string) {
 
 	if s.Props == nil {
@@ -175,12 +176,14 @@ func (s *Session) GetUserRoles() []string {
 	return strings.Fields(s.Roles)
 }
 
+// GenerateCSRF simply generates new UUID, then add that uuid to its "Props" with key is "csrf"
 func (s *Session) GenerateCSRF() string {
 	token := NewId()
 	s.AddProp("csrf", token)
 	return token
 }
 
+// get value with key of "csrf" from session's Props
 func (s *Session) GetCSRF() string {
 	if s.Props == nil {
 		return ""
