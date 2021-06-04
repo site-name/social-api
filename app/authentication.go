@@ -21,6 +21,7 @@ const (
 	TokenLocationRemoteClusterHeader
 )
 
+// String implements fmt Stringer interface
 func (tl TokenLocation) String() string {
 	switch tl {
 	case TokenLocationNotFound:
@@ -40,8 +41,12 @@ func (tl TokenLocation) String() string {
 	}
 }
 
+// IsPasswordValid checks:
+//
+// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
+//
+// 2)
 func (a *App) IsPasswordValid(password string) *model.AppError {
-
 	if *a.Config().ServiceSettings.EnableDeveloper {
 		return nil
 	}
@@ -172,10 +177,6 @@ func (a *App) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaTo
 		return err
 	}
 
-	// if err := checkUserNotBot(user); err != nil {
-	// 	return err
-	// }
-
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
 	}
@@ -270,6 +271,7 @@ func (a *App) authenticateUser(c *request.Context, user *account.User, password,
 	return user, nil
 }
 
+// ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it
 func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	authHeader := r.Header.Get(model.HEADER_AUTH)
 
@@ -305,6 +307,7 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	return "", TokenLocationNotFound
 }
 
+// IsPasswordValidWithSettings checks if given password satisfies system's requirements
 func IsPasswordValidWithSettings(password string, settings *model.PasswordSettings) *model.AppError {
 	id := "model.user.is_valid.pwd"
 	isError := false

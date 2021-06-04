@@ -52,7 +52,11 @@ func (b *Busy) Set(dur time.Duration) {
 	b.setWithoutNotify(dur)
 
 	if b.cluster != nil {
-		sbs := &model.ServerBusyState{Busy: true, Expires: b.expires.Unix(), Expires_ts: b.expires.UTC().Format(TimestampFormat)}
+		sbs := &model.ServerBusyState{
+			Busy:       true,
+			Expires:    b.expires.Unix(),
+			Expires_ts: b.expires.UTC().Format(TimestampFormat),
+		}
 		b.notifyServerBusyChange(sbs)
 	}
 }

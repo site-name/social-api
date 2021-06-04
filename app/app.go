@@ -425,58 +425,17 @@ func (a *App) setWarnMetricsStatusForId(warnMetricId string, status string) *mod
 	return nil
 }
 
-// func (a *App) RequestLicenseAndAckWarnMetric(c *request.Context, warnMetricId string, isBot bool) *model.AppError {
-// 	if *a.Config().ExperimentalSettings.RestrictSystemAdmin {
-// 		return model.NewAppError("RequestLicenseAndAckWarnMetric", "api.restricted_system_admin", nil, "", http.StatusForbidden)
-// 	}
-
-// 	currentUser, appErr := a.GetUser(c.Session().UserId)
-// 	if appErr != nil {
-// 		return appErr
-// 	}
-
-// 	registeredUsersCount, err := a.Srv().Store.User().Count(account.UserCountOptions{})
-// 	if err != nil {
-// 		return model.NewAppError("RequestLicenseAndAckWarnMetric", "api.license.request_trial_license.fail_get_user_count.app_error", nil, err.Error(), http.StatusBadRequest)
-// 	}
-
-// 	trialLicenseRequest := &model.TrialLicenseRequest{
-// 		ServerID:              a.TelemetryId(),
-// 		Name:                  currentUser.GetDisplayName(model.SHOW_FULLNAME),
-// 		Email:                 currentUser.Email,
-// 		SiteName:              *a.Config().TeamSettings.SiteName,
-// 		SiteURL:               *a.Config().ServiceSettings.SiteURL,
-// 		Users:                 int(registeredUsersCount),
-// 		TermsAccepted:         true,
-// 		ReceiveEmailsAccepted: true,
-// 	}
-
-// 	if trialLicenseRequest.SiteURL == "" {
-// 		return model.NewAppError("RequestLicenseAndAckWarnMetric", "api.license.request_trial_license.no-site-url.app_error", nil, "", http.StatusBadRequest)
-// 	}
-
-// 	if err := a.Srv().RequestTrialLicense(trialLicenseRequest); err != nil {
-// 		// turn off warn metric warning even in case of StartTrial failure
-// 		if nerr := a.setWarnMetricsStatusAndNotify(warnMetricId); nerr != nil {
-// 			return nerr
-// 		}
-
-// 		return err
-// 	}
-
-// 	if appErr = a.NotifyAndSetWarnMetricAck(warnMetricId, currentUser, true, isBot); appErr != nil {
-// 		return appErr
-// 	}
-
-// 	return nil
-// }
-
+// Srv returns system server
 func (a *App) Srv() *Server {
 	return a.srv
 }
+
+// Log returns system logger
 func (a *App) Log() *slog.Logger {
 	return a.srv.Log
 }
+
+// NotificationsLog returns system notification log
 func (a *App) NotificationsLog() *slog.Logger {
 	return a.srv.NotificationsLog
 }
@@ -503,9 +462,7 @@ func (a *App) Saml() einterfaces.SamlInterface {
 	return a.srv.Saml
 }
 
-// func (a *App) MessageExport() einterfaces.MessageExportInterface {
-// 	return a.srv.MessageExport
-// }
+// metrics for app
 func (a *App) Metrics() einterfaces.MetricsInterface {
 	return a.srv.Metrics
 }
@@ -513,9 +470,7 @@ func (a *App) Metrics() einterfaces.MetricsInterface {
 // func (a *App) Notification() einterfaces.NotificationInterface {
 // 	return a.srv.Notification
 // }
-// func (a *App) Saml() einterfaces.SamlInterface {
-// 	return a.srv.Saml
-// }
+
 // func (a *App) Cloud() einterfaces.CloudInterface {
 // 	return a.srv.Cloud
 // }

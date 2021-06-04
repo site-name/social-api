@@ -45,7 +45,7 @@ type OpenTracingAppLayer struct {
 	imageProxy   *imageproxy.ImageProxy
 	timezones    *timezones.Timezones
 	// notification     einterfaces.NotificationInterface
-	// saml             einterfaces.SamlInterface
+	saml einterfaces.SamlInterface
 	// messageExport    einterfaces.MessageExportInterface
 	dataRetention    einterfaces.DataRetentionInterface
 	accountMigration einterfaces.AccountMigrationInterface
@@ -3158,7 +3158,7 @@ func NewOpenTracingAppLayer(childApp app.AppIface, ctx context.Context) *OpenTra
 	// newApp.messageExport = childApp.MessageExport()
 	newApp.metrics = childApp.Metrics()
 	// newApp.notification = childApp.Notification()
-	// newApp.saml = childApp.Saml()
+	newApp.saml = childApp.Saml()
 	newApp.httpService = childApp.HTTPService()
 	newApp.imageProxy = childApp.ImageProxy()
 	newApp.timezones = childApp.Timezones()
@@ -3201,9 +3201,9 @@ func (a *OpenTracingAppLayer) Metrics() einterfaces.MetricsInterface {
 // func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
 // 	return a.notification
 // }
-// func (a *OpenTracingAppLayer) Saml() einterfaces.SamlInterface {
-// 	return a.saml
-// }
+func (a *OpenTracingAppLayer) Saml() einterfaces.SamlInterface {
+	return a.saml
+}
 func (a *OpenTracingAppLayer) HTTPService() httpservice.HTTPService {
 	return a.httpService
 }

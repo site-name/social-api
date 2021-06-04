@@ -76,12 +76,16 @@ type AppIface interface {
 	IsUsernameTaken(name string) bool
 	// LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	LimitedClientConfigWithComputed() map[string]string
+	// Log returns system logger
+	Log() *slog.Logger
 	// LogAuditRec logs an audit record using default LvlAuditCLI.
 	LogAuditRec(rec *audit.Record, err error)
 	// LogAuditRecWithLevel logs an audit record using specified Level.
 	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
+	// NotificationsLog returns system notification log
+	NotificationsLog() *slog.Logger
 	// RevokeSession removes session from database
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
@@ -92,22 +96,16 @@ type AppIface interface {
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
 	SetSessionExpireInDays(session *model.Session, days int)
+	// Srv returns system server
+	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
-	// func (a *App) MessageExport() einterfaces.MessageExportInterface {
-	// 	return a.srv.MessageExport
-	// }
-	Metrics() einterfaces.MetricsInterface
-	// func (a *App) Notification() einterfaces.NotificationInterface {
-	// 	return a.srv.Notification
-	// }
-	// func (a *App) Saml() einterfaces.SamlInterface {
-	// 	return a.srv.Saml
-	// }
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
 	HTTPService() httpservice.HTTPService
+	// metrics for app
+	Metrics() einterfaces.MetricsInterface
 	AccountMigration() einterfaces.AccountMigrationInterface
 	ActivateMfa(userID, token string) *model.AppError
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
@@ -194,10 +192,8 @@ type AppIface interface {
 	IsPasswordValid(password string) *model.AppError
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
-	Log() *slog.Logger
 	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
-	NotificationsLog() *slog.Logger
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
@@ -229,7 +225,6 @@ type AppIface interface {
 	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
 	SetProfileImageFromMultiPartFile(userID string, file multipart.File) *model.AppError
 	SetServer(srv *Server)
-	Srv() *Server
 	Timezones() *timezones.Timezones
 	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))

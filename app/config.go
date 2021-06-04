@@ -34,10 +34,12 @@ const (
 	ErrorTermsOfServiceNoRowsFound = "app.terms_of_service.get.no_rows.app_error"
 )
 
+// Configs return system's configurations
 func (s *Server) Config() *model.Config {
 	return s.configStore.Get()
 }
 
+// Configs return system's configurations
 func (a *App) Config() *model.Config {
 	return a.Srv().Config()
 }
