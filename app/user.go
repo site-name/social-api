@@ -24,7 +24,6 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
@@ -642,19 +641,6 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 	return buf.Bytes(), nil
 }
 
-func (a *App) WriteFile(fr io.Reader, path string) (int64, *model.AppError) {
-	backend, err := a.FileBackend()
-	if err != nil {
-		return 0, err
-	}
-
-	result, nErr := backend.WriteFile(fr, path)
-	if nErr != nil {
-		return result, model.NewAppError("WriteFile", "api.file.write_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
-	}
-	return result, nil
-}
-
 func (a *App) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
 	if *a.Config().FileSettings.DriverName == "" {
 		img, appErr := a.GetDefaultProfileImage(user)
@@ -681,22 +667,6 @@ func (a *App) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError
 	}
 
 	return data, false, nil
-}
-
-func (a *App) FileBackend() (filestore.FileBackend, *model.AppError) {
-	return a.Srv().FileBackend()
-}
-
-func (a *App) ReadFile(path string) ([]byte, *model.AppError) {
-	backend, err := a.FileBackend()
-	if err != nil {
-		return nil, err
-	}
-	result, nErr := backend.ReadFile(path)
-	if nErr != nil {
-		return nil, model.NewAppError("ReadFile", "api.file.read_file.app_error", nil, nErr.Error(), http.StatusInternalServerError)
-	}
-	return result, nil
 }
 
 func (a *App) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {

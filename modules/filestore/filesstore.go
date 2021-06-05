@@ -53,6 +53,11 @@ type FileBackendSettings struct {
 	AmazonS3Trace           bool
 }
 
+// CheckMandatoryS3Fields performs:
+//
+// 1) checks if field "AmazonS3Bucket" is empty, then return error
+//
+// 2) Checks if field "AmazonS3Endpoint" is empty, then sets it to "s3.amazonaws.com"
 func (settings *FileBackendSettings) CheckMandatoryS3Fields() error {
 	if settings.AmazonS3Bucket == "" {
 		return errors.New("missing s3 bucket settings")
@@ -66,6 +71,8 @@ func (settings *FileBackendSettings) CheckMandatoryS3Fields() error {
 	return nil
 }
 
+// NewFileBackend creates new FileBackend with given settings.
+// Either aws3 or local will be created
 func NewFileBackend(settings FileBackendSettings) (FileBackend, error) {
 	switch settings.DriverName {
 	case driverS3:

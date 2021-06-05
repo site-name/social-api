@@ -123,10 +123,12 @@ func (fi *FileInfo) IsValid() *AppError {
 	return nil
 }
 
+// IsImage check if fileInfo's MimeType is prefixed with "image"
 func (fi *FileInfo) IsImage() bool {
 	return strings.HasPrefix(fi.MimeType, "image")
 }
 
+// NewInfo create new FileInfo, attributes 'Name', 'MimeType' and 'Extension' are created
 func NewInfo(name string) *FileInfo {
 	info := &FileInfo{
 		Name: name,
@@ -145,6 +147,7 @@ func NewInfo(name string) *FileInfo {
 	return info
 }
 
+// GenerateMiniPreviewImage create preview 16x16 jpeg image
 func GenerateMiniPreviewImage(img image.Image) *[]byte {
 	preview := imaging.Resize(img, 16, 16, imaging.Lanczos)
 

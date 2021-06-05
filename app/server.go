@@ -880,6 +880,7 @@ func (s *Server) getLastWarnMetricTimestamp() (int64, *model.AppError) {
 	return value, nil
 }
 
+// FileBackend creates and returns new filebackend
 func (s *Server) FileBackend() (filestore.FileBackend, *model.AppError) {
 	backend, err := filestore.NewFileBackend(s.Config().FileSettings.ToFileBackendSettings(true))
 	if err != nil {
