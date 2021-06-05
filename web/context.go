@@ -435,6 +435,7 @@ func (c *Context) RequireFileId() *Context {
 	return c
 }
 
+// RequireUploadId checks if Params's UploadId is set and valid
 func (c *Context) RequireUploadId() *Context {
 	if c.Err != nil {
 		return c

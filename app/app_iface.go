@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/einterfaces"
@@ -28,12 +29,19 @@ import (
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
+	// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
+	// // Ensure the zip file name ends with a .zip
+	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	// Caller must close the first return value
+	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
 	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
+	// Configs return system's configurations
+	Config() *model.Config
 	// CreateGuest creates a guest and sets several fields of the returned User struct to
 	// their zero values.
 	CreateGuest(user *account.User) (*account.User, *model.AppError)
@@ -54,11 +62,21 @@ type AppIface interface {
 	// A new ExpiresAt is only written if enough time has elapsed since last update.
 	// Returns true only if the session was extended.
 	ExtendSessionExpiryIfNeeded(session *model.Session) bool
+	// FileBackend returns filebackend of the system
+	FileBackend() (filestore.FileBackend, *model.AppError)
+	// FileExists checks if given path exists
+	FileExists(path string) (bool, *model.AppError)
+	// FileModTime get last modification time of given path
+	FileModTime(path string) (time.Time, *model.AppError)
+	// FileSize checks size of given path
+	FileSize(path string) (int64, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
+	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
+	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
@@ -68,6 +86,12 @@ type AppIface interface {
 	GetSessionLengthInMillis(session *model.Session) int64
 	// GetUser get user with given userID
 	GetUser(userID string) (*account.User, *model.AppError)
+	// IsPasswordValid checks:
+	//
+	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
+	//
+	// 2)
+	IsPasswordValid(password string) *model.AppError
 	// IsUserSignUpAllowed checks if system's signing up with email is allowed
 	IsUserSignUpAllowed() *model.AppError
 	// IsUserSignupAllowed checks email settings if signing up with email is allowed
@@ -84,8 +108,12 @@ type AppIface interface {
 	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
+	// MoveFile moves file from given oldPath to newPath
+	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
+	// ReadFile read file content from given path
+	ReadFile(path string) ([]byte, *model.AppError)
 	// RevokeSession removes session from database
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
@@ -98,6 +126,10 @@ type AppIface interface {
 	SetSessionExpireInDays(session *model.Session, days int)
 	// Srv returns system server
 	Srv() *Server
+	// TestFileStoreConnection test if connection to file backend server is good
+	TestFileStoreConnection() *model.AppError
+	// TestFileStoreConnectionWithConfig test file backend connection with config
+	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
 	// func (a *App) Cloud() einterfaces.CloudInterface {
@@ -111,11 +143,13 @@ type AppIface interface {
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
 	AddSessionToCache(s *model.Session)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
+	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
+	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
@@ -128,9 +162,10 @@ type AppIface interface {
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
-	Config() *model.Config
+	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
+	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
@@ -148,15 +183,17 @@ type AppIface interface {
 	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	FileBackend() (filestore.FileBackend, *model.AppError)
-	FileExists(path string) (bool, *model.AppError)
+	ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
+	GeneratePublicLink(siteURL string, info *model.FileInfo) string
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetClusterId() string
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
+	GetFile(fileID string) ([]byte, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
@@ -168,6 +205,7 @@ type AppIface interface {
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
 	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
+	GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError)
 	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
@@ -182,6 +220,7 @@ type AppIface interface {
 	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
+	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 	HasPermissionToUser(askingUserId string, userID string) bool
@@ -189,9 +228,9 @@ type AppIface interface {
 	InvalidateCacheForUser(userID string)
 	IsFirstUserAccount() bool
 	IsLeader() bool
-	IsPasswordValid(password string) *model.AppError
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
+	ListDirectory(path string) ([]string, *model.AppError)
 	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
@@ -199,9 +238,9 @@ type AppIface interface {
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	PostActionCookieSecret() []byte
 	Publish(message *model.WebSocketEvent)
-	ReadFile(path string) ([]byte, *model.AppError)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
+	RemoveDirectory(path string) *model.AppError
 	RemoveFile(path string) *model.AppError
 	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
 	ResetPermissionsSystem() *model.AppError

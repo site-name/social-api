@@ -20,6 +20,9 @@ type Routes struct {
 	User           *mux.Router // 'api/users/{user_id:[A-Za-z0-9-]+}'
 	UserByUsername *mux.Router // 'api/users/username/{username:[A-Za-z0-9\\_\\-\\.]+}
 	UserByEmail    *mux.Router // 'api/users/email/{email:.+}
+
+	Uploads *mux.Router
+	Upload  *mux.Router
 }
 
 type API struct {
@@ -41,7 +44,12 @@ func Init(a app.AppIface, root *mux.Router) *API {
 	api.BaseRoutes.UserByUsername = api.BaseRoutes.Users.PathPrefix("/username/{username:[A-Za-z0-9\\_\\-\\.]+}").Subrouter()
 	api.BaseRoutes.UserByEmail = api.BaseRoutes.Users.PathPrefix("/email/{email:.+}").Subrouter()
 
+	// upload
+	api.BaseRoutes.Uploads = api.BaseRoutes.ApiRoot.PathPrefix("/uploads").Subrouter()
+	api.BaseRoutes.Upload = api.BaseRoutes.Uploads.PathPrefix("/{upload_id:[A-Za-z0-9]+}").Subrouter()
+
 	api.InitUser()
+	api.InitUpload()
 
 	root.Handle("/api/{anything:.*}", http.HandlerFunc(api.Handle404))
 

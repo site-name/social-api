@@ -773,7 +773,7 @@ func (a *App) SetProfileImageFromFile(userID string, file io.Reader) *model.AppE
 		slog.Warn("Error with updating last picture update", slog.Err(err))
 	}
 
-	// a.invalidateUserCacheAndPublish(userID)
+	a.InvalidateCacheForUser(userID)
 
 	return nil
 }
