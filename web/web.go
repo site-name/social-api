@@ -31,6 +31,7 @@ func New(a app.AppIface, root *mux.Router) *Web {
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
+	web.InitGraphql()
 	web.InitStatic()
 
 	return web

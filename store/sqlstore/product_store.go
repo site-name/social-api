@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/web/model"
 )
 
 type SqlProductStore struct {
@@ -90,26 +89,26 @@ func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discou
 	return products, nil
 }
 
-func (ps *SqlProductStore) FilterProducts(filter *model.ProductFilterInput) ([]*product_and_discount.Product, error) {
-	// table names
-	const (
-		TABLE_products               = "Products"
-		TABLE_collectionProducts     = "CollectionProducts"
-		TABLE_productChannelListings = "ProductChannelListings"
-		TABLE_channels               = "Channels"
-		TABLE_productVariants        = "ProductVariants"
-	)
+// func (ps *SqlProductStore) FilterProducts(filter *model.ProductFilterInput) ([]*product_and_discount.Product, error) {
+// 	// table names
+// 	const (
+// 		TABLE_products               = "Products"
+// 		TABLE_collectionProducts     = "CollectionProducts"
+// 		TABLE_productChannelListings = "ProductChannelListings"
+// 		TABLE_channels               = "Channels"
+// 		TABLE_productVariants        = "ProductVariants"
+// 	)
 
-	const (
-		INNER_JOIN = " INNER JOIN "
-	)
+// 	const (
+// 		INNER_JOIN = " INNER JOIN "
+// 	)
 
-	query := "SELECT * FROM Products"
+// 	query := "SELECT * FROM Products"
 
-	if len(filter.Collections) > 0 {
-		query += " INNER JOIN CollectionProducts ON (Products.Id = CollectionProducts.ProductID)"
-	}
+// 	if len(filter.Collections) > 0 {
+// 		query += " INNER JOIN CollectionProducts ON (Products.Id = CollectionProducts.ProductID)"
+// 	}
 
-	// TODO: fixme
-	panic("not implemented")
-}
+// 	// TODO: fixme
+// 	panic("not implemented")
+// }

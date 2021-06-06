@@ -274,16 +274,16 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	c.RemoteClusterTokenRequired()
 	// }
 
-	if c.Err == nil && h.IsLocal {
-		// if the connection is local, RemoteAddr shouldn't have the
-		// shape IP:PORT (it will be "@" in Linux, for example)
-		isLocalOrigin := !strings.Contains(r.RemoteAddr, ":")
-		if *c.App.Config().ServiceSettings.EnableLocalMode && isLocalOrigin {
-			c.AppContext.SetSession(&model.Session{Local: true})
-		} else if !isLocalOrigin {
-			c.Err = model.NewAppError("", "api.context.local_origin_required.app_error", nil, "LocalOriginRequired", http.StatusUnauthorized)
-		}
-	}
+	// if c.Err == nil && h.IsLocal {
+	// 	// if the connection is local, RemoteAddr shouldn't have the
+	// 	// shape IP:PORT (it will be "@" in Linux, for example)
+	// 	isLocalOrigin := !strings.Contains(r.RemoteAddr, ":")
+	// 	if *c.App.Config().ServiceSettings.EnableLocalMode && isLocalOrigin {
+	// 		c.AppContext.SetSession(&model.Session{Local: true})
+	// 	} else if !isLocalOrigin {
+	// 		c.Err = model.NewAppError("", "api.context.local_origin_required.app_error", nil, "LocalOriginRequired", http.StatusUnauthorized)
+	// 	}
+	// }
 
 	if c.Err == nil {
 		h.HandleFunc(c, w, r)

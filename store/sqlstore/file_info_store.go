@@ -50,7 +50,7 @@ func newSqlFileInfoStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterfac
 	}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.FileInfo{}, "FileInfos").SetKeys(false, "id")
+		table := db.AddTableWithName(model.FileInfo{}, "FileInfos").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("CreatorId").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Path").SetMaxSize(512)
@@ -67,14 +67,14 @@ func newSqlFileInfoStore(sqlStore *SqlStore, metrics einterfaces.MetricsInterfac
 }
 
 func (fs *SqlFileInfoStore) createIndexesIfNotExists() {
-	fs.CreateIndexIfNotExists("idx_fileinfo_update_at", "FileInfo", "UpdateAt")
-	fs.CreateIndexIfNotExists("idx_fileinfo_create_at", "FileInfo", "CreateAt")
-	fs.CreateIndexIfNotExists("idx_fileinfo_delete_at", "FileInfo", "DeleteAt")
-	fs.CreateIndexIfNotExists("idx_fileinfo_postid_at", "FileInfo", "PostId")
-	fs.CreateIndexIfNotExists("idx_fileinfo_extension_at", "FileInfo", "Extension")
-	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_name_txt", "FileInfo", "Name")
-	fs.CreateFullTextFuncIndexIfNotExists("idx_fileinfo_name_splitted", "FileInfo", "Translate(Name, '.,-', '   ')")
-	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_content_txt", "FileInfo", "Content")
+	fs.CreateIndexIfNotExists("idx_fileinfo_update_at", "FileInfos", "UpdateAt")
+	fs.CreateIndexIfNotExists("idx_fileinfo_create_at", "FileInfos", "CreateAt")
+	fs.CreateIndexIfNotExists("idx_fileinfo_delete_at", "FileInfos", "DeleteAt")
+	// fs.CreateIndexIfNotExists("idx_fileinfo_postid_at", "FileInfos", "PostId")
+	fs.CreateIndexIfNotExists("idx_fileinfo_extension_at", "FileInfos", "Extension")
+	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_name_txt", "FileInfos", "Name")
+	fs.CreateFullTextFuncIndexIfNotExists("idx_fileinfo_name_splitted", "FileInfos", "Translate(Name, '.,-', '   ')")
+	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_content_txt", "FileInfos", "Content")
 }
 
 func (fs *SqlFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {

@@ -22,9 +22,9 @@ func newSqlUploadSessionStore(sqlStore *SqlStore) store.UploadSessionStore {
 		table.ColMap("Id").SetMaxSize(UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(32)
 		table.ColMap("UserID").SetMaxSize(UUID_MAX_LENGTH)
-		table.ColMap("Filename").SetMaxSize(256)
+		table.ColMap("FileName").SetMaxSize(256)
 		table.ColMap("Path").SetMaxSize(512)
-		table.ColMap("ReqFileId").SetMaxSize(26)
+		// table.ColMap("ReqFileId").SetMaxSize(26)
 	}
 	return s
 }

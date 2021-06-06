@@ -19,7 +19,6 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
-	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type RetryLayer struct {
@@ -2164,26 +2163,6 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductStore.FilterProducts(filterInput)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
 		}
 	}
 

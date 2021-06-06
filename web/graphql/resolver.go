@@ -1,0 +1,25 @@
+package graphql
+
+import (
+	"context"
+
+	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/sitename/sitename/app"
+)
+
+// This file will not be regenerated automatically.
+//
+// It serves as dependency injection for your app, add any dependencies you require here.
+
+type Resolver struct {
+	app.AppIface
+}
+
+func (r *Resolver) __Directive() __DirectiveResolver { return &A{} }
+
+type A struct{}
+
+func (r *A) IsRepeatable(ctx context.Context, obj *introspection.Directive) (bool, error) {
+	// panic(fmt.Errorf("not implemented"))
+	return true, nil
+}

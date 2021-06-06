@@ -20,7 +20,6 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
-	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type OpenTracingLayer struct {
@@ -2045,24 +2044,6 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterProducts")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductStore.FilterProducts(filterInput)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
 }
 
 func (s *OpenTracingLayerProductStore) Get(id string) (*product_and_discount.Product, error) {

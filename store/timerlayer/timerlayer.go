@@ -19,7 +19,6 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
-	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type TimerLayer struct {
@@ -1923,22 +1922,6 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.Save", success, elapsed)
 	}
 	return err
-}
-
-func (s *TimerLayerProductStore) FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductStore.FilterProducts(filterInput)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.FilterProducts", success, elapsed)
-	}
-	return result, err
 }
 
 func (s *TimerLayerProductStore) Get(id string) (*product_and_discount.Product, error) {

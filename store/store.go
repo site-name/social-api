@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
-	webmodel "github.com/sitename/sitename/web/model"
 )
 
 type StoreResult struct {
@@ -238,7 +237,7 @@ type (
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
 		// GetSelectBuilder() squirrel.SelectBuilder
-		FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
+		// FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
 	}
 )
 
