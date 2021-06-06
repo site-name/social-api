@@ -18,9 +18,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -737,20 +737,20 @@ func (a *App) SetProfileImageFromMultiPartFile(userID string, file multipart.Fil
 
 func (a *App) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError) {
 	// Decode image into Image object
-	img, _, err := image.Decode(file)
+	img, _, err := a.srv.imgDecoder.Decode(file)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
 
-	orientation, _ := getImageOrientation(file)
-	img = makeImageUpright(img, orientation)
+	orientation, _ := imaging.GetImageOrientation(file)
+	img = imaging.MakeImageUpright(img, orientation)
 
 	// Scale profile image
 	profileWidthAndHeight := 128
-	img = imaging.Fill(img, profileWidthAndHeight, profileWidthAndHeight, imaging.Center, imaging.Lanczos)
+	img = imaging.FillCenter(img, profileWidthAndHeight, profileWidthAndHeight)
 
 	buf := new(bytes.Buffer)
-	err = png.Encode(buf, img)
+	err = a.srv.imgEncoder.EncodePNG(buf, img)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.encode.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -853,48 +853,6 @@ func (a *App) UpdateHashedPassword(user *account.User, newHashedPassword string)
 	}
 
 	a.InvalidateCacheForUser(user.Id)
-
-	return nil
-}
-
-// mergeChannelHigherScopedPermissions updates the permissions based on the role type, whether the permission is
-// moderated, and the value of the permission on the higher-scoped scheme.
-func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
-	return a.Srv().mergeChannelHigherScopedPermissions(roles)
-}
-
-func (a *App) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
-	roles, nErr := a.Srv().Store.Role().GetByNames(names)
-	if nErr != nil {
-		return nil, model.NewAppError("GetRolesByNames", "app.role.get_by_names.app_error", nil, nErr.Error(), http.StatusInternalServerError)
-	}
-
-	err := a.mergeChannelHigherScopedPermissions(roles)
-	if err != nil {
-		return nil, err
-	}
-
-	return roles, nil
-}
-
-func (a *App) CheckRolesExist(roleNames []string) *model.AppError {
-	roles, err := a.GetRolesByNames(roleNames)
-	if err != nil {
-		return err
-	}
-
-	for _, name := range roleNames {
-		nameFound := false
-		for _, role := range roles {
-			if name == role.Name {
-				nameFound = true
-				break
-			}
-		}
-		if !nameFound {
-			return model.NewAppError("CheckRolesExist", "app.role.check_roles_exist.role_not_found", nil, "role="+name, http.StatusBadRequest)
-		}
-	}
 
 	return nil
 }

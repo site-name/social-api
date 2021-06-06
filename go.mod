@@ -44,6 +44,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.10
 	github.com/nyaruka/phonenumbers v1.0.69
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/oov/psd v0.0.0-20201203182240-dad9002861d9
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pelletier/go-toml v1.9.1 // indirect
 	github.com/pkg/errors v0.9.1
@@ -67,6 +68,7 @@ require (
 	github.com/wiggin77/srslog v1.0.1
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
 	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.2

@@ -901,6 +901,11 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 
 // DoPermissionsMigrations execute all the permissions migrations need by the current version.
 func (a *App) DoPermissionsMigrations() error {
+	return a.Srv().doPermissionsMigrations()
+}
+
+func (s *Server) doPermissionsMigrations() error {
+	a := New(ServerConnector(s))
 	PermissionsMigrations := []struct {
 		Key       string
 		Migration func() (permissionsMap, error)
@@ -931,23 +936,54 @@ func (a *App) DoPermissionsMigrations() error {
 		{Key: model.MIGRATION_KEY_ADD_ENVIRONMENT_SUBSECTION_PERMISSIONS, Migration: a.getAddEnvironmentSubsectionPermissions},
 		{Key: model.MIGRATION_KEY_ADD_ABOUT_SUBSECTION_PERMISSIONS, Migration: a.getAddAboutSubsectionPermissions},
 		{Key: model.MIGRATION_KEY_ADD_REPORTING_SUBSECTION_PERMISSIONS, Migration: a.getAddReportingSubsectionPermissions},
+		// {Key: model.MIGRATION_KEY_ADD_TEST_EMAIL_ANCILLARY_PERMISSION, Migration: a.getAddTestEmailAncillaryPermission},
 	}
 
-	roles, err := a.srv.Store.Role().GetAll()
+	roles, err := s.Store.Role().GetAll()
 	if err != nil {
 		return err
 	}
 
-	for i, migration := range PermissionsMigrations {
+	for _, migration := range PermissionsMigrations {
 		migMap, err := migration.Migration()
 		if err != nil {
 			return err
 		}
-		if err := a.doPermissionsMigration(migration.Key, migMap, roles); err != nil {
-			fmt.Printf("doPermissionsMigration: migration number: %d---------migration key: %s-----------\n", i, migration.Key)
-
+		if err := s.doPermissionsMigration(migration.Key, migMap, roles); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (s *Server) doPermissionsMigration(key string, migrationMap permissionsMap, roles []*model.Role) *model.AppError {
+	if _, err := s.Store.System().GetByName(key); err == nil {
+		return nil
+	}
+
+	roleMap := make(map[string]map[string]bool)
+	for _, role := range roles {
+		roleMap[role.Name] = make(map[string]bool)
+		for _, permission := range role.Permissions {
+			roleMap[role.Name][permission] = true
+		}
+	}
+
+	for _, role := range roles {
+		role.Permissions = applyPermissionsMap(role, roleMap, migrationMap)
+		if _, err := s.Store.Role().Save(role); err != nil {
+			var invErr *store.ErrInvalidInput
+			switch {
+			case errors.As(err, &invErr):
+				return model.NewAppError("doPermissionsMigration", "app.role.save.invalid_role.app_error", nil, invErr.Error(), http.StatusBadRequest)
+			default:
+				return model.NewAppError("doPermissionsMigration", "app.role.save.insert.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+		}
+	}
+
+	if err := s.Store.System().Save(&model.System{Name: key, Value: "true"}); err != nil {
+		return model.NewAppError("doPermissionsMigration", "app.system.save.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

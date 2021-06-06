@@ -4,11 +4,17 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
+
+const minFirstPartSize = 5 * 1024 * 1024 // 5MB
+const IncompleteUploadSuffix = ".tmp"
 
 func (a *App) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError) {
 	uss, err := a.Srv().Store.UploadSession().GetForUser(userID)
@@ -100,4 +106,134 @@ func (a *App) UploadData(c *request.Context, us *model.UploadSession, rd io.Read
 		delete(a.Srv().uploadLockMap, us.Id)
 		a.Srv().uploadLockMapMut.Unlock()
 	}()
+
+	// fetch the session from store to check for inconsistencies.
+	if storedSession, err := a.GetUploadSession(us.Id); err != nil {
+		return nil, err
+	} else if us.FileOffset != storedSession.FileOffset {
+		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error",
+			nil, "FileOffset mismatch", http.StatusBadRequest)
+	}
+
+	uploadPath := us.Path
+	if us.Type == model.UploadTypeImport {
+		uploadPath += IncompleteUploadSuffix
+	}
+
+	// make sure it's not possible to upload more data than what is expected.
+	lr := &io.LimitedReader{
+		R: rd,
+		N: us.FileSize - us.FileOffset,
+	}
+	var err *model.AppError
+	var written int64
+	if us.FileOffset == 0 {
+		// new upload
+		written, err = a.WriteFile(lr, uploadPath)
+		if err != nil && written == 0 {
+			return nil, err
+		}
+		if written < minFirstPartSize && written != us.FileSize {
+			a.RemoveFile(uploadPath)
+			var errStr string
+			if err != nil {
+				errStr = err.Error()
+			}
+			return nil, model.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error",
+				map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
+		}
+	} else if us.FileOffset < us.FileSize {
+		// resume upload
+		written, err = a.AppendFile(lr, uploadPath)
+	}
+	if written > 0 {
+		us.FileOffset += written
+		if storeErr := a.Srv().Store.UploadSession().Update(us); storeErr != nil {
+			return nil, model.NewAppError("UploadData", "app.upload.upload_data.update.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// upload is incomplete
+	if us.FileOffset != us.FileSize {
+		return nil, nil
+	}
+
+	// upload is done, create FileInfo
+	file, err := a.FileReader(uploadPath)
+	if err != nil {
+		return nil, model.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	info, err := model.GetInfoForBytes(us.FileName, file, int(us.FileSize))
+	file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	info.CreatorId = us.UserID
+	info.Path = us.Path
+
+	// info.RemoteId = model.NewString(us.RemoteId)
+	// if us.ReqFileId != "" {
+	// 	info.Id = us.ReqFileId
+	// }
+
+	// run plugins upload hook
+	// if err := a.runPluginsHook(c, info, file); err != nil {
+	// 	return nil, err
+	// }
+
+	// image post-processing
+	if info.IsImage() {
+		if limitErr := checkImageResolutionLimit(info.Width, info.Height); limitErr != nil {
+			return nil, model.NewAppError("uploadData", "app.upload.upload_data.large_image.app_error",
+				map[string]interface{}{"Filename": us.FileName, "Width": info.Width, "Height": info.Height}, "", http.StatusBadRequest)
+		}
+
+		nameWithoutExtension := info.Name[:strings.LastIndex(info.Name, ".")]
+		info.PreviewPath = filepath.Dir(info.Path) + "/" + nameWithoutExtension + "_preview.jpg"
+		info.ThumbnailPath = filepath.Dir(info.Path) + "/" + nameWithoutExtension + "_thumb.jpg"
+		imgData, fileErr := a.ReadFile(uploadPath)
+		if fileErr != nil {
+			return nil, fileErr
+		}
+		a.HandleImages([]string{info.PreviewPath}, []string{info.ThumbnailPath}, [][]byte{imgData})
+	}
+
+	if us.Type == model.UploadTypeImport {
+		if err := a.MoveFile(uploadPath, us.Path); err != nil {
+			return nil, model.NewAppError("UploadData", "app.upload.upload_data.move_file.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	var storeErr error
+	if info, storeErr = a.Srv().Store.FileInfo().Save(info); storeErr != nil {
+		var appErr *model.AppError
+		switch {
+		case errors.As(storeErr, &appErr):
+			return nil, appErr
+		default:
+			return nil, model.NewAppError("uploadData", "app.upload.upload_data.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	if *a.Config().FileSettings.ExtractContent {
+		infoCopy := *info
+		a.Srv().Go(func() {
+			err := a.ExtractContentFromFileInfo(&infoCopy)
+			if err != nil {
+				slog.Error("Failed to extract file content", slog.Err(err), slog.String("fileInfoId", infoCopy.Id))
+			}
+		})
+	}
+
+	// delete upload session
+	if storeErr := a.Srv().Store.UploadSession().Delete(us.Id); storeErr != nil {
+		slog.Warn("Failed to delete UploadSession", slog.Err(storeErr))
+	}
+
+	return info, nil
 }

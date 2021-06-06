@@ -18,14 +18,14 @@ const UploadNoUserID = "nouser"
 
 // UploadSession contains information used to keep track of a file upload.
 type UploadSession struct {
-	Id         string     `json:"id"`
-	Type       UploadType `json:"type"`
-	CreateAt   int64      `json:"create_at"`
-	UserID     string     `json:"user_id"`
-	FileName   string     `json:"filename"`
-	Path       string     `json:"-"`
-	FileSize   int64      `json:"file_size"`
-	FileOffset int64      `json:"file_offset"`
+	Id         string     `json:"id"`          // The unique identifier for the session.
+	Type       UploadType `json:"type"`        // The type of the upload.
+	CreateAt   int64      `json:"create_at"`   // The timestamp of creation.
+	UserID     string     `json:"user_id"`     // The id of the user performing the upload.
+	FileName   string     `json:"filename"`    // The name of the file to upload.
+	Path       string     `json:"-"`           // The path where the file is stored.
+	FileSize   int64      `json:"file_size"`   // The size of the file to upload.
+	FileOffset int64      `json:"file_offset"` // The amount of received data in bytes. If equal to FileSize it means the upload has finished.
 }
 
 func (us *UploadSession) ToJson() string {

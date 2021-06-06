@@ -19,7 +19,7 @@ func Migrate(from, to string) error {
 	defer destination.Close()
 
 	sourceConfig := source.Get()
-	if _, err = destination.Set(sourceConfig); err != nil {
+	if _, _, err = destination.Set(sourceConfig); err != nil {
 		return errors.Wrapf(err, "failed to set config")
 	}
 
@@ -30,7 +30,7 @@ func Migrate(from, to string) error {
 	}
 
 	// Only migrate advanced logging config if it is not embedded JSON.
-	if !IsJsonMap(*sourceConfig.LogSettings.AdvancedLoggingConfig) {
+	if !isJSONMap(*sourceConfig.LogSettings.AdvancedLoggingConfig) {
 		files = append(files, *sourceConfig.LogSettings.AdvancedLoggingConfig)
 	}
 

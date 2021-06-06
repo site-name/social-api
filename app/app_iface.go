@@ -5,6 +5,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"crypto/ecdsa"
 	"io"
 	"mime/multipart"
@@ -76,7 +77,7 @@ type AppIface interface {
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
@@ -119,7 +120,7 @@ type AppIface interface {
 	// RevokeSessionById gets session with given sessionID then revokes it
 	RevokeSessionById(sessionID string) *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
-	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) *model.AppError
+	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
@@ -164,6 +165,7 @@ type AppIface interface {
 	Compliance() einterfaces.ComplianceInterface
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
+	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
@@ -178,8 +180,11 @@ type AppIface interface {
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	DoAppMigrations()
+	DoEmojisPermissionsMigration()
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError)
 	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
@@ -193,9 +198,11 @@ type AppIface interface {
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
 	GetFile(fileID string) ([]byte, *model.AppError)
-	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
+	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
+	GetRole(id string) (*model.Role, *model.AppError)
+	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
@@ -260,6 +267,7 @@ type AppIface interface {
 	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
 	SessionHasPermissionToUser(session model.Session, userID string) bool
 	SetDefaultProfileImage(user *account.User) *model.AppError
+	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
 	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
 	SetProfileImageFromMultiPartFile(userID string, file multipart.File) *model.AppError
@@ -280,6 +288,7 @@ type AppIface interface {
 	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
+	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)

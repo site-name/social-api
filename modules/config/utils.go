@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bytes"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -241,4 +243,21 @@ func GetValueByPath(path []string, obj interface{}) (interface{}, bool) {
 		}
 	}
 	return nil, false
+}
+
+func equal(oldCfg, newCfg *model.Config) (bool, error) {
+	oldCfgBytes, err := json.JSON.Marshal(oldCfg)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal old config: %w", err)
+	}
+	newCfgBytes, err := json.JSON.Marshal(newCfg)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal new config: %w", err)
+	}
+	return !bytes.Equal(oldCfgBytes, newCfgBytes), nil
+}
+
+func isJSONMap(data string) bool {
+	var m map[string]interface{}
+	return json.JSON.Unmarshal([]byte(data), &m) == nil
 }

@@ -30,6 +30,7 @@ import (
 	sentry "github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -188,6 +189,9 @@ type Server struct {
 	featureFlagSynchronizerMutex sync.Mutex
 
 	licenseValue atomic.Value
+
+	imgDecoder *imaging.Decoder
+	imgEncoder *imaging.Encoder
 }
 
 func NewServer(options ...Option) (*Server, error) {
@@ -223,13 +227,28 @@ func NewServer(options ...Option) (*Server, error) {
 		slog.Error("Could not initiate logging", slog.Err(err))
 	}
 
+	// initialize image encoder/decoder for processing file uploads
+	var imgErr error
+	s.imgDecoder, imgErr = imaging.NewDecoder(imaging.DecoderOptions{
+		ConcurrencyLevel: runtime.NumCPU(),
+	})
+	if imgErr != nil {
+		return nil, errors.Wrap(imgErr, "failed to create image decoder")
+	}
+	s.imgEncoder, imgErr = imaging.NewEncoder(imaging.EncoderOptions{
+		ConcurrencyLevel: runtime.NumCPU(),
+	})
+	if imgErr != nil {
+		return nil, errors.Wrap(imgErr, "failed to create image encoder")
+	}
+
 	// This is called after initLogging() to avoid a race condition.
 	slog.Info("Server is initializing...", slog.String("go_version", runtime.Version()))
 
 	// It is important to initialize the hub only after the global logger is set
 	// to avoid race conditions while logging from inside the hub.
-	// fakeApp := New(ServerConnector(s))
-	// fakeApp.HubStart()
+	// app := New(ServerConnector(s))
+	// app.HubStart()
 
 	if *s.Config().LogSettings.EnableDiagnostics && *s.Config().LogSettings.EnableSentry {
 		if strings.Contains(SentryDSN, "placeholder") {
@@ -297,11 +316,11 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	// NOTE: not sure need this:
-	if s.seenPendingPostIdsCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-		Size: 25000,
-	}); err != nil {
-		return nil, errors.Wrap(err, "Unable to create status cache")
-	}
+	// if s.seenPendingPostIdsCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
+	// 	Size: 25000,
+	// }); err != nil {
+	// 	return nil, errors.Wrap(err, "Unable to create status cache")
+	// }
 
 	if s.statusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.STATUS_CACHE_SIZE,
@@ -313,11 +332,8 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.createPushNotificationsHub()
 
-	if err2 := i18n.InitTranslations(
-		*s.Config().LocalizationSettings.DefaultServerLocale,
-		*s.Config().LocalizationSettings.DefaultClientLocale,
-	); err2 != nil {
-		return nil, errors.Wrapf(err2, "unable to load Sitename translation files")
+	if err2 := i18n.InitTranslations(*s.Config().LocalizationSettings.DefaultServerLocale, *s.Config().LocalizationSettings.DefaultClientLocale); err2 != nil {
+		return nil, errors.Wrapf(err2, "unable to load Mattermost translation files")
 	}
 
 	s.initEnterprise()
@@ -353,7 +369,7 @@ func NewServer(options ...Option) (*Server, error) {
 				s.Config(),
 			)
 
-			s.AddConfigListener(func(prev, cfg *model.Config) {
+			s.AddConfigListener(func(prevCfg, cfg *model.Config) {
 				searchStore.UpdateConfig(cfg)
 			})
 
@@ -366,7 +382,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	templatesDir, ok := templates.GetTemplateDirectory()
 	if !ok {
-		slog.Error("Failed to find server templates", slog.String("directory", "templates"))
+		slog.Error("Failed find server templates", slog.String("directory", "templates"))
 	} else {
 		htmlTemplateWatcher, errorsChan, err2 := templates.NewWithWatcher(templatesDir)
 		if err2 != nil {
@@ -386,11 +402,20 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
-	// 	// s.configOrLicenseListener()
+	// 	s.configOrLicenseListener()
 
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", nil)
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
 
 	// 	message.Add("config", s.ClientConfigWithComputed())
+	// 	s.Go(func() {
+	// 		s.Publish(message)
+	// 	})
+	// })
+	// s.licenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
+	// 	s.configOrLicenseListener()
+
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_LICENSE_CHANGED, "", "", "", nil)
+	// 	message.Add("license", s.GetSanitizedClientLicense())
 	// 	s.Go(func() {
 	// 		s.Publish(message)
 	// 	})
@@ -458,7 +483,6 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 	// s.Router = s.RootRouter.PathPrefix(subpath).Subrouter()
 
-	// // FakeApp: remove this when we have the ServePluginRequest and ServePluginPublicRequest migrated in the server
 	// pluginsRoute := s.Router.PathPrefix("/plugins/{plugin_id:[A-Za-z0-9\\_\\-\\.]+}").Subrouter()
 	// pluginsRoute.HandleFunc("", fakeApp.ServePluginRequest)
 	// pluginsRoute.HandleFunc("/public/{public_file:.*}", fakeApp.ServePluginPublicRequest)
@@ -562,9 +586,9 @@ func NewServer(options ...Option) (*Server, error) {
 	s.enableLoggingMetrics()
 
 	// Enable developer settings if this is a "dev" build
-	// if model.BuildNumber == "dev" {
-	// 	s.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableDeveloper = true })
-	// }
+	if model.BuildNumber == "dev" {
+		s.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableDeveloper = true })
+	}
 
 	if err = s.Store.Status().ResetAll(); err != nil {
 		slog.Error("Error to reset the server status.", slog.Err(err))
@@ -581,11 +605,17 @@ func NewServer(options ...Option) (*Server, error) {
 	// if enabled - perform initial product notices fetch
 	// if *s.Config().AnnouncementSettings.AdminNoticesEnabled || *s.Config().AnnouncementSettings.UserNoticesEnabled {
 	// 	go func() {
-	// 		if err := fakeApp.UpdateProductNotices(); err != nil {
+	// 		if err := app.UpdateProductNotices(); err != nil {
 	// 			slog.Warn("Failied to perform initial product notices fetch", slog.Err(err))
 	// 		}
 	// 	}()
 	// }
+
+	if s.runEssentialJobs {
+		s.runJobs()
+	}
+
+	s.doAppMigrations()
 
 	return s, nil
 }

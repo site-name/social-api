@@ -7,6 +7,9 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
+// Listener is a callback function invoked when the configuration changes.
+type Listener func(oldCfg, newCfg *model.Config)
+
 // emitter enables threadsafe registration and broadcasting to configuration listeners
 type emitter struct {
 	listeners sync.Map
@@ -15,9 +18,7 @@ type emitter struct {
 // AddListener adds a callback function to invoke when the configuration is modified.
 func (e *emitter) AddListener(listener Listener) string {
 	id := model.NewId()
-
 	e.listeners.Store(id, listener)
-
 	return id
 }
 
@@ -31,7 +32,6 @@ func (e *emitter) invokeConfigListeners(oldCfg, newCfg *model.Config) {
 	e.listeners.Range(func(key, value interface{}) bool {
 		listener := value.(Listener)
 		listener(oldCfg, newCfg)
-
 		return true
 	})
 }
