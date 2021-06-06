@@ -1,18 +1,13 @@
 package model
 
 import (
-	"bytes"
 	"image"
 	"image/gif"
-	"image/jpeg"
 	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
 	"strings"
-
-	"github.com/disintegration/imaging"
-	"github.com/sitename/sitename/modules/slog"
 )
 
 const (
@@ -145,21 +140,6 @@ func NewInfo(name string) *FileInfo {
 	}
 
 	return info
-}
-
-// GenerateMiniPreviewImage create preview 16x16 jpeg image
-func GenerateMiniPreviewImage(img image.Image) *[]byte {
-	preview := imaging.Resize(img, 16, 16, imaging.Lanczos)
-
-	buf := new(bytes.Buffer)
-
-	if err := jpeg.Encode(buf, preview, &jpeg.Options{Quality: 90}); err != nil {
-		slog.Info("Unable to encode image as mini preview jpg", slog.Err(err))
-		return nil
-	}
-
-	data := buf.Bytes()
-	return &data
 }
 
 func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *AppError) {
