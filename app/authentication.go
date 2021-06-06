@@ -271,7 +271,7 @@ func (a *App) authenticateUser(c *request.Context, user *account.User, password,
 	return user, nil
 }
 
-// ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it
+// ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it into token and token location
 func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	authHeader := r.Header.Get(model.HEADER_AUTH)
 

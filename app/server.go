@@ -129,7 +129,7 @@ type Server struct {
 	advancedLogListenerCleanup func()
 
 	// pluginCommands     []*PluginCommand
-	pluginCommandsLock sync.RWMutex
+	// pluginCommandsLock sync.RWMutex
 
 	asymmetricSigningKey atomic.Value
 	clientConfig         atomic.Value
@@ -137,6 +137,7 @@ type Server struct {
 	limitedClientConfig  atomic.Value
 
 	// telemetryService *telemetry.TelemetryService
+	// userService      *users.UserService
 
 	serviceMux sync.RWMutex
 	// remoteClusterService remotecluster.RemoteClusterServiceIFace
@@ -180,15 +181,12 @@ type Server struct {
 	uploadLockMapMut sync.Mutex
 	uploadLockMap    map[string]bool
 
-	AppInitializedOnce sync.Once
-	localModeServer    *http.Server
-
 	// featureFlagSynchronizer      *featureflag.Synchronizer
 	featureFlagStop              chan struct{}
 	featureFlagStopped           chan struct{}
 	featureFlagSynchronizerMutex sync.Mutex
 
-	licenseValue atomic.Value
+	// licenseValue atomic.Value
 
 	imgDecoder *imaging.Decoder
 	imgEncoder *imaging.Encoder
@@ -1079,12 +1077,12 @@ func (s *Server) Restart() error {
 }
 
 var corsAllowedMethods = []string{
-	"POST",
-	"GET",
-	"OPTIONS",
-	"PUT",
-	"PATCH",
-	"DELETE",
+	http.MethodPost,
+	http.MethodGet,
+	http.MethodOptions,
+	http.MethodPut,
+	http.MethodPatch,
+	http.MethodDelete,
 }
 
 // golang.org/x/crypto/acme/autocert/autocert.go
@@ -1302,48 +1300,8 @@ func (s *Server) Start() error {
 		close(s.didFinishListen)
 	}()
 
-	// if *s.Config().ServiceSettings.EnableLocalMode {
-	// 	if err := s.startLocalModeServer(); err != nil {
-	// 		slog.Critical(err.Error())
-	// 	}
-	// }
-
 	return nil
 }
-
-// func (s *Server) startLocalModeServer() error {
-// 	s.localModeServer = &http.Server{
-// 		Handler: s.LocalRouter,
-// 	}
-
-// 	socket := *s.Config().ServiceSettings.LocalModeSocketLocation
-// 	if err := os.RemoveAll(socket); err != nil {
-// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-// 	}
-
-// 	unixListener, err := net.Listen("unix", socket)
-// 	if err != nil {
-// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-// 	}
-// 	if err = os.Chmod(socket, 0600); err != nil {
-// 		return errors.Wrapf(err, "api.server.start_server.starting.critical", err)
-// 	}
-
-// 	go func() {
-// 		err = s.localModeServer.Serve(unixListener)
-// 		if err != nil && err != http.ErrServerClosed {
-// 			slog.Critical("Error starting unix socket server", slog.Err(err))
-// 		}
-// 	}()
-
-// 	return nil
-// }
-
-// func (s *Server) stopLocalModeServer() {
-// 	if s.localModeServer != nil {
-// 		s.localModeServer.Close()
-// 	}
-// }
 
 func (a *App) OriginChecker() func(*http.Request) bool {
 	if allowed := *a.Config().ServiceSettings.AllowCorsFrom; allowed != "" {

@@ -25,9 +25,11 @@ var T TranslateFunc
 // TDefault is the translate function using english as fallback language
 var TDefault TranslateFunc
 
-var locales map[string]string = make(map[string]string)
-var defaultServerLocale string
-var defaultClientLocale string
+var (
+	locales             map[string]string
+	defaultServerLocale string
+	defaultClientLocale string
+)
 
 // TranslationsPreInit loads translations from filesystem if they are not
 // loaded already and assigns english while loading server config
@@ -56,7 +58,12 @@ func InitTranslations(serverLocale, clientLocale string) error {
 }
 
 func initTranslationsWithDir(dir string) error {
-	files, _ := ioutil.ReadDir(dir)
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+
+	locales = make(map[string]string)
 	for _, f := range files {
 		if filepath.Ext(f.Name()) == ".json" {
 			filename := f.Name()
@@ -106,7 +113,7 @@ func GetTranslationsAndLocaleFromRequest(r *http.Request) (TranslateFunc, string
 	// This is for checking against locales like pt_BR or zn_CN
 	headerLocaleFull := strings.Split(r.Header.Get("Accept-Language"), ",")[0]
 	// This is for checking against locales like en, es
-	headerLocale := strings.Split(strings.Split(r.Header.Get("Accept-Language"), ",")[0], "-")[0]
+	headerLocale := strings.Split(headerLocaleFull, "-")[0]
 	defaultLocale := defaultClientLocale
 	if locales[headerLocaleFull] != "" {
 		translations := tfuncWithFallback(headerLocaleFull)
