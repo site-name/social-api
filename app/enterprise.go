@@ -62,6 +62,12 @@ func RegisterCsvExportInterface(f func(*Server) tjobs.CsvExportInterface) {
 	csvExportInterface = f
 }
 
+var jobsActiveUsersInterface func(*Server) tjobs.ActiveUsersJobInterface
+
+func RegisterJobsActiveUsersInterface(f func(*Server) tjobs.ActiveUsersJobInterface) {
+	jobsActiveUsersInterface = f
+}
+
 // --------------------------------------------------
 
 // enterprise jobs -----------------

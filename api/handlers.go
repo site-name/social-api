@@ -5,9 +5,10 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/sitename/sitename/web"
+	"github.com/sitename/sitename/web/shared"
 )
 
-type Context = web.Context
+type Context = shared.Context
 
 // ApiHandler provides a handler for API endpoints which do not require the user to be logged in order for access to be
 // granted.

@@ -27,7 +27,7 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 	slog.Info("Migrating roles to database.")
 	roles := model.MakeDefaultRoles()
-	roles = util.SetRolePermissionsFromConfig(roles, s.Config(), true)
+	roles = util.SetRolePermissionsFromConfig(roles, s.Config())
 
 	allSucceeded := true
 
@@ -71,6 +71,7 @@ func (s *Server) doAdvancedPermissionsMigration() {
 		}
 	}
 
+	// create a evidence to prove that all roles have been saved to database.
 	system := model.System{
 		Name:  model.ADVANCED_PERMISSIONS_MIGRATION_KEY,
 		Value: "true",
@@ -91,74 +92,74 @@ func (a *App) SetPhase2PermissionsMigrationStatus(isComplete bool) error {
 	return nil
 }
 
-func (a *App) DoEmojisPermissionsMigration() {
-	a.Srv().doEmojisPermissionsMigration()
-}
+// func (a *App) DoEmojisPermissionsMigration() {
+// 	a.Srv().doEmojisPermissionsMigration()
+// }
 
-func (s *Server) doEmojisPermissionsMigration() {
-	// If the migration is already marked as completed, don't do it again.
-	if _, err := s.Store.System().GetByName(EmojisPermissionsMigrationKey); err == nil {
-		return
-	}
+// func (s *Server) doEmojisPermissionsMigration() {
+// 	// If the migration is already marked as completed, don't do it again.
+// 	if _, err := s.Store.System().GetByName(EmojisPermissionsMigrationKey); err == nil {
+// 		return
+// 	}
 
-	var role *model.Role
-	var systemAdminRole *model.Role
-	var err *model.AppError
+// 	var role *model.Role
+// 	var systemAdminRole *model.Role
+// 	var err *model.AppError
 
-	slog.Info("Migrating emojis config to database.")
-	switch *s.Config().ServiceSettings.DEPRECATED_DO_NOT_USE_RestrictCustomEmojiCreation {
-	case model.RESTRICT_EMOJI_CREATION_ALL:
-		role, err = s.GetRoleByName(context.Background(), model.SYSTEM_USER_ROLE_ID)
-		if err != nil {
-			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
-			return
-		}
-	case model.RESTRICT_EMOJI_CREATION_ADMIN:
-		role, err = s.GetRoleByName(context.Background(), model.TEAM_ADMIN_ROLE_ID)
-		if err != nil {
-			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
-			return
-		}
-	case model.RESTRICT_EMOJI_CREATION_SYSTEM_ADMIN:
-		role = nil
-	default:
-		slog.Critical("Failed to migrate emojis creation permissions from mattermost config. Invalid restrict emoji creation setting")
-		return
-	}
+// 	slog.Info("Migrating emojis config to database.")
+// 	switch *s.Config().ServiceSettings.DEPRECATED_DO_NOT_USE_RestrictCustomEmojiCreation {
+// 	case model.RESTRICT_EMOJI_CREATION_ALL:
+// 		role, err = s.GetRoleByName(context.Background(), model.SYSTEM_USER_ROLE_ID)
+// 		if err != nil {
+// 			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
+// 			return
+// 		}
+// 	case model.RESTRICT_EMOJI_CREATION_ADMIN:
+// 		role, err = s.GetRoleByName(context.Background(), model.TEAM_ADMIN_ROLE_ID)
+// 		if err != nil {
+// 			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
+// 			return
+// 		}
+// 	case model.RESTRICT_EMOJI_CREATION_SYSTEM_ADMIN:
+// 		role = nil
+// 	default:
+// 		slog.Critical("Failed to migrate emojis creation permissions from mattermost config. Invalid restrict emoji creation setting")
+// 		return
+// 	}
 
-	if role != nil {
-		role.Permissions = append(role.Permissions, model.PERMISSION_CREATE_EMOJIS.Id, model.PERMISSION_DELETE_EMOJIS.Id)
-		if _, nErr := s.Store.Role().Save(role); nErr != nil {
-			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(nErr))
-			return
-		}
-	}
+// 	if role != nil {
+// 		role.Permissions = append(role.Permissions, model.PERMISSION_CREATE_EMOJIS.Id, model.PERMISSION_DELETE_EMOJIS.Id)
+// 		if _, nErr := s.Store.Role().Save(role); nErr != nil {
+// 			slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(nErr))
+// 			return
+// 		}
+// 	}
 
-	systemAdminRole, err = s.GetRoleByName(context.Background(), model.SYSTEM_ADMIN_ROLE_ID)
-	if err != nil {
-		slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
-		return
-	}
+// 	systemAdminRole, err = s.GetRoleByName(context.Background(), model.SYSTEM_ADMIN_ROLE_ID)
+// 	if err != nil {
+// 		slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
+// 		return
+// 	}
 
-	systemAdminRole.Permissions = append(systemAdminRole.Permissions,
-		model.PERMISSION_CREATE_EMOJIS.Id,
-		model.PERMISSION_DELETE_EMOJIS.Id,
-		model.PERMISSION_DELETE_OTHERS_EMOJIS.Id,
-	)
-	if _, err := s.Store.Role().Save(systemAdminRole); err != nil {
-		slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
-		return
-	}
+// 	systemAdminRole.Permissions = append(systemAdminRole.Permissions,
+// 		model.PERMISSION_CREATE_EMOJIS.Id,
+// 		model.PERMISSION_DELETE_EMOJIS.Id,
+// 		model.PERMISSION_DELETE_OTHERS_EMOJIS.Id,
+// 	)
+// 	if _, err := s.Store.Role().Save(systemAdminRole); err != nil {
+// 		slog.Critical("Failed to migrate emojis creation permissions from mattermost config.", slog.Err(err))
+// 		return
+// 	}
 
-	system := model.System{
-		Name:  EmojisPermissionsMigrationKey,
-		Value: "true",
-	}
+// 	system := model.System{
+// 		Name:  EmojisPermissionsMigrationKey,
+// 		Value: "true",
+// 	}
 
-	if err := s.Store.System().Save(&system); err != nil {
-		slog.Critical("Failed to mark emojis permissions migration as completed.", slog.Err(err))
-	}
-}
+// 	if err := s.Store.System().Save(&system); err != nil {
+// 		slog.Critical("Failed to mark emojis permissions migration as completed.", slog.Err(err))
+// 	}
+// }
 
 // func (a *App) DoGuestRolesCreationMigration() {
 // 	a.Srv().doGuestRolesCreationMigration()
@@ -319,13 +320,14 @@ func (s *Server) doContentExtractionConfigDefaultTrueMigration() {
 	}
 }
 
+// DoAppMigrations migrate permissions
 func (a *App) DoAppMigrations() {
 	a.Srv().doAppMigrations()
 }
 
 func (s *Server) doAppMigrations() {
 	s.doAdvancedPermissionsMigration()
-	s.doEmojisPermissionsMigration()
+	// s.doEmojisPermissionsMigration()
 	// s.doGuestRolesCreationMigration()
 	s.doSystemConsoleRolesCreationMigration()
 	// This migration always must be the last, because can be based on previous

@@ -31,7 +31,8 @@ func New(a app.AppIface, root *mux.Router) *Web {
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
-	web.InitGraphql()
+
+	web.InitGraphql() // must go before static routes
 	web.InitStatic()
 
 	return web
@@ -46,6 +47,7 @@ var browserMinimumSupported = map[string]int{
 	"BrowserSafari": 12,
 }
 
+// CheckClientCompatibility checks if the browser is suppoprted
 func CheckClientCompatibility(agentString string) bool {
 	ua := uasurfer.Parse(agentString)
 
@@ -72,33 +74,14 @@ func Handle404(config configservice.ConfigService, w http.ResponseWriter, r *htt
 	}
 }
 
+// IsApiCall checks if given request's url's path is prefixed with "api"
 func IsApiCall(config configservice.ConfigService, r *http.Request) bool {
 	subpath, _ := util.GetSubpathFromConfig(config.Config())
 
 	return strings.HasPrefix(r.URL.Path, path.Join(subpath, "api")+"/")
 }
 
-// func IsWebhookCall(a app.AppIface, r *http.Request) bool {
-// 	subpath, _ := util.GetSubpathFromConfig(a.Config())
-
-// 	return strings.HasPrefix(r.URL.Path, path.Join(subpath, "hooks")+"/")
-// }
-
-// func IsOAuthApiCall(config configservice.ConfigService, r *http.Request) bool {
-// 	subpath, _ := util.GetSubpathFromConfig(config.Config())
-
-// 	if r.Method == "POST" && r.URL.Path == path.Join(subpath, "oauth", "authorize") {
-// 		return true
-// 	}
-
-// 	if r.URL.Path == path.Join(subpath, "oauth", "apps", "authorized") ||
-// 		r.URL.Path == path.Join(subpath, "oauth", "deauthorize") ||
-// 		r.URL.Path == path.Join(subpath, "oauth", "access_token") {
-// 		return true
-// 	}
-// 	return false
-// }
-
+// ReturnStatusOK is for returning a json formatted message indicates that the request was success
 func ReturnStatusOK(w http.ResponseWriter) {
 	m := make(map[string]string)
 	m[model.STATUS] = model.STATUS_OK

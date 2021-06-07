@@ -940,21 +940,6 @@ func (a *OpenTracingAppLayer) DoAppMigrations() {
 	a.app.DoAppMigrations()
 }
 
-func (a *OpenTracingAppLayer) DoEmojisPermissionsMigration() {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoEmojisPermissionsMigration")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	a.app.DoEmojisPermissionsMigration()
-}
-
 func (a *OpenTracingAppLayer) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile bool, isOAuthUser bool, isSaml bool) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoLogin")

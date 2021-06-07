@@ -1,11 +1,13 @@
 package model
 
+// scopes for permissions
 const (
 	PermissionScopeSystem  = "system_scope"
 	PermissionScopeTeam    = "team_scope"
 	PermissionScopeChannel = "channel_scope"
 )
 
+// Permission type
 type Permission struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
@@ -13,7 +15,7 @@ type Permission struct {
 	Scope       string `json:"scope"`
 }
 
-// All permissions borrowed from saleor
+// All permissions from saleor
 var (
 	PERMISSION_MANAGE_USERS                        *Permission
 	PERMISSION_MANAGE_STAFF                        *Permission
@@ -170,334 +172,333 @@ func initializeSaleorPermission() {
 	}
 }
 
-var PERMISSION_INVITE_USER *Permission
-
-// var PERMISSION_ADD_USER_TO_TEAM *Permission
-var PERMISSION_USE_SLASH_COMMANDS *Permission
-var PERMISSION_MANAGE_SLASH_COMMANDS *Permission
-var PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS *Permission
-
-// var PERMISSION_CREATE_PUBLIC_CHANNEL *Permission
-// var PERMISSION_CREATE_PRIVATE_CHANNEL *Permission
-// var PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS *Permission
-// var PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS *Permission
-// var PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE *Permission
-// var PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC *Permission
-var PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE *Permission
-var PERMISSION_MANAGE_ROLES *Permission
-
-// var PERMISSION_MANAGE_TEAM_ROLES *Permission
-// var PERMISSION_MANAGE_CHANNEL_ROLES *Permission
-// var PERMISSION_CREATE_DIRECT_CHANNEL *Permission
-// var PERMISSION_CREATE_GROUP_CHANNEL *Permission
-// var PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES *Permission
-// var PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES *Permission
-// var PERMISSION_LIST_PUBLIC_TEAMS *Permission
-// var PERMISSION_JOIN_PUBLIC_TEAMS *Permission
-// var PERMISSION_LIST_PRIVATE_TEAMS *Permission
-// var PERMISSION_JOIN_PRIVATE_TEAMS *Permission
-// var PERMISSION_LIST_TEAM_CHANNELS *Permission
-// var PERMISSION_JOIN_PUBLIC_CHANNELS *Permission
-// var PERMISSION_DELETE_PUBLIC_CHANNEL *Permission
-// var PERMISSION_DELETE_PRIVATE_CHANNEL *Permission
-var PERMISSION_EDIT_OTHER_USERS *Permission
-
-// var PERMISSION_READ_CHANNEL *Permission
-// var PERMISSION_READ_PUBLIC_CHANNEL_GROUPS *Permission
-// var PERMISSION_READ_PRIVATE_CHANNEL_GROUPS *Permission
-// var PERMISSION_READ_PUBLIC_CHANNEL *Permission
-var PERMISSION_ADD_REACTION *Permission
-var PERMISSION_REMOVE_REACTION *Permission
-var PERMISSION_REMOVE_OTHERS_REACTIONS *Permission
-var PERMISSION_PERMANENT_DELETE_USER *Permission
-var PERMISSION_UPLOAD_FILE *Permission
-var PERMISSION_GET_PUBLIC_LINK *Permission
-var PERMISSION_MANAGE_WEBHOOKS *Permission
-var PERMISSION_MANAGE_OTHERS_WEBHOOKS *Permission
-var PERMISSION_MANAGE_INCOMING_WEBHOOKS *Permission
-var PERMISSION_MANAGE_OUTGOING_WEBHOOKS *Permission
-var PERMISSION_MANAGE_OTHERS_INCOMING_WEBHOOKS *Permission
-var PERMISSION_MANAGE_OTHERS_OUTGOING_WEBHOOKS *Permission
-var PERMISSION_MANAGE_OAUTH *Permission
-var PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH *Permission
-var PERMISSION_MANAGE_EMOJIS *Permission
-var PERMISSION_MANAGE_OTHERS_EMOJIS *Permission
-var PERMISSION_CREATE_EMOJIS *Permission
-var PERMISSION_DELETE_EMOJIS *Permission
-var PERMISSION_DELETE_OTHERS_EMOJIS *Permission
-var PERMISSION_CREATE_POST *Permission
-var PERMISSION_CREATE_POST_PUBLIC *Permission
-var PERMISSION_CREATE_POST_EPHEMERAL *Permission
-var PERMISSION_EDIT_POST *Permission
-var PERMISSION_EDIT_OTHERS_POSTS *Permission
-var PERMISSION_DELETE_POST *Permission
-var PERMISSION_DELETE_OTHERS_POSTS *Permission
-
-// var PERMISSION_REMOVE_USER_FROM_TEAM *Permission
-// var PERMISSION_CREATE_TEAM *Permission
-// var PERMISSION_MANAGE_TEAM *Permission
-// var PERMISSION_IMPORT_TEAM *Permission
-
-// var PERMISSION_VIEW_TEAM *Permission
-var PERMISSION_LIST_USERS_WITHOUT_TEAM *Permission
-var PERMISSION_READ_JOBS *Permission
-var PERMISSION_MANAGE_JOBS *Permission
-var PERMISSION_CREATE_USER_ACCESS_TOKEN *Permission
-var PERMISSION_READ_USER_ACCESS_TOKEN *Permission
-var PERMISSION_REVOKE_USER_ACCESS_TOKEN *Permission
-var PERMISSION_CREATE_BOT *Permission
-var PERMISSION_ASSIGN_BOT *Permission
-var PERMISSION_READ_BOTS *Permission
-var PERMISSION_READ_OTHERS_BOTS *Permission
-var PERMISSION_MANAGE_BOTS *Permission
-var PERMISSION_MANAGE_OTHERS_BOTS *Permission
-
-// var PERMISSION_VIEW_MEMBERS *Permission
-var PERMISSION_INVITE_GUEST *Permission
-var PERMISSION_PROMOTE_GUEST *Permission
-var PERMISSION_DEMOTE_TO_GUEST *Permission
-var PERMISSION_USE_CHANNEL_MENTIONS *Permission
-var PERMISSION_USE_GROUP_MENTIONS *Permission
-var PERMISSION_READ_OTHER_USERS_TEAMS *Permission
-var PERMISSION_EDIT_BRAND *Permission
-var PERMISSION_MANAGE_SHARED_CHANNELS *Permission
-var PERMISSION_MANAGE_REMOTE_CLUSTERS *Permission
-var PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT *Permission
-var PERMISSION_CREATE_DATA_RETENTION_JOB *Permission
-var PERMISSION_READ_DATA_RETENTION_JOB *Permission
-var PERMISSION_CREATE_COMPLIANCE_EXPORT_JOB *Permission
-var PERMISSION_READ_COMPLIANCE_EXPORT_JOB *Permission
-var PERMISSION_READ_AUDITS *Permission
-var PERMISSION_TEST_ELASTICSEARCH *Permission
-var PERMISSION_TEST_SITE_URL *Permission
-var PERMISSION_TEST_S3 *Permission
-var PERMISSION_RELOAD_CONFIG *Permission
-var PERMISSION_INVALIDATE_CACHES *Permission
-var PERMISSION_RECYCLE_DATABASE_CONNECTIONS *Permission
-var PERMISSION_PURGE_ELASTICSEARCH_INDEXES *Permission
-var PERMISSION_TEST_EMAIL *Permission
-var PERMISSION_CREATE_ELASTICSEARCH_POST_INDEXING_JOB *Permission
-var PERMISSION_CREATE_ELASTICSEARCH_POST_AGGREGATION_JOB *Permission
-var PERMISSION_READ_ELASTICSEARCH_POST_INDEXING_JOB *Permission
-var PERMISSION_READ_ELASTICSEARCH_POST_AGGREGATION_JOB *Permission
-var PERMISSION_PURGE_BLEVE_INDEXES *Permission
-var PERMISSION_CREATE_POST_BLEVE_INDEXES_JOB *Permission
-var PERMISSION_CREATE_LDAP_SYNC_JOB *Permission
-var PERMISSION_READ_LDAP_SYNC_JOB *Permission
-var PERMISSION_TEST_LDAP *Permission
-var PERMISSION_INVALIDATE_EMAIL_INVITE *Permission
-var PERMISSION_GET_SAML_METADATA_FROM_IDP *Permission
-var PERMISSION_ADD_SAML_PUBLIC_CERT *Permission
-var PERMISSION_ADD_SAML_PRIVATE_CERT *Permission
-var PERMISSION_ADD_SAML_IDP_CERT *Permission
-var PERMISSION_REMOVE_SAML_PUBLIC_CERT *Permission
-var PERMISSION_REMOVE_SAML_PRIVATE_CERT *Permission
-var PERMISSION_REMOVE_SAML_IDP_CERT *Permission
-var PERMISSION_GET_SAML_CERT_STATUS *Permission
-var PERMISSION_ADD_LDAP_PUBLIC_CERT *Permission
-var PERMISSION_ADD_LDAP_PRIVATE_CERT *Permission
-var PERMISSION_REMOVE_LDAP_PUBLIC_CERT *Permission
-var PERMISSION_REMOVE_LDAP_PRIVATE_CERT *Permission
-var PERMISSION_GET_LOGS *Permission
-var PERMISSION_GET_ANALYTICS *Permission
-var PERMISSION_READ_LICENSE_INFORMATION *Permission
-var PERMISSION_MANAGE_LICENSE_INFORMATION *Permission
+// deprecated permissions
+var (
+	PERMISSION_PERMANENT_DELETE_USER           *Permission
+	PERMISSION_MANAGE_WEBHOOKS                 *Permission
+	PERMISSION_MANAGE_OTHERS_WEBHOOKS          *Permission
+	PERMISSION_MANAGE_EMOJIS                   *Permission
+	PERMISSION_MANAGE_OTHERS_EMOJIS            *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE            *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE           *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT     *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT    *Permission
+	PERMISSION_SYSCONSOLE_READ_REPORTING       *Permission
+	PERMISSION_SYSCONSOLE_WRITE_REPORTING      *Permission
+	PERMISSION_SYSCONSOLE_READ_ABOUT           *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ABOUT          *Permission
+	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL    *Permission
+	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL   *Permission
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS    *Permission
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS   *Permission
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE      *Permission
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE     *Permission
+)
+
+var (
+	PERMISSION_INVITE_USER                  *Permission // user permissions
+	PERMISSION_ADD_USER_TO_TEAM             *Permission //
+	PERMISSION_USE_SLASH_COMMANDS           *Permission // slash commands
+	PERMISSION_MANAGE_SLASH_COMMANDS        *Permission //
+	PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS *Permission //
+
+	PERMISSION_CREATE_PUBLIC_CHANNEL             *Permission
+	PERMISSION_CREATE_PRIVATE_CHANNEL            *Permission
+	PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS     *Permission
+	PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS    *Permission
+	PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE *Permission
+	PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC *Permission
+	PERMISSION_MANAGE_CHANNEL_ROLES              *Permission
+	PERMISSION_CREATE_DIRECT_CHANNEL             *Permission
+	PERMISSION_CREATE_GROUP_CHANNEL              *Permission
+	PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES  *Permission
+	PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES *Permission
+
+	PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE *Permission
+	PERMISSION_MANAGE_ROLES             *Permission
+	PERMISSION_MANAGE_TEAM_ROLES        *Permission
+
+	PERMISSION_LIST_PUBLIC_TEAMS      *Permission
+	PERMISSION_JOIN_PUBLIC_TEAMS      *Permission
+	PERMISSION_LIST_PRIVATE_TEAMS     *Permission
+	PERMISSION_JOIN_PRIVATE_TEAMS     *Permission
+	PERMISSION_LIST_TEAM_CHANNELS     *Permission
+	PERMISSION_JOIN_PUBLIC_CHANNELS   *Permission
+	PERMISSION_DELETE_PUBLIC_CHANNEL  *Permission
+	PERMISSION_DELETE_PRIVATE_CHANNEL *Permission
+	PERMISSION_EDIT_OTHER_USERS       *Permission
+
+	PERMISSION_READ_CHANNEL                *Permission
+	PERMISSION_READ_PUBLIC_CHANNEL_GROUPS  *Permission
+	PERMISSION_READ_PRIVATE_CHANNEL_GROUPS *Permission
+	PERMISSION_READ_PUBLIC_CHANNEL         *Permission
+	PERMISSION_ADD_REACTION                *Permission
+	PERMISSION_REMOVE_REACTION             *Permission
+	PERMISSION_REMOVE_OTHERS_REACTIONS     *Permission
+
+	PERMISSION_UPLOAD_FILE                     *Permission
+	PERMISSION_GET_PUBLIC_LINK                 *Permission
+	PERMISSION_MANAGE_INCOMING_WEBHOOKS        *Permission
+	PERMISSION_MANAGE_OUTGOING_WEBHOOKS        *Permission
+	PERMISSION_MANAGE_OTHERS_INCOMING_WEBHOOKS *Permission
+	PERMISSION_MANAGE_OTHERS_OUTGOING_WEBHOOKS *Permission
+	PERMISSION_MANAGE_OAUTH                    *Permission
+	PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH        *Permission
+	PERMISSION_CREATE_EMOJIS                   *Permission
+	PERMISSION_DELETE_EMOJIS                   *Permission
+	PERMISSION_DELETE_OTHERS_EMOJIS            *Permission
+	PERMISSION_CREATE_POST                     *Permission
+	PERMISSION_CREATE_POST_PUBLIC              *Permission
+	PERMISSION_CREATE_POST_EPHEMERAL           *Permission
+	PERMISSION_EDIT_POST                       *Permission
+	PERMISSION_EDIT_OTHERS_POSTS               *Permission
+	PERMISSION_DELETE_POST                     *Permission
+	PERMISSION_DELETE_OTHERS_POSTS             *Permission
+
+	PERMISSION_REMOVE_USER_FROM_TEAM *Permission
+	PERMISSION_CREATE_TEAM           *Permission
+	PERMISSION_MANAGE_TEAM           *Permission
+	PERMISSION_IMPORT_TEAM           *Permission
+
+	PERMISSION_VIEW_TEAM                *Permission
+	PERMISSION_LIST_USERS_WITHOUT_TEAM  *Permission
+	PERMISSION_READ_JOBS                *Permission
+	PERMISSION_MANAGE_JOBS              *Permission
+	PERMISSION_CREATE_USER_ACCESS_TOKEN *Permission
+	PERMISSION_READ_USER_ACCESS_TOKEN   *Permission
+	PERMISSION_REVOKE_USER_ACCESS_TOKEN *Permission
+	PERMISSION_CREATE_BOT               *Permission
+	PERMISSION_ASSIGN_BOT               *Permission
+	PERMISSION_READ_BOTS                *Permission
+	PERMISSION_READ_OTHERS_BOTS         *Permission
+	PERMISSION_MANAGE_BOTS              *Permission
+	PERMISSION_MANAGE_OTHERS_BOTS       *Permission
+
+	PERMISSION_VIEW_MEMBERS                              *Permission
+	PERMISSION_INVITE_GUEST                              *Permission
+	PERMISSION_PROMOTE_GUEST                             *Permission
+	PERMISSION_DEMOTE_TO_GUEST                           *Permission
+	PERMISSION_USE_CHANNEL_MENTIONS                      *Permission
+	PERMISSION_USE_GROUP_MENTIONS                        *Permission
+	PERMISSION_READ_OTHER_USERS_TEAMS                    *Permission
+	PERMISSION_EDIT_BRAND                                *Permission
+	PERMISSION_MANAGE_SHARED_CHANNELS                    *Permission
+	PERMISSION_MANAGE_REMOTE_CLUSTERS                    *Permission
+	PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT         *Permission
+	PERMISSION_CREATE_DATA_RETENTION_JOB                 *Permission
+	PERMISSION_READ_DATA_RETENTION_JOB                   *Permission
+	PERMISSION_CREATE_COMPLIANCE_EXPORT_JOB              *Permission
+	PERMISSION_READ_COMPLIANCE_EXPORT_JOB                *Permission
+	PERMISSION_READ_AUDITS                               *Permission
+	PERMISSION_TEST_ELASTICSEARCH                        *Permission
+	PERMISSION_TEST_SITE_URL                             *Permission
+	PERMISSION_TEST_S3                                   *Permission
+	PERMISSION_RELOAD_CONFIG                             *Permission
+	PERMISSION_INVALIDATE_CACHES                         *Permission
+	PERMISSION_RECYCLE_DATABASE_CONNECTIONS              *Permission
+	PERMISSION_PURGE_ELASTICSEARCH_INDEXES               *Permission
+	PERMISSION_TEST_EMAIL                                *Permission
+	PERMISSION_CREATE_ELASTICSEARCH_POST_INDEXING_JOB    *Permission
+	PERMISSION_CREATE_ELASTICSEARCH_POST_AGGREGATION_JOB *Permission
+	PERMISSION_READ_ELASTICSEARCH_POST_INDEXING_JOB      *Permission
+	PERMISSION_READ_ELASTICSEARCH_POST_AGGREGATION_JOB   *Permission
+	PERMISSION_PURGE_BLEVE_INDEXES                       *Permission
+	PERMISSION_CREATE_POST_BLEVE_INDEXES_JOB             *Permission
+	PERMISSION_CREATE_LDAP_SYNC_JOB                      *Permission
+	PERMISSION_READ_LDAP_SYNC_JOB                        *Permission
+	PERMISSION_TEST_LDAP                                 *Permission
+	PERMISSION_INVALIDATE_EMAIL_INVITE                   *Permission
+	PERMISSION_GET_SAML_METADATA_FROM_IDP                *Permission
+	PERMISSION_ADD_SAML_PUBLIC_CERT                      *Permission
+	PERMISSION_ADD_SAML_PRIVATE_CERT                     *Permission
+	PERMISSION_ADD_SAML_IDP_CERT                         *Permission
+	PERMISSION_REMOVE_SAML_PUBLIC_CERT                   *Permission
+	PERMISSION_REMOVE_SAML_PRIVATE_CERT                  *Permission
+	PERMISSION_REMOVE_SAML_IDP_CERT                      *Permission
+	PERMISSION_GET_SAML_CERT_STATUS                      *Permission
+	PERMISSION_ADD_LDAP_PUBLIC_CERT                      *Permission
+	PERMISSION_ADD_LDAP_PRIVATE_CERT                     *Permission
+	PERMISSION_REMOVE_LDAP_PUBLIC_CERT                   *Permission
+	PERMISSION_REMOVE_LDAP_PRIVATE_CERT                  *Permission
+	PERMISSION_GET_LOGS                                  *Permission
+	PERMISSION_GET_ANALYTICS                             *Permission
+	PERMISSION_READ_LICENSE_INFORMATION                  *Permission
+	PERMISSION_MANAGE_LICENSE_INFORMATION                *Permission
+
+	PERMISSION_SYSCONSOLE_READ_ABOUT_EDITION_AND_LICENSE  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ABOUT_EDITION_AND_LICENSE *Permission
+
+	PERMISSION_SYSCONSOLE_READ_BILLING  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_BILLING *Permission
+
+	PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_REPORTING_SITE_STATISTICS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_REPORTING_TEAM_STATISTICS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_REPORTING_TEAM_STATISTICS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_REPORTING_SERVER_LOGS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_REPORTING_SERVER_LOGS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_GROUPS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_TEAMS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_TEAMS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_CHANNELS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_CHANNELS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_PERMISSIONS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_PERMISSIONS *Permission
+
+	PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_SYSTEM_ROLES  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_SYSTEM_ROLES *Permission
+
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_WEB_SERVER  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_WEB_SERVER *Permission
+
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DATABASE  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DATABASE *Permission
+
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_ELASTICSEARCH *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ABOUT *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ABOUT *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_FILE_STORAGE  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_FILE_STORAGE *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ABOUT_EDITION_AND_LICENSE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ABOUT_EDITION_AND_LICENSE *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_IMAGE_PROXY  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_IMAGE_PROXY *Permission
 
-var PERMISSION_SYSCONSOLE_READ_BILLING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_BILLING *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SMTP  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP *Permission
 
-var PERMISSION_SYSCONSOLE_READ_REPORTING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_REPORTING *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PUSH_NOTIFICATION_SERVER  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PUSH_NOTIFICATION_SERVER *Permission
 
-var PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_REPORTING_SITE_STATISTICS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_HIGH_AVAILABILITY  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_HIGH_AVAILABILITY *Permission
 
-var PERMISSION_SYSCONSOLE_READ_REPORTING_TEAM_STATISTICS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_REPORTING_TEAM_STATISTICS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_RATE_LIMITING  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_RATE_LIMITING *Permission
 
-var PERMISSION_SYSCONSOLE_READ_REPORTING_SERVER_LOGS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_REPORTING_SERVER_LOGS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_LOGGING  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_LOGGING *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SESSION_LENGTHS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SESSION_LENGTHS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_GROUPS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PERFORMANCE_MONITORING  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PERFORMANCE_MONITORING *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_TEAMS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_TEAMS *Permission
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DEVELOPER  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DEVELOPER *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_CHANNELS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_CHANNELS *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_CUSTOMIZATION  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_CUSTOMIZATION *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_PERMISSIONS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_PERMISSIONS *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_LOCALIZATION  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_LOCALIZATION *Permission
 
-var PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_SYSTEM_ROLES *Permission
-var PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_SYSTEM_ROLES *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_USERS_AND_TEAMS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_USERS_AND_TEAMS *Permission
 
-// DEPRECATED
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_NOTIFICATIONS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_NOTIFICATIONS *Permission
 
-// DEPRECATED
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_ANNOUNCEMENT_BANNER  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_ANNOUNCEMENT_BANNER *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_WEB_SERVER *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_WEB_SERVER *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_EMOJI  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_EMOJI *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DATABASE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DATABASE *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_POSTS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_POSTS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_ELASTICSEARCH *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_FILE_SHARING_AND_DOWNLOADS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_FILE_SHARING_AND_DOWNLOADS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_FILE_STORAGE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_FILE_STORAGE *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_PUBLIC_LINKS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_PUBLIC_LINKS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_IMAGE_PROXY *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_IMAGE_PROXY *Permission
+	PERMISSION_SYSCONSOLE_READ_SITE_NOTICES  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_SITE_NOTICES *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SMTP *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SIGNUP *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PUSH_NOTIFICATION_SERVER *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PUSH_NOTIFICATION_SERVER *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_EMAIL  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_EMAIL *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_HIGH_AVAILABILITY *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_HIGH_AVAILABILITY *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_PASSWORD  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_PASSWORD *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_RATE_LIMITING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_RATE_LIMITING *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_MFA  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_MFA *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_LOGGING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_LOGGING *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_LDAP *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SESSION_LENGTHS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SESSION_LENGTHS *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SAML  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SAML *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PERFORMANCE_MONITORING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PERFORMANCE_MONITORING *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_OPENID  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_OPENID *Permission
 
-var PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DEVELOPER *Permission
-var PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DEVELOPER *Permission
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_GUEST_ACCESS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE *Permission
+	PERMISSION_SYSCONSOLE_READ_PLUGINS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_PLUGINS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_CUSTOMIZATION *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_CUSTOMIZATION *Permission
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_INTEGRATION_MANAGEMENT  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_INTEGRATION_MANAGEMENT *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_LOCALIZATION *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_LOCALIZATION *Permission
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_BOT_ACCOUNTS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_BOT_ACCOUNTS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_USERS_AND_TEAMS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_USERS_AND_TEAMS *Permission
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_GIF  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_GIF *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_NOTIFICATIONS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_NOTIFICATIONS *Permission
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_CORS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_CORS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_ANNOUNCEMENT_BANNER *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_ANNOUNCEMENT_BANNER *Permission
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_DATA_RETENTION_POLICY *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_EMOJI *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_EMOJI *Permission
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_EXPORT *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_POSTS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_POSTS *Permission
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_MONITORING  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_MONITORING *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_FILE_SHARING_AND_DOWNLOADS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_FILE_SHARING_AND_DOWNLOADS *Permission
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_PUBLIC_LINKS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_PUBLIC_LINKS *Permission
+	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURES  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_FEATURES *Permission
 
-var PERMISSION_SYSCONSOLE_READ_SITE_NOTICES *Permission
-var PERMISSION_SYSCONSOLE_WRITE_SITE_NOTICES *Permission
+	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURE_FLAGS  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_FEATURE_FLAGS *Permission
 
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SIGNUP *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_EMAIL *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_EMAIL *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_PASSWORD *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_PASSWORD *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_MFA *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_MFA *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_LDAP *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SAML *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SAML *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_OPENID *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_OPENID *Permission
-
-var PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_GUEST_ACCESS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_PLUGINS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_PLUGINS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_INTEGRATIONS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_INTEGRATION_MANAGEMENT *Permission
-var PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_INTEGRATION_MANAGEMENT *Permission
-
-var PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_BOT_ACCOUNTS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_BOT_ACCOUNTS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_GIF *Permission
-var PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_GIF *Permission
-
-var PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_CORS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_CORS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_COMPLIANCE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE *Permission
-
-var PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY *Permission
-var PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_DATA_RETENTION_POLICY *Permission
-
-var PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT *Permission
-var PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_EXPORT *Permission
-
-var PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_MONITORING *Permission
-var PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_MONITORING *Permission
-
-var PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE *Permission
-
-var PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL *Permission
-var PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL *Permission
-
-var PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURES *Permission
-var PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_FEATURES *Permission
-
-var PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURE_FLAGS *Permission
-var PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_FEATURE_FLAGS *Permission
-
-var PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_BLEVE *Permission
-var PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_BLEVE *Permission
+	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_BLEVE  *Permission
+	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_BLEVE *Permission
+)
 
 // General permission that encompasses all system admin functions
 // in the future this could be broken up to allow access to some
 // admin functions but not others
 var PERMISSION_MANAGE_SYSTEM *Permission
 
+// AllPermissions contains all system's permissions
 var AllPermissions []*Permission
+
+// DeprecatedPermissions contains permissions that are deprecated
 var DeprecatedPermissions []*Permission
 
 var ChannelModeratedPermissions []string
@@ -513,12 +514,12 @@ func initializePermissions() {
 		"authentication.permissions.team_invite_user.description",
 		PermissionScopeTeam,
 	}
-	// PERMISSION_ADD_USER_TO_TEAM = &Permission{
-	// 	"add_user_to_team",
-	// 	"authentication.permissions.add_user_to_team.name",
-	// 	"authentication.permissions.add_user_to_team.description",
-	// 	PermissionScopeTeam,
-	// }
+	PERMISSION_ADD_USER_TO_TEAM = &Permission{
+		"add_user_to_team",
+		"authentication.permissions.add_user_to_team.name",
+		"authentication.permissions.add_user_to_team.description",
+		PermissionScopeTeam,
+	}
 	PERMISSION_USE_SLASH_COMMANDS = &Permission{
 		"use_slash_commands",
 		"authentication.permissions.team_use_slash_commands.name",
@@ -537,42 +538,42 @@ func initializePermissions() {
 		"authentication.permissions.manage_others_slash_commands.description",
 		PermissionScopeTeam,
 	}
-	// PERMISSION_CREATE_PUBLIC_CHANNEL = &Permission{
-	// 	"create_public_channel",
-	// 	"authentication.permissions.create_public_channel.name",
-	// 	"authentication.permissions.create_public_channel.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_CREATE_PRIVATE_CHANNEL = &Permission{
-	// 	"create_private_channel",
-	// 	"authentication.permissions.create_private_channel.name",
-	// 	"authentication.permissions.create_private_channel.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS = &Permission{
-	// 	"manage_public_channel_members",
-	// 	"authentication.permissions.manage_public_channel_members.name",
-	// 	"authentication.permissions.manage_public_channel_members.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS = &Permission{
-	// 	"manage_private_channel_members",
-	// 	"authentication.permissions.manage_private_channel_members.name",
-	// 	"authentication.permissions.manage_private_channel_members.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE = &Permission{
-	// 	"convert_public_channel_to_private",
-	// 	"authentication.permissions.convert_public_channel_to_private.name",
-	// 	"authentication.permissions.convert_public_channel_to_private.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC = &Permission{
-	// 	"convert_private_channel_to_public",
-	// 	"authentication.permissions.convert_private_channel_to_public.name",
-	// 	"authentication.permissions.convert_private_channel_to_public.description",
-	// 	PermissionScopeChannel,
-	// }
+	PERMISSION_CREATE_PUBLIC_CHANNEL = &Permission{
+		"create_public_channel",
+		"authentication.permissions.create_public_channel.name",
+		"authentication.permissions.create_public_channel.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_CREATE_PRIVATE_CHANNEL = &Permission{
+		"create_private_channel",
+		"authentication.permissions.create_private_channel.name",
+		"authentication.permissions.create_private_channel.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS = &Permission{
+		"manage_public_channel_members",
+		"authentication.permissions.manage_public_channel_members.name",
+		"authentication.permissions.manage_public_channel_members.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS = &Permission{
+		"manage_private_channel_members",
+		"authentication.permissions.manage_private_channel_members.name",
+		"authentication.permissions.manage_private_channel_members.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE = &Permission{
+		"convert_public_channel_to_private",
+		"authentication.permissions.convert_public_channel_to_private.name",
+		"authentication.permissions.convert_public_channel_to_private.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC = &Permission{
+		"convert_private_channel_to_public",
+		"authentication.permissions.convert_private_channel_to_public.name",
+		"authentication.permissions.convert_private_channel_to_public.description",
+		PermissionScopeChannel,
+	}
 	PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE = &Permission{
 		"assign_system_admin_role",
 		"authentication.permissions.assign_system_admin_role.name",
@@ -585,126 +586,126 @@ func initializePermissions() {
 		"authentication.permissions.manage_roles.description",
 		PermissionScopeSystem,
 	}
-	// PERMISSION_MANAGE_TEAM_ROLES = &Permission{
-	// 	"manage_team_roles",
-	// 	"authentication.permissions.manage_team_roles.name",
-	// 	"authentication.permissions.manage_team_roles.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_MANAGE_CHANNEL_ROLES = &Permission{
-	// 	"manage_channel_roles",
-	// 	"authentication.permissions.manage_channel_roles.name",
-	// 	"authentication.permissions.manage_channel_roles.description",
-	// 	PermissionScopeChannel,
-	// }
+	PERMISSION_MANAGE_TEAM_ROLES = &Permission{
+		"manage_team_roles",
+		"authentication.permissions.manage_team_roles.name",
+		"authentication.permissions.manage_team_roles.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_MANAGE_CHANNEL_ROLES = &Permission{
+		"manage_channel_roles",
+		"authentication.permissions.manage_channel_roles.name",
+		"authentication.permissions.manage_channel_roles.description",
+		PermissionScopeChannel,
+	}
 	PERMISSION_MANAGE_SYSTEM = &Permission{
 		"manage_system",
 		"authentication.permissions.manage_system.name",
 		"authentication.permissions.manage_system.description",
 		PermissionScopeSystem,
 	}
-	// PERMISSION_CREATE_DIRECT_CHANNEL = &Permission{
-	// 	"create_direct_channel",
-	// 	"authentication.permissions.create_direct_channel.name",
-	// 	"authentication.permissions.create_direct_channel.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_CREATE_GROUP_CHANNEL = &Permission{
-	// 	"create_group_channel",
-	// 	"authentication.permissions.create_group_channel.name",
-	// 	"authentication.permissions.create_group_channel.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES = &Permission{
-	// 	"manage_public_channel_properties",
-	// 	"authentication.permissions.manage_public_channel_properties.name",
-	// 	"authentication.permissions.manage_public_channel_properties.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES = &Permission{
-	// 	"manage_private_channel_properties",
-	// 	"authentication.permissions.manage_private_channel_properties.name",
-	// 	"authentication.permissions.manage_private_channel_properties.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_LIST_PUBLIC_TEAMS = &Permission{
-	// 	"list_public_teams",
-	// 	"authentication.permissions.list_public_teams.name",
-	// 	"authentication.permissions.list_public_teams.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_JOIN_PUBLIC_TEAMS = &Permission{
-	// 	"join_public_teams",
-	// 	"authentication.permissions.join_public_teams.name",
-	// 	"authentication.permissions.join_public_teams.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_LIST_PRIVATE_TEAMS = &Permission{
-	// 	"list_private_teams",
-	// 	"authentication.permissions.list_private_teams.name",
-	// 	"authentication.permissions.list_private_teams.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_JOIN_PRIVATE_TEAMS = &Permission{
-	// 	"join_private_teams",
-	// 	"authentication.permissions.join_private_teams.name",
-	// 	"authentication.permissions.join_private_teams.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_LIST_TEAM_CHANNELS = &Permission{
-	// 	"list_team_channels",
-	// 	"authentication.permissions.list_team_channels.name",
-	// 	"authentication.permissions.list_team_channels.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_JOIN_PUBLIC_CHANNELS = &Permission{
-	// 	"join_public_channels",
-	// 	"authentication.permissions.join_public_channels.name",
-	// 	"authentication.permissions.join_public_channels.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_DELETE_PUBLIC_CHANNEL = &Permission{
-	// 	"delete_public_channel",
-	// 	"authentication.permissions.delete_public_channel.name",
-	// 	"authentication.permissions.delete_public_channel.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_DELETE_PRIVATE_CHANNEL = &Permission{
-	// 	"delete_private_channel",
-	// 	"authentication.permissions.delete_private_channel.name",
-	// 	"authentication.permissions.delete_private_channel.description",
-	// 	PermissionScopeChannel,
-	// }
+	PERMISSION_CREATE_DIRECT_CHANNEL = &Permission{
+		"create_direct_channel",
+		"authentication.permissions.create_direct_channel.name",
+		"authentication.permissions.create_direct_channel.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_CREATE_GROUP_CHANNEL = &Permission{
+		"create_group_channel",
+		"authentication.permissions.create_group_channel.name",
+		"authentication.permissions.create_group_channel.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES = &Permission{
+		"manage_public_channel_properties",
+		"authentication.permissions.manage_public_channel_properties.name",
+		"authentication.permissions.manage_public_channel_properties.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES = &Permission{
+		"manage_private_channel_properties",
+		"authentication.permissions.manage_private_channel_properties.name",
+		"authentication.permissions.manage_private_channel_properties.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_LIST_PUBLIC_TEAMS = &Permission{
+		"list_public_teams",
+		"authentication.permissions.list_public_teams.name",
+		"authentication.permissions.list_public_teams.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_JOIN_PUBLIC_TEAMS = &Permission{
+		"join_public_teams",
+		"authentication.permissions.join_public_teams.name",
+		"authentication.permissions.join_public_teams.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_LIST_PRIVATE_TEAMS = &Permission{
+		"list_private_teams",
+		"authentication.permissions.list_private_teams.name",
+		"authentication.permissions.list_private_teams.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_JOIN_PRIVATE_TEAMS = &Permission{
+		"join_private_teams",
+		"authentication.permissions.join_private_teams.name",
+		"authentication.permissions.join_private_teams.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_LIST_TEAM_CHANNELS = &Permission{
+		"list_team_channels",
+		"authentication.permissions.list_team_channels.name",
+		"authentication.permissions.list_team_channels.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_JOIN_PUBLIC_CHANNELS = &Permission{
+		"join_public_channels",
+		"authentication.permissions.join_public_channels.name",
+		"authentication.permissions.join_public_channels.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_DELETE_PUBLIC_CHANNEL = &Permission{
+		"delete_public_channel",
+		"authentication.permissions.delete_public_channel.name",
+		"authentication.permissions.delete_public_channel.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_DELETE_PRIVATE_CHANNEL = &Permission{
+		"delete_private_channel",
+		"authentication.permissions.delete_private_channel.name",
+		"authentication.permissions.delete_private_channel.description",
+		PermissionScopeChannel,
+	}
 	PERMISSION_EDIT_OTHER_USERS = &Permission{
 		"edit_other_users",
 		"authentication.permissions.edit_other_users.name",
 		"authentication.permissions.edit_other_users.description",
 		PermissionScopeSystem,
 	}
-	// PERMISSION_READ_CHANNEL = &Permission{
-	// 	"read_channel",
-	// 	"authentication.permissions.read_channel.name",
-	// 	"authentication.permissions.read_channel.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_READ_PUBLIC_CHANNEL_GROUPS = &Permission{
-	// 	"read_public_channel_groups",
-	// 	"authentication.permissions.read_public_channel_groups.name",
-	// 	"authentication.permissions.read_public_channel_groups.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_READ_PRIVATE_CHANNEL_GROUPS = &Permission{
-	// 	"read_private_channel_groups",
-	// 	"authentication.permissions.read_private_channel_groups.name",
-	// 	"authentication.permissions.read_private_channel_groups.description",
-	// 	PermissionScopeChannel,
-	// }
-	// PERMISSION_READ_PUBLIC_CHANNEL = &Permission{
-	// 	"read_public_channel",
-	// 	"authentication.permissions.read_public_channel.name",
-	// 	"authentication.permissions.read_public_channel.description",
-	// 	PermissionScopeTeam,
-	// }
+	PERMISSION_READ_CHANNEL = &Permission{
+		"read_channel",
+		"authentication.permissions.read_channel.name",
+		"authentication.permissions.read_channel.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_READ_PUBLIC_CHANNEL_GROUPS = &Permission{
+		"read_public_channel_groups",
+		"authentication.permissions.read_public_channel_groups.name",
+		"authentication.permissions.read_public_channel_groups.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_READ_PRIVATE_CHANNEL_GROUPS = &Permission{
+		"read_private_channel_groups",
+		"authentication.permissions.read_private_channel_groups.name",
+		"authentication.permissions.read_private_channel_groups.description",
+		PermissionScopeChannel,
+	}
+	PERMISSION_READ_PUBLIC_CHANNEL = &Permission{
+		"read_public_channel",
+		"authentication.permissions.read_public_channel.name",
+		"authentication.permissions.read_public_channel.description",
+		PermissionScopeTeam,
+	}
 	PERMISSION_ADD_REACTION = &Permission{
 		"add_reaction",
 		"authentication.permissions.add_reaction.name",
@@ -723,13 +724,7 @@ func initializePermissions() {
 		"authentication.permissions.remove_others_reactions.description",
 		PermissionScopeChannel,
 	}
-	// DEPRECATED
-	PERMISSION_PERMANENT_DELETE_USER = &Permission{
-		"permanent_delete_user",
-		"authentication.permissions.permanent_delete_user.name",
-		"authentication.permissions.permanent_delete_user.description",
-		PermissionScopeSystem,
-	}
+
 	PERMISSION_UPLOAD_FILE = &Permission{
 		"upload_file",
 		"authentication.permissions.upload_file.name",
@@ -742,20 +737,7 @@ func initializePermissions() {
 		"authentication.permissions.get_public_link.description",
 		PermissionScopeSystem,
 	}
-	// DEPRECATED
-	PERMISSION_MANAGE_WEBHOOKS = &Permission{
-		"manage_webhooks",
-		"authentication.permissions.manage_webhooks.name",
-		"authentication.permissions.manage_webhooks.description",
-		PermissionScopeTeam,
-	}
-	// DEPRECATED
-	PERMISSION_MANAGE_OTHERS_WEBHOOKS = &Permission{
-		"manage_others_webhooks",
-		"authentication.permissions.manage_others_webhooks.name",
-		"authentication.permissions.manage_others_webhooks.description",
-		PermissionScopeTeam,
-	}
+
 	PERMISSION_MANAGE_INCOMING_WEBHOOKS = &Permission{
 		"manage_incoming_webhooks",
 		"authentication.permissions.manage_incoming_webhooks.name",
@@ -791,20 +773,6 @@ func initializePermissions() {
 		"authentication.permissions.manage_system_wide_oauth.name",
 		"authentication.permissions.manage_system_wide_oauth.description",
 		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_MANAGE_EMOJIS = &Permission{
-		"manage_emojis",
-		"authentication.permissions.manage_emojis.name",
-		"authentication.permissions.manage_emojis.description",
-		PermissionScopeTeam,
-	}
-	// DEPRECATED
-	PERMISSION_MANAGE_OTHERS_EMOJIS = &Permission{
-		"manage_others_emojis",
-		"authentication.permissions.manage_others_emojis.name",
-		"authentication.permissions.manage_others_emojis.description",
-		PermissionScopeTeam,
 	}
 	PERMISSION_CREATE_EMOJIS = &Permission{
 		"create_emojis",
@@ -878,7 +846,6 @@ func initializePermissions() {
 		"authentication.permissions.manage_remote_clusters.description",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_CREATE_DATA_RETENTION_JOB = &Permission{
 		"create_data_retention_job",
 		"",
@@ -891,7 +858,6 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_CREATE_COMPLIANCE_EXPORT_JOB = &Permission{
 		"create_compliance_export_job",
 		"",
@@ -904,28 +870,24 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_READ_AUDITS = &Permission{
 		"read_audits",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_PURGE_BLEVE_INDEXES = &Permission{
 		"purge_bleve_indexes",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_CREATE_POST_BLEVE_INDEXES_JOB = &Permission{
 		"create_post_bleve_indexes_job",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_CREATE_LDAP_SYNC_JOB = &Permission{
 		"create_ldap_sync_job",
 		"",
@@ -938,14 +900,12 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_TEST_LDAP = &Permission{
 		"test_ldap",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_INVALIDATE_EMAIL_INVITE = &Permission{
 		"invalidate_email_invite",
 		"",
@@ -964,112 +924,96 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_ADD_SAML_PRIVATE_CERT = &Permission{
 		"add_saml_private_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_ADD_SAML_IDP_CERT = &Permission{
 		"add_saml_idp_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_REMOVE_SAML_PUBLIC_CERT = &Permission{
 		"remove_saml_public_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_REMOVE_SAML_PRIVATE_CERT = &Permission{
 		"remove_saml_private_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_REMOVE_SAML_IDP_CERT = &Permission{
 		"remove_saml_idp_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_GET_SAML_CERT_STATUS = &Permission{
 		"get_saml_cert_status",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_ADD_LDAP_PUBLIC_CERT = &Permission{
 		"add_ldap_public_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_ADD_LDAP_PRIVATE_CERT = &Permission{
 		"add_ldap_private_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_REMOVE_LDAP_PUBLIC_CERT = &Permission{
 		"remove_ldap_public_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_REMOVE_LDAP_PRIVATE_CERT = &Permission{
 		"remove_ldap_private_cert",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_GET_LOGS = &Permission{
 		"get_logs",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_READ_LICENSE_INFORMATION = &Permission{
 		"read_license_information",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_GET_ANALYTICS = &Permission{
 		"get_analytics",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_MANAGE_LICENSE_INFORMATION = &Permission{
 		"manage_license_information",
 		"",
 		"",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT = &Permission{
 		"download_compliance_export_result",
 		"authentication.permissions.download_compliance_export_result.name",
 		"authentication.permissions.download_compliance_export_result.description",
 		PermissionScopeSystem,
 	}
-
 	PERMISSION_TEST_SITE_URL = &Permission{
 		"test_site_url",
 		"",
@@ -1142,37 +1086,36 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
-	// PERMISSION_REMOVE_USER_FROM_TEAM = &Permission{
-	// 	"remove_user_from_team",
-	// 	"authentication.permissions.remove_user_from_team.name",
-	// 	"authentication.permissions.remove_user_from_team.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_CREATE_TEAM = &Permission{
-	// 	"create_team",
-	// 	"authentication.permissions.create_team.name",
-	// 	"authentication.permissions.create_team.description",
-	// 	PermissionScopeSystem,
-	// }
-	// PERMISSION_MANAGE_TEAM = &Permission{
-	// 	"manage_team",
-	// 	"authentication.permissions.manage_team.name",
-	// 	"authentication.permissions.manage_team.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_IMPORT_TEAM = &Permission{
-	// 	"import_team",
-	// 	"authentication.permissions.import_team.name",
-	// 	"authentication.permissions.import_team.description",
-	// 	PermissionScopeTeam,
-	// }
-	// PERMISSION_VIEW_TEAM = &Permission{
-	// 	"view_team",
-	// 	"authentication.permissions.view_team.name",
-	// 	"authentication.permissions.view_team.description",
-	// 	PermissionScopeTeam,
-	// }
+	PERMISSION_REMOVE_USER_FROM_TEAM = &Permission{
+		"remove_user_from_team",
+		"authentication.permissions.remove_user_from_team.name",
+		"authentication.permissions.remove_user_from_team.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_CREATE_TEAM = &Permission{
+		"create_team",
+		"authentication.permissions.create_team.name",
+		"authentication.permissions.create_team.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_TEAM = &Permission{
+		"manage_team",
+		"authentication.permissions.manage_team.name",
+		"authentication.permissions.manage_team.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_IMPORT_TEAM = &Permission{
+		"import_team",
+		"authentication.permissions.import_team.name",
+		"authentication.permissions.import_team.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_VIEW_TEAM = &Permission{
+		"view_team",
+		"authentication.permissions.view_team.name",
+		"authentication.permissions.view_team.description",
+		PermissionScopeTeam,
+	}
 	PERMISSION_LIST_USERS_WITHOUT_TEAM = &Permission{
 		"list_users_without_team",
 		"authentication.permissions.list_users_without_team.name",
@@ -1245,12 +1188,12 @@ func initializePermissions() {
 		"authentication.permisssions.manage_jobs.description",
 		PermissionScopeSystem,
 	}
-	// PERMISSION_VIEW_MEMBERS = &Permission{
-	// 	"view_members",
-	// 	"authentication.permisssions.view_members.name",
-	// 	"authentication.permisssions.view_members.description",
-	// 	PermissionScopeTeam,
-	// }
+	PERMISSION_VIEW_MEMBERS = &Permission{
+		"view_members",
+		"authentication.permisssions.view_members.name",
+		"authentication.permisssions.view_members.description",
+		PermissionScopeTeam,
+	}
 	PERMISSION_INVITE_GUEST = &Permission{
 		"invite_guest",
 		"authentication.permissions.invite_guest.name",
@@ -1293,20 +1236,6 @@ func initializePermissions() {
 		"authentication.permissions.edit_brand.description",
 		PermissionScopeSystem,
 	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_ABOUT = &Permission{
-		"sysconsole_read_about",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_ABOUT = &Permission{
-		"sysconsole_write_about",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
 	PERMISSION_SYSCONSOLE_READ_ABOUT_EDITION_AND_LICENSE = &Permission{
 		"sysconsole_read_about_edition_and_license",
 		"",
@@ -1329,20 +1258,6 @@ func initializePermissions() {
 		"sysconsole_write_billing",
 		"",
 		"",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_REPORTING = &Permission{
-		"sysconsole_read_reporting",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_REPORTING = &Permission{
-		"sysconsole_write_reporting",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
 		PermissionScopeSystem,
 	}
 	PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS = &Permission{
@@ -1449,20 +1364,6 @@ func initializePermissions() {
 	}
 	PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_SYSTEM_ROLES = &Permission{
 		"sysconsole_write_user_management_system_roles",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT = &Permission{
-		"sysconsole_read_environment",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT = &Permission{
-		"sysconsole_write_environment",
 		"authentication.permissions.use_group_mentions.name",
 		"authentication.permissions.use_group_mentions.description",
 		PermissionScopeSystem,
@@ -1623,21 +1524,6 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_SITE = &Permission{
-		"sysconsole_read_site",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_SITE = &Permission{
-		"sysconsole_write_site",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-
 	PERMISSION_SYSCONSOLE_READ_SITE_CUSTOMIZATION = &Permission{
 		"sysconsole_read_site_customization",
 		"",
@@ -1758,21 +1644,6 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-
-	// Deprecated
-	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION = &Permission{
-		"sysconsole_read_authentication",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// Deprecated
-	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION = &Permission{
-		"sysconsole_write_authentication",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
 	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP = &Permission{
 		"sysconsole_read_authentication_signup",
 		"",
@@ -1881,20 +1752,6 @@ func initializePermissions() {
 		"authentication.permissions.use_group_mentions.description",
 		PermissionScopeSystem,
 	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS = &Permission{
-		"sysconsole_read_integrations",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS = &Permission{
-		"sysconsole_write_integrations",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
 	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_INTEGRATION_MANAGEMENT = &Permission{
 		"sysconsole_read_integrations_integration_management",
 		"",
@@ -1941,20 +1798,6 @@ func initializePermissions() {
 		"sysconsole_write_integrations_cors",
 		"",
 		"",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_COMPLIANCE = &Permission{
-		"sysconsole_read_compliance",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE = &Permission{
-		"sysconsole_write_compliance",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
 		PermissionScopeSystem,
 	}
 	PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY = &Permission{
@@ -2005,20 +1848,6 @@ func initializePermissions() {
 		"",
 		PermissionScopeSystem,
 	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL = &Permission{
-		"sysconsole_read_experimental",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
-	// DEPRECATED
-	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL = &Permission{
-		"sysconsole_write_experimental",
-		"authentication.permissions.use_group_mentions.name",
-		"authentication.permissions.use_group_mentions.description",
-		PermissionScopeSystem,
-	}
 	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURES = &Permission{
 		"sysconsole_read_experimental_features",
 		"",
@@ -2054,6 +1883,157 @@ func initializePermissions() {
 		"",
 		"",
 		PermissionScopeSystem,
+	}
+
+	// deprecated-------------------------------
+	PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL = &Permission{
+		"sysconsole_read_experimental",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL = &Permission{
+		"sysconsole_write_experimental",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_COMPLIANCE = &Permission{
+		"sysconsole_read_compliance",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE = &Permission{
+		"sysconsole_write_compliance",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_INTEGRATIONS = &Permission{
+		"sysconsole_read_integrations",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS = &Permission{
+		"sysconsole_write_integrations",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_AUTHENTICATION = &Permission{
+		"sysconsole_read_authentication",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION = &Permission{
+		"sysconsole_write_authentication",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_SITE = &Permission{
+		"sysconsole_read_site",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_SITE = &Permission{
+		"sysconsole_write_site",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_ENVIRONMENT = &Permission{
+		"sysconsole_read_environment",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT = &Permission{
+		"sysconsole_write_environment",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_REPORTING = &Permission{
+		"sysconsole_read_reporting",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_REPORTING = &Permission{
+		"sysconsole_write_reporting",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_READ_ABOUT = &Permission{
+		"sysconsole_read_about",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_SYSCONSOLE_WRITE_ABOUT = &Permission{
+		"sysconsole_write_about",
+		"authentication.permissions.use_group_mentions.name",
+		"authentication.permissions.use_group_mentions.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_EMOJIS = &Permission{
+		"manage_emojis",
+		"authentication.permissions.manage_emojis.name",
+		"authentication.permissions.manage_emojis.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_MANAGE_OTHERS_EMOJIS = &Permission{
+		"manage_others_emojis",
+		"authentication.permissions.manage_others_emojis.name",
+		"authentication.permissions.manage_others_emojis.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_MANAGE_WEBHOOKS = &Permission{
+		"manage_webhooks",
+		"authentication.permissions.manage_webhooks.name",
+		"authentication.permissions.manage_webhooks.description",
+		PermissionScopeTeam,
+	}
+	PERMISSION_PERMANENT_DELETE_USER = &Permission{
+		"permanent_delete_user",
+		"authentication.permissions.permanent_delete_user.name",
+		"authentication.permissions.permanent_delete_user.description",
+		PermissionScopeSystem,
+	}
+	PERMISSION_MANAGE_OTHERS_WEBHOOKS = &Permission{
+		"manage_others_webhooks",
+		"authentication.permissions.manage_others_webhooks.name",
+		"authentication.permissions.manage_others_webhooks.description",
+		PermissionScopeTeam,
+	}
+	DeprecatedPermissions = []*Permission{
+		PERMISSION_PERMANENT_DELETE_USER,
+		PERMISSION_MANAGE_WEBHOOKS,
+		PERMISSION_MANAGE_OTHERS_WEBHOOKS,
+		PERMISSION_MANAGE_EMOJIS,
+		PERMISSION_MANAGE_OTHERS_EMOJIS,
+		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION,
+		PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION,
+		PERMISSION_SYSCONSOLE_READ_SITE,
+		PERMISSION_SYSCONSOLE_WRITE_SITE,
+		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT,
+		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT,
+		PERMISSION_SYSCONSOLE_READ_REPORTING,
+		PERMISSION_SYSCONSOLE_WRITE_REPORTING,
+		PERMISSION_SYSCONSOLE_READ_ABOUT,
+		PERMISSION_SYSCONSOLE_WRITE_ABOUT,
+		PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL,
+		PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL,
+		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS,
+		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS,
+		PERMISSION_SYSCONSOLE_READ_COMPLIANCE,
+		PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE,
 	}
 
 	SysconsoleReadPermissions = []*Permission{
@@ -2174,18 +2154,18 @@ func initializePermissions() {
 		PERMISSION_ASSIGN_SYSTEM_ADMIN_ROLE,
 		PERMISSION_MANAGE_ROLES,
 		PERMISSION_MANAGE_SYSTEM,
-		// PERMISSION_CREATE_DIRECT_CHANNEL,
-		// PERMISSION_CREATE_GROUP_CHANNEL,
-		// PERMISSION_LIST_PUBLIC_TEAMS,
-		// PERMISSION_JOIN_PUBLIC_TEAMS,
-		// PERMISSION_LIST_PRIVATE_TEAMS,
-		// PERMISSION_JOIN_PRIVATE_TEAMS,
+		PERMISSION_CREATE_DIRECT_CHANNEL,
+		PERMISSION_CREATE_GROUP_CHANNEL,
+		PERMISSION_LIST_PUBLIC_TEAMS,
+		PERMISSION_JOIN_PUBLIC_TEAMS,
+		PERMISSION_LIST_PRIVATE_TEAMS,
+		PERMISSION_JOIN_PRIVATE_TEAMS,
 		PERMISSION_EDIT_OTHER_USERS,
 		PERMISSION_READ_OTHER_USERS_TEAMS,
 		PERMISSION_GET_PUBLIC_LINK,
 		PERMISSION_MANAGE_OAUTH,
 		PERMISSION_MANAGE_SYSTEM_WIDE_OAUTH,
-		// PERMISSION_CREATE_TEAM,
+		PERMISSION_CREATE_TEAM,
 		PERMISSION_LIST_USERS_WITHOUT_TEAM,
 		PERMISSION_CREATE_USER_ACCESS_TOKEN,
 		PERMISSION_READ_USER_ACCESS_TOKEN,
@@ -2247,15 +2227,15 @@ func initializePermissions() {
 
 	TeamScopedPermissions := []*Permission{
 		PERMISSION_INVITE_USER,
-		// PERMISSION_ADD_USER_TO_TEAM,
+		PERMISSION_ADD_USER_TO_TEAM,
 		PERMISSION_MANAGE_SLASH_COMMANDS,
 		PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS,
-		// PERMISSION_CREATE_PUBLIC_CHANNEL,
-		// PERMISSION_CREATE_PRIVATE_CHANNEL,
-		// PERMISSION_MANAGE_TEAM_ROLES,
-		// PERMISSION_LIST_TEAM_CHANNELS,
-		// PERMISSION_JOIN_PUBLIC_CHANNELS,
-		// PERMISSION_READ_PUBLIC_CHANNEL,
+		PERMISSION_CREATE_PUBLIC_CHANNEL,
+		PERMISSION_CREATE_PRIVATE_CHANNEL,
+		PERMISSION_MANAGE_TEAM_ROLES,
+		PERMISSION_LIST_TEAM_CHANNELS,
+		PERMISSION_JOIN_PUBLIC_CHANNELS,
+		PERMISSION_READ_PUBLIC_CHANNEL,
 		PERMISSION_MANAGE_INCOMING_WEBHOOKS,
 		PERMISSION_MANAGE_OUTGOING_WEBHOOKS,
 		PERMISSION_MANAGE_OTHERS_INCOMING_WEBHOOKS,
@@ -2263,28 +2243,28 @@ func initializePermissions() {
 		PERMISSION_CREATE_EMOJIS,
 		PERMISSION_DELETE_EMOJIS,
 		PERMISSION_DELETE_OTHERS_EMOJIS,
-		// PERMISSION_REMOVE_USER_FROM_TEAM,
-		// PERMISSION_MANAGE_TEAM,
-		// PERMISSION_IMPORT_TEAM,
-		// PERMISSION_VIEW_TEAM,
-		// PERMISSION_VIEW_MEMBERS,
+		PERMISSION_REMOVE_USER_FROM_TEAM,
+		PERMISSION_MANAGE_TEAM,
+		PERMISSION_IMPORT_TEAM,
+		PERMISSION_VIEW_TEAM,
+		PERMISSION_VIEW_MEMBERS,
 		PERMISSION_INVITE_GUEST,
 	}
 
 	ChannelScopedPermissions := []*Permission{
 		PERMISSION_USE_SLASH_COMMANDS,
-		// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
-		// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
-		// PERMISSION_MANAGE_CHANNEL_ROLES,
-		// PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
-		// PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
-		// PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
-		// PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
-		// PERMISSION_DELETE_PUBLIC_CHANNEL,
-		// PERMISSION_DELETE_PRIVATE_CHANNEL,
-		// PERMISSION_READ_CHANNEL,
-		// PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
-		// PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
+		PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
+		PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
+		PERMISSION_MANAGE_CHANNEL_ROLES,
+		PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+		PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+		PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+		PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
+		PERMISSION_DELETE_PUBLIC_CHANNEL,
+		PERMISSION_DELETE_PRIVATE_CHANNEL,
+		PERMISSION_READ_CHANNEL,
+		PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
+		PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
 		PERMISSION_ADD_REACTION,
 		PERMISSION_REMOVE_REACTION,
 		PERMISSION_REMOVE_OTHERS_REACTIONS,
@@ -2298,30 +2278,6 @@ func initializePermissions() {
 		PERMISSION_DELETE_OTHERS_POSTS,
 		PERMISSION_USE_CHANNEL_MENTIONS,
 		PERMISSION_USE_GROUP_MENTIONS,
-	}
-
-	DeprecatedPermissions = []*Permission{
-		PERMISSION_PERMANENT_DELETE_USER,
-		PERMISSION_MANAGE_WEBHOOKS,
-		PERMISSION_MANAGE_OTHERS_WEBHOOKS,
-		PERMISSION_MANAGE_EMOJIS,
-		PERMISSION_MANAGE_OTHERS_EMOJIS,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION,
-		PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION,
-		PERMISSION_SYSCONSOLE_READ_SITE,
-		PERMISSION_SYSCONSOLE_WRITE_SITE,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT,
-		PERMISSION_SYSCONSOLE_READ_REPORTING,
-		PERMISSION_SYSCONSOLE_WRITE_REPORTING,
-		PERMISSION_SYSCONSOLE_READ_ABOUT,
-		PERMISSION_SYSCONSOLE_WRITE_ABOUT,
-		PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL,
-		PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS,
-		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS,
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE,
-		PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE,
 	}
 
 	AllPermissions = []*Permission{}
@@ -2339,12 +2295,12 @@ func initializePermissions() {
 	}
 
 	ChannelModeratedPermissionsMap = map[string]string{
-		PERMISSION_CREATE_POST.Id:     ChannelModeratedPermissions[0],
-		PERMISSION_ADD_REACTION.Id:    ChannelModeratedPermissions[1],
-		PERMISSION_REMOVE_REACTION.Id: ChannelModeratedPermissions[1],
-		// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id:  ChannelModeratedPermissions[2],
-		// PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id: ChannelModeratedPermissions[2],
-		PERMISSION_USE_CHANNEL_MENTIONS.Id: ChannelModeratedPermissions[3],
+		PERMISSION_CREATE_POST.Id:                    ChannelModeratedPermissions[0],
+		PERMISSION_ADD_REACTION.Id:                   ChannelModeratedPermissions[1],
+		PERMISSION_REMOVE_REACTION.Id:                ChannelModeratedPermissions[1],
+		PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id:  ChannelModeratedPermissions[2],
+		PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id: ChannelModeratedPermissions[2],
+		PERMISSION_USE_CHANNEL_MENTIONS.Id:           ChannelModeratedPermissions[3],
 	}
 }
 

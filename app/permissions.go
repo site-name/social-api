@@ -44,27 +44,5 @@ func (a *App) ResetPermissionsSystem() *model.AppError {
 }
 
 func (a *App) ExportPermissions(w io.Writer) error {
-	// next := a.Scheme
-	// TODO: fixme
-	panic("not implemented")
+	panic("mot implemented") // TODO: fixme
 }
-
-// func (a *App) ImportPermissions(jsonl io.Reader) error {
-// 	createdSchemeIDs := []string{}
-
-// 	scanner := bufio.NewScanner(jsonl)
-
-// 	for scanner.Scan() {
-// 		var schemeConveyor *model.SchemeConveyor
-// 		err := json.JSON.Unmarshal(scanner.Bytes(), &schemeConveyor)
-// 		if err != nil {
-
-// 		}
-// 	}
-// }
-
-// func rollback(a *App, createdSchemeIDs []string) {
-// 	for _, schemeID := range createdSchemeIDs {
-// 		a.DeleteScheme(schemeID)
-// 	}
-// }

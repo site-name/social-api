@@ -1,4 +1,4 @@
-package web
+package shared
 
 import (
 	"net/http"
@@ -85,6 +85,7 @@ func (c *Context) LogAuditWithUserId(userId, extraInfo string) {
 	}
 }
 
+// set session missing error for c
 func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens &&
 		c.AppContext.Session().Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN &&
@@ -101,11 +102,6 @@ func (c *Context) SessionRequired() {
 }
 
 func (c *Context) MfaRequired() {
-	// Must be licensed for MFA and have it configured for enforcement
-	// if license := c.App.Srv().License(); license == nil || !*license.Features.MFA || !*c.App.Config().ServiceSettings.EnableMultifactorAuthentication || !*c.App.Config().ServiceSettings.EnforceMultifactorAuthentication {
-	// 	return
-	// }
-
 	// OAuth integrations are excepted
 	if c.AppContext.Session().IsOAuth {
 		return
@@ -132,11 +128,6 @@ func (c *Context) MfaRequired() {
 	if c.AppContext.Path() == path.Join(subpath, "/api/v4/users/me") {
 		return
 	}
-
-	// Bots are exempt
-	// if user.IsBot {
-	// 	return
-	// }
 
 	if !user.MfaActive {
 		c.Err = model.NewAppError("MfaRequired", "api.context.mfa_required.app_error", nil, "", http.StatusForbidden)

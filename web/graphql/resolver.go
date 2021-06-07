@@ -15,11 +15,11 @@ type Resolver struct {
 	app.AppIface
 }
 
+// __Directive
 func (r *Resolver) __Directive() __DirectiveResolver { return &A{} }
 
 type A struct{}
 
 func (r *A) IsRepeatable(ctx context.Context, obj *introspection.Directive) (bool, error) {
-	// panic(fmt.Errorf("not implemented"))
 	return true, nil
 }

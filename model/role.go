@@ -3,8 +3,6 @@ package model
 import (
 	"io"
 	"strings"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 // SysconsoleAncillaryPermissions maps the non-sysconsole permissions required by each sysconsole view.
@@ -398,35 +396,32 @@ type RolePermissions struct {
 }
 
 func (r *Role) ToJson() string {
-	b, _ := json.JSON.Marshal(r)
-	return string(b)
+	return ModelToJson(r)
 }
 
 func RoleFromJson(data io.Reader) *Role {
 	var r *Role
-	json.JSON.NewDecoder(data).Decode(&r)
+	ModelFromJson(&r, data)
 	return r
 }
 
 func RoleListToJson(r []*Role) string {
-	b, _ := json.JSON.Marshal(r)
-	return string(b)
+	return ModelToJson(r)
 }
 
 func RoleListFromJson(data io.Reader) []*Role {
 	var roles []*Role
-	json.JSON.NewDecoder(data).Decode(&roles)
+	ModelFromJson(&roles, data)
 	return roles
 }
 
 func (r *RolePatch) ToJson() string {
-	b, _ := json.JSON.Marshal(r)
-	return string(b)
+	return ModelToJson(r)
 }
 
 func RolePatchFromJson(data io.Reader) *RolePatch {
 	var rolePatch *RolePatch
-	json.JSON.NewDecoder(data).Decode(&rolePatch)
+	ModelFromJson(&rolePatch, data)
 	return rolePatch
 }
 
@@ -558,13 +553,11 @@ func ChannelModeratedPermissionsChangedByPatch(role *Role, patch *RolePatch) []s
 // 		if _, found := ChannelModeratedPermissionsMap[permission]; !found {
 // 			continue
 // 		}
-
 // 		for moderated, moderatedPermissionValue := range ChannelModeratedPermissionsMap {
 // 			// the moderated permission has already been found to be true so skip this iteration
 // 			if moderatedPermissions[moderatedPermissionValue] {
 // 				continue
 // 			}
-
 // 			if moderated == permission {
 // 				// Special case where the channel moderated permission for `manage_members` is different depending on whether the channel is private or public
 // 				if moderated == PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id || moderated == PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS.Id {
@@ -577,21 +570,18 @@ func ChannelModeratedPermissionsChangedByPatch(role *Role, patch *RolePatch) []s
 // 			}
 // 		}
 // 	}
-
 // 	return moderatedPermissions
 // }
 
 // RolePatchFromChannelModerationsPatch Creates and returns a RolePatch based on a slice of ChannelModerationPatchs, roleName is expected to be either "members" or "guests".
 // func (r *Role) RolePatchFromChannelModerationsPatch(channelModerationsPatch []*ChannelModerationPatch, roleName string) *RolePatch {
 // 	permissionsToAddToPatch := make(map[string]bool)
-
 // 	// Iterate through the list of existing permissions on the role and append permissions that we want to keep.
 // 	for _, permission := range r.Permissions {
 // 		// Permission is not moderated so dont add it to the patch and skip the channelModerationsPatch
 // 		if _, isModerated := ChannelModeratedPermissionsMap[permission]; !isModerated {
 // 			continue
 // 		}
-
 // 		permissionEnabled := true
 // 		// Check if permission has a matching moderated permission name inside the channel moderation patch
 // 		for _, channelModerationPatch := range channelModerationsPatch {
@@ -608,30 +598,25 @@ func ChannelModeratedPermissionsChangedByPatch(role *Role, patch *RolePatch) []s
 // 				}
 // 			}
 // 		}
-
 // 		if permissionEnabled {
 // 			permissionsToAddToPatch[permission] = true
 // 		}
 // 	}
-
 // 	// Iterate through the patch and add any permissions that dont already exist on the role
 // 	for _, channelModerationPatch := range channelModerationsPatch {
 // 		for permission, moderatedPermissionName := range ChannelModeratedPermissionsMap {
 // 			if roleName == "members" && channelModerationPatch.Roles.Members != nil && *channelModerationPatch.Roles.Members && *channelModerationPatch.Name == moderatedPermissionName {
 // 				permissionsToAddToPatch[permission] = true
 // 			}
-
 // 			if roleName == "guests" && channelModerationPatch.Roles.Guests != nil && *channelModerationPatch.Roles.Guests && *channelModerationPatch.Name == moderatedPermissionName {
 // 				permissionsToAddToPatch[permission] = true
 // 			}
 // 		}
 // 	}
-
 // 	patchPermissions := make([]string, 0, len(permissionsToAddToPatch))
 // 	for permission := range permissionsToAddToPatch {
 // 		patchPermissions = append(patchPermissions, permission)
 // 	}
-
 // 	return &RolePatch{Permissions: &patchPermissions}
 // }
 
@@ -656,7 +641,8 @@ func (r *Role) IsValidWithoutId() bool {
 		return false
 	}
 
-	check := func(perms []*Permission, permission string) bool {
+	// check checks if permission is included in perms
+	var check = func(perms []*Permission, permission string) bool {
 		for _, p := range perms {
 			if permission == p.Id {
 				return true
@@ -664,6 +650,7 @@ func (r *Role) IsValidWithoutId() bool {
 		}
 		return false
 	}
+
 	for _, permission := range r.Permissions {
 		permissionValidated := check(AllPermissions, permission) || check(DeprecatedPermissions, permission)
 		if !permissionValidated {
@@ -706,6 +693,7 @@ func IsValidRoleName(roleName string) bool {
 	return true
 }
 
+// MakeDefaultRoles make an map with values are default roles
 func MakeDefaultRoles() map[string]*Role {
 	roles := make(map[string]*Role)
 
@@ -714,7 +702,7 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.channel_guest.name",
 		Description: "authentication.roles.channel_guest.description",
 		Permissions: []string{
-			// PERMISSION_READ_CHANNEL.Id,
+			PERMISSION_READ_CHANNEL.Id,
 			PERMISSION_ADD_REACTION.Id,
 			PERMISSION_REMOVE_REACTION.Id,
 			PERMISSION_UPLOAD_FILE.Id,
@@ -732,10 +720,10 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.channel_user.name",
 		Description: "authentication.roles.channel_user.description",
 		Permissions: []string{
-			// PERMISSION_READ_CHANNEL.Id,
+			PERMISSION_READ_CHANNEL.Id,
 			PERMISSION_ADD_REACTION.Id,
 			PERMISSION_REMOVE_REACTION.Id,
-			// PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id,
+			PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS.Id,
 			PERMISSION_UPLOAD_FILE.Id,
 			PERMISSION_GET_PUBLIC_LINK.Id,
 			PERMISSION_CREATE_POST.Id,
@@ -751,7 +739,7 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.channel_admin.name",
 		Description: "authentication.roles.channel_admin.description",
 		Permissions: []string{
-			// PERMISSION_MANAGE_CHANNEL_ROLES.Id,
+			PERMISSION_MANAGE_CHANNEL_ROLES.Id,
 			PERMISSION_USE_GROUP_MENTIONS.Id,
 		},
 		SchemeManaged: true,
@@ -763,7 +751,7 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.team_guest.name",
 		Description: "authentication.roles.team_guest.description",
 		Permissions: []string{
-			// PERMISSION_VIEW_TEAM.Id,
+			PERMISSION_VIEW_TEAM.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
@@ -774,10 +762,10 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.team_user.name",
 		Description: "authentication.roles.team_user.description",
 		Permissions: []string{
-			// PERMISSION_LIST_TEAM_CHANNELS.Id,
-			// PERMISSION_JOIN_PUBLIC_CHANNELS.Id,
-			// PERMISSION_READ_PUBLIC_CHANNEL.Id,
-			// PERMISSION_VIEW_TEAM.Id,
+			PERMISSION_LIST_TEAM_CHANNELS.Id,
+			PERMISSION_JOIN_PUBLIC_CHANNELS.Id,
+			PERMISSION_READ_PUBLIC_CHANNEL.Id,
+			PERMISSION_VIEW_TEAM.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
@@ -812,19 +800,19 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.team_admin.name",
 		Description: "authentication.roles.team_admin.description",
 		Permissions: []string{
-			// PERMISSION_REMOVE_USER_FROM_TEAM.Id,
-			// PERMISSION_MANAGE_TEAM.Id,
-			// PERMISSION_IMPORT_TEAM.Id,
-			// PERMISSION_MANAGE_TEAM_ROLES.Id,
-			// PERMISSION_MANAGE_CHANNEL_ROLES.Id,
+			PERMISSION_REMOVE_USER_FROM_TEAM.Id,
+			PERMISSION_MANAGE_TEAM.Id,
+			PERMISSION_IMPORT_TEAM.Id,
+			PERMISSION_MANAGE_TEAM_ROLES.Id,
+			PERMISSION_MANAGE_CHANNEL_ROLES.Id,
 			PERMISSION_MANAGE_OTHERS_INCOMING_WEBHOOKS.Id,
 			PERMISSION_MANAGE_OTHERS_OUTGOING_WEBHOOKS.Id,
 			PERMISSION_MANAGE_SLASH_COMMANDS.Id,
 			PERMISSION_MANAGE_OTHERS_SLASH_COMMANDS.Id,
 			PERMISSION_MANAGE_INCOMING_WEBHOOKS.Id,
 			PERMISSION_MANAGE_OUTGOING_WEBHOOKS.Id,
-			// PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE.Id,
-			// PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC.Id,
+			PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE.Id,
+			PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
@@ -835,8 +823,8 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.global_guest.name",
 		Description: "authentication.roles.global_guest.description",
 		Permissions: []string{
-			// PERMISSION_CREATE_DIRECT_CHANNEL.Id,
-			// PERMISSION_CREATE_GROUP_CHANNEL.Id,
+			PERMISSION_CREATE_DIRECT_CHANNEL.Id,
+			PERMISSION_CREATE_GROUP_CHANNEL.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
@@ -847,11 +835,11 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName: "authentication.roles.global_user.name",
 		Description: "authentication.roles.global_user.description",
 		Permissions: []string{
-			// PERMISSION_LIST_PUBLIC_TEAMS.Id,
-			// PERMISSION_JOIN_PUBLIC_TEAMS.Id,
-			// PERMISSION_CREATE_DIRECT_CHANNEL.Id,
-			// PERMISSION_CREATE_GROUP_CHANNEL.Id,
-			// PERMISSION_VIEW_MEMBERS.Id,
+			PERMISSION_LIST_PUBLIC_TEAMS.Id,
+			PERMISSION_JOIN_PUBLIC_TEAMS.Id,
+			PERMISSION_CREATE_DIRECT_CHANNEL.Id,
+			PERMISSION_CREATE_GROUP_CHANNEL.Id,
+			PERMISSION_VIEW_MEMBERS.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
@@ -921,21 +909,17 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	allPermissionIDs := []string{}
-	for _, permission := range AllPermissions {
-		allPermissionIDs = append(allPermissionIDs, permission.Id)
-	}
-
 	roles[SYSTEM_ADMIN_ROLE_ID] = &Role{
-		Name:        "system_admin",
-		DisplayName: "authentication.roles.global_admin.name",
-		Description: "authentication.roles.global_admin.description",
-		// System admins can do anything channel and team admins can do
-		// plus everything members of teams and channels can do to all teams
-		// and channels on the system
-		Permissions:   allPermissionIDs,
+		Name:          "system_admin",
+		DisplayName:   "authentication.roles.global_admin.name",
+		Description:   "authentication.roles.global_admin.description",
+		Permissions:   []string{}, // system admin can do every thing
 		SchemeManaged: true,
 		BuiltIn:       true,
+	}
+
+	for _, permission := range AllPermissions {
+		roles[SYSTEM_ADMIN_ROLE_ID].Permissions = append(roles[SYSTEM_ADMIN_ROLE_ID].Permissions, permission.Id)
 	}
 
 	return roles

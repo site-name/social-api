@@ -17,6 +17,7 @@ import (
 	// _ "gopkg.in/olivere/elastic.v6"
 
 	"github.com/sitename/sitename/cmd/sitename/commands"
+	_ "github.com/sitename/sitename/modules/imports"
 )
 
 func main() {

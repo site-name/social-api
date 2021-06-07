@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/jobs"
+	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -24,7 +25,10 @@ type Worker struct {
 }
 
 func init() {
-	// TODO: fixme
+	app.RegisterJobsActiveUsersInterface(func(s *app.Server) tjobs.ActiveUsersJobInterface {
+		a := app.New(app.ServerConnector(s))
+		return &ActiveUsersJobInterfaceImpl{a}
+	})
 }
 
 type ActiveUsersJobInterfaceImpl struct {

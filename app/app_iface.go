@@ -49,6 +49,8 @@ type AppIface interface {
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
 	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
+	// DoAppMigrations migrate permissions
+	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
 	// DoubleCheckPassword performs:
@@ -179,8 +181,6 @@ type AppIface interface {
 	DeactivateMfa(userID string) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
-	DoAppMigrations()
-	DoEmojisPermissionsMigration()
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
 	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError)

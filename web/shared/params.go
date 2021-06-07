@@ -1,4 +1,4 @@
-package web
+package shared
 
 import (
 	"net/http"
@@ -41,6 +41,7 @@ type Params struct {
 	InvoiceId string
 }
 
+// ParamsFromRquest parses parameters from given request's query string, body
 func ParamsFromRquest(r *http.Request) *Params {
 	params := new(Params)
 

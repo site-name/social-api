@@ -441,6 +441,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.setupFeatureFlags()
 
+	// initialize job worker and scheduler
 	s.initJobs()
 
 	s.clusterLeaderListenerId = s.AddClusterLeaderChangedListener(func() {
@@ -752,7 +753,7 @@ func (s *Server) runJobs() {
 	// 		s.ensureFirstServerRunTimestamp()
 	// 		firstRun = util.MillisFromTime(time.Now())
 	// 	}
-	// 	s.telemetryService.RunTelemetryJob(firstRun)
+	// s.telemetryService.RunTelemetryJob(firstRun)
 	// })
 	s.Go(func() {
 		runSessionCleanupJob(s)
