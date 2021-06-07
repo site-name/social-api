@@ -2,7 +2,6 @@ package sqlstore
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -54,7 +53,7 @@ func finalizeTransaction(transaction interface{}) {
 			slog.Error("Failed to rollback transaction", slog.Err(err))
 		}
 	} else {
-		slog.Error(fmt.Sprintf("Unknown type of transaction: %T", transaction))
+		slog.Error("Invalid type")
 	}
 }
 

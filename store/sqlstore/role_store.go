@@ -18,6 +18,8 @@ type SqlRoleStore struct {
 	*SqlStore
 }
 
+// Role is similar to model.Role but different in field "Permissions".
+// Before saving model.Role to database, its Permissions slice is tranformed in to a string
 type Role struct {
 	Id            string
 	Name          string
@@ -40,17 +42,8 @@ type channelRolesPermissions struct {
 	HigherScopedAdminPermissions string
 }
 
+// NewRoleFromModel joins given role's Permissions slice into a string and return a custom Role
 func NewRoleFromModel(role *model.Role) *Role {
-	permissionsMap := make(map[string]bool)
-	permissions := ""
-
-	for _, permission := range role.Permissions {
-		if !permissionsMap[permission] {
-			permissions += fmt.Sprintf(" %v", permission)
-			permissionsMap[permission] = true
-		}
-	}
-
 	return &Role{
 		Id:            role.Id,
 		Name:          role.Name,
@@ -59,7 +52,7 @@ func NewRoleFromModel(role *model.Role) *Role {
 		CreateAt:      role.CreateAt,
 		UpdateAt:      role.UpdateAt,
 		DeleteAt:      role.DeleteAt,
-		Permissions:   permissions,
+		Permissions:   strings.Join(role.Permissions, " "),
 		SchemeManaged: role.SchemeManaged,
 		BuiltIn:       role.BuiltIn,
 	}
@@ -128,11 +121,6 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 }
 
 func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorp.Transaction) (*model.Role, error) {
-	// Check the role is valid before proceeding.
-	if !role.IsValidWithoutId() {
-		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
-	}
-
 	dbRole := NewRoleFromModel(role)
 
 	dbRole.Id = model.NewId()

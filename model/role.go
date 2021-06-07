@@ -628,6 +628,7 @@ func (r *Role) IsValid() bool {
 	return r.IsValidWithoutId()
 }
 
+// IsValidWithoutId check if current role is valid without checking its Id
 func (r *Role) IsValidWithoutId() bool {
 	if !IsValidRoleName(r.Name) {
 		return false
@@ -642,17 +643,17 @@ func (r *Role) IsValidWithoutId() bool {
 	}
 
 	// check checks if permission is included in perms
-	var check = func(perms []*Permission, permission string) bool {
+	var check = func(perms []*Permission, permissionId string) bool {
 		for _, p := range perms {
-			if permission == p.Id {
+			if permissionId == p.Id {
 				return true
 			}
 		}
 		return false
 	}
 
-	for _, permission := range r.Permissions {
-		permissionValidated := check(AllPermissions, permission) || check(DeprecatedPermissions, permission)
+	for _, permissionId := range r.Permissions {
+		permissionValidated := check(AllPermissions, permissionId) || check(DeprecatedPermissions, permissionId)
 		if !permissionValidated {
 			return false
 		}
