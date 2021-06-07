@@ -225,8 +225,9 @@ func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWrite
 	return false
 }
 
+// IsSystemAdmin checks if given session contains info of system's administrator.
 func (c *Context) IsSystemAdmin() bool {
-	return c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM)
+	return c.App.SessionHasPermissionTo(c.AppContext.Session(), model.PERMISSION_MANAGE_SYSTEM)
 }
 
 func NewInvalidParamError(parameter string) *model.AppError {

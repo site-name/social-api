@@ -172,6 +172,7 @@ func (s *Session) IsSSOLogin() bool {
 	return s.IsOAuthUser() || s.IsSaml()
 }
 
+// GetUserRoles turns current session's Roles into a slice of strings
 func (s *Session) GetUserRoles() []string {
 	return strings.Fields(s.Roles)
 }

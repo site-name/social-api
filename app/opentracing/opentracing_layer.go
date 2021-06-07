@@ -3099,7 +3099,7 @@ func (a *OpenTracingAppLayer) SessionCacheLength() int {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SessionHasPermissionTo(session model.Session, permission *model.Permission) bool {
+func (a *OpenTracingAppLayer) SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionTo")
 
@@ -3116,7 +3116,7 @@ func (a *OpenTracingAppLayer) SessionHasPermissionTo(session model.Session, perm
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool {
+func (a *OpenTracingAppLayer) SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionToAny")
 
@@ -3133,7 +3133,7 @@ func (a *OpenTracingAppLayer) SessionHasPermissionToAny(session model.Session, p
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SessionHasPermissionToUser(session model.Session, userID string) bool {
+func (a *OpenTracingAppLayer) SessionHasPermissionToUser(session *model.Session, userID string) bool {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SessionHasPermissionToUser")
 

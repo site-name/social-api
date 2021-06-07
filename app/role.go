@@ -54,6 +54,7 @@ func (a *App) GetRoleByName(ctx context.Context, name string) (*model.Role, *mod
 	return a.Srv().GetRoleByName(ctx, name)
 }
 
+// GetRolesByNames returns a slice of model.Role by given names
 func (a *App) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
 	roles, nErr := a.Srv().Store.Role().GetByNames(names)
 	if nErr != nil {
@@ -117,7 +118,7 @@ func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.Ap
 // 		return nil, err
 // 	}
 
-// 	a.sendUpdatedRoleEvent(role)
+// 	// a.sendUpdatedRoleEvent(role)
 
 // 	return role, err
 // }

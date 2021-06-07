@@ -82,6 +82,8 @@ type AppIface interface {
 	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
+	// GetRolesByNames returns a slice of model.Role by given names
+	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model.Config
 	// GetSessionLengthInMillis returns the session length, in milliseconds,
@@ -123,6 +125,8 @@ type AppIface interface {
 	RevokeSessionById(sessionID string) *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
+	// SessionHasPermissionTo checks if session's Roles contain given permission's ID
+	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
@@ -203,7 +207,6 @@ type AppIface interface {
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
 	GetRole(id string) (*model.Role, *model.AppError)
 	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
-	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
 	GetSessionById(sessionID string) (*model.Session, *model.AppError)
@@ -263,9 +266,8 @@ type AppIface interface {
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
 	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
 	SessionCacheLength() int
-	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool
-	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
-	SessionHasPermissionToUser(session model.Session, userID string) bool
+	SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool
+	SessionHasPermissionToUser(session *model.Session, userID string) bool
 	SetDefaultProfileImage(user *account.User) *model.AppError
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
