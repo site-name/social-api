@@ -899,7 +899,7 @@ func (a *App) UpdateUserRolesWithUser(user *account.User, newRoles string, sendW
 	}
 
 	a.InvalidateCacheForUser(user.Id)
-	// a.ClearSessionCacheForUser(user.Id)
+	a.ClearSessionCacheForUser(user.Id)
 
 	// if sendWebSocketEvent {
 	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ROLE_UPDATED, "", "", user.Id, nil)

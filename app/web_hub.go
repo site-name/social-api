@@ -2,6 +2,7 @@ package app
 
 import "github.com/sitename/sitename/model"
 
+// InvalidateCacheForUser
 func (a *App) InvalidateCacheForUser(userID string) {
 	a.Srv().invalidateCacheForUserSkipClusterSend(userID)
 

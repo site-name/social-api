@@ -10,6 +10,7 @@ import (
 const permissionsExportBatchSize = 100
 const systemSchemeName = "00000000-0000-0000-0000-000000000000" // Prevents collisions with user-created schemes.
 
+// ResetPermissionsSystem reset permission system
 func (a *App) ResetPermissionsSystem() *model.AppError {
 
 	// Reset all Custom Role assignments to Users.

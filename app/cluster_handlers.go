@@ -8,10 +8,11 @@ func (s *Server) invalidateCacheForUserSkipClusterSend(userID string) {
 }
 
 func (s *Server) invalidateWebConnSessionCacheForUser(userID string) {
-	panic("not impl")
+	panic("not implemented")
 	// TODO: fixme
 }
 
+// clearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
 func (s *Server) clearSessionCacheForUserSkipClusterSend(userID string) {
 	if keys, err := s.sessionCache.Keys(); err == nil {
 		var session *model.Session

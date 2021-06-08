@@ -52,6 +52,7 @@ func (sa StringArray) Remove(input string) StringArray {
 var translateFunc i18n.TranslateFunc
 var translateFuncOnce sync.Once
 
+// init translation function for translation app error
 func AppErrorInit(t i18n.TranslateFunc) {
 	translateFuncOnce.Do(func() {
 		translateFunc = t

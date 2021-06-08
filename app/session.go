@@ -17,6 +17,7 @@ import (
 	"github.com/sitename/sitename/store/sqlstore"
 )
 
+// CreateSession save given session to tha database.
 func (a *App) CreateSession(session *model.Session) (*model.Session, *model.AppError) {
 	session.Token = ""
 	session, err := a.Srv().Store.Session().Save(session)
@@ -48,10 +49,12 @@ var userSessionPool = sync.Pool{
 	},
 }
 
+// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 func (a *App) AddSessionToCache(s *model.Session) {
 	a.Srv().sessionCache.SetWithExpiry(s.Token, s, time.Duration(*a.Config().ServiceSettings.SessionCacheInMinutes))
 }
 
+// GetSessions get session from database with UserID attribute of given `userID`
 func (a *App) GetSessions(userID string) ([]*model.Session, *model.AppError) {
 
 	sessions, err := a.Srv().Store.Session().GetSessions(userID)
@@ -62,6 +65,7 @@ func (a *App) GetSessions(userID string) ([]*model.Session, *model.AppError) {
 	return sessions, nil
 }
 
+// RevokeAllSessions get session from database that has UserID of given userID, then removes it
 func (a *App) RevokeAllSessions(userID string) *model.AppError {
 	sessions, err := a.Srv().Store.Session().GetSessions(userID)
 	if err != nil {
@@ -83,6 +87,7 @@ func (a *App) RevokeAllSessions(userID string) *model.AppError {
 	return nil
 }
 
+// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 func (a *App) ClearSessionCacheForUser(userID string) {
 	a.ClearSessionCacheForUserSkipClusterSend(userID)
 
@@ -96,6 +101,7 @@ func (a *App) ClearSessionCacheForUser(userID string) {
 	}
 }
 
+// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
 func (a *App) ClearSessionCacheForUserSkipClusterSend(userID string) {
 	a.Srv().clearSessionCacheForUserSkipClusterSend(userID)
 }

@@ -531,19 +531,26 @@ func (a *App) getAddSiteSubsectionPermissions() (permissionsMap, error) {
 func (a *App) getAddComplianceSubsectionPermissions() (permissionsMap, error) {
 	transformations := []permissionTransformation{}
 
-	permissionsComplianceRead := []string{model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY.Id, model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT.Id, model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_MONITORING.Id, model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id}
-	permissionsComplianceWrite := []string{model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_DATA_RETENTION_POLICY.Id, model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_EXPORT.Id, model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_MONITORING.Id, model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id}
-
 	// Give the new subsection READ permissions to any user with READ_COMPLIANCE
 	transformations = append(transformations, permissionTransformation{
-		On:  permissionExists(model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE.Id),
-		Add: permissionsComplianceRead,
+		On: permissionExists(model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE.Id),
+		Add: []string{
+			model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY.Id,
+			model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT.Id,
+			model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_MONITORING.Id,
+			model.PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id,
+		},
 	})
 
 	// Give the new subsection WRITE permissions to any user with WRITE_COMPLIANCE
 	transformations = append(transformations, permissionTransformation{
-		On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE.Id),
-		Add: permissionsComplianceWrite,
+		On: permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE.Id),
+		Add: []string{
+			model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_DATA_RETENTION_POLICY.Id,
+			model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_EXPORT.Id,
+			model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_MONITORING.Id,
+			model.PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id,
+		},
 	})
 
 	// Ancilary permissions
@@ -783,15 +790,13 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 
 // This migration fixes https://github.com/mattermost/mattermost-server/issues/17642 where this particular ancillary permission was forgotten during the initial migrations
 func (a *App) getAddTestEmailAncillaryPermission() (permissionsMap, error) {
-	transformations := []permissionTransformation{}
-
 	// Give these ancillary permissions to anyone with WRITE_ENVIRONMENT_SMTP
-	transformations = append(transformations, permissionTransformation{
-		On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP.Id),
-		Add: []string{model.PERMISSION_TEST_EMAIL.Id},
-	})
-
-	return transformations, nil
+	return []permissionTransformation{
+		{
+			On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP.Id),
+			Add: []string{model.PERMISSION_TEST_EMAIL.Id},
+		},
+	}, nil
 }
 
 // DoPermissionsMigrations execute all the permissions migrations need by the current version.

@@ -33,12 +33,16 @@ type AppIface interface {
 	// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
 	// // Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
+	AddSessionToCache(s *model.Session)
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
 	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
+	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
+	ClearSessionCacheForUserSkipClusterSend(userID string)
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
 	// Configs return system's configurations
@@ -84,6 +88,8 @@ type AppIface interface {
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
+	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
+	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
 	// GetRolesByNames returns a slice of model.Role by given names
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
@@ -91,12 +97,16 @@ type AppIface interface {
 	// GetSessionLengthInMillis returns the session length, in milliseconds,
 	// based on the type of session (Mobile, SSO, Web/LDAP).
 	GetSessionLengthInMillis(session *model.Session) int64
+	// GetSessions get session from database with UserID attribute of given `userID`
+	GetSessions(userID string) ([]*model.Session, *model.AppError)
 	// GetUser get user with given userID
 	GetUser(userID string) (*account.User, *model.AppError)
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
 	HasPermissionToUser(askingUserId string, userID string) bool
+	// InvalidateCacheForUser
+	InvalidateCacheForUser(userID string)
 	// IsPasswordValid checks:
 	//
 	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
@@ -125,6 +135,10 @@ type AppIface interface {
 	NotificationsLog() *slog.Logger
 	// ReadFile read file content from given path
 	ReadFile(path string) ([]byte, *model.AppError)
+	// ResetPermissionsSystem reset permission system
+	ResetPermissionsSystem() *model.AppError
+	// RevokeAllSessions get session from database that has UserID of given userID, then removes it
+	RevokeAllSessions(userID string) *model.AppError
 	// RevokeSession removes session from database
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
@@ -165,7 +179,6 @@ type AppIface interface {
 	AccountMigration() einterfaces.AccountMigrationInterface
 	ActivateMfa(userID, token string) *model.AppError
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
-	AddSessionToCache(s *model.Session)
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	AsymmetricSigningKey() *ecdsa.PrivateKey
@@ -181,7 +194,6 @@ type AppIface interface {
 	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
 	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	ClearSessionCacheForUser(userID string)
-	ClearSessionCacheForUserSkipClusterSend(userID string)
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
@@ -222,11 +234,9 @@ type AppIface interface {
 	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
-	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
 	GetSessionById(sessionID string) (*model.Session, *model.AppError)
-	GetSessions(userID string) ([]*model.Session, *model.AppError)
 	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
@@ -249,7 +259,6 @@ type AppIface interface {
 	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	ImageProxy() *imageproxy.ImageProxy
-	InvalidateCacheForUser(userID string)
 	IsFirstUserAccount() bool
 	IsLeader() bool
 	Ldap() einterfaces.LdapInterface
@@ -259,6 +268,7 @@ type AppIface interface {
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
+	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	PostActionCookieSecret() []byte
 	Publish(message *model.WebSocketEvent)
@@ -267,8 +277,6 @@ type AppIface interface {
 	RemoveDirectory(path string) *model.AppError
 	RemoveFile(path string) *model.AppError
 	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
-	ResetPermissionsSystem() *model.AppError
-	RevokeAllSessions(userID string) *model.AppError
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
 	Saml() einterfaces.SamlInterface
@@ -296,6 +304,7 @@ type AppIface interface {
 	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
 	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
 	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
+	UpdateRole(role *model.Role) (*model.Role, *model.AppError)
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
 	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)

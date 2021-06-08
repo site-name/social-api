@@ -1972,6 +1972,22 @@ func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 	return result, err
 }
 
+func (s *TimerLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error) {
+	start := timemodule.Now()
+
+	result, err := s.RoleStore.ChannelHigherScopedPermissions(roleNames)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("RoleStore.ChannelHigherScopedPermissions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerRoleStore) Delete(roleID string) (*model.Role, error) {
 	start := timemodule.Now()
 

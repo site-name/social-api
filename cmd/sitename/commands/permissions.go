@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sitename/sitename/modules/audit"
 	"github.com/spf13/cobra"
 )
 
@@ -20,32 +21,11 @@ var ResetPermissionsCmd = &cobra.Command{
 	RunE:    resetPermissionsCmdF,
 }
 
-// var ExportPermissionsCmd = &cobra.Command{
-// 	Use:     "export",
-// 	Short:   "Export permissions data",
-// 	Long:    "Export Roles and Schemes to JSONL for use by Mattermost permissions import.",
-// 	Example: " permissions export > export.jsonl",
-// 	RunE:    exportPermissionsCmdF,
-// 	PreRun: func(cmd *cobra.Command, args []string) {
-// 		os.Setenv("SN_LOGSETTINGS_CONSOLELEVEL", "error")
-// 	},
-// }
-
-// var ImportPermissionsCmd = &cobra.Command{
-// 	Use:     "import [file]",
-// 	Short:   "Import permissions data",
-// 	Long:    "Import Roles and Schemes JSONL data as created by the Mattermost permissions export.",
-// 	Example: " permissions import export.jsonl",
-// 	RunE:    importPermissionsCmdF,
-// }
-
 func init() {
 	ResetPermissionsCmd.Flags().Bool("confirm", false, "Confirm you really want to reset the permissions system and a database backup has been performed.")
 
 	PermissionsCmd.AddCommand(
 		ResetPermissionsCmd,
-		// ExportPermissionsCmd,
-		// ImportPermissionsCmd,
 	)
 	RootCmd.AddCommand(PermissionsCmd)
 }
@@ -82,45 +62,8 @@ func resetPermissionsCmdF(command *cobra.Command, args []string) error {
 	CommandPrettyPrintln("Changes will take effect gradually as the server caches expire.")
 	CommandPrettyPrintln("For the changes to take effect immediately, go to the Mattermost System Console > General > Configuration and click \"Purge All Caches\".")
 
-	// auditRec := a.MakeAuditRecord("resetPermissions", audit.Success)
-	// a.LogAuditRec(auditRec, nil)
+	auditRec := a.MakeAuditRecord("resetPermissions", audit.Success)
+	a.LogAuditRec(auditRec, nil)
 
 	return nil
 }
-
-// func exportPermissionsCmdF(command *cobra.Command, args []string) error {
-// 	a, err := InitDBCommandContextCobra(command)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer a.Srv().Shutdown()
-
-// 	if err = a.ExportPermissions(os.Stdout); err != nil {
-// 		return errors.New(err.Error())
-// 	}
-
-// 	// auditRec := a.MakeAuditRecord("exportPermissions", audit.Success)
-// 	// a.LogAuditRec(auditRec, nil)
-
-// 	return nil
-// }
-
-// func importPermissionsCmdF(command *cobra.Command, args []string) error {
-// 	a, err := InitDBCommandContextCobra(command)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer a.Srv().Shutdown()
-
-// 	file, err := os.Open(args[0])
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
-
-// 	// auditRec := a.MakeAuditRecord("importPermissions", audit.Success)
-// 	// auditRec.AddMeta("file", args[0])
-// 	// a.LogAuditRec(auditRec, nil)
-
-// 	return a.ImportPermissions(file)
-// }
