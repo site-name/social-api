@@ -195,18 +195,9 @@ func (workers *Workers) handleConfigChange(oldConfig *model.Config, newConfig *m
 	if workers.DataRetention != nil {
 		if (!*oldConfig.DataRetentionSettings.EnableMessageDeletion && !*oldConfig.DataRetentionSettings.EnableFileDeletion) &&
 			(*newConfig.DataRetentionSettings.EnableMessageDeletion || *newConfig.DataRetentionSettings.EnableFileDeletion) {
-			// check if:
-			// 1) old message deletion and file deletion configurations are false
-			// 2) new message deletion or file deletion configurations are true
-			// then allow the "DataRetension" worker to run:
 			go workers.DataRetention.Run()
 		} else if (*oldConfig.DataRetentionSettings.EnableMessageDeletion || *oldConfig.DataRetentionSettings.EnableFileDeletion) &&
 			(!*newConfig.DataRetentionSettings.EnableMessageDeletion && !*newConfig.DataRetentionSettings.EnableFileDeletion) {
-			// check if:
-			// 1) old message deletion or file deletion configurations are true
-			// 2) new message deletion and file deletion configurations are false
-			// then allow the "DataRetension" worker to run:
-			// old configurations are the same when start this worker but new configurations does now allow this worker to run
 			workers.DataRetention.Stop()
 		}
 	}

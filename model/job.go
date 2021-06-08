@@ -140,10 +140,9 @@ type Worker interface {
 }
 
 type Scheduler interface {
-	Name() string
-	// JobType returns type of job
-	JobType() string
-	Enabled(cfg *Config) bool
-	NextScheduleTime(cfg *Config, now time.Time, pendingJobs bool, lastSuccessfulJob *Job) *time.Time
-	ScheduleJob(cfg *Config, pendingJobs bool, lastSuccessfulJob *Job) (*Job, *AppError)
+	Name() string                                                                                     //
+	JobType() string                                                                                  // JobType returns type of job
+	Enabled(cfg *Config) bool                                                                         //
+	NextScheduleTime(cfg *Config, now time.Time, pendingJobs bool, lastSuccessfulJob *Job) *time.Time //
+	ScheduleJob(cfg *Config, pendingJobs bool, lastSuccessfulJob *Job) (*Job, *AppError)              //
 }

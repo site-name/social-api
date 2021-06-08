@@ -300,6 +300,7 @@ func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
 	return ss.searchReplicas[rrNum]
 }
 
+// GetReplica try getting a slave datasource, if there is no slave or can only choose main source, it returns main datasource.
 func (ss *SqlStore) GetReplica() *gorp.DbMap {
 	// in case the system does not have slave data source, returns master data source instead
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {

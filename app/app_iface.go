@@ -82,6 +82,8 @@ type AppIface interface {
 	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
+	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
+	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRolesByNames returns a slice of model.Role by given names
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
@@ -91,6 +93,10 @@ type AppIface interface {
 	GetSessionLengthInMillis(session *model.Session) int64
 	// GetUser get user with given userID
 	GetUser(userID string) (*account.User, *model.AppError)
+	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
+	HasPermissionTo(askingUserId string, permission *model.Permission) bool
+	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
+	HasPermissionToUser(askingUserId string, userID string) bool
 	// IsPasswordValid checks:
 	//
 	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
@@ -123,10 +129,21 @@ type AppIface interface {
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
 	RevokeSessionById(sessionID string) *model.AppError
+	// RolesGrantPermission gets all model.Role with given roleNames.
+	// Then checks if one of these model.Role satisfies:
+	//
+	// 1) Not deleted
+	//
+	// 2) one item in the role's Permissions is equal to given permissionId
+	RolesGrantPermission(roleNames []string, permissionId string) bool
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
-	// SessionHasPermissionTo checks if session's Roles contain given permission's ID
+	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
+	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
+	SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool
+	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
+	SessionHasPermissionToUser(session *model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
@@ -205,7 +222,6 @@ type AppIface interface {
 	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
-	GetRole(id string) (*model.Role, *model.AppError)
 	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
@@ -232,8 +248,6 @@ type AppIface interface {
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
-	HasPermissionTo(askingUserId string, permission *model.Permission) bool
-	HasPermissionToUser(askingUserId string, userID string) bool
 	ImageProxy() *imageproxy.ImageProxy
 	InvalidateCacheForUser(userID string)
 	IsFirstUserAccount() bool
@@ -257,7 +271,6 @@ type AppIface interface {
 	RevokeAllSessions(userID string) *model.AppError
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
-	RolesGrantPermission(roleNames []string, permissionId string) bool
 	Saml() einterfaces.SamlInterface
 	SanitizeProfile(user *account.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
@@ -266,8 +279,6 @@ type AppIface interface {
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
 	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
 	SessionCacheLength() int
-	SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool
-	SessionHasPermissionToUser(session *model.Session, userID string) bool
 	SetDefaultProfileImage(user *account.User) *model.AppError
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError

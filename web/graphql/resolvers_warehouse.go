@@ -2,12 +2,15 @@ package graphql
 
 import (
 	"context"
-	// "fmt"
-	// "github.com/sitename/sitename/web/shared"
+	"fmt"
+
+	"github.com/sitename/sitename/web/shared"
 )
 
 func createWarehouse(ctx context.Context, input WarehouseCreateInput) (*WarehouseCreate, error) {
-	// _, _ := ctx.Value(shared.APIContextKey).(*shared.Context)
+	embeddedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	fmt.Println(embeddedCtx.App != nil)
 
 	return &WarehouseCreate{
 		Errors: []WarehouseError{},

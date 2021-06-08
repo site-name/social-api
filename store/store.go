@@ -518,11 +518,10 @@ type RoleStore interface {
 	GetByNames(names []string) ([]*model.Role, error)
 	Delete(roleID string) (*model.Role, error)
 	PermanentDeleteAll() error
-	ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error)
+	// ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error)
 	// AllChannelSchemeRoles returns all of the roles associated to channel schemes.
 	// AllChannelSchemeRoles() ([]*model.Role, error)
-	// ChannelRolesUnderTeamRole returns all of the non-deleted roles that are affected by updates to the
-	// given role.
+	// ChannelRolesUnderTeamRole returns all of the non-deleted roles that are affected by updates to the given role.
 	// ChannelRolesUnderTeamRole(roleName string) ([]*model.Role, error)
 	// HigherScopedPermissions retrieves the higher-scoped permissions of a list of role names. The higher-scope
 	// (either team scheme or system scheme) is determined based on whether the team has a scheme or not.

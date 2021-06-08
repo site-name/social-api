@@ -49,21 +49,21 @@ func init() {
 		PERMISSION_SYSCONSOLE_WRITE_ABOUT_EDITION_AND_LICENSE.Id: {
 			PERMISSION_MANAGE_LICENSE_INFORMATION,
 		},
-		// PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_CHANNELS.Id: {
-		// 	PERMISSION_READ_PUBLIC_CHANNEL,
-		// 	PERMISSION_READ_CHANNEL,
-		// 	PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
-		// 	PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
-		// },
+		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_CHANNELS.Id: {
+			PERMISSION_READ_PUBLIC_CHANNEL,
+			PERMISSION_READ_CHANNEL,
+			PERMISSION_READ_PUBLIC_CHANNEL_GROUPS,
+			PERMISSION_READ_PRIVATE_CHANNEL_GROUPS,
+		},
 		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS.Id: {
 			PERMISSION_READ_OTHER_USERS_TEAMS,
 			PERMISSION_GET_ANALYTICS,
 		},
-		// PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_TEAMS.Id: {
-		// 	PERMISSION_LIST_PRIVATE_TEAMS,
-		// 	PERMISSION_LIST_PUBLIC_TEAMS,
-		// 	PERMISSION_VIEW_TEAM,
-		// },
+		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_TEAMS.Id: {
+			PERMISSION_LIST_PRIVATE_TEAMS,
+			PERMISSION_LIST_PUBLIC_TEAMS,
+			PERMISSION_VIEW_TEAM,
+		},
 		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH.Id: {
 			PERMISSION_READ_ELASTICSEARCH_POST_INDEXING_JOB,
 			PERMISSION_READ_ELASTICSEARCH_POST_AGGREGATION_JOB,
@@ -94,41 +94,41 @@ func init() {
 		PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS.Id: {
 			PERMISSION_GET_ANALYTICS,
 		},
-		// PERMISSION_SYSCONSOLE_READ_REPORTING_TEAM_STATISTICS.Id: {
-		// 	PERMISSION_VIEW_TEAM,
-		// },
+		PERMISSION_SYSCONSOLE_READ_REPORTING_TEAM_STATISTICS.Id: {
+			PERMISSION_VIEW_TEAM,
+		},
 		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS.Id: {
 			PERMISSION_EDIT_OTHER_USERS,
 			PERMISSION_DEMOTE_TO_GUEST,
 			PERMISSION_PROMOTE_GUEST,
 		},
-		// PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_CHANNELS.Id: {
-		// 	PERMISSION_MANAGE_TEAM,
-		// 	PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
-		// 	PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
-		// 	PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
-		// 	PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
-		// 	PERMISSION_DELETE_PRIVATE_CHANNEL,
-		// 	PERMISSION_DELETE_PUBLIC_CHANNEL,
-		// 	PERMISSION_MANAGE_CHANNEL_ROLES,
-		// 	PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
-		// 	PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
-		// },
-		// PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_TEAMS.Id: {
-		// 	PERMISSION_MANAGE_TEAM,
-		// 	PERMISSION_MANAGE_TEAM_ROLES,
-		// 	PERMISSION_REMOVE_USER_FROM_TEAM,
-		// 	PERMISSION_JOIN_PRIVATE_TEAMS,
-		// 	PERMISSION_JOIN_PUBLIC_TEAMS,
-		// 	PERMISSION_ADD_USER_TO_TEAM,
-		// },
-		// PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS.Id: {
-		// 	PERMISSION_MANAGE_TEAM,
-		// 	PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
-		// 	PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
-		// 	PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
-		// 	PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
-		// },
+		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_CHANNELS.Id: {
+			PERMISSION_MANAGE_TEAM,
+			PERMISSION_MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+			PERMISSION_MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+			PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
+			PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
+			PERMISSION_DELETE_PRIVATE_CHANNEL,
+			PERMISSION_DELETE_PUBLIC_CHANNEL,
+			PERMISSION_MANAGE_CHANNEL_ROLES,
+			PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+			PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
+		},
+		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_TEAMS.Id: {
+			PERMISSION_MANAGE_TEAM,
+			PERMISSION_MANAGE_TEAM_ROLES,
+			PERMISSION_REMOVE_USER_FROM_TEAM,
+			PERMISSION_JOIN_PRIVATE_TEAMS,
+			PERMISSION_JOIN_PUBLIC_TEAMS,
+			PERMISSION_ADD_USER_TO_TEAM,
+		},
+		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS.Id: {
+			PERMISSION_MANAGE_TEAM,
+			PERMISSION_MANAGE_PRIVATE_CHANNEL_MEMBERS,
+			PERMISSION_MANAGE_PUBLIC_CHANNEL_MEMBERS,
+			PERMISSION_CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+			PERMISSION_CONVERT_PRIVATE_CHANNEL_TO_PUBLIC,
+		},
 		PERMISSION_SYSCONSOLE_WRITE_SITE_CUSTOMIZATION.Id: {
 			PERMISSION_EDIT_BRAND,
 		},
@@ -374,16 +374,17 @@ const (
 )
 
 type Role struct {
-	Id            string   `json:"id"`
-	Name          string   `json:"name"`
-	DisplayName   string   `json:"display_name"`
-	Description   string   `json:"description"`
-	CreateAt      int64    `json:"create_at"`
-	UpdateAt      int64    `json:"update_at"`
-	DeleteAt      int64    `json:"delete_at"`
-	Permissions   []string `json:"permissions"`
-	SchemeManaged bool     `json:"scheme_managed"`
-	BuiltIn       bool     `json:"built_in"`
+	Id             string   `json:"id"`
+	Name           string   `json:"name"`
+	DisplayName    string   `json:"display_name"`
+	Description    string   `json:"description"`
+	CreateAt       int64    `json:"create_at"`
+	UpdateAt       int64    `json:"update_at"`
+	DeleteAt       int64    `json:"delete_at"`
+	Permissions    []string `json:"permissions" db:"-"`       // NOT save to database, populate by `PermissionsStr`
+	PermissionsStr string   `json:"permission_str,omitempty"` // save to database
+	SchemeManaged  bool     `json:"scheme_managed"`
+	BuiltIn        bool     `json:"built_in"`
 }
 
 type RolePatch struct {
@@ -393,6 +394,30 @@ type RolePatch struct {
 type RolePermissions struct {
 	RoleID      string
 	Permissions []string
+}
+
+// PreSave set `Id`, `CreateAt` and `PermissionsStr`
+func (r *Role) PreSave() {
+	if r.Id == "" {
+		r.Id = NewId()
+	}
+	if r.CreateAt == 0 {
+		r.CreateAt = GetMillis()
+		r.UpdateAt = r.CreateAt
+	}
+	r.PermissionsStr = strings.Join(r.Permissions, " ")
+}
+
+// PreUpdate set `UpdateAt` and `PermissionsStr`
+func (r *Role) PreUpdate() {
+	r.UpdateAt = GetMillis()
+	r.PermissionsStr = strings.Join(r.Permissions, " ")
+}
+
+// PopulatePermissionSlice populates role's Permissions slice
+func (r *Role) PopulatePermissionSlice() {
+	r.Permissions = strings.Fields(r.PermissionsStr)
+	r.PermissionsStr = ""
 }
 
 func (r *Role) ToJson() string {
@@ -625,24 +650,25 @@ func (r *Role) IsValid() bool {
 		return false
 	}
 
-	return r.IsValidWithoutId()
+	ok, _, _ := r.IsValidWithoutId()
+	return ok
 }
 
 // IsValidWithoutId check if current role is valid without checking its Id
-func (r *Role) IsValidWithoutId() bool {
+func (r *Role) IsValidWithoutId() (bool, string, interface{}) {
 	if !IsValidRoleName(r.Name) {
-		return false
+		return false, "Name", r.Name
 	}
 
 	if r.DisplayName == "" || len(r.DisplayName) > ROLE_DISPLAY_NAME_MAX_LENGTH {
-		return false
+		return false, "DisplayName", r.DisplayName
 	}
 
 	if len(r.Description) > ROLE_DESCRIPTION_MAX_LENGTH {
-		return false
+		return false, "Description", r.Description
 	}
 
-	// check checks if permission is included in perms
+	// check checks if permissionId is included in perms
 	var check = func(perms []*Permission, permissionId string) bool {
 		for _, p := range perms {
 			if permissionId == p.Id {
@@ -655,11 +681,11 @@ func (r *Role) IsValidWithoutId() bool {
 	for _, permissionId := range r.Permissions {
 		permissionValidated := check(AllPermissions, permissionId) || check(DeprecatedPermissions, permissionId)
 		if !permissionValidated {
-			return false
+			return false, "Permissions", r.Permissions
 		}
 	}
 
-	return true
+	return true, "nil", nil
 }
 
 func CleanRoleNames(roleNames []string) ([]string, bool) {

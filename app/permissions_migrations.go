@@ -1,9 +1,7 @@
 package app
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -70,7 +68,7 @@ const (
 	PermissionEditBrand                      = "edit_brand"
 	PermissionManageSharedChannels           = "manage_shared_channels"
 	PermissionManageSecureConnections        = "manage_secure_connections"
-	PermissionManageRemoteClusters           = "manage_remote_clusters" // deprecated; use `manage_secure_connections`
+	// PermissionManageRemoteClusters           = "manage_remote_clusters" // deprecated; use `manage_secure_connections`
 )
 
 func isRole(roleName string) func(*model.Role, map[string]map[string]bool) bool {
@@ -91,19 +89,19 @@ func isNotSchemeRole(roleName string) func(*model.Role, map[string]map[string]bo
 	}
 }
 
-func permissionExists(permission string) func(*model.Role, map[string]map[string]bool) bool {
+func permissionExists(permissionID string) func(*model.Role, map[string]map[string]bool) bool {
 	return func(role *model.Role, permissionsMap map[string]map[string]bool) bool {
-		val, ok := permissionsMap[role.Name][permission]
+		val, ok := permissionsMap[role.Name][permissionID]
 		return ok && val
 	}
 }
 
-func permissionNotExists(permission string) func(*model.Role, map[string]map[string]bool) bool {
-	return func(role *model.Role, permissionsMap map[string]map[string]bool) bool {
-		val, ok := permissionsMap[role.Name][permission]
-		return !(ok && val)
-	}
-}
+// func permissionNotExists(permission string) func(*model.Role, map[string]map[string]bool) bool {
+// 	return func(role *model.Role, permissionsMap map[string]map[string]bool) bool {
+// 		val, ok := permissionsMap[role.Name][permission]
+// 		return !(ok && val)
+// 	}
+// }
 
 func onOtherRole(otherRole string, function func(*model.Role, map[string]map[string]bool) bool) func(*model.Role, map[string]map[string]bool) bool {
 	return func(role *model.Role, permissionsMap map[string]map[string]bool) bool {
@@ -136,23 +134,56 @@ func permissionAnd(funcs ...func(*model.Role, map[string]map[string]bool) bool) 
 func applyPermissionsMap(role *model.Role, roleMap map[string]map[string]bool, migrationMap permissionsMap) *[]string {
 	var result []string
 
+	roleName := role.Name
 	for _, transformation := range migrationMap {
 		if transformation.On(role, roleMap) {
 			for _, permission := range transformation.Add {
-				roleMap[role.Name][permission] = true
+				roleMap[roleName][permission] = true
 			}
 			for _, permission := range transformation.Remove {
-				roleMap[role.Name][permission] = false
+				roleMap[roleName][permission] = false
 			}
 		}
 	}
 
-	for key, active := range roleMap[role.Name] {
+	for key, active := range roleMap[roleName] {
 		if active {
 			result = append(result, key)
 		}
 	}
 	return &result
+}
+
+func (s *Server) doPermissionsMigration(key string, migrationMap permissionsMap, roles []*model.Role) *model.AppError {
+	if _, err := s.Store.System().GetByName(key); err == nil {
+		return nil
+	}
+
+	roleMap := make(map[string]map[string]bool)
+	for _, role := range roles {
+		roleMap[role.Name] = make(map[string]bool)
+		for _, permission := range role.Permissions {
+			roleMap[role.Name][permission] = true
+		}
+	}
+
+	for _, role := range roles {
+		role.Permissions = *applyPermissionsMap(role, roleMap, migrationMap)
+		if _, err := s.Store.Role().Save(role); err != nil {
+			var invErr *store.ErrInvalidInput
+			switch {
+			case errors.As(err, &invErr):
+				return model.NewAppError("doPermissionsMigration", "app.role.save.invalid_role.app_error", nil, invErr.Error(), http.StatusBadRequest)
+			default:
+				return model.NewAppError("doPermissionsMigration", "app.role.save.insert.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+		}
+	}
+
+	if err := s.Store.System().Save(&model.System{Name: key, Value: "true"}); err != nil {
+		return model.NewAppError("doPermissionsMigration", "app.system.save.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
 }
 
 func (a *App) getEmojisPermissionsSplitMigration() (permissionsMap, error) {
@@ -246,10 +277,10 @@ func (a *App) removeChannelManageDeleteFromTeamUser() (permissionsMap, error) {
 			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionManagePrivateChannelProperties)),
 			Remove: []string{PermissionManagePrivateChannelProperties},
 		},
-		// permissionTransformation{
-		// 	On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionDeletePrivateChannel)),
-		// 	Remove: []string{model.PERMISSION_DELETE_PRIVATE_CHANNEL.Id},
-		// },
+		permissionTransformation{
+			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionDeletePrivateChannel)),
+			Remove: []string{model.PERMISSION_DELETE_PRIVATE_CHANNEL.Id},
+		},
 		permissionTransformation{
 			On:     permissionAnd(isRole(model.TEAM_USER_ROLE_ID), permissionExists(PermissionManagePublicChannelProperties)),
 			Remove: []string{PermissionManagePublicChannelProperties},
@@ -282,103 +313,6 @@ func (a *App) getAddManageGuestsPermissionsMigration() (permissionsMap, error) {
 		},
 	}, nil
 }
-
-// func (a *App) channelModerationPermissionsMigration() (permissionsMap, error) {
-// 	transformations := permissionsMap{}
-// 	var allTeamSchemes []*model.Scheme
-// 	next := a.SchemesIterator(model.SCHEME_SCOPE_TEAM, 100)
-// 	var schemeBatch []*model.Scheme
-// 	for schemeBatch = next(); len(schemeBatch) > 0; schemeBatch = next() {
-// 		allTeamSchemes = append(allTeamSchemes, schemeBatch...)
-// 	}
-// 	moderatedPermissionsMinusCreatePost := []string{
-// 		PermissionAddReaction,
-// 		PermissionRemoveReaction,
-// 		PermissionManagePublicChannelMembers,
-// 		PermissionManagePrivateChannelMembers,
-// 		PermissionUseChannelMentions,
-// 	}
-// 	teamAndChannelAdminConditionalTransformations := func(teamAdminID, channelAdminID, channelUserID, channelGuestID string) []permissionTransformation {
-// 		transformations := []permissionTransformation{}
-// 		for _, perm := range moderatedPermissionsMinusCreatePost {
-// 			// add each moderated permission to the channel admin if channel user or guest has the permission
-// 			trans := permissionTransformation{
-// 				On: permissionAnd(
-// 					isRole(channelAdminID),
-// 					permissionOr(
-// 						onOtherRole(channelUserID, permissionExists(perm)),
-// 						onOtherRole(channelGuestID, permissionExists(perm)),
-// 					),
-// 				),
-// 				Add: []string{perm},
-// 			}
-// 			transformations = append(transformations, trans)
-// 			// add each moderated permission to the team admin if channel admin, user, or guest has the permission
-// 			trans = permissionTransformation{
-// 				On: permissionAnd(
-// 					isRole(teamAdminID),
-// 					permissionOr(
-// 						onOtherRole(channelAdminID, permissionExists(perm)),
-// 						onOtherRole(channelUserID, permissionExists(perm)),
-// 						onOtherRole(channelGuestID, permissionExists(perm)),
-// 					),
-// 				),
-// 				Add: []string{perm},
-// 			}
-// 			transformations = append(transformations, trans)
-// 		}
-// 		return transformations
-// 	}
-// 	for _, ts := range allTeamSchemes {
-// 		// ensure all team scheme channel admins have create_post because it's not exposed via the UI
-// 		trans := permissionTransformation{
-// 			On:  isRole(ts.DefaultChannelAdminRole),
-// 			Add: []string{PermissionCreatePost},
-// 		}
-// 		transformations = append(transformations, trans)
-// 		// ensure all team scheme team admins have create_post because it's not exposed via the UI
-// 		trans = permissionTransformation{
-// 			On:  isRole(ts.DefaultTeamAdminRole),
-// 			Add: []string{PermissionCreatePost},
-// 		}
-// 		transformations = append(transformations, trans)
-// 		// conditionally add all other moderated permissions to team and channel admins
-// 		transformations = append(transformations, teamAndChannelAdminConditionalTransformations(
-// 			ts.DefaultTeamAdminRole,
-// 			ts.DefaultChannelAdminRole,
-// 			ts.DefaultChannelUserRole,
-// 			ts.DefaultChannelGuestRole,
-// 		)...)
-// 	}
-// 	// ensure team admins have create_post
-// 	transformations = append(transformations, permissionTransformation{
-// 		On:  isRole(model.TEAM_ADMIN_ROLE_ID),
-// 		Add: []string{PermissionCreatePost},
-// 	})
-// 	// ensure channel admins have create_post
-// 	transformations = append(transformations, permissionTransformation{
-// 		On:  isRole(model.CHANNEL_ADMIN_ROLE_ID),
-// 		Add: []string{PermissionCreatePost},
-// 	})
-// 	// conditionally add all other moderated permissions to team and channel admins
-// 	transformations = append(transformations, teamAndChannelAdminConditionalTransformations(
-// 		model.TEAM_ADMIN_ROLE_ID,
-// 		model.CHANNEL_ADMIN_ROLE_ID,
-// 		model.CHANNEL_USER_ROLE_ID,
-// 		model.CHANNEL_GUEST_ROLE_ID,
-// 	)...)
-// 	// ensure system admin has all of the moderated permissions
-// 	transformations = append(transformations, permissionTransformation{
-// 		On:  isRole(model.SYSTEM_ADMIN_ROLE_ID),
-// 		Add: append(moderatedPermissionsMinusCreatePost, PermissionCreatePost),
-// 	})
-// 	// add the new use_channel_mentions permission to everyone who has create_post
-// 	transformations = append(transformations, permissionTransformation{
-// 		On:  permissionOr(permissionExists(PermissionCreatePost), permissionExists(PermissionCreatePost_PUBLIC)),
-// 		Add: []string{PermissionUseChannelMentions},
-// 	})
-// 	return transformations, nil
-// }
 
 func (a *App) getAddUseGroupMentionsPermissionMigration() (permissionsMap, error) {
 	return permissionsMap{
@@ -469,8 +403,8 @@ func (a *App) getAddManageSharedChannelsPermissionsMigration() (permissionsMap, 
 }
 
 func (a *App) getBillingPermissionsMigration() (permissionsMap, error) {
-	return permissionsMap{
-		permissionTransformation{
+	return []permissionTransformation{
+		{
 			On:  isRole(model.SYSTEM_ADMIN_ROLE_ID),
 			Add: []string{model.PERMISSION_SYSCONSOLE_READ_BILLING.Id, model.PERMISSION_SYSCONSOLE_WRITE_BILLING.Id},
 		},
@@ -478,22 +412,16 @@ func (a *App) getBillingPermissionsMigration() (permissionsMap, error) {
 }
 
 func (a *App) getAddManageSecureConnectionsPermissionsMigration() (permissionsMap, error) {
-	transformations := []permissionTransformation{}
-
-	// add the new permission to system admin
-	transformations = append(transformations,
-		permissionTransformation{
+	transformations := []permissionTransformation{
+		{ // add the new permission to system admin
 			On:  isRole(model.SYSTEM_ADMIN_ROLE_ID),
 			Add: []string{PermissionManageSecureConnections},
-		})
-
-	// remote the decprecated permission from system admin
-	transformations = append(transformations,
-		permissionTransformation{
+		},
+		{ // remote the decprecated permission from system admin
 			On:     isRole(model.SYSTEM_ADMIN_ROLE_ID),
-			Remove: []string{PermissionManageRemoteClusters},
-		})
-
+			Remove: []string{PermissionManageSecureConnections},
+		},
+	}
 	return transformations, nil
 }
 
@@ -853,6 +781,19 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 	return transformations, nil
 }
 
+// This migration fixes https://github.com/mattermost/mattermost-server/issues/17642 where this particular ancillary permission was forgotten during the initial migrations
+func (a *App) getAddTestEmailAncillaryPermission() (permissionsMap, error) {
+	transformations := []permissionTransformation{}
+
+	// Give these ancillary permissions to anyone with WRITE_ENVIRONMENT_SMTP
+	transformations = append(transformations, permissionTransformation{
+		On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP.Id),
+		Add: []string{model.PERMISSION_TEST_EMAIL.Id},
+	})
+
+	return transformations, nil
+}
+
 // DoPermissionsMigrations execute all the permissions migrations need by the current version.
 func (a *App) DoPermissionsMigrations() error {
 	return a.Srv().doPermissionsMigrations()
@@ -889,7 +830,7 @@ func (s *Server) doPermissionsMigrations() error {
 		{Key: model.MIGRATION_KEY_ADD_ENVIRONMENT_SUBSECTION_PERMISSIONS, Migration: a.getAddEnvironmentSubsectionPermissions},
 		{Key: model.MIGRATION_KEY_ADD_ABOUT_SUBSECTION_PERMISSIONS, Migration: a.getAddAboutSubsectionPermissions},
 		{Key: model.MIGRATION_KEY_ADD_REPORTING_SUBSECTION_PERMISSIONS, Migration: a.getAddReportingSubsectionPermissions},
-		// {Key: model.MIGRATION_KEY_ADD_TEST_EMAIL_ANCILLARY_PERMISSION, Migration: a.getAddTestEmailAncillaryPermission},
+		{Key: model.MIGRATION_KEY_ADD_TEST_EMAIL_ANCILLARY_PERMISSION, Migration: a.getAddTestEmailAncillaryPermission},
 		// {Key: model.MIGRATION_KEY_CHANNEL_MODERATIONS_PERMISSIONS, Migration: a.channelModerationPermissionsMigration},
 	}
 
@@ -906,46 +847,6 @@ func (s *Server) doPermissionsMigrations() error {
 		if err := s.doPermissionsMigration(migration.Key, migMap, roles); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func (s *Server) doPermissionsMigration(key string, migrationMap permissionsMap, roles []*model.Role) *model.AppError {
-	if _, err := s.Store.System().GetByName(key); err == nil {
-		return nil
-	}
-
-	roleMap := make(map[string]map[string]bool)
-	for _, role := range roles {
-		roleMap[role.Name] = make(map[string]bool)
-		for _, permissionId := range role.Permissions {
-			roleMap[role.Name][permissionId] = true
-		}
-	}
-
-	for _, role := range roles {
-		var before model.Role = *role
-		role.Permissions = *applyPermissionsMap(role, roleMap, migrationMap)
-		if _, err := s.Store.Role().Save(role); err != nil {
-			var invErr *store.ErrInvalidInput
-			switch {
-			case errors.As(err, &invErr):
-				fmt.Println("---------------------------")
-				b, _ := json.MarshalIndent(before, "", "    ")
-				fmt.Println(string(b))
-				b, _ = json.MarshalIndent(role, "", "    ")
-				fmt.Println(string(b))
-				fmt.Println("---------------------------")
-
-				return model.NewAppError("doPermissionsMigration", "app.role.save.invalid_role.app_error", nil, invErr.Error(), http.StatusBadRequest)
-			default:
-				return model.NewAppError("doPermissionsMigration", "app.role.save.insert.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
-		}
-	}
-
-	if err := s.Store.System().Save(&model.System{Name: key, Value: "true"}); err != nil {
-		return model.NewAppError("doPermissionsMigration", "app.system.save.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }

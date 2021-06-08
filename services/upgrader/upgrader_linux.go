@@ -24,7 +24,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-const mattermostBuildPublicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+const sitenameBuildPublicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQENBFjZQxwBCAC6kNn3zDlq/aY83M9V7MHVPoK2jnZ3BfH7sA+ibQXsijCkPSR4
 5bCUJ9qVA4XKGK+cpO9vkolSNs10igCaaemaUZNB6ksu3gT737/SZcCAfRO+cLX7
@@ -52,6 +52,7 @@ type writeCounter struct {
 	readed int64
 }
 
+// Write helps writeCounter implement io.Writer interface
 func (wc *writeCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	wc.readed += int64(n)
@@ -204,7 +205,7 @@ func UpgradeToE0() error {
 	}
 	defer os.Remove(sigfilename)
 
-	err = verifySignature(filename, sigfilename, mattermostBuildPublicKey)
+	err = verifySignature(filename, sigfilename, sitenameBuildPublicKey)
 	if err != nil {
 		upgradePercentage = 0
 		upgradeError = errors.New("unable to verify the signature of the downloaded file")

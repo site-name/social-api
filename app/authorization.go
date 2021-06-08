@@ -17,7 +17,7 @@ func (a *App) MakePermissionError(s *model.Session, permissions []*model.Permiss
 	return model.NewAppError("Permissions", "api.context.permissions.app_error", nil, "userId="+s.UserId+", "+permissionsStr, http.StatusForbidden)
 }
 
-// SessionHasPermissionTo checks if session's Roles contain given permission's ID
+// SessionHasPermissionTo checks if this user has given permission to procceed
 func (a *App) SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool {
 	if session.IsUnrestricted() {
 		return true
@@ -25,6 +25,7 @@ func (a *App) SessionHasPermissionTo(session *model.Session, permission *model.P
 	return a.RolesGrantPermission(session.GetUserRoles(), permission.Id)
 }
 
+// SessionHasPermissionToAny checks if current user has atleast one of given permissions
 func (a *App) SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool {
 	for _, perm := range permissions {
 		if a.SessionHasPermissionTo(session, perm) {
@@ -34,6 +35,7 @@ func (a *App) SessionHasPermissionToAny(session *model.Session, permissions []*m
 	return false
 }
 
+// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
 func (a *App) SessionHasPermissionToUser(session *model.Session, userID string) bool {
 	if userID == "" {
 		return false
@@ -53,17 +55,17 @@ func (a *App) SessionHasPermissionToUser(session *model.Session, userID string) 
 	return false
 }
 
+// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
 func (a *App) HasPermissionTo(askingUserId string, permission *model.Permission) bool {
 	user, err := a.GetUser(askingUserId)
 	if err != nil {
 		return false
 	}
 
-	roles := user.GetRoles()
-
-	return a.RolesGrantPermission(roles, permission.Id)
+	return a.RolesGrantPermission(user.GetRoles(), permission.Id)
 }
 
+// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
 func (a *App) HasPermissionToUser(askingUserId string, userID string) bool {
 	if askingUserId == userID {
 		return true
@@ -76,6 +78,12 @@ func (a *App) HasPermissionToUser(askingUserId string, userID string) bool {
 	return false
 }
 
+// RolesGrantPermission gets all model.Role with given roleNames.
+// Then checks if one of these model.Role satisfies:
+//
+// 1) Not deleted
+//
+// 2) one item in the role's Permissions is equal to given permissionId
 func (a *App) RolesGrantPermission(roleNames []string, permissionId string) bool {
 	roles, err := a.GetRolesByNames(roleNames)
 	if err != nil {
@@ -90,8 +98,7 @@ func (a *App) RolesGrantPermission(roleNames []string, permissionId string) bool
 			continue
 		}
 
-		permissions := role.Permissions
-		for _, permission := range permissions {
+		for _, permission := range role.Permissions {
 			if permission == permissionId {
 				return true
 			}

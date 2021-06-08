@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 func (a *App) GetRole(id string) (*model.Role, *model.AppError) {
 	role, err := a.Srv().Store.Role().Get(id)
 	if err != nil {
@@ -50,6 +51,7 @@ func (s *Server) GetRoleByName(ctx context.Context, name string) (*model.Role, *
 	return role, nil
 }
 
+// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
 func (a *App) GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError) {
 	return a.Srv().GetRoleByName(ctx, name)
 }
@@ -71,40 +73,40 @@ func (a *App) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
 
 // mergeChannelHigherScopedPermissions updates the permissions based on the role type, whether the permission is
 // moderated, and the value of the permission on the higher-scoped scheme.
-func (s *Server) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
-	var higherScopeNamesToQuery []string
+// func (s *Server) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
+// 	var higherScopeNamesToQuery []string
 
-	for _, role := range roles {
-		if role.SchemeManaged {
-			higherScopeNamesToQuery = append(higherScopeNamesToQuery, role.Name)
-		}
-	}
+// 	for _, role := range roles {
+// 		if role.SchemeManaged {
+// 			higherScopeNamesToQuery = append(higherScopeNamesToQuery, role.Name)
+// 		}
+// 	}
 
-	if len(higherScopeNamesToQuery) == 0 {
-		return nil
-	}
+// 	if len(higherScopeNamesToQuery) == 0 {
+// 		return nil
+// 	}
 
-	higherScopedPermissionsMap, err := s.Store.Role().ChannelHigherScopedPermissions(higherScopeNamesToQuery)
-	if err != nil {
-		return model.NewAppError("mergeChannelHigherScopedPermissions", "app.role.get_by_names.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+// 	higherScopedPermissionsMap, err := s.Store.Role().ChannelHigherScopedPermissions(higherScopeNamesToQuery)
+// 	if err != nil {
+// 		return model.NewAppError("mergeChannelHigherScopedPermissions", "app.role.get_by_names.app_error", nil, err.Error(), http.StatusInternalServerError)
+// 	}
 
-	for _, role := range roles {
-		if role.SchemeManaged {
-			if higherScopedPermissions, ok := higherScopedPermissionsMap[role.Name]; ok {
-				role.MergeChannelHigherScopedPermissions(higherScopedPermissions)
-			}
-		}
-	}
+// 	for _, role := range roles {
+// 		if role.SchemeManaged {
+// 			if higherScopedPermissions, ok := higherScopedPermissionsMap[role.Name]; ok {
+// 				role.MergeChannelHigherScopedPermissions(higherScopedPermissions)
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // mergeChannelHigherScopedPermissions updates the permissions based on the role type, whether the permission is
 // moderated, and the value of the permission on the higher-scoped scheme.
-func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
-	return a.Srv().mergeChannelHigherScopedPermissions(roles)
-}
+// func (a *App) mergeChannelHigherScopedPermissions(roles []*model.Role) *model.AppError {
+// 	return a.Srv().mergeChannelHigherScopedPermissions(roles)
+// }
 
 // func (a *App) PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError) {
 // 	// If patch is a no-op then short-circuit the store.
