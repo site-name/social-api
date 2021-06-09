@@ -6,11 +6,39 @@ extend type Mutation {
   productBulkDelete(ids: [ID]!): ProductBulkDelete
   productUpdate(id: ID!, input: ProductInput!): ProductUpdate
   productTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
+  productChannelListingUpdate(id: ID!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
+  productReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, productId: ID!): ProductReorderAttributeValues
 }
 
 extend type Query {
   product(id: ID, slug: String, channel: String): Product
   products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
+}
+
+input ProductChannelListingUpdateInput {
+  updateChannels: [ProductChannelListingAddInput!]
+  removeChannels: [ID!]
+}
+
+type ProductChannelListingUpdate {
+  product: Product
+  errors: [ProductChannelListingError!]!
+}
+
+type ProductReorderAttributeValues {
+  product: Product
+  errors: [ProductError!]!
+}
+
+input ProductChannelListingAddInput {
+  channelId: ID!
+  isPublished: Boolean
+  publicationDate: Date
+  visibleInListings: Boolean
+  isAvailableForPurchase: Boolean
+  availableForPurchaseDate: Date
+  addVariants: [ID!]
+  removeVariants: [ID!]
 }
 
 type Product implements Node & ObjectWithMetadata {
@@ -42,35 +70,6 @@ type Product implements Node & ObjectWithMetadata {
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
   availableForPurchase: Date
   isAvailableForPurchase: Boolean
-}
-
-enum VariantAttributeScope {
-  ALL
-  VARIANT_SELECTION
-  NOT_VARIANT_SELECTION
-}
-
-type ProductVariant implements Node & ObjectWithMetadata {
-  id: ID!
-  name: String!
-  sku: String!
-  product: Product!
-  trackInventory: Boolean!
-  weight: Weight
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  channelListings: [ProductVariantChannelListing!]
-  pricing(address: AddressInput): VariantPricingInfo
-  attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
-  costPrice: Money
-  margin: Int
-  quantityOrdered: Int
-  revenue(period: ReportingPeriod): TaxedMoney
-  media: [ProductMedia!]
-  translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
-  digitalContent: DigitalContent
-  stocks(address: AddressInput, countryCode: CountryCode): [Stock]
-  quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
 }
 
 type ProductPricingInfo {
@@ -105,28 +104,7 @@ type ProductTranslation implements Node {
   language: LanguageDisplay!
 }
 
-type ProductVariantChannelListing implements Node {
-  id: ID!
-  channel: Channel!
-  price: Money
-  costPrice: Money
-  margin: Int
-}
 
-type VariantPricingInfo {
-  onSale: Boolean
-  discount: TaxedMoney
-  discountLocalCurrency: TaxedMoney
-  price: TaxedMoney
-  priceUndiscounted: TaxedMoney
-  priceLocalCurrency: TaxedMoney
-}
-
-type ProductVariantTranslation implements Node {
-  id: ID!
-  name: String!
-  language: LanguageDisplay!
-}
 
 input ProductAttributeAssignInput {
   id: ID!
@@ -232,15 +210,6 @@ type ProductCountableConnection {
   pageInfo: PageInfo!
   edges: [ProductCountableEdge!]!
   totalCount: Int
-}
-
-type ProductMedia implements Node {
-  id: ID!
-  sortOrder: Int
-  alt: String!
-  type: ProductMediaType!
-  oembedData: JSONString!
-  url(size: Int): String!
 }
 
 enum ProductAttributeType {

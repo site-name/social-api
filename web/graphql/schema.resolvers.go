@@ -11,38 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) ProductChannelListingUpdate(ctx context.Context, id string, input ProductChannelListingUpdateInput) (*ProductChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductMediaCreate(ctx context.Context, input ProductMediaCreateInput) (*ProductMediaCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantReorder(ctx context.Context, moves []*ReorderInput, productID string) (*ProductVariantReorder, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductMediaDelete(ctx context.Context, id string) (*ProductMediaDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductMediaBulkDelete(ctx context.Context, ids []*string) (*ProductMediaBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductMediaReorder(ctx context.Context, mediaIds []*string, productID string) (*ProductMediaReorder, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductMediaUpdate(ctx context.Context, id string, input ProductMediaUpdateInput) (*ProductMediaUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductReorderAttributeValues(ctx context.Context, attributeID string, moves []*ReorderInput, productID string) (*ProductReorderAttributeValues, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) DigitalContentCreate(ctx context.Context, input DigitalContentUploadInput, variantID string) (*DigitalContentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -59,75 +27,11 @@ func (r *mutationResolver) DigitalContentURLCreate(ctx context.Context, input Di
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ProductVariantCreate(ctx context.Context, input ProductVariantCreateInput) (*ProductVariantCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantDelete(ctx context.Context, id string) (*ProductVariantDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantBulkCreate(ctx context.Context, product string, variants []*ProductVariantBulkCreateInput) (*ProductVariantBulkCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantBulkDelete(ctx context.Context, ids []*string) (*ProductVariantBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantStocksCreate(ctx context.Context, stocks []StockInput, variantID string) (*ProductVariantStocksCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantStocksDelete(ctx context.Context, variantID string, warehouseIds []string) (*ProductVariantStocksDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantStocksUpdate(ctx context.Context, stocks []StockInput, variantID string) (*ProductVariantStocksUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantUpdate(ctx context.Context, id string, input ProductVariantInput) (*ProductVariantUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantSetDefault(ctx context.Context, productID string, variantID string) (*ProductVariantSetDefault, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantTranslate(ctx context.Context, id string, input NameTranslationInput, languageCode LanguageCodeEnum) (*ProductVariantTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantChannelListingUpdate(ctx context.Context, id string, input []ProductVariantChannelListingAddInput) (*ProductVariantChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductVariantReorderAttributeValues(ctx context.Context, attributeID string, moves []*ReorderInput, variantID string) (*ProductVariantReorderAttributeValues, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) VariantMediaAssign(ctx context.Context, mediaID string, variantID string) (*VariantMediaAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) VariantMediaUnassign(ctx context.Context, mediaID string, variantID string) (*VariantMediaUnassign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *string, paymentID string) (*PaymentCapture, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) PaymentRefund(ctx context.Context, amount *string, paymentID string) (*PaymentRefund, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) PaymentVoid(ctx context.Context, paymentID string) (*PaymentVoid, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) PaymentInitialize(ctx context.Context, channel *string, gateway string, paymentData *string) (*PaymentInitialize, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -719,23 +623,7 @@ func (r *queryResolver) DigitalContents(ctx context.Context, before *string, aft
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ProductVariant(ctx context.Context, id *string, sku *string, channel *string) (*ProductVariant, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ProductVariants(ctx context.Context, ids []*string, channel *string, filter *ProductVariantFilterInput, before *string, after *string, first *int, last *int) (*ProductVariantCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *queryResolver) ReportProductSales(ctx context.Context, period ReportingPeriod, channel string, before *string, after *string, first *int, last *int) (*ProductVariantCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Payment(ctx context.Context, id string) (*Payment, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Payments(ctx context.Context, filter *PaymentFilterInput, before *string, after *string, first *int, last *int) (*PaymentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

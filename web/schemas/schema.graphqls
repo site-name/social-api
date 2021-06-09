@@ -667,10 +667,7 @@ type AttributeValueUpdate {
   attributeValue: AttributeValue
 }
 
-input BulkAttributeValueInput {
-  id: ID
-  values: [String]!
-}
+
 
 type BulkProductError {
   field: String
@@ -683,14 +680,7 @@ type BulkProductError {
   channels: [ID!]
 }
 
-type BulkStockError {
-  field: String
-  message: String
-  code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-  index: Int
-}
+
 
 input CatalogueInput {
   products: [ID]
@@ -698,29 +688,11 @@ input CatalogueInput {
   collections: [ID]
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 enum CategorySortField {
   NAME
   PRODUCT_COUNT
   SUBCATEGORY_COUNT
 }
-
-
 
 type CategoryTranslatableContent implements Node {
   id: ID!
@@ -732,12 +704,6 @@ type CategoryTranslatableContent implements Node {
   translation(languageCode: LanguageCodeEnum!): CategoryTranslation
   category: Category
 }
-
-
-
-
-
-
 
 type Channel implements Node {
   id: ID!
@@ -2378,41 +2344,13 @@ type MoneyRange {
   stop: Money
 }
 
-
-
 type Mutation {
-  
-  productChannelListingUpdate(id: ID!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
-  productMediaCreate(input: ProductMediaCreateInput!): ProductMediaCreate
-  productVariantReorder(moves: [ReorderInput]!, productId: ID!): ProductVariantReorder
-  productMediaDelete(id: ID!): ProductMediaDelete
-  productMediaBulkDelete(ids: [ID]!): ProductMediaBulkDelete
-  productMediaReorder(mediaIds: [ID]!, productId: ID!): ProductMediaReorder
-  productMediaUpdate(id: ID!, input: ProductMediaUpdateInput!): ProductMediaUpdate
-  
-  productReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, productId: ID!): ProductReorderAttributeValues
   digitalContentCreate(input: DigitalContentUploadInput!, variantId: ID!): DigitalContentCreate
   digitalContentDelete(variantId: ID!): DigitalContentDelete
   digitalContentUpdate(input: DigitalContentInput!, variantId: ID!): DigitalContentUpdate
   digitalContentUrlCreate(input: DigitalContentUrlCreateInput!): DigitalContentUrlCreate
-  productVariantCreate(input: ProductVariantCreateInput!): ProductVariantCreate
-  productVariantDelete(id: ID!): ProductVariantDelete
-  productVariantBulkCreate(product: ID!, variants: [ProductVariantBulkCreateInput]!): ProductVariantBulkCreate
-  productVariantBulkDelete(ids: [ID]!): ProductVariantBulkDelete
-  productVariantStocksCreate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksCreate
-  productVariantStocksDelete(variantId: ID!, warehouseIds: [ID!]): ProductVariantStocksDelete
-  productVariantStocksUpdate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksUpdate
-  productVariantUpdate(id: ID!, input: ProductVariantInput!): ProductVariantUpdate
-  productVariantSetDefault(productId: ID!, variantId: ID!): ProductVariantSetDefault
-  productVariantTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): ProductVariantTranslate
-  productVariantChannelListingUpdate(id: ID!, input: [ProductVariantChannelListingAddInput!]!): ProductVariantChannelListingUpdate
-  productVariantReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, variantId: ID!): ProductVariantReorderAttributeValues
   variantMediaAssign(mediaId: ID!, variantId: ID!): VariantMediaAssign
   variantMediaUnassign(mediaId: ID!, variantId: ID!): VariantMediaUnassign
-  paymentCapture(amount: PositiveDecimal, paymentId: ID!): PaymentCapture
-  paymentRefund(amount: PositiveDecimal, paymentId: ID!): PaymentRefund
-  paymentVoid(paymentId: ID!): PaymentVoid
-  paymentInitialize(channel: String, gateway: String!, paymentData: JSONString): PaymentInitialize
   pageCreate(input: PageCreateInput!): PageCreate
   pageDelete(id: ID!): PageDelete
   pageBulkDelete(ids: [ID]!): PageBulkDelete
@@ -2556,9 +2494,7 @@ type Mutation {
   permissionGroupDelete(id: ID!): PermissionGroupDelete
 }
 
-input NameTranslationInput {
-  name: String
-}
+
 
 enum NavigationType {
   MAIN
@@ -2882,89 +2818,11 @@ type PasswordChange {
   errors: [AccountError!]!
 }
 
-type Payment implements Node {
-  id: ID!
-  gateway: String!
-  isActive: Boolean!
-  created: DateTime!
-  modified: DateTime!
-  token: String!
-  checkout: Checkout
-  order: Order
-  paymentMethodType: String!
-  customerIpAddress: String
-  chargeStatus: PaymentChargeStatusEnum!
-  actions: [OrderAction]!
-  total: Money
-  capturedAmount: Money
-  transactions: [Transaction]
-  availableCaptureAmount: Money
-  availableRefundAmount: Money
-  creditCard: CreditCard
-}
-
-type PaymentCapture {
-  payment: Payment
-  # paymentErrors: [PaymentError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [PaymentError!]!
-}
-
-
-
-type PaymentCountableConnection {
-  pageInfo: PageInfo!
-  edges: [PaymentCountableEdge!]!
-  totalCount: Int
-}
-
-type PaymentCountableEdge {
-  node: Payment!
-  cursor: String!
-}
-
-type PaymentError {
-  field: String
-  message: String
-  code: PaymentErrorCode!
-}
-
-enum PaymentErrorCode {
-  BILLING_ADDRESS_NOT_SET
-  GRAPHQL_ERROR
-  INVALID
-  NOT_FOUND
-  REQUIRED
-  UNIQUE
-  PARTIAL_PAYMENT_NOT_ALLOWED
-  SHIPPING_ADDRESS_NOT_SET
-  INVALID_SHIPPING_METHOD
-  SHIPPING_METHOD_NOT_SET
-  PAYMENT_ERROR
-  NOT_SUPPORTED_GATEWAY
-  CHANNEL_INACTIVE
-}
-
-input PaymentFilterInput {
-  checkouts: [ID]
-}
-
 type PaymentGateway {
   name: String!
   id: ID!
   config: [GatewayConfigLine!]!
   currencies: [String]!
-}
-
-type PaymentInitialize {
-  initializedPayment: PaymentInitialized
-  # paymentErrors: [PaymentError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [PaymentError!]!
-}
-
-type PaymentInitialized {
-  gateway: String!
-  name: String!
-  data: JSONString
 }
 
 input PaymentInput {
@@ -2974,21 +2832,9 @@ input PaymentInput {
   returnUrl: String
 }
 
-type PaymentRefund {
-  payment: Payment
-  # paymentErrors: [PaymentError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [PaymentError!]!
-}
-
 type PaymentSource {
   gateway: String!
   creditCardInfo: CreditCard
-}
-
-type PaymentVoid {
-  payment: Payment
-  # paymentErrors: [PaymentError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [PaymentError!]!
 }
 
 type Permission {
@@ -3167,60 +3013,6 @@ scalar PositiveDecimal
 
 
 
-
-
-
-
-
-
-
-
-
-
-input ProductChannelListingAddInput {
-  channelId: ID!
-  isPublished: Boolean
-  publicationDate: Date
-  visibleInListings: Boolean
-  isAvailableForPurchase: Boolean
-  availableForPurchaseDate: Date
-  addVariants: [ID!]
-  removeVariants: [ID!]
-}
-
-type ProductChannelListingError {
-  field: String
-  message: String
-  code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-  channels: [ID!]
-  variants: [ID!]
-}
-
-type ProductChannelListingUpdate {
-  product: Product
-  # productChannelListingErrors: [ProductChannelListingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductChannelListingError!]!
-}
-
-input ProductChannelListingUpdateInput {
-  updateChannels: [ProductChannelListingAddInput!]
-  removeChannels: [ID!]
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 enum ProductFieldEnum {
   NAME
   DESCRIPTION
@@ -3248,61 +3040,6 @@ type ProductImage {
 
 
 
-type ProductMediaBulkDelete {
-  count: Int!
-  errors: [ProductError!]!
-}
-
-type ProductMediaCreate {
-  product: Product
-  media: ProductMedia
-  errors: [ProductError!]!
-}
-
-input ProductMediaCreateInput {
-  alt: String
-  image: Upload
-  product: ID!
-  mediaUrl: String
-}
-
-type ProductMediaDelete {
-  product: Product
-  media: ProductMedia
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
-
-type ProductMediaReorder {
-  product: Product
-  media: [ProductMedia!]
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
-
-
-
-type ProductMediaUpdate {
-  product: Product
-  media: ProductMedia
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
-
-input ProductMediaUpdateInput {
-  alt: String
-}
-
-
-
-
-
-type ProductReorderAttributeValues {
-  product: Product
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
-
 
 
 type ProductTranslatableContent implements Node {
@@ -3315,34 +3052,6 @@ type ProductTranslatableContent implements Node {
   product: Product
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 type ProductVariantBulkCreate {
   count: Int!
   productVariants: [ProductVariant!]!
@@ -3350,113 +3059,39 @@ type ProductVariantBulkCreate {
   errors: [BulkProductError!]!
 }
 
-input ProductVariantBulkCreateInput {
-  attributes: [BulkAttributeValueInput]!
-  sku: String!
-  trackInventory: Boolean
-  weight: WeightScalar
-  stocks: [StockInput!]
-  channelListings: [ProductVariantChannelListingAddInput!]
-}
 
-type ProductVariantBulkDelete {
-  count: Int!
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-input ProductVariantChannelListingAddInput {
-  channelId: ID!
-  price: PositiveDecimal!
-  costPrice: PositiveDecimal
-}
 
-type ProductVariantChannelListingUpdate {
-  variant: ProductVariant
-  # productChannelListingErrors: [ProductChannelListingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductChannelListingError!]!
-}
 
-type ProductVariantCountableConnection {
-  pageInfo: PageInfo!
-  edges: [ProductVariantCountableEdge!]!
-  totalCount: Int
-}
 
-type ProductVariantCountableEdge {
-  node: ProductVariant!
-  cursor: String!
-}
 
-type ProductVariantCreate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productVariant: ProductVariant
-}
 
-input ProductVariantCreateInput {
-  attributes: [AttributeValueInput]!
-  sku: String
-  trackInventory: Boolean
-  weight: WeightScalar
-  product: ID!
-  stocks: [StockInput!]
-}
 
-type ProductVariantDelete {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productVariant: ProductVariant
-}
 
-input ProductVariantFilterInput {
-  search: String
-  sku: [String]
-  metadata: [MetadataInput]
-}
 
-input ProductVariantInput {
-  attributes: [AttributeValueInput]
-  sku: String
-  trackInventory: Boolean
-  weight: WeightScalar
-}
 
-type ProductVariantReorder {
-  product: Product
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-type ProductVariantReorderAttributeValues {
-  productVariant: ProductVariant
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-type ProductVariantSetDefault {
-  product: Product
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-type ProductVariantStocksCreate {
-  productVariant: ProductVariant
-  # bulkStockErrors: [BulkStockError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [BulkStockError!]!
-}
 
-type ProductVariantStocksDelete {
-  productVariant: ProductVariant
-  # stockErrors: [StockError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [StockError!]!
-}
 
-type ProductVariantStocksUpdate {
-  productVariant: ProductVariant
-  # bulkStockErrors: [BulkStockError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [BulkStockError!]!
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 type ProductVariantTranslatableContent implements Node {
   id: ID!
@@ -3465,19 +3100,6 @@ type ProductVariantTranslatableContent implements Node {
   productVariant: ProductVariant
 }
 
-type ProductVariantTranslate {
-  errors: [TranslationError!]!
-  productVariant: ProductVariant
-}
-
-type ProductVariantUpdate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productVariant: ProductVariant
-}
-
-
-
 type Query {
   translations(kind: TranslatableKinds!, before: String, after: String, first: Int, last: Int): TranslatableItemConnection
   translation(id: ID!, kind: TranslatableKinds!): TranslatableItem
@@ -3485,14 +3107,7 @@ type Query {
   stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection
   digitalContent(id: ID!): DigitalContent
   digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
-  
-  
-  
-  productVariant(id: ID, sku: String, channel: String): ProductVariant
-  productVariants(ids: [ID], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   reportProductSales(period: ReportingPeriod!, channel: String!, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
-  payment(id: ID!): Payment
-  payments(filter: PaymentFilterInput, before: String, after: String, first: Int, last: Int): PaymentCountableConnection
   page(id: ID, slug: String): Page
   pages(sortBy: PageSortingInput, filter: PageFilterInput, before: String, after: String, first: Int, last: Int): PageCountableConnection
   pageType(id: ID!): PageType
@@ -3828,10 +3443,7 @@ input StockFilterInput {
   search: String
 }
 
-input StockInput {
-  warehouse: ID!
-  quantity: Int!
-}
+
 
 type TaxType {
   description: String

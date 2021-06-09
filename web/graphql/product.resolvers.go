@@ -36,6 +36,14 @@ func (r *mutationResolver) ProductTranslate(ctx context.Context, id string, inpu
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) ProductChannelListingUpdate(ctx context.Context, id string, input ProductChannelListingUpdateInput) (*ProductChannelListingUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) ProductReorderAttributeValues(ctx context.Context, attributeID string, moves []*ReorderInput, productID string) (*ProductReorderAttributeValues, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, channel *string) (*Product, error) {
 	panic(fmt.Errorf("not implemented"))
 }

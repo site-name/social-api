@@ -4,7 +4,7 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: web/graphql/generated.go
+  filename: web/graphql/GRAPHQL_GENERATED.go
   package: graphql
 
 # Uncomment to enable federation
@@ -14,7 +14,7 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: web/graphql/models_gen.go
+  filename: web/graphql/GRAPHQL_MODELS_GEN.go
   package: graphql
 
 # Where should the resolver implementations go?

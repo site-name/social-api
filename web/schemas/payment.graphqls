@@ -1,0 +1,106 @@
+extend type Mutation {
+  paymentCapture(amount: PositiveDecimal, paymentId: ID!): PaymentCapture
+  paymentRefund(amount: PositiveDecimal, paymentId: ID!): PaymentRefund
+  paymentVoid(paymentId: ID!): PaymentVoid
+  paymentInitialize(channel: String, gateway: String!, paymentData: JSONString): PaymentInitialize
+}
+
+extend type Query {
+  payment(id: ID!): Payment
+  payments(filter: PaymentFilterInput, before: String, after: String, first: Int, last: Int): PaymentCountableConnection
+}
+
+type Payment implements Node {
+  id: ID!
+  gateway: String!
+  isActive: Boolean!
+  created: DateTime!
+  modified: DateTime!
+  token: String!
+  checkout: Checkout
+  order: Order
+  paymentMethodType: String!
+  customerIpAddress: String
+  chargeStatus: PaymentChargeStatusEnum!
+  actions: [OrderAction]!
+  total: Money
+  capturedAmount: Money
+  transactions: [Transaction]
+  availableCaptureAmount: Money
+  availableRefundAmount: Money
+  creditCard: CreditCard
+}
+
+type PaymentCapture {
+  payment: Payment
+  errors: [PaymentError!]!
+}
+
+type PaymentRefund {
+  payment: Payment
+  errors: [PaymentError!]!
+}
+
+type PaymentVoid {
+  payment: Payment
+  errors: [PaymentError!]!
+}
+
+type PaymentInitialize {
+  initializedPayment: PaymentInitialized
+  errors: [PaymentError!]!
+}
+
+input PaymentFilterInput {
+  checkouts: [ID]
+}
+
+type PaymentCountableConnection {
+  pageInfo: PageInfo!
+  edges: [PaymentCountableEdge!]!
+  totalCount: Int
+}
+
+enum PaymentChargeStatusEnum {
+  NOT_CHARGED
+  PENDING
+  PARTIALLY_CHARGED
+  FULLY_CHARGED
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+  REFUSED
+  CANCELLED
+}
+
+type PaymentError {
+  field: String
+  message: String
+  code: PaymentErrorCode!
+}
+
+enum PaymentErrorCode {
+  BILLING_ADDRESS_NOT_SET
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  PARTIAL_PAYMENT_NOT_ALLOWED
+  SHIPPING_ADDRESS_NOT_SET
+  INVALID_SHIPPING_METHOD
+  SHIPPING_METHOD_NOT_SET
+  PAYMENT_ERROR
+  NOT_SUPPORTED_GATEWAY
+  CHANNEL_INACTIVE
+}
+
+type PaymentInitialized {
+  gateway: String!
+  name: String!
+  data: JSONString
+}
+
+type PaymentCountableEdge {
+  node: Payment!
+  cursor: String!
+}
