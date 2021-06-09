@@ -698,68 +698,21 @@ input CatalogueInput {
   collections: [ID]
 }
 
-type Category implements Node & ObjectWithMetadata {
-  id: ID!
-  seoTitle: String
-  seoDescription: String
-  name: String!
-  description: JSONString
-  slug: String!
-  parent: Category
-  level: Int!
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  # descriptionJson: JSONString @deprecated(reason: "Will be removed in Saleor 4.0. Use the `description` field instead.")
-  ancestors(before: String, after: String, first: Int, last: Int): CategoryCountableConnection
-  products(channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
-  children(before: String, after: String, first: Int, last: Int): CategoryCountableConnection
-  backgroundImage(size: Int): Image
-  translation(languageCode: LanguageCodeEnum!): CategoryTranslation
-}
 
-type CategoryBulkDelete {
-  count: Int!
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-type CategoryCountableConnection {
-  pageInfo: PageInfo!
-  edges: [CategoryCountableEdge!]!
-  totalCount: Int
-}
 
-type CategoryCountableEdge {
-  node: Category!
-  cursor: String!
-}
 
-type CategoryCreate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  category: Category
-}
 
-type CategoryDelete {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  category: Category
-}
 
-input CategoryFilterInput {
-  search: String
-  metadata: [MetadataInput]
-  ids: [ID]
-}
 
-input CategoryInput {
-  description: JSONString
-  name: String
-  slug: String
-  seo: SeoInput
-  backgroundImage: Upload
-  backgroundImageAlt: String
-}
+
+
+
+
+
+
+
+
 
 enum CategorySortField {
   NAME
@@ -767,11 +720,7 @@ enum CategorySortField {
   SUBCATEGORY_COUNT
 }
 
-input CategorySortingInput {
-  direction: OrderDirection!
-  channel: String
-  field: CategorySortField!
-}
+
 
 type CategoryTranslatableContent implements Node {
   id: ID!
@@ -784,27 +733,11 @@ type CategoryTranslatableContent implements Node {
   category: Category
 }
 
-type CategoryTranslate {
-  # translationErrors: [TranslationError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [TranslationError!]!
-  category: Category
-}
 
-type CategoryTranslation implements Node {
-  id: ID!
-  seoTitle: String
-  seoDescription: String
-  name: String
-  description: JSONString
-  language: LanguageDisplay!
-  # descriptionJson: JSONString @deprecated(reason: "Will be removed in Saleor 4.0. Use the `description` field instead.")
-}
 
-type CategoryUpdate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  category: Category
-}
+
+
+
 
 type Channel implements Node {
   id: ID!
@@ -1091,162 +1024,6 @@ type ChoiceValue {
   verbose: String
 }
 
-type Collection implements Node & ObjectWithMetadata {
-  id: ID!
-  seoTitle: String
-  seoDescription: String
-  name: String!
-  description: JSONString
-  slug: String!
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  # descriptionJson: JSONString @deprecated(reason: "Will be removed in Saleor 4.0. Use the `description` field instead.")
-  products(filter: ProductFilterInput, sortBy: ProductOrder, before: String, after: String, first: Int, last: Int): ProductCountableConnection
-  backgroundImage(size: Int): Image
-  translation(languageCode: LanguageCodeEnum!): CollectionTranslation
-  channelListings: [CollectionChannelListing!]
-}
-
-type CollectionAddProducts {
-  collection: Collection
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-}
-
-type CollectionBulkDelete {
-  count: Int!
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-}
-
-type CollectionChannelListing implements Node {
-  id: ID!
-  publicationDate: Date
-  isPublished: Boolean!
-  channel: Channel!
-}
-
-type CollectionChannelListingError {
-  field: String
-  message: String
-  code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-  channels: [ID!]
-}
-
-type CollectionChannelListingUpdate {
-  collection: Collection
-  # collectionChannelListingErrors: [CollectionChannelListingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionChannelListingError!]!
-}
-
-input CollectionChannelListingUpdateInput {
-  addChannels: [PublishableChannelListingInput!]
-  removeChannels: [ID!]
-}
-
-type CollectionCountableConnection {
-  pageInfo: PageInfo!
-  edges: [CollectionCountableEdge!]!
-  totalCount: Int
-}
-
-type CollectionCountableEdge {
-  node: Collection!
-  cursor: String!
-}
-
-type CollectionCreate {
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-  collection: Collection
-}
-
-input CollectionCreateInput {
-  isPublished: Boolean
-  name: String
-  slug: String
-  description: JSONString
-  backgroundImage: Upload
-  backgroundImageAlt: String
-  seo: SeoInput
-  publicationDate: Date
-  products: [ID]
-}
-
-type CollectionDelete {
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-  collection: Collection
-}
-
-type CollectionError {
-  field: String
-  message: String
-  products: [ID!]
-  code: CollectionErrorCode!
-}
-
-enum CollectionErrorCode {
-  DUPLICATED_INPUT_ITEM
-  GRAPHQL_ERROR
-  INVALID
-  NOT_FOUND
-  REQUIRED
-  UNIQUE
-  CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT
-}
-
-input CollectionFilterInput {
-  published: CollectionPublished
-  search: String
-  metadata: [MetadataInput]
-  ids: [ID]
-  channel: String
-}
-
-input CollectionInput {
-  isPublished: Boolean
-  name: String
-  slug: String
-  description: JSONString
-  backgroundImage: Upload
-  backgroundImageAlt: String
-  seo: SeoInput
-  publicationDate: Date
-}
-
-enum CollectionPublished {
-  PUBLISHED
-  HIDDEN
-}
-
-type CollectionRemoveProducts {
-  collection: Collection
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-}
-
-type CollectionReorderProducts {
-  collection: Collection
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
-}
-
-enum CollectionSortField {
-  NAME
-  AVAILABILITY
-  PRODUCT_COUNT
-  PUBLICATION_DATE
-}
-
-input CollectionSortingInput {
-  direction: OrderDirection!
-  channel: String
-  field: CollectionSortField!
-}
-
 type CollectionTranslatableContent implements Node {
   id: ID!
   seoTitle: String
@@ -1255,28 +1032,6 @@ type CollectionTranslatableContent implements Node {
   description: JSONString
   # descriptionJson: JSONString @deprecated(reason: "Will be removed in Saleor 4.0. Use the `description` field instead.")
   translation(languageCode: LanguageCodeEnum!): CollectionTranslation
-  collection: Collection
-}
-
-type CollectionTranslate {
-  # translationErrors: [TranslationError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [TranslationError!]!
-  collection: Collection
-}
-
-type CollectionTranslation implements Node {
-  id: ID!
-  seoTitle: String
-  seoDescription: String
-  name: String
-  description: JSONString
-  language: LanguageDisplay!
-  # descriptionJson: JSONString @deprecated(reason: "Will be removed in Saleor 4.0. Use the `description` field instead.")
-}
-
-type CollectionUpdate {
-  # collectionErrors: [CollectionError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [CollectionError!]!
   collection: Collection
 }
 
@@ -2623,45 +2378,10 @@ type MoneyRange {
   stop: Money
 }
 
-input MoveProductInput {
-  productId: ID!
-  sortOrder: Int
-}
+
 
 type Mutation {
-  shippingMethodChannelListingUpdate(id: ID!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate
-  shippingPriceCreate(input: ShippingPriceInput!): ShippingPriceCreate
-  shippingPriceDelete(id: ID!): ShippingPriceDelete
-  shippingPriceBulkDelete(ids: [ID]!): ShippingPriceBulkDelete
-  shippingPriceUpdate(id: ID!, input: ShippingPriceInput!): ShippingPriceUpdate
-  shippingPriceTranslate(id: ID!, input: ShippingPriceTranslationInput!, languageCode: LanguageCodeEnum!): ShippingPriceTranslate
-  shippingPriceExcludeProducts(id: ID!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts
-  shippingPriceRemoveProductFromExclude(id: ID!, products: [ID]!): ShippingPriceRemoveProductFromExclude
-  shippingZoneCreate(input: ShippingZoneCreateInput!): ShippingZoneCreate
-  shippingZoneDelete(id: ID!): ShippingZoneDelete
-  shippingZoneBulkDelete(ids: [ID]!): ShippingZoneBulkDelete
-  shippingZoneUpdate(id: ID!, input: ShippingZoneUpdateInput!): ShippingZoneUpdate
-  productAttributeAssign(operations: [ProductAttributeAssignInput]!, productTypeId: ID!): ProductAttributeAssign
-  productAttributeUnassign(attributeIds: [ID]!, productTypeId: ID!): ProductAttributeUnassign
-  categoryCreate(input: CategoryInput!, parent: ID): CategoryCreate
-  categoryDelete(id: ID!): CategoryDelete
-  categoryBulkDelete(ids: [ID]!): CategoryBulkDelete
-  categoryUpdate(id: ID!, input: CategoryInput!): CategoryUpdate
-  categoryTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CategoryTranslate
-  collectionAddProducts(collectionId: ID!, products: [ID]!): CollectionAddProducts
-  collectionCreate(input: CollectionCreateInput!): CollectionCreate
-  collectionDelete(id: ID!): CollectionDelete
-  collectionReorderProducts(collectionId: ID!, moves: [MoveProductInput]!): CollectionReorderProducts
-  collectionBulkDelete(ids: [ID]!): CollectionBulkDelete
-  collectionRemoveProducts(collectionId: ID!, products: [ID]!): CollectionRemoveProducts
-  collectionUpdate(id: ID!, input: CollectionInput!): CollectionUpdate
-  collectionTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CollectionTranslate
-  collectionChannelListingUpdate(id: ID!, input: CollectionChannelListingUpdateInput!): CollectionChannelListingUpdate
-  productCreate(input: ProductCreateInput!): ProductCreate
-  productDelete(id: ID!): ProductDelete
-  productBulkDelete(ids: [ID]!): ProductBulkDelete
-  productUpdate(id: ID!, input: ProductInput!): ProductUpdate
-  productTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
+  
   productChannelListingUpdate(id: ID!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
   productMediaCreate(input: ProductMediaCreateInput!): ProductMediaCreate
   productVariantReorder(moves: [ReorderInput]!, productId: ID!): ProductVariantReorder
@@ -2669,11 +2389,7 @@ type Mutation {
   productMediaBulkDelete(ids: [ID]!): ProductMediaBulkDelete
   productMediaReorder(mediaIds: [ID]!, productId: ID!): ProductMediaReorder
   productMediaUpdate(id: ID!, input: ProductMediaUpdateInput!): ProductMediaUpdate
-  productTypeCreate(input: ProductTypeInput!): ProductTypeCreate
-  productTypeDelete(id: ID!): ProductTypeDelete
-  productTypeBulkDelete(ids: [ID]!): ProductTypeBulkDelete
-  productTypeUpdate(id: ID!, input: ProductTypeInput!): ProductTypeUpdate
-  productTypeReorderAttributes(moves: [ReorderInput]!, productTypeId: ID!, type: ProductAttributeType!): ProductTypeReorderAttributes
+  
   productReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, productId: ID!): ProductReorderAttributeValues
   digitalContentCreate(input: DigitalContentUploadInput!, variantId: ID!): DigitalContentCreate
   digitalContentDelete(variantId: ID!): DigitalContentDelete
@@ -3443,45 +3159,21 @@ input PluginUpdateInput {
 
 scalar PositiveDecimal
 
-enum PostalCodeRuleInclusionTypeEnum {
-  INCLUDE
-  EXCLUDE
-}
-
-input PriceRangeInput {
-  gte: Float
-  lte: Float
-}
 
 
 
-type ProductAttributeAssign {
-  productType: ProductType
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-input ProductAttributeAssignInput {
-  id: ID!
-  type: ProductAttributeType!
-}
 
-enum ProductAttributeType {
-  PRODUCT
-  VARIANT
-}
 
-type ProductAttributeUnassign {
-  productType: ProductType
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-type ProductBulkDelete {
-  count: Int!
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
+
+
+
+
+
+
+
+
 
 
 
@@ -3517,71 +3209,17 @@ input ProductChannelListingUpdateInput {
   removeChannels: [ID!]
 }
 
-type ProductCountableConnection {
-  pageInfo: PageInfo!
-  edges: [ProductCountableEdge!]!
-  totalCount: Int
-}
 
-type ProductCountableEdge {
-  node: Product!
-  cursor: String!
-}
 
-type ProductCreate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  product: Product
-}
 
-input ProductCreateInput {
-  attributes: [AttributeValueInput!]
-  category: ID
-  chargeTaxes: Boolean
-  collections: [ID!]
-  description: JSONString
-  name: String
-  slug: String
-  taxCode: String
-  seo: SeoInput
-  weight: WeightScalar
-  rating: Float
-  productType: ID!
-}
 
-type ProductDelete {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  product: Product
-}
 
-type ProductError {
-  field: String
-  message: String
-  code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-}
 
-enum ProductErrorCode {
-  ALREADY_EXISTS
-  ATTRIBUTE_ALREADY_ASSIGNED
-  ATTRIBUTE_CANNOT_BE_ASSIGNED
-  ATTRIBUTE_VARIANTS_DISABLED
-  DUPLICATED_INPUT_ITEM
-  GRAPHQL_ERROR
-  INVALID
-  PRODUCT_WITHOUT_CATEGORY
-  NOT_PRODUCTS_IMAGE
-  NOT_PRODUCTS_VARIANT
-  NOT_FOUND
-  REQUIRED
-  UNIQUE
-  VARIANT_NO_DIGITAL_CONTENT
-  CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT
-  PRODUCT_NOT_ASSIGNED_TO_CHANNEL
-  UNSUPPORTED_MEDIA_PROVIDER
-}
+
+
+
+
+
 
 enum ProductFieldEnum {
   NAME
@@ -3597,22 +3235,7 @@ enum ProductFieldEnum {
   VARIANT_MEDIA
 }
 
-input ProductFilterInput {
-  isPublished: Boolean
-  collections: [ID]
-  categories: [ID]
-  hasCategory: Boolean
-  attributes: [AttributeInput]
-  stockAvailability: StockAvailability
-  stocks: ProductStockFilterInput
-  search: String
-  metadata: [MetadataInput]
-  price: PriceRangeInput
-  minimalPrice: PriceRangeInput
-  productTypes: [ID]
-  ids: [ID]
-  channel: String
-}
+
 
 type ProductImage {
   id: ID!
@@ -3621,28 +3244,9 @@ type ProductImage {
   url(size: Int): String!
 }
 
-input ProductInput {
-  attributes: [AttributeValueInput!]
-  category: ID
-  chargeTaxes: Boolean
-  collections: [ID!]
-  description: JSONString
-  name: String
-  slug: String
-  taxCode: String
-  seo: SeoInput
-  weight: WeightScalar
-  rating: Float
-}
 
-type ProductMedia implements Node {
-  id: ID!
-  sortOrder: Int
-  alt: String!
-  type: ProductMediaType!
-  oembedData: JSONString!
-  url(size: Int): String!
-}
+
+
 
 type ProductMediaBulkDelete {
   count: Int!
@@ -3676,10 +3280,7 @@ type ProductMediaReorder {
   errors: [ProductError!]!
 }
 
-enum ProductMediaType {
-  IMAGE
-  VIDEO
-}
+
 
 type ProductMediaUpdate {
   product: Product
@@ -3692,25 +3293,9 @@ input ProductMediaUpdateInput {
   alt: String
 }
 
-input ProductOrder {
-  direction: OrderDirection!
-  channel: String
-  attributeId: ID
-  field: ProductOrderField
-}
 
-enum ProductOrderField {
-  NAME
-  RANK
-  PRICE
-  MINIMAL_PRICE
-  DATE
-  TYPE
-  PUBLISHED
-  PUBLICATION_DATE
-  COLLECTION
-  RATING
-}
+
+
 
 type ProductReorderAttributeValues {
   product: Product
@@ -3718,10 +3303,7 @@ type ProductReorderAttributeValues {
   errors: [ProductError!]!
 }
 
-input ProductStockFilterInput {
-  warehouseIds: [ID!]
-  quantity: IntRangeInput
-}
+
 
 type ProductTranslatableContent implements Node {
   id: ID!
@@ -3733,100 +3315,31 @@ type ProductTranslatableContent implements Node {
   product: Product
 }
 
-type ProductTranslate {
-  errors: [TranslationError!]!
-  product: Product
-}
 
 
 
-type ProductTypeBulkDelete {
-  count: Int!
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-enum ProductTypeConfigurable {
-  CONFIGURABLE
-  SIMPLE
-}
 
-type ProductTypeCountableConnection {
-  pageInfo: PageInfo!
-  edges: [ProductTypeCountableEdge!]!
-  totalCount: Int
-}
 
-type ProductTypeCountableEdge {
-  node: ProductType!
-  cursor: String!
-}
 
-type ProductTypeCreate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productType: ProductType
-}
 
-type ProductTypeDelete {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productType: ProductType
-}
 
-enum ProductTypeEnum {
-  DIGITAL
-  SHIPPABLE
-}
 
-input ProductTypeFilterInput {
-  search: String
-  configurable: ProductTypeConfigurable
-  productType: ProductTypeEnum
-  metadata: [MetadataInput]
-  ids: [ID]
-}
 
-input ProductTypeInput {
-  name: String
-  slug: String
-  hasVariants: Boolean
-  productAttributes: [ID]
-  variantAttributes: [ID]
-  isShippingRequired: Boolean
-  isDigital: Boolean
-  weight: WeightScalar
-  taxCode: String
-}
 
-type ProductTypeReorderAttributes {
-  productType: ProductType
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-}
 
-enum ProductTypeSortField {
-  NAME
-  DIGITAL
-  SHIPPING_REQUIRED
-}
 
-input ProductTypeSortingInput {
-  direction: OrderDirection!
-  field: ProductTypeSortField!
-}
 
-type ProductTypeUpdate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  productType: ProductType
-}
 
-type ProductUpdate {
-  # productErrors: [ProductError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ProductError!]!
-  product: Product
-}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3963,29 +3476,18 @@ type ProductVariantUpdate {
   productVariant: ProductVariant
 }
 
-input PublishableChannelListingInput {
-  channelId: ID!
-  isPublished: Boolean
-  publicationDate: Date
-}
+
 
 type Query {
   translations(kind: TranslatableKinds!, before: String, after: String, first: Int, last: Int): TranslatableItemConnection
   translation(id: ID!, kind: TranslatableKinds!): TranslatableItem
   stock(id: ID!): Stock
   stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection
-  shippingZone(id: ID!, channel: String): ShippingZone
-  shippingZones(filter: ShippingZoneFilterInput, channel: String, before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection
   digitalContent(id: ID!): DigitalContent
   digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
-  categories(filter: CategoryFilterInput, sortBy: CategorySortingInput, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
-  category(id: ID, slug: String): Category
-  collection(id: ID, slug: String, channel: String): Collection
-  collections(filter: CollectionFilterInput, sortBy: CollectionSortingInput, channel: String, before: String, after: String, first: Int, last: Int): CollectionCountableConnection
-  product(id: ID, slug: String, channel: String): Product
-  products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
-  productType(id: ID!): ProductType
-  productTypes(filter: ProductTypeFilterInput, sortBy: ProductTypeSortingInput, before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection
+  
+  
+  
   productVariant(id: ID, sku: String, channel: String): ProductVariant
   productVariants(ids: [ID], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   reportProductSales(period: ReportingPeriod!, channel: String!, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
@@ -4043,10 +3545,7 @@ type RefreshToken {
   errors: [AccountError!]!
 }
 
-input ReorderInput {
-  id: ID!
-  sortOrder: Int
-}
+
 
 enum ReportingPeriod {
   TODAY
@@ -4210,10 +3709,7 @@ type SelectedAttribute {
   values: [AttributeValue]!
 }
 
-input SeoInput {
-  title: String
-  description: String
-}
+
 
 type SetPassword {
   token: String
@@ -4224,77 +3720,15 @@ type SetPassword {
   errors: [AccountError!]!
 }
 
-type ShippingError {
-  field: String
-  message: String
-  code: ShippingErrorCode!
-  warehouses: [ID!]
-  channels: [ID!]
-}
 
-enum ShippingErrorCode {
-  ALREADY_EXISTS
-  GRAPHQL_ERROR
-  INVALID
-  MAX_LESS_THAN_MIN
-  NOT_FOUND
-  REQUIRED
-  UNIQUE
-  DUPLICATED_INPUT_ITEM
-}
 
-type ShippingMethod implements Node & ObjectWithMetadata {
-  id: ID!
-  name: String!
-  description: JSONString
-  minimumOrderWeight: Weight
-  maximumOrderWeight: Weight
-  maximumDeliveryDays: Int
-  minimumDeliveryDays: Int
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  type: ShippingMethodTypeEnum
-  translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
-  channelListings: [ShippingMethodChannelListing!]
-  price: Money
-  maximumOrderPrice: Money
-  minimumOrderPrice: Money
-  postalCodeRules: [ShippingMethodPostalCodeRule]
-  excludedProducts(before: String, after: String, first: Int, last: Int): ProductCountableConnection
-}
 
-type ShippingMethodChannelListing implements Node {
-  id: ID!
-  channel: Channel!
-  minimumOrderPrice: Money
-  maximumOrderPrice: Money
-  price: Money
-}
 
-input ShippingMethodChannelListingAddInput {
-  channelId: ID!
-  price: PositiveDecimal
-  minimumOrderPrice: PositiveDecimal
-  maximumOrderPrice: PositiveDecimal
-}
 
-input ShippingMethodChannelListingInput {
-  addChannels: [ShippingMethodChannelListingAddInput!]
-  removeChannels: [ID!]
-}
 
-type ShippingMethodChannelListingUpdate {
-  shippingMethod: ShippingMethod
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingMethodPostalCodeRule implements Node {
-  start: String
-  end: String
-  inclusionType: PostalCodeRuleInclusionTypeEnum
-  id: ID!
-}
+
+
 
 type ShippingMethodTranslatableContent implements Node {
   id: ID!
@@ -4304,163 +3738,51 @@ type ShippingMethodTranslatableContent implements Node {
   shippingMethod: ShippingMethod
 }
 
-type ShippingMethodTranslation implements Node {
-  id: ID!
-  name: String
-  description: JSONString
-  language: LanguageDisplay!
-}
 
-enum ShippingMethodTypeEnum {
-  PRICE
-  WEIGHT
-}
 
-input ShippingPostalCodeRulesCreateInputRange {
-  start: String!
-  end: String
-}
 
-type ShippingPriceBulkDelete {
-  count: Int!
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingPriceCreate {
-  shippingZone: ShippingZone
-  shippingMethod: ShippingMethod
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingPriceDelete {
-  shippingMethod: ShippingMethod
-  shippingZone: ShippingZone
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingPriceExcludeProducts {
-  shippingMethod: ShippingMethod
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-input ShippingPriceExcludeProductsInput {
-  products: [ID]!
-}
 
-input ShippingPriceInput {
-  name: String
-  description: JSONString
-  minimumOrderWeight: WeightScalar
-  maximumOrderWeight: WeightScalar
-  maximumDeliveryDays: Int
-  minimumDeliveryDays: Int
-  type: ShippingMethodTypeEnum
-  shippingZone: ID
-  addPostalCodeRules: [ShippingPostalCodeRulesCreateInputRange!]
-  deletePostalCodeRules: [ID!]
-  inclusionType: PostalCodeRuleInclusionTypeEnum
-}
 
-type ShippingPriceRemoveProductFromExclude {
-  shippingMethod: ShippingMethod
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingPriceTranslate {
-  # translationErrors: [TranslationError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [TranslationError!]!
-  shippingMethod: ShippingMethod
-}
 
-input ShippingPriceTranslationInput {
-  name: String
-  description: JSONString
-}
 
-type ShippingPriceUpdate {
-  shippingZone: ShippingZone
-  shippingMethod: ShippingMethod
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingZone implements Node & ObjectWithMetadata {
-  id: ID!
-  name: String!
-  default: Boolean!
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  priceRange: MoneyRange
-  countries: [CountryDisplay]
-  shippingMethods: [ShippingMethod]
-  warehouses: [Warehouse!]!
-  channels: [Channel!]!
-  description: String
-}
 
-type ShippingZoneBulkDelete {
-  count: Int!
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-}
 
-type ShippingZoneCountableConnection {
-  pageInfo: PageInfo!
-  edges: [ShippingZoneCountableEdge!]!
-  totalCount: Int
-}
 
-type ShippingZoneCountableEdge {
-  node: ShippingZone!
-  cursor: String!
-}
 
-type ShippingZoneCreate {
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-  shippingZone: ShippingZone
-}
 
-input ShippingZoneCreateInput {
-  name: String
-  description: String
-  countries: [String]
-  default: Boolean
-  addWarehouses: [ID]
-  addChannels: [ID!]
-}
 
-type ShippingZoneDelete {
-  # shippingErrors: [ShippingError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
-  errors: [ShippingError!]!
-  shippingZone: ShippingZone
-}
 
-input ShippingZoneFilterInput {
-  search: String
-  channels: [ID]
-}
 
-type ShippingZoneUpdate {
-  errors: [ShippingError!]!
-  shippingZone: ShippingZone
-}
 
-input ShippingZoneUpdateInput {
-  name: String
-  description: String
-  countries: [String]
-  default: Boolean
-  addWarehouses: [ID]
-  addChannels: [ID!]
-  removeWarehouses: [ID]
-  removeChannels: [ID!]
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 type Stock implements Node {
   warehouse: Warehouse!
@@ -4592,12 +3914,7 @@ enum TranslationErrorCode {
   REQUIRED
 }
 
-input TranslationInput {
-  seoTitle: String
-  seoDescription: String
-  name: String
-  description: JSONString
-}
+
 
 scalar UUID
 

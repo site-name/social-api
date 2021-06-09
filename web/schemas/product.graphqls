@@ -1,3 +1,18 @@
+extend type Mutation {
+  productAttributeAssign(operations: [ProductAttributeAssignInput]!, productTypeId: ID!): ProductAttributeAssign
+  productAttributeUnassign(attributeIds: [ID]!, productTypeId: ID!): ProductAttributeUnassign
+  productCreate(input: ProductCreateInput!): ProductCreate
+  productDelete(id: ID!): ProductDelete
+  productBulkDelete(ids: [ID]!): ProductBulkDelete
+  productUpdate(id: ID!, input: ProductInput!): ProductUpdate
+  productTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
+}
+
+extend type Query {
+  product(id: ID, slug: String, channel: String): Product
+  products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
+}
+
 type Product implements Node & ObjectWithMetadata {
   id: ID!
   seoTitle: String
@@ -27,22 +42,6 @@ type Product implements Node & ObjectWithMetadata {
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
   availableForPurchase: Date
   isAvailableForPurchase: Boolean
-}
-
-type ProductType implements Node & ObjectWithMetadata {
-  id: ID!
-  name: String!
-  slug: String!
-  hasVariants: Boolean!
-  isShippingRequired: Boolean!
-  isDigital: Boolean!
-  weight: Weight
-  privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
-  taxType: TaxType
-  variantAttributes(variantSelection: VariantAttributeScope): [Attribute]
-  productAttributes: [Attribute]
-  availableAttributes(filter: AttributeFilterInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
 }
 
 enum VariantAttributeScope {
@@ -129,3 +128,188 @@ type ProductVariantTranslation implements Node {
   language: LanguageDisplay!
 }
 
+input ProductAttributeAssignInput {
+  id: ID!
+  type: ProductAttributeType!
+}
+
+type ProductAttributeAssign {
+  productType: ProductType
+  errors: [ProductError!]!
+}
+
+type ProductAttributeUnassign {
+  productType: ProductType
+  errors: [ProductError!]!
+}
+
+input ProductCreateInput {
+  attributes: [AttributeValueInput!]
+  category: ID
+  chargeTaxes: Boolean
+  collections: [ID!]
+  description: JSONString
+  name: String
+  slug: String
+  taxCode: String
+  seo: SeoInput
+  weight: WeightScalar
+  rating: Float
+  productType: ID!
+}
+
+type ProductCreate {
+  errors: [ProductError!]!
+  product: Product
+}
+
+type ProductDelete {
+  errors: [ProductError!]!
+  product: Product
+}
+
+type ProductBulkDelete {
+  count: Int!
+  errors: [ProductError!]!
+}
+
+input ProductInput {
+  attributes: [AttributeValueInput!]
+  category: ID
+  chargeTaxes: Boolean
+  collections: [ID!]
+  description: JSONString
+  name: String
+  slug: String
+  taxCode: String
+  seo: SeoInput
+  weight: WeightScalar
+  rating: Float
+}
+
+type ProductUpdate {
+  errors: [ProductError!]!
+  product: Product
+}
+
+input TranslationInput {
+  seoTitle: String
+  seoDescription: String
+  name: String
+  description: JSONString
+}
+
+type ProductTranslate {
+  errors: [TranslationError!]!
+  product: Product
+}
+
+input ProductFilterInput {
+  isPublished: Boolean
+  collections: [ID]
+  categories: [ID]
+  hasCategory: Boolean
+  attributes: [AttributeInput]
+  stockAvailability: StockAvailability
+  stocks: ProductStockFilterInput
+  search: String
+  metadata: [MetadataInput]
+  price: PriceRangeInput
+  minimalPrice: PriceRangeInput
+  productTypes: [ID]
+  ids: [ID]
+  channel: String
+}
+
+input ProductOrder {
+  direction: OrderDirection!
+  channel: String
+  attributeId: ID
+  field: ProductOrderField
+}
+
+type ProductCountableConnection {
+  pageInfo: PageInfo!
+  edges: [ProductCountableEdge!]!
+  totalCount: Int
+}
+
+type ProductMedia implements Node {
+  id: ID!
+  sortOrder: Int
+  alt: String!
+  type: ProductMediaType!
+  oembedData: JSONString!
+  url(size: Int): String!
+}
+
+enum ProductAttributeType {
+  PRODUCT
+  VARIANT
+}
+
+type ProductError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+}
+
+enum ProductErrorCode {
+  ALREADY_EXISTS
+  ATTRIBUTE_ALREADY_ASSIGNED
+  ATTRIBUTE_CANNOT_BE_ASSIGNED
+  ATTRIBUTE_VARIANTS_DISABLED
+  DUPLICATED_INPUT_ITEM
+  GRAPHQL_ERROR
+  INVALID
+  PRODUCT_WITHOUT_CATEGORY
+  NOT_PRODUCTS_IMAGE
+  NOT_PRODUCTS_VARIANT
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  VARIANT_NO_DIGITAL_CONTENT
+  CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT
+  PRODUCT_NOT_ASSIGNED_TO_CHANNEL
+  UNSUPPORTED_MEDIA_PROVIDER
+}
+
+input SeoInput {
+  title: String
+  description: String
+}
+
+input ProductStockFilterInput {
+  warehouseIds: [ID!]
+  quantity: IntRangeInput
+}
+
+input PriceRangeInput {
+  gte: Float
+  lte: Float
+}
+
+enum ProductOrderField {
+  NAME
+  RANK
+  PRICE
+  MINIMAL_PRICE
+  DATE
+  TYPE
+  PUBLISHED
+  PUBLICATION_DATE
+  COLLECTION
+  RATING
+}
+
+type ProductCountableEdge {
+  node: Product!
+  cursor: String!
+}
+
+enum ProductMediaType {
+  IMAGE
+  VIDEO
+}

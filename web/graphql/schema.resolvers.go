@@ -11,138 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) ShippingMethodChannelListingUpdate(ctx context.Context, id string, input ShippingMethodChannelListingInput) (*ShippingMethodChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceCreate(ctx context.Context, input ShippingPriceInput) (*ShippingPriceCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceDelete(ctx context.Context, id string) (*ShippingPriceDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceBulkDelete(ctx context.Context, ids []*string) (*ShippingPriceBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceUpdate(ctx context.Context, id string, input ShippingPriceInput) (*ShippingPriceUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceTranslate(ctx context.Context, id string, input ShippingPriceTranslationInput, languageCode LanguageCodeEnum) (*ShippingPriceTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceExcludeProducts(ctx context.Context, id string, input ShippingPriceExcludeProductsInput) (*ShippingPriceExcludeProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, id string, products []*string) (*ShippingPriceRemoveProductFromExclude, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingZoneCreate(ctx context.Context, input ShippingZoneCreateInput) (*ShippingZoneCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingZoneDelete(ctx context.Context, id string) (*ShippingZoneDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingZoneBulkDelete(ctx context.Context, ids []*string) (*ShippingZoneBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShippingZoneUpdate(ctx context.Context, id string, input ShippingZoneUpdateInput) (*ShippingZoneUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductAttributeAssign(ctx context.Context, operations []*ProductAttributeAssignInput, productTypeID string) (*ProductAttributeAssign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductAttributeUnassign(ctx context.Context, attributeIds []*string, productTypeID string) (*ProductAttributeUnassign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CategoryCreate(ctx context.Context, input CategoryInput, parent *string) (*CategoryCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CategoryDelete(ctx context.Context, id string) (*CategoryDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CategoryBulkDelete(ctx context.Context, ids []*string) (*CategoryBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CategoryUpdate(ctx context.Context, id string, input CategoryInput) (*CategoryUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CategoryTranslate(ctx context.Context, id string, input TranslationInput, languageCode LanguageCodeEnum) (*CategoryTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionAddProducts(ctx context.Context, collectionID string, products []*string) (*CollectionAddProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionCreate(ctx context.Context, input CollectionCreateInput) (*CollectionCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionDelete(ctx context.Context, id string) (*CollectionDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionReorderProducts(ctx context.Context, collectionID string, moves []*MoveProductInput) (*CollectionReorderProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionBulkDelete(ctx context.Context, ids []*string) (*CollectionBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionRemoveProducts(ctx context.Context, collectionID string, products []*string) (*CollectionRemoveProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionUpdate(ctx context.Context, id string, input CollectionInput) (*CollectionUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionTranslate(ctx context.Context, id string, input TranslationInput, languageCode LanguageCodeEnum) (*CollectionTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CollectionChannelListingUpdate(ctx context.Context, id string, input CollectionChannelListingUpdateInput) (*CollectionChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductCreate(ctx context.Context, input ProductCreateInput) (*ProductCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductDelete(ctx context.Context, id string) (*ProductDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductBulkDelete(ctx context.Context, ids []*string) (*ProductBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductUpdate(ctx context.Context, id string, input ProductInput) (*ProductUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTranslate(ctx context.Context, id string, input TranslationInput, languageCode LanguageCodeEnum) (*ProductTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) ProductChannelListingUpdate(ctx context.Context, id string, input ProductChannelListingUpdateInput) (*ProductChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -168,26 +36,6 @@ func (r *mutationResolver) ProductMediaReorder(ctx context.Context, mediaIds []*
 }
 
 func (r *mutationResolver) ProductMediaUpdate(ctx context.Context, id string, input ProductMediaUpdateInput) (*ProductMediaUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTypeCreate(ctx context.Context, input ProductTypeInput) (*ProductTypeCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTypeDelete(ctx context.Context, id string) (*ProductTypeDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTypeBulkDelete(ctx context.Context, ids []*string) (*ProductTypeBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTypeUpdate(ctx context.Context, id string, input ProductTypeInput) (*ProductTypeUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ProductTypeReorderAttributes(ctx context.Context, moves []*ReorderInput, productTypeID string, typeArg ProductAttributeType) (*ProductTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -863,51 +711,11 @@ func (r *queryResolver) Stocks(ctx context.Context, filter *StockFilterInput, be
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ShippingZone(ctx context.Context, id string, channel *string) (*ShippingZone, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ShippingZones(ctx context.Context, filter *ShippingZoneFilterInput, channel *string, before *string, after *string, first *int, last *int) (*ShippingZoneCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *queryResolver) DigitalContent(ctx context.Context, id string) (*DigitalContent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) DigitalContents(ctx context.Context, before *string, after *string, first *int, last *int) (*DigitalContentCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Categories(ctx context.Context, filter *CategoryFilterInput, sortBy *CategorySortingInput, level *int, before *string, after *string, first *int, last *int) (*CategoryCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Category(ctx context.Context, id *string, slug *string) (*Category, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Collection(ctx context.Context, id *string, slug *string, channel *string) (*Collection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Collections(ctx context.Context, filter *CollectionFilterInput, sortBy *CollectionSortingInput, channel *string, before *string, after *string, first *int, last *int) (*CollectionCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, channel *string) (*Product, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Products(ctx context.Context, filter *ProductFilterInput, sortBy *ProductOrder, channel *string, before *string, after *string, first *int, last *int) (*ProductCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ProductType(ctx context.Context, id string) (*ProductType, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) ProductTypes(ctx context.Context, filter *ProductTypeFilterInput, sortBy *ProductTypeSortingInput, before *string, after *string, first *int, last *int) (*ProductTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
