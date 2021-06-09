@@ -11,74 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) WebhookCreate(ctx context.Context, input WebhookCreateInput) (*WebhookCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) WebhookDelete(ctx context.Context, id string) (*WebhookDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) WebhookUpdate(ctx context.Context, id string, input WebhookUpdateInput) (*WebhookUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CreateWarehouse(ctx context.Context, input WarehouseCreateInput) (*WarehouseCreate, error) {
-	return createWarehouse(ctx, input) // done
-}
-
-func (r *mutationResolver) UpdateWarehouse(ctx context.Context, id string, input WarehouseUpdateInput) (*WarehouseUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) DeleteWarehouse(ctx context.Context, id string) (*WarehouseDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) AssignWarehouseShippingZone(ctx context.Context, id string, shippingZoneIds []string) (*WarehouseShippingZoneAssign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UnassignWarehouseShippingZone(ctx context.Context, id string, shippingZoneIds []string) (*WarehouseShippingZoneUnassign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffNotificationRecipientCreate(ctx context.Context, input StaffNotificationRecipientInput) (*StaffNotificationRecipientCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffNotificationRecipientUpdate(ctx context.Context, id string, input StaffNotificationRecipientInput) (*StaffNotificationRecipientUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffNotificationRecipientDelete(ctx context.Context, id string) (*StaffNotificationRecipientDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShopDomainUpdate(ctx context.Context, input *SiteDomainInput) (*ShopDomainUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShopSettingsUpdate(ctx context.Context, input ShopSettingsInput) (*ShopSettingsUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShopFetchTaxRates(ctx context.Context) (*ShopFetchTaxRates, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShopSettingsTranslate(ctx context.Context, input ShopSettingsTranslationInput, languageCode LanguageCodeEnum) (*ShopSettingsTranslate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) ShopAddressUpdate(ctx context.Context, input *AddressInput) (*ShopAddressUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderSettingsUpdate(ctx context.Context, input OrderSettingsUpdateInput) (*OrderSettingsUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) ShippingMethodChannelListingUpdate(ctx context.Context, id string, input ShippingMethodChannelListingInput) (*ShippingMethodChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -428,98 +360,6 @@ func (r *mutationResolver) DraftOrderLinesBulkDelete(ctx context.Context, ids []
 }
 
 func (r *mutationResolver) DraftOrderUpdate(ctx context.Context, id string, input DraftOrderInput) (*DraftOrderUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderAddNote(ctx context.Context, order string, input OrderAddNoteInput) (*OrderAddNote, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderCancel(ctx context.Context, id string) (*OrderCancel, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderCapture(ctx context.Context, amount string, id string) (*OrderCapture, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderConfirm(ctx context.Context, id string) (*OrderConfirm, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderFulfill(ctx context.Context, input OrderFulfillInput, order *string) (*OrderFulfill, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderFulfillmentCancel(ctx context.Context, id string, input FulfillmentCancelInput) (*FulfillmentCancel, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderFulfillmentUpdateTracking(ctx context.Context, id string, input FulfillmentUpdateTrackingInput) (*FulfillmentUpdateTracking, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderFulfillmentRefundProducts(ctx context.Context, input OrderRefundProductsInput, order string) (*FulfillmentRefundProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderFulfillmentReturnProducts(ctx context.Context, input OrderReturnProductsInput, order string) (*FulfillmentReturnProducts, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderLinesCreate(ctx context.Context, id string, input []*OrderLineCreateInput) (*OrderLinesCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderLineDelete(ctx context.Context, id string) (*OrderLineDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderLineUpdate(ctx context.Context, id string, input OrderLineInput) (*OrderLineUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderDiscountAdd(ctx context.Context, input OrderDiscountCommonInput, orderID string) (*OrderDiscountAdd, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderDiscountUpdate(ctx context.Context, discountID string, input OrderDiscountCommonInput) (*OrderDiscountUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderDiscountDelete(ctx context.Context, discountID string) (*OrderDiscountDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderLineDiscountUpdate(ctx context.Context, input OrderDiscountCommonInput, orderLineID string) (*OrderLineDiscountUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderLineDiscountRemove(ctx context.Context, orderLineID string) (*OrderLineDiscountRemove, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderMarkAsPaid(ctx context.Context, id string, transactionReference *string) (*OrderMarkAsPaid, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderRefund(ctx context.Context, amount string, id string) (*OrderRefund, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderUpdate(ctx context.Context, id string, input OrderUpdateInput) (*OrderUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderUpdateShipping(ctx context.Context, order string, input *OrderUpdateShippingInput) (*OrderUpdateShipping, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderVoid(ctx context.Context, id string) (*OrderVoid, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) OrderBulkCancel(ctx context.Context, ids []*string) (*OrderBulkCancel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -995,34 +835,6 @@ func (r *mutationResolver) CustomerBulkDelete(ctx context.Context, ids []*string
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) StaffCreate(ctx context.Context, input StaffCreateInput) (*StaffCreate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffUpdate(ctx context.Context, id string, input StaffUpdateInput) (*StaffUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffDelete(ctx context.Context, id string) (*StaffDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) StaffBulkDelete(ctx context.Context, ids []*string) (*StaffBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UserAvatarUpdate(ctx context.Context, image graphql.Upload) (*UserAvatarUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UserAvatarDelete(ctx context.Context) (*UserAvatarDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string, isActive bool) (*UserBulkSetActive, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) PermissionGroupCreate(ctx context.Context, input PermissionGroupCreateInput) (*PermissionGroupCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -1032,26 +844,6 @@ func (r *mutationResolver) PermissionGroupUpdate(ctx context.Context, id string,
 }
 
 func (r *mutationResolver) PermissionGroupDelete(ctx context.Context, id string) (*PermissionGroupDelete, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Webhook(ctx context.Context, id string) (*Webhook, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) WebhookEvents(ctx context.Context) ([]*WebhookEvent, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) WebhookSamplePayload(ctx context.Context, eventType WebhookSampleEventTypeEnum) (*string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Warehouse(ctx context.Context, id string) (*Warehouse, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Warehouses(ctx context.Context, filter *WarehouseFilterInput, sortBy *WarehouseSortingInput, before *string, after *string, first *int, last *int) (*WarehouseCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1068,14 +860,6 @@ func (r *queryResolver) Stock(ctx context.Context, id string) (*Stock, error) {
 }
 
 func (r *queryResolver) Stocks(ctx context.Context, filter *StockFilterInput, before *string, after *string, first *int, last *int) (*StockCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Shop(ctx context.Context) (*Shop, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) OrderSettings(ctx context.Context) (*OrderSettings, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1164,26 +948,6 @@ func (r *queryResolver) PageTypes(ctx context.Context, sortBy *PageTypeSortingIn
 }
 
 func (r *queryResolver) HomepageEvents(ctx context.Context, before *string, after *string, first *int, last *int) (*OrderEventCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Order(ctx context.Context, id string) (*Order, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Orders(ctx context.Context, sortBy *OrderSortingInput, filter *OrderFilterInput, channel *string, before *string, after *string, first *int, last *int) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) DraftOrders(ctx context.Context, sortBy *OrderSortingInput, filter *OrderDraftFilterInput, before *string, after *string, first *int, last *int) (*OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) OrdersTotal(ctx context.Context, period *ReportingPeriod, channel *string) (*TaxedMoney, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -1312,10 +1076,6 @@ func (r *queryResolver) PermissionGroup(ctx context.Context, id string) (*Group,
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*User, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) StaffUsers(ctx context.Context, filter *StaffUserInput, sortBy *UserSortingInput, before *string, after *string, first *int, last *int) (*UserCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -18,7 +18,9 @@ const (
 // InitGraphql registers graphql playground and graphql api endpoint routes
 func (web *Web) InitGraphql() {
 	graphqlServer := handler.NewDefaultServer(graphql.NewExecutableSchema(graphql.Config{
-		Resolvers: &graphql.Resolver{},
+		Resolvers: &graphql.Resolver{
+			AppIface: web.app,
+		},
 	}))
 	playgroundHandler := playground.Handler("Sitename", graphqlApi)
 

@@ -1,0 +1,34 @@
+type LoginResponse {
+  error: LoginError
+  user: User 
+}
+
+input LoginInput {
+  id: String
+  loginId: String
+  password: String!
+  mfaToken: String
+  deviceId: String
+  ldapOnly: Boolean!
+}
+
+type LoginError {
+  field: String
+  message: String
+  code: LoginErrorCode!
+}
+
+enum LoginErrorCode {
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+}
+
+extend type Mutation {
+  login(input: LoginInput!): LoginResponse!
+  userAvatarUpdate(image: Upload!): UserAvatarUpdate
+  userAvatarDelete: UserAvatarDelete
+  userBulkSetActive(ids: [ID]!, isActive: Boolean!): UserBulkSetActive
+}

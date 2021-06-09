@@ -1,0 +1,131 @@
+type Product implements Node & ObjectWithMetadata {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String!
+  description: JSONString
+  productType: ProductType!
+  slug: String!
+  category: Category
+  updatedAt: DateTime
+  chargeTaxes: Boolean!
+  weight: Weight
+  defaultVariant: ProductVariant
+  rating: Float
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  thumbnail(size: Int): Image
+  pricing(address: AddressInput): ProductPricingInfo
+  isAvailable(address: AddressInput): Boolean
+  taxType: TaxType
+  attributes: [SelectedAttribute!]!
+  channelListings: [ProductChannelListing!]
+  mediaById(id: ID): ProductMedia!
+  variants: [ProductVariant]
+  media: [ProductMedia!]
+  collections: [Collection]
+  translation(languageCode: LanguageCodeEnum!): ProductTranslation
+  availableForPurchase: Date
+  isAvailableForPurchase: Boolean
+}
+
+type ProductType implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  slug: String!
+  hasVariants: Boolean!
+  isShippingRequired: Boolean!
+  isDigital: Boolean!
+  weight: Weight
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  taxType: TaxType
+  variantAttributes(variantSelection: VariantAttributeScope): [Attribute]
+  productAttributes: [Attribute]
+  availableAttributes(filter: AttributeFilterInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
+}
+
+enum VariantAttributeScope {
+  ALL
+  VARIANT_SELECTION
+  NOT_VARIANT_SELECTION
+}
+
+type ProductVariant implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  sku: String!
+  product: Product!
+  trackInventory: Boolean!
+  weight: Weight
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  channelListings: [ProductVariantChannelListing!]
+  pricing(address: AddressInput): VariantPricingInfo
+  attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
+  costPrice: Money
+  margin: Int
+  quantityOrdered: Int
+  revenue(period: ReportingPeriod): TaxedMoney
+  media: [ProductMedia!]
+  translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
+  digitalContent: DigitalContent
+  stocks(address: AddressInput, countryCode: CountryCode): [Stock]
+  quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
+}
+
+type ProductPricingInfo {
+  onSale: Boolean
+  discount: TaxedMoney
+  discountLocalCurrency: TaxedMoney
+  priceRange: TaxedMoneyRange
+  priceRangeUndiscounted: TaxedMoneyRange
+  priceRangeLocalCurrency: TaxedMoneyRange
+}
+
+type ProductChannelListing implements Node {
+  id: ID!
+  publicationDate: Date
+  isPublished: Boolean!
+  channel: Channel!
+  visibleInListings: Boolean!
+  availableForPurchase: Date
+  discountedPrice: Money
+  purchaseCost: MoneyRange
+  margin: Margin
+  isAvailableForPurchase: Boolean
+  pricing(address: AddressInput): ProductPricingInfo
+}
+
+type ProductTranslation implements Node {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String
+  description: JSONString
+  language: LanguageDisplay!
+}
+
+type ProductVariantChannelListing implements Node {
+  id: ID!
+  channel: Channel!
+  price: Money
+  costPrice: Money
+  margin: Int
+}
+
+type VariantPricingInfo {
+  onSale: Boolean
+  discount: TaxedMoney
+  discountLocalCurrency: TaxedMoney
+  price: TaxedMoney
+  priceUndiscounted: TaxedMoney
+  priceLocalCurrency: TaxedMoney
+}
+
+type ProductVariantTranslation implements Node {
+  id: ID!
+  name: String!
+  language: LanguageDisplay!
+}
+

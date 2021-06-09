@@ -1,0 +1,489 @@
+extend type Mutation {
+  orderSettingsUpdate(input: OrderSettingsUpdateInput!): OrderSettingsUpdate
+  orderAddNote(order: ID!, input: OrderAddNoteInput!): OrderAddNote
+  orderCancel(id: ID!): OrderCancel
+  orderCapture(amount: PositiveDecimal!, id: ID!): OrderCapture
+  orderConfirm(id: ID!): OrderConfirm
+  orderFulfill(input: OrderFulfillInput!, order: ID): OrderFulfill
+  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput!): FulfillmentCancel
+  orderFulfillmentUpdateTracking(id: ID!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
+  orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: ID!): FulfillmentRefundProducts
+  orderFulfillmentReturnProducts(input: OrderReturnProductsInput!, order: ID!): FulfillmentReturnProducts
+  orderMarkAsPaid(id: ID!, transactionReference: String): OrderMarkAsPaid
+  orderRefund(amount: PositiveDecimal!, id: ID!): OrderRefund
+  orderUpdate(id: ID!, input: OrderUpdateInput!): OrderUpdate
+  orderUpdateShipping(order: ID!, input: OrderUpdateShippingInput): OrderUpdateShipping
+  orderVoid(id: ID!): OrderVoid
+  orderBulkCancel(ids: [ID]!): OrderBulkCancel
+}
+
+extend type Query {
+  orderSettings: OrderSettings
+  order(id: ID!): Order
+  orders(sortBy: OrderSortingInput, filter: OrderFilterInput, channel: String, before: String, after: String, first: Int, last: Int): OrderCountableConnection
+  draftOrders(sortBy: OrderSortingInput, filter: OrderDraftFilterInput, before: String, after: String, first: Int, last: Int): OrderCountableConnection
+  ordersTotal(period: ReportingPeriod, channel: String): TaxedMoney
+  orderByToken(token: UUID!): Order
+}
+
+type Order implements Node & ObjectWithMetadata {
+  id: ID!
+  created: DateTime!
+  status: OrderStatus!
+  user: User
+  trackingClientId: String!
+  billingAddress: Address
+  shippingAddress: Address
+  shippingMethod: ShippingMethod
+  shippingMethodName: String
+  channel: Channel!
+  shippingPrice: TaxedMoney!
+  shippingTaxRate: Float!
+  token: String!
+  voucher: Voucher
+  giftCards: [GiftCard]
+  displayGrossPrices: Boolean!
+  customerNote: String!
+  weight: Weight
+  redirectUrl: String
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  fulfillments: [Fulfillment]!
+  lines: [OrderLine]!
+  actions: [OrderAction]!
+  availableShippingMethods: [ShippingMethod]
+  invoices: [Invoice]
+  number: String
+  original: ID
+  origin: OrderOriginEnum!
+  isPaid: Boolean!
+  paymentStatus: PaymentChargeStatusEnum!
+  paymentStatusDisplay: String!
+  payments: [Payment]
+  total: TaxedMoney!
+  undiscountedTotal: TaxedMoney!
+  subtotal: TaxedMoney!
+  statusDisplay: String
+  canFinalize: Boolean!
+  totalAuthorized: Money!
+  totalCaptured: Money!
+  events: [OrderEvent]
+  totalBalance: Money!
+  userEmail: String
+  isShippingRequired: Boolean!
+  languageCodeEnum: LanguageCodeEnum!
+  discounts: [OrderDiscount!]
+}
+
+input OrderSettingsUpdateInput {
+  automaticallyConfirmAllNewOrders: Boolean!
+}
+
+type OrderSettingsUpdate {
+  orderSettings: OrderSettings
+  errors: [OrderSettingsError!]!
+}
+
+input OrderAddNoteInput {
+  message: String!
+}
+
+type OrderAddNote {
+  order: Order
+  event: OrderEvent
+  errors: [OrderError!]!
+}
+
+type OrderCancel {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderCapture {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderConfirm {
+  order: Order
+  errors: [OrderError!]!
+}
+
+input OrderFulfillInput {
+  lines: [OrderFulfillLineInput!]!
+  notifyCustomer: Boolean
+}
+
+type OrderFulfill {
+  fulfillments: [Fulfillment]
+  order: Order
+  errors: [OrderError!]!
+}
+
+input FulfillmentCancelInput {
+  warehouseId: ID!
+}
+
+type FulfillmentCancel {
+  fulfillment: Fulfillment
+  order: Order
+  errors: [OrderError!]!
+}
+
+input FulfillmentUpdateTrackingInput {
+  trackingNumber: String
+  notifyCustomer: Boolean = false
+}
+
+type FulfillmentUpdateTracking {
+  fulfillment: Fulfillment
+  order: Order
+  errors: [OrderError!]!
+}
+
+input OrderRefundProductsInput {
+  orderLines: [OrderRefundLineInput!]
+  fulfillmentLines: [OrderRefundFulfillmentLineInput!]
+  amountToRefund: PositiveDecimal
+  includeShippingCosts: Boolean = false
+}
+
+type FulfillmentRefundProducts {
+  fulfillment: Fulfillment
+  order: Order
+  errors: [OrderError!]!
+}
+
+input OrderReturnProductsInput {
+  orderLines: [OrderReturnLineInput!]
+  fulfillmentLines: [OrderReturnFulfillmentLineInput!]
+  amountToRefund: PositiveDecimal
+  includeShippingCosts: Boolean = false
+  refund: Boolean = false
+}
+
+type FulfillmentReturnProducts {
+  returnFulfillment: Fulfillment
+  replaceFulfillment: Fulfillment
+  order: Order
+  replaceOrder: Order
+  errors: [OrderError!]!
+}
+
+type OrderMarkAsPaid {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderRefund {
+  order: Order
+  errors: [OrderError!]!
+}
+
+input OrderUpdateShippingInput {
+  shippingMethod: ID
+}
+
+type OrderUpdateShipping {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderVoid {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderBulkCancel {
+  count: Int!
+  errors: [OrderError!]!
+}
+
+type OrderSettings {
+  automaticallyConfirmAllNewOrders: Boolean!
+}
+
+input OrderSortingInput {
+  direction: OrderDirection!
+  field: OrderSortField!
+}
+
+input OrderFilterInput {
+  paymentStatus: [PaymentChargeStatusEnum]
+  status: [OrderStatusFilter]
+  customer: String
+  created: DateRangeInput
+  search: String
+  metadata: [MetadataInput]
+  channels: [ID]
+}
+
+type OrderCountableConnection {
+  pageInfo: PageInfo!
+  edges: [OrderCountableEdge!]!
+  totalCount: Int
+}
+
+input OrderDraftFilterInput {
+  customer: String
+  created: DateRangeInput
+  search: String
+  metadata: [MetadataInput]
+  channels: [ID]
+}
+
+enum OrderStatus {
+  DRAFT
+  UNCONFIRMED
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  PARTIALLY_RETURNED
+  RETURNED
+  FULFILLED
+  CANCELED
+}
+
+type Fulfillment implements Node & ObjectWithMetadata {
+  id: ID!
+  fulfillmentOrder: Int!
+  status: FulfillmentStatus!
+  trackingNumber: String!
+  created: DateTime!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  lines: [FulfillmentLine]
+  statusDisplay: String
+  warehouse: Warehouse
+}
+
+enum OrderAction {
+  CAPTURE
+  MARK_AS_PAID
+  REFUND
+  VOID
+}
+
+enum OrderOriginEnum {
+  CHECKOUT
+  DRAFT
+  REISSUE
+}
+
+type OrderSettingsError {
+  field: String
+  message: String
+  code: OrderSettingsErrorCode!
+}
+
+enum OrderSettingsErrorCode {
+  INVALID
+}
+
+type OrderEvent implements Node {
+  id: ID!
+  date: DateTime
+  type: OrderEventsEnum
+  user: User
+  message: String
+  email: String
+  emailType: OrderEventsEmailsEnum
+  amount: Float
+  paymentId: String
+  paymentGateway: String
+  quantity: Int
+  composedId: String
+  orderNumber: String
+  invoiceNumber: String
+  oversoldItems: [String]
+  lines: [OrderEventOrderLineObject]
+  fulfilledItems: [FulfillmentLine]
+  warehouse: Warehouse
+  transactionReference: String
+  shippingCostsIncluded: Boolean
+  relatedOrder: Order
+  discount: OrderEventDiscountObject
+}
+
+type OrderError {
+  field: String
+  message: String
+  code: OrderErrorCode!
+  warehouse: ID
+  orderLine: ID
+  variants: [ID!]
+  addressType: AddressTypeEnum
+}
+
+enum OrderErrorCode {
+  BILLING_ADDRESS_NOT_SET
+  CANNOT_CANCEL_FULFILLMENT
+  CANNOT_CANCEL_ORDER
+  CANNOT_DELETE
+  CANNOT_DISCOUNT
+  CANNOT_REFUND
+  CAPTURE_INACTIVE_PAYMENT
+  NOT_EDITABLE
+  FULFILL_ORDER_LINE
+  GRAPHQL_ERROR
+  INVALID
+  PRODUCT_NOT_PUBLISHED
+  PRODUCT_UNAVAILABLE_FOR_PURCHASE
+  NOT_FOUND
+  ORDER_NO_SHIPPING_ADDRESS
+  PAYMENT_ERROR
+  PAYMENT_MISSING
+  REQUIRED
+  SHIPPING_METHOD_NOT_APPLICABLE
+  SHIPPING_METHOD_REQUIRED
+  TAX_ERROR
+  UNIQUE
+  VOID_INACTIVE_PAYMENT
+  ZERO_QUANTITY
+  INVALID_QUANTITY
+  INSUFFICIENT_STOCK
+  DUPLICATED_INPUT_ITEM
+  NOT_AVAILABLE_IN_CHANNEL
+  CHANNEL_INACTIVE
+}
+
+input OrderFulfillLineInput {
+  orderLineId: ID
+  stocks: [OrderFulfillStockInput!]!
+}
+
+input OrderFulfillStockInput {
+  quantity: Int!
+  warehouse: ID!
+}
+
+input OrderRefundLineInput {
+  orderLineId: ID!
+  quantity: Int!
+}
+
+input OrderRefundFulfillmentLineInput {
+  fulfillmentLineId: ID!
+  quantity: Int!
+}
+
+input OrderReturnLineInput {
+  orderLineId: ID!
+  quantity: Int!
+  replace: Boolean = false
+}
+
+input OrderReturnFulfillmentLineInput {
+  fulfillmentLineId: ID!
+  quantity: Int!
+  replace: Boolean = false
+}
+
+enum OrderDirection {
+  ASC
+  DESC
+}
+
+enum OrderSortField {
+  NUMBER
+  CREATION_DATE
+  CUSTOMER
+  PAYMENT
+  FULFILLMENT_STATUS
+}
+
+enum PaymentChargeStatusEnum {
+  NOT_CHARGED
+  PENDING
+  PARTIALLY_CHARGED
+  FULLY_CHARGED
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+  REFUSED
+  CANCELLED
+}
+
+enum OrderStatusFilter {
+  READY_TO_FULFILL
+  READY_TO_CAPTURE
+  UNFULFILLED
+  UNCONFIRMED
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELED
+}
+
+type OrderCountableEdge {
+  node: Order!
+  cursor: String!
+}
+
+enum OrderEventsEnum {
+  DRAFT_CREATED
+  DRAFT_CREATED_FROM_REPLACE
+  ADDED_PRODUCTS
+  REMOVED_PRODUCTS
+  PLACED
+  PLACED_FROM_DRAFT
+  OVERSOLD_ITEMS
+  CANCELED
+  ORDER_MARKED_AS_PAID
+  ORDER_FULLY_PAID
+  ORDER_REPLACEMENT_CREATED
+  ORDER_DISCOUNT_ADDED
+  ORDER_DISCOUNT_AUTOMATICALLY_UPDATED
+  ORDER_DISCOUNT_UPDATED
+  ORDER_DISCOUNT_DELETED
+  ORDER_LINE_DISCOUNT_UPDATED
+  ORDER_LINE_DISCOUNT_REMOVED
+  UPDATED_ADDRESS
+  EMAIL_SENT
+  CONFIRMED
+  PAYMENT_AUTHORIZED
+  PAYMENT_CAPTURED
+  EXTERNAL_SERVICE_NOTIFICATION
+  PAYMENT_REFUNDED
+  PAYMENT_VOIDED
+  PAYMENT_FAILED
+  INVOICE_REQUESTED
+  INVOICE_GENERATED
+  INVOICE_UPDATED
+  INVOICE_SENT
+  FULFILLMENT_CANCELED
+  FULFILLMENT_RESTOCKED_ITEMS
+  FULFILLMENT_FULFILLED_ITEMS
+  FULFILLMENT_REFUNDED
+  FULFILLMENT_RETURNED
+  FULFILLMENT_REPLACED
+  TRACKING_UPDATED
+  NOTE_ADDED
+  OTHER
+}
+
+enum OrderEventsEmailsEnum {
+  PAYMENT_CONFIRMATION
+  CONFIRMED
+  SHIPPING_CONFIRMATION
+  TRACKING_UPDATED
+  ORDER_CONFIRMATION
+  ORDER_CANCEL
+  ORDER_REFUND
+  FULFILLMENT_CONFIRMATION
+  DIGITAL_LINKS
+}
+
+type OrderEventOrderLineObject {
+  quantity: Int
+  orderLine: OrderLine
+  itemName: String
+  discount: OrderEventDiscountObject
+}
+
+type OrderEventDiscountObject {
+  valueType: DiscountValueTypeEnum!
+  value: PositiveDecimal!
+  reason: String
+  amount: Money
+  oldValueType: DiscountValueTypeEnum
+  oldValue: PositiveDecimal
+  oldAmount: Money
+}

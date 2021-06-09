@@ -1,0 +1,94 @@
+extend type Mutation {
+  orderLinesCreate(id: ID!, input: [OrderLineCreateInput]!): OrderLinesCreate
+  orderLineDelete(id: ID!): OrderLineDelete
+  orderLineUpdate(id: ID!, input: OrderLineInput!): OrderLineUpdate
+  orderDiscountAdd(input: OrderDiscountCommonInput!, orderId: ID!): OrderDiscountAdd
+  orderDiscountUpdate(discountId: ID!, input: OrderDiscountCommonInput!): OrderDiscountUpdate
+  orderDiscountDelete(discountId: ID!): OrderDiscountDelete
+  orderLineDiscountUpdate(input: OrderDiscountCommonInput!, orderLineId: ID!): OrderLineDiscountUpdate
+  orderLineDiscountRemove(orderLineId: ID!): OrderLineDiscountRemove
+}
+
+type OrderLine implements Node {
+  id: ID!
+  productName: String!
+  variantName: String!
+  productSku: String!
+  isShippingRequired: Boolean!
+  quantity: Int!
+  quantityFulfilled: Int!
+  unitDiscountReason: String
+  taxRate: Float!
+  digitalContentUrl: DigitalContentUrl
+  thumbnail(size: Int): Image
+  unitPrice: TaxedMoney!
+  undiscountedUnitPrice: TaxedMoney!
+  unitDiscount: Money!
+  unitDiscountValue: PositiveDecimal!
+  totalPrice: TaxedMoney!
+  variant: ProductVariant
+  translatedProductName: String!
+  translatedVariantName: String!
+  allocations: [Allocation!]
+  unitDiscountType: DiscountValueTypeEnum
+}
+
+input OrderLineCreateInput {
+  quantity: Int!
+  variantId: ID!
+}
+
+type OrderLinesCreate {
+  order: Order
+  orderLines: [OrderLine!]
+  errors: [OrderError!]!
+}
+
+type OrderLineDelete {
+  order: Order
+  orderLine: OrderLine
+  errors: [OrderError!]!
+}
+
+input OrderLineInput {
+  quantity: Int!
+}
+
+type OrderLineUpdate {
+  order: Order
+  errors: [OrderError!]!
+  orderLine: OrderLine
+}
+
+input OrderDiscountCommonInput {
+  valueType: DiscountValueTypeEnum!
+  value: PositiveDecimal!
+  reason: String
+}
+
+type OrderDiscountAdd {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderDiscountUpdate {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderDiscountDelete {
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderLineDiscountUpdate {
+  orderLine: OrderLine
+  order: Order
+  errors: [OrderError!]!
+}
+
+type OrderLineDiscountRemove {
+  orderLine: OrderLine
+  order: Order
+  errors: [OrderError!]!
+}

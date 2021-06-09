@@ -1735,6 +1735,26 @@ type Limits struct {
 	Warehouses      *int `json:"warehouses"`
 }
 
+type LoginError struct {
+	Field   *string        `json:"field"`
+	Message *string        `json:"message"`
+	Code    LoginErrorCode `json:"code"`
+}
+
+type LoginInput struct {
+	ID       *string `json:"id"`
+	LoginID  *string `json:"loginId"`
+	Password string  `json:"password"`
+	MfaToken *string `json:"mfaToken"`
+	DeviceID *string `json:"deviceId"`
+	LdapOnly bool    `json:"ldapOnly"`
+}
+
+type LoginResponse struct {
+	Error *LoginError `json:"error"`
+	User  *User       `json:"user"`
+}
+
 type Manifest struct {
 	Identifier       string        `json:"identifier"`
 	Version          string        `json:"version"`
@@ -6728,6 +6748,53 @@ func (e *LanguageCodeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LanguageCodeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type LoginErrorCode string
+
+const (
+	LoginErrorCodeGraphqlError LoginErrorCode = "GRAPHQL_ERROR"
+	LoginErrorCodeInvalid      LoginErrorCode = "INVALID"
+	LoginErrorCodeNotFound     LoginErrorCode = "NOT_FOUND"
+	LoginErrorCodeRequired     LoginErrorCode = "REQUIRED"
+	LoginErrorCodeUnique       LoginErrorCode = "UNIQUE"
+)
+
+var AllLoginErrorCode = []LoginErrorCode{
+	LoginErrorCodeGraphqlError,
+	LoginErrorCodeInvalid,
+	LoginErrorCodeNotFound,
+	LoginErrorCodeRequired,
+	LoginErrorCodeUnique,
+}
+
+func (e LoginErrorCode) IsValid() bool {
+	switch e {
+	case LoginErrorCodeGraphqlError, LoginErrorCodeInvalid, LoginErrorCodeNotFound, LoginErrorCodeRequired, LoginErrorCodeUnique:
+		return true
+	}
+	return false
+}
+
+func (e LoginErrorCode) String() string {
+	return string(e)
+}
+
+func (e *LoginErrorCode) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LoginErrorCode(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LoginErrorCode", str)
+	}
+	return nil
+}
+
+func (e LoginErrorCode) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
