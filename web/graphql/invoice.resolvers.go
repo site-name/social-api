@@ -6,28 +6,30 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) InvoiceRequest(ctx context.Context, number *string, orderID string) (*InvoiceRequest, error) {
+func (r *mutationResolver) InvoiceRequest(ctx context.Context, number *string, orderID string) (*gqlmodel.InvoiceRequest, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) InvoiceRequestDelete(ctx context.Context, id string) (*InvoiceRequestDelete, error) {
+func (r *mutationResolver) InvoiceRequestDelete(ctx context.Context, id string) (*gqlmodel.InvoiceRequestDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) InvoiceCreate(ctx context.Context, input InvoiceCreateInput, orderID string) (*InvoiceCreate, error) {
+func (r *mutationResolver) InvoiceCreate(ctx context.Context, input gqlmodel.InvoiceCreateInput, orderID string) (*gqlmodel.InvoiceCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) InvoiceDelete(ctx context.Context, id string) (*InvoiceDelete, error) {
+func (r *mutationResolver) InvoiceDelete(ctx context.Context, id string) (*gqlmodel.InvoiceDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) InvoiceUpdate(ctx context.Context, id string, input UpdateInvoiceInput) (*InvoiceUpdate, error) {
+func (r *mutationResolver) InvoiceUpdate(ctx context.Context, id string, input gqlmodel.UpdateInvoiceInput) (*gqlmodel.InvoiceUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) InvoiceSendNotification(ctx context.Context, id string) (*InvoiceSendNotification, error) {
+func (r *mutationResolver) InvoiceSendNotification(ctx context.Context, id string) (*gqlmodel.InvoiceSendNotification, error) {
 	panic(fmt.Errorf("not implemented"))
 }

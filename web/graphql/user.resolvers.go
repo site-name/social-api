@@ -8,28 +8,29 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) Login(ctx context.Context, input LoginInput) (*LoginResponse, error) {
+func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UserAvatarUpdate(ctx context.Context, image graphql.Upload) (*UserAvatarUpdate, error) {
+func (r *mutationResolver) UserAvatarUpdate(ctx context.Context, image graphql.Upload) (*gqlmodel.UserAvatarUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UserAvatarDelete(ctx context.Context) (*UserAvatarDelete, error) {
+func (r *mutationResolver) UserAvatarDelete(ctx context.Context) (*gqlmodel.UserAvatarDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string, isActive bool) (*UserBulkSetActive, error) {
+func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string, isActive bool) (*gqlmodel.UserBulkSetActive, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Me(ctx context.Context) (*User, error) {
+func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*User, error) {
+func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*gqlmodel.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }

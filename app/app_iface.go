@@ -41,6 +41,8 @@ type AppIface interface {
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
 	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
+	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
+	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
 	ClearSessionCacheForUserSkipClusterSend(userID string)
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
@@ -50,6 +52,8 @@ type AppIface interface {
 	// CreateGuest creates a guest and sets several fields of the returned User struct to
 	// their zero values.
 	CreateGuest(user *account.User) (*account.User, *model.AppError)
+	// CreateSession save given session to tha database.
+	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
 	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
@@ -193,7 +197,6 @@ type AppIface interface {
 	CheckUserMfa(user *account.User, token string) *model.AppError
 	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
 	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
-	ClearSessionCacheForUser(userID string)
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
@@ -201,7 +204,6 @@ type AppIface interface {
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
-	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)

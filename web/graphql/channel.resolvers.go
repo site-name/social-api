@@ -6,32 +6,34 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) ChannelCreate(ctx context.Context, input ChannelCreateInput) (*ChannelCreate, error) {
+func (r *mutationResolver) ChannelCreate(ctx context.Context, input gqlmodel.ChannelCreateInput) (*gqlmodel.ChannelCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ChannelUpdate(ctx context.Context, id string, input ChannelUpdateInput) (*ChannelUpdate, error) {
+func (r *mutationResolver) ChannelUpdate(ctx context.Context, id string, input gqlmodel.ChannelUpdateInput) (*gqlmodel.ChannelUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ChannelDelete(ctx context.Context, id string, input *ChannelDeleteInput) (*ChannelDelete, error) {
+func (r *mutationResolver) ChannelDelete(ctx context.Context, id string, input *gqlmodel.ChannelDeleteInput) (*gqlmodel.ChannelDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ChannelActivate(ctx context.Context, id string) (*ChannelActivate, error) {
+func (r *mutationResolver) ChannelActivate(ctx context.Context, id string) (*gqlmodel.ChannelActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ChannelDeactivate(ctx context.Context, id string) (*ChannelDeactivate, error) {
+func (r *mutationResolver) ChannelDeactivate(ctx context.Context, id string) (*gqlmodel.ChannelDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Channel(ctx context.Context, id *string) (*Channel, error) {
+func (r *queryResolver) Channel(ctx context.Context, id *string) (*gqlmodel.Channel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Channels(ctx context.Context) ([]Channel, error) {
+func (r *queryResolver) Channels(ctx context.Context) ([]gqlmodel.Channel, error) {
 	panic(fmt.Errorf("not implemented"))
 }

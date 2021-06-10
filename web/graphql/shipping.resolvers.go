@@ -6,60 +6,62 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) ShippingMethodChannelListingUpdate(ctx context.Context, id string, input ShippingMethodChannelListingInput) (*ShippingMethodChannelListingUpdate, error) {
+func (r *mutationResolver) ShippingMethodChannelListingUpdate(ctx context.Context, id string, input gqlmodel.ShippingMethodChannelListingInput) (*gqlmodel.ShippingMethodChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceCreate(ctx context.Context, input ShippingPriceInput) (*ShippingPriceCreate, error) {
+func (r *mutationResolver) ShippingPriceCreate(ctx context.Context, input gqlmodel.ShippingPriceInput) (*gqlmodel.ShippingPriceCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceDelete(ctx context.Context, id string) (*ShippingPriceDelete, error) {
+func (r *mutationResolver) ShippingPriceDelete(ctx context.Context, id string) (*gqlmodel.ShippingPriceDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceBulkDelete(ctx context.Context, ids []*string) (*ShippingPriceBulkDelete, error) {
+func (r *mutationResolver) ShippingPriceBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.ShippingPriceBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceUpdate(ctx context.Context, id string, input ShippingPriceInput) (*ShippingPriceUpdate, error) {
+func (r *mutationResolver) ShippingPriceUpdate(ctx context.Context, id string, input gqlmodel.ShippingPriceInput) (*gqlmodel.ShippingPriceUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceTranslate(ctx context.Context, id string, input ShippingPriceTranslationInput, languageCode LanguageCodeEnum) (*ShippingPriceTranslate, error) {
+func (r *mutationResolver) ShippingPriceTranslate(ctx context.Context, id string, input gqlmodel.ShippingPriceTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ShippingPriceTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceExcludeProducts(ctx context.Context, id string, input ShippingPriceExcludeProductsInput) (*ShippingPriceExcludeProducts, error) {
+func (r *mutationResolver) ShippingPriceExcludeProducts(ctx context.Context, id string, input gqlmodel.ShippingPriceExcludeProductsInput) (*gqlmodel.ShippingPriceExcludeProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, id string, products []*string) (*ShippingPriceRemoveProductFromExclude, error) {
+func (r *mutationResolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, id string, products []*string) (*gqlmodel.ShippingPriceRemoveProductFromExclude, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingZoneCreate(ctx context.Context, input ShippingZoneCreateInput) (*ShippingZoneCreate, error) {
+func (r *mutationResolver) ShippingZoneCreate(ctx context.Context, input gqlmodel.ShippingZoneCreateInput) (*gqlmodel.ShippingZoneCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingZoneDelete(ctx context.Context, id string) (*ShippingZoneDelete, error) {
+func (r *mutationResolver) ShippingZoneDelete(ctx context.Context, id string) (*gqlmodel.ShippingZoneDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingZoneBulkDelete(ctx context.Context, ids []*string) (*ShippingZoneBulkDelete, error) {
+func (r *mutationResolver) ShippingZoneBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.ShippingZoneBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShippingZoneUpdate(ctx context.Context, id string, input ShippingZoneUpdateInput) (*ShippingZoneUpdate, error) {
+func (r *mutationResolver) ShippingZoneUpdate(ctx context.Context, id string, input gqlmodel.ShippingZoneUpdateInput) (*gqlmodel.ShippingZoneUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ShippingZone(ctx context.Context, id string, channel *string) (*ShippingZone, error) {
+func (r *queryResolver) ShippingZone(ctx context.Context, id string, channel *string) (*gqlmodel.ShippingZone, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ShippingZones(ctx context.Context, filter *ShippingZoneFilterInput, channel *string, before *string, after *string, first *int, last *int) (*ShippingZoneCountableConnection, error) {
+func (r *queryResolver) ShippingZones(ctx context.Context, filter *gqlmodel.ShippingZoneFilterInput, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.ShippingZoneCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -6,16 +6,18 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) ExportProducts(ctx context.Context, input ExportProductsInput) (*ExportProducts, error) {
+func (r *mutationResolver) ExportProducts(ctx context.Context, input gqlmodel.ExportProductsInput) (*gqlmodel.ExportProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ExportFile(ctx context.Context, id string) (*ExportFile, error) {
+func (r *queryResolver) ExportFile(ctx context.Context, id string) (*gqlmodel.ExportFile, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ExportFiles(ctx context.Context, filter *ExportFileFilterInput, sortBy *ExportFileSortingInput, before *string, after *string, first *int, last *int) (*ExportFileCountableConnection, error) {
+func (r *queryResolver) ExportFiles(ctx context.Context, filter *gqlmodel.ExportFileFilterInput, sortBy *gqlmodel.ExportFileSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.ExportFileCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

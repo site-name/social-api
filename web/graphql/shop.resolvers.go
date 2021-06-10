@@ -6,28 +6,30 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) ShopDomainUpdate(ctx context.Context, input *SiteDomainInput) (*ShopDomainUpdate, error) {
+func (r *mutationResolver) ShopDomainUpdate(ctx context.Context, input *gqlmodel.SiteDomainInput) (*gqlmodel.ShopDomainUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShopSettingsUpdate(ctx context.Context, input ShopSettingsInput) (*ShopSettingsUpdate, error) {
+func (r *mutationResolver) ShopSettingsUpdate(ctx context.Context, input gqlmodel.ShopSettingsInput) (*gqlmodel.ShopSettingsUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShopFetchTaxRates(ctx context.Context) (*ShopFetchTaxRates, error) {
+func (r *mutationResolver) ShopFetchTaxRates(ctx context.Context) (*gqlmodel.ShopFetchTaxRates, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShopSettingsTranslate(ctx context.Context, input ShopSettingsTranslationInput, languageCode LanguageCodeEnum) (*ShopSettingsTranslate, error) {
+func (r *mutationResolver) ShopSettingsTranslate(ctx context.Context, input gqlmodel.ShopSettingsTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ShopSettingsTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ShopAddressUpdate(ctx context.Context, input *AddressInput) (*ShopAddressUpdate, error) {
+func (r *mutationResolver) ShopAddressUpdate(ctx context.Context, input *gqlmodel.AddressInput) (*gqlmodel.ShopAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Shop(ctx context.Context) (*Shop, error) {
+func (r *queryResolver) Shop(ctx context.Context) (*gqlmodel.Shop, error) {
 	panic(fmt.Errorf("not implemented"))
 }

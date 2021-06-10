@@ -8,33 +8,34 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) VariantMediaAssign(ctx context.Context, mediaID string, variantID string) (*VariantMediaAssign, error) {
+func (r *mutationResolver) VariantMediaAssign(ctx context.Context, mediaID string, variantID string) (*gqlmodel.VariantMediaAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) VariantMediaUnassign(ctx context.Context, mediaID string, variantID string) (*VariantMediaUnassign, error) {
+func (r *mutationResolver) VariantMediaUnassign(ctx context.Context, mediaID string, variantID string) (*gqlmodel.VariantMediaUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) AssignNavigation(ctx context.Context, menu *string, navigationType NavigationType) (*AssignNavigation, error) {
+func (r *mutationResolver) AssignNavigation(ctx context.Context, menu *string, navigationType gqlmodel.NavigationType) (*gqlmodel.AssignNavigation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) FileUpload(ctx context.Context, file graphql.Upload) (*FileUpload, error) {
+func (r *mutationResolver) FileUpload(ctx context.Context, file graphql.Upload) (*gqlmodel.FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) ReportProductSales(ctx context.Context, period ReportingPeriod, channel string, before *string, after *string, first *int, last *int) (*ProductVariantCountableConnection, error) {
+func (r *queryResolver) ReportProductSales(ctx context.Context, period gqlmodel.ReportingPeriod, channel string, before *string, after *string, first *int, last *int) (*gqlmodel.ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) HomepageEvents(ctx context.Context, before *string, after *string, first *int, last *int) (*OrderEventCountableConnection, error) {
+func (r *queryResolver) HomepageEvents(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.OrderEventCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) TaxTypes(ctx context.Context) ([]*TaxType, error) {
+func (r *queryResolver) TaxTypes(ctx context.Context) ([]*gqlmodel.TaxType, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

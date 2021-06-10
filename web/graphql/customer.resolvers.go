@@ -6,24 +6,26 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) CustomerCreate(ctx context.Context, input UserCreateInput) (*CustomerCreate, error) {
+func (r *mutationResolver) CustomerCreate(ctx context.Context, input gqlmodel.UserCreateInput) (*gqlmodel.CustomerCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CustomerUpdate(ctx context.Context, id string, input CustomerInput) (*CustomerUpdate, error) {
+func (r *mutationResolver) CustomerUpdate(ctx context.Context, id string, input gqlmodel.CustomerInput) (*gqlmodel.CustomerUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CustomerDelete(ctx context.Context, id string) (*CustomerDelete, error) {
+func (r *mutationResolver) CustomerDelete(ctx context.Context, id string) (*gqlmodel.CustomerDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CustomerBulkDelete(ctx context.Context, ids []*string) (*CustomerBulkDelete, error) {
+func (r *mutationResolver) CustomerBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.CustomerBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Customers(ctx context.Context, filter *CustomerFilterInput, sortBy *UserSortingInput, before *string, after *string, first *int, last *int) (*UserCountableConnection, error) {
+func (r *queryResolver) Customers(ctx context.Context, filter *gqlmodel.CustomerFilterInput, sortBy *gqlmodel.UserSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.UserCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

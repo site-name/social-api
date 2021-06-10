@@ -6,28 +6,30 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) WebhookCreate(ctx context.Context, input WebhookCreateInput) (*WebhookCreate, error) {
+func (r *mutationResolver) WebhookCreate(ctx context.Context, input gqlmodel.WebhookCreateInput) (*gqlmodel.WebhookCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) WebhookDelete(ctx context.Context, id string) (*WebhookDelete, error) {
+func (r *mutationResolver) WebhookDelete(ctx context.Context, id string) (*gqlmodel.WebhookDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) WebhookUpdate(ctx context.Context, id string, input WebhookUpdateInput) (*WebhookUpdate, error) {
+func (r *mutationResolver) WebhookUpdate(ctx context.Context, id string, input gqlmodel.WebhookUpdateInput) (*gqlmodel.WebhookUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Webhook(ctx context.Context, id string) (*Webhook, error) {
+func (r *queryResolver) Webhook(ctx context.Context, id string) (*gqlmodel.Webhook, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) WebhookEvents(ctx context.Context) ([]*WebhookEvent, error) {
+func (r *queryResolver) WebhookEvents(ctx context.Context) ([]*gqlmodel.WebhookEvent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) WebhookSamplePayload(ctx context.Context, eventType WebhookSampleEventTypeEnum) (*string, error) {
+func (r *queryResolver) WebhookSamplePayload(ctx context.Context, eventType gqlmodel.WebhookSampleEventTypeEnum) (*string, error) {
 	panic(fmt.Errorf("not implemented"))
 }

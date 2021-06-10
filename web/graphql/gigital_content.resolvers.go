@@ -6,28 +6,30 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) DigitalContentCreate(ctx context.Context, input DigitalContentUploadInput, variantID string) (*DigitalContentCreate, error) {
+func (r *mutationResolver) DigitalContentCreate(ctx context.Context, input gqlmodel.DigitalContentUploadInput, variantID string) (*gqlmodel.DigitalContentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) DigitalContentDelete(ctx context.Context, variantID string) (*DigitalContentDelete, error) {
+func (r *mutationResolver) DigitalContentDelete(ctx context.Context, variantID string) (*gqlmodel.DigitalContentDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) DigitalContentUpdate(ctx context.Context, input DigitalContentInput, variantID string) (*DigitalContentUpdate, error) {
+func (r *mutationResolver) DigitalContentUpdate(ctx context.Context, input gqlmodel.DigitalContentInput, variantID string) (*gqlmodel.DigitalContentUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) DigitalContentURLCreate(ctx context.Context, input DigitalContentURLCreateInput) (*DigitalContentURLCreate, error) {
+func (r *mutationResolver) DigitalContentURLCreate(ctx context.Context, input gqlmodel.DigitalContentURLCreateInput) (*gqlmodel.DigitalContentURLCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) DigitalContent(ctx context.Context, id string) (*DigitalContent, error) {
+func (r *queryResolver) DigitalContent(ctx context.Context, id string) (*gqlmodel.DigitalContent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) DigitalContents(ctx context.Context, before *string, after *string, first *int, last *int) (*DigitalContentCountableConnection, error) {
+func (r *queryResolver) DigitalContents(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.DigitalContentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

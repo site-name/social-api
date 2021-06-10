@@ -29,7 +29,7 @@ type Attribute implements Node & ObjectWithMetadata {
   slug: String
   type: AttributeTypeEnum
   unit: MeasurementUnitsEnum
-  values: [AttributeValue]
+  choices(sortBy: AttributeChoicesSortingInput, filter: AttributeValueFilterInput, before: String, after: String, first: Int, last: Int): AttributeValueCountableConnection
   valueRequired: Boolean!
   visibleInStorefront: Boolean!
   filterableInStorefront: Boolean!
@@ -37,6 +37,31 @@ type Attribute implements Node & ObjectWithMetadata {
   availableInGrid: Boolean!
   translation(languageCode: LanguageCodeEnum!): AttributeTranslation
   storefrontSearchPosition: Int!
+}
+
+input AttributeValueFilterInput {
+  search: String
+}
+
+enum AttributeChoicesSortField {
+  NAME
+  SLUG
+}
+
+input AttributeChoicesSortingInput {
+  direction: OrderDirection!
+  field: AttributeChoicesSortField!
+}
+
+type AttributeValueCountableConnection {
+  pageInfo: PageInfo!
+  edges: [AttributeValueCountableEdge!]!
+  totalCount: Int
+}
+
+type AttributeValueCountableEdge {
+  node: AttributeValue!
+  cursor: String!
 }
 
 type SelectedAttribute {

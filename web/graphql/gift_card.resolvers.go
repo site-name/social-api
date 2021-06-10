@@ -6,28 +6,30 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) GiftCardActivate(ctx context.Context, id string) (*GiftCardActivate, error) {
+func (r *mutationResolver) GiftCardActivate(ctx context.Context, id string) (*gqlmodel.GiftCardActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) GiftCardCreate(ctx context.Context, input GiftCardCreateInput) (*GiftCardCreate, error) {
+func (r *mutationResolver) GiftCardCreate(ctx context.Context, input gqlmodel.GiftCardCreateInput) (*gqlmodel.GiftCardCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) GiftCardDeactivate(ctx context.Context, id string) (*GiftCardDeactivate, error) {
+func (r *mutationResolver) GiftCardDeactivate(ctx context.Context, id string) (*gqlmodel.GiftCardDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) GiftCardUpdate(ctx context.Context, id string, input GiftCardUpdateInput) (*GiftCardUpdate, error) {
+func (r *mutationResolver) GiftCardUpdate(ctx context.Context, id string, input gqlmodel.GiftCardUpdateInput) (*gqlmodel.GiftCardUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GiftCard(ctx context.Context, id string) (*GiftCard, error) {
+func (r *queryResolver) GiftCard(ctx context.Context, id string) (*gqlmodel.GiftCard, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GiftCards(ctx context.Context, before *string, after *string, first *int, last *int) (*GiftCardCountableConnection, error) {
+func (r *queryResolver) GiftCards(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.GiftCardCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

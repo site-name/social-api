@@ -6,16 +6,18 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) PluginUpdate(ctx context.Context, channelID *string, id string, input PluginUpdateInput) (*PluginUpdate, error) {
+func (r *mutationResolver) PluginUpdate(ctx context.Context, channelID *string, id string, input gqlmodel.PluginUpdateInput) (*gqlmodel.PluginUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Plugin(ctx context.Context, id string) (*Plugin, error) {
+func (r *queryResolver) Plugin(ctx context.Context, id string) (*gqlmodel.Plugin, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Plugins(ctx context.Context, filter *PluginFilterInput, sortBy *PluginSortingInput, before *string, after *string, first *int, last *int) (*PluginCountableConnection, error) {
+func (r *queryResolver) Plugins(ctx context.Context, filter *gqlmodel.PluginFilterInput, sortBy *gqlmodel.PluginSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.PluginCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

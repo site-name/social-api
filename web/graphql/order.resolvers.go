@@ -8,92 +8,93 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) OrderSettingsUpdate(ctx context.Context, input OrderSettingsUpdateInput) (*OrderSettingsUpdate, error) {
+func (r *mutationResolver) OrderSettingsUpdate(ctx context.Context, input gqlmodel.OrderSettingsUpdateInput) (*gqlmodel.OrderSettingsUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderAddNote(ctx context.Context, order string, input OrderAddNoteInput) (*OrderAddNote, error) {
+func (r *mutationResolver) OrderAddNote(ctx context.Context, order string, input gqlmodel.OrderAddNoteInput) (*gqlmodel.OrderAddNote, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderCancel(ctx context.Context, id string) (*OrderCancel, error) {
+func (r *mutationResolver) OrderCancel(ctx context.Context, id string) (*gqlmodel.OrderCancel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderCapture(ctx context.Context, amount string, id string) (*OrderCapture, error) {
+func (r *mutationResolver) OrderCapture(ctx context.Context, amount string, id string) (*gqlmodel.OrderCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderConfirm(ctx context.Context, id string) (*OrderConfirm, error) {
+func (r *mutationResolver) OrderConfirm(ctx context.Context, id string) (*gqlmodel.OrderConfirm, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfill(ctx context.Context, input OrderFulfillInput, order *string) (*OrderFulfill, error) {
+func (r *mutationResolver) OrderFulfill(ctx context.Context, input gqlmodel.OrderFulfillInput, order *string) (*gqlmodel.OrderFulfill, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfillmentCancel(ctx context.Context, id string, input FulfillmentCancelInput) (*FulfillmentCancel, error) {
+func (r *mutationResolver) OrderFulfillmentCancel(ctx context.Context, id string, input gqlmodel.FulfillmentCancelInput) (*gqlmodel.FulfillmentCancel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfillmentUpdateTracking(ctx context.Context, id string, input FulfillmentUpdateTrackingInput) (*FulfillmentUpdateTracking, error) {
+func (r *mutationResolver) OrderFulfillmentUpdateTracking(ctx context.Context, id string, input gqlmodel.FulfillmentUpdateTrackingInput) (*gqlmodel.FulfillmentUpdateTracking, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfillmentRefundProducts(ctx context.Context, input OrderRefundProductsInput, order string) (*FulfillmentRefundProducts, error) {
+func (r *mutationResolver) OrderFulfillmentRefundProducts(ctx context.Context, input gqlmodel.OrderRefundProductsInput, order string) (*gqlmodel.FulfillmentRefundProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfillmentReturnProducts(ctx context.Context, input OrderReturnProductsInput, order string) (*FulfillmentReturnProducts, error) {
+func (r *mutationResolver) OrderFulfillmentReturnProducts(ctx context.Context, input gqlmodel.OrderReturnProductsInput, order string) (*gqlmodel.FulfillmentReturnProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderMarkAsPaid(ctx context.Context, id string, transactionReference *string) (*OrderMarkAsPaid, error) {
+func (r *mutationResolver) OrderMarkAsPaid(ctx context.Context, id string, transactionReference *string) (*gqlmodel.OrderMarkAsPaid, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderRefund(ctx context.Context, amount string, id string) (*OrderRefund, error) {
+func (r *mutationResolver) OrderRefund(ctx context.Context, amount string, id string) (*gqlmodel.OrderRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderUpdate(ctx context.Context, id string, input OrderUpdateInput) (*OrderUpdate, error) {
+func (r *mutationResolver) OrderUpdate(ctx context.Context, id string, input gqlmodel.OrderUpdateInput) (*gqlmodel.OrderUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderUpdateShipping(ctx context.Context, order string, input *OrderUpdateShippingInput) (*OrderUpdateShipping, error) {
+func (r *mutationResolver) OrderUpdateShipping(ctx context.Context, order string, input *gqlmodel.OrderUpdateShippingInput) (*gqlmodel.OrderUpdateShipping, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderVoid(ctx context.Context, id string) (*OrderVoid, error) {
+func (r *mutationResolver) OrderVoid(ctx context.Context, id string) (*gqlmodel.OrderVoid, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderBulkCancel(ctx context.Context, ids []*string) (*OrderBulkCancel, error) {
+func (r *mutationResolver) OrderBulkCancel(ctx context.Context, ids []*string) (*gqlmodel.OrderBulkCancel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) OrderSettings(ctx context.Context) (*OrderSettings, error) {
+func (r *queryResolver) OrderSettings(ctx context.Context) (*gqlmodel.OrderSettings, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Order(ctx context.Context, id string) (*Order, error) {
+func (r *queryResolver) Order(ctx context.Context, id string) (*gqlmodel.Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Orders(ctx context.Context, sortBy *OrderSortingInput, filter *OrderFilterInput, channel *string, before *string, after *string, first *int, last *int) (*OrderCountableConnection, error) {
+func (r *queryResolver) Orders(ctx context.Context, sortBy *gqlmodel.OrderSortingInput, filter *gqlmodel.OrderFilterInput, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) DraftOrders(ctx context.Context, sortBy *OrderSortingInput, filter *OrderDraftFilterInput, before *string, after *string, first *int, last *int) (*OrderCountableConnection, error) {
+func (r *queryResolver) DraftOrders(ctx context.Context, sortBy *gqlmodel.OrderSortingInput, filter *gqlmodel.OrderDraftFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) OrdersTotal(ctx context.Context, period *ReportingPeriod, channel *string) (*TaxedMoney, error) {
+func (r *queryResolver) OrdersTotal(ctx context.Context, period *gqlmodel.ReportingPeriod, channel *string) (*gqlmodel.TaxedMoney, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*Order, error) {
+func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*gqlmodel.Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }

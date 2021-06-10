@@ -6,48 +6,50 @@ package graphql
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) CollectionAddProducts(ctx context.Context, collectionID string, products []*string) (*CollectionAddProducts, error) {
+func (r *mutationResolver) CollectionAddProducts(ctx context.Context, collectionID string, products []*string) (*gqlmodel.CollectionAddProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionCreate(ctx context.Context, input CollectionCreateInput) (*CollectionCreate, error) {
+func (r *mutationResolver) CollectionCreate(ctx context.Context, input gqlmodel.CollectionCreateInput) (*gqlmodel.CollectionCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionDelete(ctx context.Context, id string) (*CollectionDelete, error) {
+func (r *mutationResolver) CollectionDelete(ctx context.Context, id string) (*gqlmodel.CollectionDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionReorderProducts(ctx context.Context, collectionID string, moves []*MoveProductInput) (*CollectionReorderProducts, error) {
+func (r *mutationResolver) CollectionReorderProducts(ctx context.Context, collectionID string, moves []*gqlmodel.MoveProductInput) (*gqlmodel.CollectionReorderProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionBulkDelete(ctx context.Context, ids []*string) (*CollectionBulkDelete, error) {
+func (r *mutationResolver) CollectionBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.CollectionBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionRemoveProducts(ctx context.Context, collectionID string, products []*string) (*CollectionRemoveProducts, error) {
+func (r *mutationResolver) CollectionRemoveProducts(ctx context.Context, collectionID string, products []*string) (*gqlmodel.CollectionRemoveProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionUpdate(ctx context.Context, id string, input CollectionInput) (*CollectionUpdate, error) {
+func (r *mutationResolver) CollectionUpdate(ctx context.Context, id string, input gqlmodel.CollectionInput) (*gqlmodel.CollectionUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionTranslate(ctx context.Context, id string, input TranslationInput, languageCode LanguageCodeEnum) (*CollectionTranslate, error) {
+func (r *mutationResolver) CollectionTranslate(ctx context.Context, id string, input gqlmodel.TranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.CollectionTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CollectionChannelListingUpdate(ctx context.Context, id string, input CollectionChannelListingUpdateInput) (*CollectionChannelListingUpdate, error) {
+func (r *mutationResolver) CollectionChannelListingUpdate(ctx context.Context, id string, input gqlmodel.CollectionChannelListingUpdateInput) (*gqlmodel.CollectionChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Collection(ctx context.Context, id *string, slug *string, channel *string) (*Collection, error) {
+func (r *queryResolver) Collection(ctx context.Context, id *string, slug *string, channel *string) (*gqlmodel.Collection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Collections(ctx context.Context, filter *CollectionFilterInput, sortBy *CollectionSortingInput, channel *string, before *string, after *string, first *int, last *int) (*CollectionCountableConnection, error) {
+func (r *queryResolver) Collections(ctx context.Context, filter *gqlmodel.CollectionFilterInput, sortBy *gqlmodel.CollectionSortingInput, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.CollectionCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
