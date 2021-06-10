@@ -25,3 +25,11 @@ func (r *mutationResolver) UserAvatarDelete(ctx context.Context) (*UserAvatarDel
 func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string, isActive bool) (*UserBulkSetActive, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *queryResolver) Me(ctx context.Context) (*User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*User, error) {
+	panic(fmt.Errorf("not implemented"))
+}

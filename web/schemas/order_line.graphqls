@@ -92,3 +92,9 @@ type OrderLineDiscountRemove {
   order: Order
   errors: [OrderError!]!
 }
+
+type Allocation implements Node {
+  id: ID!
+  quantity: Int!
+  warehouse: Warehouse!
+}

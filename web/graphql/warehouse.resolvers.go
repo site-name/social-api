@@ -35,3 +35,11 @@ func (r *queryResolver) Warehouse(ctx context.Context, id string) (*Warehouse, e
 func (r *queryResolver) Warehouses(ctx context.Context, filter *WarehouseFilterInput, sortBy *WarehouseSortingInput, before *string, after *string, first *int, last *int) (*WarehouseCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *queryResolver) Stock(ctx context.Context, id string) (*Stock, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Stocks(ctx context.Context, filter *StockFilterInput, before *string, after *string, first *int, last *int) (*StockCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}

@@ -1,0 +1,171 @@
+extend type Mutation {
+  pageCreate(input: PageCreateInput!): PageCreate
+  pageDelete(id: ID!): PageDelete
+  pageBulkDelete(ids: [ID]!): PageBulkDelete
+  pageBulkPublish(ids: [ID]!, isPublished: Boolean!): PageBulkPublish
+  pageUpdate(id: ID!, input: PageInput!): PageUpdate
+  pageTranslate(id: ID!, input: PageTranslationInput!, languageCode: LanguageCodeEnum!): PageTranslate
+  pageAttributeAssign(attributeIds: [ID!]!, pageTypeId: ID!): PageAttributeAssign
+  pageAttributeUnassign(attributeIds: [ID!]!, pageTypeId: ID!): PageAttributeUnassign
+  pageReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, pageId: ID!): PageReorderAttributeValues
+}
+
+extend type Query {
+  page(id: ID, slug: String): Page
+  pages(sortBy: PageSortingInput, filter: PageFilterInput, before: String, after: String, first: Int, last: Int): PageCountableConnection
+}
+
+type Page implements Node & ObjectWithMetadata {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  title: String!
+  content: JSONString
+  publicationDate: Date
+  isPublished: Boolean!
+  slug: String!
+  pageType: PageType!
+  created: DateTime!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  translation(languageCode: LanguageCodeEnum!): PageTranslation
+  attributes: [SelectedAttribute!]!
+}
+
+input PageCreateInput {
+  slug: String
+  title: String
+  content: JSONString
+  attributes: [AttributeValueInput!]
+  isPublished: Boolean
+  publicationDate: String
+  seo: SeoInput
+  pageType: ID!
+}
+
+type PageCreate {
+  errors: [PageError!]!
+  page: Page
+}
+
+type PageDelete {
+  errors: [PageError!]!
+  page: Page
+}
+
+type PageBulkDelete {
+  count: Int!
+  errors: [PageError!]!
+}
+
+type PageBulkPublish {
+  count: Int!
+  errors: [PageError!]!
+}
+
+input PageInput {
+  slug: String
+  title: String
+  content: JSONString
+  attributes: [AttributeValueInput!]
+  isPublished: Boolean
+  publicationDate: String
+  seo: SeoInput
+}
+
+type PageUpdate {
+  errors: [PageError!]!
+  page: Page
+}
+
+input PageTranslationInput {
+  seoTitle: String
+  seoDescription: String
+  title: String
+  content: JSONString
+}
+
+type PageTranslate {
+  errors: [TranslationError!]!
+  page: PageTranslatableContent
+}
+
+type PageAttributeAssign {
+  pageType: PageType
+  errors: [PageError!]!
+}
+
+type PageAttributeUnassign {
+  pageType: PageType
+  errors: [PageError!]!
+}
+
+type PageReorderAttributeValues {
+  page: Page
+  errors: [PageError!]!
+}
+
+input PageSortingInput {
+  direction: OrderDirection!
+  field: PageSortField!
+}
+
+input PageFilterInput {
+  search: String
+  metadata: [MetadataInput]
+  pageTypes: [ID]
+  ids: [ID]
+}
+
+type PageCountableConnection {
+  pageInfo: PageInfo!
+  edges: [PageCountableEdge!]!
+  totalCount: Int
+}
+
+type PageCountableEdge {
+  node: Page!
+  cursor: String!
+}
+
+type PageError {
+  field: String
+  message: String
+  code: PageErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+}
+
+enum PageErrorCode {
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  DUPLICATED_INPUT_ITEM
+  ATTRIBUTE_ALREADY_ASSIGNED
+}
+
+enum PageSortField {
+  TITLE
+  SLUG
+  VISIBILITY
+  CREATION_DATE
+  PUBLICATION_DATE
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type PageTranslation implements Node {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  title: String
+  content: JSONString
+  language: LanguageDisplay!
+}

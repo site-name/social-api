@@ -522,6 +522,78 @@ func (c *Context) SanitizeEmail() *Context {
 	return c
 }
 
+func (c *Context) RequireJobId() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if !model.IsValidId(c.Params.JobId) {
+		c.SetInvalidUrlParam("job_id")
+	}
+	return c
+}
+
+func (c *Context) RequireJobType() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if c.Params.JobType == "" || len(c.Params.JobType) > 32 {
+		c.SetInvalidUrlParam("job_type")
+	}
+	return c
+}
+
+func (c *Context) RequireRoleId() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if !model.IsValidId(c.Params.RoleId) {
+		c.SetInvalidUrlParam("role_id")
+	}
+	return c
+}
+
+func (c *Context) RequireSchemeId() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if !model.IsValidId(c.Params.SchemeId) {
+		c.SetInvalidUrlParam("scheme_id")
+	}
+	return c
+}
+
+func (c *Context) RequireRoleName() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if !model.IsValidRoleName(c.Params.RoleName) {
+		c.SetInvalidUrlParam("role_name")
+	}
+
+	return c
+}
+
+func (c *Context) RequireInvoiceId() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if len(c.Params.InvoiceId) != 27 {
+		c.SetInvalidUrlParam("invoice_id")
+	}
+
+	return c
+}
+
+func (c *Context) GetRemoteID(r *http.Request) string {
+	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
+}
+
 // func (c *Context) RequireCategory() *Context {
 // 	if c.Err != nil {
 // 		return c
@@ -595,62 +667,6 @@ func (c *Context) SanitizeEmail() *Context {
 // 	return c
 // }
 
-func (c *Context) RequireJobId() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if !model.IsValidId(c.Params.JobId) {
-		c.SetInvalidUrlParam("job_id")
-	}
-	return c
-}
-
-func (c *Context) RequireJobType() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if c.Params.JobType == "" || len(c.Params.JobType) > 32 {
-		c.SetInvalidUrlParam("job_type")
-	}
-	return c
-}
-
-func (c *Context) RequireRoleId() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if !model.IsValidId(c.Params.RoleId) {
-		c.SetInvalidUrlParam("role_id")
-	}
-	return c
-}
-
-func (c *Context) RequireSchemeId() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if !model.IsValidId(c.Params.SchemeId) {
-		c.SetInvalidUrlParam("scheme_id")
-	}
-	return c
-}
-
-func (c *Context) RequireRoleName() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if !model.IsValidRoleName(c.Params.RoleName) {
-		c.SetInvalidUrlParam("role_name")
-	}
-
-	return c
-}
-
 // func (c *Context) RequireGroupId() *Context {
 // 	if c.Err != nil {
 // 		return c
@@ -705,19 +721,3 @@ func (c *Context) RequireRoleName() *Context {
 // 	}
 // 	return c
 // }
-
-func (c *Context) RequireInvoiceId() *Context {
-	if c.Err != nil {
-		return c
-	}
-
-	if len(c.Params.InvoiceId) != 27 {
-		c.SetInvalidUrlParam("invoice_id")
-	}
-
-	return c
-}
-
-func (c *Context) GetRemoteID(r *http.Request) string {
-	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
-}

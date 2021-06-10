@@ -1,3 +1,18 @@
+extend type Query {
+  warehouse(id: ID!): Warehouse
+  warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection
+  stock(id: ID!): Stock
+  stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection
+}
+
+extend type Mutation {
+  createWarehouse(input: WarehouseCreateInput!): WarehouseCreate
+  updateWarehouse(id: ID!, input: WarehouseUpdateInput!): WarehouseUpdate
+  deleteWarehouse(id: ID!): WarehouseDelete
+  assignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneAssign
+  unassignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneUnassign
+}
+
 input WarehouseCreateInput {
   slug: String
   companyName: String
@@ -5,6 +20,19 @@ input WarehouseCreateInput {
   name: String!
   address: WarehouseAddressInput!
   shippingZones: [ID]
+}
+
+type Stock implements Node {
+  warehouse: Warehouse!
+  productVariant: ProductVariant!
+  quantity: Int!
+  id: ID!
+  quantityAllocated: Int!
+}
+
+input StockFilterInput {
+  quantity: Float
+  search: String
 }
 
 type WarehouseCreate {
@@ -103,15 +131,13 @@ type WarehouseShippingZoneUnassign {
   warehouse: Warehouse
 }
 
-extend type Query {
-  warehouse(id: ID!): Warehouse
-  warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection
+type StockCountableConnection {
+  pageInfo: PageInfo!
+  edges: [StockCountableEdge!]!
+  totalCount: Int
 }
 
-extend type Mutation {
-  createWarehouse(input: WarehouseCreateInput!): WarehouseCreate
-  updateWarehouse(id: ID!, input: WarehouseUpdateInput!): WarehouseUpdate
-  deleteWarehouse(id: ID!): WarehouseDelete
-  assignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneAssign
-  unassignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneUnassign
+type StockCountableEdge {
+  node: Stock!
+  cursor: String!
 }

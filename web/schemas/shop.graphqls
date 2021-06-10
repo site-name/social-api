@@ -119,3 +119,16 @@ type ShopSettingsTranslate {
   shop: Shop
   errors: [TranslationError!]!
 }
+
+type LimitInfo {
+  currentUsage: Limits!
+  allowedUsage: Limits!
+}
+
+type Limits {
+  channels: Int
+  orders: Int
+  productVariants: Int
+  staffUsers: Int
+  warehouses: Int
+}

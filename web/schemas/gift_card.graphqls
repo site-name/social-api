@@ -1,0 +1,86 @@
+extend type Mutation {
+  giftCardActivate(id: ID!): GiftCardActivate
+  giftCardCreate(input: GiftCardCreateInput!): GiftCardCreate
+  giftCardDeactivate(id: ID!): GiftCardDeactivate
+  giftCardUpdate(id: ID!, input: GiftCardUpdateInput!): GiftCardUpdate
+}
+
+extend type Query {
+  giftCard(id: ID!): GiftCard
+  giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
+}
+
+type GiftCard implements Node {
+  code: String
+  user: User
+  created: DateTime!
+  startDate: Date!
+  endDate: Date
+  lastUsedOn: DateTime
+  isActive: Boolean!
+  initialBalance: Money
+  currentBalance: Money
+  id: ID!
+  displayCode: String
+}
+
+type GiftCardActivate {
+  giftCard: GiftCard
+  errors: [GiftCardError!]!
+}
+
+input GiftCardCreateInput {
+  startDate: Date
+  endDate: Date
+  balance: PositiveDecimal
+  userEmail: String
+  code: String
+}
+
+type GiftCardCreate {
+  errors: [GiftCardError!]!
+  giftCard: GiftCard
+}
+
+type GiftCardDeactivate {
+  giftCard: GiftCard
+  errors: [GiftCardError!]!
+}
+
+input GiftCardUpdateInput {
+  startDate: Date
+  endDate: Date
+  balance: PositiveDecimal
+  userEmail: String
+}
+
+type GiftCardUpdate {
+  errors: [GiftCardError!]!
+  giftCard: GiftCard
+}
+
+type GiftCardCountableConnection {
+  pageInfo: PageInfo!
+  edges: [GiftCardCountableEdge!]!
+  totalCount: Int
+}
+
+type GiftCardCountableEdge {
+  node: GiftCard!
+  cursor: String!
+}
+
+type GiftCardError {
+  field: String
+  message: String
+  code: GiftCardErrorCode!
+}
+
+enum GiftCardErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+}

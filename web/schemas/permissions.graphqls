@@ -1,0 +1,115 @@
+extend type Mutation {
+  permissionGroupCreate(input: PermissionGroupCreateInput!): PermissionGroupCreate
+  permissionGroupUpdate(id: ID!, input: PermissionGroupUpdateInput!): PermissionGroupUpdate
+  permissionGroupDelete(id: ID!): PermissionGroupDelete
+}
+
+extend type Query {
+  permissionGroups(filter: PermissionGroupFilterInput, sortBy: PermissionGroupSortingInput, before: String, after: String, first: Int, last: Int): GroupCountableConnection
+  permissionGroup(id: ID!): Group
+}
+
+type Permission {
+  code: PermissionEnum!
+  name: String!
+}
+
+enum PermissionEnum {
+  MANAGE_USERS
+  MANAGE_STAFF
+  MANAGE_APPS
+  MANAGE_CHANNELS
+  MANAGE_DISCOUNTS
+  MANAGE_PLUGINS
+  MANAGE_GIFT_CARD
+  MANAGE_MENUS
+  MANAGE_ORDERS
+  MANAGE_PAGES
+  MANAGE_PAGE_TYPES_AND_ATTRIBUTES
+  MANAGE_PRODUCTS
+  MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES
+  MANAGE_SHIPPING
+  MANAGE_SETTINGS
+  MANAGE_TRANSLATIONS
+  MANAGE_CHECKOUTS
+}
+
+input PermissionGroupCreateInput {
+  addPermissions: [PermissionEnum!]
+  addUsers: [ID!]
+  name: String!
+}
+
+type PermissionGroupCreate {
+  errors: [PermissionGroupError!]!
+  group: Group
+}
+
+input PermissionGroupUpdateInput {
+  addPermissions: [PermissionEnum!]
+  addUsers: [ID!]
+  name: String
+  removePermissions: [PermissionEnum!]
+  removeUsers: [ID!]
+}
+
+type PermissionGroupUpdate {
+  errors: [PermissionGroupError!]!
+  group: Group
+}
+
+type PermissionGroupDelete {
+  errors: [PermissionGroupError!]!
+  group: Group
+}
+
+input PermissionGroupFilterInput {
+  search: String
+}
+
+input PermissionGroupSortingInput {
+  direction: OrderDirection!
+  field: PermissionGroupSortField!
+}
+
+type GroupCountableConnection {
+  pageInfo: PageInfo!
+  edges: [GroupCountableEdge!]!
+  totalCount: Int
+}
+
+type Group implements Node {
+  id: ID!
+  name: String!
+  permissions: [Permission]
+  users: [User]
+  userCanManage: Boolean!
+}
+
+type PermissionGroupError {
+  field: String
+  message: String
+  code: PermissionGroupErrorCode!
+  permissions: [PermissionEnum!]
+  users: [ID!]
+}
+
+enum PermissionGroupErrorCode {
+  ASSIGN_NON_STAFF_MEMBER
+  DUPLICATED_INPUT_ITEM
+  CANNOT_REMOVE_FROM_LAST_GROUP
+  LEFT_NOT_MANAGEABLE_PERMISSION
+  OUT_OF_SCOPE_PERMISSION
+  OUT_OF_SCOPE_USER
+  REQUIRED
+  UNIQUE
+}
+
+enum PermissionGroupSortField {
+  NAME
+}
+
+type GroupCountableEdge {
+  node: Group!
+  cursor: String!
+}

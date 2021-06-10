@@ -104,7 +104,10 @@ type ProductTranslation implements Node {
   language: LanguageDisplay!
 }
 
-
+type Margin {
+  start: Int
+  stop: Int
+}
 
 input ProductAttributeAssignInput {
   id: ID!
@@ -281,4 +284,9 @@ type ProductCountableEdge {
 enum ProductMediaType {
   IMAGE
   VIDEO
+}
+
+enum StockAvailability {
+  IN_STOCK
+  OUT_OF_STOCK
 }

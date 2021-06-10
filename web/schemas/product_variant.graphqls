@@ -95,6 +95,21 @@ type ProductVariantStocksDelete {
   errors: [StockError!]!
 }
 
+type StockError {
+  field: String
+  message: String
+  code: StockErrorCode!
+}
+
+enum StockErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+}
+
 type ProductVariantStocksUpdate {
   productVariant: ProductVariant
   errors: [BulkStockError!]!
@@ -210,4 +225,21 @@ type ProductChannelListingError {
 type ProductVariantCountableEdge {
   node: ProductVariant!
   cursor: String!
+}
+
+type ProductVariantBulkCreate {
+  count: Int!
+  productVariants: [ProductVariant!]!
+  errors: [BulkProductError!]!
+}
+
+type BulkProductError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+  index: Int
+  warehouses: [ID!]
+  channels: [ID!]
 }

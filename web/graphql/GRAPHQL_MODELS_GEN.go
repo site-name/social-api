@@ -451,8 +451,8 @@ type AttributeTranslatableContent struct {
 	Attribute   *Attribute            `json:"attribute"`
 }
 
-func (AttributeTranslatableContent) IsNode()             {}
 func (AttributeTranslatableContent) IsTranslatableItem() {}
+func (AttributeTranslatableContent) IsNode()             {}
 
 type AttributeTranslate struct {
 	Errors    []TranslationError `json:"errors"`
@@ -540,8 +540,8 @@ type AttributeValueTranslatableContent struct {
 	AttributeValue *AttributeValue            `json:"attributeValue"`
 }
 
-func (AttributeValueTranslatableContent) IsNode()             {}
 func (AttributeValueTranslatableContent) IsTranslatableItem() {}
+func (AttributeValueTranslatableContent) IsNode()             {}
 
 type AttributeValueTranslate struct {
 	Errors         []TranslationError `json:"errors"`
@@ -677,8 +677,8 @@ type CategoryTranslatableContent struct {
 	Category       *Category            `json:"category"`
 }
 
-func (CategoryTranslatableContent) IsNode()             {}
 func (CategoryTranslatableContent) IsTranslatableItem() {}
+func (CategoryTranslatableContent) IsNode()             {}
 
 type CategoryTranslate struct {
 	Errors   []TranslationError `json:"errors"`
@@ -1076,8 +1076,8 @@ type CollectionTranslatableContent struct {
 	Collection     *Collection            `json:"collection"`
 }
 
-func (CollectionTranslatableContent) IsNode()             {}
 func (CollectionTranslatableContent) IsTranslatableItem() {}
+func (CollectionTranslatableContent) IsNode()             {}
 
 type CollectionTranslate struct {
 	Errors     []TranslationError `json:"errors"`
@@ -1927,8 +1927,8 @@ type MenuItemTranslatableContent struct {
 	MenuItem    *MenuItem            `json:"menuItem"`
 }
 
-func (MenuItemTranslatableContent) IsNode()             {}
 func (MenuItemTranslatableContent) IsTranslatableItem() {}
+func (MenuItemTranslatableContent) IsNode()             {}
 
 type MenuItemTranslate struct {
 	Errors   []TranslationError `json:"errors"`
@@ -2509,8 +2509,8 @@ type PageTranslatableContent struct {
 	Page           *Page            `json:"page"`
 }
 
-func (PageTranslatableContent) IsNode()             {}
 func (PageTranslatableContent) IsTranslatableItem() {}
+func (PageTranslatableContent) IsNode()             {}
 
 type PageTranslate struct {
 	Errors []TranslationError       `json:"errors"`
@@ -2981,13 +2981,6 @@ type ProductFilterInput struct {
 	Channel           *string                  `json:"channel"`
 }
 
-type ProductImage struct {
-	ID        string  `json:"id"`
-	Alt       *string `json:"alt"`
-	SortOrder *int    `json:"sortOrder"`
-	URL       string  `json:"url"`
-}
-
 type ProductInput struct {
 	Attributes  []AttributeValueInput `json:"attributes"`
 	Category    *string               `json:"category"`
@@ -3089,8 +3082,8 @@ type ProductTranslatableContent struct {
 	Product        *Product            `json:"product"`
 }
 
-func (ProductTranslatableContent) IsNode()             {}
 func (ProductTranslatableContent) IsTranslatableItem() {}
+func (ProductTranslatableContent) IsNode()             {}
 
 type ProductTranslate struct {
 	Errors  []TranslationError `json:"errors"`
@@ -3340,8 +3333,8 @@ type ProductVariantTranslatableContent struct {
 	ProductVariant *ProductVariant            `json:"productVariant"`
 }
 
-func (ProductVariantTranslatableContent) IsNode()             {}
 func (ProductVariantTranslatableContent) IsTranslatableItem() {}
+func (ProductVariantTranslatableContent) IsNode()             {}
 
 type ProductVariantTranslate struct {
 	Errors         []TranslationError `json:"errors"`
@@ -3500,8 +3493,8 @@ type SaleTranslatableContent struct {
 	Sale        *Sale            `json:"sale"`
 }
 
-func (SaleTranslatableContent) IsNode()             {}
 func (SaleTranslatableContent) IsTranslatableItem() {}
+func (SaleTranslatableContent) IsNode()             {}
 
 type SaleTranslate struct {
 	Errors []TranslationError `json:"errors"`
@@ -3614,8 +3607,8 @@ type ShippingMethodTranslatableContent struct {
 	ShippingMethod *ShippingMethod            `json:"shippingMethod"`
 }
 
-func (ShippingMethodTranslatableContent) IsNode()             {}
 func (ShippingMethodTranslatableContent) IsTranslatableItem() {}
+func (ShippingMethodTranslatableContent) IsNode()             {}
 
 type ShippingMethodTranslation struct {
 	ID          string           `json:"id"`

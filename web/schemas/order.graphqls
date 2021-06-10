@@ -476,3 +476,45 @@ type OrderEventDiscountObject {
   oldValue: PositiveDecimal
   oldAmount: Money
 }
+
+type FulfillmentLine implements Node {
+  id: ID!
+  quantity: Int!
+  orderLine: OrderLine
+}
+
+enum FulfillmentStatus {
+  FULFILLED
+  REFUNDED
+  RETURNED
+  REPLACED
+  REFUNDED_AND_RETURNED
+  CANCELED
+}
+
+type OrderDiscount implements Node {
+  id: ID!
+  type: OrderDiscountType!
+  valueType: DiscountValueTypeEnum!
+  value: PositiveDecimal!
+  name: String
+  translatedName: String
+  reason: String
+  amount: Money!
+}
+
+enum OrderDiscountType {
+  VOUCHER
+  MANUAL
+}
+
+type OrderUpdate {
+  errors: [OrderError!]!
+  order: Order
+}
+
+input OrderUpdateInput {
+  billingAddress: AddressInput
+  userEmail: String
+  shippingAddress: AddressInput
+}

@@ -31,6 +31,14 @@ type Payment implements Node {
   creditCard: CreditCard
 }
 
+type CreditCard {
+  brand: String!
+  firstDigits: String
+  lastDigits: String!
+  expMonth: Int
+  expYear: Int
+}
+
 type PaymentCapture {
   payment: Payment
   errors: [PaymentError!]!
@@ -103,4 +111,29 @@ type PaymentInitialized {
 type PaymentCountableEdge {
   node: Payment!
   cursor: String!
+}
+
+type Transaction implements Node {
+  id: ID!
+  created: DateTime!
+  payment: Payment!
+  token: String!
+  kind: TransactionKind!
+  isSuccess: Boolean!
+  error: String
+  gatewayResponse: JSONString!
+  amount: Money
+}
+
+enum TransactionKind {
+  EXTERNAL
+  AUTH
+  PENDING
+  ACTION_TO_CONFIRM
+  REFUND
+  REFUND_ONGOING
+  CAPTURE
+  VOID
+  CONFIRM
+  CANCEL
 }
