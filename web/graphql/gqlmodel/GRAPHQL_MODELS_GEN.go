@@ -4219,21 +4219,6 @@ type VoucherUpdate struct {
 	Voucher *Voucher        `json:"voucher"`
 }
 
-type Warehouse struct {
-	ID              string                           `json:"id"`
-	Name            string                           `json:"name"`
-	Slug            string                           `json:"slug"`
-	CompanyName     string                           `json:"companyName"`
-	ShippingZones   *ShippingZoneCountableConnection `json:"shippingZones"`
-	Address         *Address                         `json:"address"`
-	Email           string                           `json:"email"`
-	PrivateMetadata []*MetadataItem                  `json:"privateMetadata"`
-	Metadata        []*MetadataItem                  `json:"metadata"`
-}
-
-func (Warehouse) IsNode()               {}
-func (Warehouse) IsObjectWithMetadata() {}
-
 type WarehouseAddressInput struct {
 	StreetAddress1 string      `json:"streetAddress1"`
 	StreetAddress2 *string     `json:"streetAddress2"`

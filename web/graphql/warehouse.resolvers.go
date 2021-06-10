@@ -7,11 +7,22 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 func (r *mutationResolver) CreateWarehouse(ctx context.Context, input gqlmodel.WarehouseCreateInput) (*gqlmodel.WarehouseCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	return &gqlmodel.WarehouseCreate{
+		Warehouse: &gqlmodel.Warehouse{
+			ID:            "thisisTheIdhehehkkkk",
+			Name:          input.Name,
+			Slug:          *input.Slug,
+			Email:         *input.Email,
+			CompanyName:   *input.CompanyName,
+			ShippingZones: &gqlmodel.ShippingZoneCountableConnection{},
+			AddressID:     model.NewString("thoisudsd878445476g"),
+		},
+	}, nil
 }
 
 func (r *mutationResolver) UpdateWarehouse(ctx context.Context, id string, input gqlmodel.WarehouseUpdateInput) (*gqlmodel.WarehouseUpdate, error) {
@@ -45,3 +56,14 @@ func (r *queryResolver) Stock(ctx context.Context, id string) (*gqlmodel.Stock, 
 func (r *queryResolver) Stocks(ctx context.Context, filter *gqlmodel.StockFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.StockCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *warehouseResolver) Address(ctx context.Context, obj *gqlmodel.Warehouse) (*gqlmodel.Address, error) {
+	return &gqlmodel.Address{
+		ID: *obj.AddressID,
+	}, nil
+}
+
+// Warehouse returns WarehouseResolver implementation.
+func (r *Resolver) Warehouse() WarehouseResolver { return &warehouseResolver{r} }
+
+type warehouseResolver struct{ *Resolver }
