@@ -34,3 +34,16 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*gqlmodel.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }

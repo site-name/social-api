@@ -619,27 +619,6 @@ type CatalogueInput struct {
 	Collections []*string `json:"collections"`
 }
 
-type Category struct {
-	ID              string                       `json:"id"`
-	SeoTitle        *string                      `json:"seoTitle"`
-	SeoDescription  *string                      `json:"seoDescription"`
-	Name            string                       `json:"name"`
-	Description     *string                      `json:"description"`
-	Slug            string                       `json:"slug"`
-	Parent          *Category                    `json:"parent"`
-	Level           int                          `json:"level"`
-	PrivateMetadata []*MetadataItem              `json:"privateMetadata"`
-	Metadata        []*MetadataItem              `json:"metadata"`
-	Ancestors       *CategoryCountableConnection `json:"ancestors"`
-	Products        *ProductCountableConnection  `json:"products"`
-	Children        *CategoryCountableConnection `json:"children"`
-	BackgroundImage *Image                       `json:"backgroundImage"`
-	Translation     *CategoryTranslation         `json:"translation"`
-}
-
-func (Category) IsNode()               {}
-func (Category) IsObjectWithMetadata() {}
-
 type CategoryBulkDelete struct {
 	Count  int            `json:"count"`
 	Errors []ProductError `json:"errors"`
@@ -783,39 +762,6 @@ type ChannelUpdateInput struct {
 	AddShippingZones    []string `json:"addShippingZones"`
 	RemoveShippingZones []string `json:"removeShippingZones"`
 }
-
-type Checkout struct {
-	Created                  time.Time         `json:"created"`
-	LastChange               time.Time         `json:"lastChange"`
-	User                     *User             `json:"user"`
-	Channel                  *Channel          `json:"channel"`
-	BillingAddress           *Address          `json:"billingAddress"`
-	ShippingAddress          *Address          `json:"shippingAddress"`
-	Note                     string            `json:"note"`
-	Discount                 *Money            `json:"discount"`
-	DiscountName             *string           `json:"discountName"`
-	TranslatedDiscountName   *string           `json:"translatedDiscountName"`
-	VoucherCode              *string           `json:"voucherCode"`
-	GiftCards                []*GiftCard       `json:"giftCards"`
-	ID                       string            `json:"id"`
-	PrivateMetadata          []*MetadataItem   `json:"privateMetadata"`
-	Metadata                 []*MetadataItem   `json:"metadata"`
-	AvailableShippingMethods []*ShippingMethod `json:"availableShippingMethods"`
-	AvailablePaymentGateways []PaymentGateway  `json:"availablePaymentGateways"`
-	Email                    string            `json:"email"`
-	IsShippingRequired       bool              `json:"isShippingRequired"`
-	Quantity                 int               `json:"quantity"`
-	Lines                    []*CheckoutLine   `json:"lines"`
-	ShippingPrice            *TaxedMoney       `json:"shippingPrice"`
-	ShippingMethod           *ShippingMethod   `json:"shippingMethod"`
-	SubtotalPrice            *TaxedMoney       `json:"subtotalPrice"`
-	Token                    uuid.UUID         `json:"token"`
-	TotalPrice               *TaxedMoney       `json:"totalPrice"`
-	LanguageCode             LanguageCodeEnum  `json:"languageCode"`
-}
-
-func (Checkout) IsNode()               {}
-func (Checkout) IsObjectWithMetadata() {}
 
 type CheckoutAddPromoCode struct {
 	Checkout *Checkout       `json:"checkout"`
@@ -3778,37 +3724,6 @@ type ShippingZoneUpdateInput struct {
 	RemoveChannels   []string  `json:"removeChannels"`
 }
 
-type Shop struct {
-	AvailablePaymentGateways            []PaymentGateway              `json:"availablePaymentGateways"`
-	AvailableExternalAuthentications    []ExternalAuthentication      `json:"availableExternalAuthentications"`
-	AvailableShippingMethods            []*ShippingMethod             `json:"availableShippingMethods"`
-	Countries                           []CountryDisplay              `json:"countries"`
-	DefaultCountry                      *CountryDisplay               `json:"defaultCountry"`
-	DefaultMailSenderName               *string                       `json:"defaultMailSenderName"`
-	DefaultMailSenderAddress            *string                       `json:"defaultMailSenderAddress"`
-	Description                         *string                       `json:"description"`
-	Domain                              *Domain                       `json:"domain"`
-	Languages                           []*LanguageDisplay            `json:"languages"`
-	Name                                string                        `json:"name"`
-	Permissions                         []*Permission                 `json:"permissions"`
-	PhonePrefixes                       []*string                     `json:"phonePrefixes"`
-	HeaderText                          *string                       `json:"headerText"`
-	IncludeTaxesInPrices                bool                          `json:"includeTaxesInPrices"`
-	DisplayGrossPrices                  bool                          `json:"displayGrossPrices"`
-	ChargeTaxesOnShipping               bool                          `json:"chargeTaxesOnShipping"`
-	TrackInventoryByDefault             *bool                         `json:"trackInventoryByDefault"`
-	DefaultWeightUnit                   *WeightUnitsEnum              `json:"defaultWeightUnit"`
-	Translation                         *ShopTranslation              `json:"translation"`
-	AutomaticFulfillmentDigitalProducts *bool                         `json:"automaticFulfillmentDigitalProducts"`
-	DefaultDigitalMaxDownloads          *int                          `json:"defaultDigitalMaxDownloads"`
-	DefaultDigitalURLValidDays          *int                          `json:"defaultDigitalUrlValidDays"`
-	CompanyAddress                      *Address                      `json:"companyAddress"`
-	CustomerSetPasswordURL              *string                       `json:"customerSetPasswordUrl"`
-	StaffNotificationRecipients         []*StaffNotificationRecipient `json:"staffNotificationRecipients"`
-	Limits                              *LimitInfo                    `json:"limits"`
-	Version                             string                        `json:"version"`
-}
-
 type ShopAddressUpdate struct {
 	Shop   *Shop       `json:"shop"`
 	Errors []ShopError `json:"errors"`
@@ -4072,36 +3987,6 @@ type UploadError struct {
 	Message *string         `json:"message"`
 	Code    UploadErrorCode `json:"code"`
 }
-
-type User struct {
-	ID                     string                       `json:"id"`
-	LastLogin              *time.Time                   `json:"lastLogin"`
-	Email                  string                       `json:"email"`
-	FirstName              string                       `json:"firstName"`
-	LastName               string                       `json:"lastName"`
-	IsStaff                bool                         `json:"isStaff"`
-	IsActive               bool                         `json:"isActive"`
-	Note                   *string                      `json:"note"`
-	DateJoined             time.Time                    `json:"dateJoined"`
-	DefaultShippingAddress *Address                     `json:"defaultShippingAddress"`
-	DefaultBillingAddress  *Address                     `json:"defaultBillingAddress"`
-	PrivateMetadata        []*MetadataItem              `json:"privateMetadata"`
-	Metadata               []*MetadataItem              `json:"metadata"`
-	Addresses              []*Address                   `json:"addresses"`
-	CheckoutTokens         []uuid.UUID                  `json:"checkoutTokens"`
-	GiftCards              *GiftCardCountableConnection `json:"giftCards"`
-	Orders                 *OrderCountableConnection    `json:"orders"`
-	UserPermissions        []*UserPermission            `json:"userPermissions"`
-	PermissionGroups       []*Group                     `json:"permissionGroups"`
-	EditableGroups         []*Group                     `json:"editableGroups"`
-	Avatar                 *Image                       `json:"avatar"`
-	Events                 []*CustomerEvent             `json:"events"`
-	StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
-	LanguageCode           LanguageCodeEnum             `json:"languageCode"`
-}
-
-func (User) IsNode()               {}
-func (User) IsObjectWithMetadata() {}
 
 type UserAvatarDelete struct {
 	User   *User          `json:"user"`

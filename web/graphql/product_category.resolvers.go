@@ -10,6 +10,14 @@ import (
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
+func (r *categoryResolver) Parent(ctx context.Context, obj *gqlmodel.Category) (*gqlmodel.Category, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *categoryResolver) Translation(ctx context.Context, obj *gqlmodel.Category, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.CategoryTranslation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) CategoryCreate(ctx context.Context, input gqlmodel.CategoryInput, parent *string) (*gqlmodel.CategoryCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -37,3 +45,8 @@ func (r *queryResolver) Categories(ctx context.Context, filter *gqlmodel.Categor
 func (r *queryResolver) Category(ctx context.Context, id *string, slug *string) (*gqlmodel.Category, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Category returns CategoryResolver implementation.
+func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
+
+type categoryResolver struct{ *Resolver }

@@ -11,6 +11,38 @@ import (
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
+func (r *checkoutResolver) User(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) Channel(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Channel, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) BillingAddress(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) ShippingAddress(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) GiftCards(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.GiftCard, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]gqlmodel.PaymentGateway, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.CheckoutLine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID string, promoCode string) (*gqlmodel.CheckoutAddPromoCode, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -66,3 +98,8 @@ func (r *queryResolver) Checkout(ctx context.Context, token *uuid.UUID) (*gqlmod
 func (r *queryResolver) Checkouts(ctx context.Context, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.CheckoutCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Checkout returns CheckoutResolver implementation.
+func (r *Resolver) Checkout() CheckoutResolver { return &checkoutResolver{r} }
+
+type checkoutResolver struct{ *Resolver }

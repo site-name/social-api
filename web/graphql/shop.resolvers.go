@@ -33,3 +33,28 @@ func (r *mutationResolver) ShopAddressUpdate(ctx context.Context, input *gqlmode
 func (r *queryResolver) Shop(ctx context.Context) (*gqlmodel.Shop, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *shopResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Shop, currency *string, channel *string) ([]gqlmodel.PaymentGateway, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *shopResolver) AvailableExternalAuthentications(ctx context.Context, obj *gqlmodel.Shop) ([]gqlmodel.ExternalAuthentication, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *shopResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmodel.Shop, channel string, address *gqlmodel.AddressInput) ([]*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *shopResolver) Translation(ctx context.Context, obj *gqlmodel.Shop, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ShopTranslation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *shopResolver) CompanyAddress(ctx context.Context, obj *gqlmodel.Shop) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// Shop returns ShopResolver implementation.
+func (r *Resolver) Shop() ShopResolver { return &shopResolver{r} }
+
+type shopResolver struct{ *Resolver }
