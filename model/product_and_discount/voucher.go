@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -38,12 +39,12 @@ var (
 
 // NotApplicable represent error to some discount (vouchers || sales)
 type NotApplicable struct {
-	MinSpent                 *model.Money
+	MinSpent                 *goprices.Money
 	MinCheckoutItemsQuantity *uint
 	Msg                      string
 }
 
-func NewNotApplicable(msg string, minSpent *model.Money, minCheckoutItemsQuantity *uint) *NotApplicable {
+func NewNotApplicable(msg string, minSpent *goprices.Money, minCheckoutItemsQuantity *uint) *NotApplicable {
 	return &NotApplicable{
 		MinSpent:                 minSpent,
 		Msg:                      msg,

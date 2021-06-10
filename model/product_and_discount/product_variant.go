@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"golang.org/x/text/language"
@@ -96,7 +97,7 @@ func ProductVariantFromJson(data io.Reader) *ProductVariant {
 }
 
 // TODO: fixme
-func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *model.Money {
+func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *goprices.Money {
 	panic("not impl")
 }
 

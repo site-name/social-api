@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util"
@@ -162,8 +163,8 @@ func (p *Payment) IsManual() bool {
 	return p.GateWay == GATE_WAY_MANUAL
 }
 
-func (p *Payment) GetTotal() *model.Money {
-	return &model.Money{
+func (p *Payment) GetTotal() *goprices.Money {
+	return &goprices.Money{
 		Amount:   p.Total,
 		Currency: p.Currency,
 	}
@@ -184,15 +185,15 @@ func (p *Payment) GetLastTransaction() *PaymentTransaction {
 	return tran
 }
 
-func (p *Payment) GetCapturedAmount() *model.Money {
-	return &model.Money{
+func (p *Payment) GetCapturedAmount() *goprices.Money {
+	return &goprices.Money{
 		Amount:   p.CapturedAmount,
 		Currency: p.Currency,
 	}
 }
 
-func (p *Payment) GetAuthorizedAmount() *model.Money {
-	money := &model.Money{
+func (p *Payment) GetAuthorizedAmount() *goprices.Money {
+	money := &goprices.Money{
 		Amount:   &decimal.Zero,
 		Currency: p.Currency,
 	}

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -14,18 +15,18 @@ type VoucherChannelListing struct {
 	VoucherID     string               `json:"voucher_id"`
 	ChannelID     string               `json:"channel_id"`
 	DiscountValue *decimal.NullDecimal `json:"discount_value"`
-	Discount      *model.Money         `json:"discount,omitempty" db:"-"`
-	MinSpent      *model.Money         `json:"min_spent,omitempty" db:"-"`
+	Discount      *goprices.Money      `json:"discount,omitempty" db:"-"`
+	MinSpent      *goprices.Money      `json:"min_spent,omitempty" db:"-"`
 	Currency      string               `json:"currency"`
 	MinSpenAmount *decimal.NullDecimal `json:"min_spent_amount"`
 }
 
 func (v *VoucherChannelListing) ToJson() string {
-	v.Discount = &model.Money{
+	v.Discount = &goprices.Money{
 		Amount:   &v.DiscountValue.Decimal,
 		Currency: v.Currency,
 	}
-	v.MinSpent = &model.Money{
+	v.MinSpent = &goprices.Money{
 		Amount:   &v.MinSpenAmount.Decimal,
 		Currency: v.Currency,
 	}

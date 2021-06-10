@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
@@ -42,7 +43,7 @@ type Checkout struct {
 	Currency               string               `json:"currency"`
 	Country                string               `json:"country"` // one country only
 	DiscountAmount         *decimal.Decimal     `json:"discount_amount"`
-	Discount               *model.Money         `db:"-" json:"discount,omitempty"`
+	Discount               *goprices.Money      `db:"-" json:"discount,omitempty"`
 	DiscountName           *string              `json:"discount_name"`
 	TranslatedDiscountName *string              `json:"translated_discount_name"`
 	VoucherCode            *string              `json:"voucher_code"`
@@ -109,7 +110,7 @@ func (c *Checkout) IsValid() *model.AppError {
 }
 
 func (c *Checkout) ToJson() string {
-	c.Discount = &model.Money{
+	c.Discount = &goprices.Money{
 		Amount:   c.DiscountAmount,
 		Currency: c.Currency,
 	}
@@ -173,7 +174,7 @@ func (c *Checkout) IsShippingRequired() bool {
 }
 
 // Return the total balance of the gift cards assigned to the checkout.
-func (c *Checkout) GetTotalGiftCardsBalance() *model.Money {
+func (c *Checkout) GetTotalGiftCardsBalance() *goprices.Money {
 	// TODO: fixme
 	panic("not impl")
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -25,9 +26,9 @@ type GiftCard struct {
 	IsActive             *bool            `json:"is_active"`
 	Currency             string           `json:"currency"`
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
-	InitialBalance       *model.Money     `json:"initial_balance" db:"-"`
+	InitialBalance       *goprices.Money  `json:"initial_balance" db:"-"`
 	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"`
-	CurrentBalance       *model.Money     `json:"current_balance" db:"-"`
+	CurrentBalance       *goprices.Money  `json:"current_balance" db:"-"`
 }
 
 func (gc *GiftCard) DisplayCode() string {
@@ -35,11 +36,11 @@ func (gc *GiftCard) DisplayCode() string {
 }
 
 func (gc *GiftCard) ToJson() string {
-	gc.InitialBalance = &model.Money{
+	gc.InitialBalance = &goprices.Money{
 		Amount:   gc.InitialBalanceAmount,
 		Currency: gc.Currency,
 	}
-	gc.CurrentBalance = &model.Money{
+	gc.CurrentBalance = &goprices.Money{
 		Amount:   gc.CurrentBalanceAmount,
 		Currency: gc.Currency,
 	}

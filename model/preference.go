@@ -63,13 +63,12 @@ type Preference struct {
 }
 
 func (o *Preference) ToJson() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(o)
 }
 
 func PreferenceFromJson(data io.Reader) *Preference {
 	var o *Preference
-	json.JSON.NewDecoder(data).Decode(&o)
+	ModelFromJson(&o, data)
 	return o
 }
 
@@ -126,4 +125,19 @@ func (o *Preference) PreUpdate() {
 			o.Value = string(b)
 		}
 	}
+}
+
+type Preferences []Preference
+
+func (o *Preferences) ToJson() string {
+	return ModelToJson(o)
+}
+
+func PreferencesFromJson(data io.Reader) (Preferences, error) {
+	var o Preferences
+	err := ModelFromJson(&o, data)
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
 }

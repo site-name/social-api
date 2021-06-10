@@ -6,6 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -31,7 +32,7 @@ func (s *Sale) String() string {
 	return s.Name
 }
 
-func (s *Sale) GetDiscount(scl *SaleChannelListing) (*model.Money, error) {
+func (s *Sale) GetDiscount(scl *SaleChannelListing) (*goprices.Money, error) {
 	if scl == nil {
 		return nil, &NotApplicable{
 			Msg: "This sale if not assigned to this channel.",

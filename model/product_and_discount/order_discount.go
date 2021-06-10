@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -38,7 +39,7 @@ type OrderDiscount struct {
 	ValueType      string           `json:"value_type"`
 	Value          *decimal.Decimal `json:"value"`
 	AmountValue    *decimal.Decimal `json:"amount_value"`
-	Amount         *model.Money     `json:"amount,omitempty" db:"-"`
+	Amount         *goprices.Money  `json:"amount,omitempty" db:"-"`
 	Currency       string           `json:"currency"`
 	Name           *string          `json:"name"`
 	TranslatedName *string          `json:"translated_name"`
@@ -90,7 +91,7 @@ func (o *OrderDiscount) PreSave() {
 }
 
 func (o *OrderDiscount) ToJson() string {
-	o.Amount = &model.Money{
+	o.Amount = &goprices.Money{
 		Amount:   o.AmountValue,
 		Currency: o.Currency,
 	}

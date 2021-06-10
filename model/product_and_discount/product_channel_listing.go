@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )
@@ -18,7 +19,7 @@ type ProductChannelListing struct {
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase"`
 	Currency              string           `json:"currency"`
 	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`
-	DiscountedPrice       *model.Money     `json:"discounted_price,omitempty" db:"-"`
+	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"`
 	model.Publishable
 }
 
@@ -55,7 +56,7 @@ func (p *ProductChannelListing) PreSave() {
 }
 
 func (p *ProductChannelListing) ToJson() string {
-	p.DiscountedPrice = &model.Money{
+	p.DiscountedPrice = &goprices.Money{
 		Amount:   p.DiscountedPriceAmount,
 		Currency: p.Currency,
 	}
