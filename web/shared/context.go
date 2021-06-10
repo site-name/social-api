@@ -101,6 +101,7 @@ func (c *Context) SessionRequired() {
 	}
 }
 
+// MfaRequired must be placed after c's SessionRequired() method
 func (c *Context) MfaRequired() {
 	// OAuth integrations are excepted
 	if c.AppContext.Session().IsOAuth {
@@ -185,6 +186,7 @@ func (c *Context) SetInvalidUrlParam(parameter string) {
 	c.Err = NewInvalidUrlParamError(parameter)
 }
 
+// SetServerBusyError set c's Err property to a non-nil AppError
 func (c *Context) SetServerBusyError() {
 	c.Err = NewServerBusyError()
 }

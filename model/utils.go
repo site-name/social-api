@@ -564,6 +564,7 @@ func (er *AppError) Translate(T i18n.TranslateFunc) {
 	}
 }
 
+// SystemMessage need an translate func,
 func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
 	if er.params == nil {
 		return T(er.Id)

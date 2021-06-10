@@ -330,6 +330,7 @@ func (s *Server) AsymmetricSigningKey() *ecdsa.PrivateKey {
 	return nil
 }
 
+// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 func (a *App) AsymmetricSigningKey() *ecdsa.PrivateKey {
 	return a.Srv().AsymmetricSigningKey()
 }

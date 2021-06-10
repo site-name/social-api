@@ -112,17 +112,17 @@ type Server struct {
 
 	newStore func() (store.Store, error)
 
-	htmlTemplateWatcher     *templates.Container
-	sessionCache            cache.Cache // cache for storing sessions
-	seenPendingPostIdsCache cache.Cache
+	htmlTemplateWatcher *templates.Container
+	sessionCache        cache.Cache // cache for storing sessions
+	// seenPendingPostIdsCache cache.Cache
+	// licenseListenerId       string
+	// searchLicenseListenerId string
+	// loggerLicenseListenerId string
 	statusCache             cache.Cache
 	configListenerId        string
-	licenseListenerId       string
 	logListenerId           string
 	clusterLeaderListenerId string
 	searchConfigListenerId  string
-	searchLicenseListenerId string
-	loggerLicenseListenerId string
 	configStore             *config.Store
 	postActionCookieSecret  []byte
 
@@ -139,7 +139,7 @@ type Server struct {
 	// telemetryService *telemetry.TelemetryService
 	// userService      *users.UserService
 
-	serviceMux sync.RWMutex
+	// serviceMux sync.RWMutex
 	// remoteClusterService remotecluster.RemoteClusterServiceIFace
 	// sharedChannelService SharedChannelServiceIFace
 
@@ -156,7 +156,7 @@ type Server struct {
 	joinCluster       bool
 	startMetrics      bool
 	startSearchEngine bool
-	skipPostInit      bool
+	// skipPostInit      bool
 
 	SearchEngine *searchengine.Broker
 
