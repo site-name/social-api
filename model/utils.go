@@ -36,6 +36,7 @@ var (
 
 type StringInterface map[string]interface{}
 type StringArray []string
+type StringMap map[string]string
 
 // Remove removes input from the array
 func (sa StringArray) Remove(input string) StringArray {
