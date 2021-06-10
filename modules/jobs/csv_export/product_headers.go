@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/web/graphql"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 // Get export fields, all headers and headers mapping.
 // Based on export_info returns exported fields, fields to headers mapping and
 // all headers.
 // Headers contains product, variant, attribute and warehouse headers.
-func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo *graphql.ExportInfoInput) ([]string, []string, []string) {
+func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo *gqlmodel.ExportInfoInput) ([]string, []string, []string) {
 	exportFields, fileHeaders := GetProductExportFieldsAndHeaders(exportInfo)
 	attributeHeaders := worker.GetAttributeHeaders(exportInfo)
 	warehouseHeaders := worker.GetWarehousesHeaders(exportInfo)
@@ -35,7 +35,7 @@ func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo *graphql.ExportIn
 // Headers are build from slug and contains information if it's a product or variant
 // attribute. Respectively for product: "slug-value (product attribute)"
 // and for variant: "slug-value (variant attribute)".
-func (worker *Worker) GetAttributeHeaders(exportInfo *graphql.ExportInfoInput) []string {
+func (worker *Worker) GetAttributeHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
 	if len(exportInfo.Attributes) == 0 {
 		return nil
 	}
@@ -55,7 +55,7 @@ func (worker *Worker) GetAttributeHeaders(exportInfo *graphql.ExportInfoInput) [
 
 // Get headers for exported warehouses.
 // Headers are build from slug. Example: "slug-value (warehouse quantity)"
-func (worker *Worker) GetWarehousesHeaders(exportInfo *graphql.ExportInfoInput) []string {
+func (worker *Worker) GetWarehousesHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
 	if len(exportInfo.Warehouses) == 0 {
 		return nil
 	}
@@ -81,7 +81,7 @@ func (worker *Worker) GetWarehousesHeaders(exportInfo *graphql.ExportInfoInput) 
 // - currency code data header: "slug-value (channel currency code)"
 // - published data header: "slug-value (channel visible)"
 // - publication date data header: "slug-value (channel publication date)"
-func (worker *Worker) GetChannelsHeaders(exportInfo *graphql.ExportInfoInput) []string {
+func (worker *Worker) GetChannelsHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
 	if len(exportInfo.Channels) == 0 {
 		return nil
 	}
@@ -121,7 +121,7 @@ func (worker *Worker) GetChannelsHeaders(exportInfo *graphql.ExportInfoInput) []
 // Get export fields from export info and prepare headers mapping.
 // Based on given fields headers from export info, export fields set and
 // headers mapping is prepared.
-func GetProductExportFieldsAndHeaders(exportInfo *graphql.ExportInfoInput) (exportFields []string, fileHeaders []string) {
+func GetProductExportFieldsAndHeaders(exportInfo *gqlmodel.ExportInfoInput) (exportFields []string, fileHeaders []string) {
 	exportFields = []string{"id"}
 	fileHeaders = []string{"id"}
 
@@ -129,7 +129,7 @@ func GetProductExportFieldsAndHeaders(exportInfo *graphql.ExportInfoInput) (expo
 		return
 	}
 
-	fieldsMapping := make(map[graphql.ProductFieldEnum]string)
+	fieldsMapping := make(map[gqlmodel.ProductFieldEnum]string)
 	for _, value := range ProductExportFields.HEADERS_TO_FIELDS_MAPPING {
 		for k, v := range value {
 			fieldsMapping[k] = v

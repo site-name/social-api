@@ -1,11 +1,11 @@
 package csv_export
 
 import (
-	"github.com/sitename/sitename/web/graphql"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 type Fields struct {
-	HEADERS_TO_FIELDS_MAPPING      map[string]map[graphql.ProductFieldEnum]string
+	HEADERS_TO_FIELDS_MAPPING      map[string]map[gqlmodel.ProductFieldEnum]string
 	PRODUCT_ATTRIBUTE_FIELDS       map[string]string
 	PRODUCT_CHANNEL_LISTING_FIELDS map[string]string
 	WAREHOUSE_FIELDS               map[string]string
@@ -19,24 +19,24 @@ var (
 
 func init() {
 	ProductExportFields = &Fields{
-		HEADERS_TO_FIELDS_MAPPING: map[string]map[graphql.ProductFieldEnum]string{
+		HEADERS_TO_FIELDS_MAPPING: map[string]map[gqlmodel.ProductFieldEnum]string{
 			"fields": {
-				graphql.ProductFieldEnumName:          "name",
-				graphql.ProductFieldEnumDescription:   "description_as_str",
-				graphql.ProductFieldEnumCategory:      "category__slug",
-				graphql.ProductFieldEnumProductType:   "product_type__name",
-				graphql.ProductFieldEnumChargeTaxes:   "charge_taxes",
-				graphql.ProductFieldEnumProductWeight: "product_weight",
-				graphql.ProductFieldEnumVariantSku:    "variants__sku",
-				graphql.ProductFieldEnumVariantWeight: "variant_weight",
+				gqlmodel.ProductFieldEnumName:          "name",
+				gqlmodel.ProductFieldEnumDescription:   "description_as_str",
+				gqlmodel.ProductFieldEnumCategory:      "category__slug",
+				gqlmodel.ProductFieldEnumProductType:   "product_type__name",
+				gqlmodel.ProductFieldEnumChargeTaxes:   "charge_taxes",
+				gqlmodel.ProductFieldEnumProductWeight: "product_weight",
+				gqlmodel.ProductFieldEnumVariantSku:    "variants__sku",
+				gqlmodel.ProductFieldEnumVariantWeight: "variant_weight",
 				// "id": "id",
 			},
 			"product_many_to_many": {
-				graphql.ProductFieldEnumCollections:  "collections__slug",
-				graphql.ProductFieldEnumProductMedia: "media__image",
+				gqlmodel.ProductFieldEnumCollections:  "collections__slug",
+				gqlmodel.ProductFieldEnumProductMedia: "media__image",
 			},
 			"variant_many_to_many": {
-				graphql.ProductFieldEnumVariantMedia: "variants__media__image",
+				gqlmodel.ProductFieldEnumVariantMedia: "variants__media__image",
 			},
 		},
 		PRODUCT_ATTRIBUTE_FIELDS: map[string]string{
