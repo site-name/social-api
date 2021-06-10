@@ -1,6 +1,6 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - web/schemas/*.graphqls
+  - web/graphql/schemas/*.graphqls
 
 # Where should the generated server code go?
 exec:
@@ -61,10 +61,10 @@ models:
 
   UUID:
     model:
-      - github.com/sitename/sitename/web/scalars.UUID
+      - github.com/sitename/sitename/web/graphql/scalars.UUID
   Date:
     model:
-      - github.com/sitename/sitename/web/scalars.Date
+      - github.com/sitename/sitename/web/graphql/scalars.Date
   DateTime:
     model:
-      - github.com/sitename/sitename/web/scalars.DateTime
+      - github.com/sitename/sitename/web/graphql/scalars.DateTime
