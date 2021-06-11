@@ -23,6 +23,7 @@ func initDBCommandContextCobra(command *cobra.Command, readOnlyConfigStore bool)
 	return a, nil
 }
 
+// InitDBCommandContextCobra
 func InitDBCommandContextCobra(command *cobra.Command) (*app.App, error) {
 	return initDBCommandContextCobra(command, true)
 }

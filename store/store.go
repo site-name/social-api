@@ -385,8 +385,8 @@ type StatusStore interface {
 }
 
 type UserStore interface {
-	Save(user *account.User) (*account.User, error)
-	Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error)
+	Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
+	Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 	UpdateLastPictureUpdate(userID string) error
 	ResetLastPictureUpdate(userID string) error
 	UpdatePassword(userID, newPassword string) error
@@ -399,7 +399,7 @@ type UserStore interface {
 	GetMany(ctx context.Context, ids []string) ([]*account.User, error)
 	GetAll() ([]*account.User, error)
 	ClearCaches()
-	InvalidateProfileCacheForUser(userID string)
+	InvalidateProfileCacheForUser(userID string) // NOTE: maybe need a look
 	GetByEmail(email string) (*account.User, error)
 	GetByAuth(authData *string, authService string) (*account.User, error)
 	GetAllUsingAuthService(authService string) ([]*account.User, error)
@@ -411,7 +411,7 @@ type UserStore interface {
 	GetEtagForProfiles(teamID string) string
 	UpdateFailedPasswordAttempts(userID string, attempts int) error
 	GetSystemAdminProfiles() (map[string]*account.User, error)
-	PermanentDelete(userID string) error
+	PermanentDelete(userID string) error // PermanentDelete completely delete user from the system
 	GetUnreadCount(userID string) (int64, error)
 	AnalyticsGetInactiveUsersCount() (int64, error)
 	AnalyticsGetExternalUsers(hostDomain string) (bool, error)
@@ -489,9 +489,9 @@ type SessionStore interface {
 	RemoveAllSessions() error
 	PermanentDeleteSessionsByUser(teamID string) error
 	UpdateExpiresAt(sessionID string, time int64) error
-	UpdateLastActivityAt(sessionID string, time int64) error
-	UpdateRoles(userID string, roles string) (string, error)
-	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error)
+	UpdateLastActivityAt(sessionID string, time int64) error                    //
+	UpdateRoles(userID string, roles string) (string, error)                    // UpdateRoles updates roles for all sessions that have userId of given userID,
+	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) //
 	UpdateProps(session *model.Session) error
 	AnalyticsSessionCount() (int64, error)
 	Cleanup(expiryTime int64, batchSize int64)

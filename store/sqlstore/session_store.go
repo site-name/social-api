@@ -188,9 +188,11 @@ func (me *SqlSessionStore) UpdateLastActivityAt(sessionId string, time int64) er
 }
 
 func (me *SqlSessionStore) UpdateRoles(userId, roles string) (string, error) {
-	query := "UPDATE Sessions SET Roles = :Roles WHERE UserId = :UserId"
 
-	_, err := me.GetMaster().Exec(query, map[string]interface{}{"Roles": roles, "UserId": userId})
+	_, err := me.GetMaster().Exec(
+		"UPDATE Sessions SET Roles = :Roles WHERE UserId = :UserId",
+		map[string]interface{}{"Roles": roles, "UserId": userId},
+	)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to update Session with userId=%s and roles=%s", userId, roles)
 	}

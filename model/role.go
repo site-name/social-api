@@ -688,6 +688,8 @@ func (r *Role) IsValidWithoutId() (bool, string, interface{}) {
 	return true, "nil", nil
 }
 
+// CleanRoleNames iterates through given roleNames.
+// checks if each name is valid.
 func CleanRoleNames(roleNames []string) ([]string, bool) {
 	var cleanedRoleNames []string
 	for _, roleName := range roleNames {

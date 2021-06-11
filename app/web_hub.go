@@ -18,6 +18,7 @@ func (a *App) InvalidateCacheForUser(userID string) {
 	}
 }
 
+// Publish push websocket event to all subscribers
 func (s *Server) Publish(message *model.WebSocketEvent) {
 	if s.Metrics != nil {
 		s.Metrics.IncrementWebsocketEvent(message.EventType())

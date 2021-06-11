@@ -2,8 +2,6 @@ package model
 
 import (
 	"io"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -65,12 +63,11 @@ type ClusterMessage struct {
 }
 
 func (o *ClusterMessage) ToJson() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(o)
 }
 
 func ClusterMessageFromJson(data io.Reader) *ClusterMessage {
 	var o *ClusterMessage
-	json.JSON.NewDecoder(data).Decode(&o)
+	ModelFromJson(&o, data)
 	return o
 }

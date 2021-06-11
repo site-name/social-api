@@ -192,6 +192,7 @@ type Server struct {
 	imgEncoder *imaging.Encoder
 }
 
+// NewServer create new system server
 func NewServer(options ...Option) (*Server, error) {
 	rootRouter := mux.NewRouter()
 

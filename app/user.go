@@ -857,6 +857,13 @@ func (a *App) UpdateHashedPassword(user *account.User, newHashedPassword string)
 	return nil
 }
 
+// UpdateUserRolesWithUser performs:
+//
+// 1) checks if there is at least one role model has name contained in given newRoles
+//
+// 2) update user by setting new roles
+//
+// 3) update user's sessions
 func (a *App) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
 
 	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
@@ -909,6 +916,19 @@ func (a *App) UpdateUserRolesWithUser(user *account.User, newRoles string, sendW
 	// }
 
 	return ruser, nil
+}
+
+// PermanentDeleteAllUsers permanently deletes all user in system
+func (a *App) PermanentDeleteAllUsers(c *request.Context) *model.AppError {
+	users, err := a.Srv().Store.User().GetAll()
+	if err != nil {
+		return model.NewAppError("PermanentDeleteAllUsers", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	for _, user := range users {
+		a.PermanentDeleteUser(c, user)
+	}
+
+	return nil
 }
 
 func (a *App) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
@@ -1085,6 +1105,19 @@ func (a *App) SearchUsers(props *account.UserSearch, options *account.UserSearch
 	return users, nil
 }
 
+// PermanentDeleteUser performs:
+//
+// 1) Update active status of given user
+//
+// 2) remove all sessions of user in database
+//
+// 3) remove all user access tokens of user
+//
+// 4) remove all uploaded files of user
+//
+// 5) delete user from database
+//
+// 6) delete audit belong to user
 func (a *App) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
 	slog.Warn("Attempting to permanently delete account", slog.String("user_id", user.Id), slog.String("user_email", user.Email))
 	if user.IsInRole(model.SYSTEM_ADMIN_ROLE_ID) {

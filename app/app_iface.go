@@ -35,12 +35,17 @@ type AppIface interface {
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
+	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
+	AsymmetricSigningKey() *ecdsa.PrivateKey
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
 	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
+	// CheckRolesExist get role model instances with given roleNames,
+	// checks if at least one db role has name contained in given roleNames.
+	CheckRolesExist(roleNames []string) *model.AppError
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -52,6 +57,8 @@ type AppIface interface {
 	// CreateGuest creates a guest and sets several fields of the returned User struct to
 	// their zero values.
 	CreateGuest(user *account.User) (*account.User, *model.AppError)
+	// CreateRole takes a role struct and save it to database
+	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// CreateSession save given session to tha database.
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	// CreateUser creates a user and sets several fields of the returned User struct to
@@ -137,6 +144,22 @@ type AppIface interface {
 	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
+	// PermanentDeleteAllUsers permanently deletes all user in system
+	PermanentDeleteAllUsers(c *request.Context) *model.AppError
+	// PermanentDeleteUser performs:
+	//
+	// 1) Update active status of given user
+	//
+	// 2) remove all sessions of user in database
+	//
+	// 3) remove all user access tokens of user
+	//
+	// 4) remove all uploaded files of user
+	//
+	// 5) delete user from database
+	//
+	// 6) delete audit belong to user
+	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	// ReadFile read file content from given path
 	ReadFile(path string) ([]byte, *model.AppError)
 	// ResetPermissionsSystem reset permission system
@@ -174,6 +197,14 @@ type AppIface interface {
 	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
+	// UpdateUserRolesWithUser performs:
+	//
+	// 1) checks if there is at least one role model has name contained in given newRoles
+	//
+	// 2) update user by setting new roles
+	//
+	// 3) update user's sessions
+	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
@@ -185,14 +216,12 @@ type AppIface interface {
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
-	AsymmetricSigningKey() *ecdsa.PrivateKey
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
-	CheckRolesExist(roleNames []string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	CheckUserMfa(user *account.User, token string) *model.AppError
 	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
@@ -203,7 +232,6 @@ type AppIface interface {
 	Compliance() einterfaces.ComplianceInterface
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
-	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
@@ -271,7 +299,6 @@ type AppIface interface {
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
 	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
-	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	PostActionCookieSecret() []byte
 	Publish(message *model.WebSocketEvent)
 	ReloadConfig() error
@@ -311,7 +338,6 @@ type AppIface interface {
 	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
 	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
-	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError

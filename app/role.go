@@ -64,10 +64,11 @@ func (a *App) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
 		return nil, model.NewAppError("GetRolesByNames", "app.role.get_by_names.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
-	err := a.mergeChannelHigherScopedPermissions(roles)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: fixme
+	// err := a.mergeChannelHigherScopedPermissions(roles)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return roles, nil
 }
@@ -126,6 +127,7 @@ func (a *App) PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, 
 	return role, err
 }
 
+// CreateRole takes a role struct and save it to database
 func (a *App) CreateRole(role *model.Role) (*model.Role, *model.AppError) {
 	role.Id = ""
 	role.CreateAt = 0
@@ -220,6 +222,8 @@ func (a *App) UpdateRole(role *model.Role) (*model.Role, *model.AppError) {
 	return savedRole, nil
 }
 
+// CheckRolesExist get role model instances with given roleNames,
+// checks if at least one db role has name contained in given roleNames.
 func (a *App) CheckRolesExist(roleNames []string) *model.AppError {
 	roles, err := a.GetRolesByNames(roleNames)
 	if err != nil {
