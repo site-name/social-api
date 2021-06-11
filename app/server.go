@@ -961,6 +961,7 @@ func (s *Server) StopHTTPServer() {
 	}
 }
 
+// Shutdown  turn off system's server
 func (s *Server) Shutdown() {
 	slog.Info("Stopping Server...")
 

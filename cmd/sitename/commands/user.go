@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"strings"
 
-	// "github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -143,14 +142,14 @@ var SearchUserCmd = &cobra.Command{
 }
 
 func init() {
-	UserCreateCmd.Flags().String("username", "", "Required. Username for the new user account.")
-	UserCreateCmd.Flags().String("email", "", "Required. The email address for the new user account.")
-	UserCreateCmd.Flags().String("password", "", "Required. The password for the new user account.")
-	UserCreateCmd.Flags().String("nickname", "", "Optional. The nickname for the new user account.")
-	UserCreateCmd.Flags().String("firstname", "", "Optional. The first name for the new user account.")
-	UserCreateCmd.Flags().String("lastname", "", "Optional. The last name for the new user account.")
-	UserCreateCmd.Flags().String("locale", "", "Optional. The locale (ex: en, fr) for the new user account.")
-	UserCreateCmd.Flags().Bool("system_admin", false, "Optional. If supplied, the new user will be a system administrator. Defaults to false.")
+	// UserCreateCmd.Flags().String("username", "", "Required. Username for the new user account.")
+	// UserCreateCmd.Flags().String("email", "", "Required. The email address for the new user account.")
+	// UserCreateCmd.Flags().String("password", "", "Required. The password for the new user account.")
+	// UserCreateCmd.Flags().String("nickname", "", "Optional. The nickname for the new user account.")
+	// UserCreateCmd.Flags().String("firstname", "", "Optional. The first name for the new user account.")
+	// UserCreateCmd.Flags().String("lastname", "", "Optional. The last name for the new user account.")
+	// UserCreateCmd.Flags().String("locale", "", "Optional. The locale (ex: en, fr) for the new user account.")
+	// UserCreateCmd.Flags().Bool("system_admin", false, "Optional. If supplied, the new user will be a system administrator. Defaults to false.")
 
 	DeleteUserCmd.Flags().Bool("confirm", false, "Confirm you really want to delete the user and a DB backup has been performed.")
 
@@ -219,6 +218,7 @@ Flags:
 Global Flags:
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}
 `)
+
 	UserCmd.AddCommand(
 		UserActivateCmd,
 		UserCreateCmd,
@@ -241,24 +241,54 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 	}
 	defer a.Srv().Shutdown()
 
-	username, err := command.Flags().GetString("username")
-	if err != nil || username == "" {
-		return errors.New("Username is required")
+	type prompt struct {
+		name  string
+		iface interface{}
 	}
-	email, err := command.Flags().GetString("email")
-	if err != nil || email == "" {
-		return errors.New("Email is required")
+
+	var (
+		username        string
+		email           string
+		password        string
+		passwordConfirm string
+		nickname        string
+		firstname       string
+		lastname        string
+		locale          string
+		systemAdmin     bool
+	)
+	fmt.Println("---------------CREATE USER--------------")
+	var prompts = []prompt{
+		{name: "username", iface: &username},
+		{name: "email", iface: &email},
+		{name: "password", iface: &password},
+		{name: "passwordConfirm", iface: &passwordConfirm},
+		{name: "nickname", iface: &nickname},
+		{name: "firstname", iface: &firstname},
+		{name: "lastname", iface: &lastname},
+		{name: "locale", iface: &locale},
+		{name: "systemAdmin", iface: &systemAdmin},
 	}
-	email = strings.ToLower(email)
-	password, err := command.Flags().GetString("password")
-	if err != nil || password == "" {
-		return errors.New("Password is required")
+	for _, prompt := range prompts {
+		fmt.Print(prompt.name + ": ")
+		fmt.Scanln(prompt.iface)
 	}
-	nickname, _ := command.Flags().GetString("nickname")
-	firstname, _ := command.Flags().GetString("firstname")
-	lastname, _ := command.Flags().GetString("lastname")
-	locale, _ := command.Flags().GetString("locale")
-	systemAdmin, _ := command.Flags().GetBool("system_admin")
+
+	if username == "" {
+		return errors.New("username is required")
+	}
+	if email == "" {
+		return errors.New("email is required")
+	}
+	if password == "" {
+		return errors.New("password is required")
+	}
+	if passwordConfirm == "" {
+		return errors.New("you have to confirm your password")
+	}
+	if passwordConfirm != password {
+		return errors.New("passwords do not match")
+	}
 
 	user := &account.User{
 		Username:  username,

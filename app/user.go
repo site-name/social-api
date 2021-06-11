@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"hash/fnv"
 	"image"
 	"image/color"
@@ -211,8 +210,6 @@ func (a *App) CreateGuest(user *account.User) (*account.User, *model.AppError) {
 }
 
 func (a *App) createUserOrGuest(user *account.User, guest bool) (*account.User, *model.AppError) {
-	fmt.Println("------------------")
-
 	user.Roles = model.SYSTEM_USER_ROLE_ID
 	if guest {
 		user.Roles = model.SYSTEM_GUEST_ROLE_ID

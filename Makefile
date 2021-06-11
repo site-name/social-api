@@ -184,7 +184,7 @@ gen-serialized: ## Generates serialization methods for hot structs
 	# would be to temporarily move all the structs to the same file,
 	# but that involves a lot of manual work.
 	$(GO) get -modfile=go.tools.mod github.com/tinylib/msgp
-	# $(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
+	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
 	$(GOBIN)/msgp -file=./model/account/user.go -tests=false -o=./model/account/user_serial_gen.go
 
 gqlgen:
@@ -192,3 +192,11 @@ gqlgen:
 	$(GO) run github.com/99designs/gqlgen
 	@echo Gqlgen has done generating.
 
+update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.
+	@echo Updating Dependencies
+
+	# Update all dependencies (does not update across major versions)
+	$(GO) get -u ./...
+
+	# Tidy up
+	$(GO) mod tidy

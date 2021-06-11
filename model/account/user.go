@@ -7,7 +7,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/timezones"
@@ -147,22 +146,6 @@ type UserForIndexing struct {
 	DeleteAt  int64  `json:"delete_at"`
 }
 
-// type ViewUsersRestrictions struct {
-// 	Teams    []string
-// 	Channels []string
-// }
-
-// func (r *ViewUsersRestrictions) Hash() string {
-// 	if r == nil {
-// 		return ""
-// 	}
-// 	ids := append(r.Teams, r.Channels...)
-// 	sort.Strings(ids)
-// 	hash := sha256.New()
-// 	hash.Write([]byte(strings.Join(ids, "")))
-// 	return fmt.Sprintf("%x", hash.Sum(nil))
-// }
-
 type UserSlice []*User
 
 func (u UserSlice) Usernames() []string {
@@ -300,10 +283,10 @@ func (u *User) IsValid() *model.AppError {
 // be run before saving the user to the db.
 func (u *User) PreSave() {
 	if u.Id == "" {
-		u.Id = uuid.NewString()
+		u.Id = model.NewId()
 	}
 	if u.Username == "" {
-		u.Username = "user_" + model.NewRandomString(10)
+		u.Username = model.NewId()
 	}
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
@@ -318,6 +301,13 @@ func (u *User) PreSave() {
 	u.UpdateAt = u.CreateAt
 	u.LastPasswordUpdate = u.CreateAt
 	u.MfaActive = false
+
+	if u.Props == nil {
+		u.Props = make(map[string]string)
+	}
+	if u.NotifyProps == nil || len(u.NotifyProps) == 0 {
+		u.SetDefaultNotifications()
+	}
 	if u.Locale == "" {
 		u.Locale = model.DEFAULT_LOCALE
 	}
@@ -461,6 +451,7 @@ func (u *User) SanitizeInput(isAdmin bool) {
 	u.MfaSecret = ""
 }
 
+// SetDefaultNotifications set default values for user's NotifyProps attribute
 func (u *User) SetDefaultNotifications() {
 	u.NotifyProps = make(map[string]string)
 	u.NotifyProps[EMAIL_NOTIFY_PROP] = "true"
@@ -494,6 +485,8 @@ func (u *User) GetMentionKeys() []string {
 	return keys
 }
 
+// ClearNonProfileFields reset user's password, authData, MfaSecret, EmailVerified,
+// LastPasswordUpdate, FailedAttempts to their default values
 func (u *User) ClearNonProfileFields() {
 	u.Password = ""
 	u.AuthData = model.NewString("")
