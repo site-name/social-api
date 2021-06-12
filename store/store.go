@@ -28,10 +28,7 @@ type StoreResult struct {
 	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
 }
 
-type Indexer interface {
-	CreateIndexesIfNotExists()
-}
-
+// Store is database gateway of the system
 type Store interface {
 	Context() context.Context                                                                                          // Context gets context
 	Close()                                                                                                            // Close closes databases
@@ -46,7 +43,7 @@ type Store interface {
 	CommonSeoMaxLength(table *gorp.TableMap)                                                                           // CommonSeoMaxLength is common method for settings max lengths for tables's `seotitle` and `seodescription`
 	CreateIndexIfNotExists(indexName, tableName, columnName string) bool                                               // CreateIndexIfNotExists creates indexes for tables
 	GetAllConns() []*gorp.DbMap                                                                                        // GetAllConns returns all datasources available in use
-	GetQueryBuilder() squirrel.StatementBuilderType                                                                    //
+	GetQueryBuilder() squirrel.StatementBuilderType                                                                    // GetQueryBuilder create squirrel sql query builder
 	CreateFullTextIndexIfNotExists(indexName string, tableName string, columnName string) bool                         //
 	IsUniqueConstraintError(err error, indexName []string) bool                                                        //
 	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
@@ -142,7 +139,7 @@ type Store interface {
 }
 
 type UploadSessionStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(session *model.UploadSession) (*model.UploadSession, error)
 	Update(session *model.UploadSession) error
 	Get(id string) (*model.UploadSession, error)
@@ -152,79 +149,80 @@ type UploadSessionStore interface {
 
 // fileinfo
 type FileInfoStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(info *model.FileInfo) (*model.FileInfo, error)
 	Upsert(info *model.FileInfo) (*model.FileInfo, error)
 	Get(id string) (*model.FileInfo, error)
 	GetFromMaster(id string) (*model.FileInfo, error)
 	GetByIds(ids []string) ([]*model.FileInfo, error)
 	GetByPath(path string) (*model.FileInfo, error)
-	// GetForPost(postID string, readFromMaster, includeDeleted, allowFromCache bool) ([]*model.FileInfo, error)
 	GetForUser(userID string) ([]*model.FileInfo, error)
 	GetWithOptions(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error)
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
-	// AttachToPost(fileID string, postID string, creatorID string) error
-	// DeleteForPost(postID string) (string, error)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
 	PermanentDeleteByUser(userID string) (int64, error)
 	SetContent(fileID, content string) error
-	// Search(paramsList []*model.SearchParams, userID, teamID string, page, perPage int) (*model.FileInfoList, error)
-	CountAll() (int64, error)
-	// GetFilesBatchForIndexing(startTime, endTime int64, limit int) ([]*model.FileForIndexing, error)
 	ClearCaches()
+	CountAll() (int64, error)
+
+	// Search(paramsList []*model.SearchParams, userID, teamID string, page, perPage int) (*model.FileInfoList, error)
+	// GetFilesBatchForIndexing(startTime, endTime int64, limit int) ([]*model.FileForIndexing, error)
+	// AttachToPost(fileID string, postID string, creatorID string) error
+	// DeleteForPost(postID string) (string, error)
+	// GetForPost(postID string, readFromMaster, includeDeleted, allowFromCache bool) ([]*model.FileInfo, error)
 }
 
 // attribute
 type (
 	AttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
 		Get(id string) (*attribute.Attribute, error)
 		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
 		GetProductAndVariantHeaders(ids []string) ([]string, error)
 	}
 	AttributeTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeValueTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributePageStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedVariantAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedVariantAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeVariantStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedProductAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedProductAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // compliance
 type ComplianceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Get(id string) (*compliance.Compliance, error)
@@ -235,106 +233,106 @@ type ComplianceStore interface {
 
 //plugin
 type PluginConfigurationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 // wishlist
 type (
 	WishlistStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	WishlistItemStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // warehouse
 type (
 	WarehouseStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error)
 		Get(id string) (*warehouse.WareHouse, error)
 		GetWarehousesHeaders(ids []string) ([]string, error)
 	}
 	StockStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AllocationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // shipping
 type (
 	ShippingZoneStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodPostalCodeRuleStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // product
 type (
 	CollectionTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	VariantMediaStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductMediaStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	DigitalContentUrlStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	DigitalContentStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductTypeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CategoryTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CategoryStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
@@ -346,139 +344,140 @@ type (
 // payment
 type (
 	PaymentStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	PaymentTransactionStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // page
 type (
 	PageTypeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	PageTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	PageStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 type OrderEventStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type FulfillmentLineStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type FulfillmentStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type OrderLineStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type OrderStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type MenuItemTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type MenuStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type InvoiceEventStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type GiftCardStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type OrderDiscountStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleChannelListingStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type VoucherTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountVoucherCustomerStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type VoucherChannelListingStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountVoucherStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 // csv
 type (
 	CsvExportEventStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
 	}
 	CsvExportFileStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(file *csv.ExportFile) (*csv.ExportFile, error)
 		Get(id string) (*csv.ExportFile, error)
 	}
 )
 
-type CheckoutLineStore interface {
-	Indexer
-}
+// checkout
+type (
+	CheckoutLineStore interface {
+		CreateIndexesIfNotExists()
+	}
+	CheckoutStore interface {
+		CreateIndexesIfNotExists()
+	}
+)
 
-type CheckoutStore interface {
-	Indexer
-}
-
+// channel
 type ChannelStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	// Get(id string) (*channel.Channel, error)
 	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error)
 }
 
-type AppTokenStore interface {
-	Indexer
-	Save(appToken *app.AppToken) (*app.AppToken, error)
-}
+// app
+type (
+	AppTokenStore interface {
+		CreateIndexesIfNotExists()
+		Save(appToken *app.AppToken) (*app.AppToken, error)
+	}
 
-type AppStore interface {
-	Indexer
-	Save(app *app.App) (*app.App, error)
-}
-
-type AddressStore interface {
-	Indexer
-	Save(address *account.Address) (*account.Address, error)
-}
+	AppStore interface {
+		CreateIndexesIfNotExists()
+		Save(app *app.App) (*app.App, error)
+	}
+)
 
 type ClusterDiscoveryStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(discovery *model.ClusterDiscovery) error
 	Delete(discovery *model.ClusterDiscovery) (bool, error)
 	Exists(discovery *model.ClusterDiscovery) (bool, error)
@@ -488,21 +487,21 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(audit *audit.Audit) error
 	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
 }
 
 type PreferenceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(preferences *model.Preferences) error
 	GetCategory(userID, category string) (model.Preferences, error)
 	Get(userID, category, name string) (*model.Preference, error)
@@ -516,7 +515,7 @@ type PreferenceStore interface {
 }
 
 type JobStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(job *model.Job) (*model.Job, error)
 	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
 	UpdateStatus(id string, status string) (*model.Job, error)
@@ -528,15 +527,13 @@ type JobStore interface {
 	GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error)
 	GetAllByStatus(status string) ([]*model.Job, error)
 	GetNewestJobByStatusAndType(status string, jobType string) (*model.Job, error)
-	// GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType.
-	// order by created time
-	GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error)
+	GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) // GetNewestJobByStatusesAndType get 1 job from database that has status is one of given statuses, and job type is given jobType. order by created time
 	GetCountByStatusAndType(status string, jobType string) (int64, error)
 	Delete(id string) (string, error)
 }
 
 type StatusStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	SaveOrUpdate(status *model.Status) error
 	Get(userID string) (*model.Status, error)
 	GetByIds(userIds []string) ([]*model.Status, error)
@@ -545,84 +542,113 @@ type StatusStore interface {
 	UpdateLastActivityAt(userID string, lastActivityAt int64) error
 }
 
-type UserStore interface {
-	Indexer
-	Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
-	Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
-	UpdateLastPictureUpdate(userID string) error
-	ResetLastPictureUpdate(userID string) error
-	UpdatePassword(userID, newPassword string) error
-	UpdateUpdateAt(userID string) (int64, error)
-	UpdateAuthData(userID string, service string, authData *string, email string, resetMfa bool) (string, error)
-	ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error)
-	UpdateMfaSecret(userID, secret string) error
-	UpdateMfaActive(userID string, active bool) error
-	Get(ctx context.Context, id string) (*account.User, error)
-	GetMany(ctx context.Context, ids []string) ([]*account.User, error)
-	GetAll() ([]*account.User, error)
-	ClearCaches()
-	InvalidateProfileCacheForUser(userID string) // NOTE: maybe need a look
-	GetByEmail(email string) (*account.User, error)
-	GetByAuth(authData *string, authService string) (*account.User, error)
-	GetAllUsingAuthService(authService string) ([]*account.User, error)
-	GetAllNotInAuthService(authServices []string) ([]*account.User, error)
-	GetByUsername(username string) (*account.User, error)
-	GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*account.User, error)
-	VerifyEmail(userID, email string) (string, error)
-	GetEtagForAllProfiles() string
-	GetEtagForProfiles(teamID string) string
-	UpdateFailedPasswordAttempts(userID string, attempts int) error
-	GetSystemAdminProfiles() (map[string]*account.User, error)
-	PermanentDelete(userID string) error // PermanentDelete completely delete user from the system
-	GetUnreadCount(userID string) (int64, error)
-	AnalyticsGetInactiveUsersCount() (int64, error)
-	AnalyticsGetExternalUsers(hostDomain string) (bool, error)
-	AnalyticsGetSystemAdminCount() (int64, error)
-	AnalyticsGetGuestCount() (int64, error)
-	ClearAllCustomRoleAssignments() error
-	InferSystemInstallDate() (int64, error)
-	GetAllAfter(limit int, afterID string) ([]*account.User, error)
-	GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*account.UserForIndexing, error)
-	PromoteGuestToUser(userID string) error
-	DemoteUserToGuest(userID string) (*account.User, error)
-	DeactivateGuests() ([]string, error)
-	GetKnownUsers(userID string) ([]string, error)
-	Count(options account.UserCountOptions) (int64, error)
-	AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error)
-	GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error)
-	Search(term string, options *account.UserSearchOptions) ([]*account.User, error)
-	AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error)
-	GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error)
-	GetProfilesByUsernames(usernames []string) ([]*account.User, error)
+// account stores
+type (
+	AddressStore interface {
+		CreateIndexesIfNotExists()
+		Save(address *account.Address) (*account.Address, error)
+	}
 
-	// GetTeamGroupUsers(teamID string) ([]*model.User, error)
-	// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
-	// GetEtagForProfilesNotInTeam(teamID string) string
-	// GetChannelGroupUsers(channelID string) ([]*model.User, error)
-	// GetUnreadCountForChannel(userID string, channelID string) (int64, error)
-	// GetAnyUnreadPostCountForChannel(userID string, channelID string) (int64, error)
-	// GetRecentlyActiveUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// GetNewUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// SearchNotInTeam(notInTeamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-	// SearchInChannel(channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-	// SearchNotInChannel(teamID string, channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-	// SearchWithoutTeam(term string, options *model.UserSearchOptions) ([]*model.User, error)
-	// SearchInGroup(groupID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-	// InvalidateProfilesInChannelCacheByUser(userID string)
-	// InvalidateProfilesInChannelCache(channelID string)
-	// GetProfilesInChannel(options *model.UserGetOptions) ([]*model.User, error)
-	// GetProfilesInChannelByStatus(options *model.UserGetOptions) ([]*model.User, error)
-	// GetAllProfilesInChannel(ctx context.Context, channelID string, allowFromCache bool) (map[string]*model.User, error)
-	// GetProfilesNotInChannel(teamID string, channelId string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// GetProfilesWithoutTeam(options *model.UserGetOptions) ([]*model.User, error)
-	// GetProfiles(options *model.UserGetOptions) ([]*model.User, error)
-	// AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
-	// GetProfilesNotInTeam(teamID string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-	// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
-}
+	UserStore interface {
+		CreateIndexesIfNotExists()
+		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
+		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
+		UpdateLastPictureUpdate(userID string) error
+		ResetLastPictureUpdate(userID string) error
+		UpdatePassword(userID, newPassword string) error
+		UpdateUpdateAt(userID string) (int64, error)
+		UpdateAuthData(userID string, service string, authData *string, email string, resetMfa bool) (string, error)
+		ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error)
+		UpdateMfaSecret(userID, secret string) error
+		UpdateMfaActive(userID string, active bool) error
+		Get(ctx context.Context, id string) (*account.User, error)
+		GetMany(ctx context.Context, ids []string) ([]*account.User, error)
+		GetAll() ([]*account.User, error)
+		ClearCaches()
+		InvalidateProfileCacheForUser(userID string) // NOTE: maybe need a look
+		GetByEmail(email string) (*account.User, error)
+		GetByAuth(authData *string, authService string) (*account.User, error)
+		GetAllUsingAuthService(authService string) ([]*account.User, error)
+		GetAllNotInAuthService(authServices []string) ([]*account.User, error)
+		GetByUsername(username string) (*account.User, error)
+		GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*account.User, error)
+		VerifyEmail(userID, email string) (string, error)
+		GetEtagForAllProfiles() string
+		GetEtagForProfiles(teamID string) string
+		UpdateFailedPasswordAttempts(userID string, attempts int) error
+		GetSystemAdminProfiles() (map[string]*account.User, error)
+		PermanentDelete(userID string) error // PermanentDelete completely delete user from the system
+		GetUnreadCount(userID string) (int64, error)
+		AnalyticsGetInactiveUsersCount() (int64, error)
+		AnalyticsGetExternalUsers(hostDomain string) (bool, error)
+		AnalyticsGetSystemAdminCount() (int64, error)
+		AnalyticsGetGuestCount() (int64, error)
+		ClearAllCustomRoleAssignments() error
+		InferSystemInstallDate() (int64, error)
+		GetAllAfter(limit int, afterID string) ([]*account.User, error)
+		GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*account.UserForIndexing, error)
+		PromoteGuestToUser(userID string) error
+		DemoteUserToGuest(userID string) (*account.User, error)
+		DeactivateGuests() ([]string, error)
+		GetKnownUsers(userID string) ([]string, error)
+		Count(options account.UserCountOptions) (int64, error)
+		AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error)
+		GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error)
+		Search(term string, options *account.UserSearchOptions) ([]*account.User, error)
+		AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error)
+		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error)
+		GetProfilesByUsernames(usernames []string) ([]*account.User, error)
+
+		// GetTeamGroupUsers(teamID string) ([]*model.User, error)
+		// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
+		// GetEtagForProfilesNotInTeam(teamID string) string
+		// GetChannelGroupUsers(channelID string) ([]*model.User, error)
+		// GetUnreadCountForChannel(userID string, channelID string) (int64, error)
+		// GetAnyUnreadPostCountForChannel(userID string, channelID string) (int64, error)
+		// GetRecentlyActiveUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
+		// GetNewUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
+		// SearchNotInTeam(notInTeamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
+		// SearchInChannel(channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
+		// SearchNotInChannel(teamID string, channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
+		// SearchWithoutTeam(term string, options *model.UserSearchOptions) ([]*model.User, error)
+		// SearchInGroup(groupID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
+		// InvalidateProfilesInChannelCacheByUser(userID string)
+		// InvalidateProfilesInChannelCache(channelID string)
+		// GetProfilesInChannel(options *model.UserGetOptions) ([]*model.User, error)
+		// GetProfilesInChannelByStatus(options *model.UserGetOptions) ([]*model.User, error)
+		// GetAllProfilesInChannel(ctx context.Context, channelID string, allowFromCache bool) (map[string]*model.User, error)
+		// GetProfilesNotInChannel(teamID string, channelId string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
+		// GetProfilesWithoutTeam(options *model.UserGetOptions) ([]*model.User, error)
+		// GetProfiles(options *model.UserGetOptions) ([]*model.User, error)
+		// AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
+		// GetProfilesNotInTeam(teamID string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
+		// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
+	}
+	TokenStore interface {
+		CreateIndexesIfNotExists()
+		Save(recovery *model.Token) error
+		Delete(token string) error
+		GetByToken(token string) (*model.Token, error)
+		Cleanup()
+		RemoveAllTokensByType(tokenType string) error
+	}
+	UserAccessTokenStore interface {
+		CreateIndexesIfNotExists()
+		Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
+		DeleteAllForUser(userID string) error
+		Delete(tokenID string) error
+		Get(tokenID string) (*account.UserAccessToken, error)
+		GetAll(offset int, limit int) ([]*account.UserAccessToken, error)
+		GetByToken(tokenString string) (*account.UserAccessToken, error)
+		GetByUser(userID string, page, perPage int) ([]*account.UserAccessToken, error)
+		Search(term string) ([]*account.UserAccessToken, error)
+		UpdateTokenEnable(tokenID string) error
+		UpdateTokenDisable(tokenID string) error
+	}
+)
 
 type SystemStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(system *model.System) error
 	SaveOrUpdate(system *model.System) error
 	Update(system *model.System) error
@@ -633,17 +659,9 @@ type SystemStore interface {
 	SaveOrUpdateWithWarnMetricHandling(system *model.System) error
 }
 
-type TokenStore interface {
-	Indexer
-	Save(recovery *model.Token) error
-	Delete(token string) error
-	GetByToken(token string) (*model.Token, error)
-	Cleanup()
-	RemoveAllTokensByType(tokenType string) error
-}
-
+// session
 type SessionStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
 	Save(session *model.Session) (*model.Session, error)
 	GetSessions(userID string) ([]*model.Session, error)
@@ -662,22 +680,8 @@ type SessionStore interface {
 	Cleanup(expiryTime int64, batchSize int64)
 }
 
-type UserAccessTokenStore interface {
-	Indexer
-	Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
-	DeleteAllForUser(userID string) error
-	Delete(tokenID string) error
-	Get(tokenID string) (*account.UserAccessToken, error)
-	GetAll(offset int, limit int) ([]*account.UserAccessToken, error)
-	GetByToken(tokenString string) (*account.UserAccessToken, error)
-	GetByUser(userID string, page, perPage int) ([]*account.UserAccessToken, error)
-	Search(term string) ([]*account.UserAccessToken, error)
-	UpdateTokenEnable(tokenID string) error
-	UpdateTokenDisable(tokenID string) error
-}
-
 type RoleStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(role *model.Role) (*model.Role, error)
 	Get(roleID string) (*model.Role, error)
 	GetAll() ([]*model.Role, error)
@@ -695,12 +699,8 @@ type RoleStore interface {
 }
 
 type UserGetByIdsOpts struct {
-	// IsAdmin tracks whether or not the request is being made by an administrator. Does nothing when provided by a client.
-	IsAdmin bool
-
+	IsAdmin bool  // IsAdmin tracks whether or not the request is being made by an administrator. Does nothing when provided by a client.
+	Since   int64 // Since filters the users based on their UpdateAt timestamp.
 	// Restrict to search in a list of teams and channels. Does nothing when provided by a client.
 	// ViewRestrictions *model.ViewUsersRestrictions
-
-	// Since filters the users based on their UpdateAt timestamp.
-	Since int64
 }
