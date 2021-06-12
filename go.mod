@@ -10,7 +10,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/advancedlogic/GoOse v0.0.0-20200830213114-1225d531e0ad // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.58
+	github.com/aws/aws-sdk-go v1.38.60
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -69,9 +69,9 @@ require (
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/image v0.0.0-20210607152325-775e3b0c77b9
-	golang.org/x/sys v0.0.0-20210608053332-aa57babbf139 // indirect
+	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
 	golang.org/x/text v0.3.6
-	golang.org/x/tools v0.1.2
+	golang.org/x/tools v0.1.3
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/mail.v2 v2.3.1

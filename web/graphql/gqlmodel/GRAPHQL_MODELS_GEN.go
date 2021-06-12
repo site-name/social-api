@@ -3164,7 +3164,6 @@ type ProductVariant struct {
 	ChannelListings   []ProductVariantChannelListing `json:"channelListings"`
 	Pricing           *VariantPricingInfo            `json:"pricing"`
 	Attributes        []SelectedAttribute            `json:"attributes"`
-	CostPrice         *Money                         `json:"costPrice"`
 	Margin            *int                           `json:"margin"`
 	QuantityOrdered   *int                           `json:"quantityOrdered"`
 	Revenue           *TaxedMoney                    `json:"revenue"`

@@ -125,7 +125,13 @@ func checkUsersIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult
 
 func CheckRelationalIntegrity(ss *SqlStore, results chan<- model.IntegrityCheckResult) {
 	slog.Info("Starting relational integrity checks...")
-
+	// checkChannelsIntegrity(ss, results)
+	// checkCommandsIntegrity(ss, results)
+	// checkPostsIntegrity(ss, results)
+	// checkSchemesIntegrity(ss, results)
+	// checkSessionsIntegrity(ss, results)
+	// checkTeamsIntegrity(ss, results)
+	checkUsersIntegrity(ss, results)
 	slog.Info("Done with relational integrity checks")
 	close(results)
 }
