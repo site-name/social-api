@@ -5,6 +5,8 @@ package store
 import (
 	"context"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -17,21 +19,39 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 )
 
+const (
+	UUID_MAX_LENGTH = 36 // max length for all tables's Id fields, since google's uuid generates ids have length of 36
+)
+
 type StoreResult struct {
 	Data interface{}
+	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
+}
 
-	// NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
-	NErr error
+type Indexer interface {
+	CreateIndexesIfNotExists()
 }
 
 type Store interface {
-	Context() context.Context
-	Close()
-	LockToMaster()
-	UnlockFromMaster()
-	DropAllTables()
-	SetContext(context context.Context)
-	GetDbVersion(numerical bool) (string, error)
+	Context() context.Context                                                                                          // Context gets context
+	Close()                                                                                                            // Close closes databases
+	LockToMaster()                                                                                                     // LockToMaster constraints all queries to be performed on master
+	UnlockFromMaster()                                                                                                 // UnlockFromMaster makes all datasources available
+	DropAllTables()                                                                                                    // DropAllTables drop all tables in databases
+	SetContext(context context.Context)                                                                                // set context
+	GetDbVersion(numerical bool) (string, error)                                                                       // GetDbVersion returns version in use of database
+	GetMaster() *gorp.DbMap                                                                                            // GetMaster get master datasource
+	GetReplica() *gorp.DbMap                                                                                           // GetMaster gets slave datasource
+	CommonMetaDataIndex(tableName string)                                                                              // CommonMetaDataIndex create indexes for tables that have fields `metadata` and `privatemetadata`
+	CommonSeoMaxLength(table *gorp.TableMap)                                                                           // CommonSeoMaxLength is common method for settings max lengths for tables's `seotitle` and `seodescription`
+	CreateIndexIfNotExists(indexName, tableName, columnName string) bool                                               // CreateIndexIfNotExists creates indexes for tables
+	GetAllConns() []*gorp.DbMap                                                                                        // GetAllConns returns all datasources available in use
+	GetQueryBuilder() squirrel.StatementBuilderType                                                                    //
+	CreateFullTextIndexIfNotExists(indexName string, tableName string, columnName string) bool                         //
+	IsUniqueConstraintError(err error, indexName []string) bool                                                        //
+	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
+	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
+	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -122,6 +142,7 @@ type Store interface {
 }
 
 type UploadSessionStore interface {
+	Indexer
 	Save(session *model.UploadSession) (*model.UploadSession, error)
 	Update(session *model.UploadSession) error
 	Get(id string) (*model.UploadSession, error)
@@ -131,6 +152,7 @@ type UploadSessionStore interface {
 
 // fileinfo
 type FileInfoStore interface {
+	Indexer
 	Save(info *model.FileInfo) (*model.FileInfo, error)
 	Upsert(info *model.FileInfo) (*model.FileInfo, error)
 	Get(id string) (*model.FileInfo, error)
@@ -156,27 +178,53 @@ type FileInfoStore interface {
 // attribute
 type (
 	AttributeStore interface {
+		Indexer
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
 		Get(id string) (*attribute.Attribute, error)
 		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
 		GetProductAndVariantHeaders(ids []string) ([]string, error)
 	}
-	AttributeTranslationStore          interface{}
-	AttributeValueStore                interface{}
-	AttributeValueTranslationStore     interface{}
-	AssignedPageAttributeValueStore    interface{}
-	AssignedPageAttributeStore         interface{}
-	AttributePageStore                 interface{}
-	AssignedVariantAttributeValueStore interface{}
-	AssignedVariantAttributeStore      interface{}
-	AttributeVariantStore              interface{}
-	AssignedProductAttributeValueStore interface{}
-	AssignedProductAttributeStore      interface{}
-	AttributeProductStore              interface{}
+	AttributeTranslationStore interface {
+		Indexer
+	}
+	AttributeValueStore interface {
+		Indexer
+	}
+	AttributeValueTranslationStore interface {
+		Indexer
+	}
+	AssignedPageAttributeValueStore interface {
+		Indexer
+	}
+	AssignedPageAttributeStore interface {
+		Indexer
+	}
+	AttributePageStore interface {
+		Indexer
+	}
+	AssignedVariantAttributeValueStore interface {
+		Indexer
+	}
+	AssignedVariantAttributeStore interface {
+		Indexer
+	}
+	AttributeVariantStore interface {
+		Indexer
+	}
+	AssignedProductAttributeValueStore interface {
+		Indexer
+	}
+	AssignedProductAttributeStore interface {
+		Indexer
+	}
+	AttributeProductStore interface {
+		Indexer
+	}
 )
 
 // compliance
 type ComplianceStore interface {
+	Indexer
 	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Get(id string) (*compliance.Compliance, error)
@@ -186,53 +234,107 @@ type ComplianceStore interface {
 }
 
 //plugin
-type PluginConfigurationStore interface{}
+type PluginConfigurationStore interface {
+	Indexer
+}
 
 // wishlist
 type (
-	WishlistStore     interface{}
-	WishlistItemStore interface{}
+	WishlistStore interface {
+		Indexer
+	}
+	WishlistItemStore interface {
+		Indexer
+	}
 )
 
 // warehouse
 type (
 	WarehouseStore interface {
+		Indexer
 		Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error)
 		Get(id string) (*warehouse.WareHouse, error)
 		GetWarehousesHeaders(ids []string) ([]string, error)
 	}
-	StockStore      interface{}
-	AllocationStore interface{}
+	StockStore interface {
+		Indexer
+	}
+	AllocationStore interface {
+		Indexer
+	}
 )
 
 // shipping
 type (
-	ShippingZoneStore                 interface{}
-	ShippingMethodStore               interface{}
-	ShippingMethodPostalCodeRuleStore interface{}
-	ShippingMethodChannelListingStore interface{}
-	ShippingMethodTranslationStore    interface{}
+	ShippingZoneStore interface {
+		Indexer
+	}
+	ShippingMethodStore interface {
+		Indexer
+	}
+	ShippingMethodPostalCodeRuleStore interface {
+		Indexer
+	}
+	ShippingMethodChannelListingStore interface {
+		Indexer
+	}
+	ShippingMethodTranslationStore interface {
+		Indexer
+	}
 )
 
 // product
 type (
-	CollectionTranslationStore        interface{}
-	CollectionChannelListingStore     interface{}
-	CollectionStore                   interface{}
-	CollectionProductStore            interface{}
-	VariantMediaStore                 interface{}
-	ProductMediaStore                 interface{}
-	DigitalContentUrlStore            interface{}
-	DigitalContentStore               interface{}
-	ProductVariantChannelListingStore interface{}
-	ProductVariantTranslationStore    interface{}
-	ProductVariantStore               interface{}
-	ProductChannelListingStore        interface{}
-	ProductTranslationStore           interface{}
-	ProductTypeStore                  interface{}
-	CategoryTranslationStore          interface{}
-	CategoryStore                     interface{}
-	ProductStore                      interface {
+	CollectionTranslationStore interface {
+		Indexer
+	}
+	CollectionChannelListingStore interface {
+		Indexer
+	}
+	CollectionStore interface {
+		Indexer
+	}
+	CollectionProductStore interface {
+		Indexer
+	}
+	VariantMediaStore interface {
+		Indexer
+	}
+	ProductMediaStore interface {
+		Indexer
+	}
+	DigitalContentUrlStore interface {
+		Indexer
+	}
+	DigitalContentStore interface {
+		Indexer
+	}
+	ProductVariantChannelListingStore interface {
+		Indexer
+	}
+	ProductVariantTranslationStore interface {
+		Indexer
+	}
+	ProductVariantStore interface {
+		Indexer
+	}
+	ProductChannelListingStore interface {
+		Indexer
+	}
+	ProductTranslationStore interface {
+		Indexer
+	}
+	ProductTypeStore interface {
+		Indexer
+	}
+	CategoryTranslationStore interface {
+		Indexer
+	}
+	CategoryStore interface {
+		Indexer
+	}
+	ProductStore interface {
+		Indexer
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
@@ -243,87 +345,140 @@ type (
 
 // payment
 type (
-	PaymentStore            interface{}
-	PaymentTransactionStore interface{}
+	PaymentStore interface {
+		Indexer
+	}
+	PaymentTransactionStore interface {
+		Indexer
+	}
 )
 
 // page
 type (
-	PageTypeStore        interface{}
-	PageTranslationStore interface{}
-	PageStore            interface{}
+	PageTypeStore interface {
+		Indexer
+	}
+	PageTranslationStore interface {
+		Indexer
+	}
+	PageStore interface {
+		Indexer
+	}
 )
 
-type OrderEventStore interface{}
+type OrderEventStore interface {
+	Indexer
+}
 
-type FulfillmentLineStore interface{}
+type FulfillmentLineStore interface {
+	Indexer
+}
 
-type FulfillmentStore interface{}
+type FulfillmentStore interface {
+	Indexer
+}
 
-type OrderLineStore interface{}
+type OrderLineStore interface {
+	Indexer
+}
 
-type OrderStore interface{}
+type OrderStore interface {
+	Indexer
+}
 
-type MenuItemTranslationStore interface{}
+type MenuItemTranslationStore interface {
+	Indexer
+}
 
-type MenuStore interface{}
+type MenuStore interface {
+	Indexer
+}
 
-type InvoiceEventStore interface{}
+type InvoiceEventStore interface {
+	Indexer
+}
 
-type GiftCardStore interface{}
+type GiftCardStore interface {
+	Indexer
+}
 
-type OrderDiscountStore interface{}
+type OrderDiscountStore interface {
+	Indexer
+}
 
-type DiscountSaleTranslationStore interface{}
+type DiscountSaleTranslationStore interface {
+	Indexer
+}
 
-type DiscountSaleChannelListingStore interface{}
+type DiscountSaleChannelListingStore interface {
+	Indexer
+}
 
-type DiscountSaleStore interface{}
+type DiscountSaleStore interface {
+	Indexer
+}
 
-type VoucherTranslationStore interface{}
+type VoucherTranslationStore interface {
+	Indexer
+}
 
-type DiscountVoucherCustomerStore interface{}
+type DiscountVoucherCustomerStore interface {
+	Indexer
+}
 
-type VoucherChannelListingStore interface{}
+type VoucherChannelListingStore interface {
+	Indexer
+}
 
-type DiscountVoucherStore interface{}
+type DiscountVoucherStore interface {
+	Indexer
+}
 
 // csv
 type (
 	CsvExportEventStore interface {
+		Indexer
 		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
 	}
 	CsvExportFileStore interface {
+		Indexer
 		Save(file *csv.ExportFile) (*csv.ExportFile, error)
 		Get(id string) (*csv.ExportFile, error)
 	}
 )
 
 type CheckoutLineStore interface {
+	Indexer
 }
 
 type CheckoutStore interface {
+	Indexer
 }
 
 type ChannelStore interface {
+	Indexer
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	// Get(id string) (*channel.Channel, error)
 	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error)
 }
 
 type AppTokenStore interface {
+	Indexer
 	Save(appToken *app.AppToken) (*app.AppToken, error)
 }
 
 type AppStore interface {
+	Indexer
 	Save(app *app.App) (*app.App, error)
 }
 
 type AddressStore interface {
+	Indexer
 	Save(address *account.Address) (*account.Address, error)
 }
 
 type ClusterDiscoveryStore interface {
+	Indexer
 	Save(discovery *model.ClusterDiscovery) error
 	Delete(discovery *model.ClusterDiscovery) (bool, error)
 	Exists(discovery *model.ClusterDiscovery) (bool, error)
@@ -333,18 +488,21 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
+	Indexer
 	Save(audit *audit.Audit) error
 	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {
+	Indexer
 	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
 }
 
 type PreferenceStore interface {
+	Indexer
 	Save(preferences *model.Preferences) error
 	GetCategory(userID, category string) (model.Preferences, error)
 	Get(userID, category, name string) (*model.Preference, error)
@@ -354,9 +512,11 @@ type PreferenceStore interface {
 	DeleteCategoryAndName(category string, name string) error
 	PermanentDeleteByUser(userID string) error
 	CleanupFlagsBatch(limit int64) (int64, error)
+	DeleteUnusedFeatures()
 }
 
 type JobStore interface {
+	Indexer
 	Save(job *model.Job) (*model.Job, error)
 	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
 	UpdateStatus(id string, status string) (*model.Job, error)
@@ -376,6 +536,7 @@ type JobStore interface {
 }
 
 type StatusStore interface {
+	Indexer
 	SaveOrUpdate(status *model.Status) error
 	Get(userID string) (*model.Status, error)
 	GetByIds(userIds []string) ([]*model.Status, error)
@@ -385,6 +546,7 @@ type StatusStore interface {
 }
 
 type UserStore interface {
+	Indexer
 	Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 	Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 	UpdateLastPictureUpdate(userID string) error
@@ -460,6 +622,7 @@ type UserStore interface {
 }
 
 type SystemStore interface {
+	Indexer
 	Save(system *model.System) error
 	SaveOrUpdate(system *model.System) error
 	Update(system *model.System) error
@@ -471,6 +634,7 @@ type SystemStore interface {
 }
 
 type TokenStore interface {
+	Indexer
 	Save(recovery *model.Token) error
 	Delete(token string) error
 	GetByToken(token string) (*model.Token, error)
@@ -479,6 +643,7 @@ type TokenStore interface {
 }
 
 type SessionStore interface {
+	Indexer
 	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
 	Save(session *model.Session) (*model.Session, error)
 	GetSessions(userID string) ([]*model.Session, error)
@@ -498,6 +663,7 @@ type SessionStore interface {
 }
 
 type UserAccessTokenStore interface {
+	Indexer
 	Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
 	DeleteAllForUser(userID string) error
 	Delete(tokenID string) error
@@ -511,6 +677,7 @@ type UserAccessTokenStore interface {
 }
 
 type RoleStore interface {
+	Indexer
 	Save(role *model.Role) (*model.Role, error)
 	Get(roleID string) (*model.Role, error)
 	GetAll() ([]*model.Role, error)

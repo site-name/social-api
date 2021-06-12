@@ -19,14 +19,14 @@ type relationalCheckConfig struct {
 func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model.OrphanedRecord, error) {
 	var records []model.OrphanedRecord
 
-	sub := ss.getQueryBuilder().
+	sub := ss.GetQueryBuilder().
 		Select("TRUE").
 		From(cfg.parentName + " AS PT").
 		Prefix("NOT Exists (").
 		Suffix(")").
 		Where("PT.id = CT." + cfg.parentIdAttr)
 
-	main := ss.getQueryBuilder().
+	main := ss.GetQueryBuilder().
 		Select().
 		Column("CT." + cfg.parentIdAttr + " AS ParentId").
 		From(cfg.childName + " AS CT").

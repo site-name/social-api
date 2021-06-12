@@ -1,6 +1,36 @@
 package sqlstore
 
-import "github.com/sitename/sitename/store"
+import (
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/sqlstore/account"
+	"github.com/sitename/sitename/store/sqlstore/app"
+	"github.com/sitename/sitename/store/sqlstore/attribute"
+	"github.com/sitename/sitename/store/sqlstore/audit"
+	"github.com/sitename/sitename/store/sqlstore/channel"
+	"github.com/sitename/sitename/store/sqlstore/checkout"
+	"github.com/sitename/sitename/store/sqlstore/cluster"
+	"github.com/sitename/sitename/store/sqlstore/compliance"
+	"github.com/sitename/sitename/store/sqlstore/csv"
+	"github.com/sitename/sitename/store/sqlstore/discount"
+	"github.com/sitename/sitename/store/sqlstore/file"
+	"github.com/sitename/sitename/store/sqlstore/giftcard"
+	"github.com/sitename/sitename/store/sqlstore/invoice"
+	"github.com/sitename/sitename/store/sqlstore/job"
+	"github.com/sitename/sitename/store/sqlstore/menu"
+	"github.com/sitename/sitename/store/sqlstore/order"
+	"github.com/sitename/sitename/store/sqlstore/page"
+	"github.com/sitename/sitename/store/sqlstore/payment"
+	"github.com/sitename/sitename/store/sqlstore/plugin"
+	"github.com/sitename/sitename/store/sqlstore/preference"
+	"github.com/sitename/sitename/store/sqlstore/product"
+	"github.com/sitename/sitename/store/sqlstore/role"
+	"github.com/sitename/sitename/store/sqlstore/session"
+	"github.com/sitename/sitename/store/sqlstore/shipping"
+	"github.com/sitename/sitename/store/sqlstore/status"
+	"github.com/sitename/sitename/store/sqlstore/system"
+	"github.com/sitename/sitename/store/sqlstore/warehouse"
+	"github.com/sitename/sitename/store/sqlstore/wishlist"
+)
 
 type SqlStoreStores struct {
 	user                          store.UserStore                          // account models
@@ -94,224 +124,225 @@ type SqlStoreStores struct {
 // setup tables before performing database migration
 func (store *SqlStore) setupTables() {
 	// account
-	store.stores.user = newSqlUserStore(store, store.metrics) // metrics is already set in caller
-	store.stores.address = newSqlAddressStore(store)
-	// common
-	store.stores.audit = newSqlAuditStore(store)
-	store.stores.cluster = newSqlClusterDiscoveryStore(store)
-	store.stores.session = newSqlSessionStore(store)
-	store.stores.system = newSqlSystemStore(store)
-	store.stores.preference = newSqlPreferenceStore(store)
-	store.stores.token = newSqlTokenStore(store)
-	store.stores.status = newSqlStatusStore(store)
-	store.stores.job = newSqlJobStore(store)
-	store.stores.userAccessToken = newSqlUserAccessTokenStore(store)
-	store.stores.TermsOfService = newSqlTermsOfServiceStore(store, store.metrics) // metrics is already set in caller
-	store.stores.role = newSqlRoleStore(store)
-	store.stores.app = newAppSqlStore(store)
-	store.stores.appToken = newSqlAppTokenStore(store)
+	store.stores.user = account.NewSqlUserStore(store, store.metrics) // metrics is already set in caller
+	store.stores.address = account.NewSqlAddressStore(store)
+	// general
+	store.stores.audit = audit.NewSqlAuditStore(store)
+	store.stores.cluster = cluster.NewSqlClusterDiscoveryStore(store)
+	store.stores.session = session.NewSqlSessionStore(store)
+	store.stores.system = system.NewSqlSystemStore(store)
+	store.stores.preference = preference.NewSqlPreferenceStore(store)
+	store.stores.token = account.NewSqlTokenStore(store)
+	store.stores.status = status.NewSqlStatusStore(store)
+	store.stores.job = job.NewSqlJobStore(store)
+	store.stores.userAccessToken = account.NewSqlUserAccessTokenStore(store)
+	store.stores.TermsOfService = account.NewSqlTermsOfServiceStore(store, store.metrics) // metrics is already set in caller
+	store.stores.role = role.NewSqlRoleStore(store)
+	store.stores.app = app.NewAppSqlStore(store)
+	store.stores.appToken = app.NewSqlAppTokenStore(store)
 	// channel
-	store.stores.channel = newSqlChannelStore(store)
+	store.stores.channel = channel.NewSqlChannelStore(store)
 	// checkout
-	store.stores.checkout = newSqlCheckoutStore(store)
-	store.stores.checkoutLine = newSqlCheckoutLineStore(store)
+	store.stores.checkout = checkout.NewSqlCheckoutStore(store)
+	store.stores.checkoutLine = checkout.NewSqlCheckoutLineStore(store)
 	// csv
-	store.stores.csvExportEvent = newSqlCsvExportEventStore(store)
-	store.stores.csvExportFile = newSqlCsvExportFileStore(store)
+	store.stores.csvExportEvent = csv.NewSqlCsvExportEventStore(store)
+	store.stores.csvExportFile = csv.NewSqlCsvExportFileStore(store)
 	// product and discount
-	store.stores.discountVoucher = newSqlVoucherStore(store)
-	store.stores.discountVoucherChannelListing = newSqlVoucherChannelListingStore(store)
-	store.stores.discountVoucherTranslation = newSqlVoucherTranslationStore(store)
-	store.stores.discountVoucherCustomer = newSqlVoucherCustomerStore(store)
-	store.stores.discountSale = newSqlDiscountSaleStore(store)
-	store.stores.discountSaleChannelListing = newSqlSaleChannelListingStore(store)
-	store.stores.discountSaleTranslation = newSqlDiscountSaleTranslationStore(store)
-	store.stores.orderDiscount = newSqlOrderDiscountStore(store)
+	store.stores.discountVoucher = discount.NewSqlVoucherStore(store)
+	store.stores.discountVoucherChannelListing = discount.NewSqlVoucherChannelListingStore(store)
+	store.stores.discountVoucherTranslation = discount.NewSqlVoucherTranslationStore(store)
+	store.stores.discountVoucherCustomer = discount.NewSqlVoucherCustomerStore(store)
+	store.stores.discountSale = discount.NewSqlDiscountSaleStore(store)
+	store.stores.discountSaleChannelListing = discount.NewSqlSaleChannelListingStore(store)
+	store.stores.discountSaleTranslation = discount.NewSqlDiscountSaleTranslationStore(store)
+	store.stores.orderDiscount = discount.NewSqlOrderDiscountStore(store)
 	// gift card
-	store.stores.giftCard = newSqlGiftCardStore(store)
+	store.stores.giftCard = giftcard.NewSqlGiftCardStore(store)
 	// invoice
-	store.stores.invoiceEvent = newSqlInvoiceEventStore(store)
+	store.stores.invoiceEvent = invoice.NewSqlInvoiceEventStore(store)
 	// menu
-	store.stores.menu = newSqlMenuStore(store)
-	store.stores.menuItemTranslation = newSqlMenuItemTranslationStore(store)
+	store.stores.menu = menu.NewSqlMenuStore(store)
+	store.stores.menuItemTranslation = menu.NewSqlMenuItemTranslationStore(store)
 	// order
-	store.stores.order = newSqlOrderStore(store)
-	store.stores.orderLine = newSqlOrderLineStore(store)
-	store.stores.fulfillment = newSqlFulfillmentStore(store)
-	store.stores.fulfillmentLine = newSqlFulfillmentLineStore(store)
-	store.stores.orderEvent = newSqlOrderEventStore(store)
+	store.stores.order = order.NewSqlOrderStore(store)
+	store.stores.orderLine = order.NewSqlOrderLineStore(store)
+	store.stores.fulfillment = order.NewSqlFulfillmentStore(store)
+	store.stores.fulfillmentLine = order.NewSqlFulfillmentLineStore(store)
+	store.stores.orderEvent = order.NewSqlOrderEventStore(store)
 	// page
-	store.stores.page = newSqlPageStore(store)
-	store.stores.pageTranslation = newSqlPageTranslationStore(store)
-	store.stores.pageType = newSqlPageTypeStore(store)
+	store.stores.page = page.NewSqlPageStore(store)
+	store.stores.pageTranslation = page.NewSqlPageTranslationStore(store)
+	store.stores.pageType = page.NewSqlPageTypeStore(store)
 	// payment
-	store.stores.payment = newSqlPaymentStore(store)
-	store.stores.transaction = newSqlPaymentTransactionStore(store)
+	store.stores.payment = payment.NewSqlPaymentStore(store)
+	store.stores.transaction = payment.NewSqlPaymentTransactionStore(store)
 	// product
-	store.stores.category = newSqlCategoryStore(store)
-	store.stores.categoryTranslation = newSqlCategoryTranslationStore(store)
-	store.stores.productType = newSqlProductTypeStore(store)
-	store.stores.product = newSqlProductStore(store)
-	store.stores.productTranslation = newSqlProductTranslationStore(store)
-	store.stores.productChannelListing = newSqlProductChannelListingStore(store)
-	store.stores.productVariant = newSqlProductVariantStore(store)
-	store.stores.productVariantTranslation = newSqlProductVariantTranslationStore(store)
-	store.stores.productVariantChannelListing = newSqlProductVariantChannelListingStore(store)
-	store.stores.digitalContent = newSqlDigitalContentStore(store)
-	store.stores.digitalContentUrl = newSqlDigitalContentUrlStore(store)
-	store.stores.productMedia = newSqlProductMediaStore(store)
-	store.stores.variantMedia = newSqlVariantMediaStore(store)
-	store.stores.collectionProduct = newSqlCollectionProductStore(store)
-	store.stores.collection = newSqlCollectionStore(store)
-	store.stores.collectionChannelListing = newSqlCollectionChannelListingStore(store)
-	store.stores.collectionTranslation = newSqlCollectionTranslationStore(store)
+	store.stores.category = product.NewSqlCategoryStore(store)
+	store.stores.categoryTranslation = product.NewSqlCategoryTranslationStore(store)
+	store.stores.productType = product.NewSqlProductTypeStore(store)
+	store.stores.product = product.NewSqlProductStore(store)
+	store.stores.productTranslation = product.NewSqlProductTranslationStore(store)
+	store.stores.productChannelListing = product.NewSqlProductChannelListingStore(store)
+	store.stores.productVariant = product.NewSqlProductVariantStore(store)
+	store.stores.productVariantTranslation = product.NewSqlProductVariantTranslationStore(store)
+	store.stores.productVariantChannelListing = product.NewSqlProductVariantChannelListingStore(store)
+	store.stores.digitalContent = product.NewSqlDigitalContentStore(store)
+	store.stores.digitalContentUrl = product.NewSqlDigitalContentUrlStore(store)
+	store.stores.productMedia = product.NewSqlProductMediaStore(store)
+	store.stores.variantMedia = product.NewSqlVariantMediaStore(store)
+	store.stores.collectionProduct = product.NewSqlCollectionProductStore(store)
+	store.stores.collection = product.NewSqlCollectionStore(store)
+	store.stores.collectionChannelListing = product.NewSqlCollectionChannelListingStore(store)
+	store.stores.collectionTranslation = product.NewSqlCollectionTranslationStore(store)
 	// shipping
-	store.stores.shippingMethodTranslation = newSqlShippingMethodTranslationStore(store)
-	store.stores.shippingMethodChannelListing = newSqlShippingMethodChannelListingStore(store)
-	store.stores.shippingMethodPostalCodeRule = newSqlShippingMethodPostalCodeRuleStore(store)
-	store.stores.shippingMethod = newSqlShippingMethodStore(store)
-	store.stores.shippingZone = newSqlShippingZoneStore(store)
+	store.stores.shippingMethodTranslation = shipping.NewSqlShippingMethodTranslationStore(store)
+	store.stores.shippingMethodChannelListing = shipping.NewSqlShippingMethodChannelListingStore(store)
+	store.stores.shippingMethodPostalCodeRule = shipping.NewSqlShippingMethodPostalCodeRuleStore(store)
+	store.stores.shippingMethod = shipping.NewSqlShippingMethodStore(store)
+	store.stores.shippingZone = shipping.NewSqlShippingZoneStore(store)
 	// warehouse
-	store.stores.warehouse = newSqlWareHouseStore(store)
-	store.stores.stock = newSqlStockStore(store)
-	store.stores.allocation = newSqlAllocationStore(store)
+	store.stores.warehouse = warehouse.NewSqlWareHouseStore(store)
+	store.stores.stock = warehouse.NewSqlStockStore(store)
+	store.stores.allocation = warehouse.NewSqlAllocationStore(store)
 	// wishlist
-	store.stores.wishlist = newSqlWishlistStore(store)
-	store.stores.wishlistItem = newSqlWishlistItemStore(store)
+	store.stores.wishlist = wishlist.NewSqlWishlistStore(store)
+	store.stores.wishlistItem = wishlist.NewSqlWishlistItemStore(store)
 	// plugin
-	store.stores.pluginConfig = newSqlPluginConfigurationStore(store)
+	store.stores.pluginConfig = plugin.NewSqlPluginConfigurationStore(store)
 	// compliance
-	store.stores.compliance = newSqlComplianceStore(store)
+	store.stores.compliance = compliance.NewSqlComplianceStore(store)
 	// attribute
-	store.stores.attribute = newSqlAttributeStore(store)
-	store.stores.attributeTranslation = newSqlAttributeTranslationStore(store)
-	store.stores.attributeValue = newSqlAttributeValueStore(store)
-	store.stores.attributeValueTranslation = newSqlAttributeValueTranslationStore(store)
-	store.stores.assignedPageAttributeValue = newSqlAssignedPageAttributeValueStore(store)
-	store.stores.assignedPageAttribute = newSqlAssignedPageAttributeStore(store)
-	store.stores.attributePage = newSqlAttributePageStore(store)
-	store.stores.assignedVariantAttributeValue = newSqlAssignedVariantAttributeValueStore(store)
-	store.stores.assignedVariantAttribute = newSqlAssignedVariantAttributeStore(store)
-	store.stores.attributeVariant = newSqlAttributeVariantStore(store)
-	store.stores.assignedProductAttributeValue = newSqlAssignedProductAttributeValueStore(store)
-	store.stores.assignedProductAttribute = newSqlAssignedProductAttributeStore(store)
-	store.stores.attributeProduct = newSqlAttributeProductStore(store)
-	// file info
-	store.stores.fileInfo = newSqlFileInfoStore(store, store.metrics)
-	// upload session
-	store.stores.uploadSession = newSqlUploadSessionStore(store)
+	store.stores.attribute = attribute.NewSqlAttributeStore(store)
+	store.stores.attributeTranslation = attribute.NewSqlAttributeTranslationStore(store)
+	store.stores.attributeValue = attribute.NewSqlAttributeValueStore(store)
+	store.stores.attributeValueTranslation = attribute.NewSqlAttributeValueTranslationStore(store)
+	store.stores.assignedPageAttributeValue = attribute.NewSqlAssignedPageAttributeValueStore(store)
+	store.stores.assignedPageAttribute = attribute.NewSqlAssignedPageAttributeStore(store)
+	store.stores.attributePage = attribute.NewSqlAttributePageStore(store)
+	store.stores.assignedVariantAttributeValue = attribute.NewSqlAssignedVariantAttributeValueStore(store)
+	store.stores.assignedVariantAttribute = attribute.NewSqlAssignedVariantAttributeStore(store)
+	store.stores.attributeVariant = attribute.NewSqlAttributeVariantStore(store)
+	store.stores.assignedProductAttributeValue = attribute.NewSqlAssignedProductAttributeValueStore(store)
+	store.stores.assignedProductAttribute = attribute.NewSqlAssignedProductAttributeStore(store)
+	store.stores.attributeProduct = attribute.NewSqlAttributeProductStore(store)
+	// file info & upload session
+	store.stores.fileInfo = file.NewSqlFileInfoStore(store, store.metrics)
+	store.stores.uploadSession = file.NewSqlUploadSessionStore(store)
 }
 
 // performs database indexing
 func (store *SqlStore) indexingTableFields() {
 	// account
-	store.stores.user.(*SqlUserStore).createIndexesIfNotExists()
-	store.stores.address.(*SqlAddressStore).createIndexesIfNotExists()
+	store.stores.user.CreateIndexesIfNotExists()
+	store.stores.address.CreateIndexesIfNotExists()
 	// common
-	store.stores.audit.(*SqlAuditStore).createIndexesIfNotExists()
-	store.stores.session.(*SqlSessionStore).createIndexesIfNotExists()
-	store.stores.system.(*SqlSystemStore).createIndexesIfNotExists()
+	store.stores.audit.CreateIndexesIfNotExists()
+	store.stores.session.CreateIndexesIfNotExists()
+	store.stores.system.CreateIndexesIfNotExists()
 	// preference
-	store.stores.preference.(*SqlPreferenceStore).createIndexesIfNotExists()
-	store.stores.preference.(*SqlPreferenceStore).deleteUnusedFeatures()
+	store.stores.preference.CreateIndexesIfNotExists()
+	store.stores.preference.DeleteUnusedFeatures()
 
-	store.stores.token.(*SqlTokenStore).createIndexesIfNotExists()
-	store.stores.status.(*SqlStatusStore).createIndexesIfNotExists()
-	store.stores.job.(*SqlJobStore).createIndexesIfNotExists()
-	store.stores.userAccessToken.(*SqlUserAccessTokenStore).createIndexesIfNotExists()
-	store.stores.TermsOfService.(*SqlTermsOfServiceStore).createIndexesIfNotExists()
-	store.stores.app.(*SqlAppStore).createIndexesIfNotExists()
-	store.stores.appToken.(*SqlAppTokenStore).createIndexesIfNotExists()
+	store.stores.token.CreateIndexesIfNotExists()
+	store.stores.status.CreateIndexesIfNotExists()
+	store.stores.job.CreateIndexesIfNotExists()
+	store.stores.userAccessToken.CreateIndexesIfNotExists()
+	store.stores.TermsOfService.CreateIndexesIfNotExists()
+	// role
+	store.stores.role.CreateIndexesIfNotExists()
+	// app
+	store.stores.app.CreateIndexesIfNotExists()
+	store.stores.appToken.CreateIndexesIfNotExists()
 	// channel
-	store.stores.channel.(*SqlChannelStore).createIndexesIfNotExists()
-	// checkout
-	store.stores.checkout.(*SqlCheckoutStore).createIndexesIfNotExists()
-	store.stores.checkoutLine.(*SqlCheckoutLineStore).createIndexesIfNotExists()
+	store.stores.channel.CreateIndexesIfNotExists()
+	// checkoutproduct.N	store.stores.checkout.CreateIndexesIfNotExists()
+	store.stores.checkoutLine.CreateIndexesIfNotExists()
 	// csv
-	store.stores.csvExportEvent.(*SqlCsvExportEventStore).createIndexesIfNotExists()
-	store.stores.csvExportFile.(*SqlCsvExportFileStore).createIndexesIfNotExists()
+	store.stores.csvExportEvent.CreateIndexesIfNotExists()
+	store.stores.csvExportFile.CreateIndexesIfNotExists()
 	// product and discount
-	store.stores.discountVoucher.(*SqlVoucherStore).createIndexesIfNotExists()
-	store.stores.discountVoucherChannelListing.(*SqlVoucherChannelListingStore).createIndexesIfNotExists()
-	store.stores.discountVoucherTranslation.(*SqlVoucherTranslationStore).createIndexesIfNotExists()
-	store.stores.discountSale.(*SqlDiscountSaleStore).createIndexesIfNotExists()
-	store.stores.discountSaleChannelListing.(*SqlSaleChannelListingStore).createIndexesIfNotExists()
-	store.stores.discountVoucherCustomer.(*SqlVoucherCustomerStore).createIndexesIfNotExists()
-	store.stores.discountSaleTranslation.(*SqlDiscountSaleTranslationStore).createIndexesIfNotExists()
-	store.stores.orderDiscount.(*SqlOrderDiscountStore).createIndexesIfNotExists()
+	store.stores.discountVoucher.CreateIndexesIfNotExists()
+	store.stores.discountVoucherChannelListing.CreateIndexesIfNotExists()
+	store.stores.discountVoucherTranslation.CreateIndexesIfNotExists()
+	store.stores.discountSale.CreateIndexesIfNotExists()
+	store.stores.discountSaleChannelListing.CreateIndexesIfNotExists()
+	store.stores.discountVoucherCustomer.CreateIndexesIfNotExists()
+	store.stores.discountSaleTranslation.CreateIndexesIfNotExists()
+	store.stores.orderDiscount.CreateIndexesIfNotExists()
 	// gift card
-	store.stores.giftCard.(*SqlGiftCardStore).createIndexesIfNotExists()
+	store.stores.giftCard.CreateIndexesIfNotExists()
 	// invoice
-	store.stores.invoiceEvent.(*SqlInvoiceEventStore).createIndexesIfNotExists()
+	store.stores.invoiceEvent.CreateIndexesIfNotExists()
 	// menu
-	store.stores.menu.(*SqlMenuStore).createIndexesIfNotExists()
-	store.stores.menuItemTranslation.(*SqlMenuItemTranslationStore).createIndexesIfNotExists()
+	store.stores.menu.CreateIndexesIfNotExists()
+	store.stores.menuItemTranslation.CreateIndexesIfNotExists()
 	// order
-	store.stores.order.(*SqlOrderStore).createIndexesIfNotExists()
-	store.stores.orderLine.(*SqlOrderLineStore).createIndexesIfNotExists()
-	store.stores.fulfillment.(*SqlFulfillmentStore).createIndexesIfNotExists()
-	store.stores.fulfillmentLine.(*SqlFulfillmentLineStore).createIndexesIfNotExists()
-	store.stores.orderEvent.(*SqlOrderEventStore).createIndexesIfNotExists()
+	store.stores.order.CreateIndexesIfNotExists()
+	store.stores.orderLine.CreateIndexesIfNotExists()
+	store.stores.fulfillment.CreateIndexesIfNotExists()
+	store.stores.fulfillmentLine.CreateIndexesIfNotExists()
+	store.stores.orderEvent.CreateIndexesIfNotExists()
 	// page
-	store.stores.page.(*SqlPageStore).createIndexesIfNotExists()
-	store.stores.pageTranslation.(*SqlPageTranslationStore).createIndexesIfNotExists()
-	store.stores.pageType.(*SqlPageTypeStore).createIndexesIfNotExists()
+	store.stores.page.CreateIndexesIfNotExists()
+	store.stores.pageTranslation.CreateIndexesIfNotExists()
+	store.stores.pageType.CreateIndexesIfNotExists()
 	// payment
-	store.stores.transaction.(*SqlPaymentTransactionStore).createIndexesIfNotExists()
-	store.stores.payment.(*SqlPaymentStore).createIndexesIfNotExists()
+	store.stores.transaction.CreateIndexesIfNotExists()
+	store.stores.payment.CreateIndexesIfNotExists()
 	// product
-	store.stores.category.(*SqlCategoryStore).createIndexesIfNotExists()
-	store.stores.categoryTranslation.(*SqlCategoryTranslationStore).createIndexesIfNotExists()
-	store.stores.productType.(*SqlProductTypeStore).createIndexesIfNotExists()
-	store.stores.product.(*SqlProductStore).createIndexesIfNotExists()
-	store.stores.productTranslation.(*SqlProductTranslationStore).createIndexesIfNotExists()
-	store.stores.productChannelListing.(*SqlProductChannelListingStore).createIndexesIfNotExists()
-	store.stores.productVariant.(*SqlProductVariantStore).createIndexesIfNotExists()
-	store.stores.productVariantTranslation.(*SqlProductVariantTranslationStore).createIndexesIfNotExists()
-	store.stores.productVariantChannelListing.(*SqlProductVariantChannelListingStore).createIndexesIfNotExists()
-	store.stores.digitalContent.(*SqlDigitalContentStore).createIndexesIfNotExists()
-	store.stores.digitalContentUrl.(*SqlDigitalContentUrlStore).createIndexesIfNotExists()
-	store.stores.productMedia.(*SqlProductMediaStore).createIndexesIfNotExists()
-	store.stores.variantMedia.(*SqlVariantMediaStore).createIndexesIfNotExists()
-	store.stores.collectionProduct.(*SqlCollectionProductStore).createIndexesIfNotExists()
-	store.stores.collection.(*SqlCollectionStore).createIndexesIfNotExists()
-	store.stores.collectionChannelListing.(*SqlCollectionChannelListingStore).createIndexesIfNotExists()
-	store.stores.collectionTranslation.(*SqlCollectionTranslationStore).createIndexesIfNotExists()
+	store.stores.category.CreateIndexesIfNotExists()
+	store.stores.categoryTranslation.CreateIndexesIfNotExists()
+	store.stores.productType.CreateIndexesIfNotExists()
+	store.stores.product.CreateIndexesIfNotExists()
+	store.stores.productTranslation.CreateIndexesIfNotExists()
+	store.stores.productChannelListing.CreateIndexesIfNotExists()
+	store.stores.productVariant.CreateIndexesIfNotExists()
+	store.stores.productVariantTranslation.CreateIndexesIfNotExists()
+	store.stores.productVariantChannelListing.CreateIndexesIfNotExists()
+	store.stores.digitalContent.CreateIndexesIfNotExists()
+	store.stores.digitalContentUrl.CreateIndexesIfNotExists()
+	store.stores.productMedia.CreateIndexesIfNotExists()
+	store.stores.variantMedia.CreateIndexesIfNotExists()
+	store.stores.collectionProduct.CreateIndexesIfNotExists()
+	store.stores.collection.CreateIndexesIfNotExists()
+	store.stores.collectionChannelListing.CreateIndexesIfNotExists()
+	store.stores.collectionTranslation.CreateIndexesIfNotExists()
 	// shipping
-	store.stores.shippingMethodTranslation.(*SqlShippingMethodTranslationStore).createIndexesIfNotExists()
-	store.stores.shippingMethodChannelListing.(*SqlShippingMethodChannelListingStore).createIndexesIfNotExists()
-	store.stores.shippingMethodPostalCodeRule.(*SqlShippingMethodPostalCodeRuleStore).createIndexesIfNotExists()
-	store.stores.shippingMethod.(*SqlShippingMethodStore).createIndexesIfNotExists()
-	store.stores.shippingZone.(*SqlShippingZoneStore).createIndexesIfNotExists()
+	store.stores.shippingMethodTranslation.CreateIndexesIfNotExists()
+	store.stores.shippingMethodChannelListing.CreateIndexesIfNotExists()
+	store.stores.shippingMethodPostalCodeRule.CreateIndexesIfNotExists()
+	store.stores.shippingMethod.CreateIndexesIfNotExists()
+	store.stores.shippingZone.CreateIndexesIfNotExists()
 	// warehouse
-	store.stores.warehouse.(*SqlWareHouseStore).createIndexesIfNotExists()
-	store.stores.stock.(*SqlStockStore).createIndexesIfNotExists()
-	store.stores.allocation.(*SqlAllocationStore).createIndexesIfNotExists()
+	store.stores.warehouse.CreateIndexesIfNotExists()
+	store.stores.stock.CreateIndexesIfNotExists()
+	store.stores.allocation.CreateIndexesIfNotExists()
 	// wishlist
-	store.stores.wishlist.(*SqlWishlistStore).createIndexesIfNotExists()
-	store.stores.wishlistItem.(*SqlWishlistItemStore).createIndexesIfNotExists()
+	store.stores.wishlist.CreateIndexesIfNotExists()
+	store.stores.wishlistItem.CreateIndexesIfNotExists()
 	// plugin
-	store.stores.pluginConfig.(*SqlPluginConfigurationStore).createIndexesIfNotExists()
+	store.stores.pluginConfig.CreateIndexesIfNotExists()
 	// compliance
-	store.stores.compliance.(*SqlComplianceStore).createIndexesIfNotExists()
+	store.stores.compliance.CreateIndexesIfNotExists()
 	// attribute
-	store.stores.attribute.(*SqlAttributeStore).createIndexesIfNotExists()
-	store.stores.attributeTranslation.(*SqlAttributeTranslationStore).createIndexesIfNotExists()
-	store.stores.attributeValue.(*SqlAttributeValueStore).createIndexesIfNotExists()
-	store.stores.attributeValueTranslation.(*SqlAttributeValueTranslationStore).createIndexesIfNotExists()
-	store.stores.assignedPageAttributeValue.(*SqlAssignedPageAttributeValueStore).createIndexesIfNotExists()
-	store.stores.assignedPageAttribute.(*SqlAssignedPageAttributeStore).createIndexesIfNotExists()
-	store.stores.attributePage.(*SqlAttributePageStore).createIndexesIfNotExists()
-	store.stores.assignedVariantAttributeValue.(*SqlAssignedVariantAttributeValueStore).createIndexesIfNotExists()
-	store.stores.assignedVariantAttribute.(*SqlAssignedVariantAttributeStore).createIndexesIfNotExists()
-	store.stores.attributeVariant.(*SqlAttributeVariantStore).createIndexesIfNotExists()
-	store.stores.assignedProductAttributeValue.(*SqlAssignedProductAttributeValueStore).createIndexesIfNotExists()
-	store.stores.assignedProductAttribute.(*SqlAssignedProductAttributeStore).createIndexesIfNotExists()
-	store.stores.attributeProduct.(*SqlAttributeProductStore).createIndexesIfNotExists()
+	store.stores.attribute.CreateIndexesIfNotExists()
+	store.stores.attributeTranslation.CreateIndexesIfNotExists()
+	store.stores.attributeValue.CreateIndexesIfNotExists()
+	store.stores.attributeValueTranslation.CreateIndexesIfNotExists()
+	store.stores.assignedPageAttributeValue.CreateIndexesIfNotExists()
+	store.stores.assignedPageAttribute.CreateIndexesIfNotExists()
+	store.stores.attributePage.CreateIndexesIfNotExists()
+	store.stores.assignedVariantAttributeValue.CreateIndexesIfNotExists()
+	store.stores.assignedVariantAttribute.CreateIndexesIfNotExists()
+	store.stores.attributeVariant.CreateIndexesIfNotExists()
+	store.stores.assignedProductAttributeValue.CreateIndexesIfNotExists()
+	store.stores.assignedProductAttribute.CreateIndexesIfNotExists()
+	store.stores.attributeProduct.CreateIndexesIfNotExists()
 	// file info
-	store.stores.fileInfo.(*SqlFileInfoStore).createIndexesIfNotExists()
+	store.stores.fileInfo.CreateIndexesIfNotExists()
 	// upload session
-	store.stores.uploadSession.(*SqlUploadSessionStore).createIndexesIfNotExists()
+	store.stores.uploadSession.CreateIndexesIfNotExists()
 }
 
 // account

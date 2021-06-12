@@ -771,7 +771,7 @@ func IsConstraintAlreadyExistsError(err error) bool {
 // 1) given error's type is pq.Error and err's code is "23505"(uniqueless violation code)
 //
 // 2) error's string contains at least one value in given indexName
-func IsUniqueConstraintError(err error, indexName []string) bool {
+func (ss *SqlStore) IsUniqueConstraintError(err error, indexName []string) bool {
 	unique := false
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 		unique = true
@@ -839,7 +839,7 @@ func (ss *SqlStore) DropAllTables() {
 	ss.master.TruncateTables()
 }
 
-func (ss *SqlStore) getQueryBuilder() sq.StatementBuilderType {
+func (ss *SqlStore) GetQueryBuilder() sq.StatementBuilderType {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 }
 
@@ -1034,7 +1034,7 @@ func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
 }
 
 // common method, set max size for model's sep fields
-func (ss *SqlStore) commonSeoMaxLength(table *gorp.TableMap) {
+func (ss *SqlStore) CommonSeoMaxLength(table *gorp.TableMap) {
 	table.ColMap("SeoTitle").SetMaxSize(seo.SEO_TITLE_MAX_LENGTH)
 	table.ColMap("SeoDescription").SetMaxSize(seo.SEO_DESCRIPTION_MAX_LENGTH)
 }
