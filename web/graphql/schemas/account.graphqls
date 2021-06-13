@@ -11,25 +11,25 @@ extend type Mutation {
 
 type AccountAddressCreate {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   address: Address
 }
 
 type AccountAddressUpdate {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   address: Address
 }
 
 type AccountAddressDelete {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   address: Address
 }
 
 type AccountSetDefaultAddress {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 input AccountRegisterInput {
@@ -43,7 +43,7 @@ input AccountRegisterInput {
 
 type AccountRegister {
   requiresConfirmation: Boolean
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   user: User
 }
 
@@ -56,16 +56,17 @@ input AccountInput {
 }
 
 type AccountUpdate {
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   user: User
 }
 
 type AccountRequestDeletion {
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
+  ok: Boolean!
 }
 
 type AccountDelete {
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
   user: User
 }
 

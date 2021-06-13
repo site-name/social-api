@@ -88,6 +88,7 @@ func (a *App) CreateUserAsAdmin(c *request.Context, user *account.User, redirect
 	return ruser, nil
 }
 
+// CreateUserFromSignup creates new users with user-typed values (manual register)
 func (a *App) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 
 	if err := a.IsUserSignupAllowed(); err != nil {
@@ -380,6 +381,7 @@ func (a *App) sendUpdatedUserEvent(user *account.User) {
 	panic("not implemented")
 }
 
+// VerifyUserEmail veryfies that user's email is verified
 func (a *App) VerifyUserEmail(userID, email string) *model.AppError {
 	if _, err := a.Srv().Store.User().VerifyEmail(userID, email); err != nil {
 		return model.NewAppError("VerifyUserEmail", "app.user.verify_email.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -410,6 +412,7 @@ func (a *App) IsUserSignupAllowed() *model.AppError {
 	return nil
 }
 
+// DeleteToken delete given token from database. If error occur during deletion, returns concret error
 func (a *App) DeleteToken(token *model.Token) *model.AppError {
 	err := a.Srv().Store.Token().Delete(token.Token)
 	if err != nil {
@@ -418,6 +421,7 @@ func (a *App) DeleteToken(token *model.Token) *model.AppError {
 	return nil
 }
 
+// GetUserByUsername get user from database with given username
 func (a *App) GetUserByUsername(username string) (*account.User, *model.AppError) {
 	result, err := a.Srv().Store.User().GetByUsername(username)
 	if err != nil {
@@ -432,6 +436,7 @@ func (a *App) GetUserByUsername(username string) (*account.User, *model.AppError
 	return result, nil
 }
 
+// GetUserByEmail get user from database with given email
 func (a *App) GetUserByEmail(email string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().GetByEmail(email)
 	if err != nil {
@@ -459,6 +464,7 @@ func (a *App) IsUsernameTaken(name string) bool {
 	return true
 }
 
+// GetUserByAuth get user with given data.
 func (a *App) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().GetByAuth(authData, authService)
 	if err != nil {

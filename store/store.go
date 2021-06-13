@@ -17,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/modules/mfa"
 )
 
 const (
@@ -459,8 +460,10 @@ type (
 type ChannelStore interface {
 	CreateIndexesIfNotExists()
 	Save(ch *channel.Channel) (*channel.Channel, error)
-	// Get(id string) (*channel.Channel, error)
-	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error)
+	Get(id string) (*channel.Channel, error)                                         // Get returns channel by given id
+	GetBySlug(slug string) (*channel.Channel, error)                                 // GetBySlug returns channel by given slug
+	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) //
+	GetRandomActiveChannel() (*channel.Channel, error)                               // GetRandomActiveChannel get an abitrary channel that is active
 }
 
 // app
@@ -550,7 +553,8 @@ type (
 	}
 
 	UserStore interface {
-		CreateIndexesIfNotExists()
+		mfa.Store                                                                     // for multifactor authentication
+		CreateIndexesIfNotExists()                                                    //
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error
@@ -572,7 +576,7 @@ type (
 		GetAllNotInAuthService(authServices []string) ([]*account.User, error)
 		GetByUsername(username string) (*account.User, error)
 		GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*account.User, error)
-		VerifyEmail(userID, email string) (string, error)
+		VerifyEmail(userID, email string) (string, error) // VerifyEmail set EmailVerified attribute of user to true
 		GetEtagForAllProfiles() string
 		GetEtagForProfiles(teamID string) string
 		UpdateFailedPasswordAttempts(userID string, attempts int) error

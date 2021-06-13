@@ -29,6 +29,7 @@ type MFA struct {
 	store Store
 }
 
+// New returns new MFA instance
 func New(store Store) *MFA {
 	return &MFA{store}
 }

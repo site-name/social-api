@@ -704,8 +704,14 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 	now := model.GetMillis()
 	if _, err := us.
 		GetMaster().
-		Exec("UPDATE Users SET Email = lower(:email), EmailVerified = true, UpdateAt = :Time WHERE Id = :UserId",
-			map[string]interface{}{"email": email, "Time": now, "UserId": userId}); err != nil {
+		Exec(
+			"UPDATE Users SET Email = lower(:email), EmailVerified = true, UpdateAt = :Time WHERE Id = :UserId",
+			map[string]interface{}{
+				"email":  email,
+				"Time":   now,
+				"UserId": userId,
+			},
+		); err != nil {
 		return "", errors.Wrapf(err, "failed to update Users with userId=%s and email=%s")
 	}
 

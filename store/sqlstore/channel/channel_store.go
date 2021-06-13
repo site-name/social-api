@@ -1,6 +1,8 @@
 package channel
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
@@ -10,11 +12,15 @@ type SqlChannelStore struct {
 	store.Store
 }
 
+const (
+	channelTableName = "Channels"
+)
+
 func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	cs := &SqlChannelStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(channel.Channel{}, "Channels").SetKeys(false, "Id")
+		table := db.AddTableWithName(channel.Channel{}, channelTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(channel.CHANNEL_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH).SetUnique(true)
@@ -24,12 +30,12 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 }
 
 func (cs *SqlChannelStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_channels_name", "Channels", "Name")
-	cs.CreateIndexIfNotExists("idx_channels_slug", "Channels", "Slug")
-	cs.CreateIndexIfNotExists("idx_channels_isactive", "Channels", "IsActive")
-	cs.CreateIndexIfNotExists("idx_channels_currency", "Channels", "Currency")
+	cs.CreateIndexIfNotExists("idx_channels_name", channelTableName, "Name")
+	cs.CreateIndexIfNotExists("idx_channels_slug", channelTableName, "Slug")
+	cs.CreateIndexIfNotExists("idx_channels_isactive", channelTableName, "IsActive")
+	cs.CreateIndexIfNotExists("idx_channels_currency", channelTableName, "Currency")
 
-	cs.CreateIndexIfNotExists("idx_channels_name_lower_textpattern", "Channels", "lower(Name) text_pattern_ops")
+	cs.CreateIndexIfNotExists("idx_channels_name_lower_textpattern", channelTableName, "lower(Name) text_pattern_ops")
 }
 
 func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
@@ -52,13 +58,7 @@ func (cs *SqlChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) 
 	var channels []*channel.Channel
 	_, err := cs.GetReplica().Select(
 		&channels,
-		`SELECT 
-			*
-		FROM
-			Channels
-		WHERE
-			Id IN :IDS
-		ORDER BY :Order`,
+		`SELECT * FROM `+channelTableName+` WHERE Id IN :IDS ORDER BY :Order`,
 		map[string]interface{}{"IDS": ids, "Order": order},
 	)
 	if err != nil {
@@ -66,4 +66,43 @@ func (cs *SqlChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) 
 	}
 
 	return channels, nil
+}
+
+func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
+	var channel channel.Channel
+	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+channelTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(channelTableName, id)
+		}
+		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
+	}
+
+	return &channel, nil
+}
+
+func (cs *SqlChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
+	var channel channel.Channel
+	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+channelTableName+" WHERE Slug = :slug", map[string]interface{}{"slug": slug})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(channelTableName, "slug="+slug)
+		}
+		return nil, errors.Wrapf(err, "Failed to get Channel with slug=%s", slug)
+	}
+
+	return &channel, nil
+}
+
+func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
+	var channel channel.Channel
+	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+channelTableName+" WHERE IsActive = :active", map[string]interface{}{"active": true})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(channelTableName, "slug=true")
+		}
+		return nil, errors.Wrap(err, "Failed to get Channel with Active=true")
+	}
+
+	return &channel, nil
 }

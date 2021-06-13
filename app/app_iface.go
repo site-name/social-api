@@ -18,6 +18,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
@@ -46,6 +47,25 @@ type AppIface interface {
 	// CheckRolesExist get role model instances with given roleNames,
 	// checks if at least one db role has name contained in given roleNames.
 	CheckRolesExist(roleNames []string) *model.AppError
+	// CheckUserMfa checks
+	//
+	// 1) if given user's `MfaActive` is false && multi factor authentication is not enabled => return nil
+	//
+	// 2) multi factor authentication is not enabled => return concret error
+	//
+	// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
+	CheckUserMfa(user *account.User, token string) *model.AppError
+	// CheckUserPostflightAuthenticationCriteria checks if:
+	//
+	// Given user's `EmailVerified` attribute is false && email verification is required,
+	// Then it return an error.
+	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
+	// CheckUserPreflightAuthenticationCriteria checks:
+	//
+	// 1) user is not disabled
+	//
+	// 2) numbers of failed logins is not exceed the limit
+	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -64,6 +84,10 @@ type AppIface interface {
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
 	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
+	// CreateUserFromSignup creates new users with user-typed values (manual register)
+	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	// DeleteToken delete given token from database. If error occur during deletion, returns concret error
+	DeleteToken(token *model.Token) *model.AppError
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
@@ -88,8 +112,12 @@ type AppIface interface {
 	FileModTime(path string) (time.Time, *model.AppError)
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model.AppError)
+	// GetChannelBySlug get a channel from database with given slug
+	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
+	// GetDefaultChannel get random channel that is active
+	GetDefaultChannel() (*channel.Channel, *model.AppError)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
@@ -112,6 +140,12 @@ type AppIface interface {
 	GetSessions(userID string) ([]*model.Session, *model.AppError)
 	// GetUser get user with given userID
 	GetUser(userID string) (*account.User, *model.AppError)
+	// GetUserByAuth get user with given data.
+	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
+	// GetUserByEmail get user from database with given email
+	GetUserByEmail(email string) (*account.User, *model.AppError)
+	// GetUserByUsername get user from database with given username
+	GetUserByUsername(username string) (*account.User, *model.AppError)
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
@@ -205,6 +239,8 @@ type AppIface interface {
 	//
 	// 3) update user's sessions
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
+	// VerifyUserEmail veryfies that user's email is verified
+	VerifyUserEmail(userID, email string) *model.AppError
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
@@ -223,9 +259,7 @@ type AppIface interface {
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
-	CheckUserMfa(user *account.User, token string) *model.AppError
-	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
-	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
+	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
@@ -235,14 +269,12 @@ type AppIface interface {
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
-	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
 	DeactivateGuests(c *request.Context) *model.AppError
 	DeactivateMfa(userID string) *model.AppError
-	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
@@ -276,9 +308,6 @@ type AppIface interface {
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
-	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
-	GetUserByEmail(email string) (*account.User, *model.AppError)
-	GetUserByUsername(username string) (*account.User, *model.AppError)
 	GetUserForLogin(id, loginId string) (*account.User, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
 	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
@@ -340,6 +369,5 @@ type AppIface interface {
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
-	VerifyUserEmail(userID, email string) *model.AppError
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

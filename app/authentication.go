@@ -172,6 +172,11 @@ func (a *App) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken st
 	return nil
 }
 
+// CheckUserPreflightAuthenticationCriteria checks:
+//
+// 1) user is not disabled
+//
+// 2) numbers of failed logins is not exceed the limit
 func (a *App) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	if err := checkUserNotDisabled(user); err != nil {
 		return err
@@ -184,6 +189,27 @@ func (a *App) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaTo
 	return nil
 }
 
+// checkUserLoginAttempts checks if user's FailedAttempts >= max, then returns error
+func checkUserLoginAttempts(user *account.User, max int) *model.AppError {
+	if user.FailedAttempts >= max {
+		return model.NewAppError("checkUserLoginAttempts", "api.user.check_user_login_attempts.too_many.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
+	}
+
+	return nil
+}
+
+// checkUserNotDisabled checks if user's DeleteAt > 0, then returns error
+func checkUserNotDisabled(user *account.User) *model.AppError {
+	if user.DeleteAt > 0 {
+		return model.NewAppError("Login", "api.user.login.inactive.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
+	}
+	return nil
+}
+
+// CheckUserPostflightAuthenticationCriteria checks if:
+//
+// Given user's `EmailVerified` attribute is false && email verification is required,
+// Then it return an error.
 func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError {
 	if !user.EmailVerified && *a.Config().EmailSettings.RequireEmailVerification {
 		return model.NewAppError("Login", "api.user.login.not_verified.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
@@ -192,6 +218,13 @@ func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *mod
 	return nil
 }
 
+// CheckUserMfa checks
+//
+// 1) if given user's `MfaActive` is false && multi factor authentication is not enabled => return nil
+//
+// 2) multi factor authentication is not enabled => return concret error
+//
+// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
 func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
 	if !user.MfaActive || !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return nil
@@ -212,28 +245,6 @@ func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
 
 	return nil
 }
-
-func checkUserLoginAttempts(user *account.User, max int) *model.AppError {
-	if user.FailedAttempts >= max {
-		return model.NewAppError("checkUserLoginAttempts", "api.user.check_user_login_attempts.too_many.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
-	}
-
-	return nil
-}
-
-func checkUserNotDisabled(user *account.User) *model.AppError {
-	if user.DeleteAt > 0 {
-		return model.NewAppError("Login", "api.user.login.inactive.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
-	}
-	return nil
-}
-
-// func checkUserNotBot(user *model.User) *model.AppError {
-// 	if user.IsBot {
-// 		return model.NewAppError("Login", "api.user.login.bot_login_forbidden.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
-// 	}
-// 	return nil
-// }
 
 func (a *App) authenticateUser(c *request.Context, user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap() != nil

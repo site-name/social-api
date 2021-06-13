@@ -29,26 +29,22 @@ type TranslatableItem interface {
 }
 
 type AccountAddressCreate struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User    `json:"user"`
+	Address *Address `json:"address"`
 }
 
 type AccountAddressDelete struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User    `json:"user"`
+	Address *Address `json:"address"`
 }
 
 type AccountAddressUpdate struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User    `json:"user"`
+	Address *Address `json:"address"`
 }
 
 type AccountDelete struct {
-	Errors []AccountError `json:"errors"`
-	User   *User          `json:"user"`
+	User *User `json:"user"`
 }
 
 type AccountError struct {
@@ -67,9 +63,8 @@ type AccountInput struct {
 }
 
 type AccountRegister struct {
-	RequiresConfirmation *bool          `json:"requiresConfirmation"`
-	Errors               []AccountError `json:"errors"`
-	User                 *User          `json:"user"`
+	RequiresConfirmation *bool `json:"requiresConfirmation"`
+	User                 *User `json:"user"`
 }
 
 type AccountRegisterInput struct {
@@ -82,17 +77,15 @@ type AccountRegisterInput struct {
 }
 
 type AccountRequestDeletion struct {
-	Errors []AccountError `json:"errors"`
+	Ok bool `json:"ok"`
 }
 
 type AccountSetDefaultAddress struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User *User `json:"user"`
 }
 
 type AccountUpdate struct {
-	Errors []AccountError `json:"errors"`
-	User   *User          `json:"user"`
+	User *User `json:"user"`
 }
 
 type Address struct {

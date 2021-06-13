@@ -153,7 +153,7 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 // common function for creating model.AppError type
 //
 // Example:
-// 	modelInstance := &ModelType{
+// 	collection := &Collection{
 //		Id: "dsdsdre984jf8se990834",
 // 		Name: "Hello World",
 //	}
@@ -161,8 +161,8 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 //			"model.collection.is_valid.%s.app_error",
 //      "collection_id=",
 //      "Collection.IsValid",
-// )
-//	return outer("create_at", &modelInstance.Id)
+//  )
+//	return outer("name", &collection.Id)
 // NOTE: This is applied for errors with status code "http.StatusBadRequest (400)" only
 func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
 	var id, details string
