@@ -47,12 +47,12 @@ const (
 )
 
 var (
-	Countries                     map[string]string      // countries supported by app
-	Languages                     map[string]string      // Languages supported by app
-	MULTIPLE_COUNTRIES_MAX_LENGTH int                    // some model's country fields contains multiple countries
-	ReservedName                  []string               // usernames that can only be used by system
-	ValidUsernameChars            *regexp.Regexp         // regexp for username validation
-	RestrictedUsernames           map[string]interface{} // usernames that cannot be used
+	Countries                     map[string]string // countries supported by app
+	Languages                     map[string]string // Languages supported by app
+	MULTIPLE_COUNTRIES_MAX_LENGTH int               // some model's country fields contains multiple countries
+	ReservedName                  []string          // usernames that can only be used by system
+	ValidUsernameChars            *regexp.Regexp    // regexp for username validation
+	RestrictedUsernames           map[string]bool   // usernames that cannot be used
 )
 
 func init() {
@@ -378,11 +378,12 @@ func init() {
 		"sitename",
 	}
 	ValidUsernameChars = regexp.MustCompile(`^[a-z0-9\.\-_]+$`)
-	RestrictedUsernames = map[string]interface{}{
-		"all":      nil,
-		"channel":  nil,
-		"sitename": nil,
-		"system":   nil,
+	RestrictedUsernames = map[string]bool{
+		"all":      true,
+		"channel":  true,
+		"sitename": true,
+		"system":   true,
+		"admin":    true,
 	}
 
 	for code := range Countries {

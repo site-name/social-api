@@ -14,11 +14,9 @@ import (
 	"golang.org/x/text/language"
 )
 
+// constants used in package account
 const (
-	ME = "me"
-)
-
-const (
+	ME                            = "me"
 	PUSH_NOTIFY_PROP              = "push"
 	EMAIL_NOTIFY_PROP             = "email"
 	USER_NOTIFY_MENTION           = "mention"
@@ -157,6 +155,7 @@ func (u UserSlice) Usernames() []string {
 	return usernames
 }
 
+// IDs returns slice of uuids from slice of users
 func (u UserSlice) IDs() []string {
 	ids := []string{}
 	for _, user := range u {
@@ -246,10 +245,10 @@ func (u *User) IsValid() *model.AppError {
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
 		return outer("nickname", &u.Id)
 	}
-	if utf8.RuneCountInString(u.FirstName) > USER_FIRST_NAME_MAX_RUNES || !IsValidNamePart(u.FirstName, model.FirstName) {
+	if !IsValidNamePart(u.FirstName, model.FirstName) {
 		return outer("first_name", &u.Id)
 	}
-	if utf8.RuneCountInString(u.LastName) > USER_LAST_NAME_MAX_RUNES || !IsValidNamePart(u.LastName, model.LastName) {
+	if !IsValidNamePart(u.LastName, model.LastName) {
 		return outer("last_name", &u.Id)
 	}
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {

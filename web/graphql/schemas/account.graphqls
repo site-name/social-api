@@ -74,7 +74,7 @@ type AccountError {
   field: String
   message: String
   code: AccountErrorCode!
-  addressType: AddressTypeEnum
+  # addressType: AddressTypeEnum
 }
 
 enum AccountErrorCode {

@@ -155,7 +155,7 @@ func (es *EmailService) SendSignInChangeEmail(email, method, locale, siteURL str
 
 }
 
-// after an user has signed up, send them an welcome email
+// after an user has signed up, send them an welcome email to newly registered user.
 func (es *EmailService) sendWelcomeEmail(userID string, email string, verified bool, disableWelcomeEmail bool, locale, siteURL, redirect string) *model.AppError {
 	if disableWelcomeEmail {
 		return nil
@@ -321,6 +321,7 @@ type tokenExtra struct {
 	Email  string
 }
 
+// CreateVerifyEmailToken create verification token
 func (es *EmailService) CreateVerifyEmailToken(userID string, newEmail string) (*model.Token, *model.AppError) {
 	tokenExtra := tokenExtra{
 		userID,

@@ -35,15 +35,16 @@ const MissingChannelMemberError = "app.channel.get_member.missing.app_error"
 const MissingAuthAccountError = "app.user.get_by_auth.missing_account.app_error"
 
 const (
-	TokenTypePasswordRecovery  = "password_recovery"
-	TokenTypeVerifyEmail       = "verify_email"
-	TokenTypeGuestInvitation   = "guest_invitation"
+	TokenTypePasswordRecovery  = "password_recovery" // token type for password recorver
+	TokenTypeVerifyEmail       = "verify_email"      // type for creating user signup verification token
+	TokenTypeGuestInvitation   = "guest_invitation"  // type for creating invite token
 	TokenTypeCWSAccess         = "cws_access_token"
 	PasswordRecoverExpiryTime  = 1000 * 60 * 60      // 1 hour
 	InvitationExpiryTime       = 1000 * 60 * 60 * 48 // 48 hours
 	ImageProfilePixelDimension = 128
 )
 
+// CreateUserWithToken creates new user, join system because of invitation
 func (a *App) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
@@ -75,6 +76,7 @@ func (a *App) CreateUserWithToken(c *request.Context, user *account.User, token 
 	return ruser, nil
 }
 
+// CreateUserAsAdmin create new user but with admin right
 func (a *App) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 	ruser, err := a.CreateUser(c, user)
 	if err != nil {
@@ -90,7 +92,6 @@ func (a *App) CreateUserAsAdmin(c *request.Context, user *account.User, redirect
 
 // CreateUserFromSignup creates new users with user-typed values (manual register)
 func (a *App) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
-
 	if err := a.IsUserSignupAllowed(); err != nil {
 		return nil, err
 	}

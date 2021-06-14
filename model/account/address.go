@@ -13,8 +13,6 @@ import (
 
 // length limits for address fields
 const (
-	ADDRESS_FIRST_NAME_MAX_LENGTH     = 256
-	ADDRESS_LAST_NAME_MAX_LENGTH      = 256
 	ADDRESS_COMPANY_NAME_MAX_LENGTH   = 256
 	ADDRESS_STREET_ADDRESS_MAX_LENGTH = 256
 	ADDRESS_CITY_NAME_MAX_LENGTH      = 256
@@ -147,11 +145,11 @@ func (a *Address) IsValid() *model.AppError {
 // IsValidNamePart check if given first_name/last_name is valid or not
 func IsValidNamePart(s string, nameType model.NamePart) bool {
 	if nameType == model.FirstName {
-		if utf8.RuneCountInString(s) > ADDRESS_FIRST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > USER_FIRST_NAME_MAX_RUNES {
 			return false
 		}
 	} else if nameType == model.LastName {
-		if utf8.RuneCountInString(s) > ADDRESS_LAST_NAME_MAX_LENGTH {
+		if utf8.RuneCountInString(s) > USER_LAST_NAME_MAX_RUNES {
 			return false
 		}
 	}

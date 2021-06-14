@@ -26,7 +26,7 @@ func (r *mutationResolver) PageTypeBulkDelete(ctx context.Context, ids []string)
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PageTypeReorderAttributes(ctx context.Context, moves []gqlmodel.ReorderInput, pageTypeID string) (*gqlmodel.PageTypeReorderAttributes, error) {
+func (r *mutationResolver) PageTypeReorderAttributes(ctx context.Context, moves []*gqlmodel.ReorderInput, pageTypeID string) (*gqlmodel.PageTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

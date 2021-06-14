@@ -352,6 +352,7 @@ func (a *App) GetCookieDomain() string {
 	return ""
 }
 
+// GetSiteURL returns service's siteurl configuration.
 func (a *App) GetSiteURL() string {
 	return *a.Config().ServiceSettings.SiteURL
 }

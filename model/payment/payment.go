@@ -254,10 +254,10 @@ func (p *Payment) IsValid() *model.AppError {
 	if !model.IsValidEmail(p.BillingEmail) {
 		return outer("billing_email", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingFirstName) > account.ADDRESS_FIRST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
+	if !account.IsValidNamePart(p.BillingFirstName, model.FirstName) {
 		return outer("billing_first_name", &p.Id)
 	}
-	if utf8.RuneCountInString(p.BillingLastName) > account.ADDRESS_LAST_NAME_MAX_LENGTH || !account.IsValidNamePart(p.BillingLastName, model.LastName) {
+	if !account.IsValidNamePart(p.BillingLastName, model.LastName) {
 		return outer("billing_last_name", &p.Id)
 	}
 	if utf8.RuneCountInString(p.BillingCompanyName) > MAX_LENGTH_PAYMENT_COMMON_256 {

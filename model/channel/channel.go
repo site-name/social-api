@@ -10,6 +10,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// max lengths for some channel's fields
 const (
 	CHANNEL_NAME_MAX_LENGTH = 250
 	CHANNEL_SLUG_MAX_LENGTH = 255

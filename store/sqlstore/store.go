@@ -22,6 +22,7 @@ import (
 	"github.com/sitename/sitename/db/migrations"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
@@ -905,12 +906,17 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 	return nil
 }
 
+// siteNameConverter make tables able to have fields with custom types
+//
+// Example:
+//  map[string]string, []string, map[string]interface{}, ...
 type siteNameConverter struct{}
 
 func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
-
 	switch t := val.(type) {
 	case model.StringMap:
+		return model.MapToJson(t), nil
+	case account.StringMap: // this is needed
 		return model.MapToJson(t), nil
 	case map[string]string:
 		return model.MapToJson(model.StringMap(t)), nil
@@ -930,8 +936,9 @@ func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
 }
 
 func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
+
 	switch target.(type) {
-	case *model.StringMap:
+	case *model.StringMap, *account.StringMap, *map[string]string:
 		binder := func(holder, target interface{}) error {
 			s, ok := holder.(*string)
 			if !ok {
@@ -941,17 +948,7 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 			return json.JSON.Unmarshal(b, target)
 		}
 		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
-	case *map[string]string:
-		binder := func(holder, target interface{}) error {
-			s, ok := holder.(*string)
-			if !ok {
-				return errors.New(i18n.T("store.sql.convert_string_map"))
-			}
-			b := []byte(*s)
-			return json.JSON.Unmarshal(b, target)
-		}
-		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
-	case *model.StringArray:
+	case *model.StringArray, *[]string:
 		binder := func(holder, target interface{}) error {
 			s, ok := holder.(*string)
 			if !ok {
@@ -961,17 +958,7 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 			return json.JSON.Unmarshal(b, target)
 		}
 		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
-	case *model.StringInterface:
-		binder := func(holder, target interface{}) error {
-			s, ok := holder.(*string)
-			if !ok {
-				return errors.New(i18n.T("store.sql.convert_string_interface"))
-			}
-			b := []byte(*s)
-			return json.JSON.Unmarshal(b, target)
-		}
-		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
-	case *map[string]interface{}:
+	case *model.StringInterface, *map[string]interface{}:
 		binder := func(holder, target interface{}) error {
 			s, ok := holder.(*string)
 			if !ok {

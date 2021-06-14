@@ -2779,17 +2779,17 @@ type ExportSettings struct {
 	RetentionDays *int
 }
 
-func (s *ExportSettings) isValid() *AppError {
-	if *s.Directory == "" {
-		return NewAppError("Config.IsValid", "model.config.is_valid.export.directory.app_error", nil, "", http.StatusBadRequest)
-	}
+// func (s *ExportSettings) isValid() *AppError {
+// 	if *s.Directory == "" {
+// 		return NewAppError("Config.IsValid", "model.config.is_valid.export.directory.app_error", nil, "", http.StatusBadRequest)
+// 	}
 
-	if *s.RetentionDays <= 0 {
-		return NewAppError("Config.IsValid", "model.config.is_valid.export.retention_days_too_low.app_error", nil, "", http.StatusBadRequest)
-	}
+// 	if *s.RetentionDays <= 0 {
+// 		return NewAppError("Config.IsValid", "model.config.is_valid.export.retention_days_too_low.app_error", nil, "", http.StatusBadRequest)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // SetDefaults applies the default settings to the struct.
 func (s *ExportSettings) SetDefaults() {

@@ -17,8 +17,8 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(account.Address{}, "Addresses").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("FirstName").SetMaxSize(account.ADDRESS_FIRST_NAME_MAX_LENGTH)
-		table.ColMap("LastName").SetMaxSize(account.ADDRESS_LAST_NAME_MAX_LENGTH)
+		table.ColMap("FirstName").SetMaxSize(account.USER_FIRST_NAME_MAX_RUNES)
+		table.ColMap("LastName").SetMaxSize(account.USER_LAST_NAME_MAX_RUNES)
 		table.ColMap("CompanyName").SetMaxSize(account.ADDRESS_COMPANY_NAME_MAX_LENGTH)
 		table.ColMap("StreetAddress1").SetMaxSize(account.ADDRESS_STREET_ADDRESS_MAX_LENGTH)
 		table.ColMap("StreetAddress2").SetMaxSize(account.ADDRESS_STREET_ADDRESS_MAX_LENGTH)

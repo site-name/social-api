@@ -1,6 +1,6 @@
 {
     "ServiceSettings": {
-        "SiteURL": "",
+        "SiteURL": "http://localhost:8065",
         "WebsocketURL": "",
         "LicenseFileLocation": "",
         "ListenAddress": ":8065",
@@ -198,7 +198,7 @@
         "EnableSignInWithUsername": true,
         "SendEmailNotifications": true,
         "UseChannelInEmailNotifications": false,
-        "RequireEmailVerification": false,
+        "RequireEmailVerification": true,
         "FeedbackName": "",
         "FeedbackEmail": "test@example.com",
         "ReplyToAddress": "test@example.com",
