@@ -559,7 +559,7 @@ func (a *OpenTracingAppLayer) CopyFileInfos(userID string, fileIDs []string) ([]
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) CreateGuest(user *account.User) (*account.User, *model.AppError) {
+func (a *OpenTracingAppLayer) CreateGuest(c *request.Context, user *account.User) (*account.User, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateGuest")
 
@@ -571,7 +571,7 @@ func (a *OpenTracingAppLayer) CreateGuest(user *account.User) (*account.User, *m
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateGuest(user)
+	resultVar0, resultVar1 := a.app.CreateGuest(c, user)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -1481,9 +1481,9 @@ func (a *OpenTracingAppLayer) GetCookieDomain() string {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetDefaultChannel() (*channel.Channel, *model.AppError) {
+func (a *OpenTracingAppLayer) GetDefaultActiveChannel() (*channel.Channel, *model.AppError) {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetDefaultChannel")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetDefaultActiveChannel")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -1493,7 +1493,7 @@ func (a *OpenTracingAppLayer) GetDefaultChannel() (*channel.Channel, *model.AppE
 	}()
 
 	defer span.Finish()
-	resultVar0, resultVar1 := a.app.GetDefaultChannel()
+	resultVar0, resultVar1 := a.app.GetDefaultActiveChannel()
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))

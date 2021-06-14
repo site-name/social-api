@@ -1119,19 +1119,6 @@ type CustomerDelete struct {
 	User   *User          `json:"user"`
 }
 
-type CustomerEvent struct {
-	ID        string              `json:"id"`
-	Date      *time.Time          `json:"date"`
-	Type      *CustomerEventsEnum `json:"type"`
-	User      *User               `json:"user"`
-	Message   *string             `json:"message"`
-	Count     *int                `json:"count"`
-	Order     *Order              `json:"order"`
-	OrderLine *OrderLine          `json:"orderLine"`
-}
-
-func (CustomerEvent) IsNode() {}
-
 type CustomerFilterInput struct {
 	DateJoined     *DateRangeInput  `json:"dateJoined"`
 	NumberOfOrders *IntRangeInput   `json:"numberOfOrders"`

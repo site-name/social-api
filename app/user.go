@@ -201,16 +201,16 @@ func (s *Server) IsFirstUserAccount() bool {
 // CreateUser creates a user and sets several fields of the returned User struct to
 // their zero values.
 func (a *App) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
-	return a.createUserOrGuest(user, false)
+	return a.createUserOrGuest(c, user, false)
 }
 
 // CreateGuest creates a guest and sets several fields of the returned User struct to
 // their zero values.
-func (a *App) CreateGuest(user *account.User) (*account.User, *model.AppError) {
-	return a.createUserOrGuest(user, true)
+func (a *App) CreateGuest(c *request.Context, user *account.User) (*account.User, *model.AppError) {
+	return a.createUserOrGuest(c, user, true)
 }
 
-func (a *App) createUserOrGuest(user *account.User, guest bool) (*account.User, *model.AppError) {
+func (a *App) createUserOrGuest(c *request.Context, user *account.User, guest bool) (*account.User, *model.AppError) {
 	user.Roles = model.SYSTEM_USER_ROLE_ID
 	if guest {
 		user.Roles = model.SYSTEM_GUEST_ROLE_ID

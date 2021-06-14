@@ -50,6 +50,7 @@ type Store interface {
 	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
 	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
 	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
+	MarkSystemRanUnitTests()
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //

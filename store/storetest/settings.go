@@ -9,7 +9,7 @@ import (
 	"path"
 
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
+	// _ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 
@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	defaultMysqlDSN        = "mmuser:mostest@tcp(localhost:3306)/mattermost_test?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s&multiStatements=true"
-	defaultPostgresqlDSN   = "postgres://mmuser:mostest@localhost:5432/mattermost_test?sslmode=disable&connect_timeout=10"
-	defaultMysqlRootPWD    = "mostest"
-	defaultMysqlReplicaDSN = "root:mostest@tcp(localhost:3307)/mattermost_test?charset=utf8mb4,utf8\u0026readTimeout=30s"
+	defaultMysqlDSN        = "minh:anhyeuem98@tcp(localhost:3306)/mattermost_test?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s&multiStatements=true"
+	defaultPostgresqlDSN   = "postgres://minh:anhyeuem98@localhost:5432/mattermost_test?sslmode=disable&connect_timeout=10"
+	defaultMysqlRootPWD    = "anhyeuem98"
+	defaultMysqlReplicaDSN = "root:anhyeuem98@tcp(localhost:3307)/mattermost_test?charset=utf8mb4,utf8\u0026readTimeout=30s"
 )
 
 func getEnv(name, defaultValue string) string {
@@ -214,12 +214,12 @@ func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
 
 	switch driver {
 	case model.DATABASE_DRIVER_MYSQL:
-		if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON "+dbName+".* TO 'mmuser'"); err != nil {
-			panic("failed to grant mmuser permission to " + dbName + ":" + err.Error())
+		if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON "+dbName+".* TO 'minh'"); err != nil {
+			panic("failed to grant minh permission to " + dbName + ":" + err.Error())
 		}
 	case model.DATABASE_DRIVER_POSTGRES:
-		if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON DATABASE \""+dbName+"\" TO mmuser"); err != nil {
-			panic("failed to grant mmuser permission to " + dbName + ":" + err.Error())
+		if err := execAsRoot(settings, "GRANT ALL PRIVILEGES ON DATABASE \""+dbName+"\" TO minh"); err != nil {
+			panic("failed to grant minh permission to " + dbName + ":" + err.Error())
 		}
 	default:
 		panic("unsupported driver " + driver)

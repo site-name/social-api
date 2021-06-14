@@ -66,6 +66,13 @@ type AppIface interface {
 	//
 	// 2) numbers of failed logins is not exceed the limit
 	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
+	// CleanChannel performs:
+	//
+	// 1) If given slug is not nil, try getting a channel with that slug.
+	//   +) if found, check if channel is active
+	//
+	// 2) If given slug if nil, it try
+	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -76,7 +83,7 @@ type AppIface interface {
 	Config() *model.Config
 	// CreateGuest creates a guest and sets several fields of the returned User struct to
 	// their zero values.
-	CreateGuest(user *account.User) (*account.User, *model.AppError)
+	CreateGuest(c *request.Context, user *account.User) (*account.User, *model.AppError)
 	// CreateRole takes a role struct and save it to database
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// CreateSession save given session to tha database.
@@ -117,7 +124,7 @@ type AppIface interface {
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetDefaultChannel get random channel that is active
-	GetDefaultChannel() (*channel.Channel, *model.AppError)
+	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
@@ -259,7 +266,6 @@ type AppIface interface {
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
-	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface

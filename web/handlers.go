@@ -235,23 +235,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			c.AppContext.SetSession(session)
 		}
 	}
-	// TODO: may add this later
-	// else if token != "" && tokenLocation == app.TokenLocationRemoteClusterHeader {
-	// 	// Get the remote cluster
-	// 	if remoteId := c.GetRemoteID(r); remoteId == "" {
-	// 		c.Logger.Warn("Missing remote cluster id")
-	// 		c.Err = model.NewAppError("ServeHTTP", "api.context.remote_id_missing.app_error", nil, "", http.StatusUnauthorized)
-	// 	} else {
-	// 		// Check the token is correct for the remote cluster id.
-	// 		session, err := c.App.GetRemoteClusterSession(token, remoteId)
-	// 		if err != nil {
-	// 			c.Logger.Warn("Invalid remote cluster token", slog.Err(err))
-	// 			c.Err = err
-	// 		} else {
-	// 			c.AppContext.SetSession(session)
-	// 		}
-	// 	}
-	// }
 
 	c.Logger = c.App.Log().With(
 		slog.String("path", c.AppContext.Path()),
@@ -271,25 +254,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if c.Err == nil && h.DisableWhenBusy && c.App.Srv().Busy.IsBusy() {
 		c.SetServerBusyError()
-	}
-
-	// if c.Err == nil && h.RequireCloudKey {
-	// 	c.CloudKeyRequired()
-	// }
-
-	// if c.Err == nil && h.RequireRemoteClusterToken {
-	// 	c.RemoteClusterTokenRequired()
-	// }
-
-	if c.Err == nil && h.IsLocal {
-		// if the connection is local, RemoteAddr shouldn't have the
-		// shape IP:PORT (it will be "@" in Linux, for example)
-		isLocalOrigin := !strings.Contains(r.RemoteAddr, ":")
-		if *c.App.Config().ServiceSettings.EnableLocalMode && isLocalOrigin {
-			c.AppContext.SetSession(&model.Session{Local: true})
-		} else if !isLocalOrigin {
-			c.Err = model.NewAppError("", "api.context.local_origin_required.app_error", nil, "LocalOriginRequired", http.StatusUnauthorized)
-		}
 	}
 
 	if c.Err == nil {

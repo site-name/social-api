@@ -26,6 +26,8 @@ func (web *Web) InitGraphql() {
 
 	web.MainRouter.Handle(graphqlPlayground, web.NewHandler(commonGraphHandler(playgroundHandler))).Methods(http.MethodGet)
 	web.MainRouter.Handle(graphqlApi, web.NewHandler(commonGraphHandler(graphqlServer))).Methods(http.MethodPost)
+	// web.MainRouter.Handle(graphqlPlayground, playgroundHandler)
+	// web.MainRouter.Handle(graphqlApi, graphqlServer)
 }
 
 // commonGraphHandler is used for both graphql playground/api
