@@ -2,8 +2,6 @@ package model
 
 import (
 	"io"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 type MfaSecret struct {
@@ -12,15 +10,11 @@ type MfaSecret struct {
 }
 
 func (mfa *MfaSecret) ToJson() string {
-	b, _ := json.JSON.Marshal(mfa)
-	return string(b)
+	return ModelToJson(mfa)
 }
 
 func MfaSecretFromJson(data io.Reader) *MfaSecret {
-	var mfa MfaSecret
-	err := json.JSON.NewDecoder(data).Decode(&mfa)
-	if err != nil {
-		return nil
-	}
-	return &mfa
+	var mfa *MfaSecret
+	ModelFromJson(&mfa, data)
+	return mfa
 }
