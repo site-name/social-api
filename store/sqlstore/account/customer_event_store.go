@@ -55,3 +55,12 @@ func (cs *SqlCustomerEventStore) Get(id string) (*account.CustomerEvent, error) 
 
 	return &event, nil
 }
+
+func (cs *SqlCustomerEventStore) Count() (int64, error) {
+	count, err := cs.GetReplica().SelectInt("SELECT COUNT(Id) FROM " + customerEventTableName)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of "+customerEventTableName)
+	}
+
+	return count, nil
+}

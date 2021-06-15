@@ -611,7 +611,8 @@ type (
 		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error)
 		GetProfilesByUsernames(usernames []string) ([]*account.User, error)
 
-		// GetUnreadCount(userID string) (int64, error)
+		GetUnreadCount(userID string) (int64, error) // gonna be removed
+
 		// GetTeamGroupUsers(teamID string) ([]*model.User, error)
 		// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
 		// GetEtagForProfilesNotInTeam(teamID string) string
@@ -666,7 +667,7 @@ type (
 		Indexer
 		Save(*account.CustomerEvent) (*account.CustomerEvent, error)
 		Get(id string) (*account.CustomerEvent, error)
-		Count() int64
+		Count() (int64, error)
 	}
 	StaffNotificationRecipientStore interface {
 		Indexer

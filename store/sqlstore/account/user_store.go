@@ -80,6 +80,11 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	return us
 }
 
+// TODO: remove this
+func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
+	panic("not implemented")
+}
+
 func (us *SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateIndexIfNotExists("idx_users_email", userTableName, "Email")
 	us.CreateIndexIfNotExists("idx_users_update_at", userTableName, "UpdateAt")
@@ -762,9 +767,6 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.UserCountOptions) (int64, error) {
 	time := model.GetMillis() - timePeriod
 	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :Time", map[string]interface{}{"Time": time})
-	// if !options.IncludeBotAccounts {
-	// 	query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
-	// }
 
 	if !options.IncludeDeleted {
 		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
@@ -914,7 +916,7 @@ func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
 func (us *SqlUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, error) {
 	count, err := us.GetReplica().SelectInt("SELECT COUNT(Id) FROM Users WHERE LOWER(Email) NOT LIKE :HostDomain", map[string]interface{}{"HostDomain": "%@" + strings.ToLower(hostDomain)})
 	if err != nil {
-		return false, errors.Wrap(err, "failed to count inactive Users")
+		return false, errors.Wrap(err, "failed to count Users")
 	}
 	return count > 0, nil
 }
