@@ -20,30 +20,38 @@ type CustomerEvent struct {
 func (CustomerEvent) IsNode() {}
 
 type User struct {
-	ID                       string                                                                                   `json:"id"`
-	LastLogin                *time.Time                                                                               `json:"lastLogin"`
-	Email                    string                                                                                   `json:"email"`
-	FirstName                string                                                                                   `json:"firstName"`
-	LastName                 string                                                                                   `json:"lastName"`
-	IsStaff                  bool                                                                                     `json:"isStaff"`
-	IsActive                 bool                                                                                     `json:"isActive"`
-	Note                     *string                                                                                  `json:"note"`
-	DateJoined               time.Time                                                                                `json:"dateJoined"`
-	DefaultShippingAddressID *string                                                                                  `json:"defaultShippingAddress"` // *Address
-	DefaultBillingAddressID  *string                                                                                  `json:"defaultBillingAddress"`  // *Address
-	PrivateMetadata          []*MetadataItem                                                                          `json:"privateMetadata"`
-	Metadata                 []*MetadataItem                                                                          `json:"metadata"`
-	AddresseIDs              []string                                                                                 `json:"addresses"`      // []*Address
-	CheckoutTokens           []uuid.UUID                                                                              `json:"checkoutTokens"` //
-	UserPermissions          []*UserPermission                                                                        `json:"userPermissions"`
-	PermissionGroups         []*Group                                                                                 `json:"permissionGroups"`
-	EditableGroups           []*Group                                                                                 `json:"editableGroups"`
-	Avatar                   *Image                                                                                   `json:"avatar"`
-	EventIDs                 []string                                                                                 `json:"events"`               //[]*CustomerEvent
-	StoredPaymentSources     []*PaymentSource                                                                         `json:"storedPaymentSources"` //
-	LanguageCode             LanguageCodeEnum                                                                         `json:"languageCode"`         //
-	GiftCards                func(page int, perPage int, orderDirection *OrderDirection) *GiftCardCountableConnection `json:"giftCards"`            // *GiftCardCountableConnection
-	Orders                   func(page int, perPage int, orderDirection *OrderDirection) *OrderCountableConnection    `json:"orders"`               // *OrderCountableConnection
+	ID                       string            `json:"id"`
+	LastLogin                *time.Time        `json:"lastLogin"`
+	Email                    string            `json:"email"`
+	FirstName                string            `json:"firstName"`
+	LastName                 string            `json:"lastName"`
+	IsStaff                  bool              `json:"isStaff"`
+	IsActive                 bool              `json:"isActive"`
+	Note                     *string           `json:"note"`
+	DateJoined               time.Time         `json:"dateJoined"`
+	DefaultShippingAddressID *string           `json:"defaultShippingAddress"` // *Address
+	DefaultBillingAddressID  *string           `json:"defaultBillingAddress"`  // *Address
+	PrivateMetadata          []*MetadataItem   `json:"privateMetadata"`
+	Metadata                 []*MetadataItem   `json:"metadata"`
+	AddresseIDs              []string          `json:"addresses"`      // []*Address
+	CheckoutTokens           []uuid.UUID       `json:"checkoutTokens"` //
+	UserPermissions          []*UserPermission `json:"userPermissions"`
+	PermissionGroups         []*Group          `json:"permissionGroups"`
+	EditableGroups           []*Group          `json:"editableGroups"`
+	Avatar                   *Image            `json:"avatar"`
+	EventIDs                 []string          `json:"events"`               //[]*CustomerEvent
+	StoredPaymentSources     []*PaymentSource  `json:"storedPaymentSources"` //
+	LanguageCode             LanguageCodeEnum  `json:"languageCode"`         //
+	GiftCards                func(
+		page int,
+		perPage int,
+		orderDirection *OrderDirection,
+	) *GiftCardCountableConnection `json:"giftCards"` // *GiftCardCountableConnection
+	Orders func(
+		page int,
+		perPage int,
+		orderDirection *OrderDirection,
+	) *OrderCountableConnection `json:"orders"` // *OrderCountableConnection
 }
 
 func (User) IsNode()               {}

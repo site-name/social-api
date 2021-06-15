@@ -727,6 +727,7 @@ func (us *SqlUserStore) PermanentDelete(userId string) error {
 	return nil
 }
 
+// applyViewRestrictionsFilter add "DISTINCT" to query if given distinct is `true`
 func applyViewRestrictionsFilter(query squirrel.SelectBuilder, distinct bool) squirrel.SelectBuilder {
 	if distinct {
 		return query.Distinct()
@@ -742,20 +743,8 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 		query = query.Where("u.DeleteAt = 0")
 	}
 
-	// if options.IncludeBotAccounts {
-	// 	if options.ExcludeRegularUsers {
-	// 		query = query.Join("Bots ON u.Id = Bots.UserId")
-	// 	}
-	// } else {
-	// 	query = query.LeftJoin("Bots ON u.Id = Bots.UserId").Where("Bots.UserId IS NULL")
-	// 	if options.ExcludeRegularUsers {
-	// 		// Currently this doesn't make sense because it will always return 0
-	// 		return int64(0), errors.New("query with IncludeBotAccounts=false and excludeRegularUsers=true always return 0")
-	// 	}
-	// }
-
 	query = applyViewRestrictionsFilter(query, true)
-	query = applyMultiRoleFilters(query, options.Roles, true)
+	query = applyMultiRoleFilters(query, options.Roles)
 
 	query = query.PlaceholderFormat(squirrel.Dollar)
 	queryString, args, err := query.ToSql()
@@ -795,9 +784,6 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.U
 
 func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
 	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :StartTime AND LastActivityAt <= :EndTime", map[string]interface{}{"StartTime": startTime, "EndTime": endTime})
-	// if !options.IncludeBotAccounts {
-	// 	query = query.LeftJoin("Bots ON s.UserId = Bots.UserId").Where("Bots.UserId IS NULL")
-	// }
 	if !options.IncludeDeleted {
 		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
 	}
@@ -814,11 +800,7 @@ func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime i
 	return v, nil
 }
 
-func (us *SqlUserStore) GetUnreadCount(userId string) (int64, error) {
-	panic("not implemented")
-}
-
-func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string, isPostgreSQL bool) squirrel.SelectBuilder {
+func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) squirrel.SelectBuilder {
 	sqOr := squirrel.Or{}
 
 	if len(systemRoles) > 0 && systemRoles[0] != "" {
@@ -828,11 +810,13 @@ func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string, i
 			case model.SYSTEM_USER_ROLE_ID:
 				// If querying for a `system_user` ensure that the user is only a system_user.
 				sqOr = append(sqOr, squirrel.Eq{"u.Roles": role})
-			case model.SYSTEM_GUEST_ROLE_ID, model.SYSTEM_ADMIN_ROLE_ID, model.SYSTEM_USER_MANAGER_ROLE_ID, model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID, model.SYSTEM_MANAGER_ROLE_ID:
+			case model.SYSTEM_GUEST_ROLE_ID,
+				model.SYSTEM_ADMIN_ROLE_ID,
+				model.SYSTEM_USER_MANAGER_ROLE_ID,
+				model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID,
+				model.SYSTEM_MANAGER_ROLE_ID:
 				// If querying for any other roles search using a wildcard
-				if isPostgreSQL {
-					sqOr = append(sqOr, squirrel.ILike{"u.Roles": queryRole})
-				}
+				sqOr = append(sqOr, squirrel.ILike{"u.Roles": queryRole})
 			}
 		}
 	}
@@ -865,18 +849,13 @@ func (us *SqlUserStore) Search(term string, options *account.UserSearchOptions) 
 	return us.performSearch(query, term, options)
 }
 
-func applyRoleFilter(query squirrel.SelectBuilder, role string, isPostgreSQL bool) squirrel.SelectBuilder {
+func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectBuilder {
 	if role == "" {
 		return query
 	}
 
-	if isPostgreSQL {
-		roleParam := fmt.Sprintf("%%%s%%", store.SanitizeSearchTerm(role, "\\"))
-		return query.Where("u.Roles LIKE LOWER(?)", roleParam)
-	}
-
-	roleParam := fmt.Sprintf("%%%s%%", store.SanitizeSearchTerm(role, "*"))
-	return query.Where("u.Roles LIKE ? ESCAPE '*'", roleParam)
+	roleParam := fmt.Sprintf("%%%s%%", store.SanitizeSearchTerm(role, "\\"))
+	return query.Where("u.Roles LIKE LOWER(?)", roleParam)
 }
 
 func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *account.UserSearchOptions) ([]*account.User, error) {
@@ -897,8 +876,8 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 		}
 	}
 
-	query = applyRoleFilter(query, options.Role, true)
-	query = applyMultiRoleFilters(query, options.Roles, true)
+	query = applyRoleFilter(query, options.Role)
+	query = applyMultiRoleFilters(query, options.Roles)
 
 	if !options.AllowInactive {
 		query = query.Where("u.DeleteAt = 0")

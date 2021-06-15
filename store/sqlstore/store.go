@@ -128,7 +128,24 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 
 	store.initConnection()
 
-	err := store.migrate(migrationsDirectionUp)
+	// check if database version is met requirement
+	ver, err := store.GetDbVersion(true)
+	if err != nil {
+		slog.Critical("Cannot get DB version.", slog.Err(err))
+		os.Exit(ExitGenericFailure)
+	}
+	intVer, err := strconv.Atoi(ver)
+	if err != nil {
+		slog.Critical("Cannot parse DB version.", slog.Err(err))
+		os.Exit(ExitGenericFailure)
+	}
+	if intVer < MinimumRequiredPostgresVersion {
+		slog.Critical("Minimum Postgres version requirements not met.", slog.String("Found", VersionString(intVer)), slog.String("Wanted", VersionString(MinimumRequiredPostgresVersion)))
+		os.Exit(ExitGenericFailure)
+	}
+
+	// migrate tables
+	err = store.migrate(migrationsDirectionUp)
 	if err != nil {
 		slog.Critical("Failed to apply database migrations.", slog.Err(err))
 		os.Exit(ExitGenericFailure)

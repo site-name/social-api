@@ -36,6 +36,8 @@ type SqlStoreStores struct {
 	user                          store.UserStore                          // account models
 	address                       store.AddressStore                       //
 	userAddress                   store.UserAddressStore                   //
+	customerEvent                 store.CustomerEventStore                 //
+	staffNotificationRecipient    store.StaffNotificationRecipientStore    //
 	audit                         store.AuditStore                         // common
 	cluster                       store.ClusterDiscoveryStore              //
 	session                       store.SessionStore                       //
@@ -128,6 +130,8 @@ func (store *SqlStore) setupTables() {
 	store.stores.user = account.NewSqlUserStore(store, store.metrics) // metrics is already set in caller
 	store.stores.address = account.NewSqlAddressStore(store)
 	store.stores.userAddress = account.NewSqlUserAddressStore(store)
+	store.stores.customerEvent = account.NewSqlCustomerEventStore(store)
+	store.stores.staffNotificationRecipient = account.NewSqlStaffNotificationRecipientStore(store)
 	// general
 	store.stores.audit = audit.NewSqlAuditStore(store)
 	store.stores.cluster = cluster.NewSqlClusterDiscoveryStore(store)
@@ -239,6 +243,8 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.user.CreateIndexesIfNotExists()
 	store.stores.address.CreateIndexesIfNotExists()
 	store.stores.userAddress.CreateIndexesIfNotExists()
+	store.stores.customerEvent.CreateIndexesIfNotExists()
+	store.stores.staffNotificationRecipient.CreateIndexesIfNotExists()
 	// common
 	store.stores.audit.CreateIndexesIfNotExists()
 	store.stores.session.CreateIndexesIfNotExists()
@@ -357,6 +363,12 @@ func (ss *SqlStore) User() store.UserStore {
 }
 func (ss *SqlStore) UserAddress() store.UserAddressStore {
 	return ss.stores.userAddress
+}
+func (ss *SqlStore) CustomerEvent() store.CustomerEventStore {
+	return ss.stores.customerEvent
+}
+func (ss *SqlStore) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
+	return ss.stores.staffNotificationRecipient
 }
 
 // app

@@ -99,6 +99,7 @@ func cleanInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlm
 	return data, nil
 }
 
+// DatabaseAddressesToGraphqlAddresses convert a slice of database addresses to graphql addresses
 func DatabaseAddressesToGraphqlAddresses(adds []*account.Address) []*gqlmodel.Address {
 	res := make([]*gqlmodel.Address, len(adds))
 	for _, ad := range adds {
@@ -108,6 +109,7 @@ func DatabaseAddressesToGraphqlAddresses(adds []*account.Address) []*gqlmodel.Ad
 	return res
 }
 
+// DatabaseAddressToGraphqlAddress convert single database address to single graphql address
 func DatabaseAddressToGraphqlAddress(ad *account.Address) *gqlmodel.Address {
 	df := false
 
@@ -131,6 +133,7 @@ func DatabaseAddressToGraphqlAddress(ad *account.Address) *gqlmodel.Address {
 	}
 }
 
+// MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
 func MapToGraphqlMetaDataItems(m map[string]string) []*gqlmodel.MetadataItem {
 	if m == nil {
 		return []*gqlmodel.MetadataItem{}

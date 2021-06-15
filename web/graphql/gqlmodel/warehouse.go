@@ -6,7 +6,7 @@ type Warehouse struct {
 	Slug            string                           `json:"slug"`
 	CompanyName     string                           `json:"companyName"`
 	ShippingZones   *ShippingZoneCountableConnection `json:"shippingZones"`
-	AddressID       *string                          `json:"address"` // Address
+	AddressID       *string                          `json:"address"` // *Address
 	Email           string                           `json:"email"`
 	PrivateMetadata []*MetadataItem                  `json:"privateMetadata"`
 	Metadata        []*MetadataItem                  `json:"metadata"`

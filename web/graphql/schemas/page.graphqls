@@ -157,8 +157,9 @@ enum PageSortField {
 type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
-  startCursor: String
-  endCursor: String
+  currentPage: Int!
+  # startCursor: String
+  # endCursor: String
 }
 
 type PageTranslation implements Node {

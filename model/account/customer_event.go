@@ -6,9 +6,13 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+// max length values
 const (
 	CUSTOMER_EVENT_TYPE_MAX_LENGTH = 255
+)
 
+// some available types for CustomerEvent's Type attribute
+const (
 	ACCOUNT_CREATED          = "account_created"
 	PASSWORD_RESET_LINK_SENT = "password_reset_link_sent"
 	PASSWORD_RESET           = "password_reset"
@@ -105,7 +109,7 @@ type StaffNotificationRecipient struct {
 	UserID     *string `json:"user_id"`
 	StaffEmail *string `json:"staff_email"`
 	Active     *bool   `json:"active"`
-	User       *User   `json:"user" db:"-"`
+	// User       *User   `json:"user" db:"-"`
 }
 
 func (c *StaffNotificationRecipient) ToJson() string {
@@ -141,7 +145,7 @@ func (c *StaffNotificationRecipient) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
-	if c.Active != nil {
+	if c.Active == nil {
 		c.Active = model.NewBool(true)
 	}
 	if c.StaffEmail != nil {
@@ -149,10 +153,10 @@ func (c *StaffNotificationRecipient) PreSave() {
 	}
 }
 
-func (c *StaffNotificationRecipient) GetEmail() string {
-	if c.User != nil {
-		return c.User.Email
-	}
+// func (c *StaffNotificationRecipient) GetEmail() string {
+// 	if c.User != nil {
+// 		return c.User.Email
+// 	}
 
-	return *c.StaffEmail
-}
+// 	return *c.StaffEmail
+// }

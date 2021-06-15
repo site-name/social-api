@@ -46,17 +46,6 @@ type Rollbackable interface {
 }
 
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-// func FinalizeTransaction(transaction interface{}) {
-// 	if t, ok := transaction.(Rollbackable); ok {
-// 		if err := t.Rollback(); err != nil && err != sql.ErrTxDone {
-// 			slog.Error("Failed to rollback transaction", slog.Err(err))
-// 		}
-// 	} else {
-// 		slog.Error("Invalid type")
-// 	}
-// }
-
-// finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 func FinalizeTransaction(transaction Rollbackable) {
 	if err := transaction.Rollback(); err != nil {
 		slog.Error("Failed to rollback transaction", slog.Err(err))
@@ -98,6 +87,10 @@ func IsQuotedWord(s string) bool {
 	return s[0] == '"' && s[len(s)-1] == '"'
 }
 
+// WildcardSearchTerm convert given term to lower-case, concatenates `%` to both ends
+//
+// Example:
+//  WildcardSearchTerm("HELLO") => "%hello%"
 func WildcardSearchTerm(term string) string {
 	return strings.ToLower("%" + term + "%")
 }
