@@ -2169,32 +2169,6 @@ type OrderFulfillStockInput struct {
 	Warehouse string `json:"warehouse"`
 }
 
-type OrderLine struct {
-	ID                    string                 `json:"id"`
-	ProductName           string                 `json:"productName"`
-	VariantName           string                 `json:"variantName"`
-	ProductSku            string                 `json:"productSku"`
-	IsShippingRequired    bool                   `json:"isShippingRequired"`
-	Quantity              int                    `json:"quantity"`
-	QuantityFulfilled     int                    `json:"quantityFulfilled"`
-	UnitDiscountReason    *string                `json:"unitDiscountReason"`
-	TaxRate               float64                `json:"taxRate"`
-	DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
-	Thumbnail             *Image                 `json:"thumbnail"`
-	UnitPrice             *TaxedMoney            `json:"unitPrice"`
-	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
-	UnitDiscount          *Money                 `json:"unitDiscount"`
-	UnitDiscountValue     string                 `json:"unitDiscountValue"`
-	TotalPrice            *TaxedMoney            `json:"totalPrice"`
-	Variant               *ProductVariant        `json:"variant"`
-	TranslatedProductName string                 `json:"translatedProductName"`
-	TranslatedVariantName string                 `json:"translatedVariantName"`
-	Allocations           []*Allocation          `json:"allocations"`
-	UnitDiscountType      *DiscountValueTypeEnum `json:"unitDiscountType"`
-}
-
-func (OrderLine) IsNode() {}
-
 type OrderLineCreateInput struct {
 	Quantity  int    `json:"quantity"`
 	VariantID string `json:"variantId"`
@@ -2418,10 +2392,9 @@ type PageFilterInput struct {
 }
 
 type PageInfo struct {
-	HasNextPage     bool    `json:"hasNextPage"`
-	HasPreviousPage bool    `json:"hasPreviousPage"`
-	StartCursor     *string `json:"startCursor"`
-	EndCursor       *string `json:"endCursor"`
+	HasNextPage     bool `json:"hasNextPage"`
+	HasPreviousPage bool `json:"hasPreviousPage"`
+	CurrentPage     int  `json:"currentPage"`
 }
 
 type PageInput struct {

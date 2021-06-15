@@ -41,3 +41,20 @@ func (r *mutationResolver) OrderLineDiscountUpdate(ctx context.Context, input gq
 func (r *mutationResolver) OrderLineDiscountRemove(ctx context.Context, orderLineID string) (*gqlmodel.OrderLineDiscountRemove, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *orderLineResolver) DigitalContentURL(ctx context.Context, obj *gqlmodel.OrderLine) (*gqlmodel.DigitalContentURL, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderLineResolver) Variant(ctx context.Context, obj *gqlmodel.OrderLine) (*gqlmodel.ProductVariant, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderLineResolver) Allocations(ctx context.Context, obj *gqlmodel.OrderLine) ([]*gqlmodel.Allocation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// OrderLine returns OrderLineResolver implementation.
+func (r *Resolver) OrderLine() OrderLineResolver { return &orderLineResolver{r} }
+
+type orderLineResolver struct{ *Resolver }

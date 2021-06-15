@@ -52,8 +52,8 @@ type ModelMetadata struct {
 type User struct {
 	Id                       string    `json:"id"`
 	Email                    string    `json:"email"`
-	Username                 string    `json:"username"`
-	FirstName                string    `json:"first_name"`
+	Username                 string    `json:"username"`   // can be empty
+	FirstName                string    `json:"first_name"` // can be empty
 	LastName                 string    `json:"last_name"`
 	DefaultShippingAddressID *string   `json:"default_shipping_address,omitempty"`
 	DefaultBillingAddressID  *string   `json:"default_billing_address,omitempty"`
@@ -225,10 +225,10 @@ func (u *User) IsValid() *model.AppError {
 	if utf8.RuneCountInString(u.Nickname) > USER_NICKNAME_MAX_RUNES {
 		return outer("nickname", &u.Id)
 	}
-	if !IsValidNamePart(u.FirstName, model.FirstName) {
+	if u.FirstName != "" && !IsValidNamePart(u.FirstName, model.FirstName) {
 		return outer("first_name", &u.Id)
 	}
-	if !IsValidNamePart(u.LastName, model.LastName) {
+	if u.LastName != "" && !IsValidNamePart(u.LastName, model.LastName) {
 		return outer("last_name", &u.Id)
 	}
 	if u.AuthData != nil && len(*u.AuthData) > USER_AUTH_DATA_MAX_LENGTH {

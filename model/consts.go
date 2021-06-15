@@ -307,7 +307,6 @@ func init() {
 		"ZM": "Zambia",
 		"ZW": "Zimbabwe",
 	}
-
 	Languages = map[string]string{
 		"ar":      "Arabic",
 		"az":      "Azerbaijani",

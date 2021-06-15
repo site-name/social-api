@@ -19,6 +19,7 @@ type CustomerEvent struct {
 
 func (CustomerEvent) IsNode() {}
 
+
 type User struct {
 	ID                       string            `json:"id"`
 	LastLogin                *time.Time        `json:"lastLogin"`

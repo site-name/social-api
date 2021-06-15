@@ -95,7 +95,8 @@ func (a *Address) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.address.is_valid.%s.app_error",
 		"address_id=",
-		"Address.IsValid")
+		"Address.IsValid",
+	)
 	if !model.IsValidId(a.Id) {
 		return outer("id", nil)
 	}
@@ -105,10 +106,10 @@ func (a *Address) IsValid() *model.AppError {
 	if a.UpdateAt == 0 {
 		return outer("update_at", &a.Id)
 	}
-	if a.FirstName == "" || !IsValidNamePart(a.FirstName, model.FirstName) {
+	if !IsValidNamePart(a.FirstName, model.FirstName) {
 		return outer("first_name", &a.Id)
 	}
-	if a.LastName == "" || !IsValidNamePart(a.LastName, model.LastName) {
+	if !IsValidNamePart(a.LastName, model.LastName) {
 		return outer("last_name", &a.Id)
 	}
 	if utf8.RuneCountInString(a.CompanyName) > ADDRESS_COMPANY_NAME_MAX_LENGTH {

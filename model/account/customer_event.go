@@ -50,12 +50,12 @@ var CustomerEventTypes = []string{
 
 // Model used to store events that happened during the customer lifecycle
 type CustomerEvent struct {
-	Id         string          `json:"id"`
-	Date       int64           `json:"date"`
-	Type       string          `json:"type"`
-	OrderID    *string         `json:"order_id"`
-	UserID     string          `json:"user_id"`
-	Parameters model.StringMap `json:"parameters"`
+	Id         string                `json:"id"`
+	Date       int64                 `json:"date"`
+	Type       string                `json:"type"`
+	OrderID    *string               `json:"order_id"`
+	UserID     string                `json:"user_id"`
+	Parameters model.StringInterface `json:"parameters"`
 }
 
 func (c *CustomerEvent) ToJson() string {

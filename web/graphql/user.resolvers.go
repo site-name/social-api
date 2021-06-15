@@ -64,9 +64,9 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 	if err != nil {
 		var nfErr *store.ErrNotFound
 		if errors.As(err, &nfErr) {
-			return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), http.StatusNotFound)
+			return []*gqlmodel.Address{}, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), http.StatusNotFound)
 		}
-		return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return []*gqlmodel.Address{}, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return DatabaseAddressesToGraphqlAddresses(addresses), nil
@@ -77,11 +77,13 @@ func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *
 }
 
 func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	return nil, errors.New("not implemented")
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	panic(fmt.Errorf("not implemented"))
+	if len(obj.EventIDs) == 0 {
+		return []*gqlmodel.CustomerEvent{}, nil
+	}
 }
 
 // CustomerEvent returns CustomerEventResolver implementation.

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -174,5 +175,48 @@ func DatabaseUserToGraphqlUser(u *account.User) *gqlmodel.User {
 		LanguageCode:             gqlmodel.LanguageCodeEnumEn,
 		// GiftCards:                func(page int, perPage int, orderDirection *OrderDirection) *GiftCardCountableConnection { return nil },
 		// Orders:                   nil,
+	}
+}
+
+// DatabaseCustomerEventToGraphqlCustomerEvent
+func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *gqlmodel.CustomerEvent {
+	var message *string
+	var count *int
+	var orderLinePk *string
+
+	// parse message
+	if msg, ok := event.Parameters["message"]; ok {
+		if strMsg, ok := msg.(string); ok {
+			message = &strMsg
+		}
+	}
+	// parse count
+	if count, ok := event.Parameters["count"]; ok {
+		switch t := count.(type) {
+		case int:
+			count = &t
+		case int64:
+			count = model.NewInt(int(t))
+		}
+	}
+	// parse order line pk
+	item, ok := event.Parameters["order_line_pk"]
+	if ok {
+		if strOrderlinePk, ok := item.(string); ok {
+			orderLinePk = &strOrderlinePk
+		}
+	}
+
+	eventType := gqlmodel.CustomerEventsEnum(strings.ToUpper(event.Type))
+
+	return &gqlmodel.CustomerEvent{
+		ID:          event.Id,
+		Date:        util.TimePointerFromMillis(event.Date),
+		Type:        &eventType,
+		UserID:      &event.UserID,
+		Message:     message,
+		Count:       count,
+		OrderID:     event.OrderID,
+		OrderLineID: orderLinePk,
 	}
 }
