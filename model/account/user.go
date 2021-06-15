@@ -36,25 +36,6 @@ const (
 // NOTE: don't delete this
 type StringMap map[string]string
 
-// Address contains information belong to the address
-// NOTE: don't delete this
-type Address_ struct {
-	Id             string  `json:"id"`
-	FirstName      string  `json:"first_name"`
-	LastName       string  `json:"last_name"`
-	CompanyName    *string `json:"company_name,omitempty"`
-	StreetAddress1 string  `json:"street_address_1,omitempty"`
-	StreetAddress2 *string `json:"street_address_2,omitempty"`
-	City           string  `json:"city"`
-	CityArea       *string `json:"city_area,omitempty"`
-	PostalCode     string  `json:"postal_code"`
-	Country        string  `json:"country"` // one country name only
-	CountryArea    string  `json:"country_area"`
-	Phone          string  `json:"phone"`
-	CreateAt       int64   `json:"create_at,omitempty"`
-	UpdateAt       int64   `json:"update_at,omitempty"`
-}
-
 // NOTE: don't delete this
 type ModelMetadata struct {
 	// Id              string    `json:"string,omitempty"`
@@ -69,40 +50,39 @@ type ModelMetadata struct {
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type User struct {
-	Id                       string      `json:"id"`
-	Email                    string      `json:"email"`
-	Username                 string      `json:"username"`
-	FirstName                string      `json:"first_name"`
-	LastName                 string      `json:"last_name"`
-	DefaultShippingAddressID *string     `json:"default_shipping_address,omitempty"`
-	DefaultBillingAddressID  *string     `json:"default_billing_address,omitempty"`
-	Password                 string      `json:"password,omitempty"`
-	AuthData                 *string     `json:"auth_data,omitempty"`
-	AuthService              string      `json:"auth_service"`
-	EmailVerified            bool        `json:"email_verified,omitempty"`
-	Nickname                 string      `json:"nickname"`
-	Roles                    string      `json:"roles"`
-	Props                    StringMap   `json:"props,omitempty"`
-	NotifyProps              StringMap   `json:"notify_props,omitempty"`
-	LastPasswordUpdate       int64       `json:"last_password_update,omitempty"`
-	LastPictureUpdate        int64       `json:"last_picture_update,omitempty"`
-	FailedAttempts           int         `json:"failed_attempts,omitempty"`
-	Locale                   string      `json:"locale"`
-	Timezone                 StringMap   `json:"timezone"`
-	MfaActive                bool        `json:"mfa_active,omitempty"`
-	MfaSecret                string      `json:"mfa_secret,omitempty"`
-	CreateAt                 int64       `json:"create_at,omitempty"`
-	UpdateAt                 int64       `json:"update_at,omitempty"`
-	DeleteAt                 int64       `json:"delete_at"`
-	IsStaff                  bool        `json:"is_staff"`
-	IsActive                 bool        `json:"is_active"`
-	Note                     *string     `json:"note"`
-	Addresses                []*Address_ `json:"addresses" db:"-"`
-	JwtTokenKey              string      `json:"jwt_token_key"`
-	LastActivityAt           int64       `db:"-" json:"last_activity_at,omitempty"`
-	TermsOfServiceId         string      `db:"-" json:"terms_of_service_id,omitempty"`
-	TermsOfServiceCreateAt   int64       `db:"-" json:"terms_of_service_create_at,omitempty"`
-	DisableWelcomeEmail      bool        `db:"-" json:"disable_welcome_email"`
+	Id                       string    `json:"id"`
+	Email                    string    `json:"email"`
+	Username                 string    `json:"username"`
+	FirstName                string    `json:"first_name"`
+	LastName                 string    `json:"last_name"`
+	DefaultShippingAddressID *string   `json:"default_shipping_address,omitempty"`
+	DefaultBillingAddressID  *string   `json:"default_billing_address,omitempty"`
+	Password                 string    `json:"password,omitempty"`
+	AuthData                 *string   `json:"auth_data,omitempty"`
+	AuthService              string    `json:"auth_service"`
+	EmailVerified            bool      `json:"email_verified,omitempty"`
+	Nickname                 string    `json:"nickname"`
+	Roles                    string    `json:"roles"`
+	Props                    StringMap `json:"props,omitempty"`
+	NotifyProps              StringMap `json:"notify_props,omitempty"`
+	LastPasswordUpdate       int64     `json:"last_password_update,omitempty"`
+	LastPictureUpdate        int64     `json:"last_picture_update,omitempty"`
+	FailedAttempts           int       `json:"failed_attempts,omitempty"`
+	Locale                   string    `json:"locale"`
+	Timezone                 StringMap `json:"timezone"`
+	MfaActive                bool      `json:"mfa_active,omitempty"`
+	MfaSecret                string    `json:"mfa_secret,omitempty"`
+	CreateAt                 int64     `json:"create_at,omitempty"`
+	UpdateAt                 int64     `json:"update_at,omitempty"`
+	DeleteAt                 int64     `json:"delete_at"`
+	IsStaff                  bool      `json:"is_staff"`
+	IsActive                 bool      `json:"is_active"`
+	Note                     *string   `json:"note"`
+	JwtTokenKey              string    `json:"jwt_token_key"`
+	LastActivityAt           int64     `db:"-" json:"last_activity_at,omitempty"`
+	TermsOfServiceId         string    `db:"-" json:"terms_of_service_id,omitempty"`
+	TermsOfServiceCreateAt   int64     `db:"-" json:"terms_of_service_create_at,omitempty"`
+	DisableWelcomeEmail      bool      `db:"-" json:"disable_welcome_email"`
 	ModelMetadata
 }
 

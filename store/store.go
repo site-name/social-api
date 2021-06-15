@@ -54,6 +54,7 @@ type Store interface {
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
+	UserAddress() UserAddressStore                                     //
 	System() SystemStore                                               // system
 	Job() JobStore                                                     // job
 	Session() SessionStore                                             // session
@@ -549,10 +550,12 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		CreateIndexesIfNotExists()
-		Save(address *account.Address) (*account.Address, error)
+		CreateIndexesIfNotExists()                                           // CreateIndexesIfNotExists creates indexes for table if needed
+		Save(address *account.Address) (*account.Address, error)             // Save saves address into database
+		Get(addressID string) (*account.Address, error)                      // Get returns an Address with given addressID is exist
+		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
+		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
 	}
-
 	UserStore interface {
 		mfa.Store                                                                     // for multifactor authentication
 		CreateIndexesIfNotExists()                                                    //
@@ -649,6 +652,10 @@ type (
 		Search(term string) ([]*account.UserAccessToken, error)
 		UpdateTokenEnable(tokenID string) error
 		UpdateTokenDisable(tokenID string) error
+	}
+	UserAddressStore interface {
+		CreateIndexesIfNotExists()
+		Save(*account.UserAddress) (*account.UserAddress, error)
 	}
 )
 

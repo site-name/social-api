@@ -35,6 +35,7 @@ import (
 type SqlStoreStores struct {
 	user                          store.UserStore                          // account models
 	address                       store.AddressStore                       //
+	userAddress                   store.UserAddressStore                   //
 	audit                         store.AuditStore                         // common
 	cluster                       store.ClusterDiscoveryStore              //
 	session                       store.SessionStore                       //
@@ -126,6 +127,7 @@ func (store *SqlStore) setupTables() {
 	// account
 	store.stores.user = account.NewSqlUserStore(store, store.metrics) // metrics is already set in caller
 	store.stores.address = account.NewSqlAddressStore(store)
+	store.stores.userAddress = account.NewSqlUserAddressStore(store)
 	// general
 	store.stores.audit = audit.NewSqlAuditStore(store)
 	store.stores.cluster = cluster.NewSqlClusterDiscoveryStore(store)
@@ -236,6 +238,7 @@ func (store *SqlStore) indexingTableFields() {
 	// account
 	store.stores.user.CreateIndexesIfNotExists()
 	store.stores.address.CreateIndexesIfNotExists()
+	store.stores.userAddress.CreateIndexesIfNotExists()
 	// common
 	store.stores.audit.CreateIndexesIfNotExists()
 	store.stores.session.CreateIndexesIfNotExists()
@@ -352,6 +355,11 @@ func (ss *SqlStore) Address() store.AddressStore {
 func (ss *SqlStore) User() store.UserStore {
 	return ss.stores.user
 }
+func (ss *SqlStore) UserAddress() store.UserAddressStore {
+	return ss.stores.userAddress
+}
+
+// app
 func (ss *SqlStore) App() store.AppStore {
 	return ss.stores.app
 }

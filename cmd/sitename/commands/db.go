@@ -3,13 +3,18 @@ package commands
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/modules/config"
+
+	// "github.com/sitename/sitename/modules/config"
+	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
 )
@@ -33,13 +38,9 @@ var InitDbCmd = &cobra.Command{
 
 This command should be run using a database configuration DSN.`,
 	Example: `  # you can use the config flag to pass the DSN
-  $ mattermost db init --config postgres://localhost/mattermost
-
-  # or you can use the SN_CONFIG environment variable
-  $ SN_CONFIG=postgres://localhost/mattermost mattermost db init
-
-  # and you can set a custom defaults file to be loaded into the database
-  $ SN_CUSTOM_DEFAULTS_PATH=custom.json SN_CONFIG=postgres://localhost/mattermost mattermost db init`,
+  $ sitename db init --config modules/config/config.json 
+  OR 
+  $ ` + CustomDefaultsEnvVar + `=<path_to_config> sitename db init`,
 	Args: cobra.NoArgs,
 	RunE: initDbCmdF,
 }
@@ -47,6 +48,8 @@ This command should be run using a database configuration DSN.`,
 func init() {
 	PopulateDbCmd.Flags().StringP("type", "t", "all", "specify which table to populate")
 	PopulateDbCmd.Flags().IntP("amount", "a", 5, "specify which table to populate")
+
+	InitDbCmd.Flags().StringP("config", "c", "modules/config/config.json", "path to config.json file.")
 
 	DbCmd.AddCommand(
 		InitDbCmd,
@@ -117,24 +120,28 @@ func populateDbCmdF(command *cobra.Command, args []string) error {
 }
 
 func initDbCmdF(command *cobra.Command, _ []string) error {
-	dsn := getConfigDSN(command, config.GetEnvironment())
-
-	if !config.IsDatabaseDSN(dsn) {
-		return errors.New("this command should be run using a database configuration DSN")
-	}
-
-	customDefaults, err := loadCustomDefaults()
+	dsn, err := command.Flags().GetString("config")
 	if err != nil {
-		return errors.Wrap(err, "error loading custom configuration defaults")
+		slog.Error("Error getting config path. Trying get config path from environment var: "+CustomDefaultsEnvVar, slog.Err(err))
+		dsn = os.Getenv(CustomDefaultsEnvVar)
+		if dsn == "" {
+			return errors.New("cannot get path to config.json file.")
+		}
 	}
 
-	configStore, err := config.NewStoreFromDSN(getConfigDSN(command, config.GetEnvironment()), false, false, customDefaults)
+	file, err := os.Open(dsn)
 	if err != nil {
-		return errors.Wrap(err, "failed to load configuration")
+		return fmt.Errorf("unable to open custom defaults file at %q: %w", dsn, err)
 	}
-	defer configStore.Close()
+	defer file.Close()
 
-	sqlStore := sqlstore.New(configStore.Get().SqlSettings, nil)
+	var config *model.Config
+	err = json.JSON.NewDecoder(file).Decode(&config)
+	if err != nil {
+		return fmt.Errorf("unable to decode custom defaults configuration: %w", err)
+	}
+
+	sqlStore := sqlstore.New(config.SqlSettings, nil)
 	defer sqlStore.Close()
 
 	fmt.Println("Database store correctly initialized")

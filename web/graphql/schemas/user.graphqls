@@ -26,8 +26,10 @@ type User implements Node & ObjectWithMetadata {
   metadata: [MetadataItem]!
   addresses: [Address]
   checkoutTokens(channel: String): [UUID!]
-  giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
-  orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
+  # giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
+  # orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
+  giftCards(page: Int, perPage: Int, order: OrderDirection): GiftCardCountableConnection
+  orders(page: Int, perPage: Int, order: OrderDirection): OrderCountableConnection
   userPermissions: [UserPermission]
   permissionGroups: [Group]
   editableGroups: [Group]

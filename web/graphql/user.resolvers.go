@@ -5,9 +5,13 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -56,6 +60,23 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
+	addresses, err := r.Srv().Store.Address().GetAddressesByUserID(obj.ID)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		if errors.As(err, &nfErr) {
+			return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), http.StatusNotFound)
+		}
+		return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return DatabaseAddressesToGraphqlAddresses(addresses), nil
+}
+
+func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.GiftCardCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

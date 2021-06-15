@@ -25,20 +25,20 @@ const (
 
 // Address contains information belong to the address
 type Address struct {
-	Id             string  `json:"id"`
-	FirstName      string  `json:"first_name"`
-	LastName       string  `json:"last_name"`
-	CompanyName    *string `json:"company_name,omitempty"`
-	StreetAddress1 string  `json:"street_address_1,omitempty"`
-	StreetAddress2 *string `json:"street_address_2,omitempty"`
-	City           string  `json:"city"`
-	CityArea       *string `json:"city_area,omitempty"`
-	PostalCode     string  `json:"postal_code"`
-	Country        string  `json:"country"` // one country name only
-	CountryArea    string  `json:"country_area"`
-	Phone          string  `json:"phone"`
-	CreateAt       int64   `json:"create_at,omitempty"`
-	UpdateAt       int64   `json:"update_at,omitempty"`
+	Id             string `json:"id"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	CompanyName    string `json:"company_name,omitempty"`
+	StreetAddress1 string `json:"street_address_1,omitempty"`
+	StreetAddress2 string `json:"street_address_2,omitempty"`
+	City           string `json:"city"`
+	CityArea       string `json:"city_area,omitempty"`
+	PostalCode     string `json:"postal_code"`
+	Country        string `json:"country"` // one country name only
+	CountryArea    string `json:"country_area"`
+	Phone          string `json:"phone"`
+	CreateAt       int64  `json:"create_at,omitempty"`
+	UpdateAt       int64  `json:"update_at,omitempty"`
 }
 
 func (add *Address) FullName() string {
@@ -47,8 +47,8 @@ func (add *Address) FullName() string {
 
 // String implements fmt.Stringer interface
 func (a *Address) String() string {
-	if a.CompanyName != nil {
-		return fmt.Sprintf("%s - %s", *a.CompanyName, a.FullName())
+	if a.CompanyName != "" {
+		return fmt.Sprintf("%s - %s", a.CompanyName, a.FullName())
 	}
 	return a.FullName()
 }
@@ -111,19 +111,19 @@ func (a *Address) IsValid() *model.AppError {
 	if a.LastName == "" || !IsValidNamePart(a.LastName, model.LastName) {
 		return outer("last_name", &a.Id)
 	}
-	if a.CompanyName != nil && utf8.RuneCountInString(*a.CompanyName) > ADDRESS_COMPANY_NAME_MAX_LENGTH {
+	if utf8.RuneCountInString(a.CompanyName) > ADDRESS_COMPANY_NAME_MAX_LENGTH {
 		return outer("company_name", &a.Id)
 	}
-	if a.StreetAddress1 != "" && utf8.RuneCountInString(a.StreetAddress1) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
+	if utf8.RuneCountInString(a.StreetAddress1) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
 		return outer("street_address_1", &a.Id)
 	}
-	if a.StreetAddress2 != nil && utf8.RuneCountInString(*a.StreetAddress2) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
+	if utf8.RuneCountInString(a.StreetAddress2) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
 		return outer("street_address_2", &a.Id)
 	}
 	if utf8.RuneCountInString(a.City) > ADDRESS_CITY_NAME_MAX_LENGTH {
 		return outer("city", &a.Id)
 	}
-	if a.CityArea != nil && utf8.RuneCountInString(*a.CityArea) > ADDRESS_CITY_AREA_MAX_LENGTH {
+	if utf8.RuneCountInString(a.CityArea) > ADDRESS_CITY_AREA_MAX_LENGTH {
 		return outer("city_area", &a.Id)
 	}
 	if utf8.RuneCountInString(a.PostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
