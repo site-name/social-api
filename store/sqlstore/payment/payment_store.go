@@ -1,6 +1,9 @@
 package payment
 
 import (
+	"database/sql"
+
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/payment"
@@ -11,11 +14,15 @@ type SqlPaymentStore struct {
 	store.Store
 }
 
+const (
+	paymentTableName = "Payments"
+)
+
 func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 	ps := &SqlPaymentStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(payment.Payment{}, "Payments").SetKeys(false, "Id")
+		table := db.AddTableWithName(payment.Payment{}, paymentTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CheckoutID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -49,18 +56,56 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 
 func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
 	// NOTE: need more investigation in the future
-	ps.CreateIndexIfNotExists("idx_payments_billing_email", "Payments", "BillingEmail")
-	ps.CreateIndexIfNotExists("idx_payments_billing_first_name", "Payments", "BillingFirstName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_last_name", "Payments", "BillingLastName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_company_name", "Payments", "BillingCompanyName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_address_1", "Payments", "BillingAddress1")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city", "Payments", "BillingCity")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city_area", "Payments", "BillingCityArea")
+	ps.CreateIndexIfNotExists("idx_payments_billing_email", paymentTableName, "BillingEmail")
+	ps.CreateIndexIfNotExists("idx_payments_billing_first_name", paymentTableName, "BillingFirstName")
+	ps.CreateIndexIfNotExists("idx_payments_billing_last_name", paymentTableName, "BillingLastName")
+	ps.CreateIndexIfNotExists("idx_payments_billing_company_name", paymentTableName, "BillingCompanyName")
+	ps.CreateIndexIfNotExists("idx_payments_billing_address_1", paymentTableName, "BillingAddress1")
+	ps.CreateIndexIfNotExists("idx_payments_billing_city", paymentTableName, "BillingCity")
+	ps.CreateIndexIfNotExists("idx_payments_billing_city_area", paymentTableName, "BillingCityArea")
 
-	ps.CreateIndexIfNotExists("idx_payments_billing_email_lower_textpattern", "Payments", "lower(BillingEmail) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_first_name_lower_textpattern", "Payments", "lower(BillingFirstName) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_last_name_lower_textpattern", "Payments", "lower(BillingLastName) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city_area_lower_textpattern", "Payments", "lower(BillingCityArea) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_payments_billing_email_lower_textpattern", paymentTableName, "lower(BillingEmail) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_payments_billing_first_name_lower_textpattern", paymentTableName, "lower(BillingFirstName) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_payments_billing_last_name_lower_textpattern", paymentTableName, "lower(BillingLastName) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_payments_billing_city_area_lower_textpattern", paymentTableName, "lower(BillingCityArea) text_pattern_ops")
 
-	ps.CreateIndexIfNotExists("idx_payments_psp_reference", "Payments", "PspReference")
+	ps.CreateIndexIfNotExists("idx_payments_psp_reference", paymentTableName, "PspReference")
+}
+
+func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+	payment.PreSave()
+	if err := payment.IsValid(); err != nil {
+		return nil, err
+	}
+	if err := ps.GetMaster().Insert(payment); err != nil {
+		return nil, errors.Wrapf(err, "failed to insert new payment with id=%s", payment.Id)
+	}
+
+	return payment, nil
+}
+
+func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
+	var payment payment.Payment
+	err := ps.GetReplica().SelectOne(&payment, "SELECT * FROM "+paymentTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(paymentTableName, id)
+		}
+		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
+	}
+
+	return &payment, nil
+}
+
+func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
+	var payments []*payment.Payment
+	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+paymentTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(paymentTableName, "orderID="+orderID)
+		}
+		return nil, errors.Wrapf(err, "failed to find payments belong to order with Id=%s", orderID)
+	}
+
+	return payments, nil
 }

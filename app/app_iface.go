@@ -19,6 +19,8 @@ import (
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
@@ -91,8 +93,12 @@ type AppIface interface {
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
 	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
+	// CreateUserAsAdmin create new user but with admin right
+	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	// CreateUserFromSignup creates new users with user-typed values (manual register)
 	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	// CreateUserWithToken creates new user, join system because of invitation
+	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	// DeleteToken delete given token from database. If error occur during deletion, returns concret error
 	DeleteToken(token *model.Token) *model.AppError
 	// DoAppMigrations migrate permissions
@@ -119,6 +125,10 @@ type AppIface interface {
 	FileModTime(path string) (time.Time, *model.AppError)
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model.AppError)
+	// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
+	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError)
+	// GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
+	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)
 	// GetChannelBySlug get a channel from database with given slug
 	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
@@ -132,6 +142,8 @@ type AppIface interface {
 	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
+	// GetLastOrderPayment get most recent payment made for given order
+	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -145,6 +157,8 @@ type AppIface interface {
 	GetSessionLengthInMillis(session *model.Session) int64
 	// GetSessions get session from database with UserID attribute of given `userID`
 	GetSessions(userID string) ([]*model.Session, *model.AppError)
+	// GetSiteURL returns service's siteurl configuration.
+	GetSiteURL() string
 	// GetUser get user with given userID
 	GetUser(userID string) (*account.User, *model.AppError)
 	// GetUserByAuth get user with given data.
@@ -185,6 +199,10 @@ type AppIface interface {
 	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
+	// OrderShippingIsRequired checks if an order requires ship or not
+	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
+	// OrderTotalQuantity return total quantity of given order
+	OrderTotalQuantity(orderID string) (int, *model.AppError)
 	// PermanentDeleteAllUsers permanently deletes all user in system
 	PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	// PermanentDeleteUser performs:
@@ -274,8 +292,6 @@ type AppIface interface {
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
-	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
-	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
@@ -305,7 +321,6 @@ type AppIface interface {
 	GetSanitizeOptions(asAdmin bool) map[string]bool
 	GetSession(token string) (*model.Session, *model.AppError)
 	GetSessionById(sessionID string) (*model.Session, *model.AppError)
-	GetSiteURL() string
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
 	GetTotalUsersStats() (*account.UsersStats, *model.AppError)

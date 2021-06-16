@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 )
 
+// OrderLine represents data format will be returned to end user
 type OrderLine struct {
 	ID                    string                 `json:"id"`
 	ProductName           string                 `json:"productName"`
@@ -68,6 +69,7 @@ func DatabaseOrderLineToGraphqlOrderLine(o *order.OrderLine) *OrderLine {
 	}
 }
 
+// NormalMoneyToGraphqlMoney converts money with amount is Decimal into float-amount money
 func NormalMoneyToGraphqlMoney(m *goprices.Money) *Money {
 	float64Amount, _ := m.Amount.Float64()
 
@@ -77,6 +79,7 @@ func NormalMoneyToGraphqlMoney(m *goprices.Money) *Money {
 	}
 }
 
+// NormalTaxedMoneyToGraphqlTaxedMoney
 func NormalTaxedMoneyToGraphqlTaxedMoney(t *goprices.TaxedMoney) *TaxedMoney {
 	taxMoney, _ := t.Tax()
 
@@ -88,17 +91,18 @@ func NormalTaxedMoneyToGraphqlTaxedMoney(t *goprices.TaxedMoney) *TaxedMoney {
 	}
 }
 
+// Order represents data format will be returned to end user
 type Order struct {
 	ID                         string                  `json:"id"`
 	Created                    time.Time               `json:"created"`
 	Status                     OrderStatus             `json:"status"`
-	User                       *User                   `json:"user"`
-	TrackingClientID           string                  `json:"trackingClientId"`
+	UserID                     *string                 `json:"user"`               // *User
+	TrackingClientID           string                  `json:"trackingClientId"`   //
 	BillingAddressID           *string                 `json:"billingAddress"`     // *Address
 	ShippingAddressID          *string                 `json:"shippingAddress"`    // *Address
 	ShippingMethodID           *string                 `json:"shippingMethod"`     // *ShippingMethod
 	ShippingMethodName         *string                 `json:"shippingMethodName"` //
-	ChannelID                  *string                 `json:"channel"`            // Channel
+	ChannelID                  string                  `json:"channel"`            // Channel
 	ShippingPrice              *TaxedMoney             `json:"shippingPrice"`      //
 	ShippingTaxRate            float64                 `json:"shippingTaxRate"`    //
 	Token                      string                  `json:"token"`              //
@@ -139,3 +143,67 @@ type Order struct {
 
 func (Order) IsNode()               {}
 func (Order) IsObjectWithMetadata() {}
+
+// DatabaseOrderToGraphqlOrder converts 1 database order to 1 graphql order model
+func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
+
+	shippingTaxRate, _ := o.ShippingTaxRate.Float64()
+
+	canFinalize := true
+	if o.Status == order.DRAFT {
+
+	}
+
+	return &Order{
+		// ID                         : o.Id,
+		// Created                    : o.CreateAt,
+		// Status                     : OrderStatus(strings.ToUpper(o.Status)),
+		// UserID                       : o.UserID,
+		// TrackingClientID           : o.TrackingClientID,
+		// BillingAddressID           : o.BillingAddressID,
+		// ShippingAddressID          : o.ShippingAddressID,
+		// ShippingMethodID           : o.ShippingMethodID,
+		// ShippingMethodName         : o.ShippingMethodName,
+		// ChannelID                  : o.ChannelID,
+		// ShippingPrice              : o.ShippingPrice,
+		// ShippingTaxRate            : shippingTaxRate,
+		// Token                      : o.Token,
+		// VoucherID                  : o.VoucherID,
+		// // GiftCardIDs                : o.GiftCards,
+		// DisplayGrossPrices         : *o.DisplayGrossPrices,
+		// CustomerNote               : o.CustomerNote,
+		// Weight                     : o.Weight,
+		// RedirectURL                : o.RedirectUrl,
+		// PrivateMetadata            : MapToGraphqlMetaDataItems(o.PrivateMetadata),
+		// Metadata                   : MapToGraphqlMetaDataItems(o.Metadata),
+		// FulfillmentIDs             : nil,
+		// LineIDs                    : []string{},
+		// Actions                    : nil,
+		// AvailableShippingMethodIDs : []string{},
+		// InvoiceIDs                 : nil,
+		// Number                     : &o.Id,
+		// Original                   : o.OriginalID,
+		// Origin                     : OrderOriginEnum(strings.ToUpper(o.Origin)),
+		// IsPaid                     : o.IsFullyPaid(),
+		// PaymentStatus              : PaymentChargeStatusEnumCancelled,
+		// // PaymentStatusDisplay       : ,
+		// PaymentIDs                 : []string{},
+		// Total                      : o.Total,
+		// UndiscountedTotal          : NormalTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
+		// // Subtotal                   : NormalTaxedMoneyToGraphqlTaxedMoney(o.),
+		// // StatusDisplay              : o.,
+		// CanFinalize                : ,
+		// TotalAuthorized            : ,
+		// TotalCaptured              : ,
+		// EventIDs                   : ,
+		// TotalBalance               : ,
+		// UserEmail                  : ,
+		// IsShippingRequired         : ,
+		// LanguageCodeEnum           : ,
+		// DiscountIDs                : ,
+	}
+}
+
+func SystemWeightToGraphqlWeight() *Weight {
+
+}

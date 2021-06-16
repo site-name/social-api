@@ -15,6 +15,8 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/mfa"
@@ -353,6 +355,9 @@ type (
 type (
 	PaymentStore interface {
 		Indexer
+		Save(*payment.Payment) (*payment.Payment, error)                 // Save save payment instance into database
+		Get(string) (*payment.Payment, error)                            // Get returns a payment with given id
+		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) // GetPaymentsByOrderID returns all payments that belong to given order
 	}
 	PaymentTransactionStore interface {
 		Indexer
@@ -386,6 +391,9 @@ type FulfillmentStore interface {
 
 type OrderLineStore interface {
 	Indexer
+	Save(*order.OrderLine) (*order.OrderLine, error)            // Save save given order line instance into database and returns it
+	Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
+	GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
 }
 
 type OrderStore interface {
@@ -668,6 +676,7 @@ type (
 		Save(*account.CustomerEvent) (*account.CustomerEvent, error)
 		Get(id string) (*account.CustomerEvent, error)
 		Count() (int64, error)
+		GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) // get list of customer event belongs to given id
 	}
 	StaffNotificationRecipientStore interface {
 		Indexer

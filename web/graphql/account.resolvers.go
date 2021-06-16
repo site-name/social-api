@@ -37,14 +37,21 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 		return nil, err
 	}
 
-	// construct instance
+	// construct instance:
+	// convert slice of metadata to a string map
 	userMetaData := make(account.StringMap)
 	for _, metaInput := range cleanedInput.Metadata {
 		userMetaData[metaInput.Key] = metaInput.Value
 	}
+	// prepare language for user
+	var userLanguage string
+	if cleanedInput.LanguageCode != nil {
+		userLanguage = string(*cleanedInput.LanguageCode)
+	}
 	user := &account.User{
 		Email:    cleanedInput.Email,
 		Password: cleanedInput.Password,
+		Locale:   userLanguage,
 		ModelMetadata: account.ModelMetadata{
 			Metadata: userMetaData,
 		},

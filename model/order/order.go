@@ -8,7 +8,6 @@ import (
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/slog"
 	"golang.org/x/text/currency"
@@ -117,7 +116,6 @@ type Order struct {
 	TotalPaidAmount              *decimal.Decimal       `json:"total_paid_amount"`
 	TotalPaid                    *goprices.Money        `json:"total_paid" db:"-"`
 	VoucherID                    *string                `json:"voucher_id"`
-	GiftCards                    []*giftcard.GiftCard   `json:"gift_cards" db:"-"`
 	DisplayGrossPrices           *bool                  `json:"display_gross_prices"`
 	CustomerNote                 string                 `json:"customer_note"`
 	WeightAmount                 float32                `json:"weight_amount"`
@@ -285,7 +283,7 @@ func (o *Order) PreSave() {
 		o.Status = UNFULFILLED
 	}
 	if o.LanguageCode == "" {
-		o.LanguageCode = model.DEFAULT_LANGUAGE_CODE
+		o.LanguageCode = model.DEFAULT_LOCALE
 	}
 	if o.ShippingPriceNetAmount == nil {
 		o.ShippingPriceNetAmount = &decimal.Zero
@@ -334,10 +332,6 @@ func (o *Order) IsPartlyPaid() bool {
 
 func (o *Order) GetCustomerEmail() string {
 	panic("not implemented") // TODO: fixme
-}
-
-func (o *Order) String() string {
-	return "#" + o.Id
 }
 
 func (o *Order) IsDraft() bool {

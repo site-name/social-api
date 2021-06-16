@@ -32,8 +32,6 @@ const (
 // some default values for model fields
 const (
 	TimeZone                       = "UTC"
-	DEFAULT_LANGUAGE_CODE          = "en"
-	DEFAULT_LOCALE                 = "en"
 	USER_AUTH_SERVICE_EMAIL        = "email"
 	DEFAULT_CURRENCY               = "USD"
 	USER_NAME_MAX_LENGTH           = 64
@@ -44,6 +42,10 @@ const (
 	URL_LINK_MAX_LENGTH            = 200
 	SINGLE_COUNTRY_CODE_MAX_LENGTH = 2
 	IP_ADDRESS_MAX_LENGTH          = 39
+)
+
+const (
+	DEFAULT_LOCALE = "en" // this is default language also
 )
 
 var (

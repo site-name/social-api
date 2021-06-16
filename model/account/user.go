@@ -31,6 +31,7 @@ const (
 	USER_HASH_PASSWORD_MAX_LENGTH = 128
 	USER_LOCALE_MAX_LENGTH        = 5
 	USER_TIMEZONE_MAX_RUNES       = 256
+	USER_LANGUAGE_CODE_MAX_LENGTH = 10
 )
 
 // NOTE: don't delete this
@@ -68,7 +69,7 @@ type User struct {
 	LastPasswordUpdate       int64     `json:"last_password_update,omitempty"`
 	LastPictureUpdate        int64     `json:"last_picture_update,omitempty"`
 	FailedAttempts           int       `json:"failed_attempts,omitempty"`
-	Locale                   string    `json:"locale"`
+	Locale                   string    `json:"locale"` // user's language
 	Timezone                 StringMap `json:"timezone"`
 	MfaActive                bool      `json:"mfa_active,omitempty"`
 	MfaSecret                string    `json:"mfa_secret,omitempty"`

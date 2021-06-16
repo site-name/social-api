@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
@@ -20,11 +21,29 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	panic(fmt.Errorf("not implemented"))
+	// if obj.OrderID == nil {
+	// 	return nil, nil
+	// }
+	panic("not implt")
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	panic("not implt")
+	if obj.OrderLineID == nil {
+		return nil, nil
+	}
+	orderLine, err := r.Srv().Store.OrderLine().Get(*obj.OrderLineID)
+	if err != nil {
+		var status int
+		switch err.(type) {
+		case *store.ErrNotFound:
+			status = http.StatusNotFound
+		default:
+			status = http.StatusInternalServerError
+		}
+		return nil, model.NewAppError("OrderLine", "graphql.user.customer_event.app_error", nil, err.Error(), status)
+	}
+
+	return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
@@ -72,6 +91,10 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 	return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
 }
 
+func (r *userResolver) CheckoutTokens(ctx context.Context, obj *gqlmodel.User, channel *string) ([]uuid.UUID, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.GiftCardCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -80,11 +103,29 @@ func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int
 	return nil, errors.New("not implemented")
 }
 
+func (r *userResolver) PermissionGroups(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Group, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *userResolver) EditableGroups(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Group, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int) (*gqlmodel.Image, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	// if len(obj.EventIDs) == 0 {
-	// 	return []*gqlmodel.CustomerEvent{}, nil
-	// }
-	panic("not impl")
+	events, err := r.Srv().Store.CustomerEvent().GetEventsByUserID(obj.ID)
+	if err != nil {
+		return []*gqlmodel.CustomerEvent{}, model.NewAppError("Events", "graphql.user.events.app_error", nil, err.Error(), http.StatusNotFound)
+	}
+
+	return gqlmodel.DatabaseCustomerEventsToGraphqlCustomerEvents(events), nil
+}
+
+func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // CustomerEvent returns CustomerEventResolver implementation.

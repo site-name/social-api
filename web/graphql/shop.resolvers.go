@@ -46,6 +46,10 @@ func (r *shopResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmod
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *shopResolver) Countries(ctx context.Context, obj *gqlmodel.Shop, languageCode *gqlmodel.LanguageCodeEnum) ([]*gqlmodel.CountryDisplay, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *shopResolver) Translation(ctx context.Context, obj *gqlmodel.Shop, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ShopTranslation, error) {
 	panic(fmt.Errorf("not implemented"))
 }

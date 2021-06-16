@@ -30,7 +30,7 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 		table.ColMap("Token").SetMaxSize(order.ORDER_TOKEN_MAX_LENGTH).SetUnique(true)
 		table.ColMap("CheckoutToken").SetMaxSize(order.ORDER_CHECKOUT_TOKEN_MAX_LENGTH)
 		table.ColMap("UserEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(35).SetDefaultConstraint(model.NewString(model.DEFAULT_LANGUAGE_CODE))
+		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH).SetDefaultConstraint(model.NewString(model.DEFAULT_LOCALE))
 		table.ColMap("Currency").SetMaxSize(model.URL_LINK_MAX_LENGTH)
 	}
 

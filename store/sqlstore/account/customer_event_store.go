@@ -64,3 +64,16 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 
 	return count, nil
 }
+
+func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
+	var events []*account.CustomerEvent
+	_, err := cs.GetReplica().Select(&events, "SELECT * FROM "+customerEventTableName+" WHERE UserID = :userID", map[string]interface{}{"userID": userID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(customerEventTableName, "userId="+userID)
+		}
+		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)
+	}
+
+	return events, nil
+}

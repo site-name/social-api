@@ -1574,16 +1574,6 @@ type GiftCardUpdateInput struct {
 	UserEmail *string          `json:"userEmail"`
 }
 
-type Group struct {
-	ID            string        `json:"id"`
-	Name          string        `json:"name"`
-	Permissions   []*Permission `json:"permissions"`
-	Users         []*User       `json:"users"`
-	UserCanManage bool          `json:"userCanManage"`
-}
-
-func (Group) IsNode() {}
-
 type GroupCountableConnection struct {
 	PageInfo   *PageInfo             `json:"pageInfo"`
 	Edges      []*GroupCountableEdge `json:"edges"`

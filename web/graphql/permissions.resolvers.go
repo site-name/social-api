@@ -10,6 +10,10 @@ import (
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
+func (r *groupResolver) Users(ctx context.Context, obj *gqlmodel.Group) ([]*gqlmodel.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) PermissionGroupCreate(ctx context.Context, input gqlmodel.PermissionGroupCreateInput) (*gqlmodel.PermissionGroupCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -29,3 +33,8 @@ func (r *queryResolver) PermissionGroups(ctx context.Context, filter *gqlmodel.P
 func (r *queryResolver) PermissionGroup(ctx context.Context, id string) (*gqlmodel.Group, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Group returns GroupResolver implementation.
+func (r *Resolver) Group() GroupResolver { return &groupResolver{r} }
+
+type groupResolver struct{ *Resolver }

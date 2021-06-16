@@ -2,11 +2,35 @@ package gqlmodel
 
 import (
 	"strings"
+	"time"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util"
 )
+
+type CustomerEvent struct {
+	ID          string              `json:"id"`
+	Date        *time.Time          `json:"date"`
+	Type        *CustomerEventsEnum `json:"type"`
+	UserID      *string             `json:"user"`      // *User
+	Message     *string             `json:"message"`   //
+	Count       *int                `json:"count"`     //
+	OrderID     *string             `json:"order"`     // *Order
+	OrderLineID *string             `json:"orderLine"` // *OrderLine
+}
+
+func (CustomerEvent) IsNode() {}
+
+// DatabaseCustomerEventsToGraphqlCustomerEvents converts slice of db customer events to graphql slice of customer events
+func DatabaseCustomerEventsToGraphqlCustomerEvents(events []*account.CustomerEvent) []*CustomerEvent {
+	res := make([]*CustomerEvent, len(events))
+	for _, event := range events {
+		res = append(res, DatabaseCustomerEventToGraphqlCustomerEvent(event))
+	}
+
+	return res
+}
 
 // DatabaseAddressesToGraphqlAddresses convert a slice of database addresses to graphql addresses
 func DatabaseAddressesToGraphqlAddresses(adds []*account.Address) []*Address {
@@ -36,57 +60,16 @@ func DatabaseAddressToGraphqlAddress(ad *account.Address) *Address {
 		Phone:                    &ad.Phone,
 		IsDefaultShippingAddress: &df,
 		IsDefaultBillingAddress:  &df,
-		// Country : &CountryDisplay{
-		//   Code: ad.Country,
+		// Country: &CountryDisplay{
+		// 	Code: ad.Country,
+		// 	Vat: &Vat{
+		// 		CountryCode: ad.Country,
+		// 	},
 		// },
 	}
 }
 
-// MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
-func MapToGraphqlMetaDataItems(m map[string]string) []*MetadataItem {
-	if m == nil {
-		return []*MetadataItem{}
-	}
-
-	res := make([]*MetadataItem, len(m))
-	for key, value := range m {
-		res = append(res, &MetadataItem{Key: key, Value: value})
-	}
-
-	return res
-}
-
-// DatabaseUserToGraphqlUser converts database user to graphql user
-func DatabaseUserToGraphqlUser(u *account.User) *User {
-	return &User{
-		ID:                       u.Id,
-		LastLogin:                util.TimePointerFromMillis(u.LastActivityAt),
-		Email:                    u.Email,
-		FirstName:                u.FirstName,
-		LastName:                 u.LastName,
-		IsStaff:                  u.IsStaff,
-		IsActive:                 u.IsActive,
-		Note:                     u.Note,
-		DateJoined:               util.TimeFromMillis(u.CreateAt),
-		DefaultShippingAddressID: u.DefaultShippingAddressID,
-		DefaultBillingAddressID:  u.DefaultBillingAddressID,
-		PrivateMetadata:          MapToGraphqlMetaDataItems(u.PrivateMetadata),
-		Metadata:                 MapToGraphqlMetaDataItems(u.Metadata),
-		AddresseIDs:              []string{},
-		CheckoutTokens:           nil,
-		UserPermissions:          nil,
-		PermissionGroups:         nil,
-		EditableGroups:           nil,
-		Avatar:                   nil,
-		EventIDs:                 nil,
-		StoredPaymentSources:     nil,
-		LanguageCode:             LanguageCodeEnumEn,
-		// GiftCards:                func(page int, perPage int, orderDirection *OrderDirection) *GiftCardCountableConnection { return nil },
-		// Orders:                   nil,
-	}
-}
-
-// DatabaseCustomerEventToGraphqlCustomerEvent
+// DatabaseCustomerEventToGraphqlCustomerEvent converts 1 db customer event to 1 graphql customer event.
 func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *CustomerEvent {
 	var message *string
 	var count *int
