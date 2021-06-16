@@ -32,34 +32,40 @@ var UnitDiscountTypeStrings = map[string]string{
 }
 
 type OrderLine struct {
-	Id                    string               `json:"id"`
-	OrderID               string               `json:"order_id"`
-	VariantID             *string              `json:"variant_id"`
-	ProductName           string               `json:"product_name"`
-	VariantName           string               `json:"variant_name"`
-	TranslatedProductName string               `json:"translated_product_name"`
-	TranslatedVariantName string               `json:"translated_variant_name"`
-	ProductSku            string               `json:"product_sku"`
-	IsShippingRequired    bool                 `json:"is_shipping_required"`
-	Quantity              int                  `json:"quantity"`
-	QuantityFulfilled     int                  `json:"quantity_fulfilled"`
-	Currency              string               `json:"currency"`
-	UnitDiscountAmount    *decimal.Decimal     `json:"unit_discount_amount"`
-	UnitDiscount          *goprices.Money      `json:"unit_dsicount" db:"-"`
-	UnitDiscountType      string               `json:"unit_discount_type"`
-	UnitDiscountReason    *string              `json:"unit_discount_reason"`
-	UnitPriceNetAmount    *decimal.Decimal     `json:"unit_price_net_amount"`
-	UnitDiscountValue     *decimal.Decimal     `json:"unit_discount_value"`
-	UnitPriceNet          *goprices.Money      `json:"unit_price_net" db:"-"`
-	UnitPriceGrossAmount  *decimal.Decimal     `json:"unit_price_gross_amount"`
-	UnitPriceGross        *goprices.Money      `json:"unit_price_gross" db:"-"`
-	UnitPrice             *goprices.TaxedMoney `json:"unit_price" db:"-"`
-	TotalPriceNetAmount   *decimal.Decimal     `json:"total_price_net_amount"`
-	TotalPriceNet         *goprices.Money      `json:"total_price_net" db:"-"`
-	TotalPriceGrossAmount *decimal.Decimal     `json:"total_price_gross_amount"`
-	TotalPriceGross       *goprices.Money      `json:"total_price_gross" db:"-"`
-	TotalPrice            *goprices.TaxedMoney `json:"total_price" db:"-"`
-	TaxRate               *decimal.Decimal     `json:"tax_rate"`
+	Id                                string               `json:"id"`
+	OrderID                           string               `json:"order_id"`
+	VariantID                         *string              `json:"variant_id"`
+	ProductName                       string               `json:"product_name"`
+	VariantName                       string               `json:"variant_name"`
+	TranslatedProductName             string               `json:"translated_product_name"`
+	TranslatedVariantName             string               `json:"translated_variant_name"`
+	ProductSku                        string               `json:"product_sku"`
+	IsShippingRequired                bool                 `json:"is_shipping_required"`
+	Quantity                          int                  `json:"quantity"`
+	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
+	Currency                          string               `json:"currency"`
+	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"`
+	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
+	UnitDiscountType                  string               `json:"unit_discount_type"`
+	UnitDiscountReason                *string              `json:"unit_discount_reason"`
+	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"`
+	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"`
+	UnitPriceNet                      *goprices.Money      `json:"unit_price_net" db:"-"`
+	UnitPriceGrossAmount              *decimal.Decimal     `json:"unit_price_gross_amount"`
+	UnitPriceGross                    *goprices.Money      `json:"unit_price_gross" db:"-"`
+	UnitPrice                         *goprices.TaxedMoney `json:"unit_price" db:"-"`
+	TotalPriceNetAmount               *decimal.Decimal     `json:"total_price_net_amount"`
+	TotalPriceNet                     *goprices.Money      `json:"total_price_net" db:"-"`
+	TotalPriceGrossAmount             *decimal.Decimal     `json:"total_price_gross_amount"`
+	TotalPriceGross                   *goprices.Money      `json:"total_price_gross" db:"-"`
+	TotalPrice                        *goprices.TaxedMoney `json:"total_price" db:"-"`
+	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal     `json:"undiscounted_unit_price_gross_amount"`
+	UnDiscountedUnitPriceNetAmount    *decimal.Decimal     `json:"undiscounted_unit_price_net_amount"`
+	UnDiscountedUnitPrice             *goprices.TaxedMoney `json:"undiscounted_unit_price" db:"-"`
+	UnDsicountedTotalPriceGrossAmount *decimal.Decimal     `json:"undiscounted_total_price_gross_amount"`
+	UnDiscountedTotalPriceNetAmount   *decimal.Decimal     `json:"undiscounted_total_price_net_amount"`
+	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
+	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
 }
 
 func (o *OrderLine) IsValid() *model.AppError {
@@ -153,6 +159,20 @@ func (o *OrderLine) ToJson() string {
 			Currency: o.Currency,
 		}
 	}
+	if o.UnDiscountedUnitPrice == nil {
+		o.UnDiscountedUnitPrice = &goprices.TaxedMoney{
+			Net:      &goprices.Money{Amount: o.UnDiscountedUnitPriceNetAmount, Currency: o.Currency},
+			Gross:    &goprices.Money{Amount: o.UnDiscountedUnitPriceGrossAmount, Currency: o.Currency},
+			Currency: o.Currency,
+		}
+	}
+	if o.UnDiscountedTotalPrice == nil {
+		o.UnDiscountedTotalPrice = &goprices.TaxedMoney{
+			Net:      &goprices.Money{Amount: o.UnDiscountedTotalPriceNetAmount, Currency: o.Currency},
+			Gross:    &goprices.Money{Amount: o.UnDsicountedTotalPriceGrossAmount, Currency: o.Currency},
+			Currency: o.Currency,
+		}
+	}
 
 	return model.ModelToJson(o)
 }
@@ -199,10 +219,6 @@ func (o *OrderLine) PreUpdate() {
 
 func (o *OrderLine) String() string {
 	return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
-}
-
-func (o *OrderLine) UndiscountedUnitPrice() (*goprices.TaxedMoney, error) {
-	return o.UnitPrice.Add(o.UnitDiscount)
 }
 
 func (o *OrderLine) QuantityUnFulfilled() int {

@@ -7,14 +7,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *string, paymentID string) (*gqlmodel.PaymentCapture, error) {
+func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *decimal.Decimal, paymentID string) (*gqlmodel.PaymentCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PaymentRefund(ctx context.Context, amount *string, paymentID string) (*gqlmodel.PaymentRefund, error) {
+func (r *mutationResolver) PaymentRefund(ctx context.Context, amount *decimal.Decimal, paymentID string) (*gqlmodel.PaymentRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

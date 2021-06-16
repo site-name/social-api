@@ -61,7 +61,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 
 	return &gqlmodel.AccountRegister{
 		RequiresConfirmation: r.Config().EmailSettings.RequireEmailVerification,
-		User:                 DatabaseUserToGraphqlUser(ruser),
+		User:                 gqlmodel.DatabaseUserToGraphqlUser(ruser),
 	}, nil
 }
 

@@ -46,6 +46,10 @@ func (r *orderLineResolver) DigitalContentURL(ctx context.Context, obj *gqlmodel
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *orderLineResolver) Thumbnail(ctx context.Context, obj *gqlmodel.OrderLine, size *int) (*gqlmodel.Image, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *orderLineResolver) Variant(ctx context.Context, obj *gqlmodel.OrderLine) (*gqlmodel.ProductVariant, error) {
 	panic(fmt.Errorf("not implemented"))
 }

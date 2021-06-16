@@ -21,7 +21,7 @@ var WEIGHT_UNIT_STRINGS = map[WeightUnit]string{
 	G:     "Gram",
 	LB:    "Pound",
 	OZ:    "Ounce",
-	KG:    "kg",
+	KG:    "Kg",
 	TONNE: "Tonne",
 }
 
@@ -42,7 +42,7 @@ type Weight struct {
 }
 
 func (w *Weight) String() string {
-	return fmt.Sprintf("%.3f%s", w.Amount, w.Unit)
+	return fmt.Sprintf("%.3f %s", w.Amount, w.Unit)
 }
 
 var (

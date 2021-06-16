@@ -10,7 +10,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/advancedlogic/GoOse v0.0.0-20200830213114-1225d531e0ad // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.60
+	github.com/aws/aws-sdk-go v1.38.62
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -41,19 +41,19 @@ require (
 	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.0
-	github.com/minio/minio-go/v7 v7.0.10
+	github.com/minio/minio-go/v7 v7.0.11
 	github.com/nyaruka/phonenumbers v1.0.70
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/oov/psd v0.0.0-20210610080222-2b36475937df
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pelletier/go-toml v1.9.2 // indirect
+	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/cors v1.7.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/site-name/go-prices v0.0.0-20210609025204-6e56678458c7
+	github.com/site-name/go-prices v0.0.0-20210616032024-5891e0c6d6c8
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/splitio/go-client/v6 v6.1.0
@@ -69,7 +69,7 @@ require (
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/image v0.0.0-20210607152325-775e3b0c77b9
-	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
+	golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71 // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.3
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

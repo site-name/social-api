@@ -84,3 +84,13 @@ func TestMul(t *testing.T) {
 	fmt.Println(resAmount)
 	fmt.Println(mulRes)
 }
+
+func TestMassToString(t *testing.T) {
+	w1 := Weight{
+		Amount: 3.456,
+		Unit:   KG,
+	}
+	w2, _ := w1.ConvertTo(G)
+	str := w2.String()
+	fmt.Println(str)
+}

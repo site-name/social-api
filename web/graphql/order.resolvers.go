@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -23,7 +24,7 @@ func (r *mutationResolver) OrderCancel(ctx context.Context, id string) (*gqlmode
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderCapture(ctx context.Context, amount string, id string) (*gqlmodel.OrderCapture, error) {
+func (r *mutationResolver) OrderCapture(ctx context.Context, amount *decimal.Decimal, id string) (*gqlmodel.OrderCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -55,7 +56,7 @@ func (r *mutationResolver) OrderMarkAsPaid(ctx context.Context, id string, trans
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderRefund(ctx context.Context, amount string, id string) (*gqlmodel.OrderRefund, error) {
+func (r *mutationResolver) OrderRefund(ctx context.Context, amount *decimal.Decimal, id string) (*gqlmodel.OrderRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -72,6 +73,58 @@ func (r *mutationResolver) OrderVoid(ctx context.Context, id string) (*gqlmodel.
 }
 
 func (r *mutationResolver) OrderBulkCancel(ctx context.Context, ids []*string) (*gqlmodel.OrderBulkCancel, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) BillingAddress(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) ShippingAddress(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.Address, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) ShippingMethod(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Channel(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.Channel, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Voucher(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.Voucher, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) GiftCards(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.GiftCard, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Fulfillments(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.Fulfillment, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Lines(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.OrderLine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Invoices(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.Invoice, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Payments(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.Payment, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Events(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.OrderEvent, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) Discounts(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.OrderDiscount, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -98,3 +151,8 @@ func (r *queryResolver) OrdersTotal(ctx context.Context, period *gqlmodel.Report
 func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*gqlmodel.Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Order returns OrderResolver implementation.
+func (r *Resolver) Order() OrderResolver { return &orderResolver{r} }
+
+type orderResolver struct{ *Resolver }

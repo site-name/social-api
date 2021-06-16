@@ -10,6 +10,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/modules/measurement"
 )
 
 type Job interface {
@@ -1278,7 +1280,7 @@ type DraftOrderCreateInput struct {
 	BillingAddress  *AddressInput           `json:"billingAddress"`
 	User            *string                 `json:"user"`
 	UserEmail       *string                 `json:"userEmail"`
-	Discount        *string                 `json:"discount"`
+	Discount        *decimal.Decimal        `json:"discount"`
 	ShippingAddress *AddressInput           `json:"shippingAddress"`
 	ShippingMethod  *string                 `json:"shippingMethod"`
 	Voucher         *string                 `json:"voucher"`
@@ -1294,16 +1296,16 @@ type DraftOrderDelete struct {
 }
 
 type DraftOrderInput struct {
-	BillingAddress  *AddressInput `json:"billingAddress"`
-	User            *string       `json:"user"`
-	UserEmail       *string       `json:"userEmail"`
-	Discount        *string       `json:"discount"`
-	ShippingAddress *AddressInput `json:"shippingAddress"`
-	ShippingMethod  *string       `json:"shippingMethod"`
-	Voucher         *string       `json:"voucher"`
-	CustomerNote    *string       `json:"customerNote"`
-	ChannelID       *string       `json:"channelId"`
-	RedirectURL     *string       `json:"redirectUrl"`
+	BillingAddress  *AddressInput    `json:"billingAddress"`
+	User            *string          `json:"user"`
+	UserEmail       *string          `json:"userEmail"`
+	Discount        *decimal.Decimal `json:"discount"`
+	ShippingAddress *AddressInput    `json:"shippingAddress"`
+	ShippingMethod  *string          `json:"shippingMethod"`
+	Voucher         *string          `json:"voucher"`
+	CustomerNote    *string          `json:"customerNote"`
+	ChannelID       *string          `json:"channelId"`
+	RedirectURL     *string          `json:"redirectUrl"`
 }
 
 type DraftOrderLinesBulkDelete struct {
@@ -1542,11 +1544,11 @@ type GiftCardCreate struct {
 }
 
 type GiftCardCreateInput struct {
-	StartDate *time.Time `json:"startDate"`
-	EndDate   *time.Time `json:"endDate"`
-	Balance   *string    `json:"balance"`
-	UserEmail *string    `json:"userEmail"`
-	Code      *string    `json:"code"`
+	StartDate *time.Time       `json:"startDate"`
+	EndDate   *time.Time       `json:"endDate"`
+	Balance   *decimal.Decimal `json:"balance"`
+	UserEmail *string          `json:"userEmail"`
+	Code      *string          `json:"code"`
 }
 
 type GiftCardDeactivate struct {
@@ -1566,10 +1568,10 @@ type GiftCardUpdate struct {
 }
 
 type GiftCardUpdateInput struct {
-	StartDate *time.Time `json:"startDate"`
-	EndDate   *time.Time `json:"endDate"`
-	Balance   *string    `json:"balance"`
-	UserEmail *string    `json:"userEmail"`
+	StartDate *time.Time       `json:"startDate"`
+	EndDate   *time.Time       `json:"endDate"`
+	Balance   *decimal.Decimal `json:"balance"`
+	UserEmail *string          `json:"userEmail"`
 }
 
 type Group struct {
@@ -1938,58 +1940,6 @@ type NameTranslationInput struct {
 	Name *string `json:"name"`
 }
 
-type Order struct {
-	ID                       string                  `json:"id"`
-	Created                  time.Time               `json:"created"`
-	Status                   OrderStatus             `json:"status"`
-	User                     *User                   `json:"user"`
-	TrackingClientID         string                  `json:"trackingClientId"`
-	BillingAddress           *Address                `json:"billingAddress"`
-	ShippingAddress          *Address                `json:"shippingAddress"`
-	ShippingMethod           *ShippingMethod         `json:"shippingMethod"`
-	ShippingMethodName       *string                 `json:"shippingMethodName"`
-	Channel                  *Channel                `json:"channel"`
-	ShippingPrice            *TaxedMoney             `json:"shippingPrice"`
-	ShippingTaxRate          float64                 `json:"shippingTaxRate"`
-	Token                    string                  `json:"token"`
-	Voucher                  *Voucher                `json:"voucher"`
-	GiftCards                []*GiftCard             `json:"giftCards"`
-	DisplayGrossPrices       bool                    `json:"displayGrossPrices"`
-	CustomerNote             string                  `json:"customerNote"`
-	Weight                   *Weight                 `json:"weight"`
-	RedirectURL              *string                 `json:"redirectUrl"`
-	PrivateMetadata          []*MetadataItem         `json:"privateMetadata"`
-	Metadata                 []*MetadataItem         `json:"metadata"`
-	Fulfillments             []*Fulfillment          `json:"fulfillments"`
-	Lines                    []*OrderLine            `json:"lines"`
-	Actions                  []*OrderAction          `json:"actions"`
-	AvailableShippingMethods []*ShippingMethod       `json:"availableShippingMethods"`
-	Invoices                 []*Invoice              `json:"invoices"`
-	Number                   *string                 `json:"number"`
-	Original                 *string                 `json:"original"`
-	Origin                   OrderOriginEnum         `json:"origin"`
-	IsPaid                   bool                    `json:"isPaid"`
-	PaymentStatus            PaymentChargeStatusEnum `json:"paymentStatus"`
-	PaymentStatusDisplay     string                  `json:"paymentStatusDisplay"`
-	Payments                 []*Payment              `json:"payments"`
-	Total                    *TaxedMoney             `json:"total"`
-	UndiscountedTotal        *TaxedMoney             `json:"undiscountedTotal"`
-	Subtotal                 *TaxedMoney             `json:"subtotal"`
-	StatusDisplay            *string                 `json:"statusDisplay"`
-	CanFinalize              bool                    `json:"canFinalize"`
-	TotalAuthorized          *Money                  `json:"totalAuthorized"`
-	TotalCaptured            *Money                  `json:"totalCaptured"`
-	Events                   []*OrderEvent           `json:"events"`
-	TotalBalance             *Money                  `json:"totalBalance"`
-	UserEmail                *string                 `json:"userEmail"`
-	IsShippingRequired       bool                    `json:"isShippingRequired"`
-	LanguageCodeEnum         LanguageCodeEnum        `json:"languageCodeEnum"`
-	Discounts                []*OrderDiscount        `json:"discounts"`
-}
-
-func (Order) IsNode()               {}
-func (Order) IsObjectWithMetadata() {}
-
 type OrderAddNote struct {
 	Order  *Order        `json:"order"`
 	Event  *OrderEvent   `json:"event"`
@@ -2035,7 +1985,7 @@ type OrderDiscount struct {
 	ID             string                `json:"id"`
 	Type           OrderDiscountType     `json:"type"`
 	ValueType      DiscountValueTypeEnum `json:"valueType"`
-	Value          string                `json:"value"`
+	Value          *decimal.Decimal      `json:"value"`
 	Name           *string               `json:"name"`
 	TranslatedName *string               `json:"translatedName"`
 	Reason         *string               `json:"reason"`
@@ -2051,7 +2001,7 @@ type OrderDiscountAdd struct {
 
 type OrderDiscountCommonInput struct {
 	ValueType DiscountValueTypeEnum `json:"valueType"`
-	Value     string                `json:"value"`
+	Value     *decimal.Decimal      `json:"value"`
 	Reason    *string               `json:"reason"`
 }
 
@@ -2123,11 +2073,11 @@ type OrderEventCountableEdge struct {
 
 type OrderEventDiscountObject struct {
 	ValueType    DiscountValueTypeEnum  `json:"valueType"`
-	Value        string                 `json:"value"`
+	Value        *decimal.Decimal       `json:"value"`
 	Reason       *string                `json:"reason"`
 	Amount       *Money                 `json:"amount"`
 	OldValueType *DiscountValueTypeEnum `json:"oldValueType"`
-	OldValue     *string                `json:"oldValue"`
+	OldValue     *decimal.Decimal       `json:"oldValue"`
 	OldAmount    *Money                 `json:"oldAmount"`
 }
 
@@ -2231,7 +2181,7 @@ type OrderRefundLineInput struct {
 type OrderRefundProductsInput struct {
 	OrderLines           []*OrderRefundLineInput            `json:"orderLines"`
 	FulfillmentLines     []*OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *string                            `json:"amountToRefund"`
+	AmountToRefund       *decimal.Decimal                   `json:"amountToRefund"`
 	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
 }
 
@@ -2250,7 +2200,7 @@ type OrderReturnLineInput struct {
 type OrderReturnProductsInput struct {
 	OrderLines           []*OrderReturnLineInput            `json:"orderLines"`
 	FulfillmentLines     []*OrderReturnFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *string                            `json:"amountToRefund"`
+	AmountToRefund       *decimal.Decimal                   `json:"amountToRefund"`
 	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
 	Refund               *bool                              `json:"refund"`
 }
@@ -2603,10 +2553,10 @@ type PaymentInitialized struct {
 }
 
 type PaymentInput struct {
-	Gateway   string  `json:"gateway"`
-	Token     *string `json:"token"`
-	Amount    *string `json:"amount"`
-	ReturnURL *string `json:"returnUrl"`
+	Gateway   string           `json:"gateway"`
+	Token     *string          `json:"token"`
+	Amount    *decimal.Decimal `json:"amount"`
+	ReturnURL *string          `json:"returnUrl"`
 }
 
 type PaymentRefund struct {
@@ -2864,7 +2814,7 @@ type ProductCreateInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *measurement.Weight    `json:"weight"`
 	Rating      *float64               `json:"rating"`
 	ProductType string                 `json:"productType"`
 }
@@ -2909,7 +2859,7 @@ type ProductInput struct {
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
 	Seo         *SeoInput              `json:"seo"`
-	Weight      *string                `json:"weight"`
+	Weight      *measurement.Weight    `json:"weight"`
 	Rating      *float64               `json:"rating"`
 }
 
@@ -3073,15 +3023,15 @@ type ProductTypeFilterInput struct {
 }
 
 type ProductTypeInput struct {
-	Name               *string   `json:"name"`
-	Slug               *string   `json:"slug"`
-	HasVariants        *bool     `json:"hasVariants"`
-	ProductAttributes  []*string `json:"productAttributes"`
-	VariantAttributes  []*string `json:"variantAttributes"`
-	IsShippingRequired *bool     `json:"isShippingRequired"`
-	IsDigital          *bool     `json:"isDigital"`
-	Weight             *string   `json:"weight"`
-	TaxCode            *string   `json:"taxCode"`
+	Name               *string             `json:"name"`
+	Slug               *string             `json:"slug"`
+	HasVariants        *bool               `json:"hasVariants"`
+	ProductAttributes  []*string           `json:"productAttributes"`
+	VariantAttributes  []*string           `json:"variantAttributes"`
+	IsShippingRequired *bool               `json:"isShippingRequired"`
+	IsDigital          *bool               `json:"isDigital"`
+	Weight             *measurement.Weight `json:"weight"`
+	TaxCode            *string             `json:"taxCode"`
 }
 
 type ProductTypeReorderAttributes struct {
@@ -3139,7 +3089,7 @@ type ProductVariantBulkCreateInput struct {
 	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
 	Sku             string                                  `json:"sku"`
 	TrackInventory  *bool                                   `json:"trackInventory"`
-	Weight          *string                                 `json:"weight"`
+	Weight          *measurement.Weight                     `json:"weight"`
 	Stocks          []*StockInput                           `json:"stocks"`
 	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
 }
@@ -3160,9 +3110,9 @@ type ProductVariantChannelListing struct {
 func (ProductVariantChannelListing) IsNode() {}
 
 type ProductVariantChannelListingAddInput struct {
-	ChannelID string  `json:"channelId"`
-	Price     string  `json:"price"`
-	CostPrice *string `json:"costPrice"`
+	ChannelID string           `json:"channelId"`
+	Price     *decimal.Decimal `json:"price"`
+	CostPrice *decimal.Decimal `json:"costPrice"`
 }
 
 type ProductVariantChannelListingUpdate struct {
@@ -3190,7 +3140,7 @@ type ProductVariantCreateInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *measurement.Weight    `json:"weight"`
 	Product        string                 `json:"product"`
 	Stocks         []*StockInput          `json:"stocks"`
 }
@@ -3210,7 +3160,7 @@ type ProductVariantInput struct {
 	Attributes     []*AttributeValueInput `json:"attributes"`
 	Sku            *string                `json:"sku"`
 	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *string                `json:"weight"`
+	Weight         *measurement.Weight    `json:"weight"`
 }
 
 type ProductVariantReorder struct {
@@ -3339,8 +3289,8 @@ type SaleChannelListing struct {
 func (SaleChannelListing) IsNode() {}
 
 type SaleChannelListingAddInput struct {
-	ChannelID     string `json:"channelId"`
-	DiscountValue string `json:"discountValue"`
+	ChannelID     string           `json:"channelId"`
+	DiscountValue *decimal.Decimal `json:"discountValue"`
 }
 
 type SaleChannelListingInput struct {
@@ -3384,7 +3334,7 @@ type SaleFilterInput struct {
 type SaleInput struct {
 	Name        *string                `json:"name"`
 	Type        *DiscountValueTypeEnum `json:"type"`
-	Value       *string                `json:"value"`
+	Value       *decimal.Decimal       `json:"value"`
 	Products    []*string              `json:"products"`
 	Categories  []*string              `json:"categories"`
 	Collections []*string              `json:"collections"`
@@ -3491,10 +3441,10 @@ type ShippingMethodChannelListing struct {
 func (ShippingMethodChannelListing) IsNode() {}
 
 type ShippingMethodChannelListingAddInput struct {
-	ChannelID         string  `json:"channelId"`
-	Price             *string `json:"price"`
-	MinimumOrderPrice *string `json:"minimumOrderPrice"`
-	MaximumOrderPrice *string `json:"maximumOrderPrice"`
+	ChannelID         string           `json:"channelId"`
+	Price             *decimal.Decimal `json:"price"`
+	MinimumOrderPrice *decimal.Decimal `json:"minimumOrderPrice"`
+	MaximumOrderPrice *decimal.Decimal `json:"maximumOrderPrice"`
 }
 
 type ShippingMethodChannelListingInput struct {
@@ -3570,8 +3520,8 @@ type ShippingPriceExcludeProductsInput struct {
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
 	Description           *string                                    `json:"description"`
-	MinimumOrderWeight    *string                                    `json:"minimumOrderWeight"`
-	MaximumOrderWeight    *string                                    `json:"maximumOrderWeight"`
+	MinimumOrderWeight    *measurement.Weight                        `json:"minimumOrderWeight"`
+	MaximumOrderWeight    *measurement.Weight                        `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int                                       `json:"maximumDeliveryDays"`
 	MinimumDeliveryDays   *int                                       `json:"minimumDeliveryDays"`
 	Type                  *ShippingMethodTypeEnum                    `json:"type"`
@@ -4070,9 +4020,9 @@ type VoucherChannelListing struct {
 func (VoucherChannelListing) IsNode() {}
 
 type VoucherChannelListingAddInput struct {
-	ChannelID      string  `json:"channelId"`
-	DiscountValue  *string `json:"discountValue"`
-	MinAmountSpent *string `json:"minAmountSpent"`
+	ChannelID      string           `json:"channelId"`
+	DiscountValue  *decimal.Decimal `json:"discountValue"`
+	MinAmountSpent *decimal.Decimal `json:"minAmountSpent"`
 }
 
 type VoucherChannelListingInput struct {

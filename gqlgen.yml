@@ -55,10 +55,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
 
-  # PositiveDecimal:
-  #   model:
-  #     - github.com/sitename/sitename/web/scalars.PositiveDecimal
-
+  # custom scalars
   UUID:
     model:
       - github.com/sitename/sitename/web/graphql/scalars.UUID
@@ -68,3 +65,9 @@ models:
   DateTime:
     model:
       - github.com/sitename/sitename/web/graphql/scalars.DateTime
+  PositiveDecimal:
+    model:
+      - github.com/sitename/sitename/web/graphql/scalars.PositiveDecimal
+  WeightScalar:
+    model:
+      - github.com/sitename/sitename/web/graphql/scalars.WeightScalar

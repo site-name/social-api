@@ -24,7 +24,7 @@ func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.Custome
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	panic(fmt.Errorf("not implemented"))
+	panic("not implt")
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
@@ -69,7 +69,7 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 		return []*gqlmodel.Address{}, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return DatabaseAddressesToGraphqlAddresses(addresses), nil
+	return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
 }
 
 func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.GiftCardCountableConnection, error) {
@@ -81,9 +81,10 @@ func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	if len(obj.EventIDs) == 0 {
-		return []*gqlmodel.CustomerEvent{}, nil
-	}
+	// if len(obj.EventIDs) == 0 {
+	// 	return []*gqlmodel.CustomerEvent{}, nil
+	// }
+	panic("not impl")
 }
 
 // CustomerEvent returns CustomerEventResolver implementation.
