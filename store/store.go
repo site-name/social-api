@@ -64,6 +64,7 @@ type Store interface {
 	UserAddress() UserAddressStore                                     //
 	CustomerEvent() CustomerEventStore                                 //
 	StaffNotificationRecipient() StaffNotificationRecipientStore       //
+	CustomerNote() CustomerNoteStore                                   //
 	System() SystemStore                                               // system
 	Job() JobStore                                                     // job
 	Session() SessionStore                                             // session
@@ -695,6 +696,9 @@ type (
 		Indexer
 		Save(*account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error)
 		Get(string) (*account.StaffNotificationRecipient, error)
+	}
+	CustomerNoteStore interface {
+		Indexer
 	}
 )
 

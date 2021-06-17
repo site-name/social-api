@@ -68,7 +68,7 @@ func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 		}
 		break
 	}
-
+	order.PopulateNonDbFields()
 	return order, nil
 }
 
@@ -81,7 +81,7 @@ func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
-
+	order.PopulateNonDbFields()
 	return &order, nil
 }
 
@@ -123,6 +123,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, count)
 	}
 
+	newOrder.PopulateNonDbFields()
 	return newOrder, nil
 }
 

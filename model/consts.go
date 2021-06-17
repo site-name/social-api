@@ -45,7 +45,8 @@ const (
 )
 
 const (
-	DEFAULT_LOCALE = "en" // this is default language also
+	DEFAULT_LOCALE  = "en" // this is default language also
+	DEFAULT_COUNTRY = "US"
 )
 
 var (

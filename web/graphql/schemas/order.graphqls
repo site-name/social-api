@@ -64,7 +64,8 @@ type Order implements Node & ObjectWithMetadata {
   undiscountedTotal: TaxedMoney!
   subtotal: TaxedMoney!
   statusDisplay: String
-  canFinalize: Boolean!
+  # canFinalize: Boolean! 
+  canFinalize(_: String): Boolean! 
   totalAuthorized: Money!
   totalCaptured: Money!
   events: [OrderEvent]

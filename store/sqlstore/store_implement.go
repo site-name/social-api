@@ -38,6 +38,7 @@ type SqlStoreStores struct {
 	userAddress                   store.UserAddressStore                   //
 	customerEvent                 store.CustomerEventStore                 //
 	staffNotificationRecipient    store.StaffNotificationRecipientStore    //
+	customerNote                  store.CustomerNoteStore                  //
 	audit                         store.AuditStore                         // common
 	cluster                       store.ClusterDiscoveryStore              //
 	session                       store.SessionStore                       //
@@ -132,6 +133,7 @@ func (store *SqlStore) setupTables() {
 	store.stores.userAddress = account.NewSqlUserAddressStore(store)
 	store.stores.customerEvent = account.NewSqlCustomerEventStore(store)
 	store.stores.staffNotificationRecipient = account.NewSqlStaffNotificationRecipientStore(store)
+	store.stores.customerNote = account.NewSqlCustomerNoteStore(store)
 	// general
 	store.stores.audit = audit.NewSqlAuditStore(store)
 	store.stores.cluster = cluster.NewSqlClusterDiscoveryStore(store)
@@ -245,6 +247,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.userAddress.CreateIndexesIfNotExists()
 	store.stores.customerEvent.CreateIndexesIfNotExists()
 	store.stores.staffNotificationRecipient.CreateIndexesIfNotExists()
+	store.stores.customerNote.CreateIndexesIfNotExists()
 	// common
 	store.stores.audit.CreateIndexesIfNotExists()
 	store.stores.session.CreateIndexesIfNotExists()
@@ -369,6 +372,9 @@ func (ss *SqlStore) CustomerEvent() store.CustomerEventStore {
 }
 func (ss *SqlStore) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return ss.stores.staffNotificationRecipient
+}
+func (ss *SqlStore) CustomerNote() store.CustomerNoteStore {
+	return ss.stores.customerNote
 }
 
 // app

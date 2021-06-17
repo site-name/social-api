@@ -61,6 +61,8 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(account.User{}, userTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("DefaultShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("DefaultBillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Username").SetMaxSize(model.USER_NAME_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Password").SetMaxSize(account.USER_HASH_PASSWORD_MAX_LENGTH)
 		table.ColMap("AuthData").SetMaxSize(account.USER_AUTH_DATA_MAX_LENGTH).SetUnique(true)
@@ -87,9 +89,6 @@ func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 
 func (us *SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateIndexIfNotExists("idx_users_email", userTableName, "Email")
-	us.CreateIndexIfNotExists("idx_users_update_at", userTableName, "UpdateAt")
-	us.CreateIndexIfNotExists("idx_users_create_at", userTableName, "CreateAt")
-	us.CreateIndexIfNotExists("idx_users_delete_at", userTableName, "DeleteAt")
 	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", userTableName, "lower(Email) text_pattern_ops")
 	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", userTableName, "lower(Username) text_pattern_ops")
 	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", userTableName, "lower(Nickname) text_pattern_ops")
@@ -100,6 +99,8 @@ func (us *SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", userTableName, strings.Join(UserSearchTypeNames, ", "))
 	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", userTableName, strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
 
+	us.CreateForeignKeyIfNotExists(userTableName, "DefaultShippingAddressID", "Addresses", "Id", false)
+	us.CreateForeignKeyIfNotExists(userTableName, "DefaultBillingAddressID", "Addresses", "Id", false)
 	// create indexes for metadata
 	us.CommonMetaDataIndex(userTableName)
 }

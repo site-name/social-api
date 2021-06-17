@@ -62,7 +62,7 @@ func (as *SqlAddressStore) Save(address *account.Address) (*account.Address, err
 }
 
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
-	var address = account.Address{}
+	var address account.Address
 	err := as.GetReplica().SelectOne(&address, "SELECT * FROM "+addressTableName+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
 	if err != nil {
 		if err == sql.ErrNoRows {

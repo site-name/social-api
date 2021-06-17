@@ -8,6 +8,8 @@ import (
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/modules/measurement"
+	// "github.com/sitename/sitename/modules/util"
 )
 
 // OrderLine represents data format will be returned to end user
@@ -130,7 +132,7 @@ type Order struct {
 	UndiscountedTotal          *TaxedMoney             `json:"undiscountedTotal"`
 	Subtotal                   *TaxedMoney             `json:"subtotal"`
 	StatusDisplay              *string                 `json:"statusDisplay"`
-	CanFinalize                bool                    `json:"canFinalize"`
+	CanFinalize                func(_ string) bool     `json:"canFinalize"`
 	TotalAuthorized            *Money                  `json:"totalAuthorized"`
 	TotalCaptured              *Money                  `json:"totalCaptured"`
 	EventIDs                   []string                `json:"events"` // []*OrderEvent
@@ -145,65 +147,68 @@ func (Order) IsNode()               {}
 func (Order) IsObjectWithMetadata() {}
 
 // DatabaseOrderToGraphqlOrder converts 1 database order to 1 graphql order model
-func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
+// func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
 
-	shippingTaxRate, _ := o.ShippingTaxRate.Float64()
+// 	shippingTaxRate, _ := o.ShippingTaxRate.Float64()
 
-	canFinalize := true
-	if o.Status == order.DRAFT {
+// 	canFinalize := true
+// 	if o.Status == order.DRAFT {
 
+// 	}
+
+// 	return &Order{
+// 		ID                         : o.Id,
+// 		Created                    : util.TimeFromMillis(o.CreateAt),
+// 		Status                     : OrderStatus(strings.ToUpper(o.Status)),
+// 		UserID                     : o.UserID,
+// 		TrackingClientID           : o.TrackingClientID,
+// 		BillingAddressID           : o.BillingAddressID,
+// 		ShippingAddressID          : o.ShippingAddressID,
+// 		ShippingMethodID           : o.ShippingMethodID,
+// 		ShippingMethodName         : o.ShippingMethodName,
+// 		ChannelID                  : o.ChannelID,
+// 		ShippingPrice              : o.ShippingPrice,
+// 		ShippingTaxRate            : shippingTaxRate,
+// 		Token                      : o.Token,
+// 		VoucherID                  : o.VoucherID,
+// 		// GiftCardIDs                : o.GiftCards,
+// 		DisplayGrossPrices         : *o.DisplayGrossPrices,
+// 		CustomerNote               : o.CustomerNote,
+// 		Weight                     : SystemWeightToGraphqlWeight(o.Weight),
+// 		RedirectURL                : o.RedirectUrl,
+// 		PrivateMetadata            : MapToGraphqlMetaDataItems(o.PrivateMetadata),
+// 		Metadata                   : MapToGraphqlMetaDataItems(o.Metadata),
+// 		FulfillmentIDs             : nil,
+// 		LineIDs                    : []string{},
+// 		Actions                    : nil,
+// 		AvailableShippingMethodIDs : []string{},
+// 		InvoiceIDs                 : nil,
+// 		Number                     : &o.Id,
+// 		Original                   : o.OriginalID,
+// 		Origin                     : OrderOriginEnum(strings.ToUpper(o.Origin)),
+// 		IsPaid                     : o.IsFullyPaid(),
+// 		PaymentStatus              : PaymentChargeStatusEnumCancelled,
+// 		// PaymentStatusDisplay       : ,
+// 		PaymentIDs                 : []string{},
+// 		Total                      : o.Total,
+// 		UndiscountedTotal          : NormalTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
+// 		// Subtotal                   : NormalTaxedMoneyToGraphqlTaxedMoney(o.),
+// 		// StatusDisplay              : o.,
+// 		CanFinalize                : ,
+// 		TotalAuthorized            : ,
+// 		TotalCaptured              : ,
+// 		EventIDs                   : ,
+// 		TotalBalance               : ,
+// 		UserEmail                  : ,
+// 		IsShippingRequired         : ,
+// 		LanguageCodeEnum           : ,
+// 		DiscountIDs                : ,
+// 	}
+// }
+
+func SystemWeightToGraphqlWeight(w *measurement.Weight) *Weight {
+	return &Weight{
+		Value: float64(w.Amount),
+		Unit:  WeightUnitsEnum(strings.ToUpper(string(w.Unit))),
 	}
-
-	return &Order{
-		// ID                         : o.Id,
-		// Created                    : o.CreateAt,
-		// Status                     : OrderStatus(strings.ToUpper(o.Status)),
-		// UserID                       : o.UserID,
-		// TrackingClientID           : o.TrackingClientID,
-		// BillingAddressID           : o.BillingAddressID,
-		// ShippingAddressID          : o.ShippingAddressID,
-		// ShippingMethodID           : o.ShippingMethodID,
-		// ShippingMethodName         : o.ShippingMethodName,
-		// ChannelID                  : o.ChannelID,
-		// ShippingPrice              : o.ShippingPrice,
-		// ShippingTaxRate            : shippingTaxRate,
-		// Token                      : o.Token,
-		// VoucherID                  : o.VoucherID,
-		// // GiftCardIDs                : o.GiftCards,
-		// DisplayGrossPrices         : *o.DisplayGrossPrices,
-		// CustomerNote               : o.CustomerNote,
-		// Weight                     : o.Weight,
-		// RedirectURL                : o.RedirectUrl,
-		// PrivateMetadata            : MapToGraphqlMetaDataItems(o.PrivateMetadata),
-		// Metadata                   : MapToGraphqlMetaDataItems(o.Metadata),
-		// FulfillmentIDs             : nil,
-		// LineIDs                    : []string{},
-		// Actions                    : nil,
-		// AvailableShippingMethodIDs : []string{},
-		// InvoiceIDs                 : nil,
-		// Number                     : &o.Id,
-		// Original                   : o.OriginalID,
-		// Origin                     : OrderOriginEnum(strings.ToUpper(o.Origin)),
-		// IsPaid                     : o.IsFullyPaid(),
-		// PaymentStatus              : PaymentChargeStatusEnumCancelled,
-		// // PaymentStatusDisplay       : ,
-		// PaymentIDs                 : []string{},
-		// Total                      : o.Total,
-		// UndiscountedTotal          : NormalTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
-		// // Subtotal                   : NormalTaxedMoneyToGraphqlTaxedMoney(o.),
-		// // StatusDisplay              : o.,
-		// CanFinalize                : ,
-		// TotalAuthorized            : ,
-		// TotalCaptured              : ,
-		// EventIDs                   : ,
-		// TotalBalance               : ,
-		// UserEmail                  : ,
-		// IsShippingRequired         : ,
-		// LanguageCodeEnum           : ,
-		// DiscountIDs                : ,
-	}
-}
-
-func SystemWeightToGraphqlWeight() *Weight {
-
 }

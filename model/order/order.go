@@ -3,6 +3,7 @@ package order
 import (
 	"io"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
@@ -60,6 +61,10 @@ var OrderOriginStrings = map[string]string{
 	REISSUE:  "Reissue",
 }
 
+var (
+	lock sync.Mutex
+)
+
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"`           // NOT editable
@@ -103,7 +108,45 @@ type Order struct {
 	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`
 	Weight                       *measurement.Weight    `json:"weight" db:"-"`
 	RedirectUrl                  *string                `json:"redirect_url"`
+	populatedNonDbFields         bool                   `json:"-" db:"-"` // this field check if order's non db fields are populated
 	model.ModelMetadata
+}
+
+// PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
+func (o *Order) PopulateNonDbFields() {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if o.populatedNonDbFields {
+		return
+	}
+	// errors can be ignored since they are about invalid currencies,
+	// and order's Currency was checked before saving into database
+	o.ShippingPriceNet, _ = goprices.NewMoney(o.ShippingPriceNetAmount, o.Currency)
+	o.ShippingPriceGross, _ = goprices.NewMoney(o.ShippingPriceGrossAmount, o.Currency)
+	o.ShippingPrice, _ = goprices.NewTaxedMoney(o.ShippingPriceNet, o.ShippingPriceGross)
+	o.TotalNet, _ = goprices.NewMoney(o.TotalNetAmount, o.Currency)
+	o.UnDiscountedTotalNet, _ = goprices.NewMoney(o.UnDiscountedTotalNetAmount, o.Currency)
+	o.TotalGross, _ = goprices.NewMoney(o.TotalGrossAmount, o.Currency)
+	o.UnDiscountedTotalGross, _ = goprices.NewMoney(o.UnDiscountedTotalGrossAmount, o.Currency)
+	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)
+	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross)
+	o.TotalPaid, _ = goprices.NewMoney(o.TotalPaidAmount, o.Currency)
+	o.Weight = &measurement.Weight{
+		Amount: o.WeightAmount,
+		Unit:   o.WeightUnit,
+	}
+
+	o.populatedNonDbFields = true
+}
+
+// Orders is slice contains order(s)
+type Orders []*Order
+
+func (os Orders) PopulateNonDbFields() {
+	for _, o := range os {
+		o.PopulateNonDbFields()
+	}
 }
 
 func (o *Order) IsValid() *model.AppError {
@@ -174,75 +217,7 @@ func (o *Order) IsValid() *model.AppError {
 }
 
 func (o *Order) ToJson() string {
-	if o.ShippingPriceNet == nil {
-		o.ShippingPriceNet = &goprices.Money{
-			Amount:   o.ShippingPriceNetAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.ShippingPriceGross == nil {
-		o.ShippingPriceGross = &goprices.Money{
-			Amount:   o.ShippingPriceGrossAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.ShippingPrice == nil {
-		o.ShippingPrice = &goprices.TaxedMoney{
-			Net:      o.ShippingPriceNet,
-			Gross:    o.ShippingPriceGross,
-			Currency: o.Currency,
-		}
-	}
-	if o.TotalNet == nil {
-		o.TotalNet = &goprices.Money{
-			Amount:   o.TotalNetAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.UnDiscountedTotalNet == nil {
-		o.UnDiscountedTotalNet = &goprices.Money{
-			Amount:   o.UnDiscountedTotalNetAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.TotalGross == nil {
-		o.TotalGross = &goprices.Money{
-			Amount:   o.TotalGrossAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.UnDiscountedTotalGross == nil {
-		o.UnDiscountedTotalGross = &goprices.Money{
-			Amount:   o.UnDiscountedTotalGrossAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.TotalPaid == nil {
-		o.TotalPaid = &goprices.Money{
-			Amount:   o.TotalPaidAmount,
-			Currency: o.Currency,
-		}
-	}
-	if o.Total == nil {
-		o.Total = &goprices.TaxedMoney{
-			Net:      o.UnDiscountedTotalNet,
-			Gross:    o.UnDiscountedTotalGross,
-			Currency: o.Currency,
-		}
-	}
-	if o.UnDiscountedTotal == nil {
-		o.UnDiscountedTotal = &goprices.TaxedMoney{
-			Net:      o.UnDiscountedTotalNet,
-			Gross:    o.UnDiscountedTotalGross,
-			Currency: o.Currency,
-		}
-	}
-	if o.Weight == nil {
-		o.Weight = &measurement.Weight{
-			Amount: o.WeightAmount,
-			Unit:   o.WeightUnit,
-		}
-	}
+	o.PopulateNonDbFields()
 
 	return model.ModelToJson(o)
 }

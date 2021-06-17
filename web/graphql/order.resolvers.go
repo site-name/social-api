@@ -76,6 +76,10 @@ func (r *mutationResolver) OrderBulkCancel(ctx context.Context, ids []*string) (
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *orderResolver) User(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *orderResolver) BillingAddress(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.Address, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -118,6 +122,14 @@ func (r *orderResolver) Invoices(ctx context.Context, obj *gqlmodel.Order) ([]*g
 
 func (r *orderResolver) Payments(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.Payment, error) {
 	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) CanFinalize(ctx context.Context, obj *gqlmodel.Order, _ *string) (bool, error) {
+	// if obj.Status == gqlmodel.OrderStatusDraft {
+	// 	countryCode, appErr := r.GetOrderCountryCode()
+	// }
+	// return true, nil
+	panic("not implt")
 }
 
 func (r *orderResolver) Events(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.OrderEvent, error) {

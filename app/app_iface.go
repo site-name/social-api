@@ -151,6 +151,8 @@ type AppIface interface {
 	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
 	// GetLastPaymentTransaction return most recent transaction made for given payment
 	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
+	// GetOrderCountryCode is helper function, returns contry code of given order
+	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur

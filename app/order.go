@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -300,4 +301,34 @@ func (a *App) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.Ap
 		return nil, model.NewAppError("OrderTotalAuthorized", "app.order.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return zeroMoney, nil
+}
+
+// GetOrderCountryCode is helper function, returns contry code of given order
+func (a *App) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
+	addressID := ord.BillingAddressID
+	requireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
+	if appErr != nil {
+		return "", appErr
+	}
+
+	if requireShipping {
+		addressID = ord.ShippingAddressID
+	}
+	if addressID == nil {
+		return *a.Config().LocalizationSettings.DefaultCountryCode, nil
+	}
+
+	address, err := a.srv.Store.Address().Get(*addressID)
+	if err != nil {
+		var errNf *store.ErrNotFound
+		var statusCode int
+		if errors.As(err, &errNf) {
+			statusCode = http.StatusNotFound
+		} else {
+			statusCode = http.StatusInternalServerError
+		}
+		return "", model.NewAppError("GetOrderCountryCode", "app.order.get_address.app_error", nil, errNf.Error(), statusCode)
+	}
+
+	return address.Country, nil
 }
