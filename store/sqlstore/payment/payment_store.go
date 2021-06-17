@@ -27,8 +27,7 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 		table.ColMap("CheckoutID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("GateWay").SetMaxSize(payment.MAX_LENGTH_PAYMENT_GATEWAY)
-		table.ColMap("ChargeStatus").SetMaxSize(payment.MAX_LENGTH_PAYMENT_CHARGE_STATUS).
-			SetDefaultConstraint(model.NewString(payment.NOT_CHARGED))
+		table.ColMap("ChargeStatus").SetMaxSize(payment.MAX_LENGTH_PAYMENT_CHARGE_STATUS)
 		table.ColMap("Token").SetMaxSize(payment.MAX_LENGTH_PAYMENT_TOKEN)
 		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 		table.ColMap("BillingEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
@@ -55,21 +54,13 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 }
 
 func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
-	// NOTE: need more investigation in the future
-	ps.CreateIndexIfNotExists("idx_payments_billing_email", paymentTableName, "BillingEmail")
-	ps.CreateIndexIfNotExists("idx_payments_billing_first_name", paymentTableName, "BillingFirstName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_last_name", paymentTableName, "BillingLastName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_company_name", paymentTableName, "BillingCompanyName")
-	ps.CreateIndexIfNotExists("idx_payments_billing_address_1", paymentTableName, "BillingAddress1")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city", paymentTableName, "BillingCity")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city_area", paymentTableName, "BillingCityArea")
-
-	ps.CreateIndexIfNotExists("idx_payments_billing_email_lower_textpattern", paymentTableName, "lower(BillingEmail) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_first_name_lower_textpattern", paymentTableName, "lower(BillingFirstName) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_last_name_lower_textpattern", paymentTableName, "lower(BillingLastName) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_payments_billing_city_area_lower_textpattern", paymentTableName, "lower(BillingCityArea) text_pattern_ops")
-
+	ps.CreateIndexIfNotExists("idx_payments_order_id", paymentTableName, "OrderID")
+	ps.CreateIndexIfNotExists("idx_payments_is_active", paymentTableName, "IsActive")
+	ps.CreateIndexIfNotExists("idx_payments_charge_status", paymentTableName, "ChargeStatus")
 	ps.CreateIndexIfNotExists("idx_payments_psp_reference", paymentTableName, "PspReference")
+
+	ps.CreateForeignKeyIfNotExists(paymentTableName, "OrderID", "Orders", "Id", false)
+	ps.CreateForeignKeyIfNotExists(paymentTableName, "CheckoutID", "Checkouts", "Id", false)
 }
 
 func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
@@ -112,28 +103,32 @@ func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Paym
 
 func (ps *SqlPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) {
 	query := `SELECT *
-		FROM
-			Payments AS P
-		INNER JOIN
-			Transactions AS T
-		ON (
-			P.Id = T.PaymentID
-		)
-		WHERE (
-			P.OrderId = :orderId
-			AND P.IsActive = :isActive
-			AND T.Kind = :kind
-			AND T.ActionRequired = :actionRequired
-			AND T.IsSuccess = :isSuccess
-		)`
+	FROM
+		Payments AS P
+	INNER JOIN
+		Transactions AS T
+	ON (
+		P.Id = T.PaymentID
+	)
+	WHERE (
+		P.OrderId = :orderId
+		AND P.IsActive = :isActive
+		AND T.Kind = :kind
+		AND T.ActionRequired = :actionRequired
+		AND T.IsSuccess = :isSuccess
+	)`
 	var payments []*payment.Payment
-	_, err = ps.GetReplica().Select(&payments, query, map[string]interface{}{
-		"orderId":        opts.OrderID,
-		"isActive":       opts.IsActive,
-		"kind":           opts.Kind,
-		"actionRequired": opts.ActionRequired,
-		"isSuccess":      opts.IsSuccess,
-	})
+	_, err = ps.GetReplica().Select(
+		&payments,
+		query,
+		map[string]interface{}{
+			"orderId":        opts.OrderID,
+			"isActive":       opts.IsActive,
+			"kind":           opts.Kind,
+			"actionRequired": opts.ActionRequired,
+			"isSuccess":      opts.IsSuccess,
+		},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// not found means does not exist

@@ -114,6 +114,7 @@ func (p *Payment) GetChargeAmount() decimal.Decimal {
 	return res
 }
 
+// IsNotCharged checks if payment's char status is "not-charged"
 func (p *Payment) IsNotCharged() bool {
 	return p.ChargeStatus == NOT_CHARGED
 }
@@ -130,21 +131,6 @@ func (p *Payment) CanCapture() bool {
 
 	return true
 }
-
-// func (p *Payment) IsAuthorized() bool {
-// 	for _, tx := range p.Transactions {
-// 		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
-// CanVoid checks if current payment is active and not charged and is authorized
-// func (p *Payment) CanVoid() bool {
-// 	return p.IsActive && p.IsNotCharged() && p.IsAuthorized()
-// }
 
 func (p *Payment) CanRefund() bool {
 	canRefundChargeStatuses := []string{
@@ -171,50 +157,12 @@ func (p *Payment) GetTotal() *goprices.Money {
 	}
 }
 
-// get most recent transaction by comparing their created time
-// func (p *Payment) GetLastTransaction() *PaymentTransaction {
-// 	var maxTime int64 = 0
-// 	var tran *PaymentTransaction
-
-// 	for _, tx := range p.Transactions {
-// 		if tx.CreateAt > maxTime {
-// 			maxTime = tx.CreateAt
-// 			tran = tx
-// 		}
-// 	}
-
-// 	return tran
-// }
-
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{
 		Amount:   p.CapturedAmount,
 		Currency: p.Currency,
 	}
 }
-
-// GetAuthorizedAmount
-// func (p *Payment) GetAuthorizedAmount() *goprices.Money {
-// 	money := &goprices.Money{
-// 		Amount:   &decimal.Zero,
-// 		Currency: p.Currency,
-// 	}
-
-// 	for _, tx := range p.Transactions {
-// 		if tx.Kind == CAPTURE && tx.IsSuccess {
-// 			return money
-// 		}
-// 	}
-
-// 	for _, tx := range p.Transactions {
-// 		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
-// 			addedAmount := money.Amount.Add(*tx.Amount)
-// 			money.Amount = &addedAmount
-// 		}
-// 	}
-
-// 	return money
-// }
 
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *model.AppError {

@@ -106,7 +106,7 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
 		return outer("token", &p.Id)
 	}
-	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH || TransactionKindString[strings.ToLower(p.Kind)] == "" {
+	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH {
 		return outer("kind", &p.Id)
 	}
 	if p.Error != nil && utf8.RuneCountInString(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {

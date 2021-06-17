@@ -73,7 +73,7 @@ func (a *App) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
 
 // PaymentGetAuthorizedAmount
 func (a *App) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError) {
-	zeroMoney, err := util.ZeroMoney(pm.Currency)
+	authorizedMoney, err := util.ZeroMoney(pm.Currency)
 	if err != nil {
 		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -82,26 +82,33 @@ func (a *App) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, 
 		return nil, appErr
 	}
 
-	if !strings.EqualFold(pm.Currency, trans[0].Currency) {
-		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.payment_transactions_currency_integrity.app_error", nil, "payment and its transactions must have same money currencies", http.StatusInternalServerError)
+	// check if payment's Currency is same as transactions's currencies
+	for _, tran := range trans {
+		if !strings.EqualFold(tran.Currency, pm.Currency) {
+			return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.payment_transactions_currency_integrity.app_error", nil, "payment and its transactions must have same money currencies", http.StatusInternalServerError)
+		}
 	}
 
+	// There is no authorized amount anymore when capture is succeeded
+	// since capture can only be made once, even it is a partial capture
 	for _, tran := range trans {
 		if tran.Kind == payment.CAPTURE && tran.IsSuccess {
-			return zeroMoney, nil
+			return authorizedMoney, nil
 		}
 	}
 
+	// Filter the succeeded auth transactions
 	for _, tran := range trans {
 		if tran.Kind == payment.AUTH && tran.IsSuccess && !tran.ActionRequired {
-			zeroMoney, err = zeroMoney.Add(&goprices.Money{Amount: tran.Amount, Currency: tran.Currency})
-			if err != nil {
-				return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.add_money.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
+			// resulting error can be ignored here:
+			authorizedMoney, _ = authorizedMoney.Add(&goprices.Money{
+				Amount:   tran.Amount,
+				Currency: tran.Currency,
+			})
 		}
 	}
 
-	return zeroMoney, nil
+	return authorizedMoney, nil
 }
 
 // PaymentCanVoid

@@ -247,9 +247,10 @@ func (a *App) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *m
 	return a.PaymentCanVoid(payment)
 }
 
+// OrderCanRefund checks if order can refund
 func (a *App) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
-	if payments == nil || len(payments) == 0 {
+	if len(payments) == 0 {
 		payments, appErr = a.GetAllPaymentsByOrderId(ord.Id)
 	}
 
@@ -266,9 +267,10 @@ func (a *App) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (boo
 	return len(payments) == 0, nil
 }
 
+// CanMarkOrderAsPaid checks if given order can be marked as paid.
 func (a *App) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
-	if payments == nil || len(payments) == 0 {
+	if len(payments) == 0 {
 		payments, appErr = a.GetAllPaymentsByOrderId(ord.Id)
 	}
 
@@ -283,6 +285,7 @@ func (a *App) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) 
 	return len(payments) == 0, nil
 }
 
+// OrderTotalAuthorized returns order's total authorized amount
 func (a *App) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
 	lastPayment, appErr := a.GetLastOrderPayment(ord.Id)
 	if appErr != nil {
@@ -294,7 +297,7 @@ func (a *App) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.Ap
 
 	zeroMoney, err := util.ZeroMoney(ord.Currency)
 	if err != nil {
-		return nil, model.NewAppError("OrderTotalAuthorized", "app.order.get_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("OrderTotalAuthorized", "app.order.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return zeroMoney, nil
 }

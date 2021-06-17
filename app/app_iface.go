@@ -43,6 +43,8 @@ type AppIface interface {
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
+	// CanMarkOrderAsPaid checks if given order can be marked as paid.
+	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
@@ -208,6 +210,8 @@ type AppIface interface {
 	OrderCanCancel(ord *order.Order) (bool, *model.AppError)
 	// OrderCanCapture
 	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	// OrderCanRefund checks if order can refund
+	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
 	// OrderCanVoid
 	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
 	// OrderIsCaptured checks if given order is captured
@@ -218,6 +222,8 @@ type AppIface interface {
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
 	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError)
+	// OrderTotalAuthorized returns order's total authorized amount
+	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
 	// OrderTotalQuantity return total quantity of given order
 	OrderTotalQuantity(orderID string) (int, *model.AppError)
 	// PaymentCanVoid
@@ -305,7 +311,6 @@ type AppIface interface {
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
@@ -373,8 +378,6 @@ type AppIface interface {
 	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
-	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
 	OriginChecker() func(*http.Request) bool
 	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
 	PostActionCookieSecret() []byte
