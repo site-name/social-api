@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"time"
 
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -127,6 +128,8 @@ type AppIface interface {
 	FileSize(path string) (int64, *model.AppError)
 	// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
 	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError)
+	// GetAllPaymentTransactions returns all transactions belong to given payment
+	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
 	// GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
 	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)
 	// GetChannelBySlug get a channel from database with given slug
@@ -144,6 +147,8 @@ type AppIface interface {
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetLastOrderPayment get most recent payment made for given order
 	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
+	// GetLastPaymentTransaction return most recent transaction made for given payment
+	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -199,10 +204,28 @@ type AppIface interface {
 	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
+	// OrderCanCalcel checks if given order can be canceled
+	OrderCanCancel(ord *order.Order) (bool, *model.AppError)
+	// OrderCanCapture
+	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	// OrderCanVoid
+	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	// OrderIsCaptured checks if given order is captured
+	OrderIsCaptured(orderID string) (bool, *model.AppError)
+	// OrderIsPreAuthorized checks if order is pre-authorized
+	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)
 	// OrderShippingIsRequired checks if an order requires ship or not
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
+	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
+	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError)
 	// OrderTotalQuantity return total quantity of given order
 	OrderTotalQuantity(orderID string) (int, *model.AppError)
+	// PaymentCanVoid
+	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
+	// PaymentGetAuthorizedAmount
+	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
+	// PaymentIsAuthorized checks if given payment is authorized
+	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
 	// PermanentDeleteAllUsers permanently deletes all user in system
 	PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	// PermanentDeleteUser performs:
@@ -256,6 +279,8 @@ type AppIface interface {
 	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
+	// UpdateOrderTotalPaid update given order's total paid amount
+	UpdateOrderTotalPaid(orderID string) *model.AppError
 	// UpdateUserRolesWithUser performs:
 	//
 	// 1) checks if there is at least one role model has name contained in given newRoles
@@ -280,6 +305,7 @@ type AppIface interface {
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
+	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
@@ -347,6 +373,8 @@ type AppIface interface {
 	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
+	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
+	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
 	OriginChecker() func(*http.Request) bool
 	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
 	PostActionCookieSecret() []byte

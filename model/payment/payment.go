@@ -62,41 +62,40 @@ var ChargeStatuString = map[string]string{
 
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string                `json:"id"`
-	GateWay            string                `json:"gate_way"`
-	IsActive           bool                  `json:"is_active"`
-	ToConfirm          bool                  `json:"to_confirm"`
-	CreateAt           int64                 `json:"create_at"`
-	UpdateAt           int64                 `json:"update_at"`
-	ChargeStatus       string                `json:"charge_status"`
-	Token              string                `json:"token"`
-	Total              *decimal.Decimal      `json:"total"`
-	CapturedAmount     *decimal.Decimal      `json:"captured_amount"`
-	Currency           string                `json:"currency"`
-	CheckoutID         string                `json:"checkout_id"`
-	OrderID            string                `json:"order_id"`
-	BillingEmail       string                `json:"billing_email"`
-	BillingFirstName   string                `json:"billing_first_name"`
-	BillingLastName    string                `json:"billing_last_name"`
-	BillingCompanyName string                `json:"billing_company_name"`
-	BillingAddress1    string                `json:"billing_address_1"`
-	BillingAddress2    string                `json:"billing_address_2"`
-	BillingCity        string                `json:"billing_city"`
-	BillingCityArea    string                `json:"billing_city_area"`
-	BillingPostalCode  string                `json:"billing_postal_code"`
-	BillingCountryCode string                `json:"billing_country_code"`
-	BillingCountryArea string                `json:"billing_country_area"`
-	CcFirstDigits      string                `json:"cc_first_digits"`
-	CcLastDigits       string                `json:"cc_last_digits"`
-	CcBrand            string                `json:"cc_brand"`
-	CcExpMonth         *uint8                `json:"cc_exp_month"`
-	CcExpYear          *uint16               `json:"cc_exp_year"`
-	PaymentMethodType  string                `json:"payment_method_type"`
-	CustomerIpAddress  *string               `json:"customer_ip_address"`
-	ExtraData          string                `json:"extra_data"`
-	ReturnUrl          *string               `json:"return_url_url"`
-	Transactions       []*PaymentTransaction `json:"transactions" db:"-"`
-	PspReference       *string               `json:"psp_reference"` // db index
+	Id                 string           `json:"id"`
+	GateWay            string           `json:"gate_way"`
+	IsActive           bool             `json:"is_active"`
+	ToConfirm          bool             `json:"to_confirm"`
+	CreateAt           int64            `json:"create_at"`
+	UpdateAt           int64            `json:"update_at"`
+	ChargeStatus       string           `json:"charge_status"`
+	Token              string           `json:"token"`
+	Total              *decimal.Decimal `json:"total"`
+	CapturedAmount     *decimal.Decimal `json:"captured_amount"`
+	Currency           string           `json:"currency"`
+	CheckoutID         string           `json:"checkout_id"`
+	OrderID            string           `json:"order_id"`
+	BillingEmail       string           `json:"billing_email"`
+	BillingFirstName   string           `json:"billing_first_name"`
+	BillingLastName    string           `json:"billing_last_name"`
+	BillingCompanyName string           `json:"billing_company_name"`
+	BillingAddress1    string           `json:"billing_address_1"`
+	BillingAddress2    string           `json:"billing_address_2"`
+	BillingCity        string           `json:"billing_city"`
+	BillingCityArea    string           `json:"billing_city_area"`
+	BillingPostalCode  string           `json:"billing_postal_code"`
+	BillingCountryCode string           `json:"billing_country_code"`
+	BillingCountryArea string           `json:"billing_country_area"`
+	CcFirstDigits      string           `json:"cc_first_digits"`
+	CcLastDigits       string           `json:"cc_last_digits"`
+	CcBrand            string           `json:"cc_brand"`
+	CcExpMonth         *uint8           `json:"cc_exp_month"`
+	CcExpYear          *uint16          `json:"cc_exp_year"`
+	PaymentMethodType  string           `json:"payment_method_type"`
+	CustomerIpAddress  *string          `json:"customer_ip_address"`
+	ExtraData          string           `json:"extra_data"`
+	ReturnUrl          *string          `json:"return_url_url"`
+	PspReference       *string          `json:"psp_reference"` // db index
 }
 
 func (p *Payment) String() string {
@@ -123,6 +122,7 @@ func (p *Payment) CanAuthorize() bool {
 	return p.IsActive && p.IsNotCharged()
 }
 
+// CanCapture checks if payment is not active and is not charged => false, else => true.
 func (p *Payment) CanCapture() bool {
 	if !p.IsActive && !p.IsNotCharged() {
 		return false
@@ -131,19 +131,20 @@ func (p *Payment) CanCapture() bool {
 	return true
 }
 
-func (p *Payment) IsAuthorized() bool {
-	for _, tx := range p.Transactions {
-		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
-			return true
-		}
-	}
+// func (p *Payment) IsAuthorized() bool {
+// 	for _, tx := range p.Transactions {
+// 		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
-func (p *Payment) CanVoid() bool {
-	return p.IsActive && p.IsNotCharged() && p.IsAuthorized()
-}
+// CanVoid checks if current payment is active and not charged and is authorized
+// func (p *Payment) CanVoid() bool {
+// 	return p.IsActive && p.IsNotCharged() && p.IsAuthorized()
+// }
 
 func (p *Payment) CanRefund() bool {
 	canRefundChargeStatuses := []string{
@@ -171,19 +172,19 @@ func (p *Payment) GetTotal() *goprices.Money {
 }
 
 // get most recent transaction by comparing their created time
-func (p *Payment) GetLastTransaction() *PaymentTransaction {
-	var maxTime int64 = 0
-	var tran *PaymentTransaction
+// func (p *Payment) GetLastTransaction() *PaymentTransaction {
+// 	var maxTime int64 = 0
+// 	var tran *PaymentTransaction
 
-	for _, tx := range p.Transactions {
-		if tx.CreateAt > maxTime {
-			maxTime = tx.CreateAt
-			tran = tx
-		}
-	}
+// 	for _, tx := range p.Transactions {
+// 		if tx.CreateAt > maxTime {
+// 			maxTime = tx.CreateAt
+// 			tran = tx
+// 		}
+// 	}
 
-	return tran
-}
+// 	return tran
+// }
 
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{
@@ -192,27 +193,28 @@ func (p *Payment) GetCapturedAmount() *goprices.Money {
 	}
 }
 
-func (p *Payment) GetAuthorizedAmount() *goprices.Money {
-	money := &goprices.Money{
-		Amount:   &decimal.Zero,
-		Currency: p.Currency,
-	}
+// GetAuthorizedAmount
+// func (p *Payment) GetAuthorizedAmount() *goprices.Money {
+// 	money := &goprices.Money{
+// 		Amount:   &decimal.Zero,
+// 		Currency: p.Currency,
+// 	}
 
-	for _, tx := range p.Transactions {
-		if tx.Kind == CAPTURE && tx.IsSuccess {
-			return money
-		}
-	}
+// 	for _, tx := range p.Transactions {
+// 		if tx.Kind == CAPTURE && tx.IsSuccess {
+// 			return money
+// 		}
+// 	}
 
-	for _, tx := range p.Transactions {
-		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
-			addedAmount := money.Amount.Add(*tx.Amount)
-			money.Amount = &addedAmount
-		}
-	}
+// 	for _, tx := range p.Transactions {
+// 		if tx.Kind == AUTH && tx.IsSuccess && !tx.ActionRequired {
+// 			addedAmount := money.Amount.Add(*tx.Amount)
+// 			money.Amount = &addedAmount
+// 		}
+// 	}
 
-	return money
-}
+// 	return money
+// }
 
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *model.AppError {

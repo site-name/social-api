@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -355,12 +356,16 @@ type (
 type (
 	PaymentStore interface {
 		Indexer
-		Save(*payment.Payment) (*payment.Payment, error)                 // Save save payment instance into database
-		Get(string) (*payment.Payment, error)                            // Get returns a payment with given id
-		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) // GetPaymentsByOrderID returns all payments that belong to given order
+		Save(*payment.Payment) (*payment.Payment, error)                                        // Save save payment instance into database
+		Get(string) (*payment.Payment, error)                                                   // Get returns a payment with given id
+		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error)                        // GetPaymentsByOrderID returns all payments that belong to given order
+		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
 	}
 	PaymentTransactionStore interface {
 		Indexer
+		Save(*payment.PaymentTransaction) (*payment.PaymentTransaction, error)     // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                        // Get returns a payment transaction with given id
+		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
 	}
 )
 
@@ -377,28 +382,36 @@ type (
 	}
 )
 
-type OrderEventStore interface {
-	Indexer
-}
-
-type FulfillmentLineStore interface {
-	Indexer
-}
-
-type FulfillmentStore interface {
-	Indexer
-}
-
-type OrderLineStore interface {
-	Indexer
-	Save(*order.OrderLine) (*order.OrderLine, error)            // Save save given order line instance into database and returns it
-	Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
-	GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
-}
-
-type OrderStore interface {
-	Indexer
-}
+// order
+type (
+	OrderLineStore interface {
+		Indexer
+		Save(*order.OrderLine) (*order.OrderLine, error)            // Save save given order line instance into database and returns it
+		Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
+		GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
+	}
+	OrderStore interface {
+		Indexer
+		Save(*order.Order) (*order.Order, error)                             // Save insert an order into database and returns that order if success
+		Get(id string) (*order.Order, error)                                 // Get find order in database with given id
+		Update(order *order.Order) (*order.Order, error)                     // Update update order
+		UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error // updateTotalPaid update total paid amount of given order
+	}
+	OrderEventStore interface {
+		Indexer
+	}
+	FulfillmentLineStore interface {
+		Indexer
+		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
+		Get(id string) (*order.FulfillmentLine, error)
+	}
+	FulfillmentStore interface {
+		Indexer
+		Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error)
+		Get(id string) (*order.Fulfillment, error)
+		FilterByExcludeStatuses(orderID string, excludeStatuses []string) (exist bool, err error) // FilterByExcludeStatuses check if there is at least 1 fulfillment belong to given order and have status differnt than given statuses.
+	}
+)
 
 type MenuItemTranslationStore interface {
 	Indexer

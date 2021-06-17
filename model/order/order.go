@@ -24,25 +24,6 @@ const (
 	ORDER_CHECKOUT_TOKEN_MAX_LENGTH       = 36
 )
 
-// fulfillment statuses
-const (
-	FULFILLMENT_FULFILLED             = "fulfilled"             // group of products in an order marked as fulfilled
-	FULFILLMENT_REFUNDED              = "refunded"              // group of refunded products
-	FULFILLMENT_RETURNED              = "returned"              // group of returned products
-	FULFILLMENT_REFUNDED_AND_RETURNED = "refunded_and_returned" // group of returned and replaced products
-	FULFILLMENT_REPLACED              = "replaced"              // group of replaced products
-	FULFILLMENT_CANCELED              = "canceled"              // fulfilled group of products in an order marked as canceled
-)
-
-var FulfillmentStrings = map[string]string{
-	FULFILLMENT_FULFILLED:             "Fulfilled",
-	FULFILLMENT_REFUNDED:              "Refunded",
-	FULFILLMENT_RETURNED:              "Returned",
-	FULFILLMENT_REPLACED:              "Replaced",
-	FULFILLMENT_REFUNDED_AND_RETURNED: "Refunded and returned",
-	FULFILLMENT_CANCELED:              "Canceled",
-}
-
 // order origin valid values
 const (
 	CHECKOUT = "checkout" // order created from checkout
@@ -81,29 +62,29 @@ var OrderOriginStrings = map[string]string{
 
 type Order struct {
 	Id                           string                 `json:"id"`
-	CreateAt                     int64                  `json:"create_at"` // default: now()
-	Status                       string                 `json:"status"`    // default: UNFULFILLED
-	UserID                       *string                `json:"user_id"`   // default: en
-	LanguageCode                 string                 `json:"language_code"`
-	TrackingClientID             string                 `json:"tracking_client_id"`
-	BillingAddressID             *string                `json:"billing_address_id"`
-	ShippingAddressID            *string                `json:"shipping_address_id"`
-	UserEmail                    string                 `json:"user_email"`  // default: ""
-	OriginalID                   *string                `json:"original_id"` // original order
+	CreateAt                     int64                  `json:"create_at"`           // NOT editable
+	Status                       string                 `json:"status"`              // default: UNFULFILLED
+	UserID                       *string                `json:"user_id"`             // default: "en"
+	LanguageCode                 string                 `json:"language_code"`       //
+	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
+	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
+	ShippingAddressID            *string                `json:"shipping_address_id"` // NOT editable
+	UserEmail                    string                 `json:"user_email"`          //
+	OriginalID                   *string                `json:"original_id"`         // original order id
 	Origin                       string                 `json:"origin"`
 	Currency                     string                 `json:"currency"`
 	ShippingMethodID             *string                `json:"shipping_method_id"`
-	ShippingMethodName           *string                `json:"shipping_method_name"`
-	ChannelID                    string                 `json:"channel_id"`
-	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`
-	ShippingPriceNet             *goprices.Money        `json:"shipping_price_net" db:"-"`
-	ShippingPriceGrossAmount     *decimal.Decimal       `json:"shipping_price_gross_amount"`
+	ShippingMethodName           *string                `json:"shipping_method_name"`        // NOT editable
+	ChannelID                    string                 `json:"channel_id"`                  //
+	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`   // NOT editable
+	ShippingPriceNet             *goprices.Money        `json:"shipping_price_net" db:"-"`   //
+	ShippingPriceGrossAmount     *decimal.Decimal       `json:"shipping_price_gross_amount"` // NOT editable
 	ShippingPriceGross           *goprices.Money        `json:"shipping_price_gross" db:"-"`
 	ShippingPrice                *goprices.TaxedMoney   `json:"shipping_price" db:"-"`
 	ShippingTaxRate              *decimal.Decimal       `json:"shipping_tax_rate"` // default: Decimal(0)
 	Token                        string                 `json:"token"`             // unique
-	CheckoutToken                string                 `json:"checkout_token"`
-	TotalNetAmount               *decimal.Decimal       `json:"total_net_amount"` // default 0
+	CheckoutToken                string                 `json:"checkout_token"`    //
+	TotalNetAmount               *decimal.Decimal       `json:"total_net_amount"`  // default 0
 	UnDiscountedTotalNetAmount   *decimal.Decimal       `json:"undiscounted_total_net_amount"`
 	TotalNet                     *goprices.Money        `json:"total_net" db:"-"`
 	UnDiscountedTotalNet         *goprices.Money        `json:"undiscounted_total_net" db:"-"`
@@ -267,9 +248,9 @@ func (o *Order) ToJson() string {
 }
 
 func OrderFromJson(data io.Reader) *Order {
-	var o Order
+	var o *Order
 	model.ModelFromJson(&o, data)
-	return &o
+	return o
 }
 
 func (o *Order) PreSave() {
@@ -284,6 +265,9 @@ func (o *Order) PreSave() {
 	}
 	if o.LanguageCode == "" {
 		o.LanguageCode = model.DEFAULT_LOCALE
+	}
+	if o.Token == "" {
+		o.Token = model.NewId()
 	}
 	if o.ShippingPriceNetAmount == nil {
 		o.ShippingPriceNetAmount = &decimal.Zero
@@ -315,8 +299,10 @@ func (o *Order) PreSave() {
 	if o.ShippingMethodName != nil {
 		o.ShippingMethodName = model.NewString(model.SanitizeUnicode(*o.ShippingMethodName))
 	}
+	o.CustomerNote = model.SanitizeUnicode(o.CustomerNote)
 }
 
+// IsFullyPaid checks current order's total paid is greater than its total gross
 func (o *Order) IsFullyPaid() bool {
 	ok, err := o.Total.Gross.LessThanOrEqual(o.TotalPaid)
 	if err != nil {
@@ -327,7 +313,7 @@ func (o *Order) IsFullyPaid() bool {
 }
 
 func (o *Order) IsPartlyPaid() bool {
-	return decimal.Zero.LessThan(*o.TotalPaidAmount)
+	return o.TotalPaidAmount != nil && decimal.Zero.LessThan(*o.TotalPaidAmount)
 }
 
 func (o *Order) GetCustomerEmail() string {

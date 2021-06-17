@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 )
 
@@ -18,13 +19,34 @@ const (
 	FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH = 255
 )
 
+// fulfillment statuses
+const (
+	FULFILLMENT_FULFILLED             = "fulfilled"             // group of products in an order marked as fulfilled
+	FULFILLMENT_REFUNDED              = "refunded"              // group of refunded products
+	FULFILLMENT_RETURNED              = "returned"              // group of returned products
+	FULFILLMENT_REFUNDED_AND_RETURNED = "refunded_and_returned" // group of returned and replaced products
+	FULFILLMENT_REPLACED              = "replaced"              // group of replaced products
+	FULFILLMENT_CANCELED              = "canceled"              // fulfilled group of products in an order marked as canceled
+)
+
+var FulfillmentStrings = map[string]string{
+	FULFILLMENT_FULFILLED:             "Fulfilled",
+	FULFILLMENT_REFUNDED:              "Refunded",
+	FULFILLMENT_RETURNED:              "Returned",
+	FULFILLMENT_REPLACED:              "Replaced",
+	FULFILLMENT_REFUNDED_AND_RETURNED: "Refunded and returned",
+	FULFILLMENT_CANCELED:              "Canceled",
+}
+
 type Fulfillment struct {
-	Id               string `json:"id"`
-	FulfillmentOrder uint   `json:"fulfillment_order"`
-	OrderID          string `json:"order_id"`
-	Status           string `json:"status"`
-	TrackingNumber   string `json:"tracking_numdber"`
-	CreateAt         int64  `json:"create_at"`
+	Id                   string           `json:"id"`
+	FulfillmentOrder     uint             `json:"fulfillment_order"`
+	OrderID              string           `json:"order_id"`
+	Status               string           `json:"status"`
+	TrackingNumber       string           `json:"tracking_numdber"`
+	CreateAt             int64            `json:"create_at"`
+	ShippingRefundAmount *decimal.Decimal `json:"shipping_refund_amount"`
+	TotalRefundAmount    *decimal.Decimal `json:"total_refund_amount"`
 	model.ModelMetadata
 }
 

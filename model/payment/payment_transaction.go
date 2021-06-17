@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -11,27 +12,26 @@ import (
 	"golang.org/x/text/currency"
 )
 
-// default choices for payment transaction kind
 const (
-	EXTERNAL          = "external"
-	AUTH              = "auth"
-	CAPTURE           = "capture"
-	CAPTURE_FAILED    = "capture_failed"
-	ACTION_TO_CONFIRM = "action_to_confirm"
-	VOID              = "void"
-	PENDING_          = "pending"
-	REFUND            = "refund"
-	REFUND_ONGOING    = "refund_ongoing"
-	REFUND_FAILED     = "refund_failed"
-	REFUND_REVERSED   = "refund_reversed"
-	CONFIRM           = "confirm"
-	CANCEL            = "cancel"
+	EXTERNAL          string = "external"
+	AUTH              string = "auth"
+	CAPTURE           string = "capture"
+	CAPTURE_FAILED    string = "capture_failed" // ?
+	ACTION_TO_CONFIRM string = "action_to_confirm"
+	VOID              string = "void"
+	PENDING_          string = "pending"
+	REFUND            string = "refund"
+	REFUND_ONGOING    string = "refund_ongoing"
+	REFUND_FAILED     string = "refund_failed"   // ?
+	REFUND_REVERSED   string = "refund_reversed" // ?
+	CONFIRM           string = "confirm"
+	CANCEL            string = "cancel"
 )
 
 var TransactionKindString = map[string]string{
 	EXTERNAL:          "External reference",
 	AUTH:              "Authorization",
-	PENDING:           "Pending",
+	PENDING_:          "Pending",
 	ACTION_TO_CONFIRM: "Action to confirm",
 	REFUND:            "Refund",
 	REFUND_ONGOING:    "Refund in progress",
@@ -41,11 +41,11 @@ var TransactionKindString = map[string]string{
 	CANCEL:            "Cancel",
 }
 
+// max lengths for some of payment transaction's fields
 const (
 	TRANSACTION_KIND_MAX_LENGTH        = 25
 	TRANSACTION_ERROR_MAX_LENGTH       = 256
 	TRANSACTION_CUSTOMER_ID_MAX_LENGTH = 256
-	// SEARCHABLE_KEY_MAX_LENGTH    = 512
 )
 
 // Represents a single payment operation.
@@ -53,7 +53,7 @@ const (
 // and your customers, with a chosen payment method.
 type PaymentTransaction struct {
 	Id                 string           `json:"id"`
-	CreateAt           int64            `json:"create_at"`
+	CreateAt           int64            `json:"create_at"` // NOT editable
 	PaymentID          string           `json:"payment_id"`
 	Token              string           `json:"token"`
 	Kind               string           `json:"kind"`
@@ -66,7 +66,6 @@ type PaymentTransaction struct {
 	CustomerID         *string          `json:"customer_id"`
 	GatewayResponse    model.StringMap  `json:"gateway_response"`
 	AlreadyProcessed   bool             `json:"already_processed"`
-	// SearchableKey      *string          `json:"searchable_key"`
 }
 
 func (p *PaymentTransaction) String() string {
@@ -97,6 +96,7 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if !model.IsValidId(p.PaymentID) {
 		return outer("payment_id", &p.Id)
 	}
+	// NOTE: not sure CustomerID is uuid or not
 	if p.CustomerID != nil && len(*p.CustomerID) > TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
 		return outer("customer_id", &p.Id)
 	}
@@ -106,15 +106,12 @@ func (p *PaymentTransaction) IsValid() *model.AppError {
 	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
 		return outer("token", &p.Id)
 	}
-	if TransactionKindString[strings.ToLower(p.Kind)] == "" {
+	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH || TransactionKindString[strings.ToLower(p.Kind)] == "" {
 		return outer("kind", &p.Id)
 	}
-	if p.Error != nil && len(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
+	if p.Error != nil && utf8.RuneCountInString(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
 		return outer("error", &p.Id)
 	}
-	// if p.SearchableKey != nil && utf8.RuneCountInString(*p.SearchableKey) > SEARCHABLE_KEY_MAX_LENGTH {
-	// 	return outer("searchable_key", &p.Id)
-	// }
 	if un, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(un.String(), p.Currency) {
 		return outer("currency", &p.Id)
 	}
@@ -133,6 +130,13 @@ func (p *PaymentTransaction) PreSave() {
 		p.Amount = &decimal.Zero
 	}
 	p.CreateAt = model.GetMillis()
+
+	if p.ActionRequiredData == nil {
+		p.ActionRequiredData = make(model.StringMap)
+	}
+	if p.Error != nil {
+		*p.Error = model.SanitizeUnicode(*p.Error)
+	}
 }
 
 func (p *PaymentTransaction) ToJson() string {

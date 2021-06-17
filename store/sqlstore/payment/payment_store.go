@@ -109,3 +109,42 @@ func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Paym
 
 	return payments, nil
 }
+
+func (ps *SqlPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) {
+	query := `SELECT *
+		FROM
+			Payments AS P
+		INNER JOIN
+			Transactions AS T
+		ON (
+			P.Id = T.PaymentID
+		)
+		WHERE (
+			P.OrderId = :orderId
+			AND P.IsActive = :isActive
+			AND T.Kind = :kind
+			AND T.ActionRequired = :actionRequired
+			AND T.IsSuccess = :isSuccess
+		)`
+	var payments []*payment.Payment
+	_, err = ps.GetReplica().Select(&payments, query, map[string]interface{}{
+		"orderId":        opts.OrderID,
+		"isActive":       opts.IsActive,
+		"kind":           opts.Kind,
+		"actionRequired": opts.ActionRequired,
+		"isSuccess":      opts.IsSuccess,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// not found means does not exist
+			return false, nil
+		}
+		// other errors mean system error
+		return false, errors.Wrap(err, "failed to find transactions with given options")
+	}
+
+	if len(payments) == 0 {
+		return false, nil
+	}
+	return true, nil
+}

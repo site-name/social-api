@@ -231,7 +231,6 @@ func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
 // Update updates user
 func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*account.UserUpdate, error) {
 	user.PreUpdate()
-
 	if err := user.IsValid(); err != nil {
 		return nil, err
 	}
@@ -262,10 +261,8 @@ func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*acc
 		user.DeleteAt = oldUser.DeleteAt
 	}
 
-	if user.IsOAuthUser() {
-		if !trustedUpdateData {
-			user.Email = oldUser.Email
-		}
+	if user.IsOAuthUser() && !trustedUpdateData {
+		user.Email = oldUser.Email
 	} else if user.IsLDAPUser() && !trustedUpdateData {
 		if user.Username != oldUser.Username || user.Email != oldUser.Email {
 			return nil, store.NewErrInvalidInput("User", "id", user.Id)
