@@ -41,39 +41,38 @@ type Order implements Node & ObjectWithMetadata {
   shippingTaxRate: Float!
   token: String!
   voucher: Voucher
-  giftCards: [GiftCard]
+  giftCards(_: PlaceHolder): [GiftCard]
   displayGrossPrices: Boolean!
   customerNote: String!
   weight: Weight
   redirectUrl: String
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  fulfillments: [Fulfillment]!
-  lines: [OrderLine]!
-  actions: [OrderAction]!
-  availableShippingMethods: [ShippingMethod]
-  invoices: [Invoice]
+  fulfillments(_: PlaceHolder): [Fulfillment]! # fulfillments: [Fulfillment]!
+  lines(_: PlaceHolder): [OrderLine]! # lines: [OrderLine]!
+  actions(_: PlaceHolder): [OrderAction]! # actions: [OrderAction]!
+  availableShippingMethods(_: PlaceHolder): [ShippingMethod] # availableShippingMethods: [ShippingMethod]
+  invoices(_: PlaceHolder): [Invoice] # invoices: [Invoice]
   number: String
   original: ID
   origin: OrderOriginEnum!
   isPaid: Boolean!
-  paymentStatus: PaymentChargeStatusEnum!
-  paymentStatusDisplay: String!
-  payments: [Payment]
+  paymentStatus(_: PlaceHolder): PaymentChargeStatusEnum! # paymentStatus: PaymentChargeStatusEnum!
+  paymentStatusDisplay(_: PlaceHolder): String! # paymentStatusDisplay: String!
+  payments(_: PlaceHolder): [Payment] # payments: [Payment]
   total: TaxedMoney!
   undiscountedTotal: TaxedMoney!
-  subtotal: TaxedMoney!
-  statusDisplay: String
-  # canFinalize: Boolean! 
-  canFinalize(_: String): Boolean! 
-  totalAuthorized: Money!
-  totalCaptured: Money!
-  events: [OrderEvent]
+  subtotal(_: PlaceHolder): TaxedMoney! # subtotal: TaxedMoney!
+  statusDisplay(_: PlaceHolder): String # statusDisplay: String
+  canFinalize(_: PlaceHolder): Boolean! # canFinalize: Boolean! 
+  totalAuthorized(_: PlaceHolder): Money! # totalAuthorized: Money!
+  totalCaptured(_: PlaceHolder): Money! # totalCaptured: Money!
+  events(_: PlaceHolder): [OrderEvent] # events: [OrderEvent]
   totalBalance: Money!
   userEmail: String
-  isShippingRequired: Boolean!
+  isShippingRequired(_: PlaceHolder): Boolean! # isShippingRequired: Boolean!
   languageCodeEnum: LanguageCodeEnum!
-  discounts: [OrderDiscount!]
+  discounts(_: PlaceHolder): [OrderDiscount!] # discounts: [OrderDiscount!]
 }
 
 input OrderSettingsUpdateInput {

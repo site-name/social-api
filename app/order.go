@@ -48,7 +48,11 @@ func (a *App) GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *mode
 	return payments, nil
 }
 
-// OrderShippingIsRequired checks if an order requires ship or not
+// OrderShippingIsRequired checks if an order requires ship or not by:
+//
+// 1) Find all child order lines that belong to given order
+//
+// 2) iterates over resulting slice to check if at least one order line requires shipping
 func (a *App) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, err := a.GetAllOrderLinesByOrderId(orderID)
 	if err != nil {

@@ -8,11 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -51,9 +47,6 @@ type Checkout struct {
 	RedirectURL            *string              `json:"redirect_url"`
 	TrackingCode           *string              `json:"tracking_code"`
 	LanguageCode           string               `json:"language_code"`
-	User                   *account.User        `db:"-" json:"-"`
-	CheckoutLines          []*CheckoutLine      `db:"-" json:"checkout_lines"`
-	Payments               []*payment.Payment   `json:"payments" db:"-"`
 	model.ModelMetadata
 }
 
@@ -153,25 +146,25 @@ func (c *Checkout) PreUpdate() {
 	c.UpdateAt = model.GetMillis()
 }
 
-func (c *Checkout) GetCustomerEmail() string {
-	if c.User != nil {
-		return c.User.Email
-	}
+// func (c *Checkout) GetCustomerEmail() string {
+// 	if c.User != nil {
+// 		return c.User.Email
+// 	}
 
-	return c.Email
-}
+// 	return c.Email
+// }
 
 // true if any of lines belong to this checkout requires shipping.
 // otherwise return false
-func (c *Checkout) IsShippingRequired() bool {
-	for _, line := range c.CheckoutLines {
-		if line.IsShippingRequired() {
-			return true
-		}
-	}
+// func (c *Checkout) IsShippingRequired() bool {
+// 	for _, line := range c.CheckoutLines {
+// 		if line.IsShippingRequired() {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 // Return the total balance of the gift cards assigned to the checkout.
 func (c *Checkout) GetTotalGiftCardsBalance() *goprices.Money {
@@ -179,43 +172,43 @@ func (c *Checkout) GetTotalGiftCardsBalance() *goprices.Money {
 	panic("not impl")
 }
 
-func (c *Checkout) GetTotalWeight(checkoutlinesInfos []*CheckoutLineInfo) *measurement.Weight {
-	weight := measurement.ZeroWeight
-	for _, checkoutLineInfo := range checkoutlinesInfos {
-		weight = weight.Add(
-			checkoutLineInfo.Line.Variant.
-				GetWeight().
-				Mul(float32(checkoutLineInfo.Line.Quantity)),
-		)
-	}
+// func (c *Checkout) GetTotalWeight(checkoutlinesInfos []*CheckoutLineInfo) *measurement.Weight {
+// 	weight := measurement.ZeroWeight
+// 	for _, checkoutLineInfo := range checkoutlinesInfos {
+// 		weight = weight.Add(
+// 			checkoutLineInfo.Line.Variant.
+// 				GetWeight().
+// 				Mul(float32(checkoutLineInfo.Line.Quantity)),
+// 		)
+// 	}
 
-	return weight
-}
+// 	return weight
+// }
 
 // Return a line matching the given variant and data if any.
-func (c *Checkout) GetLine(variant *product_and_discount.ProductVariant) *CheckoutLine {
-	for _, line := range c.CheckoutLines {
-		if line.VariantID == variant.Id {
-			return line
-		}
-	}
+// func (c *Checkout) GetLine(variant *product_and_discount.ProductVariant) *CheckoutLine {
+// 	for _, line := range c.CheckoutLines {
+// 		if line.VariantID == variant.Id {
+// 			return line
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // returns one payment that:
 //  1) Belongs to this checkout
 //  2) Has largest created time
-func (c *Checkout) GetLastActivePayment() *payment.Payment {
-	var neededPayment *payment.Payment
-	var maxCreateTime int64 = 0
+// func (c *Checkout) GetLastActivePayment() *payment.Payment {
+// 	var neededPayment *payment.Payment
+// 	var maxCreateTime int64 = 0
 
-	for _, payment := range c.Payments {
-		if payment.IsActive && payment.CreateAt >= maxCreateTime {
-			neededPayment = payment
-			maxCreateTime = payment.CreateAt
-		}
-	}
+// 	for _, payment := range c.Payments {
+// 		if payment.IsActive && payment.CreateAt >= maxCreateTime {
+// 			neededPayment = payment
+// 			maxCreateTime = payment.CreateAt
+// 		}
+// 	}
 
-	return neededPayment
-}
+// 	return neededPayment
+// }

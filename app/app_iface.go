@@ -22,6 +22,7 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
@@ -128,6 +129,8 @@ type AppIface interface {
 	FileModTime(path string) (time.Time, *model.AppError)
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model.AppError)
+	// GetAddressById returns address with given id. If not found returns nil and concret error
+	GetAddressById(id string) (*account.Address, *model.AppError)
 	// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
 	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError)
 	// GetAllPaymentTransactions returns all transactions belong to given payment
@@ -220,7 +223,11 @@ type AppIface interface {
 	OrderIsCaptured(orderID string) (bool, *model.AppError)
 	// OrderIsPreAuthorized checks if order is pre-authorized
 	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)
-	// OrderShippingIsRequired checks if an order requires ship or not
+	// OrderShippingIsRequired checks if an order requires ship or not by:
+	//
+	// 1) Find all child order lines that belong to given order
+	//
+	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
 	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError)
@@ -250,6 +257,8 @@ type AppIface interface {
 	//
 	// 6) delete audit belong to user
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
+	// ProductVariantById get a product variant with given id if exist
+	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)
 	// ReadFile read file content from given path
 	ReadFile(path string) ([]byte, *model.AppError)
 	// ResetPermissionsSystem reset permission system

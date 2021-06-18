@@ -3,6 +3,8 @@ schema {
   mutation: Mutation
 }
 
+scalar PlaceHolder
+
 enum AreaUnitsEnum {
   SQ_CM
   SQ_M

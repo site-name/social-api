@@ -22,6 +22,7 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
@@ -1360,6 +1361,28 @@ func (a *OpenTracingAppLayer) GeneratePublicLink(siteURL string, info *model.Fil
 	resultVar0 := a.app.GeneratePublicLink(siteURL, info)
 
 	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) GetAddressById(id string) (*account.Address, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetAddressById")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetAddressById(id)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
 }
 
 func (a *OpenTracingAppLayer) GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) {
@@ -3203,6 +3226,28 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	resultVar0 := a.app.PostActionCookieSecret()
 
 	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ProductVariantById")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.ProductVariantById(id)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
 }
 
 func (a *OpenTracingAppLayer) Publish(message *model.WebSocketEvent) {

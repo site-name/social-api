@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // max lengths for checkout line table's fields
@@ -16,11 +15,10 @@ const (
 // Multiple lines in the same checkout can refer to the same product variant if
 // their `data` field is different.
 type CheckoutLine struct {
-	Id         string                               `json:"id"`
-	CheckoutID string                               `json:"checkout_id"`
-	VariantID  string                               `json:"variant_id"`
-	Quantity   uint                                 `json:"quantity"`
-	Variant    *product_and_discount.ProductVariant `json:"variant" db:"-"`
+	Id         string `json:"id"`
+	CheckoutID string `json:"checkout_id"`
+	VariantID  string `json:"variant_id"`
+	Quantity   uint   `json:"quantity"`
 }
 
 func (c *CheckoutLine) ToJson() string {
@@ -70,6 +68,6 @@ func (c *CheckoutLine) PreSave() {
 }
 
 // true if related product variant requires shipping.
-func (c *CheckoutLine) IsShippingRequired() bool {
-	return c.Variant.IsShippingRequired()
-}
+// func (c *CheckoutLine) IsShippingRequired() bool {
+// 	return c.Variant.IsShippingRequired()
+// }

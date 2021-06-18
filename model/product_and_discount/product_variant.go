@@ -26,8 +26,6 @@ type ProductVariant struct {
 	Weight         *float32               `json:"weight"`
 	WeightUnit     measurement.WeightUnit `json:"weight_unit"`
 	TrackInventory *bool                  `json:"track_inventory"`
-	Medias         []*ProductMedia        `json:"medias" db:"-"`
-	Product        *Product               `json:"product" db:"-"`
 	model.Sortable
 	model.ModelMetadata
 }
@@ -50,7 +48,7 @@ func (p *ProductVariant) IsValid() *model.AppError {
 	if utf8.RuneCountInString(p.Name) > PRODUCT_VARIANT_NAME_MAX_LENGTH {
 		return outer("name", &p.Id)
 	}
-	if p.Weight != nil && *p.Weight < 0 {
+	if p.Weight != nil && *p.Weight <= 0 {
 		return outer("weight", &p.Id)
 	}
 	if p.WeightUnit != "" {
@@ -101,43 +99,43 @@ func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, c
 	panic("not impl")
 }
 
-func (p *ProductVariant) GetWeight() *measurement.Weight {
-	if p.Weight != nil {
-		return &measurement.Weight{
-			Amount: *p.Weight,
-			Unit:   p.WeightUnit,
-		}
-	}
+// func (p *ProductVariant) GetWeight() *measurement.Weight {
+// 	if p.Weight != nil {
+// 		return &measurement.Weight{
+// 			Amount: *p.Weight,
+// 			Unit:   p.WeightUnit,
+// 		}
+// 	}
 
-	if p.Product != nil {
-		return &measurement.Weight{
-			Amount: *p.Product.Weight,
-			Unit:   p.Product.WeightUnit,
-		}
-	}
+// 	if p.Product != nil {
+// 		return &measurement.Weight{
+// 			Amount: *p.Product.Weight,
+// 			Unit:   p.Product.WeightUnit,
+// 		}
+// 	}
 
-	return &measurement.Weight{
-		Amount: *p.Product.ProductType.Weight,
-		Unit:   p.Product.ProductType.WeightUnit,
-	}
-}
+// 	return &measurement.Weight{
+// 		Amount: *p.Product.ProductType.Weight,
+// 		Unit:   p.Product.ProductType.WeightUnit,
+// 	}
+// }
 
-func (p *ProductVariant) IsShippingRequired() bool {
-	return *p.Product.ProductType.IsShippingRequired
-}
+// func (p *ProductVariant) IsShippingRequired() bool {
+// 	return *p.Product.ProductType.IsShippingRequired
+// }
 
-func (p *ProductVariant) IsDigital() bool {
-	return !p.IsShippingRequired() && *p.Product.ProductType.IsDigital
-}
+// func (p *ProductVariant) IsDigital() bool {
+// 	return !p.IsShippingRequired() && *p.Product.ProductType.IsDigital
+// }
 
 // TODO: fixme
 func (p *ProductVariant) DisplayProduct() {
 	panic("not implemented")
 }
 
-func (p *ProductVariant) GetOrderingQuerySet() []*ProductVariant {
-	return p.Product.Variants
-}
+// func (p *ProductVariant) GetOrderingQuerySet() []*ProductVariant {
+// 	return p.Product.Variants
+// }
 
 // --------------------
 type ProductVariantTranslation struct {

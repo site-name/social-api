@@ -328,6 +328,8 @@ type (
 	}
 	ProductVariantStore interface {
 		Indexer
+		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Save inserts product variant instance to database
+		Get(id string) (*product_and_discount.ProductVariant, error)                                     // Get returns a product variant with given id
 	}
 	ProductChannelListingStore interface {
 		Indexer

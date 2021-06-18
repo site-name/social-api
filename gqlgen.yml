@@ -71,3 +71,6 @@ models:
   WeightScalar:
     model:
       - github.com/sitename/sitename/web/graphql/scalars.WeightScalar
+  PlaceHolder:
+    model:
+      - github.com/sitename/sitename/web/graphql/scalars.PlaceHolder

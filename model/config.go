@@ -2068,7 +2068,7 @@ type LocalizationSettings struct {
 	DefaultServerLocale *string `access:"site_localization"`
 	DefaultClientLocale *string `access:"site_localization"`
 	AvailableLocales    *string `access:"site_localization"`
-	DefaultCountryCode  *string `access:"site_localization"`
+	DefaultCountryCode  *string `access:"site_localization"` // added for sitename
 }
 
 func (s *LocalizationSettings) SetDefaults() {
