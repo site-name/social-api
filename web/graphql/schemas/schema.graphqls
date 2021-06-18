@@ -26,6 +26,7 @@ input AttributeValueInput {
   contentType: String
   references: [ID!]
   richText: JSONString
+  boolean: Boolean
 }
 
 enum CategorySortField {

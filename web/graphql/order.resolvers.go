@@ -146,7 +146,14 @@ func (r *orderResolver) StatusDisplay(ctx context.Context, obj *gqlmodel.Order, 
 }
 
 func (r *orderResolver) CanFinalize(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.Status == gqlmodel.OrderStatusDraft {
+		countryCode, appErr := r.getOrderCountryCode(obj)
+		if appErr != nil {
+			return false, appErr
+		}
+	}
+
+	return true, nil
 }
 
 func (r *orderResolver) TotalAuthorized(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) (*gqlmodel.Money, error) {

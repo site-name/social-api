@@ -226,6 +226,7 @@ input AttributeInput {
   slug: String!
   values: [String]
   valuesRange: IntRangeInput
+  boolean: Boolean
 }
 
 enum AttributeInputTypeEnum {
@@ -235,6 +236,7 @@ enum AttributeInputTypeEnum {
   REFERENCE
   NUMERIC
   RICH_TEXT
+  BOOLEAN
 }
 
 type AttributeTranslation implements Node {
@@ -258,6 +260,7 @@ type AttributeValue implements Node {
   reference: ID
   file: File
   richText: JSONString
+  boolean: Boolean
 }
 
 type AttributeValueTranslation implements Node {

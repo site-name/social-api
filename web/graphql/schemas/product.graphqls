@@ -63,7 +63,7 @@ type Product implements Node & ObjectWithMetadata {
   taxType: TaxType
   attributes: [SelectedAttribute!]!
   channelListings: [ProductChannelListing!]
-  mediaById(id: ID): ProductMedia!
+  mediaById(id: ID): ProductMedia
   variants: [ProductVariant]
   media: [ProductMedia!]
   collections: [Collection]

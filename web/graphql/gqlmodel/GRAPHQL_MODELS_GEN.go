@@ -431,6 +431,7 @@ type AttributeInput struct {
 	Slug        string         `json:"slug"`
 	Values      []*string      `json:"values"`
 	ValuesRange *IntRangeInput `json:"valuesRange"`
+	Boolean     *bool          `json:"boolean"`
 }
 
 type AttributeReorderValues struct {
@@ -496,6 +497,7 @@ type AttributeValue struct {
 	Reference   *string                    `json:"reference"`
 	File        *File                      `json:"file"`
 	RichText    *string                    `json:"richText"`
+	Boolean     *bool                      `json:"boolean"`
 }
 
 func (AttributeValue) IsNode() {}
@@ -545,6 +547,7 @@ type AttributeValueInput struct {
 	ContentType *string   `json:"contentType"`
 	References  []string  `json:"references"`
 	RichText    *string   `json:"richText"`
+	Boolean     *bool     `json:"boolean"`
 }
 
 type AttributeValueTranslatableContent struct {
@@ -4110,17 +4113,6 @@ type VoucherUpdate struct {
 	Voucher *Voucher         `json:"voucher"`
 }
 
-type WarehouseAddressInput struct {
-	StreetAddress1 string      `json:"streetAddress1"`
-	StreetAddress2 *string     `json:"streetAddress2"`
-	City           string      `json:"city"`
-	CityArea       *string     `json:"cityArea"`
-	PostalCode     *string     `json:"postalCode"`
-	Country        CountryCode `json:"country"`
-	CountryArea    *string     `json:"countryArea"`
-	Phone          *string     `json:"phone"`
-}
-
 type WarehouseCountableConnection struct {
 	PageInfo   *PageInfo                 `json:"pageInfo"`
 	Edges      []*WarehouseCountableEdge `json:"edges"`
@@ -4138,12 +4130,12 @@ type WarehouseCreate struct {
 }
 
 type WarehouseCreateInput struct {
-	Slug          *string                `json:"slug"`
-	CompanyName   *string                `json:"companyName"`
-	Email         *string                `json:"email"`
-	Name          string                 `json:"name"`
-	Address       *WarehouseAddressInput `json:"address"`
-	ShippingZones []*string              `json:"shippingZones"`
+	Slug          *string       `json:"slug"`
+	CompanyName   *string       `json:"companyName"`
+	Email         *string       `json:"email"`
+	Name          string        `json:"name"`
+	Address       *AddressInput `json:"address"`
+	ShippingZones []*string     `json:"shippingZones"`
 }
 
 type WarehouseDelete struct {
@@ -4183,11 +4175,10 @@ type WarehouseUpdate struct {
 }
 
 type WarehouseUpdateInput struct {
-	Slug        *string                `json:"slug"`
-	CompanyName *string                `json:"companyName"`
-	Email       *string                `json:"email"`
-	Name        *string                `json:"name"`
-	Address     *WarehouseAddressInput `json:"address"`
+	Slug    *string       `json:"slug"`
+	Email   *string       `json:"email"`
+	Name    *string       `json:"name"`
+	Address *AddressInput `json:"address"`
 }
 
 type Webhook struct {
@@ -4727,6 +4718,7 @@ const (
 	AttributeInputTypeEnumReference   AttributeInputTypeEnum = "REFERENCE"
 	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = "NUMERIC"
 	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = "RICH_TEXT"
+	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = "BOOLEAN"
 )
 
 var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
@@ -4736,11 +4728,12 @@ var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
 	AttributeInputTypeEnumReference,
 	AttributeInputTypeEnumNumeric,
 	AttributeInputTypeEnumRichText,
+	AttributeInputTypeEnumBoolean,
 }
 
 func (e AttributeInputTypeEnum) IsValid() bool {
 	switch e {
-	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText:
+	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText, AttributeInputTypeEnumBoolean:
 		return true
 	}
 	return false
@@ -6021,12 +6014,14 @@ func (e DistanceUnitsEnum) MarshalGQL(w io.Writer) {
 type ExportErrorCode string
 
 const (
-	ExportErrorCodeInvalid  ExportErrorCode = "INVALID"
-	ExportErrorCodeNotFound ExportErrorCode = "NOT_FOUND"
-	ExportErrorCodeRequired ExportErrorCode = "REQUIRED"
+	ExportErrorCodeGraphqlError ExportErrorCode = "GRAPHQL_ERROR"
+	ExportErrorCodeInvalid      ExportErrorCode = "INVALID"
+	ExportErrorCodeNotFound     ExportErrorCode = "NOT_FOUND"
+	ExportErrorCodeRequired     ExportErrorCode = "REQUIRED"
 )
 
 var AllExportErrorCode = []ExportErrorCode{
+	ExportErrorCodeGraphqlError,
 	ExportErrorCodeInvalid,
 	ExportErrorCodeNotFound,
 	ExportErrorCodeRequired,
@@ -6034,7 +6029,7 @@ var AllExportErrorCode = []ExportErrorCode{
 
 func (e ExportErrorCode) IsValid() bool {
 	switch e {
-	case ExportErrorCodeInvalid, ExportErrorCodeNotFound, ExportErrorCodeRequired:
+	case ExportErrorCodeGraphqlError, ExportErrorCodeInvalid, ExportErrorCodeNotFound, ExportErrorCodeRequired:
 		return true
 	}
 	return false

@@ -22,7 +22,6 @@ func NewSqlWareHouseStore(s store.Store) store.WarehouseStore {
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(warehouse.WAREHOUSE_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(warehouse.WAREHOUSE_SLUG_MAX_LENGTH).SetUnique(true)
-		table.ColMap("CompanyName").SetMaxSize(warehouse.WAREHOUSE_COMPANY_NAME_MAX_LENGTH)
 		table.ColMap("Email").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
 	}
 	return ws

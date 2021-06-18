@@ -36,6 +36,7 @@ const (
 	REFERENCE   = "reference"
 	NUMERIC     = "numeric"
 	RICH_TEXT   = "rich-text"
+	BOOLEAN     = "boolean"
 )
 
 var AttributeInputTypeStrings = map[string]string{
@@ -45,6 +46,7 @@ var AttributeInputTypeStrings = map[string]string{
 	REFERENCE:   "Reference",
 	NUMERIC:     "Numeric",
 	RICH_TEXT:   "Rich Text",
+	BOOLEAN:     "Boolean",
 }
 
 var AttributeTypeStrings = map[string]string{

@@ -18,7 +18,7 @@ input WarehouseCreateInput {
   companyName: String
   email: String
   name: String!
-  address: WarehouseAddressInput!
+  address: AddressInput!
   shippingZones: [ID]
 }
 
@@ -38,17 +38,6 @@ input StockFilterInput {
 type WarehouseCreate {
   errors: [WarehouseError!]!
   warehouse: Warehouse
-}
-
-input WarehouseAddressInput {
-  streetAddress1: String!
-  streetAddress2: String
-  city: String!
-  cityArea: String
-  postalCode: String
-  country: CountryCode!
-  countryArea: String
-  phone: String
 }
 
 type WarehouseError {
@@ -75,7 +64,6 @@ type Warehouse implements Node & ObjectWithMetadata {
   id: ID!
   name: String!
   slug: String!
-  companyName: String!
   shippingZones(before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection!
   address: Address!
   email: String!
@@ -110,10 +98,9 @@ input WarehouseSortingInput {
 
 input WarehouseUpdateInput {
   slug: String
-  companyName: String
   email: String
   name: String
-  address: WarehouseAddressInput
+  address: AddressInput
 }
 
 type WarehouseDelete {

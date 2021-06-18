@@ -2,13 +2,12 @@ package model
 
 import (
 	"io"
-	"net/http"
 	"time"
 )
 
 type Sortable struct {
-	Id        string `json:"id"`
-	SortOrder int    `json:"sort_order"`
+	// Id        string `json:"id"`
+	SortOrder int `json:"sort_order"`
 }
 
 func (s *Sortable) ToJson() string {
@@ -21,21 +20,21 @@ func SortableFromJson(data io.Reader) *Sortable {
 	return &st
 }
 
-func (s *Sortable) IsValid() *AppError {
-	if !IsValidId(s.Id) {
-		return NewAppError("Sortable.IsValid", "model.sortable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
-	}
-	return nil
-}
+// func (s *Sortable) IsValid() *AppError {
+// 	if !IsValidId(s.Id) {
+// 		return NewAppError("Sortable.IsValid", "model.sortable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+// 	}
+// 	return nil
+// }
 
-func (s *Sortable) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-}
+// func (s *Sortable) PreSave() {
+// 	if s.Id == "" {
+// 		s.Id = NewId()
+// 	}
+// }
 
 type Publishable struct {
-	Id              string     `json:"is"`
+	// Id              string     `json:"is"`
 	PublicationDate *time.Time `json:"publication_date"`
 	IsPublished     bool       `json:"is_published"`
 }
@@ -55,15 +54,15 @@ func PublishableFromJson(data io.Reader) *Publishable {
 	return &st
 }
 
-func (s *Publishable) IsValid() *AppError {
-	if !IsValidId(s.Id) {
-		return NewAppError("Publishable.IsValid", "model.publishable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
-	}
-	return nil
-}
+// func (s *Publishable) IsValid() *AppError {
+// 	if !IsValidId(s.Id) {
+// 		return NewAppError("Publishable.IsValid", "model.publishable.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+// 	}
+// 	return nil
+// }
 
-func (s *Publishable) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-}
+// func (s *Publishable) PreSave() {
+// 	if s.Id == "" {
+// 		s.Id = NewId()
+// 	}
+// }

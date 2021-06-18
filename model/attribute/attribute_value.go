@@ -28,6 +28,8 @@ type AttributeValue struct {
 	AttributeID string                 `json:"attribute_id"`
 	Attribute   *Attribute             `json:"attribute" db:"-"`
 	RichText    *model.StringInterface `json:"rich_text"`
+	Boolean     *bool                  `json:"boolean"`
+	model.Sortable
 }
 
 func (a *AttributeValue) String() string {
