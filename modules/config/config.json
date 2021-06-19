@@ -496,11 +496,13 @@
         "EnableHealthCheck": true,
         "Directory": "./plugins",
         "ClientDirectory": "./client/plugins",
-        "Plugins": {},
+        "Plugins": {
+            
+        },
         "PluginStates": {
             "com.mattermost.nps": {
-                "Enable": true
-            }
+    "Enable": true
+}
         },
         "EnableMarketplace": true,
         "EnableRemoteMarketplace": true,

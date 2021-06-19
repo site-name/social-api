@@ -76,26 +76,26 @@ func validateShippingMethod(order *gqlmodel.Order) *orderError {
 	return nil
 }
 
-func (r *orderResolver) validateOrderLines(order *gqlmodel.Order, orderCountryCode string) (*orderError, *model.AppError) {
-	orderLines, appErr := r.GetAllOrderLinesByOrderId(order.ID)
-	if appErr != nil {
-		return nil, appErr
-	}
+// func (r *orderResolver) validateOrderLines(order *gqlmodel.Order, orderCountryCode string) (*orderError, *model.AppError) {
+// 	orderLines, appErr := r.GetAllOrderLinesByOrderId(order.ID)
+// 	if appErr != nil {
+// 		return nil, appErr
+// 	}
 
-	for _, line := range orderLines {
-		if line.VariantID == nil {
-			return newOrderError("graphql.order.order_line_no_variant.app_error", gqlmodel.OrderErrorCodeNotFound), nil
-		}
-		// get product variant
-		variant, appErr := r.ProductVariantById(*line.VariantID)
-		if appErr != nil {
-			return nil, appErr
-		}
-		if variant.TrackInventory != nil && *variant.TrackInventory {
+// 	for _, line := range orderLines {
+// 		if line.VariantID == nil {
+// 			return newOrderError("graphql.order.order_line_no_variant.app_error", gqlmodel.OrderErrorCodeNotFound), nil
+// 		}
+// 		// get product variant
+// 		variant, appErr := r.ProductVariantById(*line.VariantID)
+// 		if appErr != nil {
+// 			return nil, appErr
+// 		}
+// 		if variant.TrackInventory != nil && *variant.TrackInventory {
 
-		}
-	}
-}
+// 		}
+// 	}
+// }
 
 // ValidateDraftOrder validates
 func (r *orderResolver) ValidateDraftOrder(order *gqlmodel.Order, orderCountryCode string) (*orderError, *model.AppError) {
@@ -124,5 +124,5 @@ func (r *orderResolver) ValidateDraftOrder(order *gqlmodel.Order, orderCountryCo
 		return newOrderError("graphql.order.quantity_empty.app_error", gqlmodel.OrderErrorCodeRequired), nil
 	}
 
-	return nil
+	return nil, nil
 }
