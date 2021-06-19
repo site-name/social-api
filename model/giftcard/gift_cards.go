@@ -17,8 +17,8 @@ const (
 
 type GiftCard struct {
 	Id                   string           `json:"id"`
-	UserID               string           `json:"user_id"`
-	Code                 string           `json:"code"`
+	UserID               *string          `json:"user_id"`
+	Code                 string           `json:"code"` // unique, db_index
 	CreateAt             int64            `json:"created_at"`
 	StartDate            *time.Time       `json:"start_date"`
 	EndDate              *time.Time       `json:"end_date"`
@@ -26,9 +26,9 @@ type GiftCard struct {
 	IsActive             *bool            `json:"is_active"`
 	Currency             string           `json:"currency"`
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
-	InitialBalance       *goprices.Money  `json:"initial_balance" db:"-"`
+	InitialBalance       *goprices.Money  `json:"initial_balance,omitempty" db:"-"`
 	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"`
-	CurrentBalance       *goprices.Money  `json:"current_balance" db:"-"`
+	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 }
 
 func (gc *GiftCard) DisplayCode() string {
@@ -36,6 +36,12 @@ func (gc *GiftCard) DisplayCode() string {
 }
 
 func (gc *GiftCard) ToJson() string {
+	gc.PopulateNonDbFields()
+	return model.ModelToJson(gc)
+}
+
+// PopulateNonDbFields populates non-database fields contained in giftcard
+func (gc *GiftCard) PopulateNonDbFields() {
 	gc.InitialBalance = &goprices.Money{
 		Amount:   gc.InitialBalanceAmount,
 		Currency: gc.Currency,
@@ -44,7 +50,6 @@ func (gc *GiftCard) ToJson() string {
 		Amount:   gc.CurrentBalanceAmount,
 		Currency: gc.Currency,
 	}
-	return model.ModelToJson(gc)
 }
 
 func GiftCardFromJson(data io.Reader) *GiftCard {
@@ -58,10 +63,11 @@ func (gc *GiftCard) IsValid() *model.AppError {
 		"model.gift_card.is_valid.%s.app_error",
 		"gift_card_id=",
 		"GiftCard.IsValid")
+
 	if !model.IsValidId(gc.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(gc.UserID) {
+	if gc.UserID != nil && !model.IsValidId(*gc.UserID) {
 		return outer("user_id", &gc.Id)
 	}
 	if gc.CreateAt == 0 {

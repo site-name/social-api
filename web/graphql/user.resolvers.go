@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
+	"github.com/sitename/sitename/web/graphql/scalars"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
@@ -71,21 +72,50 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.DefaultShippingAddressID == nil {
+		return nil, model.NewAppError("DefaultShippingAddress", "graphql.user.address_missing.app_error", nil, "You need to provide default shipping address.", http.StatusNoContent)
+	}
+
+	address, err := r.Srv().Store.Address().Get(*obj.DefaultShippingAddressID)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		statusCode := http.StatusInternalServerError
+		if errors.As(err, &nfErr) {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("DefaultShippingAddress", "graphql.user.address_not_found.app_error", nil, err.Error(), statusCode)
+	}
+
+	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.DefaultBillingAddressID == nil {
+		return nil, model.NewAppError("DefaultBillingAddress", "graphql.user.address_missing.app_error", nil, "You need to provide default shipping address.", http.StatusNoContent)
+	}
+
+	address, err := r.Srv().Store.Address().Get(*obj.DefaultBillingAddressID)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		statusCode := http.StatusInternalServerError
+		if errors.As(err, &nfErr) {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("DefaultBillingAddress", "graphql.user.address_not_found.app_error", nil, err.Error(), statusCode)
+	}
+
+	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
 	addresses, err := r.Srv().Store.Address().GetAddressesByUserID(obj.ID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
+		statusCode := http.StatusInternalServerError
 		if errors.As(err, &nfErr) {
-			return []*gqlmodel.Address{}, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), http.StatusNotFound)
+			statusCode = http.StatusNotFound
 		}
-		return []*gqlmodel.Address{}, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), statusCode)
 	}
 
 	return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
@@ -103,6 +133,10 @@ func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int
 	return nil, errors.New("not implemented")
 }
 
+func (r *userResolver) UserPermissions(ctx context.Context, obj *gqlmodel.User, _ *scalars.PlaceHolder) ([]*gqlmodel.UserPermission, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *userResolver) PermissionGroups(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Group, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -118,7 +152,12 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
 	events, err := r.Srv().Store.CustomerEvent().GetEventsByUserID(obj.ID)
 	if err != nil {
-		return []*gqlmodel.CustomerEvent{}, model.NewAppError("Events", "graphql.user.events.app_error", nil, err.Error(), http.StatusNotFound)
+		var nfErr *store.ErrNotFound
+		statusCode := http.StatusInternalServerError
+		if errors.As(err, &nfErr) {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("Events", "graphql.user.user_missing_customer_events.app_error", nil, nfErr.Error(), statusCode)
 	}
 
 	return gqlmodel.DatabaseCustomerEventsToGraphqlCustomerEvents(events), nil

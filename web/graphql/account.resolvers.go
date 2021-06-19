@@ -32,9 +32,9 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	cleanedInput, err := cleanInput(r, &input)
-	if err != nil {
-		return nil, err
+	cleanedInput, appErr := r.cleanInput(&input)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// construct instance:

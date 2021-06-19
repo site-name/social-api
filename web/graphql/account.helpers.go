@@ -10,7 +10,8 @@ import (
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func cleanInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
+// cleanInput cleans user registration input
+func (r *mutationResolver) cleanInput(data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
 	// if signup email verification is disabled
 	if !*r.Config().EmailSettings.RequireEmailVerification {
 		return data, nil

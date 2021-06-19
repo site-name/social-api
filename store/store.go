@@ -16,21 +16,13 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/mfa"
 )
-
-const (
-	UUID_MAX_LENGTH = 36 // max length for all tables's Id fields, since google's uuid generates ids have length of 36
-)
-
-type StoreResult struct {
-	Data interface{}
-	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
-}
 
 type Indexer interface {
 	CreateIndexesIfNotExists() // CreateIndexesIfNotExists creates indexes for table fields
@@ -430,6 +422,9 @@ type InvoiceEventStore interface {
 
 type GiftCardStore interface {
 	Indexer
+	Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)     // Save insert new giftcard to database
+	GetById(id string) (*giftcard.GiftCard, error)              // GetById returns a giftcard instance that has id of given id
+	GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) // GetAllByUserId returns a slice aff giftcards that belong to given user
 }
 
 type OrderDiscountStore interface {

@@ -13,45 +13,37 @@ type Group struct {
 	ID            string        `json:"id"`
 	Name          string        `json:"name"`
 	Permissions   []*Permission `json:"permissions"`
-	UserIDs       []string      `json:"users"` // []*User
+	UserIDs       []string      `json:"users"` // Users []*User
 	UserCanManage bool          `json:"userCanManage"`
 }
 
 func (Group) IsNode() {}
 
 type User struct {
-	ID                       string                         `json:"id"`
-	LastLogin                *time.Time                     `json:"lastLogin"`
-	Email                    string                         `json:"email"`
-	FirstName                string                         `json:"firstName"`
-	LastName                 string                         `json:"lastName"`
-	IsStaff                  bool                           `json:"isStaff"`
-	IsActive                 bool                           `json:"isActive"`
-	Note                     *string                        `json:"note"`
-	DateJoined               time.Time                      `json:"dateJoined"`
-	DefaultShippingAddressID *string                        `json:"defaultShippingAddress"` // *Address
-	DefaultBillingAddressID  *string                        `json:"defaultBillingAddress"`  // *Address
-	PrivateMetadata          []*MetadataItem                `json:"privateMetadata"`
-	Metadata                 []*MetadataItem                `json:"metadata"`
-	AddresseIDs              []string                       `json:"addresses"`      // []*Address
-	CheckoutTokens           func(*string) []uuid.UUID      `json:"checkoutTokens"` //
-	UserPermissions          []*UserPermission              `json:"userPermissions"`
-	PermissionGroupIDs       []string                       `json:"permissionGroups"` // []*Group
-	EditableGroupIDs         []string                       `json:"editableGroups"`   // []*Group
-	Avatar                   func(*int) *Image              `json:"avatar"`
-	EventIDs                 []string                       `json:"events"`               //[]*CustomerEvent
-	StoredPaymentSources     func(*string) []*PaymentSource `json:"storedPaymentSources"` //
-	LanguageCode             LanguageCodeEnum               `json:"languageCode"`         //
-	GiftCards                func(
-		page int,
-		perPage int,
-		orderDirection *OrderDirection,
-	) *GiftCardCountableConnection `json:"giftCards"` // *GiftCardCountableConnection
-	Orders func(
-		page int,
-		perPage int,
-		orderDirection *OrderDirection,
-	) *OrderCountableConnection `json:"orders"` // *OrderCountableConnection
+	ID                       string                              `json:"id"`
+	LastLogin                *time.Time                          `json:"lastLogin"`
+	Email                    string                              `json:"email"`
+	FirstName                string                              `json:"firstName"`
+	LastName                 string                              `json:"lastName"`
+	IsStaff                  bool                                `json:"isStaff"`
+	IsActive                 bool                                `json:"isActive"`
+	Note                     *string                             `json:"note"`
+	DateJoined               time.Time                           `json:"dateJoined"`
+	LanguageCode             LanguageCodeEnum                    `json:"languageCode"`
+	DefaultShippingAddressID *string                             `json:"defaultShippingAddress"` // *Address
+	DefaultBillingAddressID  *string                             `json:"defaultBillingAddress"`  // *Address
+	PrivateMetadata          []*MetadataItem                     `json:"privateMetadata"`
+	Metadata                 []*MetadataItem                     `json:"metadata"`
+	AddresseIDs              []string                            `json:"addresses"`            // []*Address
+	PermissionGroupIDs       []string                            `json:"permissionGroups"`     // []*Group
+	EditableGroupIDs         []string                            `json:"editableGroups"`       // []*Group
+	EventIDs                 []string                            `json:"events"`               // []*CustomerEvent
+	UserPermissions          func() []*UserPermission            `json:"userPermissions"`      // []*UserPermission
+	CheckoutTokens           func() []uuid.UUID                  `json:"checkoutTokens"`       // []uuid.UUID
+	Avatar                   func() *Image                       `json:"avatar"`               // *Image
+	StoredPaymentSources     func() []*PaymentSource             `json:"storedPaymentSources"` // []*PaymentSource
+	GiftCards                func() *GiftCardCountableConnection `json:"giftCards"`            // *GiftCardCountableConnection
+	Orders                   func() *OrderCountableConnection    `json:"orders"`               // *OrderCountableConnection
 }
 
 func (User) IsNode()               {}
@@ -83,20 +75,20 @@ func DatabaseUserToGraphqlUser(u *account.User) *User {
 		IsActive:                 u.IsActive,
 		Note:                     u.Note,
 		DateJoined:               util.TimeFromMillis(u.CreateAt),
+		LanguageCode:             LanguageCodeEnum(strings.ToUpper(u.Locale)),
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		PrivateMetadata:          MapToGraphqlMetaDataItems(u.PrivateMetadata),
 		Metadata:                 MapToGraphqlMetaDataItems(u.Metadata),
-		LanguageCode:             LanguageCodeEnum(strings.ToUpper(u.Locale)),
-		// AddresseIDs:              []string{},
-		// CheckoutTokens:           nil,
-		// UserPermissions:          nil,
-		// PermissionGroupIDs:         nil,
-		// EditableGroupIDs:           nil,
-		// Avatar:                   nil,
-		// EventIDs:                 []string{},
-		// StoredPaymentSources:     nil,
-		// GiftCards:                func(page int, perPage int, orderDirection *OrderDirection) *GiftCardCountableConnection { return nil },
-		// Orders:                   nil,
+		// UserPermissions   :,
+		// AddresseIDs            :,
+		// PermissionGroupIDs     :,
+		// EditableGroupIDs       :,
+		// EventIDs               :,
+		// CheckoutTokens         :,
+		// Avatar                 :,
+		// StoredPaymentSources   :,
+		// GiftCards              :,
+		// Orders                 :,
 	}
 }
