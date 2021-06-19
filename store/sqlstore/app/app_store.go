@@ -9,7 +9,7 @@ type SqlAppStore struct {
 	store.Store
 }
 
-func NewAppSqlStore(sqlStore store.Store) store.AppStore {
+func NewSqlAppStore(sqlStore store.Store) store.AppStore {
 	as := &SqlAppStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {

@@ -9,7 +9,7 @@ type SqlSaleChannelListingStore struct {
 	store.Store
 }
 
-func NewSqlSaleChannelListingStore(sqlStore store.Store) store.DiscountSaleChannelListingStore {
+func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountSaleChannelListingStore {
 	scls := &SqlSaleChannelListingStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {

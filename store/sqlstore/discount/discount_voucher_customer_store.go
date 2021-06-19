@@ -10,7 +10,7 @@ type SqlVoucherCustomerStore struct {
 	store.Store
 }
 
-func NewSqlVoucherCustomerStore(sqlStore store.Store) store.DiscountVoucherCustomerStore {
+func NewSqlDiscountVoucherCustomerStore(sqlStore store.Store) store.DiscountVoucherCustomerStore {
 	vcs := &SqlVoucherCustomerStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {

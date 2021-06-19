@@ -34,6 +34,10 @@ func main() {
 	if err := buildRetryLayer(); err != nil {
 		log.Fatal(err)
 	}
+
+	if err := buildStoreImplement(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func buildRetryLayer() error {
@@ -73,6 +77,117 @@ func buildOpenTracingLayer() error {
 	}
 
 	return ioutil.WriteFile(path.Join("opentracinglayer", "opentracinglayer.go"), formatedCode, 0644)
+}
+
+type A interface {
+}
+
+func buildStoreImplement() error {
+	name := "SqlStoreStores"
+	templateFile := "store_implement.go.tmpl"
+
+	out := bytes.NewBufferString("")
+	metadata, err := extractStoreMetadata()
+	if err != nil {
+		return err
+	}
+
+	myfuncs := template.FuncMap{
+		"LowerFirstChar": func(s string) string {
+			return strings.ToLower(string(s[0])) + s[1:]
+		},
+		"FromWhichPackage": func(s string) string {
+			switch s {
+			case "User", "Address", "UserAddress", "CustomerEvent", "StaffNotificationRecipient", "CustomerNote", "UserAccessToken", "TermsOfService", "Token":
+				return "account"
+			case "System":
+				return "system"
+			case "Job":
+				return "job"
+			case "Session":
+				return "session"
+			case "Preference":
+				return "preference"
+			case "Status":
+				return "status"
+			case "Role":
+				return "role"
+			case "ClusterDiscovery":
+				return "cluster"
+			case "Audit":
+				return "audit"
+			case "App", "AppToken":
+				return "app"
+			case "Channel":
+				return "channel"
+			case "Checkout", "CheckoutLine":
+				return "checkout"
+			case "CsvExportEvent", "CsvExportFile":
+				return "csv"
+			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation", "DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount":
+				return "discount"
+			case "GiftCard":
+				return "giftcard"
+			case "InvoiceEvent":
+				return "invoice"
+			case "Menu", "MenuItemTranslation":
+				return "menu"
+			case "Fulfillment", "FulfillmentLine", "OrderEvent", "Order", "OrderLine":
+				return "order"
+			case "Page", "PageType", "PageTranslation":
+				return "page"
+			case "Payment", "PaymentTransaction":
+				return "payment"
+			case "Category", "CategoryTranslation", "ProductType", "Product", "ProductTranslation", "ProductChannelListing", "ProductVariant", "ProductVariantTranslation", "ProductVariantChannelListing", "DigitalContent", "DigitalContentUrl", "ProductMedia", "VariantMedia", "CollectionProduct", "Collection", "CollectionChannelListing", "CollectionTranslation":
+				return "product"
+			case "ShippingMethodTranslation", "ShippingMethodChannelListing", "ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone":
+				return "shipping"
+			case "Warehouse", "Stock", "Allocation":
+				return "warehouse"
+			case "Wishlist", "WishlistItem":
+				return "wishlist"
+			case "PluginConfiguration":
+				return "plugin"
+			case "Compliance":
+				return "compliance"
+			case "Attribute", "AttributeTranslation", "AttributeValue", "AttributeValueTranslation", "AssignedPageAttributeValue", "AssignedPageAttribute", "AttributePage", "AssignedVariantAttributeValue", "AssignedVariantAttribute", "AttributeVariant", "AssignedProductAttributeValue", "AssignedProductAttribute", "AttributeProduct":
+				return "attribute"
+			case "FileInfo", "UploadSession":
+				return "file"
+			}
+			panic("not found package name")
+		},
+		"StoreNeedMetric": func(s string) string {
+			switch s {
+			case "User", "TermsOfService", "FileInfo":
+				return ", store.metrics"
+			default:
+				return ""
+			}
+		},
+		"OtherCallOtherThanCreateIndexesIfNotExists": func(s string) string {
+			switch s {
+			case "Preference":
+				return "\nstore.stores.preference.DeleteUnusedFeatures()"
+			default:
+				return ""
+			}
+		},
+	}
+
+	metadata.Name = name
+
+	t := template.Must(template.New(templateFile).Funcs(myfuncs).ParseFiles("layer_generators/" + templateFile))
+	if err = t.Execute(out, metadata); err != nil {
+		return err
+	}
+
+	formatedCode, err := format.Source(out.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path.Join("sqlstore", "store_implement.go"), formatedCode, 0644)
 }
 
 type methodParam struct {

@@ -93,7 +93,7 @@ type SqlStore struct {
 	Replicas          []*gorp.DbMap
 	searchReplicas    []*gorp.DbMap
 	replicaLagHandles []*dbsql.DB
-	stores            SqlStoreStores
+	stores            *SqlStoreStores
 	settings          *model.SqlSettings
 	lockedToMaster    bool
 	context           context.Context

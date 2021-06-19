@@ -146,6 +146,7 @@ i18n-check: ## Exit on empty translation strings and translation source strings
 	$(GOBIN)/mmgotool i18n check-empty-src --portal-dir=""
 
 store-layers: ## Generate layers for the store
+	$(GOFLAGS)
 	$(GO) generate $(GOFLAGS) ./store
 
 migration-prereqs: ## Builds prerequisite packages for migrations

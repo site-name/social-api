@@ -10,7 +10,7 @@ type SqlVoucherStore struct {
 	store.Store
 }
 
-func NewSqlVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
+func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
 	vs := &SqlVoucherStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
@@ -24,9 +24,6 @@ func NewSqlVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
 		table.ColMap("DiscountValueType").SetMaxSize(product_and_discount.VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH).
 			SetDefaultConstraint(model.NewString(product_and_discount.FIXED))
 		table.ColMap("Countries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
-		// table.ColMap("StartDate").SetDefaultConstraint(model.NewString("NOW()"))
-		// table.ColMap("Used").SetDefaultConstraint(model.NewString("0"))
-
 	}
 
 	return vs

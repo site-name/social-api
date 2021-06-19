@@ -13,7 +13,7 @@ type SqlWareHouseStore struct {
 	store.Store
 }
 
-func NewSqlWareHouseStore(s store.Store) store.WarehouseStore {
+func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 	ws := &SqlWareHouseStore{s}
 
 	for _, db := range s.GetAllConns() {
