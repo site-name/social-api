@@ -8,6 +8,7 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -16,6 +17,9 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -54,6 +58,8 @@ type RetryLayer struct {
 	ComplianceStore                    store.ComplianceStore
 	CsvExportEventStore                store.CsvExportEventStore
 	CsvExportFileStore                 store.CsvExportFileStore
+	CustomerEventStore                 store.CustomerEventStore
+	CustomerNoteStore                  store.CustomerNoteStore
 	DigitalContentStore                store.DigitalContentStore
 	DigitalContentUrlStore             store.DigitalContentUrlStore
 	DiscountSaleStore                  store.DiscountSaleStore
@@ -95,6 +101,7 @@ type RetryLayer struct {
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
+	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
 	SystemStore                        store.SystemStore
@@ -103,6 +110,7 @@ type RetryLayer struct {
 	UploadSessionStore                 store.UploadSessionStore
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
+	UserAddressStore                   store.UserAddressStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
@@ -233,6 +241,14 @@ func (s *RetryLayer) CsvExportEvent() store.CsvExportEventStore {
 
 func (s *RetryLayer) CsvExportFile() store.CsvExportFileStore {
 	return s.CsvExportFileStore
+}
+
+func (s *RetryLayer) CustomerEvent() store.CustomerEventStore {
+	return s.CustomerEventStore
+}
+
+func (s *RetryLayer) CustomerNote() store.CustomerNoteStore {
+	return s.CustomerNoteStore
 }
 
 func (s *RetryLayer) DigitalContent() store.DigitalContentStore {
@@ -399,6 +415,10 @@ func (s *RetryLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
 }
 
+func (s *RetryLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
+	return s.StaffNotificationRecipientStore
+}
+
 func (s *RetryLayer) Status() store.StatusStore {
 	return s.StatusStore
 }
@@ -429,6 +449,10 @@ func (s *RetryLayer) User() store.UserStore {
 
 func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+func (s *RetryLayer) UserAddress() store.UserAddressStore {
+	return s.UserAddressStore
 }
 
 func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
@@ -607,6 +631,16 @@ type RetryLayerCsvExportEventStore struct {
 
 type RetryLayerCsvExportFileStore struct {
 	store.CsvExportFileStore
+	Root *RetryLayer
+}
+
+type RetryLayerCustomerEventStore struct {
+	store.CustomerEventStore
+	Root *RetryLayer
+}
+
+type RetryLayerCustomerNoteStore struct {
+	store.CustomerNoteStore
 	Root *RetryLayer
 }
 
@@ -815,6 +849,11 @@ type RetryLayerShippingZoneStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerStaffNotificationRecipientStore struct {
+	store.StaffNotificationRecipientStore
+	Root *RetryLayer
+}
+
 type RetryLayerStatusStore struct {
 	store.StatusStore
 	Root *RetryLayer
@@ -852,6 +891,11 @@ type RetryLayerUserStore struct {
 
 type RetryLayerUserAccessTokenStore struct {
 	store.UserAccessTokenStore
+	Root *RetryLayer
+}
+
+type RetryLayerUserAddressStore struct {
+	store.UserAddressStore
 	Root *RetryLayer
 }
 
@@ -896,6 +940,72 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
+func (s *RetryLayerAddressStore) CreateIndexesIfNotExists() {
+
+	s.AddressStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error) {
+
+	tries := 0
+	for {
+		result, err := s.AddressStore.Get(addressID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
+
+	tries := 0
+	for {
+		result, err := s.AddressStore.GetAddressesByIDs(addressesIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
+
+	tries := 0
+	for {
+		result, err := s.AddressStore.GetAddressesByUserID(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
 
 	tries := 0
@@ -913,6 +1023,18 @@ func (s *RetryLayerAddressStore) Save(address *account.Address) (*account.Addres
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerAllocationStore) CreateIndexesIfNotExists() {
+
+	s.AllocationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAppStore) CreateIndexesIfNotExists() {
+
+	s.AppStore.CreateIndexesIfNotExists()
 
 }
 
@@ -936,6 +1058,12 @@ func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 }
 
+func (s *RetryLayerAppTokenStore) CreateIndexesIfNotExists() {
+
+	s.AppTokenStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
 
 	tries := 0
@@ -953,6 +1081,48 @@ func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, e
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
+
+	s.AssignedPageAttributeStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
+
+	s.AssignedPageAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
+
+	s.AssignedProductAttributeStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
+
+	s.AssignedProductAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
+
+	s.AssignedVariantAttributeStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
+
+	s.AssignedVariantAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeStore) CreateIndexesIfNotExists() {
+
+	s.AttributeStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1036,6 +1206,48 @@ func (s *RetryLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.A
 
 }
 
+func (s *RetryLayerAttributePageStore) CreateIndexesIfNotExists() {
+
+	s.AttributePageStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeProductStore) CreateIndexesIfNotExists() {
+
+	s.AttributeProductStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeTranslationStore) CreateIndexesIfNotExists() {
+
+	s.AttributeTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeValueStore) CreateIndexesIfNotExists() {
+
+	s.AttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
+
+	s.AttributeValueTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeVariantStore) CreateIndexesIfNotExists() {
+
+	s.AttributeVariantStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAuditStore) CreateIndexesIfNotExists() {
+
+	s.AuditStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
 
 	tries := 0
@@ -1096,11 +1308,89 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 
 }
 
+func (s *RetryLayerCategoryStore) CreateIndexesIfNotExists() {
+
+	s.CategoryStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCategoryTranslationStore) CreateIndexesIfNotExists() {
+
+	s.CategoryTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerChannelStore) CreateIndexesIfNotExists() {
+
+	s.ChannelStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.GetBySlug(slug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
 
 	tries := 0
 	for {
 		result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.GetRandomActiveChannel()
 		if err == nil {
 			return result, nil
 		}
@@ -1136,6 +1426,18 @@ func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 
 }
 
+func (s *RetryLayerCheckoutStore) CreateIndexesIfNotExists() {
+
+	s.CheckoutStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCheckoutLineStore) CreateIndexesIfNotExists() {
+
+	s.CheckoutLineStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
 
 	tries := 0
@@ -1153,6 +1455,12 @@ func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
+
+	s.ClusterDiscoveryStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1256,6 +1564,30 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 
 }
 
+func (s *RetryLayerCollectionStore) CreateIndexesIfNotExists() {
+
+	s.CollectionStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCollectionChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.CollectionChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCollectionProductStore) CreateIndexesIfNotExists() {
+
+	s.CollectionProductStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCollectionTranslationStore) CreateIndexesIfNotExists() {
+
+	s.CollectionTranslationStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 
 	tries := 0
@@ -1273,6 +1605,12 @@ func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Comp
 			return result, resultVar1, err
 		}
 	}
+
+}
+
+func (s *RetryLayerComplianceStore) CreateIndexesIfNotExists() {
+
+	s.ComplianceStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1376,6 +1714,12 @@ func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 
 }
 
+func (s *RetryLayerCsvExportEventStore) CreateIndexesIfNotExists() {
+
+	s.CsvExportEventStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 
 	tries := 0
@@ -1393,6 +1737,12 @@ func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.Expor
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerCsvExportFileStore) CreateIndexesIfNotExists() {
+
+	s.CsvExportFileStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1436,6 +1786,140 @@ func (s *RetryLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFi
 
 }
 
+func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerEventStore.Count()
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomerEventStore) CreateIndexesIfNotExists() {
+
+	s.CustomerEventStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerEventStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerEventStore.GetEventsByUserID(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomerEventStore) Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerEventStore.Save(customemrEvent)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomerNoteStore) CreateIndexesIfNotExists() {
+
+	s.CustomerNoteStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDigitalContentStore) CreateIndexesIfNotExists() {
+
+	s.DigitalContentStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDigitalContentUrlStore) CreateIndexesIfNotExists() {
+
+	s.DigitalContentUrlStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountSaleStore) CreateIndexesIfNotExists() {
+
+	s.DiscountSaleStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.DiscountSaleChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
+
+	s.DiscountSaleTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
+
+	s.DiscountVoucherStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountVoucherCustomerStore) CreateIndexesIfNotExists() {
+
+	s.DiscountVoucherCustomerStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerFileInfoStore) ClearCaches() {
 
 	s.FileInfoStore.ClearCaches()
@@ -1459,6 +1943,12 @@ func (s *RetryLayerFileInfoStore) CountAll() (int64, error) {
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerFileInfoStore) CreateIndexesIfNotExists() {
+
+	s.FileInfoStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1705,6 +2195,196 @@ func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerFulfillmentStore) CreateIndexesIfNotExists() {
+
+	s.FulfillmentStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentStore.FilterByExcludeStatuses(orderID, excludeStatuses)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentStore.Save(fulfillment)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFulfillmentLineStore) CreateIndexesIfNotExists() {
+
+	s.FulfillmentLineStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentLineStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentLineStore.Save(fulfillmentLine)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) CreateIndexesIfNotExists() {
+
+	s.GiftCardStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.GetAllByUserId(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.Save(gc)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceEventStore) CreateIndexesIfNotExists() {
+
+	s.InvoiceEventStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerJobStore) CreateIndexesIfNotExists() {
+
+	s.JobStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1988,6 +2668,358 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
+func (s *RetryLayerMenuStore) CreateIndexesIfNotExists() {
+
+	s.MenuStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
+
+	s.MenuItemTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerOrderStore) CreateIndexesIfNotExists() {
+
+	s.OrderStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.Save(order)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderStore) Update(order *order.Order) (*order.Order, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.Update(order)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
+
+	tries := 0
+	for {
+		err := s.OrderStore.UpdateTotalPaid(orderId, newTotalPaid)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderDiscountStore) CreateIndexesIfNotExists() {
+
+	s.OrderDiscountStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerOrderEventStore) CreateIndexesIfNotExists() {
+
+	s.OrderEventStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerOrderLineStore) CreateIndexesIfNotExists() {
+
+	s.OrderLineStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderLineStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderLineStore.GetAllByOrderID(orderID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderLineStore.Save(orderLine)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPageStore) CreateIndexesIfNotExists() {
+
+	s.PageStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerPageTranslationStore) CreateIndexesIfNotExists() {
+
+	s.PageTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerPageTypeStore) CreateIndexesIfNotExists() {
+
+	s.PageTypeStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerPaymentStore) CreateIndexesIfNotExists() {
+
+	s.PaymentStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerPaymentStore) Get(id string) (*payment.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.GetPaymentsByOrderID(orderID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.PaymentExistWithOptions(opts)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.Save(payment)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
+
+	s.PaymentTransactionStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentTransactionStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentTransactionStore.GetAllByPaymentID(paymentID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentTransactionStore.Save(transaction)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
+
+	s.PluginConfigurationStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
 
 	tries := 0
@@ -2005,6 +3037,12 @@ func (s *RetryLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerPreferenceStore) CreateIndexesIfNotExists() {
+
+	s.PreferenceStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2065,6 +3103,12 @@ func (s *RetryLayerPreferenceStore) DeleteCategoryAndName(category string, name 
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerPreferenceStore) DeleteUnusedFeatures() {
+
+	s.PreferenceStore.DeleteUnusedFeatures()
 
 }
 
@@ -2168,6 +3212,12 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
+func (s *RetryLayerProductStore) CreateIndexesIfNotExists() {
+
+	s.ProductStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 
 	tries := 0
@@ -2228,6 +3278,88 @@ func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 
 }
 
+func (s *RetryLayerProductChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.ProductChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductMediaStore) CreateIndexesIfNotExists() {
+
+	s.ProductMediaStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductTranslationStore) CreateIndexesIfNotExists() {
+
+	s.ProductTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductTypeStore) CreateIndexesIfNotExists() {
+
+	s.ProductTypeStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductVariantStore) CreateIndexesIfNotExists() {
+
+	s.ProductVariantStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.Save(variant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.ProductVariantChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerProductVariantTranslationStore) CreateIndexesIfNotExists() {
+
+	s.ProductVariantTranslationStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error) {
 
 	tries := 0
@@ -2245,6 +3377,12 @@ func (s *RetryLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string)
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerRoleStore) CreateIndexesIfNotExists() {
+
+	s.RoleStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2411,6 +3549,12 @@ func (s *RetryLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 func (s *RetryLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 
 	s.SessionStore.Cleanup(expiryTime, batchSize)
+
+}
+
+func (s *RetryLayerSessionStore) CreateIndexesIfNotExists() {
+
+	s.SessionStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2694,6 +3838,88 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
+func (s *RetryLayerShippingMethodStore) CreateIndexesIfNotExists() {
+
+	s.ShippingMethodStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.ShippingMethodChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
+
+	s.ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShippingMethodTranslationStore) CreateIndexesIfNotExists() {
+
+	s.ShippingMethodTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShippingZoneStore) CreateIndexesIfNotExists() {
+
+	s.ShippingZoneStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
+
+	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
+
+	tries := 0
+	for {
+		result, err := s.StaffNotificationRecipientStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
+
+	tries := 0
+	for {
+		result, err := s.StaffNotificationRecipientStore.Save(notificationRecipient)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStatusStore) CreateIndexesIfNotExists() {
+
+	s.StatusStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerStatusStore) Get(userID string) (*model.Status, error) {
 
 	tries := 0
@@ -2811,6 +4037,18 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerStockStore) CreateIndexesIfNotExists() {
+
+	s.StockStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerSystemStore) CreateIndexesIfNotExists() {
+
+	s.SystemStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2974,6 +4212,12 @@ func (s *RetryLayerSystemStore) Update(system *model.System) error {
 
 }
 
+func (s *RetryLayerTermsOfServiceStore) CreateIndexesIfNotExists() {
+
+	s.TermsOfServiceStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 
 	tries := 0
@@ -3037,6 +4281,12 @@ func (s *RetryLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfServic
 func (s *RetryLayerTokenStore) Cleanup() {
 
 	s.TokenStore.Cleanup()
+
+}
+
+func (s *RetryLayerTokenStore) CreateIndexesIfNotExists() {
+
+	s.TokenStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3117,6 +4367,12 @@ func (s *RetryLayerTokenStore) Save(recovery *model.Token) error {
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerUploadSessionStore) CreateIndexesIfNotExists() {
+
+	s.UploadSessionStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3383,6 +4639,12 @@ func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, er
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerUserStore) CreateIndexesIfNotExists() {
+
+	s.UserStore.CreateIndexesIfNotExists()
 
 }
 
@@ -4104,6 +5366,12 @@ func (s *RetryLayerUserStore) VerifyEmail(userID string, email string) (string, 
 
 }
 
+func (s *RetryLayerUserAccessTokenStore) CreateIndexesIfNotExists() {
+
+	s.UserAccessTokenStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerUserAccessTokenStore) Delete(tokenID string) error {
 
 	tries := 0
@@ -4304,6 +5572,56 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
+func (s *RetryLayerUserAddressStore) CreateIndexesIfNotExists() {
+
+	s.UserAddressStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserAddressStore.Save(userAddress)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVariantMediaStore) CreateIndexesIfNotExists() {
+
+	s.VariantMediaStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
+
+	s.VoucherChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
+
+	s.VoucherTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerWarehouseStore) CreateIndexesIfNotExists() {
+
+	s.WarehouseStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 
 	tries := 0
@@ -4364,6 +5682,18 @@ func (s *RetryLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.War
 
 }
 
+func (s *RetryLayerWishlistStore) CreateIndexesIfNotExists() {
+
+	s.WishlistStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerWishlistItemStore) CreateIndexesIfNotExists() {
+
+	s.WishlistItemStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayer) Close() {
 	s.Store.Close()
 }
@@ -4374,6 +5704,10 @@ func (s *RetryLayer) DropAllTables() {
 
 func (s *RetryLayer) LockToMaster() {
 	s.Store.LockToMaster()
+}
+
+func (s *RetryLayer) MarkSystemRanUnitTests() {
+	s.Store.MarkSystemRanUnitTests()
 }
 
 func (s *RetryLayer) SetContext(context context.Context) {
@@ -4420,6 +5754,8 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ComplianceStore = &RetryLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
 	newStore.CsvExportEventStore = &RetryLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
 	newStore.CsvExportFileStore = &RetryLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.CustomerEventStore = &RetryLayerCustomerEventStore{CustomerEventStore: childStore.CustomerEvent(), Root: &newStore}
+	newStore.CustomerNoteStore = &RetryLayerCustomerNoteStore{CustomerNoteStore: childStore.CustomerNote(), Root: &newStore}
 	newStore.DigitalContentStore = &RetryLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}
 	newStore.DigitalContentUrlStore = &RetryLayerDigitalContentUrlStore{DigitalContentUrlStore: childStore.DigitalContentUrl(), Root: &newStore}
 	newStore.DiscountSaleStore = &RetryLayerDiscountSaleStore{DiscountSaleStore: childStore.DiscountSale(), Root: &newStore}
@@ -4461,6 +5797,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ShippingMethodPostalCodeRuleStore = &RetryLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
+	newStore.StaffNotificationRecipientStore = &RetryLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &RetryLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
 	newStore.SystemStore = &RetryLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
@@ -4469,6 +5806,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UploadSessionStore = &RetryLayerUploadSessionStore{UploadSessionStore: childStore.UploadSession(), Root: &newStore}
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
+	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}

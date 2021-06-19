@@ -21,12 +21,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
-	"github.com/sitename/sitename/modules/mfa"
 )
-
-type Indexer interface {
-	CreateIndexesIfNotExists() // CreateIndexesIfNotExists creates indexes for table fields
-}
 
 // Store is database gateway of the system
 type Store interface {
@@ -144,7 +139,7 @@ type Store interface {
 }
 
 type UploadSessionStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(session *model.UploadSession) (*model.UploadSession, error)
 	Update(session *model.UploadSession) error
 	Get(id string) (*model.UploadSession, error)
@@ -154,7 +149,7 @@ type UploadSessionStore interface {
 
 // fileinfo
 type FileInfoStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(info *model.FileInfo) (*model.FileInfo, error)
 	Upsert(info *model.FileInfo) (*model.FileInfo, error)
 	Get(id string) (*model.FileInfo, error)
@@ -181,53 +176,53 @@ type FileInfoStore interface {
 // attribute
 type (
 	AttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
 		Get(id string) (*attribute.Attribute, error)
 		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
 		GetProductAndVariantHeaders(ids []string) ([]string, error)
 	}
 	AttributeTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeValueTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributePageStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedVariantAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedVariantAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeVariantStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedProductAttributeValueStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AssignedProductAttributeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AttributeProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // compliance
 type ComplianceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Get(id string) (*compliance.Compliance, error)
@@ -238,108 +233,108 @@ type ComplianceStore interface {
 
 //plugin
 type PluginConfigurationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 // wishlist
 type (
 	WishlistStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	WishlistItemStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // warehouse
 type (
 	WarehouseStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error)
 		Get(id string) (*warehouse.WareHouse, error)
 		GetWarehousesHeaders(ids []string) ([]string, error)
 	}
 	StockStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	AllocationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // shipping
 type (
 	ShippingZoneStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodPostalCodeRuleStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ShippingMethodTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // product
 type (
 	CollectionTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CollectionProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	VariantMediaStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductMediaStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	DigitalContentUrlStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	DigitalContentStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductVariantStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                     // Get returns a product variant with given id
 	}
 	ProductChannelListingStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductTypeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CategoryTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CategoryStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	ProductStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
@@ -350,58 +345,58 @@ type (
 // payment
 type (
 	PaymentStore interface {
-		Indexer
-		Save(*payment.Payment) (*payment.Payment, error)                                        // Save save payment instance into database
-		Get(string) (*payment.Payment, error)                                                   // Get returns a payment with given id
+		CreateIndexesIfNotExists()
+		Save(payment *payment.Payment) (*payment.Payment, error)                                // Save save payment instance into database
+		Get(id string) (*payment.Payment, error)                                                // Get returns a payment with given id
 		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error)                        // GetPaymentsByOrderID returns all payments that belong to given order
 		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
 	}
 	PaymentTransactionStore interface {
-		Indexer
-		Save(*payment.PaymentTransaction) (*payment.PaymentTransaction, error)     // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                        // Get returns a payment transaction with given id
-		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
+		CreateIndexesIfNotExists()
+		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                // Get returns a payment transaction with given id
+		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error)         // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
 	}
 )
 
 // page
 type (
 	PageTypeStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	PageTranslationStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	PageStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // order
 type (
 	OrderLineStore interface {
-		Indexer
-		Save(*order.OrderLine) (*order.OrderLine, error)            // Save save given order line instance into database and returns it
+		CreateIndexesIfNotExists()
+		Save(orderLine *order.OrderLine) (*order.OrderLine, error)  // Save save given order line instance into database and returns it
 		Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
 		GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
 	}
 	OrderStore interface {
-		Indexer
-		Save(*order.Order) (*order.Order, error)                             // Save insert an order into database and returns that order if success
+		CreateIndexesIfNotExists()
+		Save(order *order.Order) (*order.Order, error)                       // Save insert an order into database and returns that order if success
 		Get(id string) (*order.Order, error)                                 // Get find order in database with given id
 		Update(order *order.Order) (*order.Order, error)                     // Update update order
 		UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error // updateTotalPaid update total paid amount of given order
 	}
 	OrderEventStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	FulfillmentLineStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
 	}
 	FulfillmentStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error)
 		Get(id string) (*order.Fulfillment, error)
 		FilterByExcludeStatuses(orderID string, excludeStatuses []string) (exist bool, err error) // FilterByExcludeStatuses check if there is at least 1 fulfillment belong to given order and have status differnt than given statuses.
@@ -409,64 +404,64 @@ type (
 )
 
 type MenuItemTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type MenuStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type InvoiceEventStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type GiftCardStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)     // Save insert new giftcard to database
 	GetById(id string) (*giftcard.GiftCard, error)              // GetById returns a giftcard instance that has id of given id
 	GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) // GetAllByUserId returns a slice aff giftcards that belong to given user
 }
 
 type OrderDiscountStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleChannelListingStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountSaleStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type VoucherTranslationStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountVoucherCustomerStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type VoucherChannelListingStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 type DiscountVoucherStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 }
 
 // csv
 type (
 	CsvExportEventStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
 	}
 	CsvExportFileStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(file *csv.ExportFile) (*csv.ExportFile, error)
 		Get(id string) (*csv.ExportFile, error)
 	}
@@ -475,16 +470,16 @@ type (
 // checkout
 type (
 	CheckoutLineStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 	CheckoutStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 // channel
 type ChannelStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                         // Get returns channel by given id
 	GetBySlug(slug string) (*channel.Channel, error)                                 // GetBySlug returns channel by given slug
@@ -495,18 +490,18 @@ type ChannelStore interface {
 // app
 type (
 	AppTokenStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(appToken *app.AppToken) (*app.AppToken, error)
 	}
 
 	AppStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(app *app.App) (*app.App, error)
 	}
 )
 
 type ClusterDiscoveryStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(discovery *model.ClusterDiscovery) error
 	Delete(discovery *model.ClusterDiscovery) (bool, error)
 	Exists(discovery *model.ClusterDiscovery) (bool, error)
@@ -516,21 +511,21 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(audit *audit.Audit) error
 	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
 }
 
 type PreferenceStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(preferences *model.Preferences) error
 	GetCategory(userID, category string) (model.Preferences, error)
 	Get(userID, category, name string) (*model.Preference, error)
@@ -544,7 +539,7 @@ type PreferenceStore interface {
 }
 
 type JobStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(job *model.Job) (*model.Job, error)
 	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
 	UpdateStatus(id string, status string) (*model.Job, error)
@@ -562,7 +557,7 @@ type JobStore interface {
 }
 
 type StatusStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	SaveOrUpdate(status *model.Status) error
 	Get(userID string) (*model.Status, error)
 	GetByIds(userIds []string) ([]*model.Status, error)
@@ -574,15 +569,14 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		Indexer                                                              // CreateIndexesIfNotExists creates indexes for table if needed
+		CreateIndexesIfNotExists()                                           // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(address *account.Address) (*account.Address, error)             // Save saves address into database
 		Get(addressID string) (*account.Address, error)                      // Get returns an Address with given addressID is exist
 		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
 		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
 	}
 	UserStore interface {
-		mfa.Store                                                                     // for multifactor authentication
-		Indexer                                                                       //
+		CreateIndexesIfNotExists()                                                    //
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error
@@ -658,7 +652,7 @@ type (
 		// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
 	}
 	TokenStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(recovery *model.Token) error
 		Delete(token string) error
 		GetByToken(token string) (*model.Token, error)
@@ -666,7 +660,7 @@ type (
 		RemoveAllTokensByType(tokenType string) error
 	}
 	UserAccessTokenStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 		Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
 		DeleteAllForUser(userID string) error
 		Delete(tokenID string) error
@@ -679,28 +673,28 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	UserAddressStore interface {
-		Indexer
-		Save(*account.UserAddress) (*account.UserAddress, error)
+		CreateIndexesIfNotExists()
+		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 	}
 	CustomerEventStore interface {
-		Indexer
-		Save(*account.CustomerEvent) (*account.CustomerEvent, error)
+		CreateIndexesIfNotExists()
+		Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error)
 		Get(id string) (*account.CustomerEvent, error)
 		Count() (int64, error)
 		GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) // get list of customer event belongs to given id
 	}
 	StaffNotificationRecipientStore interface {
-		Indexer
-		Save(*account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error)
-		Get(string) (*account.StaffNotificationRecipient, error)
+		CreateIndexesIfNotExists()
+		Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error)
+		Get(id string) (*account.StaffNotificationRecipient, error)
 	}
 	CustomerNoteStore interface {
-		Indexer
+		CreateIndexesIfNotExists()
 	}
 )
 
 type SystemStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(system *model.System) error
 	SaveOrUpdate(system *model.System) error
 	Update(system *model.System) error
@@ -713,7 +707,7 @@ type SystemStore interface {
 
 // session
 type SessionStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
 	Save(session *model.Session) (*model.Session, error)
 	GetSessions(userID string) ([]*model.Session, error)
@@ -733,7 +727,7 @@ type SessionStore interface {
 }
 
 type RoleStore interface {
-	Indexer
+	CreateIndexesIfNotExists()
 	Save(role *model.Role) (*model.Role, error)
 	Get(roleID string) (*model.Role, error)
 	GetAll() ([]*model.Role, error)

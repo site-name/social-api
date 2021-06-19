@@ -7,6 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -16,6 +17,9 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -55,6 +59,8 @@ type TimerLayer struct {
 	ComplianceStore                    store.ComplianceStore
 	CsvExportEventStore                store.CsvExportEventStore
 	CsvExportFileStore                 store.CsvExportFileStore
+	CustomerEventStore                 store.CustomerEventStore
+	CustomerNoteStore                  store.CustomerNoteStore
 	DigitalContentStore                store.DigitalContentStore
 	DigitalContentUrlStore             store.DigitalContentUrlStore
 	DiscountSaleStore                  store.DiscountSaleStore
@@ -96,6 +102,7 @@ type TimerLayer struct {
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
+	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
 	SystemStore                        store.SystemStore
@@ -104,6 +111,7 @@ type TimerLayer struct {
 	UploadSessionStore                 store.UploadSessionStore
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
+	UserAddressStore                   store.UserAddressStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
@@ -234,6 +242,14 @@ func (s *TimerLayer) CsvExportEvent() store.CsvExportEventStore {
 
 func (s *TimerLayer) CsvExportFile() store.CsvExportFileStore {
 	return s.CsvExportFileStore
+}
+
+func (s *TimerLayer) CustomerEvent() store.CustomerEventStore {
+	return s.CustomerEventStore
+}
+
+func (s *TimerLayer) CustomerNote() store.CustomerNoteStore {
+	return s.CustomerNoteStore
 }
 
 func (s *TimerLayer) DigitalContent() store.DigitalContentStore {
@@ -400,6 +416,10 @@ func (s *TimerLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
 }
 
+func (s *TimerLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
+	return s.StaffNotificationRecipientStore
+}
+
 func (s *TimerLayer) Status() store.StatusStore {
 	return s.StatusStore
 }
@@ -430,6 +450,10 @@ func (s *TimerLayer) User() store.UserStore {
 
 func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
+}
+
+func (s *TimerLayer) UserAddress() store.UserAddressStore {
+	return s.UserAddressStore
 }
 
 func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
@@ -608,6 +632,16 @@ type TimerLayerCsvExportEventStore struct {
 
 type TimerLayerCsvExportFileStore struct {
 	store.CsvExportFileStore
+	Root *TimerLayer
+}
+
+type TimerLayerCustomerEventStore struct {
+	store.CustomerEventStore
+	Root *TimerLayer
+}
+
+type TimerLayerCustomerNoteStore struct {
+	store.CustomerNoteStore
 	Root *TimerLayer
 }
 
@@ -816,6 +850,11 @@ type TimerLayerShippingZoneStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerStaffNotificationRecipientStore struct {
+	store.StaffNotificationRecipientStore
+	Root *TimerLayer
+}
+
 type TimerLayerStatusStore struct {
 	store.StatusStore
 	Root *TimerLayer
@@ -856,6 +895,11 @@ type TimerLayerUserAccessTokenStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerUserAddressStore struct {
+	store.UserAddressStore
+	Root *TimerLayer
+}
+
 type TimerLayerVariantMediaStore struct {
 	store.VariantMediaStore
 	Root *TimerLayer
@@ -886,6 +930,69 @@ type TimerLayerWishlistItemStore struct {
 	Root *TimerLayer
 }
 
+func (s *TimerLayerAddressStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AddressStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.Get(addressID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.GetAddressesByIDs(addressesIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.GetAddressesByIDs", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.GetAddressesByUserID(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.GetAddressesByUserID", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
@@ -900,6 +1007,36 @@ func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Addres
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerAllocationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AllocationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAppStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AppStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AppStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
@@ -918,6 +1055,21 @@ func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
 	return result, err
 }
 
+func (s *TimerLayerAppTokenStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AppTokenStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AppTokenStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
 	start := timemodule.Now()
 
@@ -932,6 +1084,111 @@ func (s *TimerLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, e
 		s.Root.Metrics.ObserveStoreMethodDuration("AppTokenStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedPageAttributeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedPageAttributeValueStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedProductAttributeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedProductAttributeValueStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedVariantAttributeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AssignedVariantAttributeValueStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
@@ -998,6 +1255,111 @@ func (s *TimerLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.A
 	return result, err
 }
 
+func (s *TimerLayerAttributePageStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributePageStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributePageStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeProductStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeProductStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeValueStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeValueStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeValueTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAttributeVariantStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AttributeVariantStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerAuditStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.AuditStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AuditStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
 	start := timemodule.Now()
 
@@ -1046,6 +1408,83 @@ func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
 	return err
 }
 
+func (s *TimerLayerCategoryStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CategoryStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCategoryTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CategoryTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerChannelStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ChannelStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.GetBySlug(slug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetBySlug", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
 	start := timemodule.Now()
 
@@ -1058,6 +1497,22 @@ func (s *TimerLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order st
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetChannelsByIdsAndOrder", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.GetRandomActiveChannel()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetRandomActiveChannel", success, elapsed)
 	}
 	return result, err
 }
@@ -1078,6 +1533,36 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CheckoutStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCheckoutLineStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CheckoutLineStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
 	start := timemodule.Now()
 
@@ -1092,6 +1577,21 @@ func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
 		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.Cleanup", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ClusterDiscoveryStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
@@ -1174,6 +1674,66 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 	return err
 }
 
+func (s *TimerLayerCollectionStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CollectionStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCollectionChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CollectionChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCollectionProductStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CollectionProductStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionProductStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCollectionTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CollectionTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 	start := timemodule.Now()
 
@@ -1188,6 +1748,21 @@ func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Comp
 		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.ComplianceExport", success, elapsed)
 	}
 	return result, resultVar1, err
+}
+
+func (s *TimerLayerComplianceStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ComplianceStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
@@ -1270,6 +1845,21 @@ func (s *TimerLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 	return result, err
 }
 
+func (s *TimerLayerCsvExportEventStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CsvExportEventStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportEventStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 	start := timemodule.Now()
 
@@ -1284,6 +1874,21 @@ func (s *TimerLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.Expor
 		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportEventStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerCsvExportFileStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CsvExportFileStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportFileStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
@@ -1318,6 +1923,205 @@ func (s *TimerLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFi
 	return result, err
 }
 
+func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerEventStore.Count()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Count", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomerEventStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CustomerEventStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerEventStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerEventStore.GetEventsByUserID(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.GetEventsByUserID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomerEventStore) Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerEventStore.Save(customemrEvent)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomerNoteStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.CustomerNoteStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerNoteStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDigitalContentStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DigitalContentStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDigitalContentUrlStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DigitalContentUrlStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDiscountSaleStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DiscountSaleStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DiscountSaleChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DiscountSaleTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DiscountVoucherStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerDiscountVoucherCustomerStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.DiscountVoucherCustomerStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherCustomerStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerFileInfoStore) ClearCaches() {
 	start := timemodule.Now()
 
@@ -1347,6 +2151,21 @@ func (s *TimerLayerFileInfoStore) CountAll() (int64, error) {
 		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.CountAll", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerFileInfoStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.FileInfoStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
@@ -1554,6 +2373,209 @@ func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.Upsert", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerFulfillmentStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.FulfillmentStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentStore.FilterByExcludeStatuses(orderID, excludeStatuses)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.FilterByExcludeStatuses", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentStore.Save(fulfillment)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFulfillmentLineStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.FulfillmentLineStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentLineStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentLineStore.Save(fulfillmentLine)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.GiftCardStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.GetAllByUserId(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByUserId", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.Save(gc)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerInvoiceEventStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.InvoiceEventStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("InvoiceEventStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerJobStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.JobStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("JobStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerJobStore) Delete(id string) (string, error) {
@@ -1780,6 +2802,410 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
+func (s *TimerLayerMenuStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.MenuStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.MenuItemTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerOrderStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.OrderStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.Save(order)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderStore) Update(order *order.Order) (*order.Order, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.Update(order)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
+	start := timemodule.Now()
+
+	err := s.OrderStore.UpdateTotalPaid(orderId, newTotalPaid)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.UpdateTotalPaid", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerOrderDiscountStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.OrderDiscountStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderDiscountStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerOrderEventStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.OrderEventStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderEventStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerOrderLineStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.OrderLineStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderLineStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderLineStore.GetAllByOrderID(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.GetAllByOrderID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderLineStore.Save(orderLine)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPageStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PageStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PageStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerPageTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PageTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PageTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerPageTypeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PageTypeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PageTypeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerPaymentStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PaymentStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.GetPaymentsByOrderID(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.GetPaymentsByOrderID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.PaymentExistWithOptions(opts)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.PaymentExistWithOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.Save(payment)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PaymentTransactionStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentTransactionStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentTransactionStore.GetAllByPaymentID(paymentID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.GetAllByPaymentID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentTransactionStore.Save(transaction)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PluginConfigurationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginConfigurationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
 	start := timemodule.Now()
 
@@ -1794,6 +3220,21 @@ func (s *TimerLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error
 		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.CleanupFlagsBatch", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerPreferenceStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PreferenceStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerPreferenceStore) Delete(userID string, category string, name string) error {
@@ -1842,6 +3283,21 @@ func (s *TimerLayerPreferenceStore) DeleteCategoryAndName(category string, name 
 		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.DeleteCategoryAndName", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerPreferenceStore) DeleteUnusedFeatures() {
+	start := timemodule.Now()
+
+	s.PreferenceStore.DeleteUnusedFeatures()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreferenceStore.DeleteUnusedFeatures", success, elapsed)
+	}
 }
 
 func (s *TimerLayerPreferenceStore) Get(userID string, category string, name string) (*model.Preference, error) {
@@ -1924,6 +3380,21 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerProductStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -1972,6 +3443,143 @@ func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 	return result, err
 }
 
+func (s *TimerLayerProductChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductMediaStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductMediaStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductMediaStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductTypeStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductTypeStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductVariantStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductVariantStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.Save(variant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductVariantChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerProductVariantTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ProductVariantTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string) (map[string]*model.RolePermissions, error) {
 	start := timemodule.Now()
 
@@ -1986,6 +3594,21 @@ func (s *TimerLayerRoleStore) ChannelHigherScopedPermissions(roleNames []string)
 		s.Root.Metrics.ObserveStoreMethodDuration("RoleStore.ChannelHigherScopedPermissions", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerRoleStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.RoleStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("RoleStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerRoleStore) Delete(roleID string) (*model.Role, error) {
@@ -2128,6 +3751,21 @@ func (s *TimerLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.Cleanup", success, elapsed)
+	}
+}
+
+func (s *TimerLayerSessionStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.SessionStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SessionStore.CreateIndexesIfNotExists", success, elapsed)
 	}
 }
 
@@ -2355,6 +3993,143 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingMethodStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingMethodChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerShippingMethodTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingMethodTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerShippingZoneStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingZoneStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StaffNotificationRecipientStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
+	start := timemodule.Now()
+
+	result, err := s.StaffNotificationRecipientStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StaffNotificationRecipientStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
+	start := timemodule.Now()
+
+	result, err := s.StaffNotificationRecipientStore.Save(notificationRecipient)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StaffNotificationRecipientStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStatusStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.StatusStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StatusStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerStatusStore) Get(userID string) (*model.Status, error) {
 	start := timemodule.Now()
 
@@ -2449,6 +4224,36 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 		s.Root.Metrics.ObserveStoreMethodDuration("StatusStore.UpdateLastActivityAt", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerStockStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.StockStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerSystemStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.SystemStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SystemStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerSystemStore) Get() (model.StringMap, error) {
@@ -2579,6 +4384,21 @@ func (s *TimerLayerSystemStore) Update(system *model.System) error {
 	return err
 }
 
+func (s *TimerLayerTermsOfServiceStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.TermsOfServiceStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("TermsOfServiceStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 	start := timemodule.Now()
 
@@ -2639,6 +4459,21 @@ func (s *TimerLayerTokenStore) Cleanup() {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.Cleanup", success, elapsed)
+	}
+}
+
+func (s *TimerLayerTokenStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.TokenStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.CreateIndexesIfNotExists", success, elapsed)
 	}
 }
 
@@ -2704,6 +4539,21 @@ func (s *TimerLayerTokenStore) Save(recovery *model.Token) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("TokenStore.Save", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerUploadSessionStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.UploadSessionStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UploadSessionStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerUploadSessionStore) Delete(id string) error {
@@ -2927,6 +4777,21 @@ func (s *TimerLayerUserStore) Count(options account.UserCountOptions) (int64, er
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Count", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerUserStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.UserStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerUserStore) DeactivateGuests() ([]string, error) {
@@ -3536,6 +5401,21 @@ func (s *TimerLayerUserStore) VerifyEmail(userID string, email string) (string, 
 	return result, err
 }
 
+func (s *TimerLayerUserAccessTokenStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.UserAccessTokenStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAccessTokenStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerUserAccessTokenStore) Delete(tokenID string) error {
 	start := timemodule.Now()
 
@@ -3696,6 +5576,97 @@ func (s *TimerLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 	return err
 }
 
+func (s *TimerLayerUserAddressStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.UserAddressStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserAddressStore.Save(userAddress)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVariantMediaStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VariantMediaStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VariantMediaStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VoucherChannelListingStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VoucherTranslationStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerWarehouseStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.WarehouseStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
@@ -3744,6 +5715,36 @@ func (s *TimerLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.War
 	return result, err
 }
 
+func (s *TimerLayerWishlistStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.WishlistStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerWishlistItemStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.WishlistItemStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayer) Close() {
 	s.Store.Close()
 }
@@ -3754,6 +5755,10 @@ func (s *TimerLayer) DropAllTables() {
 
 func (s *TimerLayer) LockToMaster() {
 	s.Store.LockToMaster()
+}
+
+func (s *TimerLayer) MarkSystemRanUnitTests() {
+	s.Store.MarkSystemRanUnitTests()
 }
 
 func (s *TimerLayer) SetContext(context context.Context) {
@@ -3801,6 +5806,8 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ComplianceStore = &TimerLayerComplianceStore{ComplianceStore: childStore.Compliance(), Root: &newStore}
 	newStore.CsvExportEventStore = &TimerLayerCsvExportEventStore{CsvExportEventStore: childStore.CsvExportEvent(), Root: &newStore}
 	newStore.CsvExportFileStore = &TimerLayerCsvExportFileStore{CsvExportFileStore: childStore.CsvExportFile(), Root: &newStore}
+	newStore.CustomerEventStore = &TimerLayerCustomerEventStore{CustomerEventStore: childStore.CustomerEvent(), Root: &newStore}
+	newStore.CustomerNoteStore = &TimerLayerCustomerNoteStore{CustomerNoteStore: childStore.CustomerNote(), Root: &newStore}
 	newStore.DigitalContentStore = &TimerLayerDigitalContentStore{DigitalContentStore: childStore.DigitalContent(), Root: &newStore}
 	newStore.DigitalContentUrlStore = &TimerLayerDigitalContentUrlStore{DigitalContentUrlStore: childStore.DigitalContentUrl(), Root: &newStore}
 	newStore.DiscountSaleStore = &TimerLayerDiscountSaleStore{DiscountSaleStore: childStore.DiscountSale(), Root: &newStore}
@@ -3842,6 +5849,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ShippingMethodPostalCodeRuleStore = &TimerLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &TimerLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
+	newStore.StaffNotificationRecipientStore = &TimerLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &TimerLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &TimerLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
 	newStore.SystemStore = &TimerLayerSystemStore{SystemStore: childStore.System(), Root: &newStore}
@@ -3850,6 +5858,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UploadSessionStore = &TimerLayerUploadSessionStore{UploadSessionStore: childStore.UploadSession(), Root: &newStore}
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
+	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}

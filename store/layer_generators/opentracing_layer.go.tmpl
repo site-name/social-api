@@ -19,7 +19,11 @@ import (
 	"github.com/sitename/sitename/model/app"
 	"github.com/sitename/sitename/store"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/giftcard"
+	"github.com/shopspring/decimal"
 	spanlog "github.com/opentracing/opentracing-go/log"
+	"github.com/sitename/sitename/model/payment"
 )
 
 type {{.Name}} struct {
