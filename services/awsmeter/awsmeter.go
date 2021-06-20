@@ -15,7 +15,6 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -39,8 +38,7 @@ type AWSMeterReport struct {
 }
 
 func (o *AWSMeterReport) ToJSON() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return model.ModelToJson(o)
 }
 
 func New(store store.Store, config *model.Config) *AwsMeter {

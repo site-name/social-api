@@ -79,9 +79,6 @@ func buildOpenTracingLayer() error {
 	return ioutil.WriteFile(path.Join("opentracinglayer", "opentracinglayer.go"), formatedCode, 0644)
 }
 
-type A interface {
-}
-
 func buildStoreImplement() error {
 	name := "SqlStoreStores"
 	templateFile := "store_implement.go.tmpl"
@@ -98,7 +95,8 @@ func buildStoreImplement() error {
 		},
 		"FromWhichPackage": func(s string) string {
 			switch s {
-			case "User", "Address", "UserAddress", "CustomerEvent", "StaffNotificationRecipient", "CustomerNote", "UserAccessToken", "TermsOfService", "Token":
+			case "User", "Address", "UserAddress", "CustomerEvent", "StaffNotificationRecipient",
+				"CustomerNote", "UserAccessToken", "TermsOfService", "Token":
 				return "account"
 			case "System":
 				return "system"
@@ -124,7 +122,8 @@ func buildStoreImplement() error {
 				return "checkout"
 			case "CsvExportEvent", "CsvExportFile":
 				return "csv"
-			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation", "DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount":
+			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation",
+				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount":
 				return "discount"
 			case "GiftCard":
 				return "giftcard"
@@ -138,9 +137,13 @@ func buildStoreImplement() error {
 				return "page"
 			case "Payment", "PaymentTransaction":
 				return "payment"
-			case "Category", "CategoryTranslation", "ProductType", "Product", "ProductTranslation", "ProductChannelListing", "ProductVariant", "ProductVariantTranslation", "ProductVariantChannelListing", "DigitalContent", "DigitalContentUrl", "ProductMedia", "VariantMedia", "CollectionProduct", "Collection", "CollectionChannelListing", "CollectionTranslation":
+			case "Category", "CategoryTranslation", "ProductType", "Product", "ProductTranslation",
+				"ProductChannelListing", "ProductVariant", "ProductVariantTranslation", "ProductVariantChannelListing",
+				"DigitalContent", "DigitalContentUrl", "ProductMedia", "VariantMedia",
+				"CollectionProduct", "Collection", "CollectionChannelListing", "CollectionTranslation":
 				return "product"
-			case "ShippingMethodTranslation", "ShippingMethodChannelListing", "ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone":
+			case "ShippingMethodTranslation", "ShippingMethodChannelListing",
+				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone":
 				return "shipping"
 			case "Warehouse", "Stock", "Allocation":
 				return "warehouse"
@@ -150,7 +153,10 @@ func buildStoreImplement() error {
 				return "plugin"
 			case "Compliance":
 				return "compliance"
-			case "Attribute", "AttributeTranslation", "AttributeValue", "AttributeValueTranslation", "AssignedPageAttributeValue", "AssignedPageAttribute", "AttributePage", "AssignedVariantAttributeValue", "AssignedVariantAttribute", "AttributeVariant", "AssignedProductAttributeValue", "AssignedProductAttribute", "AttributeProduct":
+			case "Attribute", "AttributeTranslation", "AttributeValue", "AttributeValueTranslation",
+				"AssignedPageAttributeValue", "AssignedPageAttribute", "AttributePage",
+				"AssignedVariantAttributeValue", "AssignedVariantAttribute", "AttributeVariant",
+				"AssignedProductAttributeValue", "AssignedProductAttribute", "AttributeProduct":
 				return "attribute"
 			case "FileInfo", "UploadSession":
 				return "file"
