@@ -25,6 +25,7 @@ type App struct {
 	srv *Server
 
 	// sub apps
+	account   sub_app_iface.AccountApp
 	order     sub_app_iface.OrderApp
 	payment   sub_app_iface.PaymentApp
 	giftcard  sub_app_iface.GiftcardApp
@@ -42,6 +43,7 @@ type App struct {
 	seo       sub_app_iface.SeoApp
 	attribute sub_app_iface.AttributeApp
 	channel   sub_app_iface.ChannelApp
+	invoice   sub_app_iface.InvoiceApp
 
 	// XXX: This is required because removing this needs BleveEngine
 	// to be registered in (h *MainHelper) setupStore, but that creates

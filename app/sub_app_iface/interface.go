@@ -3,6 +3,7 @@ package sub_app_iface
 import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -19,10 +20,26 @@ type PaymentApp interface {
 	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)
 	// GetLastOrderPayment get most recent payment made for given order
 	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
+	// GetAllPaymentTransactions returns all transactions belong to given payment
+	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
+	// GetLastPaymentTransaction return most recent transaction made for given payment
+	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
+	// PaymentIsAuthorized checks if given payment is authorized
+	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
+	// PaymentGetAuthorizedAmount calculates authorized amount
+	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
+	// PaymentCanVoid check if payment can void
+	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
 }
 
 // CheckoutApp
 type CheckoutApp interface {
+}
+
+// CheckoutApp
+type AccountApp interface {
+	// GetAddressById returns address with given id. If not found returns nil and concret error
+	GetAddressById(id string) (*account.Address, *model.AppError)
 }
 
 type ProductApp interface {
@@ -32,6 +49,9 @@ type WishlistApp interface {
 }
 
 type AttributeApp interface {
+}
+
+type InvoiceApp interface {
 }
 
 type ChannelApp interface {

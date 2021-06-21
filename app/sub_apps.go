@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	accountApp   func(AppIface) sub_app_iface.AccountApp
 	giftcardApp  func(AppIface) sub_app_iface.GiftcardApp
 	paymentApp   func(AppIface) sub_app_iface.PaymentApp
 	checkoutApp  func(AppIface) sub_app_iface.CheckoutApp
@@ -23,6 +24,7 @@ var (
 	csvApp       func(AppIface) sub_app_iface.CsvApp
 	attributeApp func(AppIface) sub_app_iface.AttributeApp
 	channelApp   func(AppIface) sub_app_iface.ChannelApp
+	invoiceApp   func(AppIface) sub_app_iface.InvoiceApp
 )
 
 // RegisterGiftcardApp
@@ -93,6 +95,14 @@ func RegisterAttributeApp(f func(AppIface) sub_app_iface.AttributeApp) {
 
 func RegisterChannelApp(f func(AppIface) sub_app_iface.ChannelApp) {
 	channelApp = f
+}
+
+func RegisterAccountApp(f func(AppIface) sub_app_iface.AccountApp) {
+	accountApp = f
+}
+
+func RegisterInvoiceApp(f func(AppIface) sub_app_iface.InvoiceApp) {
+	invoiceApp = f
 }
 
 func criticalLog(app string) {
@@ -221,6 +231,20 @@ var registerAllSubApps AppOptionCreator = func() []AppOption {
 			}
 			a.channel = channelApp(a)
 		},
+		func(a *App) {
+			if accountApp == nil {
+				criticalLog("account")
+				return
+			}
+			a.account = accountApp(a)
+		},
+		func(a *App) {
+			if invoiceApp == nil {
+				criticalLog("invoice")
+				return
+			}
+			a.invoice = invoiceApp(a)
+		},
 	}
 }
 
@@ -302,4 +326,14 @@ func (a *App) Webhook() sub_app_iface.WebhookApp {
 // Channel returns channel sub app
 func (a *App) Channel() sub_app_iface.ChannelApp {
 	return a.channel
+}
+
+// Account returns account sub app
+func (a *App) Account() sub_app_iface.AccountApp {
+	return a.account
+}
+
+// Invoice returns invoice sub app
+func (a *App) Invoice() sub_app_iface.InvoiceApp {
+	return a.invoice
 }
