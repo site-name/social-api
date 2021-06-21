@@ -58,7 +58,7 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
-	payments, appErr := a.Payment().GetAllPaymentsByOrderId(orderID)
+	payments, appErr := a.PaymentApp().GetAllPaymentsByOrderId(orderID)
 	if appErr != nil {
 		return appErr
 	}
@@ -168,7 +168,7 @@ func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (
 	var err *model.AppError
 
 	if payment == nil {
-		payment, err = a.Payment().GetLastOrderPayment(ord.Id)
+		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
 		if err != nil {
 			return false, err
 		}
@@ -187,7 +187,7 @@ func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (
 func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var err *model.AppError
 	if payment == nil {
-		payment, err = a.Payment().GetLastOrderPayment(ord.Id)
+		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
 		if err != nil {
 			return false, err
 		}
@@ -197,14 +197,14 @@ func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (boo
 		return false, nil
 	}
 
-	return a.Payment().PaymentCanVoid(payment)
+	return a.PaymentApp().PaymentCanVoid(payment)
 }
 
 // OrderCanRefund checks if order can refund
 func (a *AppOrder) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.Payment().GetAllPaymentsByOrderId(ord.Id)
+		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
 	}
 
 	if appErr != nil {
@@ -224,7 +224,7 @@ func (a *AppOrder) OrderCanRefund(ord *order.Order, payments []*payment.Payment)
 func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.Payment().GetAllPaymentsByOrderId(ord.Id)
+		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
 	}
 
 	if appErr != nil {
@@ -240,12 +240,12 @@ func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Paym
 
 // OrderTotalAuthorized returns order's total authorized amount
 func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
-	lastPayment, appErr := a.Payment().GetLastOrderPayment(ord.Id)
+	lastPayment, appErr := a.PaymentApp().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
 	if lastPayment != nil && lastPayment.IsActive {
-		return a.Payment().PaymentGetAuthorizedAmount(lastPayment)
+		return a.PaymentApp().PaymentGetAuthorizedAmount(lastPayment)
 	}
 
 	zeroMoney, err := util.ZeroMoney(ord.Currency)

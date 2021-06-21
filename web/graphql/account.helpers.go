@@ -62,9 +62,9 @@ func (r *mutationResolver) cleanInput(data *gqlmodel.AccountRegisterInput) (*gql
 	var appErr *model.AppError
 
 	if data.Channel != nil {
-		channel, appErr = r.GetChannelBySlug(*data.Channel)
+		channel, appErr = r.ChannelApp().GetChannelBySlug(*data.Channel)
 	} else {
-		channel, appErr = r.GetDefaultActiveChannel()
+		channel, appErr = r.ChannelApp().GetDefaultActiveChannel()
 		if channel == nil { // means usder did not provide channel slug
 			return nil, model.NewAppError(
 				"AccountRegister",

@@ -56,9 +56,9 @@ type OpenTracingAppLayer struct {
 	ctx context.Context
 }
 
-func (a *OpenTracingAppLayer) Account() sub_app_iface.AccountApp {
+func (a *OpenTracingAppLayer) AccountApp() sub_app_iface.AccountApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Account")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AccountApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -68,7 +68,7 @@ func (a *OpenTracingAppLayer) Account() sub_app_iface.AccountApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Account()
+	resultVar0 := a.app.AccountApp()
 
 	return resultVar0
 }
@@ -225,9 +225,9 @@ func (a *OpenTracingAppLayer) AttachSessionCookies(c *request.Context, w http.Re
 	a.app.AttachSessionCookies(c, w, r)
 }
 
-func (a *OpenTracingAppLayer) Attribute() sub_app_iface.AttributeApp {
+func (a *OpenTracingAppLayer) AttributeApp() sub_app_iface.AttributeApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Attribute")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AttributeApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -237,7 +237,7 @@ func (a *OpenTracingAppLayer) Attribute() sub_app_iface.AttributeApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Attribute()
+	resultVar0 := a.app.AttributeApp()
 
 	return resultVar0
 }
@@ -264,9 +264,9 @@ func (a *OpenTracingAppLayer) AuthenticateUserForLogin(c *request.Context, id st
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) Channel() sub_app_iface.ChannelApp {
+func (a *OpenTracingAppLayer) ChannelApp() sub_app_iface.ChannelApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Channel")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ChannelApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -276,7 +276,7 @@ func (a *OpenTracingAppLayer) Channel() sub_app_iface.ChannelApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Channel()
+	resultVar0 := a.app.ChannelApp()
 
 	return resultVar0
 }
@@ -469,9 +469,9 @@ func (a *OpenTracingAppLayer) CheckUserPreflightAuthenticationCriteria(user *acc
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Checkout() sub_app_iface.CheckoutApp {
+func (a *OpenTracingAppLayer) CheckoutApp() sub_app_iface.CheckoutApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Checkout")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckoutApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -481,7 +481,7 @@ func (a *OpenTracingAppLayer) Checkout() sub_app_iface.CheckoutApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Checkout()
+	resultVar0 := a.app.CheckoutApp()
 
 	return resultVar0
 }
@@ -848,9 +848,9 @@ func (a *OpenTracingAppLayer) CreateZipFileAndAddFiles(fileBackend filestore.Fil
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Csv() sub_app_iface.CsvApp {
+func (a *OpenTracingAppLayer) CsvApp() sub_app_iface.CsvApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Csv")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CsvApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -860,7 +860,7 @@ func (a *OpenTracingAppLayer) Csv() sub_app_iface.CsvApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Csv()
+	resultVar0 := a.app.CsvApp()
 
 	return resultVar0
 }
@@ -2285,9 +2285,9 @@ func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model.WarnMetr
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) Giftcard() sub_app_iface.GiftcardApp {
+func (a *OpenTracingAppLayer) GiftcardApp() sub_app_iface.GiftcardApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Giftcard")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GiftcardApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2297,7 +2297,7 @@ func (a *OpenTracingAppLayer) Giftcard() sub_app_iface.GiftcardApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Giftcard()
+	resultVar0 := a.app.GiftcardApp()
 
 	return resultVar0
 }
@@ -2396,9 +2396,9 @@ func (a *OpenTracingAppLayer) InvalidateCacheForUser(userID string) {
 	a.app.InvalidateCacheForUser(userID)
 }
 
-func (a *OpenTracingAppLayer) Invoice() sub_app_iface.InvoiceApp {
+func (a *OpenTracingAppLayer) InvoiceApp() sub_app_iface.InvoiceApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Invoice")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.InvoiceApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2408,7 +2408,7 @@ func (a *OpenTracingAppLayer) Invoice() sub_app_iface.InvoiceApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Invoice()
+	resultVar0 := a.app.InvoiceApp()
 
 	return resultVar0
 }
@@ -2655,9 +2655,9 @@ func (a *OpenTracingAppLayer) MakePermissionError(s *model.Session, permissions 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Menu() sub_app_iface.MenuApp {
+func (a *OpenTracingAppLayer) MenuApp() sub_app_iface.MenuApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Menu")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.MenuApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2667,7 +2667,7 @@ func (a *OpenTracingAppLayer) Menu() sub_app_iface.MenuApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Menu()
+	resultVar0 := a.app.MenuApp()
 
 	return resultVar0
 }
@@ -2733,9 +2733,9 @@ func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sen
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Order() sub_app_iface.OrderApp {
+func (a *OpenTracingAppLayer) OrderApp() sub_app_iface.OrderApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Order")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.OrderApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2745,7 +2745,7 @@ func (a *OpenTracingAppLayer) Order() sub_app_iface.OrderApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Order()
+	resultVar0 := a.app.OrderApp()
 
 	return resultVar0
 }
@@ -2767,9 +2767,9 @@ func (a *OpenTracingAppLayer) OriginChecker() func(*http.Request) bool {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Page() sub_app_iface.PageApp {
+func (a *OpenTracingAppLayer) PageApp() sub_app_iface.PageApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Page")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PageApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2779,7 +2779,7 @@ func (a *OpenTracingAppLayer) Page() sub_app_iface.PageApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Page()
+	resultVar0 := a.app.PageApp()
 
 	return resultVar0
 }
@@ -2806,9 +2806,9 @@ func (a *OpenTracingAppLayer) PatchRole(role *model.Role, patch *model.RolePatch
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) Payment() sub_app_iface.PaymentApp {
+func (a *OpenTracingAppLayer) PaymentApp() sub_app_iface.PaymentApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Payment")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PaymentApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2818,7 +2818,7 @@ func (a *OpenTracingAppLayer) Payment() sub_app_iface.PaymentApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Payment()
+	resultVar0 := a.app.PaymentApp()
 
 	return resultVar0
 }
@@ -2884,9 +2884,9 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Product() sub_app_iface.ProductApp {
+func (a *OpenTracingAppLayer) ProductApp() sub_app_iface.ProductApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Product")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ProductApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -2896,7 +2896,7 @@ func (a *OpenTracingAppLayer) Product() sub_app_iface.ProductApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Product()
+	resultVar0 := a.app.ProductApp()
 
 	return resultVar0
 }
@@ -3354,9 +3354,9 @@ func (a *OpenTracingAppLayer) SendPasswordReset(email string, siteURL string) (b
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) Seo() sub_app_iface.SeoApp {
+func (a *OpenTracingAppLayer) SeoApp() sub_app_iface.SeoApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Seo")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SeoApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -3366,7 +3366,7 @@ func (a *OpenTracingAppLayer) Seo() sub_app_iface.SeoApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Seo()
+	resultVar0 := a.app.SeoApp()
 
 	return resultVar0
 }
@@ -3564,9 +3564,9 @@ func (a *OpenTracingAppLayer) SetSessionExpireInDays(session *model.Session, day
 	a.app.SetSessionExpireInDays(session, days)
 }
 
-func (a *OpenTracingAppLayer) Shipping() sub_app_iface.ShippingApp {
+func (a *OpenTracingAppLayer) ShippingApp() sub_app_iface.ShippingApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Shipping")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ShippingApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -3576,14 +3576,14 @@ func (a *OpenTracingAppLayer) Shipping() sub_app_iface.ShippingApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Shipping()
+	resultVar0 := a.app.ShippingApp()
 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Site() sub_app_iface.SiteApp {
+func (a *OpenTracingAppLayer) SiteApp() sub_app_iface.SiteApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Site")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SiteApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -3593,7 +3593,7 @@ func (a *OpenTracingAppLayer) Site() sub_app_iface.SiteApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Site()
+	resultVar0 := a.app.SiteApp()
 
 	return resultVar0
 }
@@ -4046,9 +4046,9 @@ func (a *OpenTracingAppLayer) VerifyUserEmail(userID string, email string) *mode
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Warehouse() sub_app_iface.WarehouseApp {
+func (a *OpenTracingAppLayer) WarehouseApp() sub_app_iface.WarehouseApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Warehouse")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WarehouseApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -4058,14 +4058,14 @@ func (a *OpenTracingAppLayer) Warehouse() sub_app_iface.WarehouseApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Warehouse()
+	resultVar0 := a.app.WarehouseApp()
 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Webhook() sub_app_iface.WebhookApp {
+func (a *OpenTracingAppLayer) WebhookApp() sub_app_iface.WebhookApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Webhook")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WebhookApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -4075,14 +4075,14 @@ func (a *OpenTracingAppLayer) Webhook() sub_app_iface.WebhookApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Webhook()
+	resultVar0 := a.app.WebhookApp()
 
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) Wishlist() sub_app_iface.WishlistApp {
+func (a *OpenTracingAppLayer) WishlistApp() sub_app_iface.WishlistApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Wishlist")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WishlistApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -4092,7 +4092,7 @@ func (a *OpenTracingAppLayer) Wishlist() sub_app_iface.WishlistApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.Wishlist()
+	resultVar0 := a.app.WishlistApp()
 
 	return resultVar0
 }

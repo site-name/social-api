@@ -249,91 +249,91 @@ var registerAllSubApps AppOptionCreator = func() []AppOption {
 }
 
 // Order returns order sub app
-func (a *App) Order() sub_app_iface.OrderApp {
+func (a *App) OrderApp() sub_app_iface.OrderApp {
 	return a.order
 }
 
 // Csv returns csv sub app
-func (a *App) Csv() sub_app_iface.CsvApp {
+func (a *App) CsvApp() sub_app_iface.CsvApp {
 	return a.csv
 }
 
 // Product returns product sub app
-func (a *App) Product() sub_app_iface.ProductApp {
+func (a *App) ProductApp() sub_app_iface.ProductApp {
 	return a.product
 }
 
 // Payment returns payment sub app
-func (a *App) Payment() sub_app_iface.PaymentApp {
+func (a *App) PaymentApp() sub_app_iface.PaymentApp {
 	return a.payment
 }
 
 // Giftcard returns giftcard sub app
-func (a *App) Giftcard() sub_app_iface.GiftcardApp {
+func (a *App) GiftcardApp() sub_app_iface.GiftcardApp {
 	return a.giftcard
 }
 
 // Site returns site sub app
-func (a *App) Site() sub_app_iface.SiteApp {
+func (a *App) SiteApp() sub_app_iface.SiteApp {
 	return a.site
 }
 
 // Seo returns order seo app
-func (a *App) Seo() sub_app_iface.SeoApp {
+func (a *App) SeoApp() sub_app_iface.SeoApp {
 	return a.seo
 }
 
 // Shipping returns shipping sub app
-func (a *App) Shipping() sub_app_iface.ShippingApp {
+func (a *App) ShippingApp() sub_app_iface.ShippingApp {
 	return a.shipping
 }
 
 // Wishlist returns wishlist sub app
-func (a *App) Wishlist() sub_app_iface.WishlistApp {
+func (a *App) WishlistApp() sub_app_iface.WishlistApp {
 	return a.wishlist
 }
 
 // Page returns page sub app
-func (a *App) Page() sub_app_iface.PageApp {
+func (a *App) PageApp() sub_app_iface.PageApp {
 	return a.page
 }
 
 // Menu returns menu sub app
-func (a *App) Menu() sub_app_iface.MenuApp {
-	return a.Menu
+func (a *App) MenuApp() sub_app_iface.MenuApp {
+	return a.menu
 }
 
 // Attribute returns attribute sub app
-func (a *App) Attribute() sub_app_iface.AttributeApp {
+func (a *App) AttributeApp() sub_app_iface.AttributeApp {
 	return a.attribute
 }
 
 // Warehouse returns warehouse sub app
-func (a *App) Warehouse() sub_app_iface.WarehouseApp {
+func (a *App) WarehouseApp() sub_app_iface.WarehouseApp {
 	return a.order
 }
 
 // Checkout returns checkout sub app
-func (a *App) Checkout() sub_app_iface.CheckoutApp {
+func (a *App) CheckoutApp() sub_app_iface.CheckoutApp {
 	return a.checkout
 }
 
 // Webhook returns webhook sub app
-func (a *App) Webhook() sub_app_iface.WebhookApp {
+func (a *App) WebhookApp() sub_app_iface.WebhookApp {
 	return a.webhook
 }
 
 // Channel returns channel sub app
-func (a *App) Channel() sub_app_iface.ChannelApp {
+func (a *App) ChannelApp() sub_app_iface.ChannelApp {
 	return a.channel
 }
 
 // Account returns account sub app
-func (a *App) Account() sub_app_iface.AccountApp {
+func (a *App) AccountApp() sub_app_iface.AccountApp {
 	return a.account
 }
 
 // Invoice returns invoice sub app
-func (a *App) Invoice() sub_app_iface.InvoiceApp {
+func (a *App) InvoiceApp() sub_app_iface.InvoiceApp {
 	return a.invoice
 }

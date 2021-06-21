@@ -36,17 +36,17 @@ type AppIface interface {
 	// // Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
 	// Account returns account sub app
-	Account() sub_app_iface.AccountApp
+	AccountApp() sub_app_iface.AccountApp
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
 	// Attribute returns attribute sub app
-	Attribute() sub_app_iface.AttributeApp
+	AttributeApp() sub_app_iface.AttributeApp
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// Channel returns channel sub app
-	Channel() sub_app_iface.ChannelApp
+	ChannelApp() sub_app_iface.ChannelApp
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
@@ -74,7 +74,7 @@ type AppIface interface {
 	// 2) numbers of failed logins is not exceed the limit
 	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	// Checkout returns checkout sub app
-	Checkout() sub_app_iface.CheckoutApp
+	CheckoutApp() sub_app_iface.CheckoutApp
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -100,7 +100,7 @@ type AppIface interface {
 	// CreateUserWithToken creates new user, join system because of invitation
 	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	// Csv returns csv sub app
-	Csv() sub_app_iface.CsvApp
+	CsvApp() sub_app_iface.CsvApp
 	// DeleteToken delete given token from database. If error occur during deletion, returns concret error
 	DeleteToken(token *model.Token) *model.AppError
 	// DoAppMigrations migrate permissions
@@ -160,7 +160,7 @@ type AppIface interface {
 	// GetUserByUsername get user from database with given username
 	GetUserByUsername(username string) (*account.User, *model.AppError)
 	// Giftcard returns giftcard sub app
-	Giftcard() sub_app_iface.GiftcardApp
+	GiftcardApp() sub_app_iface.GiftcardApp
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
@@ -168,7 +168,7 @@ type AppIface interface {
 	// InvalidateCacheForUser
 	InvalidateCacheForUser(userID string)
 	// Invoice returns invoice sub app
-	Invoice() sub_app_iface.InvoiceApp
+	InvoiceApp() sub_app_iface.InvoiceApp
 	// IsPasswordValid checks:
 	//
 	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
@@ -192,17 +192,17 @@ type AppIface interface {
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
 	// Menu returns menu sub app
-	Menu() sub_app_iface.MenuApp
+	MenuApp() sub_app_iface.MenuApp
 	// MoveFile moves file from given oldPath to newPath
 	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
 	// Order returns order sub app
-	Order() sub_app_iface.OrderApp
+	OrderApp() sub_app_iface.OrderApp
 	// Page returns page sub app
-	Page() sub_app_iface.PageApp
+	PageApp() sub_app_iface.PageApp
 	// Payment returns payment sub app
-	Payment() sub_app_iface.PaymentApp
+	PaymentApp() sub_app_iface.PaymentApp
 	// PermanentDeleteAllUsers permanently deletes all user in system
 	PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	// PermanentDeleteUser performs:
@@ -220,7 +220,7 @@ type AppIface interface {
 	// 6) delete audit belong to user
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	// Product returns product sub app
-	Product() sub_app_iface.ProductApp
+	ProductApp() sub_app_iface.ProductApp
 	// ProductVariantById get a product variant with given id if exist
 	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)
 	// ReadFile read file content from given path
@@ -243,7 +243,7 @@ type AppIface interface {
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
 	// Seo returns order seo app
-	Seo() sub_app_iface.SeoApp
+	SeoApp() sub_app_iface.SeoApp
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
@@ -255,9 +255,9 @@ type AppIface interface {
 	// on the `ExtendSessionOnActivity` config setting.
 	SetSessionExpireInDays(session *model.Session, days int)
 	// Shipping returns shipping sub app
-	Shipping() sub_app_iface.ShippingApp
+	ShippingApp() sub_app_iface.ShippingApp
 	// Site returns site sub app
-	Site() sub_app_iface.SiteApp
+	SiteApp() sub_app_iface.SiteApp
 	// Srv returns system server
 	Srv() *Server
 	// TestFileStoreConnection test if connection to file backend server is good
@@ -277,11 +277,11 @@ type AppIface interface {
 	// VerifyUserEmail veryfies that user's email is verified
 	VerifyUserEmail(userID, email string) *model.AppError
 	// Warehouse returns warehouse sub app
-	Warehouse() sub_app_iface.WarehouseApp
+	WarehouseApp() sub_app_iface.WarehouseApp
 	// Webhook returns webhook sub app
-	Webhook() sub_app_iface.WebhookApp
+	WebhookApp() sub_app_iface.WebhookApp
 	// Wishlist returns wishlist sub app
-	Wishlist() sub_app_iface.WishlistApp
+	WishlistApp() sub_app_iface.WishlistApp
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
