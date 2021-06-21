@@ -5,6 +5,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
+// all sub applications of platform
 var (
 	accountApp   func(AppIface) sub_app_iface.AccountApp
 	giftcardApp  func(AppIface) sub_app_iface.GiftcardApp
@@ -111,6 +112,8 @@ func criticalLog(app string) {
 
 // registerAllSubApps register all sub app to App.
 var registerAllSubApps AppOptionCreator = func() []AppOption {
+	slog.Info("Registering all sub applications...")
+
 	return []AppOption{
 		func(a *App) {
 			if productApp == nil {
