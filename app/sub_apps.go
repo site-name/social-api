@@ -1,0 +1,305 @@
+package app
+
+import (
+	"github.com/sitename/sitename/app/sub_app_iface"
+	"github.com/sitename/sitename/modules/slog"
+)
+
+var (
+	giftcardApp  func(AppIface) sub_app_iface.GiftcardApp
+	paymentApp   func(AppIface) sub_app_iface.PaymentApp
+	checkoutApp  func(AppIface) sub_app_iface.CheckoutApp
+	warehouseApp func(AppIface) sub_app_iface.WarehouseApp
+	productApp   func(AppIface) sub_app_iface.ProductApp
+	wishlistApp  func(AppIface) sub_app_iface.WishlistApp
+	orderApp     func(AppIface) sub_app_iface.OrderApp
+	webhookApp   func(AppIface) sub_app_iface.WebhookApp
+	menuApp      func(AppIface) sub_app_iface.MenuApp
+	pageApp      func(AppIface) sub_app_iface.PageApp
+	seoApp       func(AppIface) sub_app_iface.SeoApp
+	siteApp      func(AppIface) sub_app_iface.SiteApp
+	shippingApp  func(AppIface) sub_app_iface.ShippingApp
+	discountApp  func(AppIface) sub_app_iface.DiscountApp
+	csvApp       func(AppIface) sub_app_iface.CsvApp
+	attributeApp func(AppIface) sub_app_iface.AttributeApp
+	channelApp   func(AppIface) sub_app_iface.ChannelApp
+)
+
+// RegisterGiftcardApp
+func RegisterGiftcardApp(f func(AppIface) sub_app_iface.GiftcardApp) {
+	giftcardApp = f
+}
+
+// RegisterPaymentApp
+func RegisterPaymentApp(f func(AppIface) sub_app_iface.PaymentApp) {
+	paymentApp = f
+}
+
+func RegisterProductApp(f func(AppIface) sub_app_iface.ProductApp) {
+	productApp = f
+}
+
+func RegisterWarehouseApp(f func(AppIface) sub_app_iface.WarehouseApp) {
+	warehouseApp = f
+}
+
+func RegisterWishlistApp(f func(AppIface) sub_app_iface.WishlistApp) {
+	wishlistApp = f
+}
+
+func RegisterCheckoutApp(f func(AppIface) sub_app_iface.CheckoutApp) {
+	checkoutApp = f
+}
+
+func RegisterOrderApp(f func(AppIface) sub_app_iface.OrderApp) {
+	orderApp = f
+}
+
+func RegisterWebhookApp(f func(AppIface) sub_app_iface.WebhookApp) {
+	webhookApp = f
+}
+
+func RegisterMenuApp(f func(AppIface) sub_app_iface.MenuApp) {
+	menuApp = f
+}
+
+func RegisterPageApp(f func(AppIface) sub_app_iface.PageApp) {
+	pageApp = f
+}
+
+func RegisterSeoApp(f func(AppIface) sub_app_iface.SeoApp) {
+	seoApp = f
+}
+
+func RegisterSiteApp(f func(AppIface) sub_app_iface.SiteApp) {
+	siteApp = f
+}
+
+func RegisterShippingApp(f func(AppIface) sub_app_iface.ShippingApp) {
+	shippingApp = f
+}
+
+func RegisterDiscountApp(f func(AppIface) sub_app_iface.DiscountApp) {
+	discountApp = f
+}
+
+func RegisterCsvApp(f func(AppIface) sub_app_iface.CsvApp) {
+	csvApp = f
+}
+
+func RegisterAttributeApp(f func(AppIface) sub_app_iface.AttributeApp) {
+	attributeApp = f
+}
+
+func RegisterChannelApp(f func(AppIface) sub_app_iface.ChannelApp) {
+	channelApp = f
+}
+
+func criticalLog(app string) {
+	slog.Critical("Failed to register. Please check again", slog.String("app", app))
+}
+
+// registerAllSubApps register all sub app to App.
+var registerAllSubApps AppOptionCreator = func() []AppOption {
+	return []AppOption{
+		func(a *App) {
+			if productApp == nil {
+				criticalLog("product")
+				return
+			}
+			a.product = productApp(a)
+		},
+		func(a *App) {
+			if seoApp == nil {
+				criticalLog("seo")
+				return
+			}
+			a.seo = seoApp(a)
+		},
+		func(a *App) {
+			if siteApp == nil {
+				criticalLog("site")
+				return
+			}
+			a.site = siteApp(a)
+		},
+		func(a *App) {
+			if paymentApp == nil {
+				criticalLog("payment")
+				return
+			}
+			a.payment = paymentApp(a)
+		},
+		func(a *App) {
+			if shippingApp == nil {
+				criticalLog("shipping")
+				return
+			}
+			a.shipping = shippingApp(a)
+		},
+		func(a *App) {
+			if menuApp == nil {
+				criticalLog("menu")
+				return
+			}
+			a.menu = menuApp(a)
+		},
+		func(a *App) {
+			if orderApp == nil {
+				criticalLog("order")
+				return
+			}
+			a.order = orderApp(a)
+		},
+		func(a *App) {
+			if webhookApp == nil {
+				criticalLog("webhook")
+				return
+			}
+			a.webhook = webhookApp(a)
+		},
+		func(a *App) {
+			if warehouseApp == nil {
+				criticalLog("warehouse")
+				return
+			}
+			a.warehouse = warehouseApp(a)
+		},
+		func(a *App) {
+			if checkoutApp == nil {
+				criticalLog("checkout")
+				return
+			}
+			a.checkout = checkoutApp(a)
+		},
+		func(a *App) {
+			if discountApp == nil {
+				criticalLog("discount")
+				return
+			}
+			a.discount = discountApp(a)
+		},
+		func(a *App) {
+			if wishlistApp == nil {
+				criticalLog("wishlist")
+				return
+			}
+			a.wishlist = wishlistApp(a)
+		},
+		func(a *App) {
+			if giftcardApp == nil {
+				criticalLog("giftcard")
+				return
+			}
+			a.giftcard = giftcardApp(a)
+		},
+		func(a *App) {
+			if pageApp == nil {
+				criticalLog("page")
+				return
+			}
+			a.page = pageApp(a)
+		},
+		func(a *App) {
+			if csvApp == nil {
+				criticalLog("csv")
+				return
+			}
+			a.csv = csvApp(a)
+		},
+		func(a *App) {
+			if attributeApp == nil {
+				criticalLog("attribute")
+				return
+			}
+			a.attribute = attributeApp(a)
+		},
+		func(a *App) {
+			if channelApp == nil {
+				criticalLog("channel")
+				return
+			}
+			a.channel = channelApp(a)
+		},
+	}
+}
+
+// Order returns order sub app
+func (a *App) Order() sub_app_iface.OrderApp {
+	return a.order
+}
+
+// Csv returns csv sub app
+func (a *App) Csv() sub_app_iface.CsvApp {
+	return a.csv
+}
+
+// Product returns product sub app
+func (a *App) Product() sub_app_iface.ProductApp {
+	return a.product
+}
+
+// Payment returns payment sub app
+func (a *App) Payment() sub_app_iface.PaymentApp {
+	return a.payment
+}
+
+// Giftcard returns giftcard sub app
+func (a *App) Giftcard() sub_app_iface.GiftcardApp {
+	return a.giftcard
+}
+
+// Site returns site sub app
+func (a *App) Site() sub_app_iface.SiteApp {
+	return a.site
+}
+
+// Seo returns order seo app
+func (a *App) Seo() sub_app_iface.SeoApp {
+	return a.seo
+}
+
+// Shipping returns shipping sub app
+func (a *App) Shipping() sub_app_iface.ShippingApp {
+	return a.shipping
+}
+
+// Wishlist returns wishlist sub app
+func (a *App) Wishlist() sub_app_iface.WishlistApp {
+	return a.wishlist
+}
+
+// Page returns page sub app
+func (a *App) Page() sub_app_iface.PageApp {
+	return a.page
+}
+
+// Menu returns menu sub app
+func (a *App) Menu() sub_app_iface.MenuApp {
+	return a.Menu
+}
+
+// Attribute returns attribute sub app
+func (a *App) Attribute() sub_app_iface.AttributeApp {
+	return a.attribute
+}
+
+// Warehouse returns warehouse sub app
+func (a *App) Warehouse() sub_app_iface.WarehouseApp {
+	return a.order
+}
+
+// Checkout returns checkout sub app
+func (a *App) Checkout() sub_app_iface.CheckoutApp {
+	return a.checkout
+}
+
+// Webhook returns webhook sub app
+func (a *App) Webhook() sub_app_iface.WebhookApp {
+	return a.webhook
+}
+
+// Channel returns channel sub app
+func (a *App) Channel() sub_app_iface.ChannelApp {
+	return a.channel
+}

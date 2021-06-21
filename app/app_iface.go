@@ -15,6 +15,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -321,11 +322,13 @@ type AppIface interface {
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
+	Attribute() sub_app_iface.AttributeApp
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
+	Checkout() sub_app_iface.CheckoutApp
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
@@ -334,6 +337,7 @@ type AppIface interface {
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
 	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
+	Csv() sub_app_iface.CsvApp
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
@@ -377,6 +381,7 @@ type AppIface interface {
 	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
 	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
+	Giftcard() sub_app_iface.GiftcardApp
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
@@ -387,11 +392,16 @@ type AppIface interface {
 	LimitedClientConfig() map[string]string
 	ListDirectory(path string) ([]string, *model.AppError)
 	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
+	Menu() sub_app_iface.MenuApp
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
+	Order() sub_app_iface.OrderApp
 	OriginChecker() func(*http.Request) bool
+	Page() sub_app_iface.PageApp
 	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
+	Payment() sub_app_iface.PaymentApp
 	PostActionCookieSecret() []byte
+	Product() sub_app_iface.ProductApp
 	Publish(message *model.WebSocketEvent)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
@@ -407,6 +417,7 @@ type AppIface interface {
 	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
 	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
+	Seo() sub_app_iface.SeoApp
 	SessionCacheLength() int
 	SetDefaultProfileImage(user *account.User) *model.AppError
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
@@ -414,6 +425,8 @@ type AppIface interface {
 	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
 	SetProfileImageFromMultiPartFile(userID string, file multipart.File) *model.AppError
 	SetServer(srv *Server)
+	Shipping() sub_app_iface.ShippingApp
+	Site() sub_app_iface.SiteApp
 	Timezones() *timezones.Timezones
 	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
@@ -432,5 +445,8 @@ type AppIface interface {
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
+	Warehouse() sub_app_iface.WarehouseApp
+	Webhook() sub_app_iface.WebhookApp
+	Wishlist() sub_app_iface.WishlistApp
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }
