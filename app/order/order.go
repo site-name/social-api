@@ -1,4 +1,4 @@
-package app
+package order
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -14,46 +16,17 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
-func (a *App) GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) {
-	lines, err := a.srv.Store.OrderLine().GetAllByOrderID(orderID)
-	if err != nil {
-		var statusCode int
-		switch err.(type) {
-		case *store.ErrNotFound:
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusInternalServerError
-		}
-		return nil, model.NewAppError("GetAllOrderLinesByOrderId", "app.order.get_child_order_lines.app_error", nil, err.Error(), statusCode)
-	}
-
-	return lines, nil
+type AppOrder struct {
+	app.AppIface
 }
 
-// GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
-func (a *App) GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.srv.Store.Payment().GetPaymentsByOrderID(orderID)
-	if err != nil {
-		var statusCode int
-		switch err.(type) {
-		case *store.ErrNotFound:
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusInternalServerError
-		}
-		return nil, model.NewAppError("GetAllPaymentsByOrderId", "app.order.get_child_payments.app_error", nil, err.Error(), statusCode)
-	}
-
-	return payments, nil
+func init() {
+	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
+		return &AppOrder{a}
+	})
 }
 
-// OrderShippingIsRequired checks if an order requires ship or not by:
-//
-// 1) Find all child order lines that belong to given order
-//
-// 2) iterates over resulting slice to check if at least one order line requires shipping
-func (a *App) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
+func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, err := a.GetAllOrderLinesByOrderId(orderID)
 	if err != nil {
 		return false, err
@@ -69,7 +42,7 @@ func (a *App) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 }
 
 // OrderTotalQuantity return total quantity of given order
-func (a *App) OrderTotalQuantity(orderID string) (int, *model.AppError) {
+func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, err := a.GetAllOrderLinesByOrderId(orderID)
 	if err != nil {
 		return 0, err
@@ -83,34 +56,9 @@ func (a *App) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	return total, nil
 }
 
-// GetLastOrderPayment get most recent payment made for given order
-func (a *App) GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError) {
-	payments, err := a.GetAllPaymentsByOrderId(orderID)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(payments) == 0 {
-		return nil, nil
-	}
-
-	if len(payments) == 1 {
-		return payments[0], nil
-	}
-
-	latestPayment := payments[0]
-	for _, payment := range payments[1:] {
-		if payment != nil && payment.CreateAt >= latestPayment.CreateAt {
-			latestPayment = payment
-		}
-	}
-
-	return latestPayment, nil
-}
-
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *App) UpdateOrderTotalPaid(orderID string) *model.AppError {
-	payments, appErr := a.GetAllPaymentsByOrderId(orderID)
+func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
+	payments, appErr := a.PaymentApp().GetAllPaymentsByOrderId(orderID)
 	if appErr != nil {
 		return appErr
 	}
@@ -122,7 +70,7 @@ func (a *App) UpdateOrderTotalPaid(orderID string) *model.AppError {
 		}
 	}
 
-	if err := a.srv.Store.Order().UpdateTotalPaid(orderID, &total); err != nil {
+	if err := a.Srv().Store.Order().UpdateTotalPaid(orderID, &total); err != nil {
 		return model.NewAppError("UpdateOrderTotalPaid", "app.order.update_total_paid.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -130,7 +78,7 @@ func (a *App) UpdateOrderTotalPaid(orderID string) *model.AppError {
 }
 
 // OrderIsPreAuthorized checks if order is pre-authorized
-func (a *App) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
+func (a *AppOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	filterOptions := &payment.PaymentFilterOpts{
 		OrderID:  orderID,
 		IsActive: true,
@@ -140,7 +88,7 @@ func (a *App) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 			IsSuccess:      true,
 		},
 	}
-	exist, err := a.srv.Store.Payment().PaymentExistWithOptions(filterOptions)
+	exist, err := a.Srv().Store.Payment().PaymentExistWithOptions(filterOptions)
 	if err != nil {
 		// this err means system error, not sql not found
 		return false, model.NewAppError("OrderIsPreAuthorized", "app.order.order_is_pre_authorized.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -150,7 +98,7 @@ func (a *App) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 }
 
 // OrderIsCaptured checks if given order is captured
-func (a *App) OrderIsCaptured(orderID string) (bool, *model.AppError) {
+func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	filterOptions := &payment.PaymentFilterOpts{
 		OrderID:  orderID,
 		IsActive: true,
@@ -160,7 +108,7 @@ func (a *App) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 			IsSuccess:      true,
 		},
 	}
-	exist, err := a.srv.Store.Payment().PaymentExistWithOptions(filterOptions)
+	exist, err := a.Srv().Store.Payment().PaymentExistWithOptions(filterOptions)
 	if err != nil {
 		// this err means system error, not sql not found error
 		return false, model.NewAppError("OrderIsCaptured", "app.order.order_is_captured.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -170,7 +118,7 @@ func (a *App) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 }
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-func (a *App) OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError) {
+func (a *AppOrder) OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError) {
 	orderLines, appErr := a.GetAllOrderLinesByOrderId(orderID)
 	if appErr != nil {
 		return nil, appErr
@@ -199,8 +147,8 @@ func (a *App) OrderSubTotal(orderID string, orderCurrency string) (*goprices.Tax
 }
 
 // OrderCanCalcel checks if given order can be canceled
-func (a *App) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
-	exist, err := a.srv.Store.Fulfillment().FilterByExcludeStatuses(ord.Id, []string{
+func (a *AppOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
+	exist, err := a.Srv().Store.Fulfillment().FilterByExcludeStatuses(ord.Id, []string{
 		order.FULFILLMENT_CANCELED,
 		order.FULFILLMENT_REFUNDED,
 		order.FULFILLMENT_RETURNED,
@@ -216,11 +164,11 @@ func (a *App) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
 }
 
 // OrderCanCapture
-func (a *App) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var err *model.AppError
 
 	if payment == nil {
-		payment, err = a.GetLastOrderPayment(ord.Id)
+		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
 		if err != nil {
 			return false, err
 		}
@@ -236,10 +184,10 @@ func (a *App) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool,
 }
 
 // OrderCanVoid
-func (a *App) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var err *model.AppError
 	if payment == nil {
-		payment, err = a.GetLastOrderPayment(ord.Id)
+		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
 		if err != nil {
 			return false, err
 		}
@@ -249,14 +197,14 @@ func (a *App) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *m
 		return false, nil
 	}
 
-	return a.PaymentCanVoid(payment)
+	return a.PaymentApp().PaymentCanVoid(payment)
 }
 
 // OrderCanRefund checks if order can refund
-func (a *App) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
+func (a *AppOrder) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.GetAllPaymentsByOrderId(ord.Id)
+		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
 	}
 
 	if appErr != nil {
@@ -273,10 +221,10 @@ func (a *App) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (boo
 }
 
 // CanMarkOrderAsPaid checks if given order can be marked as paid.
-func (a *App) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
+func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.GetAllPaymentsByOrderId(ord.Id)
+		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
 	}
 
 	if appErr != nil {
@@ -291,13 +239,13 @@ func (a *App) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) 
 }
 
 // OrderTotalAuthorized returns order's total authorized amount
-func (a *App) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
-	lastPayment, appErr := a.GetLastOrderPayment(ord.Id)
+func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
+	lastPayment, appErr := a.PaymentApp().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
 	if lastPayment != nil && lastPayment.IsActive {
-		return a.PaymentGetAuthorizedAmount(lastPayment)
+		return a.PaymentApp().PaymentGetAuthorizedAmount(lastPayment)
 	}
 
 	zeroMoney, err := util.ZeroMoney(ord.Currency)
@@ -308,7 +256,7 @@ func (a *App) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.Ap
 }
 
 // GetOrderCountryCode is helper function, returns contry code of given order
-func (a *App) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
+func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
 	addressID := ord.BillingAddressID
 	requireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
@@ -322,16 +270,14 @@ func (a *App) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
 		return *a.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
-	address, err := a.srv.Store.Address().Get(*addressID)
+	address, err := a.Srv().Store.Address().Get(*addressID)
 	if err != nil {
 		var errNf *store.ErrNotFound
-		var statusCode int
+		var statusCode int = http.StatusInternalServerError
 		if errors.As(err, &errNf) {
 			statusCode = http.StatusNotFound
-		} else {
-			statusCode = http.StatusInternalServerError
 		}
-		return "", model.NewAppError("GetOrderCountryCode", "app.order.get_address.app_error", nil, errNf.Error(), statusCode)
+		return "", model.NewAppError("GetOrderCountryCode", "app.order.get_address.app_error", nil, err.Error(), statusCode)
 	}
 
 	return address.Country, nil

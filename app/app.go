@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -23,14 +24,38 @@ import (
 type App struct {
 	srv *Server
 
+	// sub apps
+	account   sub_app_iface.AccountApp
+	order     sub_app_iface.OrderApp
+	payment   sub_app_iface.PaymentApp
+	giftcard  sub_app_iface.GiftcardApp
+	checkout  sub_app_iface.CheckoutApp
+	product   sub_app_iface.ProductApp
+	warehouse sub_app_iface.WarehouseApp
+	wishlist  sub_app_iface.WishlistApp
+	webhook   sub_app_iface.WebhookApp
+	shipping  sub_app_iface.ShippingApp
+	discount  sub_app_iface.DiscountApp
+	menu      sub_app_iface.MenuApp
+	csv       sub_app_iface.CsvApp
+	page      sub_app_iface.PageApp
+	site      sub_app_iface.SiteApp
+	seo       sub_app_iface.SeoApp
+	attribute sub_app_iface.AttributeApp
+	channel   sub_app_iface.ChannelApp
+	invoice   sub_app_iface.InvoiceApp
+
 	// XXX: This is required because removing this needs BleveEngine
 	// to be registered in (h *MainHelper) setupStore, but that creates
 	// a cyclic dependency as bleve tests themselves import testlib.
 	searchEngine *searchengine.Broker
 }
 
+// New creates new app and returns it
 func New(options ...AppOption) *App {
 	app := &App{}
+
+	options = append(options, registerAllSubApps()...)
 
 	for _, option := range options {
 		option(app)

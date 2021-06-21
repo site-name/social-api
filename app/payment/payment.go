@@ -1,4 +1,4 @@
-package app
+package payment
 
 import (
 	"errors"
@@ -6,57 +6,63 @@ import (
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
-// GetAllPaymentTransactions returns all transactions belong to given payment
-func (a *App) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
-	transactions, err := a.srv.Store.PaymentTransaction().GetAllByPaymentID(paymentID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		var statusCode int
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		} else {
-			statusCode = http.StatusInternalServerError
-		}
-
-		return nil, model.NewAppError("GetAllPaymentTransactions", "app.payment.get_associated_transactions.app_error", nil, err.Error(), statusCode)
-	}
-
-	return transactions, nil
+type AppPayment struct {
+	app.AppIface
 }
 
-// GetLastPaymentTransaction return most recent transaction made for given payment
-func (a *App) GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError) {
-	trans, appErr := a.GetAllPaymentTransactions(paymentID)
-	if appErr != nil {
-		return nil, appErr
+func init() {
+	app.RegisterPaymentApp(func(a app.AppIface) sub_app_iface.PaymentApp {
+		return &AppPayment{a}
+	})
+}
+
+func (a *AppPayment) GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError) {
+	payments, err := a.Srv().Store.Payment().GetPaymentsByOrderID(orderID)
+	if err != nil {
+		var statusCode int = http.StatusInternalServerError
+		var nfErr *store.ErrNotFound
+		if errors.As(err, &nfErr) {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetAllPaymentsByOrderId", "app.order.get_child_payments.app_error", nil, err.Error(), statusCode)
 	}
 
-	if len(trans) == 0 {
+	return payments, nil
+}
+
+func (a *AppPayment) GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError) {
+	payments, err := a.GetAllPaymentsByOrderId(orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(payments) == 0 {
 		return nil, nil
 	}
 
-	if len(trans) == 1 {
-		return trans[0], nil
+	if len(payments) == 1 {
+		return payments[0], nil
 	}
 
-	lastTran := trans[0]
-	for _, tran := range trans {
-		if tran != nil && tran.CreateAt >= lastTran.CreateAt {
-			lastTran = tran
+	latestPayment := payments[0]
+	for _, payment := range payments[1:] {
+		if payment != nil && payment.CreateAt >= latestPayment.CreateAt {
+			latestPayment = payment
 		}
 	}
 
-	return lastTran, nil
+	return latestPayment, nil
 }
 
-// PaymentIsAuthorized checks if given payment is authorized
-func (a *App) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
+func (a *AppPayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
 	trans, err := a.GetAllPaymentTransactions(paymentID)
 	if err != nil {
 		return false, err
@@ -71,8 +77,7 @@ func (a *App) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
 	return false, nil
 }
 
-// PaymentGetAuthorizedAmount
-func (a *App) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError) {
+func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError) {
 	authorizedMoney, err := util.ZeroMoney(pm.Currency)
 	if err != nil {
 		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -111,8 +116,7 @@ func (a *App) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, 
 	return authorizedMoney, nil
 }
 
-// PaymentCanVoid
-func (a *App) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError) {
+func (a *AppPayment) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError) {
 	authorized, err := a.PaymentIsAuthorized(pm.Id)
 	if err != nil {
 		return false, err

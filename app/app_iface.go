@@ -13,15 +13,12 @@ import (
 	"reflect"
 	"time"
 
-	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
@@ -38,14 +35,18 @@ type AppIface interface {
 	// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
 	// // Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	// Account returns account sub app
+	AccountApp() sub_app_iface.AccountApp
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
+	// Attribute returns attribute sub app
+	AttributeApp() sub_app_iface.AttributeApp
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
-	// CanMarkOrderAsPaid checks if given order can be marked as paid.
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
+	// Channel returns channel sub app
+	ChannelApp() sub_app_iface.ChannelApp
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
@@ -72,13 +73,8 @@ type AppIface interface {
 	//
 	// 2) numbers of failed logins is not exceed the limit
 	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
-	// CleanChannel performs:
-	//
-	// 1) If given slug is not nil, try getting a channel with that slug.
-	//   +) if found, check if channel is active
-	//
-	// 2) If given slug if nil, it try
-	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
+	// Checkout returns checkout sub app
+	CheckoutApp() sub_app_iface.CheckoutApp
 	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
 	ClearSessionCacheForUser(userID string)
 	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
@@ -103,6 +99,8 @@ type AppIface interface {
 	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	// CreateUserWithToken creates new user, join system because of invitation
 	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
+	// Csv returns csv sub app
+	CsvApp() sub_app_iface.CsvApp
 	// DeleteToken delete given token from database. If error occur during deletion, returns concret error
 	DeleteToken(token *model.Token) *model.AppError
 	// DoAppMigrations migrate permissions
@@ -129,20 +127,8 @@ type AppIface interface {
 	FileModTime(path string) (time.Time, *model.AppError)
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model.AppError)
-	// GetAddressById returns address with given id. If not found returns nil and concret error
-	GetAddressById(id string) (*account.Address, *model.AppError)
-	// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
-	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError)
-	// GetAllPaymentTransactions returns all transactions belong to given payment
-	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
-	// GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
-	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)
-	// GetChannelBySlug get a channel from database with given slug
-	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
-	// GetDefaultChannel get random channel that is active
-	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
@@ -150,12 +136,6 @@ type AppIface interface {
 	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
-	// GetLastOrderPayment get most recent payment made for given order
-	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
-	// GetLastPaymentTransaction return most recent transaction made for given payment
-	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
-	// GetOrderCountryCode is helper function, returns contry code of given order
-	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -179,12 +159,16 @@ type AppIface interface {
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	// GetUserByUsername get user from database with given username
 	GetUserByUsername(username string) (*account.User, *model.AppError)
+	// Giftcard returns giftcard sub app
+	GiftcardApp() sub_app_iface.GiftcardApp
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
 	HasPermissionToUser(askingUserId string, userID string) bool
 	// InvalidateCacheForUser
 	InvalidateCacheForUser(userID string)
+	// Invoice returns invoice sub app
+	InvoiceApp() sub_app_iface.InvoiceApp
 	// IsPasswordValid checks:
 	//
 	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
@@ -207,40 +191,18 @@ type AppIface interface {
 	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
+	// Menu returns menu sub app
+	MenuApp() sub_app_iface.MenuApp
 	// MoveFile moves file from given oldPath to newPath
 	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
-	// OrderCanCalcel checks if given order can be canceled
-	OrderCanCancel(ord *order.Order) (bool, *model.AppError)
-	// OrderCanCapture
-	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
-	// OrderCanRefund checks if order can refund
-	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
-	// OrderCanVoid
-	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
-	// OrderIsCaptured checks if given order is captured
-	OrderIsCaptured(orderID string) (bool, *model.AppError)
-	// OrderIsPreAuthorized checks if order is pre-authorized
-	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)
-	// OrderShippingIsRequired checks if an order requires ship or not by:
-	//
-	// 1) Find all child order lines that belong to given order
-	//
-	// 2) iterates over resulting slice to check if at least one order line requires shipping
-	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
-	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError)
-	// OrderTotalAuthorized returns order's total authorized amount
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
-	// OrderTotalQuantity return total quantity of given order
-	OrderTotalQuantity(orderID string) (int, *model.AppError)
-	// PaymentCanVoid
-	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
-	// PaymentGetAuthorizedAmount
-	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
-	// PaymentIsAuthorized checks if given payment is authorized
-	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
+	// Order returns order sub app
+	OrderApp() sub_app_iface.OrderApp
+	// Page returns page sub app
+	PageApp() sub_app_iface.PageApp
+	// Payment returns payment sub app
+	PaymentApp() sub_app_iface.PaymentApp
 	// PermanentDeleteAllUsers permanently deletes all user in system
 	PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	// PermanentDeleteUser performs:
@@ -257,6 +219,8 @@ type AppIface interface {
 	//
 	// 6) delete audit belong to user
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
+	// Product returns product sub app
+	ProductApp() sub_app_iface.ProductApp
 	// ProductVariantById get a product variant with given id if exist
 	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)
 	// ReadFile read file content from given path
@@ -278,6 +242,8 @@ type AppIface interface {
 	RolesGrantPermission(roleNames []string, permissionId string) bool
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
+	// Seo returns order seo app
+	SeoApp() sub_app_iface.SeoApp
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
@@ -288,6 +254,10 @@ type AppIface interface {
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
 	SetSessionExpireInDays(session *model.Session, days int)
+	// Shipping returns shipping sub app
+	ShippingApp() sub_app_iface.ShippingApp
+	// Site returns site sub app
+	SiteApp() sub_app_iface.SiteApp
 	// Srv returns system server
 	Srv() *Server
 	// TestFileStoreConnection test if connection to file backend server is good
@@ -296,8 +266,6 @@ type AppIface interface {
 	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
-	// UpdateOrderTotalPaid update given order's total paid amount
-	UpdateOrderTotalPaid(orderID string) *model.AppError
 	// UpdateUserRolesWithUser performs:
 	//
 	// 1) checks if there is at least one role model has name contained in given newRoles
@@ -308,6 +276,12 @@ type AppIface interface {
 	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
 	// VerifyUserEmail veryfies that user's email is verified
 	VerifyUserEmail(userID, email string) *model.AppError
+	// Warehouse returns warehouse sub app
+	WarehouseApp() sub_app_iface.WarehouseApp
+	// Webhook returns webhook sub app
+	WebhookApp() sub_app_iface.WebhookApp
+	// Wishlist returns wishlist sub app
+	WishlistApp() sub_app_iface.WishlistApp
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
