@@ -22,7 +22,6 @@ func (r *mutationResolver) AccountAddressCreate(ctx context.Context, input gqlmo
 	if embedCtx.AppContext.Session() == nil || strings.TrimSpace(embedCtx.AppContext.Session().UserId) == "" {
 		return nil, model.NewAppError("AccountAddressCreate", "graphql.account.user_unauthenticated.app_error", nil, "", http.StatusForbidden)
 	}
-
 }
 
 func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, input gqlmodel.AddressInput) (*gqlmodel.AccountAddressUpdate, error) {

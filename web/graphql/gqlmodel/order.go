@@ -30,7 +30,7 @@ type OrderLine struct {
 	TranslatedProductName string                 `json:"translatedProductName"`
 	TranslatedVariantName string                 `json:"translatedVariantName"`
 	UnitDiscountType      *DiscountValueTypeEnum `json:"unitDiscountType"`
-	Thumbnail             func(size *int) *Image `json:"thumbnail"`         // *Image
+	Thumbnail             func() *Image          `json:"thumbnail"`         // *Image
 	DigitalContentURLID   *string                `json:"digitalContentUrl"` // *DigitalContentURL
 	VariantID             *string                `json:"variant"`           // *ProductVariant
 	AllocationIDs         []string               `json:"allocations"`       // []*Allocation

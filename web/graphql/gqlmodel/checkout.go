@@ -22,7 +22,7 @@ type Checkout struct {
 	ID                         string           `json:"id"`
 	PrivateMetadata            []*MetadataItem  `json:"privateMetadata"`
 	Metadata                   []*MetadataItem  `json:"metadata"`
-	AvailableShippingMethodIDs []*string        `json:"availableShippingMethods"` // ShippingMethod
+	AvailableShippingMethodIDs []string         `json:"availableShippingMethods"` // ShippingMethod
 	AvailablePaymentGatewayIDs []string         `json:"availablePaymentGateways"` // PaymentGateway
 	Email                      string           `json:"email"`
 	IsShippingRequired         bool             `json:"isShippingRequired"`
