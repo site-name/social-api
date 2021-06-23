@@ -573,9 +573,12 @@ func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
 }
 
 // IsValidPhoneNumber checks if number is valid
-func IsValidPhoneNumber(phone, countryCode string) bool {
-	_, err := phonenumbers.Parse(phone, countryCode)
-	return err == nil
+func IsValidPhoneNumber(phone, countryCode string) (*phonenumbers.PhoneNumber, bool) {
+	parsed, err := phonenumbers.Parse(phone, strings.ToUpper(countryCode)) // since country code must be upper-cased
+	if err != nil {
+		return nil, false
+	}
+	return parsed, true
 }
 
 // checkif username is valid

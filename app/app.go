@@ -468,21 +468,27 @@ func (a *App) NotificationsLog() *slog.Logger {
 func (a *App) AccountMigration() einterfaces.AccountMigrationInterface {
 	return a.srv.AccountMigration
 }
+
 func (a *App) Cluster() einterfaces.ClusterInterface {
 	return a.srv.Cluster
 }
+
 func (a *App) Compliance() einterfaces.ComplianceInterface {
 	return a.srv.Compliance
 }
+
 func (a *App) DataRetention() einterfaces.DataRetentionInterface {
 	return a.srv.DataRetention
 }
+
 func (a *App) SearchEngine() *searchengine.Broker {
 	return a.searchEngine
 }
+
 func (a *App) Ldap() einterfaces.LdapInterface {
 	return a.srv.Ldap
 }
+
 func (a *App) Saml() einterfaces.SamlInterface {
 	return a.srv.Saml
 }
@@ -502,9 +508,11 @@ func (a *App) Metrics() einterfaces.MetricsInterface {
 func (a *App) HTTPService() httpservice.HTTPService {
 	return a.srv.HTTPService
 }
+
 func (a *App) ImageProxy() *imageproxy.ImageProxy {
 	return a.srv.ImageProxy
 }
+
 func (a *App) Timezones() *timezones.Timezones {
 	return a.srv.timezones
 }

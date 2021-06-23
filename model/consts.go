@@ -52,13 +52,14 @@ const (
 var (
 	Countries                     map[string]string // countries supported by app
 	Languages                     map[string]string // Languages supported by app
-	MULTIPLE_COUNTRIES_MAX_LENGTH int               // some model's country fields contains multiple countries
+	MULTIPLE_COUNTRIES_MAX_LENGTH int               // some model"s country fields contains multiple countries
 	ReservedName                  []string          // usernames that can only be used by system
 	ValidUsernameChars            *regexp.Regexp    // regexp for username validation
 	RestrictedUsernames           map[string]bool   // usernames that cannot be used
 )
 
 func init() {
+	// copied from django_countries
 	Countries = map[string]string{
 		"AF": "Afghanistan",
 		"AX": "Åland Islands",
@@ -309,6 +310,7 @@ func init() {
 		"YE": "Yemen",
 		"ZM": "Zambia",
 		"ZW": "Zimbabwe",
+		"EU": "European Union",
 	}
 	Languages = map[string]string{
 		"ar":      "Arabic",

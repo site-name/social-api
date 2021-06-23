@@ -1,6 +1,8 @@
 package sub_app_iface
 
 import (
+	"context"
+
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -40,6 +42,7 @@ type CheckoutApp interface {
 type AccountApp interface {
 	// GetAddressById returns address with given id. If not found returns nil and concret error
 	GetAddressById(id string) (*account.Address, *model.AppError)
+	GetUserById(ctx context.Context, userID string) (*account.User, *model.AppError) // GetUserById get user from database with given userId
 }
 
 type ProductApp interface {

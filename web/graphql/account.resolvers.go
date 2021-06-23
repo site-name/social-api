@@ -6,6 +6,8 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -14,7 +16,13 @@ import (
 )
 
 func (r *mutationResolver) AccountAddressCreate(ctx context.Context, input gqlmodel.AddressInput, typeArg *gqlmodel.AddressTypeEnum) (*gqlmodel.AccountAddressCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	// check if session is nil or session's userID is empty
+	if embedCtx.AppContext.Session() == nil || strings.TrimSpace(embedCtx.AppContext.Session().UserId) == "" {
+		return nil, model.NewAppError("AccountAddressCreate", "graphql.account.user_unauthenticated.app_error", nil, "", http.StatusForbidden)
+	}
+
 }
 
 func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, input gqlmodel.AddressInput) (*gqlmodel.AccountAddressUpdate, error) {
@@ -32,7 +40,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	cleanedInput, appErr := r.cleanInput(&input)
+	cleanedInput, appErr := cleanAccountCreateInput(r, &input)
 	if appErr != nil {
 		return nil, appErr
 	}

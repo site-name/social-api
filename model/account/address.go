@@ -136,7 +136,10 @@ func (a *Address) IsValid() *model.AppError {
 	if utf8.RuneCountInString(a.CountryArea) > ADDRESS_COUNTRY_AREA_MAX_LENGTH {
 		return outer("country_area", &a.Id)
 	}
-	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH || !model.IsValidPhoneNumber(a.Phone, "") {
+	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
+		return outer("phone", &a.Id)
+	}
+	if _, ok := model.IsValidPhoneNumber(a.Phone, ""); !ok {
 		return outer("phone", &a.Id)
 	}
 

@@ -6,9 +6,65 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
+	"github.com/sitename/sitename/web/graphql/scalars"
+	"github.com/sitename/sitename/web/shared"
 )
+
+func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
+	if obj.ID == "" {
+		return model.NewBool(false), nil
+	}
+	if r.AccountApp() == nil {
+		return nil, model.NewAppError(
+			"IsDefaultShippingAddress",
+			"app.app_unregistered.%s.app_error",
+			map[string]interface{}{"app": "account"}, "",
+			http.StatusInternalServerError,
+		)
+	}
+	// extract context from ctx
+	embedCtx := ctx.Value(shared.APIContextKey).(shared.Context)
+	if embedCtx.AppContext.Session() == nil {
+		return model.NewBool(false), nil
+	}
+
+	user, appErr := r.AccountApp().GetUserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return model.NewBool(false), appErr
+	}
+
+	return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
+}
+
+func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
+	if obj.ID == "" {
+		return model.NewBool(false), nil
+	}
+	if r.AccountApp() == nil {
+		return model.NewBool(false), model.NewAppError(
+			"IsDefaultBillingAddress",
+			"app.app_unregistered.%s.app_error",
+			map[string]interface{}{"app": "account"}, "",
+			http.StatusInternalServerError,
+		)
+	}
+	// extract context from ctx
+	embedCtx := ctx.Value(shared.APIContextKey).(shared.Context)
+	if embedCtx.AppContext.Session() == nil {
+		return model.NewBool(false), nil
+	}
+
+	user, appErr := r.AccountApp().GetUserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return model.NewBool(false), appErr
+	}
+
+	return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil
+}
 
 func (r *mutationResolver) AddressCreate(ctx context.Context, input gqlmodel.AddressInput, userID string) (*gqlmodel.AddressCreate, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -33,3 +89,8 @@ func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode 
 func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Address, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Address returns AddressResolver implementation.
+func (r *Resolver) Address() AddressResolver { return &addressResolver{r} }
+
+type addressResolver struct{ *Resolver }

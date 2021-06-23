@@ -6,12 +6,13 @@ import (
 	"net/url"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-// cleanInput cleans user registration input
-func (r *mutationResolver) cleanInput(data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
+// cleanAccountCreateInput cleans user registration input
+func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
 	// if signup email verification is disabled
 	if !*r.Config().EmailSettings.RequireEmailVerification {
 		return data, nil
@@ -96,4 +97,29 @@ func (r *mutationResolver) cleanInput(data *gqlmodel.AccountRegisterInput) (*gql
 	data.Channel = &channel.Slug
 
 	return data, nil
+}
+
+// validateAddressInput validate if given data is valid
+func validateAddressInput(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (*account.Address, *model.AppError) {
+	if addressData.Country == nil {
+		var params map[string]interface{}
+		if addressType != nil {
+			params = map[string]interface{}{"address_type": *addressType}
+		}
+		return nil, model.NewAppError("validateAddressInput", "graphql.account.address_required.app_error", params, "", http.StatusBadRequest)
+	}
+}
+
+func validateAddressForm(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) {
+	var params map[string]interface{}
+	if addressType != nil {
+		params = map[string]interface{}{"address_type": *addressType}
+	}
+
+	if addressData.Phone != nil {
+		parsedPhone, valid := model.IsValidPhoneNumber(*addressData.Phone, string(*addressData.Country))
+		if !valid {
+			return
+		}
+	}
 }

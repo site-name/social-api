@@ -22,6 +22,25 @@ type CustomerEvent struct {
 
 func (CustomerEvent) IsNode() {}
 
+type Address struct {
+	ID                       string          `json:"id"`
+	FirstName                string          `json:"firstName"`
+	LastName                 string          `json:"lastName"`
+	CompanyName              string          `json:"companyName"`
+	StreetAddress1           string          `json:"streetAddress1"`
+	StreetAddress2           string          `json:"streetAddress2"`
+	City                     string          `json:"city"`
+	CityArea                 string          `json:"cityArea"`
+	PostalCode               string          `json:"postalCode"`
+	Country                  *CountryDisplay `json:"country"`
+	CountryArea              string          `json:"countryArea"`
+	Phone                    *string         `json:"phone"`
+	IsDefaultShippingAddress func() *bool    `json:"isDefaultShippingAddress"` // *bool
+	IsDefaultBillingAddress  func() *bool    `json:"isDefaultBillingAddress"`  // *bool
+}
+
+func (Address) IsNode() {}
+
 // DatabaseCustomerEventsToGraphqlCustomerEvents converts slice of db customer events to graphql slice of customer events
 func DatabaseCustomerEventsToGraphqlCustomerEvents(events []*account.CustomerEvent) []*CustomerEvent {
 	res := make([]*CustomerEvent, len(events))
@@ -44,28 +63,27 @@ func DatabaseAddressesToGraphqlAddresses(adds []*account.Address) []*Address {
 
 // DatabaseAddressToGraphqlAddress convert single database address to single graphql address
 func DatabaseAddressToGraphqlAddress(ad *account.Address) *Address {
-	df := false
 
+	// TODO: update VAT returns
 	return &Address{
-		ID:                       ad.Id,
-		FirstName:                ad.FirstName,
-		LastName:                 ad.LastName,
-		CompanyName:              ad.CompanyName,
-		StreetAddress1:           ad.StreetAddress1,
-		StreetAddress2:           ad.StreetAddress2,
-		City:                     ad.City,
-		CityArea:                 ad.CityArea,
-		PostalCode:               ad.PostalCode,
-		CountryArea:              ad.CountryArea,
-		Phone:                    &ad.Phone,
-		IsDefaultShippingAddress: &df,
-		IsDefaultBillingAddress:  &df,
-		// Country: &CountryDisplay{
-		// 	Code: ad.Country,
-		// 	Vat: &Vat{
-		// 		CountryCode: ad.Country,
-		// 	},
-		// },
+		ID:             ad.Id,
+		FirstName:      ad.FirstName,
+		LastName:       ad.LastName,
+		CompanyName:    ad.CompanyName,
+		StreetAddress1: ad.StreetAddress1,
+		StreetAddress2: ad.StreetAddress2,
+		City:           ad.City,
+		CityArea:       ad.CityArea,
+		PostalCode:     ad.PostalCode,
+		CountryArea:    ad.CountryArea,
+		Phone:          &ad.Phone,
+		Country: &CountryDisplay{
+			Code:    ad.Country,
+			Country: model.Countries[strings.ToUpper(ad.Country)],
+			// Vat: &Vat{
+			// 	CountryCode: ad.Country,
+			// },
+		},
 	}
 }
 
