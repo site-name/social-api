@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppAccount) GetAddressById(id string) (*account.Address, *model.AppError) {
+func (a *AppAccount) AddressById(id string) (*account.Address, *model.AppError) {
 	address, err := a.Srv().Store.Address().Get(id)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -21,4 +21,13 @@ func (a *AppAccount) GetAddressById(id string) (*account.Address, *model.AppErro
 	}
 
 	return address, nil
+}
+
+func (a *AppAccount) AddressesByUserId(userID string) ([]*account.Address, *model.AppError) {
+	addresses, err := a.Srv().Store.Address().GetAddressesByUserID(userID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("AddressesByUserId", "app.account.missing_addresses.app_error", err)
+	}
+
+	return addresses, nil
 }

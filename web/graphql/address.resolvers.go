@@ -25,7 +25,7 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 		return model.NewBool(false), nil
 	}
 
-	user, appErr := r.AccountApp().GetUserById(ctx, embedCtx.AppContext.Session().UserId)
+	user, appErr := r.AccountApp().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
 		return model.NewBool(false), appErr
 	}
@@ -43,7 +43,7 @@ func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlm
 		return model.NewBool(false), nil
 	}
 
-	user, appErr := r.AccountApp().GetUserById(ctx, embedCtx.AppContext.Session().UserId)
+	user, appErr := r.AccountApp().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
 		return model.NewBool(false), appErr
 	}
@@ -76,7 +76,7 @@ func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Addre
 	if err != nil {
 		return nil, model.NewAppError("Address", "graphql.account.invalid_id.app_error", nil, "", http.StatusBadRequest)
 	}
-	address, appErr := r.AccountApp().GetAddressById(uid.String())
+	address, appErr := r.AccountApp().AddressById(uid.String())
 	if appErr != nil {
 		return nil, appErr
 	}

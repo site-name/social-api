@@ -12,9 +12,9 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
+	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
@@ -22,9 +22,6 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	// if obj.OrderID == nil {
-	// 	return nil, nil
-	// }
 	panic("not implt")
 }
 
@@ -32,16 +29,9 @@ func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.Cus
 	if obj.OrderLineID == nil {
 		return nil, nil
 	}
-	orderLine, err := r.Srv().Store.OrderLine().Get(*obj.OrderLineID)
-	if err != nil {
-		var status int
-		switch err.(type) {
-		case *store.ErrNotFound:
-			status = http.StatusNotFound
-		default:
-			status = http.StatusInternalServerError
-		}
-		return nil, model.NewAppError("OrderLine", "graphql.user.customer_event.app_error", nil, err.Error(), status)
+	orderLine, appErr := r.OrderApp().OrderLineById(*obj.OrderLineID)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
@@ -73,51 +63,34 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
 	if obj.DefaultShippingAddressID == nil {
-		return nil, model.NewAppError("DefaultShippingAddress", "graphql.user.address_missing.app_error", nil, "You need to provide default shipping address.", http.StatusNoContent)
+		return nil, nil
 	}
 
-	address, err := r.Srv().Store.Address().Get(*obj.DefaultShippingAddressID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("DefaultShippingAddress", "graphql.user.address_not_found.app_error", nil, err.Error(), statusCode)
+	address, appErr := r.AccountApp().AddressById(*obj.DefaultShippingAddressID)
+	if appErr != nil {
+		return nil, appErr
 	}
-
 	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
 	if obj.DefaultBillingAddressID == nil {
-		return nil, model.NewAppError("DefaultBillingAddress", "graphql.user.address_missing.app_error", nil, "You need to provide default shipping address.", http.StatusNoContent)
+		return nil, nil
 	}
 
-	address, err := r.Srv().Store.Address().Get(*obj.DefaultBillingAddressID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("DefaultBillingAddress", "graphql.user.address_not_found.app_error", nil, err.Error(), statusCode)
+	address, appErr := r.AccountApp().AddressById(*obj.DefaultBillingAddressID)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
-	addresses, err := r.Srv().Store.Address().GetAddressesByUserID(obj.ID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("Addresses", "graphql.user.address_missing.app_error", nil, nfErr.Error(), statusCode)
+	addresses, AppErr := r.AccountApp().AddressesByUserId(obj.ID)
+	if AppErr != nil {
+		return []*gqlmodel.Address{}, AppErr
 	}
-
 	return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
 }
 
@@ -150,14 +123,15 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	events, err := r.Srv().Store.CustomerEvent().GetEventsByUserID(obj.ID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("Events", "graphql.user.user_missing_customer_events.app_error", nil, nfErr.Error(), statusCode)
+	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	if embedCtx.AppContext.Session() == nil || embedCtx.AppContext.Session().UserId != obj.ID {
+		return nil, model.NewAppError("Events", "graphql.user.user_unauthenticated.app_error", nil, "", http.StatusForbidden)
+	}
+
+	events, appErr := r.AccountApp().CustomerEventsByUser(obj.ID)
+	if appErr != nil {
+		return []*gqlmodel.CustomerEvent{}, appErr
 	}
 
 	return gqlmodel.DatabaseCustomerEventsToGraphqlCustomerEvents(events), nil

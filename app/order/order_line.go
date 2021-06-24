@@ -22,3 +22,17 @@ func (a *AppOrder) GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine
 
 	return lines, nil
 }
+
+func (a *AppOrder) OrderLineById(id string) (*order.OrderLine, *model.AppError) {
+	odrLine, err := a.Srv().Store.OrderLine().Get(id)
+	if err != nil {
+		var nfErr *store.ErrNotFound
+		statusCode := http.StatusInternalServerError
+		if errors.As(err, &nfErr) {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("OrderLineById", "app.order.missing_order_line.app_error", nil, err.Error(), statusCode)
+	}
+
+	return odrLine, nil
+}

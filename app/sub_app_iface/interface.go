@@ -40,9 +40,10 @@ type CheckoutApp interface {
 
 // CheckoutApp
 type AccountApp interface {
-	// GetAddressById returns address with given id. If not found returns nil and concret error
-	GetAddressById(id string) (*account.Address, *model.AppError)
-	GetUserById(ctx context.Context, userID string) (*account.User, *model.AppError) // GetUserById get user from database with given userId
+	AddressById(id string) (*account.Address, *model.AppError)                      // GetAddressById returns address with given id. If not found returns nil and concret error
+	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)   // GetUserById get user from database with given userId
+	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError) // CustomerEventsByUser returns all customer event(s) belong to given user
+	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)          // AddressesByUserId returns list of address(es) (if found) that belong to given user
 }
 
 type ProductApp interface {
@@ -110,6 +111,7 @@ type OrderApp interface {
 	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
 	// GetOrderCountryCode is helper function, returns contry code of given order
 	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)
+	OrderLineById(id string) (*order.OrderLine, *model.AppError) // OrderLineById returns order line with id of given id
 }
 
 type MenuApp interface {

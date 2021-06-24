@@ -10,7 +10,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppAccount) GetUserById(ctx context.Context, userID string) (*account.User, *model.AppError) {
+func (a *AppAccount) UserById(ctx context.Context, userID string) (*account.User, *model.AppError) {
 	user, err := a.Srv().Store.User().Get(ctx, userID)
 	if err != nil {
 		var nfErr *store.ErrNotFound

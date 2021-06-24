@@ -49,20 +49,6 @@ type User struct {
 func (User) IsNode()               {}
 func (User) IsObjectWithMetadata() {}
 
-// MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
-func MapToGraphqlMetaDataItems(m map[string]string) []*MetadataItem {
-	if m == nil {
-		return []*MetadataItem{}
-	}
-
-	res := make([]*MetadataItem, len(m))
-	for key, value := range m {
-		res = append(res, &MetadataItem{Key: key, Value: value})
-	}
-
-	return res
-}
-
 // DatabaseUserToGraphqlUser converts database user to graphql user
 func DatabaseUserToGraphqlUser(u *account.User) *User {
 	return &User{

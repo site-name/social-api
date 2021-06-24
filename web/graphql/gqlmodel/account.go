@@ -100,8 +100,8 @@ func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *
 		}
 	}
 	// parse count
-	if count, ok := event.Parameters["count"]; ok {
-		switch t := count.(type) {
+	if c, ok := event.Parameters["count"]; ok {
+		switch t := c.(type) {
 		case int:
 			count = &t
 		case int64:
@@ -109,8 +109,7 @@ func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *
 		}
 	}
 	// parse order line pk
-	item, ok := event.Parameters["order_line_pk"]
-	if ok {
+	if item, ok := event.Parameters["order_line_pk"]; ok {
 		if strOrderlinePk, ok := item.(string); ok {
 			orderLinePk = &strOrderlinePk
 		}

@@ -2,6 +2,7 @@ package model
 
 import "regexp"
 
+// constants for access http(s) requests's headers
 const (
 	HEADER_REQUEST_ID          = "X-Request-ID"
 	HEADER_VERSION_ID          = "X-Version-ID"

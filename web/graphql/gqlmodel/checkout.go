@@ -27,7 +27,7 @@ type Checkout struct {
 	Email                      string           `json:"email"`
 	IsShippingRequired         bool             `json:"isShippingRequired"`
 	Quantity                   int              `json:"quantity"`
-	LineIDs                    []*string        `json:"lines"` // CheckoutLine
+	LineIDs                    []*string        `json:"lines"` // []*CheckoutLine
 	ShippingPrice              *TaxedMoney      `json:"shippingPrice"`
 	ShippingMethod             *ShippingMethod  `json:"shippingMethod"`
 	SubtotalPrice              *TaxedMoney      `json:"subtotalPrice"`

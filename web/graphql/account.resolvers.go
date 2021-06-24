@@ -45,13 +45,8 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 	}
 
 	// construct instance:
-	// convert slice of metadata to a string map
-	userMetaData := make(account.StringMap)
-	for _, metaInput := range cleanedInput.Metadata {
-		userMetaData[metaInput.Key] = metaInput.Value
-	}
-	// prepare language for user
-	var userLanguage string
+	// 1) prepare language for user
+	var userLanguage string = model.DEFAULT_LOCALE
 	if cleanedInput.LanguageCode != nil {
 		userLanguage = string(*cleanedInput.LanguageCode)
 	}
@@ -60,15 +55,16 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 		Password: cleanedInput.Password,
 		Locale:   userLanguage,
 		ModelMetadata: account.ModelMetadata{
-			Metadata: userMetaData,
+			Metadata: gqlmodel.MetaDataToStringMap(cleanedInput.Metadata),
 		},
 	}
 
-	// save to database
-	if cleanedInput.RedirectURL == nil {
-		cleanedInput.RedirectURL = model.NewString("")
+	// 2) save to database
+	var redirect string
+	if cleanedInput.RedirectURL != nil {
+		redirect = *cleanedInput.RedirectURL
 	}
-	ruser, err := r.CreateUserFromSignup(embedContext.AppContext, user, *cleanedInput.RedirectURL)
+	ruser, err := r.CreateUserFromSignup(embedContext.AppContext, user, redirect)
 	if err != nil {
 		return nil, err
 	}
