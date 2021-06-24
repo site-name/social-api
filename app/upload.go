@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -16,7 +17,7 @@ import (
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
-func (a *App) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError) {
+func (a *App) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
 	uss, err := a.Srv().Store.UploadSession().GetForUser(userID)
 	if err != nil {
 		return nil, model.NewAppError(
@@ -30,7 +31,7 @@ func (a *App) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *
 	return uss, nil
 }
 
-func (a *App) GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError) {
+func (a *App) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
 	us, err := a.Srv().Store.UploadSession().Get(uploadId)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -46,7 +47,7 @@ func (a *App) GetUploadSession(uploadId string) (*model.UploadSession, *model.Ap
 	return us, nil
 }
 
-func (a *App) CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError) {
+func (a *App) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
 	// if us.FileSize > *a.Config().FileSettings.MaxFileSize {
 	// 	return nil, model.NewAppError("CreateUploadSession", "app.upload.create.upload_too_large.app_error",
 	// 		nil, "", http.StatusRequestEntityTooLarge)
@@ -85,7 +86,7 @@ func (a *App) CreateUploadSession(us *model.UploadSession) (*model.UploadSession
 	panic("not implemented") // TODO: fixme
 }
 
-func (a *App) UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError) {
+func (a *App) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
 	a.Srv().uploadLockMapMut.Lock()
@@ -116,7 +117,7 @@ func (a *App) UploadData(c *request.Context, us *model.UploadSession, rd io.Read
 	}
 
 	uploadPath := us.Path
-	if us.Type == model.UploadTypeImport {
+	if us.Type == file.UploadTypeImport {
 		uploadPath += IncompleteUploadSuffix
 	}
 
@@ -162,13 +163,13 @@ func (a *App) UploadData(c *request.Context, us *model.UploadSession, rd io.Read
 	}
 
 	// upload is done, create FileInfo
-	file, err := a.FileReader(uploadPath)
+	f, err := a.FileReader(uploadPath)
 	if err != nil {
 		return nil, model.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	info, err := model.GetInfoForBytes(us.FileName, file, int(us.FileSize))
-	file.Close()
+	info, err := file.GetInfoForBytes(us.FileName, f, int(us.FileSize))
+	f.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +204,7 @@ func (a *App) UploadData(c *request.Context, us *model.UploadSession, rd io.Read
 		a.HandleImages([]string{info.PreviewPath}, []string{info.ThumbnailPath}, [][]byte{imgData})
 	}
 
-	if us.Type == model.UploadTypeImport {
+	if us.Type == file.UploadTypeImport {
 		if err := a.MoveFile(uploadPath, us.Path); err != nil {
 			return nil, model.NewAppError("UploadData", "app.upload.upload_data.move_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}

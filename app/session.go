@@ -11,6 +11,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -92,9 +93,9 @@ func (a *App) ClearSessionCacheForUser(userID string) {
 	a.ClearSessionCacheForUserSkipClusterSend(userID)
 
 	if a.Cluster() != nil {
-		msg := &model.ClusterMessage{
-			Event:    model.CLUSTER_EVENT_CLEAR_SESSION_CACHE_FOR_USER,
-			SendType: model.CLUSTER_SEND_RELIABLE,
+		msg := &cluster.ClusterMessage{
+			Event:    cluster.CLUSTER_EVENT_CLEAR_SESSION_CACHE_FOR_USER,
+			SendType: cluster.CLUSTER_SEND_RELIABLE,
 			Data:     userID,
 		}
 		a.Cluster().SendClusterMessage(msg)

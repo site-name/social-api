@@ -7,6 +7,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 )
 
 const (
@@ -110,9 +111,9 @@ func (b *Busy) notifyServerBusyChange(sbs *model.ServerBusyState) {
 	if b.cluster == nil {
 		return
 	}
-	msg := &model.ClusterMessage{
-		Event:            model.CLUSTER_EVENT_BUSY_STATE_CHANGED,
-		SendType:         model.CLUSTER_SEND_RELIABLE,
+	msg := &cluster.ClusterMessage{
+		Event:            cluster.CLUSTER_EVENT_BUSY_STATE_CHANGED,
+		SendType:         cluster.CLUSTER_SEND_RELIABLE,
 		WaitForAllToSend: true,
 		Data:             sbs.ToJson(),
 	}

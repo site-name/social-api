@@ -15,8 +15,10 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -1584,7 +1586,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -1602,7 +1604,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *model.ClusterD
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDiscovery) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Exists")
 	s.Root.Store.SetContext(newCtx)
@@ -1620,7 +1622,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Exists(discovery *model.ClusterD
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*cluster.ClusterDiscovery, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.GetAll")
 	s.Root.Store.SetContext(newCtx)
@@ -1638,7 +1640,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) GetAll(discoveryType string, clu
 	return result, err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscovery) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -1656,7 +1658,7 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Save(discovery *model.ClusterDis
 	return err
 }
 
-func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.ClusterDiscovery) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.SetLastPingAt")
 	s.Root.Store.SetContext(newCtx)
@@ -2160,7 +2162,7 @@ func (s *OpenTracingLayerFileInfoStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -2178,7 +2180,7 @@ func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) 
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByIds")
 	s.Root.Store.SetContext(newCtx)
@@ -2196,7 +2198,7 @@ func (s *OpenTracingLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInf
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByPath")
 	s.Root.Store.SetContext(newCtx)
@@ -2214,7 +2216,7 @@ func (s *OpenTracingLayerFileInfoStore) GetByPath(path string) (*model.FileInfo,
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetForUser")
 	s.Root.Store.SetContext(newCtx)
@@ -2232,7 +2234,7 @@ func (s *OpenTracingLayerFileInfoStore) GetForUser(userID string) ([]*model.File
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetFromMaster")
 	s.Root.Store.SetContext(newCtx)
@@ -2250,7 +2252,7 @@ func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*model.FileInf
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetWithOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -2335,7 +2337,7 @@ func (s *OpenTracingLayerFileInfoStore) PermanentDeleteByUser(userID string) (in
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -2371,7 +2373,7 @@ func (s *OpenTracingLayerFileInfoStore) SetContent(fileID string, content string
 	return err
 }
 
-func (s *OpenTracingLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4694,7 +4696,7 @@ func (s *OpenTracingLayerUploadSessionStore) Delete(id string) error {
 	return err
 }
 
-func (s *OpenTracingLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
+func (s *OpenTracingLayerUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UploadSessionStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -4712,7 +4714,7 @@ func (s *OpenTracingLayerUploadSessionStore) Get(id string) (*model.UploadSessio
 	return result, err
 }
 
-func (s *OpenTracingLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
+func (s *OpenTracingLayerUploadSessionStore) GetForUser(userID string) ([]*file.UploadSession, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UploadSessionStore.GetForUser")
 	s.Root.Store.SetContext(newCtx)
@@ -4730,7 +4732,7 @@ func (s *OpenTracingLayerUploadSessionStore) GetForUser(userID string) ([]*model
 	return result, err
 }
 
-func (s *OpenTracingLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (s *OpenTracingLayerUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UploadSessionStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4748,7 +4750,7 @@ func (s *OpenTracingLayerUploadSessionStore) Save(session *model.UploadSession) 
 	return result, err
 }
 
-func (s *OpenTracingLayerUploadSessionStore) Update(session *model.UploadSession) error {
+func (s *OpenTracingLayerUploadSessionStore) Update(session *file.UploadSession) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UploadSessionStore.Update")
 	s.Root.Store.SetContext(newCtx)

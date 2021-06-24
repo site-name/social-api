@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/audit"
 )
 
@@ -24,7 +25,7 @@ func createUpload(c *Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	us := model.UploadSessionFromJson(r.Body)
+	us := file.UploadSessionFromJson(r.Body)
 	if us == nil {
 		c.SetInvalidParam("upload")
 		return
@@ -106,7 +107,7 @@ func uploadData(c *Context, w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(info.ToJson()))
 }
 
-func doUploadData(c *Context, us *model.UploadSession, r *http.Request) (*model.FileInfo, *model.AppError) {
+func doUploadData(c *Context, us *file.UploadSession, r *http.Request) (*file.FileInfo, *model.AppError) {
 	boundary, parseErr := parseMultipartRequestHeader(r)
 	if parseErr != nil && !errors.Is(parseErr, http.ErrNotMultipart) {
 		return nil, model.NewAppError("uploadData", "api.upload.upload_data.invalid_content_type",

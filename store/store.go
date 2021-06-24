@@ -14,8 +14,10 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -140,24 +142,24 @@ type Store interface {
 
 type UploadSessionStore interface {
 	CreateIndexesIfNotExists()
-	Save(session *model.UploadSession) (*model.UploadSession, error)
-	Update(session *model.UploadSession) error
-	Get(id string) (*model.UploadSession, error)
-	GetForUser(userID string) ([]*model.UploadSession, error)
+	Save(session *file.UploadSession) (*file.UploadSession, error)
+	Update(session *file.UploadSession) error
+	Get(id string) (*file.UploadSession, error)
+	GetForUser(userID string) ([]*file.UploadSession, error)
 	Delete(id string) error
 }
 
 // fileinfo
 type FileInfoStore interface {
 	CreateIndexesIfNotExists()
-	Save(info *model.FileInfo) (*model.FileInfo, error)
-	Upsert(info *model.FileInfo) (*model.FileInfo, error)
-	Get(id string) (*model.FileInfo, error)
-	GetFromMaster(id string) (*model.FileInfo, error)
-	GetByIds(ids []string) ([]*model.FileInfo, error)
-	GetByPath(path string) (*model.FileInfo, error)
-	GetForUser(userID string) ([]*model.FileInfo, error)
-	GetWithOptions(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error)
+	Save(info *file.FileInfo) (*file.FileInfo, error)
+	Upsert(info *file.FileInfo) (*file.FileInfo, error)
+	Get(id string) (*file.FileInfo, error)
+	GetFromMaster(id string) (*file.FileInfo, error)
+	GetByIds(ids []string) ([]*file.FileInfo, error)
+	GetByPath(path string) (*file.FileInfo, error)
+	GetForUser(userID string) ([]*file.FileInfo, error)
+	GetWithOptions(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error)
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
@@ -502,11 +504,11 @@ type (
 
 type ClusterDiscoveryStore interface {
 	CreateIndexesIfNotExists()
-	Save(discovery *model.ClusterDiscovery) error
-	Delete(discovery *model.ClusterDiscovery) (bool, error)
-	Exists(discovery *model.ClusterDiscovery) (bool, error)
-	GetAll(discoveryType, clusterName string) ([]*model.ClusterDiscovery, error)
-	SetLastPingAt(discovery *model.ClusterDiscovery) error
+	Save(discovery *cluster.ClusterDiscovery) error
+	Delete(discovery *cluster.ClusterDiscovery) (bool, error)
+	Exists(discovery *cluster.ClusterDiscovery) (bool, error)
+	GetAll(discoveryType, clusterName string) ([]*cluster.ClusterDiscovery, error)
+	SetLastPingAt(discovery *cluster.ClusterDiscovery) error
 	Cleanup() error
 }
 

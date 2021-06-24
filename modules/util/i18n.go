@@ -13,7 +13,7 @@ import (
 // loaded already and assigns english while loading server config
 func TranslationsPreInit() error {
 	translationsDir := "i18n"
-	if mattermostPath := os.Getenv("MM_SERVER_PATH"); mattermostPath != "" {
+	if mattermostPath := os.Getenv("SN_SERVER_PATH"); mattermostPath != "" {
 		translationsDir = filepath.Join(mattermostPath, "i18n")
 	}
 

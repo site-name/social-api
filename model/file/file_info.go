@@ -1,4 +1,4 @@
-package model
+package file
 
 import (
 	"image"
@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/sitename/sitename/model"
 )
 
 const (
@@ -53,56 +55,56 @@ type FileInfo struct {
 }
 
 func (fi *FileInfo) ToJson() string {
-	return ModelToJson(fi)
+	return model.ModelToJson(fi)
 }
 
 func FileInfoFromJson(data io.Reader) *FileInfo {
-	var fi FileInfo
-	ModelFromJson(&fi, data)
+	var fi *FileInfo
+	model.ModelFromJson(&fi, data)
 
-	return &fi
+	return fi
 }
 
 func FileInfosToJson(infos []*FileInfo) string {
-	return ModelToJson(infos)
+	return model.ModelToJson(infos)
 }
 
 func FileInfosFromJson(data io.Reader) []*FileInfo {
 	var infos []*FileInfo
-	ModelFromJson(&infos, data)
+	model.ModelFromJson(&infos, data)
 	return infos
 }
 
 func (fi *FileInfo) PreSave() {
 	if fi.Id == "" {
-		fi.Id = NewId()
+		fi.Id = model.NewId()
 	}
 
 	if fi.CreateAt == 0 {
-		fi.CreateAt = GetMillis()
+		fi.CreateAt = model.GetMillis()
 	}
 	if fi.UpdateAt < fi.CreateAt {
 		fi.UpdateAt = fi.CreateAt
 	}
 
 	if fi.RemoteId == nil {
-		fi.RemoteId = NewString("")
+		fi.RemoteId = model.NewString("")
 	}
 }
 
-func (fi *FileInfo) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
+func (fi *FileInfo) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
 		"model.file_info.is_valid.%s.app_error",
 		"file_info_id=",
 		"FileInfo.IsValid",
 	)
-	if !IsValidId(fi.Id) {
+	if !model.IsValidId(fi.Id) {
 		return outer("id", nil)
 	}
-	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
+	if !model.IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
 		return outer("creator_id", &fi.Id)
 	}
-	if fi.ProductId != "" && !IsValidId(fi.ProductId) {
+	if fi.ProductId != "" && !model.IsValidId(fi.ProductId) {
 		return outer("product_id", &fi.Id)
 	}
 	if fi.CreateAt == 0 {
@@ -142,13 +144,13 @@ func NewInfo(name string) *FileInfo {
 	return info
 }
 
-func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *AppError) {
+func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *model.AppError) {
 	info := &FileInfo{
 		Name: name,
 		Size: int64(size),
 	}
 
-	var err *AppError
+	var err *model.AppError
 
 	extension := strings.ToLower(filepath.Ext(name))
 	info.MimeType = mime.TypeByExtension(extension)
@@ -170,7 +172,7 @@ func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *App
 				if err != nil {
 					// Still return the rest of the info even though it doesn't appear to be an actual gif
 					info.HasPreviewImage = true
-					return info, NewAppError("GetInfoForBytes", "model.file_info.get.gif.app_error", nil, err.Error(), http.StatusBadRequest)
+					return info, model.NewAppError("GetInfoForBytes", "model.file_info.get.gif.app_error", nil, err.Error(), http.StatusBadRequest)
 				}
 				info.HasPreviewImage = len(gifConfig.Image) == 1
 			} else {
@@ -184,7 +186,7 @@ func GetInfoForBytes(name string, data io.ReadSeeker, size int) (*FileInfo, *App
 
 func GetEtagForFileInfos(infos []*FileInfo) string {
 	if len(infos) == 0 {
-		return Etag()
+		return model.Etag()
 	}
 
 	var maxUpdateAt int64
@@ -195,5 +197,5 @@ func GetEtagForFileInfos(infos []*FileInfo) string {
 		}
 	}
 
-	return Etag(infos[0].ProductId, maxUpdateAt)
+	return model.Etag(infos[0].ProductId, maxUpdateAt)
 }

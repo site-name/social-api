@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 )
 
 const (
@@ -30,7 +31,7 @@ type ProductMedia struct {
 	Id          string                `json:"id"`
 	ProductID   string                `json:"product_id"`
 	Ppoi        string                `json:"ppoi"` // NOTE: need investigation
-	Image       *model.FileInfo       `db:"-"`
+	Image       *file.FileInfo        `db:"-"`
 	Alt         string                `json:"alt"`
 	Type        string                `json:"type"`
 	ExternalUrl *string               `json:"external_url"`

@@ -2,9 +2,10 @@ package einterfaces
 
 import (
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 )
 
-type ClusterMessageHandler func(msg *model.ClusterMessage)
+type ClusterMessageHandler func(msg *cluster.ClusterMessage)
 
 type ClusterInterface interface {
 	StartInterNodeCommunication()
@@ -16,11 +17,11 @@ type ClusterInterface interface {
 	// the soft real-time requirements of the protocol. Lower numbers are better,
 	// and zero means "totally healthy".
 	HealthScore() int
-	GetMyClusterInfo() *model.ClusterInfo
-	GetClusterInfos() []*model.ClusterInfo
-	SendClusterMessage(cluster *model.ClusterMessage)
+	GetMyClusterInfo() *cluster.ClusterInfo
+	GetClusterInfos() []*cluster.ClusterInfo
+	SendClusterMessage(cluster *cluster.ClusterMessage)
 	NotifyMsg(buf []byte)
-	GetClusterStats() ([]*model.ClusterStats, *model.AppError)
+	GetClusterStats() ([]*cluster.ClusterStats, *model.AppError)
 	GetLogs(page, perPage int) ([]string, *model.AppError)
 	// GetPluginStatuses() (model.PluginStatuses, *model.AppError)
 	ConfigChanged(previousConfig *model.Config, newConfig *model.Config, sendToOtherServer bool) *model.AppError

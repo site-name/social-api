@@ -14,17 +14,16 @@ type SecurityBulletin struct {
 type SecurityBulletins []SecurityBulletin
 
 func (sb *SecurityBulletin) ToJson() string {
-	b, _ := json.JSON.Marshal(sb)
-	return string(b)
+	return ModelToJson(sb)
 }
 
 func SecurityBulletinFromJson(data io.Reader) *SecurityBulletin {
 	var o *SecurityBulletin
-	json.JSON.NewDecoder(data).Decode(&o)
+	ModelFromJson(&o, data)
 	return o
 }
 
-func (sb SecurityBulletins) ToJson() string {
+func (sb *SecurityBulletins) ToJson() string {
 	b, err := json.JSON.Marshal(sb)
 	if err != nil {
 		return "[]"

@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	modelFile "github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
@@ -730,7 +731,7 @@ func (a *App) SetProfileImageFromMultiPartFile(userID string, file multipart.Fil
 	// This casting is done to prevent overflow on 32 bit systems (not needed
 	// in 64 bits systems because images can't have more than 32 bits height or
 	// width)
-	if int64(config.Width)*int64(config.Height) > model.MaxImageSize {
+	if int64(config.Width)*int64(config.Height) > modelFile.MaxImageSize {
 		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.too_large.app_error", nil, "", http.StatusBadRequest)
 	}
 

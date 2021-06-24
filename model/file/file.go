@@ -1,7 +1,9 @@
-package model
+package file
 
 import (
 	"io"
+
+	"github.com/sitename/sitename/model"
 )
 
 const (
@@ -14,11 +16,11 @@ type FileUploadResponse struct {
 }
 
 func FileUploadResponseFromJson(data io.Reader) *FileUploadResponse {
-	var o FileUploadResponse
-	ModelFromJson(&o, data)
-	return &o
+	var o *FileUploadResponse
+	model.ModelFromJson(&o, data)
+	return o
 }
 
 func (o *FileUploadResponse) ToJson() string {
-	return ModelToJson(o)
+	return model.ModelToJson(o)
 }

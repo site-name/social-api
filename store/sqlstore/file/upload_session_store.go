@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,7 +17,7 @@ type SqlUploadSessionStore struct {
 func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 	s := &SqlUploadSessionStore{sqlStore}
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.UploadSession{}, "UploadSessions").SetKeys(false, "Id")
+		table := db.AddTableWithName(file.UploadSession{}, "UploadSessions").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(32)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -33,7 +34,7 @@ func (us SqlUploadSessionStore) CreateIndexesIfNotExists() {
 	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", "UploadSessions", "UserID")
 }
 
-func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
 	if session == nil {
 		return nil, errors.New("SqlUploadSessionStore.Save: session should not be nil")
 	}
@@ -47,7 +48,7 @@ func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.Uplo
 	return session, nil
 }
 
-func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
+func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
 	if session == nil {
 		return errors.New("SqlUploadSessionStore.Update: session should not be nil")
 	}
@@ -63,7 +64,7 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 	return nil
 }
 
-func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
+func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	if !model.IsValidId(id) {
 		return nil, errors.New("SqlUploadSessionStore.Get: id is not valid")
 	}
@@ -75,7 +76,7 @@ func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.Get: failed to build query")
 	}
-	var session model.UploadSession
+	var session file.UploadSession
 	if err := us.GetReplica().SelectOne(&session, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("UploadSession", id)
@@ -85,7 +86,7 @@ func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	return &session, nil
 }
 
-func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSession, error) {
+func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSession, error) {
 	query := us.GetQueryBuilder().
 		Select("*").
 		From("UploadSessions").
@@ -95,7 +96,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSessi
 	if err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.GetForUser: failed to build query")
 	}
-	var sessions []*model.UploadSession
+	var sessions []*file.UploadSession
 	if _, err := us.GetReplica().Select(&sessions, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.GetForUser: failed to select")
 	}

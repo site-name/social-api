@@ -1,11 +1,10 @@
-package model
+package cluster
 
 import (
 	"io"
-	"net/http"
 	"os"
 
-	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/model"
 )
 
 const (
@@ -26,11 +25,11 @@ type ClusterDiscovery struct {
 
 func (o *ClusterDiscovery) PreSave() {
 	if o.Id == "" {
-		o.Id = NewId()
+		o.Id = model.NewId()
 	}
 
 	if o.CreateAt == 0 {
-		o.CreateAt = GetMillis()
+		o.CreateAt = model.GetMillis()
 		o.LastPingAt = o.CreateAt
 	}
 }
@@ -50,7 +49,7 @@ func (o *ClusterDiscovery) AutoFillIpAddress(iface string, ipAddress string) {
 		if ipAddress != "" {
 			o.Hostname = ipAddress
 		} else {
-			o.Hostname = GetServerIpAddress(iface)
+			o.Hostname = model.GetServerIpAddress(iface)
 		}
 	}
 }
@@ -86,50 +85,40 @@ func FilterClusterDiscovery(vs []*ClusterDiscovery, f func(*ClusterDiscovery) bo
 	return copy
 }
 
-func (o *ClusterDiscovery) IsValid() *AppError {
-	if !IsValidId(o.Id) {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.id.app_error", nil, "", http.StatusBadRequest)
+func (o *ClusterDiscovery) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.cluster.is_valid.%s.app_error",
+		"cluster_discovery_id=",
+		"ClusterDiscovery.IsValid",
+	)
+	if !model.IsValidId(o.Id) {
+		return outer("id", nil)
 	}
-
 	if o.ClusterName == "" {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.name.app_error", nil, "", http.StatusBadRequest)
+		return outer("cluster_name", &o.Id)
 	}
-
 	if o.Type == "" {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.type.app_error", nil, "", http.StatusBadRequest)
+		return outer("type", &o.Id)
 	}
-
 	if o.Hostname == "" {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.hostname.app_error", nil, "", http.StatusBadRequest)
+		return outer("host_name", &o.Id)
 	}
-
 	if o.CreateAt == 0 {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.create_at.app_error", nil, "", http.StatusBadRequest)
+		return outer("create_at", &o.Id)
 	}
-
 	if o.LastPingAt == 0 {
-		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.last_ping_at.app_error", nil, "", http.StatusBadRequest)
+		return outer("last_ping_at", &o.Id)
 	}
 
 	return nil
 }
 
 func (o *ClusterDiscovery) ToJson() string {
-	b, err := json.JSON.Marshal(o)
-	if err != nil {
-		return ""
-	}
-
-	return string(b)
+	return model.ModelToJson(o)
 }
 
 func ClusterDiscoveryFromJson(data io.Reader) *ClusterDiscovery {
-	decoder := json.JSON.NewDecoder(data)
-	var me ClusterDiscovery
-	err := decoder.Decode(&me)
-	if err == nil {
-		return &me
-	}
-
-	return nil
+	var me *ClusterDiscovery
+	model.ModelFromJson(&me, data)
+	return me
 }

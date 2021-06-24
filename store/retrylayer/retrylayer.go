@@ -15,8 +15,10 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -1464,7 +1466,7 @@ func (s *RetryLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -1484,7 +1486,7 @@ func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscove
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -1504,7 +1506,7 @@ func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscove
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*cluster.ClusterDiscovery, error) {
 
 	tries := 0
 	for {
@@ -1524,7 +1526,7 @@ func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -1544,7 +1546,7 @@ func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -1952,7 +1954,7 @@ func (s *RetryLayerFileInfoStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -1972,7 +1974,7 @@ func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 
 }
 
-func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -1992,7 +1994,7 @@ func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, err
 
 }
 
-func (s *RetryLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -2012,7 +2014,7 @@ func (s *RetryLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error
 
 }
 
-func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -2032,7 +2034,7 @@ func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, 
 
 }
 
-func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -2052,7 +2054,7 @@ func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, err
 
 }
 
-func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -2138,7 +2140,7 @@ func (s *RetryLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 
 }
 
-func (s *RetryLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -2178,7 +2180,7 @@ func (s *RetryLayerFileInfoStore) SetContent(fileID string, content string) erro
 
 }
 
-func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -4396,7 +4398,7 @@ func (s *RetryLayerUploadSessionStore) Delete(id string) error {
 
 }
 
-func (s *RetryLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -4416,7 +4418,7 @@ func (s *RetryLayerUploadSessionStore) Get(id string) (*model.UploadSession, err
 
 }
 
-func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*file.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -4436,7 +4438,7 @@ func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*model.Uploa
 
 }
 
-func (s *RetryLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -4456,7 +4458,7 @@ func (s *RetryLayerUploadSessionStore) Save(session *model.UploadSession) (*mode
 
 }
 
-func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) error {
+func (s *RetryLayerUploadSessionStore) Update(session *file.UploadSession) error {
 
 	tries := 0
 	for {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/seo"
 	"golang.org/x/text/language"
 )
@@ -19,13 +20,13 @@ const (
 )
 
 type Collection struct {
-	Id                 string          `json:"id"`
-	Name               string          `json:"name"`
-	Slug               string          `json:"slug"`
-	Products           []*Product      `json:"products" db:"-"`
-	BackgroundImage    *model.FileInfo `json:"background_image"`
-	BackgroundImageAlt string          `json:"background_image_alt"`
-	Description        *string         `json:"description"`
+	Id                 string         `json:"id"`
+	Name               string         `json:"name"`
+	Slug               string         `json:"slug"`
+	Products           []*Product     `json:"products" db:"-"`
+	BackgroundImage    *file.FileInfo `json:"background_image"`
+	BackgroundImageAlt string         `json:"background_image_alt"`
+	Description        *string        `json:"description"`
 	model.ModelMetadata
 	seo.Seo
 }

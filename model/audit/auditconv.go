@@ -4,6 +4,7 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/file"
 )
 
 // AuditModelTypeConv converts key model types to something better suited for audit output.
@@ -28,7 +29,7 @@ func AuditModelTypeConv(val interface{}) (newVal interface{}, converted bool) {
 	// 	return newAuditChannelModerationPatch(v), true
 	// case *model.Emoji:
 	// 	return newAuditEmoji(v), true
-	case *model.FileInfo:
+	case *file.FileInfo:
 		return newAuditFileInfo(v), true
 	// case *Group:
 	// 	return newAuditGroup(v), true
@@ -318,7 +319,7 @@ type auditFileInfo struct {
 }
 
 // newAuditFileInfo creates a simplified representation of FileInfo for output to audit log.
-func newAuditFileInfo(f *model.FileInfo) auditFileInfo {
+func newAuditFileInfo(f *file.FileInfo) auditFileInfo {
 	var fi auditFileInfo
 	if f != nil {
 		fi.ID = f.Id

@@ -1,7 +1,9 @@
-package model
+package cluster
 
 import (
 	"io"
+
+	"github.com/sitename/sitename/model"
 )
 
 type ClusterInfo struct {
@@ -13,21 +15,21 @@ type ClusterInfo struct {
 }
 
 func (ci *ClusterInfo) ToJson() string {
-	return ModelToJson(ci)
+	return model.ModelToJson(ci)
 }
 
 func ClusterInfoFromJson(data io.Reader) *ClusterInfo {
 	var ci *ClusterInfo
-	ModelFromJson(&ci, data)
+	model.ModelFromJson(&ci, data)
 	return ci
 }
 
 func ClusterInfosToJson(objmap []*ClusterInfo) string {
-	return ModelToJson(&objmap)
+	return model.ModelToJson(&objmap)
 }
 
 func ClusterInfosFromJson(data io.Reader) []*ClusterInfo {
 	var objmap []*ClusterInfo
-	ModelFromJson(&objmap, data)
+	model.ModelFromJson(&objmap, data)
 	return objmap
 }

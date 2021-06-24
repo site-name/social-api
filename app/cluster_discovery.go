@@ -3,7 +3,7 @@ package app
 import (
 	"time"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -12,14 +12,14 @@ const (
 )
 
 type ClusterDiscoveryService struct {
-	model.ClusterDiscovery
+	cluster.ClusterDiscovery
 	srv  *Server
 	stop chan bool
 }
 
 func (s *Server) NewClusterDiscoveryService() *ClusterDiscoveryService {
 	ds := &ClusterDiscoveryService{
-		ClusterDiscovery: model.ClusterDiscovery{},
+		ClusterDiscovery: cluster.ClusterDiscovery{},
 		srv:              s,
 		stop:             make(chan bool),
 	}

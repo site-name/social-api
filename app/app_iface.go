@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/filestore"
@@ -133,7 +134,7 @@ type AppIface interface {
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
 	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
@@ -306,7 +307,7 @@ type AppIface interface {
 	Compliance() einterfaces.ComplianceInterface
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
 	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
-	CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError)
+	CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError)
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
@@ -316,14 +317,14 @@ type AppIface interface {
 	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
-	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError)
-	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError)
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError)
 	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
+	ExtractContentFromFileInfo(fileInfo *file.FileInfo) error
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
-	GeneratePublicLink(siteURL string, info *model.FileInfo) string
+	GeneratePublicLink(siteURL string, info *file.FileInfo) string
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
@@ -331,7 +332,7 @@ type AppIface interface {
 	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
 	GetFile(fileID string) ([]byte, *model.AppError)
-	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
+	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
 	GetSanitizeOptions(asAdmin bool) map[string]bool
@@ -340,8 +341,8 @@ type AppIface interface {
 	GetStatus(userID string) (*model.Status, *model.AppError)
 	GetStatusFromCache(userID string) *model.Status
 	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
-	GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError)
-	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError)
+	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
+	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
@@ -404,7 +405,7 @@ type AppIface interface {
 	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
 	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
-	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
+	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

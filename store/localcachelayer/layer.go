@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/store"
@@ -70,10 +70,10 @@ type LocalCacheStore struct {
 	userProfileByIdsCache cache.Cache
 }
 
-func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterface, cluster einterfaces.ClusterInterface, cacheProvider cache.Provider) (localCacheStore LocalCacheStore, err error) {
+func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterface, cluster_ einterfaces.ClusterInterface, cacheProvider cache.Provider) (localCacheStore LocalCacheStore, err error) {
 	localCacheStore = LocalCacheStore{
 		Store:   baseStore,
-		cluster: cluster,
+		cluster: cluster_,
 		metrics: metrics,
 	}
 
@@ -82,7 +82,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		Size:                   UserProfileByIDCacheSize,
 		Name:                   "UserProfileByIds",
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
-		InvalidateClusterEvent: model.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS,
+		InvalidateClusterEvent: cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS,
 		Striped:                true,
 		StripedBuckets:         util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
@@ -94,8 +94,8 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		userProfileByIdsInvalidations: make(map[string]bool),
 	}
 
-	if cluster != nil {
-		cluster.RegisterClusterMessageHandler(model.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS, localCacheStore.user.handleClusterInvalidateScheme)
+	if cluster_ != nil {
+		cluster_.RegisterClusterMessageHandler(cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS, localCacheStore.user.handleClusterInvalidateScheme)
 	}
 
 	return
@@ -113,9 +113,9 @@ func (s LocalCacheStore) DropAllTables() {
 func (s *LocalCacheStore) doInvalidateCacheCluster(cache cache.Cache, key string) {
 	cache.Remove(key)
 	if s.cluster != nil {
-		msg := &model.ClusterMessage{
+		msg := &cluster.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: model.CLUSTER_SEND_BEST_EFFORT,
+			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
 			Data:     key,
 		}
 		s.cluster.SendClusterMessage(msg)
@@ -143,9 +143,9 @@ func (s *LocalCacheStore) doStandardReadCache(cache cache.Cache, key string, val
 func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 	cache.Purge()
 	if s.cluster != nil {
-		msg := &model.ClusterMessage{
+		msg := &cluster.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: model.CLUSTER_SEND_BEST_EFFORT,
+			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
 			Data:     ClearCacheMessageData,
 		}
 		s.cluster.SendClusterMessage(msg)

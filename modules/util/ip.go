@@ -32,10 +32,7 @@ func IsValidIPv4(ip string) bool {
 		return false
 	}
 	ip4 := netIP.To4()
-	if ip4 == nil {
-		return false
-	}
-	return true
+	return ip4 != nil
 }
 
 // Check whether the passed IP is a valid V6 IP address
@@ -45,8 +42,5 @@ func IsValidIPv6(ip string) bool {
 		return false
 	}
 	ip6 := netIP.To16()
-	if ip6 == nil {
-		return false
-	}
-	return true
+	return ip6 != nil
 }

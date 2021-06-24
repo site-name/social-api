@@ -3,7 +3,7 @@ package localcachelayer
 import (
 	"sync"
 
-	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/store"
 )
 
@@ -14,7 +14,7 @@ type LocalCacheUserStore struct {
 	userProfileByIdsInvalidations map[string]bool
 }
 
-func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *model.ClusterMessage) {
+func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *cluster.ClusterMessage) {
 	if msg.Data == ClearCacheMessageData {
 		s.rootStore.userProfileByIdsCache.Purge()
 	} else {

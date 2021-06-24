@@ -109,3 +109,14 @@ func CopyDir(src string, dst string) (err error) {
 
 	return
 }
+
+func IsFile(filePath string) (bool, error) {
+	f, err := os.Stat(filePath)
+	if err == nil {
+		return !f.IsDir(), nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}

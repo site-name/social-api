@@ -1,8 +1,10 @@
-package model
+package file
 
 import (
 	"fmt"
 	"io"
+
+	"github.com/sitename/sitename/model"
 )
 
 // UploadType defines the type of an upload.
@@ -29,25 +31,25 @@ type UploadSession struct {
 }
 
 func (us *UploadSession) ToJson() string {
-	return ModelToJson(us)
+	return model.ModelToJson(us)
 }
 
 func UploadSessionFromJson(data io.Reader) *UploadSession {
 	var us *UploadSession
-	ModelFromJson(&us, data)
+	model.ModelFromJson(&us, data)
 	return us
 }
 
 // UploadSessionsToJson serializes a list of UploadSession into JSON and
 // returns it as string.
 func UploadSessionsToJson(uss []*UploadSession) string {
-	return ModelToJson(uss)
+	return model.ModelToJson(uss)
 }
 
 // UploadSessionsFromJson deserializes a list of UploadSession from JSON data.
 func UploadSessionsFromJson(data io.Reader) []*UploadSession {
 	var uss []*UploadSession
-	if err := ModelFromJson(&uss, data); err != nil {
+	if err := model.ModelFromJson(&uss, data); err != nil {
 		return nil
 	}
 	return uss
@@ -56,11 +58,11 @@ func UploadSessionsFromJson(data io.Reader) []*UploadSession {
 // PreSave is a utility function used to fill required information.
 func (us *UploadSession) PreSave() {
 	if us.Id == "" {
-		us.Id = NewId()
+		us.Id = model.NewId()
 	}
 
 	if us.CreateAt == 0 {
-		us.CreateAt = GetMillis()
+		us.CreateAt = model.GetMillis()
 	}
 }
 
@@ -77,19 +79,19 @@ func (t UploadType) IsValid() error {
 	return fmt.Errorf("invalid UploadType %s", t)
 }
 
-func (us *UploadSession) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
+func (us *UploadSession) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
 		"model.upload_session.is_valid.%s.app_error",
 		"upload_session_id=",
 		"UploadSession.IsValid",
 	)
-	if !IsValidId(us.Id) {
+	if !model.IsValidId(us.Id) {
 		return outer("id", nil)
 	}
 	if err := us.Type.IsValid(); err != nil {
 		return outer("type", &us.Id)
 	}
-	if !IsValidId(us.UserID) && us.UserID != UploadNoUserID {
+	if !model.IsValidId(us.UserID) && us.UserID != UploadNoUserID {
 		return outer("user_id", &us.Id)
 	}
 	if us.CreateAt == 0 {

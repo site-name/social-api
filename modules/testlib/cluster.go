@@ -5,12 +5,13 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 )
 
 type FakeClusterInterface struct {
 	clusterMessageHandler einterfaces.ClusterMessageHandler
 	mut                   sync.RWMutex
-	messages              []*model.ClusterMessage
+	messages              []*cluster.ClusterMessage
 }
 
 func (c *FakeClusterInterface) StartInterNodeCommunication() {}
@@ -29,17 +30,17 @@ func (c *FakeClusterInterface) GetClusterId() string { return "" }
 
 func (c *FakeClusterInterface) IsLeader() bool { return false }
 
-func (c *FakeClusterInterface) GetMyClusterInfo() *model.ClusterInfo { return nil }
+func (c *FakeClusterInterface) GetMyClusterInfo() *cluster.ClusterInfo { return nil }
 
-func (c *FakeClusterInterface) GetClusterInfos() []*model.ClusterInfo { return nil }
+func (c *FakeClusterInterface) GetClusterInfos() []*cluster.ClusterInfo { return nil }
 
-func (c *FakeClusterInterface) SendClusterMessage(message *model.ClusterMessage) {
+func (c *FakeClusterInterface) SendClusterMessage(message *cluster.ClusterMessage) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	c.messages = append(c.messages, message)
 }
 
-func (c *FakeClusterInterface) SendClusterMessageToNode(nodeID string, message *model.ClusterMessage) error {
+func (c *FakeClusterInterface) SendClusterMessageToNode(nodeID string, message *cluster.ClusterMessage) error {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	c.messages = append(c.messages, message)
@@ -48,7 +49,7 @@ func (c *FakeClusterInterface) SendClusterMessageToNode(nodeID string, message *
 
 func (c *FakeClusterInterface) NotifyMsg(buf []byte) {}
 
-func (c *FakeClusterInterface) GetClusterStats() ([]*model.ClusterStats, *model.AppError) {
+func (c *FakeClusterInterface) GetClusterStats() ([]*cluster.ClusterStats, *model.AppError) {
 	return nil, nil
 }
 
@@ -62,8 +63,8 @@ func (c *FakeClusterInterface) ConfigChanged(previousConfig *model.Config, newCo
 
 func (c *FakeClusterInterface) SendClearRoleCacheMessage() {
 	if c.clusterMessageHandler != nil {
-		c.clusterMessageHandler(&model.ClusterMessage{
-			Event: model.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_ROLES,
+		c.clusterMessageHandler(&cluster.ClusterMessage{
+			Event: cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_ROLES,
 		})
 	}
 }
@@ -72,17 +73,17 @@ func (c *FakeClusterInterface) SendClearRoleCacheMessage() {
 // 	return nil, nil
 // }
 
-func (c *FakeClusterInterface) GetMessages() []*model.ClusterMessage {
+func (c *FakeClusterInterface) GetMessages() []*cluster.ClusterMessage {
 	c.mut.RLock()
 	defer c.mut.RUnlock()
 	return c.messages
 }
 
-func (c *FakeClusterInterface) SelectMessages(filterCond func(message *model.ClusterMessage) bool) []*model.ClusterMessage {
+func (c *FakeClusterInterface) SelectMessages(filterCond func(message *cluster.ClusterMessage) bool) []*cluster.ClusterMessage {
 	c.mut.RLock()
 	defer c.mut.RUnlock()
 
-	filteredMessages := []*model.ClusterMessage{}
+	filteredMessages := []*cluster.ClusterMessage{}
 	for _, msg := range c.messages {
 		if filterCond(msg) {
 			filteredMessages = append(filteredMessages, msg)

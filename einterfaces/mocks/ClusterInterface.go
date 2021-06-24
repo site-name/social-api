@@ -6,6 +6,8 @@ package mocks
 
 import (
 	einterfaces "github.com/sitename/sitename/einterfaces"
+	cluster "github.com/sitename/sitename/model/cluster"
+
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/sitename/sitename/model"
@@ -47,15 +49,15 @@ func (_m *ClusterInterface) GetClusterId() string {
 }
 
 // GetClusterInfos provides a mock function with given fields:
-func (_m *ClusterInterface) GetClusterInfos() []*model.ClusterInfo {
+func (_m *ClusterInterface) GetClusterInfos() []*cluster.ClusterInfo {
 	ret := _m.Called()
 
-	var r0 []*model.ClusterInfo
-	if rf, ok := ret.Get(0).(func() []*model.ClusterInfo); ok {
+	var r0 []*cluster.ClusterInfo
+	if rf, ok := ret.Get(0).(func() []*cluster.ClusterInfo); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.ClusterInfo)
+			r0 = ret.Get(0).([]*cluster.ClusterInfo)
 		}
 	}
 
@@ -63,15 +65,15 @@ func (_m *ClusterInterface) GetClusterInfos() []*model.ClusterInfo {
 }
 
 // GetClusterStats provides a mock function with given fields:
-func (_m *ClusterInterface) GetClusterStats() ([]*model.ClusterStats, *model.AppError) {
+func (_m *ClusterInterface) GetClusterStats() ([]*cluster.ClusterStats, *model.AppError) {
 	ret := _m.Called()
 
-	var r0 []*model.ClusterStats
-	if rf, ok := ret.Get(0).(func() []*model.ClusterStats); ok {
+	var r0 []*cluster.ClusterStats
+	if rf, ok := ret.Get(0).(func() []*cluster.ClusterStats); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*model.ClusterStats)
+			r0 = ret.Get(0).([]*cluster.ClusterStats)
 		}
 	}
 
@@ -113,15 +115,15 @@ func (_m *ClusterInterface) GetLogs(page int, perPage int) ([]string, *model.App
 }
 
 // GetMyClusterInfo provides a mock function with given fields:
-func (_m *ClusterInterface) GetMyClusterInfo() *model.ClusterInfo {
+func (_m *ClusterInterface) GetMyClusterInfo() *cluster.ClusterInfo {
 	ret := _m.Called()
 
-	var r0 *model.ClusterInfo
-	if rf, ok := ret.Get(0).(func() *model.ClusterInfo); ok {
+	var r0 *cluster.ClusterInfo
+	if rf, ok := ret.Get(0).(func() *cluster.ClusterInfo); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.ClusterInfo)
+			r0 = ret.Get(0).(*cluster.ClusterInfo)
 		}
 	}
 
@@ -166,9 +168,9 @@ func (_m *ClusterInterface) RegisterClusterMessageHandler(event string, crm eint
 	_m.Called(event, crm)
 }
 
-// SendClusterMessage provides a mock function with given fields: cluster
-func (_m *ClusterInterface) SendClusterMessage(cluster *model.ClusterMessage) {
-	_m.Called(cluster)
+// SendClusterMessage provides a mock function with given fields: _a0
+func (_m *ClusterInterface) SendClusterMessage(_a0 *cluster.ClusterMessage) {
+	_m.Called(_a0)
 }
 
 // StartInterNodeCommunication provides a mock function with given fields:

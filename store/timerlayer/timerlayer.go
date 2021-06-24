@@ -15,8 +15,10 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -1594,7 +1596,7 @@ func (s *TimerLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
 	}
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Delete(discovery)
@@ -1610,7 +1612,7 @@ func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscove
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Exists(discovery)
@@ -1626,7 +1628,7 @@ func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscove
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
+func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*cluster.ClusterDiscovery, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.GetAll(discoveryType, clusterName)
@@ -1642,7 +1644,7 @@ func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.Save(discovery)
@@ -1658,7 +1660,7 @@ func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery
 	return err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.SetLastPingAt(discovery)
@@ -2168,7 +2170,7 @@ func (s *TimerLayerFileInfoStore) CreateIndexesIfNotExists() {
 	}
 }
 
-func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Get(id)
@@ -2184,7 +2186,7 @@ func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetByIds(ids)
@@ -2200,7 +2202,7 @@ func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, err
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetByPath(path)
@@ -2216,7 +2218,7 @@ func (s *TimerLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetForUser(userID)
@@ -2232,7 +2234,7 @@ func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, 
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetFromMaster(id)
@@ -2248,7 +2250,7 @@ func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, err
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
@@ -2327,7 +2329,7 @@ func (s *TimerLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) Save(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Save(info)
@@ -2359,7 +2361,7 @@ func (s *TimerLayerFileInfoStore) SetContent(fileID string, content string) erro
 	return err
 }
 
-func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Upsert(info)
@@ -4572,7 +4574,7 @@ func (s *TimerLayerUploadSessionStore) Delete(id string) error {
 	return err
 }
 
-func (s *TimerLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.Get(id)
@@ -4588,7 +4590,7 @@ func (s *TimerLayerUploadSessionStore) Get(id string) (*model.UploadSession, err
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*file.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.GetForUser(userID)
@@ -4604,7 +4606,7 @@ func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*model.Uploa
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.Save(session)
@@ -4620,7 +4622,7 @@ func (s *TimerLayerUploadSessionStore) Save(session *model.UploadSession) (*mode
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) error {
+func (s *TimerLayerUploadSessionStore) Update(session *file.UploadSession) error {
 	start := timemodule.Now()
 
 	err := s.UploadSessionStore.Update(session)

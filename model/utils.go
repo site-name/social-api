@@ -37,6 +37,13 @@ var (
 type StringInterface map[string]interface{}
 type StringArray []string
 
+func NewBool(b bool) *bool          { return &b }
+func NewInt(n int) *int             { return &n }
+func NewInt64(n int64) *int64       { return &n }
+func NewInt32(n int32) *int32       { return &n }
+func NewFloat32(n float32) *float32 { return &n }
+func NewString(s string) *string    { return &s }
+
 // Remove removes input from the array
 func (sa StringArray) Remove(input string) StringArray {
 	for index := range sa {

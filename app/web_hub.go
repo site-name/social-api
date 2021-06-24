@@ -1,6 +1,9 @@
 package app
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
+)
 
 // InvalidateCacheForUser
 func (a *App) InvalidateCacheForUser(userID string) {
@@ -9,9 +12,9 @@ func (a *App) InvalidateCacheForUser(userID string) {
 	a.Srv().Store.User().InvalidateProfileCacheForUser(userID)
 
 	if a.Cluster() != nil {
-		msg := &model.ClusterMessage{
-			Event:    model.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_USER,
-			SendType: model.CLUSTER_SEND_BEST_EFFORT,
+		msg := &cluster.ClusterMessage{
+			Event:    cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_USER,
+			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
 			Data:     userID,
 		}
 		a.Cluster().SendClusterMessage(msg)
@@ -27,15 +30,15 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 	s.PublishSkipClusterSend(message)
 
 	if s.Cluster != nil {
-		cm := &model.ClusterMessage{
-			Event:    model.CLUSTER_EVENT_PUBLISH,
-			SendType: model.CLUSTER_SEND_BEST_EFFORT,
+		cm := &cluster.ClusterMessage{
+			Event:    cluster.CLUSTER_EVENT_PUBLISH,
+			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
 			Data:     message.ToJson(),
 		}
 
 		switch message.EventType() {
 		case model.WEBSOCKET_EVENT_POSTED, model.WEBSOCKET_EVENT_POST_EDITED, model.WEBSOCKET_EVENT_DIRECT_ADDED, model.WEBSOCKET_EVENT_GROUP_ADDED, model.WEBSOCKET_EVENT_ADDED_TO_TEAM:
-			cm.SendType = model.CLUSTER_SEND_RELIABLE
+			cm.SendType = cluster.CLUSTER_SEND_RELIABLE
 		default:
 		}
 

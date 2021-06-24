@@ -4,6 +4,7 @@ import (
 	"runtime/debug"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -13,9 +14,9 @@ func (s *Server) InvalidateAllCaches() *model.AppError {
 
 	if s.Cluster != nil {
 
-		msg := &model.ClusterMessage{
-			Event:            model.CLUSTER_EVENT_INVALIDATE_ALL_CACHES,
-			SendType:         model.CLUSTER_SEND_RELIABLE,
+		msg := &cluster.ClusterMessage{
+			Event:            cluster.CLUSTER_EVENT_INVALIDATE_ALL_CACHES,
+			SendType:         cluster.CLUSTER_SEND_RELIABLE,
 			WaitForAllToSend: true,
 		}
 

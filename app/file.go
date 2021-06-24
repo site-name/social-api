@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/docextractor"
@@ -474,7 +475,7 @@ func parseOldFilenames(filenames []string, channelID, userID string) [][]string 
 // 	return savedInfos
 // }
 
-func (a *App) GeneratePublicLink(siteURL string, info *model.FileInfo) string {
+func (a *App) GeneratePublicLink(siteURL string, info *file.FileInfo) string {
 	hash := GeneratePublicLinkHash(info.Id, *a.Config().FileSettings.PublicLinkSalt)
 	return fmt.Sprintf("%s/files/%v/public?h=%s", siteURL, info.Id, hash)
 }
@@ -588,7 +589,7 @@ func GeneratePublicLinkHash(fileID, salt string) string {
 // 	return info, nil
 // }
 
-func (a *App) DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError) {
+func (a *App) DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError) {
 	info, _, err := a.DoUploadFileExpectModification(c, now, rawTeamId, rawChannelId, rawUserId, rawFilename, data)
 	return info, err
 }
@@ -632,18 +633,18 @@ func UploadFileSetRaw() func(t *UploadFileTask) {
 type UploadFileTask struct {
 	Name             string
 	UserId           string
-	Timestamp        time.Time       // Time stamp to use when creating the file.
-	ContentLength    int64           // The value of the Content-Length http header, when available.
-	Input            io.Reader       // The file data stream.
-	ClientId         string          // An optional, client-assigned Id field.
-	Raw              bool            // If Raw, do not execute special processing for images, just upload the file.  Plugins are still invoked.
-	buf              *bytes.Buffer   //
-	limit            int64           //
-	limitedInput     io.Reader       //
-	teeInput         io.Reader       //
-	fileinfo         *model.FileInfo //
-	maxFileSize      int64           //
-	decoded          image.Image     // Cached image data that (may) get initialized in preprocessImage and is used in postprocessImage
+	Timestamp        time.Time      // Time stamp to use when creating the file.
+	ContentLength    int64          // The value of the Content-Length http header, when available.
+	Input            io.Reader      // The file data stream.
+	ClientId         string         // An optional, client-assigned Id field.
+	Raw              bool           // If Raw, do not execute special processing for images, just upload the file.  Plugins are still invoked.
+	buf              *bytes.Buffer  //
+	limit            int64          //
+	limitedInput     io.Reader      //
+	teeInput         io.Reader      //
+	fileinfo         *file.FileInfo //
+	maxFileSize      int64          //
+	decoded          image.Image    // Cached image data that (may) get initialized in preprocessImage and is used in postprocessImage
 	imageType        string
 	imageOrientation int
 	// Testing: overrideable dependency functions
@@ -651,7 +652,7 @@ type UploadFileTask struct {
 	// ChannelId string
 	// TeamId    string
 	writeFile      func(io.Reader, string) (int64, *model.AppError)
-	saveToDatabase func(*model.FileInfo) (*model.FileInfo, error)
+	saveToDatabase func(*file.FileInfo) (*file.FileInfo, error)
 	imgDecoder     *imaging.Decoder
 	imgEncoder     *imaging.Encoder
 }
@@ -670,7 +671,7 @@ func (t *UploadFileTask) init(a *App) {
 		t.buf.Grow(maxUploadInitialBufferSize)
 	}
 
-	t.fileinfo = model.NewInfo(filepath.Base(t.Name))
+	t.fileinfo = file.NewInfo(filepath.Base(t.Name))
 	t.fileinfo.Id = model.NewId()
 	t.fileinfo.CreatorId = t.UserId
 	t.fileinfo.CreateAt = t.Timestamp.UnixNano() / int64(time.Millisecond)
@@ -941,13 +942,13 @@ func (t *UploadFileTask) newAppError(id string, httpStatus int, extra ...interfa
 	return model.NewAppError("uploadFileTask", id, params, "", httpStatus)
 }
 
-func (a *App) DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError) {
+func (a *App) DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError) {
 	filename := filepath.Base(rawFilename)
 	teamID := filepath.Base(rawTeamId)
 	channelID := filepath.Base(rawChannelId)
 	userID := filepath.Base(rawUserId)
 
-	info, err := model.GetInfoForBytes(filename, bytes.NewReader(data), len(data))
+	info, err := file.GetInfoForBytes(filename, bytes.NewReader(data), len(data))
 	if err != nil {
 		err.StatusCode = http.StatusBadRequest
 		return nil, data, err
@@ -1112,7 +1113,7 @@ func (a *App) generatePreviewImage(img image.Image, previewPath string) {
 
 // generateMiniPreview updates mini preview if needed
 // will save fileinfo with the preview added
-func (a *App) generateMiniPreview(fi *model.FileInfo) {
+func (a *App) generateMiniPreview(fi *file.FileInfo) {
 	if fi.IsImage() && fi.MiniPreview == nil {
 		file, err := a.FileReader(fi.Path)
 		if err != nil {
@@ -1141,12 +1142,12 @@ func (a *App) generateMiniPreview(fi *model.FileInfo) {
 	}
 }
 
-func (a *App) generateMiniPreviewForInfos(fileInfos []*model.FileInfo) {
+func (a *App) generateMiniPreviewForInfos(fileInfos []*file.FileInfo) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(fileInfos))
 
 	for _, fileInfo := range fileInfos {
-		go func(fi *model.FileInfo) {
+		go func(fi *file.FileInfo) {
 			defer wg.Done()
 			a.generateMiniPreview(fi)
 		}(fileInfo)
@@ -1155,7 +1156,7 @@ func (a *App) generateMiniPreviewForInfos(fileInfos []*model.FileInfo) {
 }
 
 // GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-func (a *App) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
+func (a *App) GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError) {
 	fileInfos, err := a.Srv().Store.FileInfo().GetWithOptions(page, perPage, opt)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
@@ -1175,7 +1176,7 @@ func (a *App) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([
 	return fileInfos, nil
 }
 
-func (a *App) GetFileInfo(fileID string) (*model.FileInfo, *model.AppError) {
+func (a *App) GetFileInfo(fileID string) (*file.FileInfo, *model.AppError) {
 	fileInfo, err := a.Srv().Store.FileInfo().Get(fileID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -1335,7 +1336,7 @@ func populateZipfile(w *zip.Writer, fileDatas []model.FileData) error {
 // 	return fileInfoSearchResults, nil
 // }
 
-func (a *App) ExtractContentFromFileInfo(fileInfo *model.FileInfo) error {
+func (a *App) ExtractContentFromFileInfo(fileInfo *file.FileInfo) error {
 	file, aerr := a.FileReader(fileInfo.Path)
 	if aerr != nil {
 		return errors.Wrap(aerr, "failed to open file for extract file content")

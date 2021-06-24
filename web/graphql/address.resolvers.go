@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
@@ -18,16 +19,8 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 	if obj.ID == "" {
 		return model.NewBool(false), nil
 	}
-	if r.AccountApp() == nil {
-		return nil, model.NewAppError(
-			"IsDefaultShippingAddress",
-			"app.app_unregistered.%s.app_error",
-			map[string]interface{}{"app": "account"}, "",
-			http.StatusInternalServerError,
-		)
-	}
 	// extract context from ctx
-	embedCtx := ctx.Value(shared.APIContextKey).(shared.Context)
+	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 	if embedCtx.AppContext.Session() == nil {
 		return model.NewBool(false), nil
 	}
@@ -44,16 +37,8 @@ func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlm
 	if obj.ID == "" {
 		return model.NewBool(false), nil
 	}
-	if r.AccountApp() == nil {
-		return model.NewBool(false), model.NewAppError(
-			"IsDefaultBillingAddress",
-			"app.app_unregistered.%s.app_error",
-			map[string]interface{}{"app": "account"}, "",
-			http.StatusInternalServerError,
-		)
-	}
 	// extract context from ctx
-	embedCtx := ctx.Value(shared.APIContextKey).(shared.Context)
+	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 	if embedCtx.AppContext.Session() == nil {
 		return model.NewBool(false), nil
 	}
@@ -87,7 +72,15 @@ func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode 
 }
 
 func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, model.NewAppError("Address", "graphql.account.invalid_id.app_error", nil, "", http.StatusBadRequest)
+	}
+	address, appErr := r.AccountApp().GetAddressById(uid.String())
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 // Address returns AddressResolver implementation.
