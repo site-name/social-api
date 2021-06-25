@@ -111,7 +111,7 @@ func criticalLog(app string) {
 }
 
 // registerAllSubApps register all sub app to App.
-var registerAllSubApps AppOptionCreator = func() []AppOption {
+func registerAllSubApps() []AppOption {
 	slog.Info("Registering all sub applications...")
 
 	return []AppOption{

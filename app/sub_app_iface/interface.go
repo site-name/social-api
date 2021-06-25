@@ -59,7 +59,7 @@ type InvoiceApp interface {
 }
 
 type ChannelApp interface {
-	// GetChannelBySlug get a channel from database with given slug
+	// GetChannelBySlug returns a channel (if found) from database with given slug
 	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError)
 	// GetDefaultChannel get random channel that is active
 	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)
@@ -79,39 +79,26 @@ type DiscountApp interface {
 }
 
 type OrderApp interface {
-	// GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
-	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError)
+	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) // GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
 	// OrderShippingIsRequired checks if an order requires ship or not by:
 	//
 	// 1) Find all child order lines that belong to given order
 	//
 	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
-	// OrderTotalQuantity return total quantity of given order
-	OrderTotalQuantity(orderID string) (int, *model.AppError)
-	// UpdateOrderTotalPaid update given order's total paid amount
-	UpdateOrderTotalPaid(orderID string) *model.AppError
-	// OrderIsPreAuthorized checks if order is pre-authorized
-	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)
-	// OrderIsCaptured checks if given order is captured
-	OrderIsCaptured(orderID string) (bool, *model.AppError)
-	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError)
-	// OrderCanCalcel checks if given order can be canceled
-	OrderCanCancel(ord *order.Order) (bool, *model.AppError)
-	// OrderCanCapture
-	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
-	// OrderCanVoid
-	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
-	// OrderCanRefund checks if order can refund
-	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
-	// CanMarkOrderAsPaid checks if given order can be marked as paid.
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
-	// OrderTotalAuthorized returns order's total authorized amount
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
-	// GetOrderCountryCode is helper function, returns contry code of given order
-	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)
-	OrderLineById(id string) (*order.OrderLine, *model.AppError) // OrderLineById returns order line with id of given id
+	OrderTotalQuantity(orderID string) (int, *model.AppError)                                   // OrderTotalQuantity return total quantity of given order
+	UpdateOrderTotalPaid(orderID string) *model.AppError                                        // UpdateOrderTotalPaid update given order's total paid amount
+	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                // OrderIsPreAuthorized checks if order is pre-authorized
+	OrderIsCaptured(orderID string) (bool, *model.AppError)                                     // OrderIsCaptured checks if given order is captured
+	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError) // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
+	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                    // OrderCanCalcel checks if given order can be canceled
+	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)         // OrderCanCapture checks if given order can capture.
+	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)            // OrderCanVoid checks if given order can void
+	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)       // OrderCanRefund checks if order can refund
+	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)   // CanMarkOrderAsPaid checks if given order can be marked as paid.
+	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                   // OrderTotalAuthorized returns order's total authorized amount
+	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                             // GetOrderCountryCode is helper function, returns contry code of given order
+	OrderLineById(id string) (*order.OrderLine, *model.AppError)                                // OrderLineById returns order line with id of given id
 }
 
 type MenuApp interface {

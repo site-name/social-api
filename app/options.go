@@ -94,6 +94,7 @@ func SetLogger(logger *slog.Logger) Option {
 type AppOption func(a *App)
 type AppOptionCreator func() []AppOption
 
+// ServerConnector simply healps set Server and SearchEngine to App
 func ServerConnector(s *Server) AppOption {
 	return func(a *App) {
 		a.srv = s

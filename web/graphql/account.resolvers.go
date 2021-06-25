@@ -20,7 +20,7 @@ func (r *mutationResolver) AccountAddressCreate(ctx context.Context, input gqlmo
 
 	// check if session is nil or session's userID is empty
 	if embedCtx.AppContext.Session() == nil || strings.TrimSpace(embedCtx.AppContext.Session().UserId) == "" {
-		return nil, model.NewAppError("AccountAddressCreate", "graphql.account.user_unauthenticated.app_error", nil, "", http.StatusForbidden)
+		return nil, model.NewAppError("AccountAddressCreate", userUnauthenticatedId, nil, "", http.StatusForbidden)
 	}
 }
 
@@ -39,9 +39,9 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	cleanedInput, appErr := cleanAccountCreateInput(r, &input)
-	if appErr != nil {
-		return nil, appErr
+	cleanedInput, cleanResErr := cleanAccountCreateInput(r, &input)
+	if cleanResErr != nil {
+		return nil, model.NewAppError("AccountRegister", cleanResErr.id, nil, "", cleanResErr.statusCode)
 	}
 
 	// construct instance:
