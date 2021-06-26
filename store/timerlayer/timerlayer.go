@@ -5593,6 +5593,22 @@ func (s *TimerLayerUserAddressStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
+	start := timemodule.Now()
+
+	err := s.UserAddressStore.DeleteForUser(userID, addressID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.DeleteForUser", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
 	start := timemodule.Now()
 

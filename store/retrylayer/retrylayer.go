@@ -5580,6 +5580,26 @@ func (s *RetryLayerUserAddressStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
+
+	tries := 0
+	for {
+		err := s.UserAddressStore.DeleteForUser(userID, addressID)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
 
 	tries := 0
