@@ -101,7 +101,7 @@ func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode 
 		if _, ok := err.(*i18naddress.InvalidCodeErr); ok {
 			statusCode = http.StatusBadRequest
 		}
-		return nil, model.NewAppError("", "app.account.get_address_validation_rules.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("AddressValidationRules", "app.account.get_address_validation_rules.app_error", nil, err.Error(), statusCode)
 	}
 
 	return gqlmodel.I18nAddressValidationRulesToGraphql(rules), nil

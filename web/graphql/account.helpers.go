@@ -85,19 +85,28 @@ func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegister
 }
 
 // validateAddressInput validate if given data is valid
-func validateAddressInput(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (res interface{}, errorID *string) {
+func validateAddressInput(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (interface{}, *model.AppError) {
 	if addressData.Country == nil {
-		return nil, model.NewString("graphql.account.country_required.app_error")
+		return nil, model.NewAppError("validateAddressInput", "graphql.account.country_required.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	if _, appErr := validateAddressForm(addressData, addressType); appErr != nil {
+		return nil, appErr
 	}
 }
 
-func validateAddressForm(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (res interface{}, errorID *string) {
+func validateAddressForm(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (interface{}, *model.AppError) {
 	if addressData.Phone != nil {
 		_, valid := model.IsValidPhoneNumber(*addressData.Phone, string(*addressData.Country))
 		if !valid {
-			return nil, model.NewString("graphql.account.invalid_phone.app_error")
+			return nil, model.NewAppError("validateAddressForm",
+				"graphql.account.invalid_phone.app_error",
+				map[string]interface{}{"phone": *addressData.Phone}, "",
+				http.StatusBadRequest,
+			)
 		}
 	}
+
 }
 
 type AddressFormForCountry struct {

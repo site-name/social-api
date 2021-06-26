@@ -34,7 +34,7 @@ type Address struct {
 	City           string `json:"city"`
 	CityArea       string `json:"city_area,omitempty"`
 	PostalCode     string `json:"postal_code"`
-	Country        string `json:"country"` // one country name only
+	Country        string `json:"country"` // single value
 	CountryArea    string `json:"country_area"`
 	Phone          string `json:"phone"`
 	CreateAt       int64  `json:"create_at,omitempty"`

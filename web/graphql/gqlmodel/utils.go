@@ -41,35 +41,45 @@ func MetaDataToStringMap(metaList interface{}) map[string]string {
 // I18nAddressValidationRulesToGraphql convert *i18naddress.ValidationRules to *AddressValidationData
 func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *AddressValidationData {
 
+	allowedFields := StringSliceToStringPointerSlice(r.AllowedFields)
+	requiredFields := StringSliceToStringPointerSlice(r.RequiredFields)
+	upperFields := StringSliceToStringPointerSlice(r.UpperFields)
+	postalCodeMatchers := StringSliceToStringPointerSlice(*i18naddress.RegexesToStrings(r.PostalCodeMatchers))
+	postalCodeExamples := StringSliceToStringPointerSlice(r.PostalCodeExamples)
+
+	countryAreaChoices := ChoicesToChoiceValues(r.CountryAreaChoices)
+	cityChoices := ChoicesToChoiceValues(r.CityChoices)
+	cityAreaChoices := ChoicesToChoiceValues(r.CityAreaChoices)
+
 	return &AddressValidationData{
 		CountryCode:        &r.CountryCode,
 		CountryName:        &r.CountryName,
 		AddressFormat:      &r.AddressFormat,
 		AddressLatinFormat: &r.AddressLatinFormat,
-		AllowedFields:      StringSliceToStringPointerSlice(r.AllowedFields),
-		RequiredFields:     StringSliceToStringPointerSlice(r.RequiredFields),
-		UpperFields:        StringSliceToStringPointerSlice(r.UpperFields),
+		AllowedFields:      allowedFields,
+		RequiredFields:     requiredFields,
+		UpperFields:        upperFields,
 		CountryAreaType:    &r.CountryAreaType,
-		CountryAreaChoices: ChoicesToChoiceValues(r.CountryAreaChoices),
+		CountryAreaChoices: countryAreaChoices,
 		CityType:           &r.CityType,
-		CityChoices:        ChoicesToChoiceValues(r.CityChoices),
+		CityChoices:        cityChoices,
 		CityAreaType:       &r.CityAreaType,
-		CityAreaChoices:    ChoicesToChoiceValues(r.CityAreaChoices),
+		CityAreaChoices:    cityAreaChoices,
 		PostalCodeType:     &r.PostalCodeType,
-		PostalCodeMatchers: StringSliceToStringPointerSlice(*i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
-		PostalCodeExamples: StringSliceToStringPointerSlice(r.PostalCodeExamples),
+		PostalCodeMatchers: postalCodeMatchers,
+		PostalCodeExamples: postalCodeExamples,
 		PostalCodePrefix:   &r.PostalCodePrefix,
 	}
 }
 
 // ChoicesToChoiceValues convert [][2]string => []*ChoiceValue
 func ChoicesToChoiceValues(choices [][2]string) []*ChoiceValue {
-	res := make([]*ChoiceValue, len(choices))
+	res := []*ChoiceValue{}
 
-	for _, choice := range choices {
+	for i := range choices {
 		res = append(res, &ChoiceValue{
-			Raw:     &choice[0],
-			Verbose: &choice[1],
+			Raw:     &choices[i][0],
+			Verbose: &choices[i][1],
 		})
 	}
 
@@ -78,10 +88,10 @@ func ChoicesToChoiceValues(choices [][2]string) []*ChoiceValue {
 
 // StringSliceToStringPointerSlice convert []string => []*string
 func StringSliceToStringPointerSlice(s []string) []*string {
-	res := make([]*string, len(s))
+	res := []*string{}
 
-	for _, str := range s {
-		res = append(res, &str)
+	for i := range s {
+		res = append(res, &s[i])
 	}
 
 	return res
