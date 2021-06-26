@@ -11,7 +11,7 @@ import (
 )
 
 func (r *mutationResolver) TokenCreate(ctx context.Context, email string, password string) (*gqlmodel.CreateToken, error) {
-	panic(fmt.Errorf("not implemented"))
+	return nil, nil
 }
 
 func (r *mutationResolver) TokenRefresh(ctx context.Context, csrfToken *string, refreshToken *string) (*gqlmodel.RefreshToken, error) {
