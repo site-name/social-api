@@ -576,6 +576,7 @@ type (
 		Get(addressID string) (*account.Address, error)                      // Get returns an Address with given addressID is exist
 		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
 		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
+
 	}
 	UserStore interface {
 		CreateIndexesIfNotExists()                                                    //
@@ -677,6 +678,7 @@ type (
 	UserAddressStore interface {
 		CreateIndexesIfNotExists()
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
+		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
 	}
 	CustomerEventStore interface {
 		CreateIndexesIfNotExists()

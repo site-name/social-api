@@ -35,7 +35,7 @@ func (r *orderResolver) getOrderCountryCode(order *gqlmodel.Order) (string, *mod
 		return *r.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
-	address, appErr := r.AccountApp().GetAddressById(*addressID)
+	address, appErr := r.AccountApp().AddressById(*addressID)
 	if appErr != nil {
 		return "", appErr
 	}

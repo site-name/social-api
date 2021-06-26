@@ -5,6 +5,10 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
+const (
+	userNotOwnAddress = "app.account.user_not_own_address.app_error"
+)
+
 type AppAccount struct {
 	app.AppIface
 }

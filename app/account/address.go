@@ -31,3 +31,12 @@ func (a *AppAccount) AddressesByUserId(userID string) ([]*account.Address, *mode
 
 	return addresses, nil
 }
+
+func (a *AppAccount) AddressDeleteForUser(userID, addressID string) *model.AppError {
+	err := a.Srv().Store.UserAddress().DeleteForUser(userID, addressID)
+	if err != nil {
+		return model.NewAppError("AddressDeleteForUser", "app.account.user_address_delete.app_error", nil, "", http.StatusInternalServerError)
+	}
+
+	return nil
+}

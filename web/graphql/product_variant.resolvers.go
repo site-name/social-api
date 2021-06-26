@@ -30,7 +30,7 @@ func (r *mutationResolver) ProductVariantBulkDelete(ctx context.Context, ids []*
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ProductVariantStocksCreate(ctx context.Context, stocks []*gqlmodel.StockInput, variantID string) (*gqlmodel.ProductVariantStocksCreate, error) {
+func (r *mutationResolver) ProductVariantStocksCreate(ctx context.Context, stocks []gqlmodel.StockInput, variantID string) (*gqlmodel.ProductVariantStocksCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -38,7 +38,7 @@ func (r *mutationResolver) ProductVariantStocksDelete(ctx context.Context, varia
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ProductVariantStocksUpdate(ctx context.Context, stocks []*gqlmodel.StockInput, variantID string) (*gqlmodel.ProductVariantStocksUpdate, error) {
+func (r *mutationResolver) ProductVariantStocksUpdate(ctx context.Context, stocks []gqlmodel.StockInput, variantID string) (*gqlmodel.ProductVariantStocksUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -54,7 +54,7 @@ func (r *mutationResolver) ProductVariantTranslate(ctx context.Context, id strin
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ProductVariantChannelListingUpdate(ctx context.Context, id string, input []*gqlmodel.ProductVariantChannelListingAddInput) (*gqlmodel.ProductVariantChannelListingUpdate, error) {
+func (r *mutationResolver) ProductVariantChannelListingUpdate(ctx context.Context, id string, input []gqlmodel.ProductVariantChannelListingAddInput) (*gqlmodel.ProductVariantChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

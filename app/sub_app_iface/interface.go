@@ -40,10 +40,12 @@ type CheckoutApp interface {
 
 // CheckoutApp
 type AccountApp interface {
-	AddressById(id string) (*account.Address, *model.AppError)                      // GetAddressById returns address with given id. If not found returns nil and concret error
-	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)   // GetUserById get user from database with given userId
-	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError) // CustomerEventsByUser returns all customer event(s) belong to given user
-	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)          // AddressesByUserId returns list of address(es) (if found) that belong to given user
+	AddressById(id string) (*account.Address, *model.AppError)                                    // GetAddressById returns address with given id. If not found returns nil and concret error
+	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                 // GetUserById get user from database with given userId
+	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)               // CustomerEventsByUser returns all customer event(s) belong to given user
+	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                        // AddressesByUserId returns list of address(es) (if found) that belong to given user
+	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
+	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser delete given address from addresses list of given user
 }
 
 type ProductApp interface {

@@ -34,6 +34,12 @@ const (
 	USER_LANGUAGE_CODE_MAX_LENGTH = 10
 )
 
+// types for addresses
+const (
+	ADDRESS_TYPE_SHIPPING = "shipping"
+	ADDRESS_TYPE_BILLING  = "billing"
+)
+
 // NOTE: don't delete this
 type StringMap map[string]string
 

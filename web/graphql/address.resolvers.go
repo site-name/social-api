@@ -8,51 +8,52 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
+	"github.com/site-name/i18naddress"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
-	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
-	if obj.ID == "" {
+	if !model.IsValidId(obj.ID) {
 		return model.NewBool(false), nil
 	}
-	// extract context from ctx
-	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
-	if embedCtx.AppContext.Session() == nil {
-		return model.NewBool(false), nil
-	}
+	// onyl authenticated users can check their default addresses
+	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
+		if appErr != nil {
+			return model.NewBool(false), appErr
+		}
 
-	user, appErr := r.AccountApp().UserById(ctx, embedCtx.AppContext.Session().UserId)
-	if appErr != nil {
-		return model.NewBool(false), appErr
+		return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
 	}
-
-	return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
 }
 
 func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
-	if obj.ID == "" {
-		return model.NewBool(false), nil
-	}
-	// extract context from ctx
-	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
-	if embedCtx.AppContext.Session() == nil {
+	if !model.IsValidId(obj.ID) {
 		return model.NewBool(false), nil
 	}
 
-	user, appErr := r.AccountApp().UserById(ctx, embedCtx.AppContext.Session().UserId)
-	if appErr != nil {
-		return model.NewBool(false), appErr
-	}
+	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
+		if appErr != nil {
+			return model.NewBool(false), appErr
+		}
 
-	return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil
+		return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil
+	}
 }
 
 func (r *mutationResolver) AddressCreate(ctx context.Context, input gqlmodel.AddressInput, userID string) (*gqlmodel.AddressCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	if _, appErr := checkUserAuthenticated("", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		panic(fmt.Errorf("not implemented"))
+	}
 }
 
 func (r *mutationResolver) AddressUpdate(ctx context.Context, id string, input gqlmodel.AddressInput) (*gqlmodel.AddressUpdate, error) {
@@ -68,15 +69,49 @@ func (r *mutationResolver) AddressSetDefault(ctx context.Context, addressID stri
 }
 
 func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode gqlmodel.CountryCode, countryArea *string, city *string, cityArea *string) (*gqlmodel.AddressValidationData, error) {
-	panic(fmt.Errorf("not implemented"))
+	// only authenticated users can see
+	if _, appErr := checkUserAuthenticated("", ctx); appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		countryArea_ string
+		city_        string
+		cityArea_    string
+	)
+	if countryArea != nil {
+		countryArea_ = *countryArea
+	}
+	if city != nil {
+		city_ = *city
+	}
+	if cityArea != nil {
+		cityArea_ = *cityArea
+	}
+
+	params := &i18naddress.Params{
+		CountryCode: string(countryCode),
+		City:        city_,
+		CityArea:    cityArea_,
+		CountryArea: countryArea_,
+	}
+	rules, err := i18naddress.GetValidationRules(params)
+	if err != nil {
+		var statusCode int = http.StatusInternalServerError
+		if _, ok := err.(*i18naddress.InvalidCodeErr); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("", "app.account.get_address_validation_rules.app_error", nil, err.Error(), statusCode)
+	}
+
+	return gqlmodel.I18nAddressValidationRulesToGraphql(rules), nil
 }
 
 func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Address, error) {
-	uid, err := uuid.Parse(id)
-	if err != nil {
+	if !model.IsValidId(id) {
 		return nil, model.NewAppError("Address", "graphql.account.invalid_id.app_error", nil, "", http.StatusBadRequest)
 	}
-	address, appErr := r.AccountApp().AddressById(uid.String())
+	address, appErr := r.AccountApp().AddressById(id)
 	if appErr != nil {
 		return nil, appErr
 	}

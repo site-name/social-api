@@ -22,9 +22,10 @@ type AccountAddressUpdate {
 }
 
 type AccountAddressDelete {
-  user: User
+  ok: Boolean!
+  # user: User
   # errors: [AccountError!]!
-  address: Address
+  # address: Address
 }
 
 type AccountSetDefaultAddress {

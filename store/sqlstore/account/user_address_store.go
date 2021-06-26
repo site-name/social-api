@@ -47,3 +47,16 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 
 	return userAddress, nil
 }
+
+func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
+	_, err := uas.GetMaster().Exec(
+		"DELETE FROM "+userAddressTableName+" WHERE UserID = :uid AND AddressID = addId",
+		map[string]interface{}{"uid": userID, "addId": addressID},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

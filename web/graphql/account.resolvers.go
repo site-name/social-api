@@ -16,12 +16,7 @@ import (
 )
 
 func (r *mutationResolver) AccountAddressCreate(ctx context.Context, input gqlmodel.AddressInput, typeArg *gqlmodel.AddressTypeEnum) (*gqlmodel.AccountAddressCreate, error) {
-	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
-
-	// check if session is nil or session's userID is empty
-	if embedCtx.AppContext.Session() == nil || strings.TrimSpace(embedCtx.AppContext.Session().UserId) == "" {
-		return nil, model.NewAppError("AccountAddressCreate", userUnauthenticatedId, nil, "", http.StatusForbidden)
-	}
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, input gqlmodel.AddressInput) (*gqlmodel.AccountAddressUpdate, error) {
@@ -29,11 +24,45 @@ func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, 
 }
 
 func (r *mutationResolver) AccountAddressDelete(ctx context.Context, id string) (*gqlmodel.AccountAddressDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		appErr := r.AccountApp().AddressDeleteForUser(session.UserId, id)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return &gqlmodel.AccountAddressDelete{
+			Ok: true,
+		}, nil
+	}
 }
 
 func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id string, typeArg gqlmodel.AddressTypeEnum) (*gqlmodel.AccountSetDefaultAddress, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		var addressType string
+
+		switch typeArg {
+		case gqlmodel.AddressTypeEnumBilling:
+			addressType = account.ADDRESS_TYPE_BILLING
+		case gqlmodel.AddressTypeEnumShipping:
+			addressType = account.ADDRESS_TYPE_SHIPPING
+
+		default:
+			return nil, model.NewAppError(
+				"AccountSetDefaultAddress",
+				"graphql.account.address_type_invalid.app_error",
+				map[string]interface{}{"type": typeArg}, "", http.StatusBadRequest)
+		}
+		updatedUser, appErr := r.AccountApp().UserSetDefaultAddress(session.UserId, id, addressType)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return &gqlmodel.AccountSetDefaultAddress{
+			User: gqlmodel.DatabaseUserToGraphqlUser(updatedUser),
+		}, nil
+	}
 }
 
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
@@ -48,7 +77,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 	// 1) prepare language for user
 	var userLanguage string = model.DEFAULT_LOCALE
 	if cleanedInput.LanguageCode != nil {
-		userLanguage = string(*cleanedInput.LanguageCode)
+		userLanguage = strings.ToLower(string(*cleanedInput.LanguageCode))
 	}
 	user := &account.User{
 		Email:    cleanedInput.Email,
@@ -76,13 +105,25 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 }
 
 func (r *mutationResolver) AccountUpdate(ctx context.Context, input gqlmodel.AccountInput) (*gqlmodel.AccountUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	if _, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		panic(fmt.Errorf("not implemented"))
+	}
 }
 
 func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *string, redirectURL string) (*gqlmodel.AccountRequestDeletion, error) {
-	panic(fmt.Errorf("not implemented"))
+	if _, appErr := checkUserAuthenticated("AccountRequestDeletion", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		panic(fmt.Errorf("not implemented"))
+	}
 }
 
 func (r *mutationResolver) AccountDelete(ctx context.Context, token string) (*gqlmodel.AccountDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	if _, appErr := checkUserAuthenticated("AccountDelete", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		panic(fmt.Errorf("not implemented"))
+	}
 }
