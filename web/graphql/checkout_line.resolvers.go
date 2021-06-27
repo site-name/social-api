@@ -7,18 +7,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (r *mutationResolver) CheckoutLineDelete(ctx context.Context, checkoutID string, lineID *string) (*gqlmodel.CheckoutLineDelete, error) {
+func (r *mutationResolver) CheckoutLineDelete(ctx context.Context, checkoutID *string, lineID *string, token *uuid.UUID) (*gqlmodel.CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutLinesAdd(ctx context.Context, checkoutID string, lines []*gqlmodel.CheckoutLineInput) (*gqlmodel.CheckoutLinesAdd, error) {
+func (r *mutationResolver) CheckoutLinesAdd(ctx context.Context, checkoutID *string, lines []*gqlmodel.CheckoutLineInput, token *uuid.UUID) (*gqlmodel.CheckoutLinesAdd, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutLinesUpdate(ctx context.Context, checkoutID string, lines []*gqlmodel.CheckoutLineInput) (*gqlmodel.CheckoutLinesUpdate, error) {
+func (r *mutationResolver) CheckoutLinesUpdate(ctx context.Context, checkoutID *string, lines []*gqlmodel.CheckoutLineInput, token *uuid.UUID) (*gqlmodel.CheckoutLinesUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

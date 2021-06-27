@@ -43,15 +43,15 @@ func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID string, promoCode string) (*gqlmodel.CheckoutAddPromoCode, error) {
+func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID *string, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutAddPromoCode, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutBillingAddressUpdate(ctx context.Context, billingAddress gqlmodel.AddressInput, checkoutID string) (*gqlmodel.CheckoutBillingAddressUpdate, error) {
+func (r *mutationResolver) CheckoutBillingAddressUpdate(ctx context.Context, billingAddress gqlmodel.AddressInput, checkoutID string, token *uuid.UUID) (*gqlmodel.CheckoutBillingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutComplete(ctx context.Context, checkoutID string, paymentData *string, redirectURL *string, storeSource *bool) (*gqlmodel.CheckoutComplete, error) {
+func (r *mutationResolver) CheckoutComplete(ctx context.Context, checkoutID *string, paymentData *string, redirectURL *string, storeSource *bool, token *uuid.UUID) (*gqlmodel.CheckoutComplete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -59,35 +59,35 @@ func (r *mutationResolver) CheckoutCreate(ctx context.Context, input gqlmodel.Ch
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID string) (*gqlmodel.CheckoutCustomerAttach, error) {
+func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerAttach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerDetach(ctx context.Context, checkoutID string) (*gqlmodel.CheckoutCustomerDetach, error) {
+func (r *mutationResolver) CheckoutCustomerDetach(ctx context.Context, checkoutID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerDetach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutEmailUpdate(ctx context.Context, checkoutID *string, email string) (*gqlmodel.CheckoutEmailUpdate, error) {
+func (r *mutationResolver) CheckoutEmailUpdate(ctx context.Context, checkoutID *string, email string, token *uuid.UUID) (*gqlmodel.CheckoutEmailUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutRemovePromoCode(ctx context.Context, checkoutID string, promoCode string) (*gqlmodel.CheckoutRemovePromoCode, error) {
+func (r *mutationResolver) CheckoutRemovePromoCode(ctx context.Context, checkoutID *string, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutRemovePromoCode, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutPaymentCreate(ctx context.Context, checkoutID string, input gqlmodel.PaymentInput) (*gqlmodel.CheckoutPaymentCreate, error) {
+func (r *mutationResolver) CheckoutPaymentCreate(ctx context.Context, checkoutID *string, input gqlmodel.PaymentInput, token *uuid.UUID) (*gqlmodel.CheckoutPaymentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutShippingAddressUpdate(ctx context.Context, checkoutID string, shippingAddress gqlmodel.AddressInput) (*gqlmodel.CheckoutShippingAddressUpdate, error) {
+func (r *mutationResolver) CheckoutShippingAddressUpdate(ctx context.Context, checkoutID *string, shippingAddress gqlmodel.AddressInput, token *uuid.UUID) (*gqlmodel.CheckoutShippingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
+func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string, token *uuid.UUID) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutLanguageCodeUpdate(ctx context.Context, checkoutID string, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.CheckoutLanguageCodeUpdate, error) {
+func (r *mutationResolver) CheckoutLanguageCodeUpdate(ctx context.Context, checkoutID *string, languageCode gqlmodel.LanguageCodeEnum, token *uuid.UUID) (*gqlmodel.CheckoutLanguageCodeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
