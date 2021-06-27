@@ -16,7 +16,7 @@ import (
 
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	if !model.IsValidId(obj.ID) {
-		return model.NewBool(false), nil
+		return nil, nil
 	}
 	// onyl authenticated users can check their default addresses
 	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
@@ -24,7 +24,7 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 	} else {
 		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
 		if appErr != nil {
-			return model.NewBool(false), appErr
+			return nil, appErr
 		}
 
 		return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
@@ -33,15 +33,15 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 
 func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	if !model.IsValidId(obj.ID) {
-		return model.NewBool(false), nil
+		return nil, nil
 	}
-
+	// onyl authenticated users can check their default addresses
 	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
 		if appErr != nil {
-			return model.NewBool(false), appErr
+			return nil, appErr
 		}
 
 		return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil

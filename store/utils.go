@@ -1,13 +1,10 @@
 package store
 
 import (
-	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -96,17 +93,4 @@ func IsQuotedWord(s string) bool {
 //  WildcardSearchTerm("HELLO") => "%hello%"
 func WildcardSearchTerm(term string) string {
 	return strings.ToLower("%" + term + "%")
-}
-
-// AppErrorFromDatabaseLookupError is a utility function that create *model.AppError with given error.
-//
-// Must be used with database LOOLUP errors.
-func AppErrorFromDatabaseLookupError(where, id string, err error) *model.AppError {
-	statusCode := http.StatusInternalServerError
-	var nfErr *ErrNotFound
-	if errors.As(err, &nfErr) {
-		statusCode = http.StatusNotFound
-	}
-
-	return model.NewAppError(where, id, nil, err.Error(), statusCode)
 }

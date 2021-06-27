@@ -61,7 +61,7 @@ type GiftCardUpdate {
 
 type GiftCardCountableConnection {
   pageInfo: PageInfo!
-  edges: [GiftCardCountableEdge!]!
+  edges: [GiftCard!]! # edges: [GiftCardCountableEdge!]!
   totalCount: Int
 }
 

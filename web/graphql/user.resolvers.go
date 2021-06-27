@@ -7,14 +7,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
-	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
@@ -54,7 +51,15 @@ func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string,
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("Me", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		user, err := r.AccountApp().UserById(ctx, session.UserId)
+		if err != nil {
+			return nil, AppErrorFromDatabaseLookupError("Me", "graphql.account.user_not_found.app_error", err)
+		}
+		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+	}
 }
 
 func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*gqlmodel.User, error) {
@@ -123,18 +128,19 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		if session.UserId != obj.ID {
+			return nil, newUserUnauthenticatedAppError("Events")
+		}
+		events, appErr := r.AccountApp().CustomerEventsByUser(obj.ID)
+		if appErr != nil {
+			return nil, appErr
+		}
 
-	if embedCtx.AppContext.Session() == nil || embedCtx.AppContext.Session().UserId != obj.ID {
-		return nil, model.NewAppError("Events", "graphql.user.user_unauthenticated.app_error", nil, "", http.StatusForbidden)
+		return gqlmodel.DatabaseCustomerEventsToGraphqlCustomerEvents(events), nil
 	}
-
-	events, appErr := r.AccountApp().CustomerEventsByUser(obj.ID)
-	if appErr != nil {
-		return []*gqlmodel.CustomerEvent{}, appErr
-	}
-
-	return gqlmodel.DatabaseCustomerEventsToGraphqlCustomerEvents(events), nil
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {

@@ -1511,9 +1511,9 @@ type GiftCardActivate struct {
 }
 
 type GiftCardCountableConnection struct {
-	PageInfo   *PageInfo               `json:"pageInfo"`
-	Edges      []GiftCardCountableEdge `json:"edges"`
-	TotalCount *int                    `json:"totalCount"`
+	PageInfo   *PageInfo  `json:"pageInfo"`
+	Edges      []GiftCard `json:"edges"`
+	TotalCount *int       `json:"totalCount"`
 }
 
 type GiftCardCountableEdge struct {

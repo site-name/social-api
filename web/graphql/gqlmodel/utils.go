@@ -1,6 +1,11 @@
 package gqlmodel
 
-import "github.com/site-name/i18naddress"
+import (
+	"strings"
+
+	"github.com/site-name/i18naddress"
+	"github.com/sitename/sitename/model"
+)
 
 // MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
 func MapToGraphqlMetaDataItems(m map[string]string) []*MetadataItem {
@@ -41,39 +46,29 @@ func MetaDataToStringMap(metaList interface{}) map[string]string {
 // I18nAddressValidationRulesToGraphql convert *i18naddress.ValidationRules to *AddressValidationData
 func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *AddressValidationData {
 
-	allowedFields := StringSliceToStringPointerSlice(r.AllowedFields)
-	requiredFields := StringSliceToStringPointerSlice(r.RequiredFields)
-	upperFields := StringSliceToStringPointerSlice(r.UpperFields)
-	postalCodeMatchers := StringSliceToStringPointerSlice(*i18naddress.RegexesToStrings(r.PostalCodeMatchers))
-	postalCodeExamples := StringSliceToStringPointerSlice(r.PostalCodeExamples)
-
-	countryAreaChoices := ChoicesToChoiceValues(r.CountryAreaChoices)
-	cityChoices := ChoicesToChoiceValues(r.CityChoices)
-	cityAreaChoices := ChoicesToChoiceValues(r.CityAreaChoices)
-
 	return &AddressValidationData{
 		CountryCode:        &r.CountryCode,
 		CountryName:        &r.CountryName,
 		AddressFormat:      &r.AddressFormat,
 		AddressLatinFormat: &r.AddressLatinFormat,
-		AllowedFields:      allowedFields,
-		RequiredFields:     requiredFields,
-		UpperFields:        upperFields,
+		AllowedFields:      getAllowedFieldsCamelCase(&r.AllowedFields),
+		RequiredFields:     getFieldsToCamelCase(&r.RequiredFields),
+		UpperFields:        getFieldsToCamelCase(&r.UpperFields),
 		CountryAreaType:    &r.CountryAreaType,
-		CountryAreaChoices: countryAreaChoices,
+		CountryAreaChoices: choicesToChoiceValues(r.CountryAreaChoices),
 		CityType:           &r.CityType,
-		CityChoices:        cityChoices,
+		CityChoices:        choicesToChoiceValues(r.CityChoices),
 		CityAreaType:       &r.CityAreaType,
-		CityAreaChoices:    cityAreaChoices,
+		CityAreaChoices:    choicesToChoiceValues(r.CityAreaChoices),
 		PostalCodeType:     &r.PostalCodeType,
-		PostalCodeMatchers: postalCodeMatchers,
-		PostalCodeExamples: postalCodeExamples,
+		PostalCodeMatchers: StringSliceToStringPointerSlice(*i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
+		PostalCodeExamples: StringSliceToStringPointerSlice(r.PostalCodeExamples),
 		PostalCodePrefix:   &r.PostalCodePrefix,
 	}
 }
 
-// ChoicesToChoiceValues convert [][2]string => []*ChoiceValue
-func ChoicesToChoiceValues(choices [][2]string) []*ChoiceValue {
+// choicesToChoiceValues convert [][2]string => []*ChoiceValue
+func choicesToChoiceValues(choices [][2]string) []*ChoiceValue {
 	res := []*ChoiceValue{}
 
 	for i := range choices {
@@ -81,6 +76,60 @@ func ChoicesToChoiceValues(choices [][2]string) []*ChoiceValue {
 			Raw:     &choices[i][0],
 			Verbose: &choices[i][1],
 		})
+	}
+
+	return res
+}
+
+// toCamelCase converts "the_snake" => "theSnake"
+func toCamelCase(snakeStr string) string {
+	splitSnake := strings.Split(strings.ToLower(snakeStr), "_")
+
+	res := splitSnake[0]
+	if splitSnake[0] == "_" || splitSnake[0] == "" {
+		res = "_"
+	}
+
+	for _, str := range splitSnake[1:] {
+		if trimmed := strings.TrimSpace(str); trimmed == "" {
+			res += "_"
+		} else if len(trimmed) == 1 {
+			res += strings.ToUpper(trimmed)
+		} else {
+			res += strings.ToUpper(string(trimmed[0])) + trimmed[1:]
+		}
+	}
+
+	return res
+}
+
+func validationFieldToCamelCase(name string) string {
+	name = toCamelCase(name)
+	if name == "streetAddress" {
+		return "streetAddress1"
+	}
+	return name
+}
+
+func getFieldsToCamelCase(fields *[]string) []*string {
+	res := make([]*string, len(*fields))
+
+	for i := range *fields {
+		res = append(res, model.NewString(validationFieldToCamelCase((*fields)[i])))
+	}
+
+	return res
+}
+
+func getAllowedFieldsCamelCase(allowedFields *[]string) []*string {
+	res := make([]*string, len(*allowedFields))
+
+	for i := range *allowedFields {
+		convStr := validationFieldToCamelCase((*allowedFields)[i])
+		res = append(res, &convStr)
+		if convStr == "streetAddress1" {
+			res = append(res, model.NewString("streetAddress2"))
+		}
 	}
 
 	return res

@@ -33,3 +33,17 @@ func TestI18nAddressValidationRulesToGraphql(t *testing.T) {
 
 	fmt.Println(string(dt))
 }
+
+func TestToCamelCase(t *testing.T) {
+	// type testCase struct {
+	// 	input    string
+	// 	expected string
+	// }
+
+	// testCases := []testCase{
+	// 	{"anh_yeu_em", "anhYeuEm"},
+	// 	{"_anh_yeu_em_", "_anhYeuEm_"},
+	// 	{"anh__yeu_em_", "anh_"},
+	// 	{"", ""},
+	// }
+}

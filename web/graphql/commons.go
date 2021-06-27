@@ -2,9 +2,11 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/shared"
 )
 
@@ -18,7 +20,7 @@ func newUserUnauthenticatedAppError(where string) *model.AppError {
 	return model.NewAppError(where, userUnauthenticatedId, nil, "", http.StatusForbidden)
 }
 
-// checkUserAuthenticated check if context is authenticated
+// checkUserAuthenticated is an utility function that check if session contained inside context is authenticated
 func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, *model.AppError) {
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
@@ -27,4 +29,17 @@ func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, 
 	} else {
 		return session, nil
 	}
+}
+
+// AppErrorFromDatabaseLookupError is a utility function that create *model.AppError with given error.
+//
+// Must be used with database LOOLUP errors.
+func AppErrorFromDatabaseLookupError(where, errId string, err error) *model.AppError {
+	statusCode := http.StatusInternalServerError
+	var nfErr *store.ErrNotFound
+	if errors.As(err, &nfErr) {
+		statusCode = http.StatusNotFound
+	}
+
+	return model.NewAppError(where, errId, nil, err.Error(), statusCode)
 }
