@@ -124,3 +124,15 @@ func (a *AppPayment) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
 
 	return pm.IsActive && pm.IsNotCharged() && authorized, nil
 }
+
+func (a *AppPayment) SavePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {
+	newPm, err := a.Srv().Store.Payment().Save(pm)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		return nil, model.NewAppError("SavePayment", "app.payment.save_payment_error.app_error", nil, "", http.StatusInternalServerError)
+	}
+
+	return newPm, nil
+}

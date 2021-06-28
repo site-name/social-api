@@ -31,7 +31,7 @@ type GatewayResponse struct {
 	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
 	RawResponse                 model.StringMap
-	ActionRequiredData          interface{}
+	ActionRequiredData          map[string]string
 	TransactionAlreadyProcessed bool
 	SearchableKey               string
 }
@@ -72,7 +72,7 @@ func AddressDataFromAddress(a *account.Address) *AddressData {
 // It is required to communicate between Saleor and given payment gateway.
 type PaymentData struct {
 	Gateway           string
-	Amount            *decimal.Decimal
+	Amount            decimal.Decimal
 	Currency          string
 	Billing           *AddressData
 	Shipping          *AddressData

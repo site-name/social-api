@@ -1,7 +1,6 @@
 package payment
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/sitename/sitename/model"
@@ -12,13 +11,7 @@ import (
 func (a *AppPayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
 	transactions, err := a.Srv().Store.PaymentTransaction().GetAllByPaymentID(paymentID)
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		var statusCode int = http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-
-		return nil, model.NewAppError("GetAllPaymentTransactions", "app.payment.get_associated_transactions.app_error", nil, err.Error(), statusCode)
+		return nil, store.AppErrorFromDatabaseLookupError("GetAllPaymentTransactions", "app.payment.payment_transactions_not_found.app_error", err)
 	}
 
 	return transactions, nil
@@ -46,4 +39,16 @@ func (a *AppPayment) GetLastPaymentTransaction(paymentID string) (*payment.Payme
 	}
 
 	return lastTran, nil
+}
+
+func (a *AppPayment) SaveTransaction(tran *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
+	tran, err := a.Srv().Store.PaymentTransaction().Save(tran)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		return nil, model.NewAppError("SaveTransaction", "app.payment.save_transaction_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return tran, nil
 }

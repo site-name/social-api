@@ -29,13 +29,21 @@ type PaymentApp interface {
 	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                  // PaymentCanVoid check if payment can void
 	// Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
 	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError)
-	GetAlreadyProcessedTransaction(payment *payment.Payment, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
+	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
 	// CreatePayment creates new payment inside database with given data and returned it
 	CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError)
+	SavePayment(payment *payment.Payment) (*payment.Payment, *model.AppError)                               // SavePayment save new payment into database
+	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) // SaveTransaction save new payment transaction into database
+	// CreatePaymentTransaction save new payment transaction into database and returns it
+	CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)
+	// GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
+	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
+	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError // CleanCapture Checks if payment can be captured.
 }
 
 // CheckoutApp
 type CheckoutApp interface {
+	CheckoutbyId(id string) (*checkout.Checkout, *model.AppError) // CheckoutbyId returns checkout with given id
 }
 
 // CheckoutApp
@@ -101,6 +109,8 @@ type OrderApp interface {
 	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                   // OrderTotalAuthorized returns order's total authorized amount
 	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                             // GetOrderCountryCode is helper function, returns contry code of given order
 	OrderLineById(id string) (*order.OrderLine, *model.AppError)                                // OrderLineById returns order line with id of given id
+	OrderById(id string) (*order.Order, *model.AppError)                                        // OrderById returns order with id of given id
+
 }
 
 type MenuApp interface {

@@ -26,6 +26,15 @@ func init() {
 	})
 }
 
+func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
+	order, err := a.Srv().Store.Order().Get(id)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("OrderById", "app.order.order_missing.app_error", err)
+	}
+
+	return order, nil
+}
+
 func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, err := a.GetAllOrderLinesByOrderId(orderID)
 	if err != nil {
