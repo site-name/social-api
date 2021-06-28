@@ -66,15 +66,5 @@ func DatabaseUserToGraphqlUser(u *account.User) *User {
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		PrivateMetadata:          MapToGraphqlMetaDataItems(u.PrivateMetadata),
 		Metadata:                 MapToGraphqlMetaDataItems(u.Metadata),
-		// UserPermissions   :,
-		// AddresseIDs            :,
-		// PermissionGroupIDs     :,
-		// EditableGroupIDs       :,
-		// EventIDs               :,
-		// CheckoutTokens         :,
-		// Avatar                 :,
-		// StoredPaymentSources   :,
-		// GiftCards              :,
-		// Orders                 :,
 	}
 }

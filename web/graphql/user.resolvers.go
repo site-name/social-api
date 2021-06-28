@@ -67,36 +67,48 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if obj.DefaultShippingAddressID == nil {
-		return nil, nil
-	}
-
-	address, appErr := r.AccountApp().AddressById(*obj.DefaultShippingAddressID)
-	if appErr != nil {
+	if session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx); appErr != nil || session.UserId != obj.ID {
 		return nil, appErr
+	} else {
+		if obj.DefaultShippingAddressID == nil {
+			return nil, nil
+		}
+
+		address, appErr := r.AccountApp().AddressById(*obj.DefaultShippingAddressID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 	}
-	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if obj.DefaultBillingAddressID == nil {
-		return nil, nil
-	}
-
-	address, appErr := r.AccountApp().AddressById(*obj.DefaultBillingAddressID)
-	if appErr != nil {
+	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil || session.UserId != obj.ID {
 		return nil, appErr
-	}
+	} else {
+		if obj.DefaultBillingAddressID == nil {
+			return nil, nil
+		}
 
-	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
+		address, appErr := r.AccountApp().AddressById(*obj.DefaultBillingAddressID)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
+	}
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
-	addresses, AppErr := r.AccountApp().AddressesByUserId(obj.ID)
-	if AppErr != nil {
-		return []*gqlmodel.Address{}, AppErr
+	if session, appErr := checkUserAuthenticated("Addresses", ctx); appErr != nil || session.UserId != obj.ID {
+		return nil, appErr
+	} else {
+		addresses, AppErr := r.AccountApp().AddressesByUserId(obj.ID)
+		if AppErr != nil {
+			return nil, AppErr
+		}
+		return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
 	}
-	return gqlmodel.DatabaseAddressesToGraphqlAddresses(addresses), nil
 }
 
 func (r *userResolver) CheckoutTokens(ctx context.Context, obj *gqlmodel.User, channel *string) ([]uuid.UUID, error) {
@@ -128,7 +140,7 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil {
+	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil || session.UserId != obj.ID {
 		return nil, appErr
 	} else {
 		if session.UserId != obj.ID {
@@ -144,7 +156,11 @@ func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmo
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil || session.UserId != obj.ID {
+		return nil, appErr
+	} else {
+		return nil, nil
+	}
 }
 
 // CustomerEvent returns CustomerEventResolver implementation.

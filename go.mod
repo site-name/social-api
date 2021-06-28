@@ -74,6 +74,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.4
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1
+	gitlab.com/hookactions/gqlgen-relay v1.0.2 // indirect
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c

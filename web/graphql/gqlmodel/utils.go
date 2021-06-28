@@ -13,7 +13,7 @@ func MapToGraphqlMetaDataItems(m map[string]string) []*MetadataItem {
 		return []*MetadataItem{}
 	}
 
-	res := make([]*MetadataItem, len(m))
+	res := []*MetadataItem{}
 	for key, value := range m {
 		res = append(res, &MetadataItem{Key: key, Value: value})
 	}
@@ -69,13 +69,13 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 
 // choicesToChoiceValues convert [][2]string => []*ChoiceValue
 func choicesToChoiceValues(choices [][2]string) []*ChoiceValue {
-	res := []*ChoiceValue{}
+	res := make([]*ChoiceValue, len(choices))
 
 	for i := range choices {
-		res = append(res, &ChoiceValue{
+		res[i] = &ChoiceValue{
 			Raw:     &choices[i][0],
 			Verbose: &choices[i][1],
-		})
+		}
 	}
 
 	return res
@@ -115,14 +115,14 @@ func getFieldsToCamelCase(fields *[]string) []*string {
 	res := make([]*string, len(*fields))
 
 	for i := range *fields {
-		res = append(res, model.NewString(validationFieldToCamelCase((*fields)[i])))
+		res[i] = model.NewString(validationFieldToCamelCase((*fields)[i]))
 	}
 
 	return res
 }
 
 func getAllowedFieldsCamelCase(allowedFields *[]string) []*string {
-	res := make([]*string, len(*allowedFields))
+	res := []*string{}
 
 	for i := range *allowedFields {
 		convStr := validationFieldToCamelCase((*allowedFields)[i])
@@ -137,10 +137,10 @@ func getAllowedFieldsCamelCase(allowedFields *[]string) []*string {
 
 // StringSliceToStringPointerSlice convert []string => []*string
 func StringSliceToStringPointerSlice(s []string) []*string {
-	res := []*string{}
+	res := make([]*string, len(s))
 
 	for i := range s {
-		res = append(res, &s[i])
+		res[i] = &s[i]
 	}
 
 	return res

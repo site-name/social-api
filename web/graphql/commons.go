@@ -20,7 +20,13 @@ func newUserUnauthenticatedAppError(where string) *model.AppError {
 	return model.NewAppError(where, userUnauthenticatedId, nil, "", http.StatusForbidden)
 }
 
-// checkUserAuthenticated is an utility function that check if session contained inside context is authenticated
+// checkUserAuthenticated is an utility function that check if session contained inside context is authenticated:
+//
+// 1) extracts value embedded in given ctx
+//
+// 2) checks whether session inside that value is nil or concret
+//
+// 3) checks whether UserId property of session is valid uuid
 func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, *model.AppError) {
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
