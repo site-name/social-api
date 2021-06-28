@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
@@ -1548,6 +1549,38 @@ func (s *TimerLayerCheckoutStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.Save(checkout)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerCheckoutLineStore) CreateIndexesIfNotExists() {

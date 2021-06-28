@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
@@ -1540,6 +1541,42 @@ func (s *OpenTracingLayerCheckoutStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.CheckoutStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutStore.Save(checkout)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerCheckoutLineStore) CreateIndexesIfNotExists() {

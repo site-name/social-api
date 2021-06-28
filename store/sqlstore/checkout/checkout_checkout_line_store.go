@@ -9,7 +9,7 @@ type SqlCheckoutLineStore struct {
 	store.Store
 }
 
-func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutStore {
+func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
 	cls := &SqlCheckoutLineStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {

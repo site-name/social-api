@@ -73,8 +73,8 @@ type Payment struct {
 	Total              *decimal.Decimal `json:"total"`
 	CapturedAmount     *decimal.Decimal `json:"captured_amount"`
 	Currency           string           `json:"currency"`
-	CheckoutID         string           `json:"checkout_id"`
-	OrderID            string           `json:"order_id"`
+	CheckoutID         *string          `json:"checkout_id"`
+	OrderID            *string          `json:"order_id"`
 	BillingEmail       string           `json:"billing_email"`
 	BillingFirstName   string           `json:"billing_first_name"`
 	BillingLastName    string           `json:"billing_last_name"`
@@ -174,10 +174,10 @@ func (p *Payment) IsValid() *model.AppError {
 	if !model.IsValidId(p.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(p.OrderID) {
+	if p.OrderID != nil && !model.IsValidId(*p.OrderID) {
 		return outer("order_id", &p.Id)
 	}
-	if !model.IsValidId(p.CheckoutID) {
+	if p.CheckoutID != nil && !model.IsValidId(*p.CheckoutID) {
 		return outer("checkout_id", &p.Id)
 	}
 	if p.CreateAt == 0 {

@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
@@ -1431,6 +1432,46 @@ func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 func (s *RetryLayerCheckoutStore) CreateIndexesIfNotExists() {
 
 	s.CheckoutStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.Save(checkout)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 

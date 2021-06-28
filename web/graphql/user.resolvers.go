@@ -10,6 +10,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -56,7 +57,7 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 	} else {
 		user, err := r.AccountApp().UserById(ctx, session.UserId)
 		if err != nil {
-			return nil, AppErrorFromDatabaseLookupError("Me", "graphql.account.user_not_found.app_error", err)
+			return nil, store.AppErrorFromDatabaseLookupError("Me", "graphql.account.user_not_found.app_error", err)
 		}
 		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
 	}

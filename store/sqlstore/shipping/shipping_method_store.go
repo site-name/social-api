@@ -9,6 +9,10 @@ type SqlShippingMethodStore struct {
 	store.Store
 }
 
+const (
+	ShippingMethodTableName = "ShippingMethods"
+)
+
 func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	smls := &SqlShippingMethodStore{s}
 	for _, db := range s.GetAllConns() {

@@ -33,7 +33,6 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/system"
 	"github.com/sitename/sitename/store/sqlstore/warehouse"
 	"github.com/sitename/sitename/store/sqlstore/wishlist"
-	// "github.com/sitename/sitename/store/sqlstore/cluster"
 )
 
 type SqlStoreStores struct {

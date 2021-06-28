@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
@@ -476,6 +477,8 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
+		Save(checkout *checkout.Checkout) (*checkout.Checkout, error) // Save inserts checkout instance to database
+		Get(id string) (*checkout.Checkout, error)                    // Get returns checkout by given id
 	}
 )
 
@@ -495,7 +498,6 @@ type (
 		CreateIndexesIfNotExists()
 		Save(appToken *app.AppToken) (*app.AppToken, error)
 	}
-
 	AppStore interface {
 		CreateIndexesIfNotExists()
 		Save(app *app.App) (*app.App, error)

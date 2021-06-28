@@ -3,10 +3,12 @@ package sub_app_iface
 import (
 	"context"
 
+	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 )
@@ -18,20 +20,18 @@ type GiftcardApp interface {
 
 // PaymentApp defines methods for payment app
 type PaymentApp interface {
-	// GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
-	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)
-	// GetLastOrderPayment get most recent payment made for given order
-	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
-	// GetAllPaymentTransactions returns all transactions belong to given payment
-	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
-	// GetLastPaymentTransaction return most recent transaction made for given payment
-	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
-	// PaymentIsAuthorized checks if given payment is authorized
-	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
-	// PaymentGetAuthorizedAmount calculates authorized amount
-	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
-	// PaymentCanVoid check if payment can void
-	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
+	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)                // GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
+	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)                      // GetLastOrderPayment get most recent payment made for given order
+	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) // GetAllPaymentTransactions returns all transactions belong to given payment
+	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)   // GetLastPaymentTransaction return most recent transaction made for given payment
+	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)                                // PaymentIsAuthorized checks if given payment is authorized
+	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)           // PaymentGetAuthorizedAmount calculates authorized amount
+	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                  // PaymentCanVoid check if payment can void
+	// Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
+	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError)
+	GetAlreadyProcessedTransaction(payment *payment.Payment, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
+	// CreatePayment creates new payment inside database with given data and returned it
+	CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError)
 }
 
 // CheckoutApp

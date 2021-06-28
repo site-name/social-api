@@ -1,19 +1,20 @@
-package einterfaces
+package payment
 
 import (
 	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 )
 
 // Uniform way to represent payment method information.
 type PaymentMethodInfo struct {
-	Last4    *string
-	ExpYear  *int
-	ExpMonth *int
-	Brand    *string
-	Name     *string
-	Type     *string
+	Last4    string
+	ExpYear  uint16
+	ExpMonth uint8
+	Brand    string
+	Name     string
+	Type     string
 }
 
 // for storing gateway response.
@@ -26,13 +27,13 @@ type GatewayResponse struct {
 	Amount                      decimal.Decimal
 	Currency                    string
 	TransactionID               string
-	Error                       *string
-	CustomerID                  *string
+	Error                       string
+	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
-	RawResponse                 *model.StringMap
+	RawResponse                 model.StringMap
 	ActionRequiredData          interface{}
-	TransactionAlreadyProcessed *bool
-	SearchableKey               *string
+	TransactionAlreadyProcessed bool
+	SearchableKey               string
 }
 
 type AddressData struct {
@@ -49,28 +50,46 @@ type AddressData struct {
 	Phone          string
 }
 
+// AddressDataFromAddress convert *account.Address to *AddressData
+func AddressDataFromAddress(a *account.Address) *AddressData {
+	return &AddressData{
+		FirstName:      a.FirstName,
+		LastName:       a.LastName,
+		CompanyName:    a.CompanyName,
+		StreetAddress1: a.StreetAddress1,
+		StreetAddress2: a.StreetAddress2,
+		City:           a.City,
+		CityArea:       a.CityArea,
+		PostalCode:     a.PostalCode,
+		Country:        a.Country,
+		CountryArea:    a.CountryArea,
+		Phone:          a.Phone,
+	}
+}
+
 // Dataclass for storing all payment information.
 // Used for unifying the representation of data.
 // It is required to communicate between Saleor and given payment gateway.
 type PaymentData struct {
-	Amount            decimal.Decimal
+	Gateway           string
+	Amount            *decimal.Decimal
 	Currency          string
 	Billing           *AddressData
 	Shipping          *AddressData
 	PaymentID         string
-	GraphqlPaymentID  string
-	OrderID           *string
-	CustomerIpAddress *string
+	GraphqlPaymentID  string // note
+	OrderID           string
+	CustomerIpAddress string
 	CustomerEmail     string
 	Token             *string
 	CustomerID        *string
 	ReuseSource       bool
-	Data              *model.StringMap
+	Data              model.StringMap
 }
 
 // Dataclass for payment gateway token fetching customization.
 type TokenConfig struct {
-	CustomerID *string
+	CustomerID string
 }
 
 // Dataclass for storing gateway config data.
@@ -81,8 +100,8 @@ type GatewayConfig struct {
 	AutoCapture         bool
 	SupportedCurrencies string
 	ConnectionParams    model.StringInterface
-	StoreCustomer       *bool
-	Require3dSecure     *bool
+	StoreCustomer       bool
+	Require3dSecure     bool
 }
 
 // Dataclass for storing information about stored payment sources in gateways.
@@ -97,7 +116,7 @@ type PaymentGateway struct {
 	Id         string
 	Name       string
 	Currencies model.StringArray
-	Config     []*model.StringInterface
+	Config     []model.StringInterface
 }
 
 type InitializedPaymentResponse struct {
@@ -107,14 +126,14 @@ type InitializedPaymentResponse struct {
 }
 
 type PaymentInterface interface {
-	ListPaymentGateWays(currency string, checkout *checkout.Checkout, activeOnly bool) []*PaymentGateway
-	AuthorizePayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	CapturePayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	RefundPayent(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	VoidPayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	ConfirmPayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	TokenIsRequiredAsPaymentInput(gateway string) bool
-	ProcessPayment(gateway string, paymentInformation *PaymentData) *GatewayResponse
-	GetClientToken(gateway string, tokenConfig *TokenConfig) string
-	ListPaymentSources(gateway string, customerId string) []*CustomerSource
+	ListPaymentGateWays(currency *string, checkout *checkout.Checkout, channelSlug *string, activeOnly bool) []*PaymentGateway
+	AuthorizePayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	CapturePayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	RefundPayent(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	VoidPayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	ConfirmPayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	TokenIsRequiredAsPaymentInput(gateway string, channelSlug *string) bool
+	ProcessPayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
+	GetClientToken(gateway string, tokenConfig *TokenConfig, channelSlug *string) string
+	ListPaymentSources(gateway string, customerId string, channelSlug *string) []*CustomerSource
 }
