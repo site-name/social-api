@@ -136,3 +136,25 @@ func (a *AppPayment) SavePayment(pm *payment.Payment) (*payment.Payment, *model.
 
 	return newPm, nil
 }
+
+func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError) {
+	trans, appErr := a.GetAllPaymentTransactions(paymentID)
+	if appErr != nil {
+		return "", appErr
+	}
+
+	var tran *payment.PaymentTransaction
+	for _, tr := range trans {
+		if tr.Kind == payment.AUTH && tr.IsSuccess {
+			if tran == nil || tran.CreateAt > tr.CreateAt {
+				tran = tr
+			}
+		}
+	}
+
+	if tran == nil {
+		return "", model.NewAppError("GetPaymentToken", "app.payment.no_authorized_payment_transaction.app_error", nil, "", http.StatusNotFound)
+	}
+
+	return tran.Token, nil
+}

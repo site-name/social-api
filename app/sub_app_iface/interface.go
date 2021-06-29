@@ -39,6 +39,7 @@ type PaymentApp interface {
 	// GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
 	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError // CleanCapture Checks if payment can be captured.
+	GetPaymentToken(paymentID string) (string, *model.AppError)                    // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
 }
 
 // CheckoutApp
