@@ -18,7 +18,7 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
 	if *r.Config().ExperimentalSettings.ClientSideCertEnable {
-		certPem, certSubject, certEmail := r.CheckForClientSideCertFromHeader(embedCtx.RequestHeader)
+		certPem, certSubject, certEmail := r.CheckForClientSideCert(embedCtx.GetRequest())
 		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
 
 		if certPem == "" || certEmail == "" {
@@ -36,7 +36,30 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 		return nil, err
 	}
 
-	// r.DoLogin(embedCtx.AppContext)
+	err = r.DoLogin(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest(), user, input.DeviceID, false, false, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if embedCtx.GetRequest().Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
+		r.AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
+	}
+
+	userTermOfService, err := r.GetUserTermsOfService(user.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if userTermOfService != nil {
+		user.TermsOfServiceId = userTermOfService.TermsOfServiceId
+		user.TermsOfServiceCreateAt = userTermOfService.CreateAt
+	}
+
+	user.Sanitize(map[string]bool{})
+
+	return &gqlmodel.CreateToken{
+		User: gqlmodel.DatabaseUserToGraphqlUser(user),
+	}, nil
 }
 
 func (r *mutationResolver) TokenRefresh(ctx context.Context, csrfToken *string, refreshToken *string) (*gqlmodel.RefreshToken, error) {

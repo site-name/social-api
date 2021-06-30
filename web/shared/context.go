@@ -24,7 +24,8 @@ type Context struct {
 	Err           *model.AppError
 	siteURLHeader string
 
-	RequestHeader http.Header
+	request *http.Request
+	writer  http.ResponseWriter
 }
 
 // LogAuditRec logs an audit record using default LevelAPI.
@@ -295,39 +296,6 @@ func (c *Context) RequireUserId() *Context {
 	return c
 }
 
-// func (c *Context) RequireTeamId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.TeamId) {
-// 		c.SetInvalidUrlParam("team_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireCategoryId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidCategoryId(c.Params.CategoryId) {
-// 		c.SetInvalidUrlParam("category_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireInviteId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.InviteId == "" {
-// 		c.SetInvalidUrlParam("invite_id")
-// 	}
-// 	return c
-// }
-
 // RequireTokenId make sure the TokenId is valid in c's Params
 func (c *Context) RequireTokenId() *Context {
 	if c.Err != nil {
@@ -340,17 +308,6 @@ func (c *Context) RequireTokenId() *Context {
 	return c
 }
 
-// func (c *Context) RequireThreadId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.ThreadId) {
-// 		c.SetInvalidUrlParam("thread_id")
-// 	}
-// 	return c
-// }
-
 func (c *Context) RequireTimestamp() *Context {
 	if c.Err != nil {
 		return c
@@ -361,17 +318,6 @@ func (c *Context) RequireTimestamp() *Context {
 	}
 	return c
 }
-
-// func (c *Context) RequireChannelId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.ChannelId) {
-// 		c.SetInvalidUrlParam("channel_id")
-// 	}
-// 	return c
-// }
 
 func (c *Context) RequireUsername() *Context {
 	if c.Err != nil {
@@ -385,17 +331,6 @@ func (c *Context) RequireUsername() *Context {
 	return c
 }
 
-// func (c *Context) RequirePostId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.PostId) {
-// 		c.SetInvalidUrlParam("post_id")
-// 	}
-// 	return c
-// }
-
 func (c *Context) RequirePolicyId() *Context {
 	if c.Err != nil {
 		return c
@@ -406,17 +341,6 @@ func (c *Context) RequirePolicyId() *Context {
 	}
 	return c
 }
-
-// func (c *Context) RequireAppId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.AppId) {
-// 		c.SetInvalidUrlParam("app_id")
-// 	}
-// 	return c
-// }
 
 func (c *Context) RequireFileId() *Context {
 	if c.Err != nil {
@@ -455,18 +379,6 @@ func (c *Context) RequireFilename() *Context {
 	return c
 }
 
-// func (c *Context) RequirePluginId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.PluginId == "" {
-// 		c.SetInvalidUrlParam("plugin_id")
-// 	}
-
-// 	return c
-// }
-
 func (c *Context) RequireReportId() *Context {
 	if c.Err != nil {
 		return c
@@ -477,41 +389,6 @@ func (c *Context) RequireReportId() *Context {
 	}
 	return c
 }
-
-// func (c *Context) RequireEmojiId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.EmojiId) {
-// 		c.SetInvalidUrlParam("emoji_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireTeamName() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidTeamName(c.Params.TeamName) {
-// 		c.SetInvalidUrlParam("team_name")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireChannelName() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidChannelIdentifier(c.Params.ChannelName) {
-// 		c.SetInvalidUrlParam("channel_name")
-// 	}
-
-// 	return c
-// }
 
 func (c *Context) SanitizeEmail() *Context {
 	if c.Err != nil {
@@ -597,130 +474,22 @@ func (c *Context) GetRemoteID(r *http.Request) string {
 	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
 }
 
-// func (c *Context) RequireCategory() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
+// SetRequest set http request for context
+func (c *Context) SetRequest(r *http.Request) {
+	c.request = r
+}
 
-// 	if !model.IsValidAlphaNumHyphenUnderscore(c.Params.Category, true) {
-// 		c.SetInvalidUrlParam("category")
-// 	}
+// GetRequest returns current context's http request
+func (c *Context) GetRequest() *http.Request {
+	return c.request
+}
 
-// 	return c
-// }
+// SetHttpResponse set http response writer for context
+func (c *Context) SetHttpResponse(w http.ResponseWriter) {
+	c.writer = w
+}
 
-// func (c *Context) RequireService() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.Service == "" {
-// 		c.SetInvalidUrlParam("service")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequirePreferenceName() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidAlphaNumHyphenUnderscore(c.Params.PreferenceName, true) {
-// 		c.SetInvalidUrlParam("preference_name")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireEmojiName() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	validName := regexp.MustCompile(`^[a-zA-Z0-9\-\+_]+$`)
-
-// 	if c.Params.EmojiName == "" || len(c.Params.EmojiName) > model.EMOJI_NAME_MAX_LENGTH || !validName.MatchString(c.Params.EmojiName) {
-// 		c.SetInvalidUrlParam("emoji_name")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireHookId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.HookId) {
-// 		c.SetInvalidUrlParam("hook_id")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireCommandId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.CommandId) {
-// 		c.SetInvalidUrlParam("command_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireGroupId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.GroupId) {
-// 		c.SetInvalidUrlParam("group_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireRemoteId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.RemoteId == "" {
-// 		c.SetInvalidUrlParam("remote_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireSyncableId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.SyncableId) {
-// 		c.SetInvalidUrlParam("syncable_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireSyncableType() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.SyncableType != model.GroupSyncableTypeTeam && c.Params.SyncableType != model.GroupSyncableTypeChannel {
-// 		c.SetInvalidUrlParam("syncable_type")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireBotUserId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.BotUserId) {
-// 		c.SetInvalidUrlParam("bot_user_id")
-// 	}
-// 	return c
-// }
+// GetHttpResponse returns current context's http response writer
+func (c *Context) GetHttpResponse() http.ResponseWriter {
+	return c.writer
+}

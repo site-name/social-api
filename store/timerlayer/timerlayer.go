@@ -115,6 +115,7 @@ type TimerLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
+	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
@@ -457,6 +458,10 @@ func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *TimerLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
+}
+
+func (s *TimerLayer) UserTermOfService() store.UserTermOfServiceStore {
+	return s.UserTermOfServiceStore
 }
 
 func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
@@ -900,6 +905,11 @@ type TimerLayerUserAccessTokenStore struct {
 
 type TimerLayerUserAddressStore struct {
 	store.UserAddressStore
+	Root *TimerLayer
+}
+
+type TimerLayerUserTermOfServiceStore struct {
+	store.UserTermOfServiceStore
 	Root *TimerLayer
 }
 
@@ -5658,6 +5668,69 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 	return result, err
 }
 
+func (s *TimerLayerUserTermOfServiceStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.UserTermOfServiceStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
+	start := timemodule.Now()
+
+	err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Delete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserTermOfServiceStore.GetByUser(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.GetByUser", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVariantMediaStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -5910,6 +5983,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
+	newStore.UserTermOfServiceStore = &TimerLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}

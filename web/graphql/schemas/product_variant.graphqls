@@ -47,7 +47,7 @@ type ProductVariantReorder {
 }
 
 input ProductVariantCreateInput {
-  attributes: [AttributeValueInput]!
+  attributes: [AttributeValueInput!]!
   sku: String
   trackInventory: Boolean
   weight: WeightScalar
@@ -66,7 +66,7 @@ type ProductVariantDelete {
 }
 
 input ProductVariantBulkCreateInput {
-  attributes: [BulkAttributeValueInput]!
+  attributes: [BulkAttributeValueInput!]!
   sku: String!
   trackInventory: Boolean
   weight: WeightScalar
@@ -115,7 +115,7 @@ type ProductVariantStocksUpdate {
 }
 
 input ProductVariantInput {
-  attributes: [AttributeValueInput]
+  attributes: [AttributeValueInput!]
   sku: String
   trackInventory: Boolean
   weight: WeightScalar
@@ -199,7 +199,7 @@ type ProductVariantTranslation implements Node {
 
 input BulkAttributeValueInput {
   id: ID
-  values: [String]!
+  values: [String!]!
 }
 
 type BulkStockError {

@@ -115,7 +115,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.AppContext.SetUserAgent(r.UserAgent())
 	c.AppContext.SetAcceptLanguage(r.Header.Get("Accept-Language"))
 	c.AppContext.SetPath(r.URL.Path)
-	c.RequestHeader = r.Header
+	c.SetRequest(r)
+	c.SetHttpResponse(w)
 	// c.Params = shared.ParamsFromRquest(r)
 	c.Logger = c.App.Log()
 

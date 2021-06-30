@@ -338,12 +338,12 @@ func (u *User) IsSSOUser() bool {
 	return u.AuthService != "" && u.AuthService != USER_AUTH_SERVICE_EMAIL
 }
 
-// IsLDAPUser checks if user's AuthService is "ldap"
+// IsLDAPUser checks if user's AuthService == USER_AUTH_SERVICE_LDAP = "ldap"
 func (u *User) IsLDAPUser() bool {
 	return u.AuthService == model.USER_AUTH_SERVICE_LDAP
 }
 
-// IsSAMLUser checks if user's AuthService is "saml"
+// IsSAMLUser checks if user's AuthService == USER_AUTH_SERVICE_SAML = "saml"
 func (u *User) IsSAMLUser() bool {
 	return u.AuthService == model.USER_AUTH_SERVICE_SAML
 }

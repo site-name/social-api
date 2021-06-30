@@ -21,7 +21,7 @@ type AssignNavigation {
 
 input AttributeValueInput {
   id: ID
-  values: [String]
+  values: [String!]
   file: String
   contentType: String
   references: [ID!]

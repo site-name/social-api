@@ -428,7 +428,6 @@ type AttributeTranslatableContent struct {
 	ID          string                `json:"id"`
 	Name        string                `json:"name"`
 	Translation *AttributeTranslation `json:"translation"`
-	Attribute   *Attribute            `json:"attribute"`
 }
 
 func (AttributeTranslatableContent) IsTranslatableItem() {}
@@ -521,20 +520,19 @@ type AttributeValueFilterInput struct {
 }
 
 type AttributeValueInput struct {
-	ID          *string   `json:"id"`
-	Values      []*string `json:"values"`
-	File        *string   `json:"file"`
-	ContentType *string   `json:"contentType"`
-	References  []string  `json:"references"`
-	RichText    *string   `json:"richText"`
-	Boolean     *bool     `json:"boolean"`
+	ID          *string  `json:"id"`
+	Values      []string `json:"values"`
+	File        *string  `json:"file"`
+	ContentType *string  `json:"contentType"`
+	References  []string `json:"references"`
+	RichText    *string  `json:"richText"`
+	Boolean     *bool    `json:"boolean"`
 }
 
 type AttributeValueTranslatableContent struct {
-	ID             string                     `json:"id"`
-	Name           string                     `json:"name"`
-	Translation    *AttributeValueTranslation `json:"translation"`
-	AttributeValue *AttributeValue            `json:"attributeValue"`
+	ID          string                     `json:"id"`
+	Name        string                     `json:"name"`
+	Translation *AttributeValueTranslation `json:"translation"`
 }
 
 func (AttributeValueTranslatableContent) IsTranslatableItem() {}
@@ -566,8 +564,8 @@ type AttributeValueUpdate struct {
 }
 
 type BulkAttributeValueInput struct {
-	ID     *string   `json:"id"`
-	Values []*string `json:"values"`
+	ID     *string  `json:"id"`
+	Values []string `json:"values"`
 }
 
 type BulkProductError struct {
@@ -650,7 +648,6 @@ type CategoryTranslatableContent struct {
 	Name           string               `json:"name"`
 	Description    *string              `json:"description"`
 	Translation    *CategoryTranslation `json:"translation"`
-	Category       *Category            `json:"category"`
 }
 
 func (CategoryTranslatableContent) IsTranslatableItem() {}
@@ -1016,7 +1013,6 @@ type CollectionTranslatableContent struct {
 	Name           string                 `json:"name"`
 	Description    *string                `json:"description"`
 	Translation    *CollectionTranslation `json:"translation"`
-	Collection     *Collection            `json:"collection"`
 }
 
 func (CollectionTranslatableContent) IsTranslatableItem() {}
@@ -1843,7 +1839,6 @@ type MenuItemTranslatableContent struct {
 	ID          string               `json:"id"`
 	Name        string               `json:"name"`
 	Translation *MenuItemTranslation `json:"translation"`
-	MenuItem    *MenuItem            `json:"menuItem"`
 }
 
 func (MenuItemTranslatableContent) IsTranslatableItem() {}
@@ -2346,7 +2341,6 @@ type PageTranslatableContent struct {
 	Title          string           `json:"title"`
 	Content        *string          `json:"content"`
 	Translation    *PageTranslation `json:"translation"`
-	Page           *Page            `json:"page"`
 }
 
 func (PageTranslatableContent) IsTranslatableItem() {}
@@ -2919,7 +2913,6 @@ type ProductTranslatableContent struct {
 	Name           string              `json:"name"`
 	Description    *string             `json:"description"`
 	Translation    *ProductTranslation `json:"translation"`
-	Product        *Product            `json:"product"`
 }
 
 func (ProductTranslatableContent) IsTranslatableItem() {}
@@ -3058,7 +3051,7 @@ type ProductVariantBulkCreate struct {
 }
 
 type ProductVariantBulkCreateInput struct {
-	Attributes      []*BulkAttributeValueInput             `json:"attributes"`
+	Attributes      []BulkAttributeValueInput              `json:"attributes"`
 	Sku             string                                 `json:"sku"`
 	TrackInventory  *bool                                  `json:"trackInventory"`
 	Weight          *measurement.Weight                    `json:"weight"`
@@ -3109,12 +3102,12 @@ type ProductVariantCreate struct {
 }
 
 type ProductVariantCreateInput struct {
-	Attributes     []*AttributeValueInput `json:"attributes"`
-	Sku            *string                `json:"sku"`
-	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *measurement.Weight    `json:"weight"`
-	Product        string                 `json:"product"`
-	Stocks         []StockInput           `json:"stocks"`
+	Attributes     []AttributeValueInput `json:"attributes"`
+	Sku            *string               `json:"sku"`
+	TrackInventory *bool                 `json:"trackInventory"`
+	Weight         *measurement.Weight   `json:"weight"`
+	Product        string                `json:"product"`
+	Stocks         []StockInput          `json:"stocks"`
 }
 
 type ProductVariantDelete struct {
@@ -3129,10 +3122,10 @@ type ProductVariantFilterInput struct {
 }
 
 type ProductVariantInput struct {
-	Attributes     []*AttributeValueInput `json:"attributes"`
-	Sku            *string                `json:"sku"`
-	TrackInventory *bool                  `json:"trackInventory"`
-	Weight         *measurement.Weight    `json:"weight"`
+	Attributes     []AttributeValueInput `json:"attributes"`
+	Sku            *string               `json:"sku"`
+	TrackInventory *bool                 `json:"trackInventory"`
+	Weight         *measurement.Weight   `json:"weight"`
 }
 
 type ProductVariantReorder struct {
@@ -3166,10 +3159,9 @@ type ProductVariantStocksUpdate struct {
 }
 
 type ProductVariantTranslatableContent struct {
-	ID             string                     `json:"id"`
-	Name           string                     `json:"name"`
-	Translation    *ProductVariantTranslation `json:"translation"`
-	ProductVariant *ProductVariant            `json:"productVariant"`
+	ID          string                     `json:"id"`
+	Name        string                     `json:"name"`
+	Translation *ProductVariantTranslation `json:"translation"`
 }
 
 func (ProductVariantTranslatableContent) IsTranslatableItem() {}
@@ -3329,7 +3321,6 @@ type SaleTranslatableContent struct {
 	ID          string           `json:"id"`
 	Name        string           `json:"name"`
 	Translation *SaleTranslation `json:"translation"`
-	Sale        *Sale            `json:"sale"`
 }
 
 func (SaleTranslatableContent) IsTranslatableItem() {}
@@ -3439,11 +3430,10 @@ type ShippingMethodPostalCodeRule struct {
 func (ShippingMethodPostalCodeRule) IsNode() {}
 
 type ShippingMethodTranslatableContent struct {
-	ID             string                     `json:"id"`
-	Name           string                     `json:"name"`
-	Description    *string                    `json:"description"`
-	Translation    *ShippingMethodTranslation `json:"translation"`
-	ShippingMethod *ShippingMethod            `json:"shippingMethod"`
+	ID          string                     `json:"id"`
+	Name        string                     `json:"name"`
+	Description *string                    `json:"description"`
+	Translation *ShippingMethodTranslation `json:"translation"`
 }
 
 func (ShippingMethodTranslatableContent) IsTranslatableItem() {}
@@ -4077,7 +4067,6 @@ type VoucherTranslatableContent struct {
 	ID          string              `json:"id"`
 	Name        *string             `json:"name"`
 	Translation *VoucherTranslation `json:"translation"`
-	Voucher     *Voucher            `json:"voucher"`
 }
 
 func (VoucherTranslatableContent) IsTranslatableItem() {}

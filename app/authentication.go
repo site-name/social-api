@@ -54,6 +54,7 @@ func (a *App) IsPasswordValid(password string) *model.AppError {
 	return IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
 }
 
+// CheckPasswordAndAllCriteria
 func (a *App) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
@@ -136,6 +137,7 @@ func (a *App) checkUserPassword(user *account.User, password string) *model.AppE
 	return nil
 }
 
+// checkLdapUserPasswordAndAllCriteria
 func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*account.User, *model.AppError) {
 	if a.Ldap() == nil || ldapId == nil {
 		err := model.NewAppError("doLdapAuthentication", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
@@ -220,9 +222,9 @@ func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *mod
 
 // CheckUserMfa checks
 //
-// 1) if given user's `MfaActive` is false && multi factor authentication is not enabled => return nil
+// 1) if given user's `MfaActive` is false || multi factor authentication is not enabled => return nil
 //
-// 2) multi factor authentication is not enabled => return concret error
+// 2) multi factor authentication is not enabled => return non-nil error
 //
 // 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
 func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
@@ -246,13 +248,13 @@ func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
 	return nil
 }
 
+// authenticateUser
 func (a *App) authenticateUser(c *request.Context, user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap() != nil
 
-	if user.AuthService == model.USER_AUTH_SERVICE_LDAP {
+	if user.IsLDAPUser() {
 		if !ldapAvailable {
-			err := model.NewAppError("login", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
-			return user, err
+			return user, model.NewAppError("login", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
 		}
 
 		ldapUser, err := a.checkLdapUserPasswordAndAllCriteria(user.AuthData, password, mfaToken)
@@ -265,13 +267,15 @@ func (a *App) authenticateUser(c *request.Context, user *account.User, password,
 		return ldapUser, nil
 	}
 
-	if user.AuthService != "" {
-		authService := user.AuthService
-		if authService == model.USER_AUTH_SERVICE_SAML {
-			authService = strings.ToUpper(authService)
-		}
-		err := model.NewAppError("login", "api.user.login.use_auth_service.app_error", map[string]interface{}{"AuthService": authService}, "", http.StatusBadRequest)
-		return user, err
+	if user.IsSAMLUser() {
+		return user, model.NewAppError(
+			"login",
+			"api.user.login.use_auth_service.app_error",
+			map[string]interface{}{
+				"AuthService": strings.ToUpper(user.AuthService),
+			},
+			"", http.StatusBadRequest,
+		)
 	}
 
 	if err := a.CheckPasswordAndAllCriteria(user, password, mfaToken); err != nil {

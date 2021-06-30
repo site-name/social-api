@@ -42,12 +42,22 @@ type AppIface interface {
 	AddSessionToCache(s *model.Session)
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
+	// AttachSessionCookies sets:
+	//
+	// 1) session cookie with value of given s's session's token to given w
+	//
+	// 2) user cookie with value of user id
+	//
+	// 3) csrf cookie with value of csrf in session
+	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	// Attribute returns attribute sub app
 	AttributeApp() sub_app_iface.AttributeApp
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// Channel returns channel sub app
 	ChannelApp() sub_app_iface.ChannelApp
+	// CheckPasswordAndAllCriteria
+	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
 	// overriding attributes set by the user's login provider; otherwise, the name of the offending
 	// field is returned.
@@ -57,9 +67,9 @@ type AppIface interface {
 	CheckRolesExist(roleNames []string) *model.AppError
 	// CheckUserMfa checks
 	//
-	// 1) if given user's `MfaActive` is false && multi factor authentication is not enabled => return nil
+	// 1) if given user's `MfaActive` is false || multi factor authentication is not enabled => return nil
 	//
-	// 2) multi factor authentication is not enabled => return concret error
+	// 2) multi factor authentication is not enabled => return non-nil error
 	//
 	// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
 	CheckUserMfa(user *account.User, token string) *model.AppError
@@ -89,7 +99,7 @@ type AppIface interface {
 	CreateGuest(c *request.Context, user *account.User) (*account.User, *model.AppError)
 	// CreateRole takes a role struct and save it to database
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
-	// CreateSession save given session to tha database.
+	// CreateSession try saving given session to the database. If success then add that session to cache.
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	// CreateUser creates a user and sets several fields of the returned User struct to
 	// their zero values.
@@ -160,6 +170,8 @@ type AppIface interface {
 	GetUserByEmail(email string) (*account.User, *model.AppError)
 	// GetUserByUsername get user from database with given username
 	GetUserByUsername(username string) (*account.User, *model.AppError)
+	// GetUserTermsOfService get user term of service from database with given userID
+	GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError)
 	// Giftcard returns giftcard sub app
 	GiftcardApp() sub_app_iface.GiftcardApp
 	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
@@ -243,6 +255,8 @@ type AppIface interface {
 	RolesGrantPermission(roleNames []string, permissionId string) bool
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
+	// SaveUserTermsOfService saves given user term of service to database
+	SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError
 	// Seo returns order seo app
 	SeoApp() sub_app_iface.SeoApp
 	// SessionHasPermissionTo checks if this user has given permission to procceed
@@ -295,12 +309,9 @@ type AppIface interface {
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
-	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
-	CheckForClientSideCertFromHeader(h http.Header) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
-	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	ClientConfig() map[string]string
 	ClientConfigHash() string

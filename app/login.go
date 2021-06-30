@@ -21,9 +21,9 @@ import (
 
 const cwsTokenEnv = "CWS_CLOUD_TOKEN"
 
-func (a *App) CheckForClientSideCertFromHeader(h http.Header) (string, string, string) {
-	pem := h.Get("X-SSL-Client-Cert")
-	subject := h.Get("X-SSL-Client-Cert-Subject-DN")
+func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
+	pem := r.Header.Get("X-SSL-Client-Cert")
+	subject := r.Header.Get("X-SSL-Client-Cert-Subject-DN")
 	email := ""
 
 	if subject != "" {
@@ -36,10 +36,6 @@ func (a *App) CheckForClientSideCertFromHeader(h http.Header) (string, string, s
 	}
 
 	return pem, subject, email
-}
-
-func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
-	return a.CheckForClientSideCertFromHeader(r.Header)
 }
 
 func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
@@ -250,6 +246,7 @@ func (a *App) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request
 	return nil
 }
 
+// GetProtocol returns request's protocol
 func GetProtocol(r *http.Request) string {
 	if r.Header.Get(model.HEADER_FORWARDED_PROTO) == "https" || r.TLS != nil {
 		return "https"
@@ -257,6 +254,13 @@ func GetProtocol(r *http.Request) string {
 	return "http"
 }
 
+// AttachSessionCookies sets:
+//
+// 1) session cookie with value of given s's session's token to given w
+//
+// 2) user cookie with value of user id
+//
+// 3) csrf cookie with value of csrf in session
 func (a *App) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
 	secure := false
 	if GetProtocol(r) == "https" {
@@ -304,6 +308,7 @@ func (a *App) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r 
 	http.SetCookie(w, csrfCookie)
 }
 
+// IsCWSLogin returns true if token != "" else false
 func IsCWSLogin(a *App, token string) bool {
 	return token != ""
 }

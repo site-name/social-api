@@ -51,6 +51,7 @@ type Store interface {
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
+	UserTermOfService() UserTermOfServiceStore                         //
 	UserAddress() UserAddressStore                                     //
 	CustomerEvent() CustomerEventStore                                 //
 	StaffNotificationRecipient() StaffNotificationRecipientStore       //
@@ -579,6 +580,12 @@ type (
 		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
 		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
 
+	}
+	UserTermOfServiceStore interface {
+		CreateIndexesIfNotExists()                                                                //
+		GetByUser(userID string) (*account.UserTermsOfService, error)                             // GetByUser returns a term of service with given user id
+		Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) // Save inserts new user term of service to database
+		Delete(userID, termsOfServiceId string) error                                             // Delete deletes from database an usder term of service with given userId and term of service id
 	}
 	UserStore interface {
 		CreateIndexesIfNotExists()                                                    //

@@ -115,6 +115,7 @@ type OpenTracingLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
+	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
@@ -457,6 +458,10 @@ func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *OpenTracingLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
+}
+
+func (s *OpenTracingLayer) UserTermOfService() store.UserTermOfServiceStore {
+	return s.UserTermOfServiceStore
 }
 
 func (s *OpenTracingLayer) VariantMedia() store.VariantMediaStore {
@@ -900,6 +905,11 @@ type OpenTracingLayerUserAccessTokenStore struct {
 
 type OpenTracingLayerUserAddressStore struct {
 	store.UserAddressStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerUserTermOfServiceStore struct {
+	store.UserTermOfServiceStore
 	Root *OpenTracingLayer
 }
 
@@ -5886,6 +5896,73 @@ func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress
 	return result, err
 }
 
+func (s *OpenTracingLayerUserTermOfServiceStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.UserTermOfServiceStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.GetByUser")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.UserTermOfServiceStore.GetByUser(userID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerVariantMediaStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VariantMediaStore.CreateIndexesIfNotExists")
@@ -6131,6 +6208,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.UserStore = &OpenTracingLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &OpenTracingLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &OpenTracingLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
+	newStore.UserTermOfServiceStore = &OpenTracingLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &OpenTracingLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &OpenTracingLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &OpenTracingLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}

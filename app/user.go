@@ -1466,3 +1466,39 @@ func (a *App) UpdateMfa(activate bool, userID, token string) *model.AppError {
 
 	return nil
 }
+
+// GetUserTermsOfService get user term of service from database with given userID
+func (a *App) GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError) {
+	u, err := a.Srv().Store.UserTermOfService().GetByUser(userID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("GetUserTermsOfService", "app.account.user_term_of_service_missing.app_error", err)
+	}
+
+	return u, nil
+}
+
+// SaveUserTermsOfService saves given user term of service to database
+func (a *App) SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError {
+	if accepted {
+		userTermsOfService := &account.UserTermsOfService{
+			UserId:           userID,
+			TermsOfServiceId: termsOfServiceId,
+		}
+
+		if _, err := a.Srv().Store.UserTermOfService().Save(userTermsOfService); err != nil {
+			var appErr *model.AppError
+			switch {
+			case errors.As(err, &appErr):
+				return appErr
+			default:
+				return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.save.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+		}
+	} else {
+		if err := a.Srv().Store.UserTermOfService().Delete(userID, termsOfServiceId); err != nil {
+			return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	return nil
+}

@@ -1238,5 +1238,9 @@
   {
     "id": "web.error.unsupported_browser.system_browser_or",
     "translation": "or"
+  },
+  {
+    "id": "graphql.account.user_unauthenticated.app_error",
+    "translation": "You are not authenticated to do this"
   }
 ]

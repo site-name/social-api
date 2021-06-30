@@ -120,6 +120,7 @@ type SqlStoreStores struct {
 	user                          store.UserStore
 	userAccessToken               store.UserAccessTokenStore
 	userAddress                   store.UserAddressStore
+	userTermOfService             store.UserTermOfServiceStore
 	variantMedia                  store.VariantMediaStore
 	voucherChannelListing         store.VoucherChannelListingStore
 	voucherTranslation            store.VoucherTranslationStore
@@ -215,6 +216,7 @@ func (store *SqlStore) setupTables() {
 		user:                          account.NewSqlUserStore(store, store.metrics),
 		userAccessToken:               account.NewSqlUserAccessTokenStore(store),
 		userAddress:                   account.NewSqlUserAddressStore(store),
+		userTermOfService:             account.NewSqlUserTermOfServiceStore(store),
 		variantMedia:                  product.NewSqlVariantMediaStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
@@ -311,6 +313,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.user.CreateIndexesIfNotExists()
 	store.stores.userAccessToken.CreateIndexesIfNotExists()
 	store.stores.userAddress.CreateIndexesIfNotExists()
+	store.stores.userTermOfService.CreateIndexesIfNotExists()
 	store.stores.variantMedia.CreateIndexesIfNotExists()
 	store.stores.voucherChannelListing.CreateIndexesIfNotExists()
 	store.stores.voucherTranslation.CreateIndexesIfNotExists()
@@ -654,6 +657,10 @@ func (ss *SqlStore) UserAccessToken() store.UserAccessTokenStore {
 
 func (ss *SqlStore) UserAddress() store.UserAddressStore {
 	return ss.stores.userAddress
+}
+
+func (ss *SqlStore) UserTermOfService() store.UserTermOfServiceStore {
+	return ss.stores.userTermOfService
 }
 
 func (ss *SqlStore) VariantMedia() store.VariantMediaStore {
