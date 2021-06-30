@@ -311,6 +311,7 @@ func (o *Order) TotalCaptured() *goprices.Money {
 	return o.TotalPaid
 }
 
+// TotalBalance substracts order's total paid to order's total gross
 func (o *Order) TotalBalance() (*goprices.Money, error) {
 	return o.TotalCaptured().Sub(o.Total.Gross)
 }

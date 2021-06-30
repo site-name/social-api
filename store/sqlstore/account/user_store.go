@@ -585,7 +585,7 @@ func (us *SqlUserStore) GetByEmail(email string) (*account.User, error) {
 	user := account.User{}
 	if err := us.GetReplica().SelectOne(&user, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.Wrap(store.NewErrNotFound("User", fmt.Sprintf("email=%s", email)), "failed to find User")
+			return nil, store.NewErrNotFound("User", fmt.Sprintf("email=%s", email))
 		}
 
 		return nil, errors.Wrapf(err, "failed to get User with email=%s", email)

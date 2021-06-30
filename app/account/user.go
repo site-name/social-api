@@ -81,3 +81,12 @@ func (a *AppAccount) UserSetDefaultAddress(userID, addressID, addressType string
 
 	return userUpdate.New, nil
 }
+
+func (a *AppAccount) UserByEmail(email string) (*account.User, *model.AppError) {
+	user, err := a.Srv().Store.User().GetByEmail(email)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("UserByEmail", "app.account.user_missing.app_error", err)
+	}
+
+	return user, nil
+}

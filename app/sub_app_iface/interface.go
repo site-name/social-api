@@ -55,6 +55,7 @@ type AccountApp interface {
 	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                        // AddressesByUserId returns list of address(es) (if found) that belong to given user
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
 	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser delete given address from addresses list of given user
+	UserByEmail(email string) (*account.User, *model.AppError)                                    // UserByEmail try finding user with given email and returns that user
 }
 
 type ProductApp interface {

@@ -15,13 +15,13 @@ import (
 )
 
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
-	if !model.IsValidId(obj.ID) {
-		return nil, nil
-	}
 	// onyl authenticated users can check their default addresses
 	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		if !model.IsValidId(obj.ID) {
+			return nil, nil
+		}
 		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
 		if appErr != nil {
 			return nil, appErr
@@ -32,13 +32,13 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 }
 
 func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
-	if !model.IsValidId(obj.ID) {
-		return nil, nil
-	}
 	// onyl authenticated users can check their default addresses
 	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		if !model.IsValidId(obj.ID) {
+			return nil, nil
+		}
 		user, appErr := r.AccountApp().UserById(ctx, session.UserId)
 		if appErr != nil {
 			return nil, appErr

@@ -182,6 +182,7 @@ func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
 	}
 }
 
+// NormalWeightToGraphqlWeight converts weight to graphql weight
 func NormalWeightToGraphqlWeight(w *measurement.Weight) *Weight {
 	return &Weight{
 		Value: float64(w.Amount),
