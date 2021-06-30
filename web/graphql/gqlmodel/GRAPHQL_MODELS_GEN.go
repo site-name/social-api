@@ -1073,11 +1073,10 @@ type CountryDisplay struct {
 }
 
 type CreateToken struct {
-	Token        *string        `json:"token"`
-	RefreshToken *string        `json:"refreshToken"`
-	CsrfToken    *string        `json:"csrfToken"`
-	User         *User          `json:"user"`
-	Errors       []AccountError `json:"errors"`
+	Token        *string `json:"token"`
+	RefreshToken *string `json:"refreshToken"`
+	CsrfToken    *string `json:"csrfToken"`
+	User         *User   `json:"user"`
 }
 
 type CreditCard struct {
@@ -3801,6 +3800,15 @@ type TaxedMoney struct {
 type TaxedMoneyRange struct {
 	Start *TaxedMoney `json:"start"`
 	Stop  *TaxedMoney `json:"stop"`
+}
+
+type TokenCreateInput struct {
+	ID       string `json:"id"`
+	LoginID  string `json:"loginId"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
+	DeviceID string `json:"deviceId"`
+	LdapOnly string `json:"ldapOnly"`
 }
 
 type Transaction struct {

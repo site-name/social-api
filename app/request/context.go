@@ -64,6 +64,7 @@ func (c *Context) Context() context.Context {
 	return c.context
 }
 
+// SetSession sets c's session to given session
 func (c *Context) SetSession(s *model.Session) {
 	c.session = *s
 }

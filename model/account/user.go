@@ -134,9 +134,9 @@ type UserForIndexing struct {
 type UserSlice []*User
 
 func (u UserSlice) Usernames() []string {
-	usernames := []string{}
-	for _, user := range u {
-		usernames = append(usernames, user.Username)
+	usernames := make([]string, len(u))
+	for i, user := range u {
+		usernames[i] = user.Username
 	}
 	sort.Strings(usernames)
 	return usernames
@@ -144,9 +144,9 @@ func (u UserSlice) Usernames() []string {
 
 // IDs returns slice of uuids from slice of users
 func (u UserSlice) IDs() []string {
-	ids := []string{}
-	for _, user := range u {
-		ids = append(ids, user.Id)
+	ids := make([]string, len(u))
+	for i, user := range u {
+		ids[i] = user.Id
 	}
 	return ids
 }

@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	SESSION_COOKIE_TOKEN              = "MMAUTHTOKEN"
-	SESSION_COOKIE_USER               = "MMUSERID"
-	SESSION_COOKIE_CSRF               = "MMCSRF"
+	SESSION_COOKIE_TOKEN              = "SNAUTHTOKEN"
+	SESSION_COOKIE_USER               = "SNUSERID"
+	SESSION_COOKIE_CSRF               = "SNCSRF"
 	SESSION_CACHE_SIZE                = 35000
 	SESSION_PROP_PLATFORM             = "platform"
 	SESSION_PROP_OS                   = "os"
@@ -89,11 +89,31 @@ func (s *Session) PreSave() {
 	}
 }
 
+func (s *Session) IsValid() *AppError {
+	outer := CreateAppErrorForModel(
+		"model.session.is_valid.%s.app_error",
+		"session_id=",
+		"Session.IsValid",
+	)
+	if !IsValidId(s.Id) {
+		return outer("id", nil)
+	}
+	if !IsValidId(s.UserId) {
+		return outer("user_id", &s.Id)
+	}
+	return nil
+}
+
 // Sanitize sets session's Token to empty string
 func (s *Session) Sanitize() {
 	s.Token = ""
 }
 
+// IsExpired checks if:
+//
+// 1) session's ExpiresAt <= 0 => false
+//
+// 2) time.Now() > session's ExpiresAt => true
 func (s *Session) IsExpired() bool {
 	if s.ExpiresAt <= 0 {
 		return false
@@ -179,7 +199,7 @@ func (s *Session) GetUserRoles() []string {
 	return strings.Fields(s.Roles)
 }
 
-// GenerateCSRF simply generates new UUID, then add that uuid to its "Props" with key is "csrf"
+// GenerateCSRF simply generates new UUID, then add that uuid to its "Props" with key is "csrf". Finally returns that token
 func (s *Session) GenerateCSRF() string {
 	token := NewId()
 	s.AddProp("csrf", token)

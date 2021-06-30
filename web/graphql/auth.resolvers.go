@@ -6,12 +6,37 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
+	"github.com/sitename/sitename/web/shared"
 )
 
-func (r *mutationResolver) TokenCreate(ctx context.Context, email string, password string) (*gqlmodel.CreateToken, error) {
-	return nil, nil
+func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.TokenCreateInput) (*gqlmodel.CreateToken, error) {
+	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	if *r.Config().ExperimentalSettings.ClientSideCertEnable {
+		certPem, certSubject, certEmail := r.CheckForClientSideCertFromHeader(embedCtx.RequestHeader)
+		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
+
+		if certPem == "" || certEmail == "" {
+			return nil, model.NewAppError("TokenCreate", "app.account.login.client_side_cert_missing.app_error", nil, "", http.StatusBadRequest)
+		}
+
+		if *r.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+			input.LoginID = certEmail
+			input.Password = "certificate"
+		}
+	}
+
+	user, err := r.AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.Token, "", input.LdapOnly == "true")
+	if err != nil {
+		return nil, err
+	}
+
+	// r.DoLogin(embedCtx.AppContext)
 }
 
 func (r *mutationResolver) TokenRefresh(ctx context.Context, csrfToken *string, refreshToken *string) (*gqlmodel.RefreshToken, error) {

@@ -23,6 +23,8 @@ type Context struct {
 	Params        *Params
 	Err           *model.AppError
 	siteURLHeader string
+
+	RequestHeader http.Header
 }
 
 // LogAuditRec logs an audit record using default LevelAPI.

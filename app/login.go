@@ -21,9 +21,9 @@ import (
 
 const cwsTokenEnv = "CWS_CLOUD_TOKEN"
 
-func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
-	pem := r.Header.Get("X-SSL-Client-Cert")
-	subject := r.Header.Get("X-SSL-Client-Cert-Subject-DN")
+func (a *App) CheckForClientSideCertFromHeader(h http.Header) (string, string, string) {
+	pem := h.Get("X-SSL-Client-Cert")
+	subject := h.Get("X-SSL-Client-Cert-Subject-DN")
 	email := ""
 
 	if subject != "" {
@@ -36,6 +36,10 @@ func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	}
 
 	return pem, subject, email
+}
+
+func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
+	return a.CheckForClientSideCertFromHeader(r.Header)
 }
 
 func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
@@ -207,14 +211,9 @@ func (a *App) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request
 
 	ua := uasurfer.Parse(r.UserAgent())
 
-	plat := getPlatformName(ua)
-	os := getOSName(ua)
-	bname := getBrowserName(ua, r.UserAgent())
-	bversion := getBrowserVersion(ua, r.UserAgent())
-
-	session.AddProp(model.SESSION_PROP_PLATFORM, plat)
-	session.AddProp(model.SESSION_PROP_OS, os)
-	session.AddProp(model.SESSION_PROP_BROWSER, fmt.Sprintf("%v/%v", bname, bversion))
+	session.AddProp(model.SESSION_PROP_PLATFORM, getPlatformName(ua))
+	session.AddProp(model.SESSION_PROP_OS, getOSName(ua))
+	session.AddProp(model.SESSION_PROP_BROWSER, fmt.Sprintf("%s/%s", getBrowserName(ua, r.UserAgent()), getBrowserVersion(ua, r.UserAgent())))
 	if user.IsGuest() {
 		session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
 	} else {
@@ -223,7 +222,6 @@ func (a *App) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request
 
 	var err *model.AppError
 	if session, err = a.CreateSession(session); err != nil {
-		err.StatusCode = http.StatusInternalServerError
 		return err
 	}
 

@@ -84,7 +84,7 @@ type Handler struct {
 	cspShaDirective           string
 }
 
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w = newWrappedWriter(w)
 	now := time.Now()
 
@@ -115,7 +115,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.AppContext.SetUserAgent(r.UserAgent())
 	c.AppContext.SetAcceptLanguage(r.Header.Get("Accept-Language"))
 	c.AppContext.SetPath(r.URL.Path)
-	c.Params = shared.ParamsFromRquest(r)
+	c.RequestHeader = r.Header
+	// c.Params = shared.ParamsFromRquest(r)
 	c.Logger = c.App.Log()
 
 	// check if open tracing is enabled

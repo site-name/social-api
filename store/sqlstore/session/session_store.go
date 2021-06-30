@@ -44,12 +44,11 @@ func (me SqlSessionStore) CreateIndexesIfNotExists() {
 	me.CreateIndexIfNotExists("idx_sessions_last_activity_at", "Sessions", "LastActivityAt")
 }
 
-// insert new session to the database
 func (me *SqlSessionStore) Save(session *model.Session) (*model.Session, error) {
-	if session.Id != "" {
-		return nil, store.NewErrInvalidInput("Session", "id", session.Id)
-	}
 	session.PreSave()
+	if err := session.IsValid(); err != nil {
+		return nil, err
+	}
 
 	if err := me.GetMaster().Insert(session); err != nil {
 		return nil, errors.Wrapf(err, "failed to save Session with id=%s", session.Id)

@@ -1,5 +1,6 @@
 extend type Mutation {
-  tokenCreate(email: String!, password: String!): CreateToken
+  # NOTE: tokenCreate mutation is borrowed from mattermost
+  tokenCreate(input: TokenCreateInput!): CreateToken # tokenCreate(email: String!, password: String!): CreateToken
   tokenRefresh(csrfToken: String, refreshToken: String): RefreshToken
   tokenVerify(token: String!): VerifyToken
   tokensDeactivateAll: DeactivateAllUserTokens
@@ -16,12 +17,22 @@ extend type Mutation {
   confirmEmailChange(channel: String, token: String!): ConfirmEmailChange
 }
 
+# This input type idea is borrowed from Mattermost
+input TokenCreateInput {
+  id: String!
+  loginId: String!
+  password: String!
+  token: String!
+  deviceId: String!
+  ldapOnly: String!
+}
+
 type CreateToken {
   token: String
   refreshToken: String
   csrfToken: String
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type RefreshToken {

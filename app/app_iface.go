@@ -298,6 +298,7 @@ type AppIface interface {
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	CheckForClientSideCert(r *http.Request) (string, string, string)
+	CheckForClientSideCertFromHeader(h http.Header) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError

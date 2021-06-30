@@ -10,7 +10,7 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/advancedlogic/GoOse v0.0.0-20200830213114-1225d531e0ad // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.38.68
+	github.com/aws/aws-sdk-go v1.38.69
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -70,15 +70,14 @@ require (
 	github.com/tylerb/graceful v1.2.15
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.2.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.4
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1
-	go.uber.org/zap v1.17.0
+	go.uber.org/zap v1.18.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
-	golang.org/x/image v0.0.0-20210622092929-e6eecd499c2c
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
+	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.4
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

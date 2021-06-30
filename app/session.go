@@ -18,18 +18,16 @@ import (
 	"github.com/sitename/sitename/store/sqlstore"
 )
 
-// CreateSession save given session to tha database.
+// CreateSession try saving given session to the database. If success then add that session to cache.
 func (a *App) CreateSession(session *model.Session) (*model.Session, *model.AppError) {
 	session.Token = ""
 	session, err := a.Srv().Store.Session().Save(session)
 	if err != nil {
-		var invErr *store.ErrInvalidInput
-		switch {
-		case errors.As(err, &invErr):
-			return nil, model.NewAppError("CreateSession", "app.session.save.existing.app_error", nil, invErr.Error(), http.StatusBadRequest)
-		default:
-			return nil, model.NewAppError("CreateSession", "app.session.save.app_error", nil, err.Error(), http.StatusInternalServerError)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*model.AppError); ok {
+			statusCode = http.StatusBadRequest
 		}
+		return nil, model.NewAppError("CreateSession", "app.session.save_session.app_error", nil, err.Error(), statusCode)
 	}
 
 	a.AddSessionToCache(session)
