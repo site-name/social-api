@@ -6,6 +6,10 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+const (
+	CategoryTableName = "Categories"
+)
+
 type SqlCategoryStore struct {
 	store.Store
 }
@@ -14,7 +18,7 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	cs := &SqlCategoryStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Category{}, "Categories").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.Category{}, CategoryTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ParentID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.CATEGORY_NAME_MAX_LENGTH).SetUnique(true)
@@ -28,7 +32,7 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 }
 
 func (ps *SqlCategoryStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_categories_name", "Categories", "Name")
-	ps.CreateIndexIfNotExists("idx_categories_slug", "Categories", "Slug")
-	ps.CreateIndexIfNotExists("idx_categories_name_lower_textpattern", "Categories", "lower(Name) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_categories_name", CategoryTableName, "Name")
+	ps.CreateIndexIfNotExists("idx_categories_slug", CategoryTableName, "Slug")
+	ps.CreateIndexIfNotExists("idx_categories_name_lower_textpattern", CategoryTableName, "lower(Name) text_pattern_ops")
 }

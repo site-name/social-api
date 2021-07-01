@@ -7,8 +7,42 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
+
+func (r *menuResolver) Items(ctx context.Context, obj *gqlmodel.Menu) ([]*gqlmodel.MenuItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Menu(ctx context.Context, obj *gqlmodel.MenuItem) (*gqlmodel.Menu, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Parent(ctx context.Context, obj *gqlmodel.MenuItem) (*gqlmodel.MenuItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Category(ctx context.Context, obj *gqlmodel.MenuItem) (*gqlmodel.Category, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Collection(ctx context.Context, obj *gqlmodel.MenuItem) (*gqlmodel.Collection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Page(ctx context.Context, obj *gqlmodel.MenuItem) (*gqlmodel.Page, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Children(ctx context.Context, obj *gqlmodel.MenuItem) ([]*gqlmodel.MenuItem, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *menuItemResolver) Translation(ctx context.Context, obj *gqlmodel.MenuItem, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.MenuItemTranslation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *mutationResolver) MenuCreate(ctx context.Context, input gqlmodel.MenuCreateInput) (*gqlmodel.MenuCreate, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -51,7 +85,35 @@ func (r *mutationResolver) MenuItemMove(ctx context.Context, menu string, moves 
 }
 
 func (r *queryResolver) Menu(ctx context.Context, channel *string, id *string, name *string, slug *string) (*gqlmodel.Menu, error) {
-	panic(fmt.Errorf("not implemented"))
+	// var channelSlug string
+	// if channel == nil {
+	// 	ch, appErr := r.ChannelApp().GetDefaultActiveChannel()
+	// 	if appErr != nil {
+	// 		return nil, appErr
+	// 	}
+	// 	channelSlug = ch.Slug
+	// } else {
+	// 	channelSlug = *channel
+	// }
+
+	var (
+		mnu    *menu.Menu
+		appErr *model.AppError
+	)
+
+	if id != nil && model.IsValidId(*id) {
+		mnu, appErr = r.MenuApp().MenuById(*id)
+	} else if name != nil {
+		mnu, appErr = r.MenuApp().MenuByName(*name)
+	} else if slug != nil {
+		mnu, appErr = r.MenuApp().MenuBySlug(*slug)
+	}
+
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.DatabaseMenuToGraphqlMenu(mnu), nil
 }
 
 func (r *queryResolver) Menus(ctx context.Context, channel *string, sortBy *gqlmodel.MenuSortingInput, filter *gqlmodel.MenuFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.MenuCountableConnection, error) {
@@ -65,3 +127,12 @@ func (r *queryResolver) MenuItem(ctx context.Context, id string, channel *string
 func (r *queryResolver) MenuItems(ctx context.Context, channel *string, sortBy *gqlmodel.MenuItemSortingInput, filter *gqlmodel.MenuItemFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.MenuItemCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Menu returns MenuResolver implementation.
+func (r *Resolver) Menu() MenuResolver { return &menuResolver{r} }
+
+// MenuItem returns MenuItemResolver implementation.
+func (r *Resolver) MenuItem() MenuItemResolver { return &menuItemResolver{r} }
+
+type menuResolver struct{ *Resolver }
+type menuItemResolver struct{ *Resolver }

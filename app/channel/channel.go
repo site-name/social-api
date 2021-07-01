@@ -25,7 +25,6 @@ func init() {
 	})
 }
 
-// GetChannelBySlug get a channel from database with given slug
 func (a *AppChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) {
 	channel, err := a.Srv().Store.Channel().GetBySlug(slug)
 	if err != nil {
@@ -35,7 +34,6 @@ func (a *AppChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.App
 	return channel, nil
 }
 
-// GetDefaultChannel get random channel that is active
 func (a *AppChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppError) {
 	channel, err := a.Srv().Store.Channel().GetRandomActiveChannel()
 	if err != nil {
@@ -45,12 +43,6 @@ func (a *AppChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppErro
 	return channel, nil
 }
 
-// CleanChannel performs:
-//
-// 1) If given slug is not nil, try getting a channel with that slug.
-//   +) if found, check if channel is active
-//
-// 2) If given slug if nil, it try
 func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError) {
 	var channel *channel.Channel
 

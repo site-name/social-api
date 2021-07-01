@@ -21,10 +21,12 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 )
 
@@ -77,6 +79,7 @@ type RetryLayer struct {
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
 	MenuStore                          store.MenuStore
+	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
@@ -310,6 +313,10 @@ func (s *RetryLayer) Job() store.JobStore {
 
 func (s *RetryLayer) Menu() store.MenuStore {
 	return s.MenuStore
+}
+
+func (s *RetryLayer) MenuItem() store.MenuItemStore {
+	return s.MenuItemStore
 }
 
 func (s *RetryLayer) MenuItemTranslation() store.MenuItemTranslationStore {
@@ -724,6 +731,11 @@ type RetryLayerJobStore struct {
 
 type RetryLayerMenuStore struct {
 	store.MenuStore
+	Root *RetryLayer
+}
+
+type RetryLayerMenuItemStore struct {
+	store.MenuItemStore
 	Root *RetryLayer
 }
 
@@ -2734,6 +2746,152 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 func (s *RetryLayerMenuStore) CreateIndexesIfNotExists() {
 
 	s.MenuStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerMenuStore) GetById(id string) (*menu.Menu, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuStore) GetByName(name string) (*menu.Menu, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuStore.GetByName(name)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuStore) GetBySlug(slug string) (*menu.Menu, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuStore.GetBySlug(slug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuStore.Save(menu)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuItemStore) CreateIndexesIfNotExists() {
+
+	s.MenuItemStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuItemStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuItemStore.GetByName(name)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuItemStore.Save(menuItem)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -5837,15 +5995,175 @@ func (s *RetryLayerWishlistStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistStore.GetByUserID(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistStore.Save(wishlist)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerWishlistItemStore) CreateIndexesIfNotExists() {
 
 	s.WishlistItemStore.CreateIndexesIfNotExists()
 
 }
 
+func (s *RetryLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.Save(wishlistItem)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.WishlistItemsByWishlistId(wishlistID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
 
 	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistProductVariantStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistProductVariantStore.Save(wishlistVariant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -5925,6 +6243,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.InvoiceEventStore = &RetryLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.MenuStore = &RetryLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemStore = &RetryLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &RetryLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
 	newStore.OrderStore = &RetryLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &RetryLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}

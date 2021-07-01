@@ -3,6 +3,7 @@ package graphql
 import (
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/sitename/sitename/model"
 )
@@ -23,8 +24,67 @@ func validateStoreFrontUrl(config *model.Config, urlValue *string) *model.AppErr
 		return model.NewAppError("validateStoreFrontUrl", systemUrlInvalidID, nil, "", http.StatusInternalServerError)
 	}
 	if parsedRedirectUrl.Hostname() != parsedSitenameUrl.Hostname() {
-		return invalidParameterError("validateStoreFrontUrl", "redirect url", "Url ")
+		return invalidParameterError("validateStoreFrontUrl", "redirect url", "Url is not allowed")
 	}
 
 	return nil
+}
+
+var mutex sync.Mutex
+
+// oneOfArgumentsIsValid checks if there is only 1 item that is meaningful.
+//
+// NOTE: only primitives accepted (booleans, integers, strings, floats)
+func oneOfArgumentsIsValid(args ...interface{}) bool {
+	res := 0
+
+	for _, item := range args {
+		if item != nil {
+			switch t := item.(type) {
+			case *string:
+				if len(*t) > 0 {
+					res++
+				}
+				continue
+			case string:
+				if len(t) > 0 {
+					res++
+				}
+			case *int:
+				if *t != 0 {
+					res++
+				}
+			case int:
+				if t != 0 {
+					res++
+				}
+			case *uint:
+				if *t != 0 {
+					res++
+				}
+			case uint:
+				if t != 0 {
+					res++
+				}
+			case *int64:
+				if *t != 0 {
+					res++
+				}
+			case int64:
+				if t != 0 {
+					res++
+				}
+			case *bool:
+				if *t {
+					res++
+				}
+			case bool:
+				if t {
+					res++
+				}
+			}
+		}
+	}
+
+	return res == 1
 }

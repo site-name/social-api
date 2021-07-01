@@ -560,7 +560,6 @@ func GetServerIpAddress(iface string) string {
 // Translates AppError to user's locale
 func (er *AppError) Translate(T i18n.TranslateFunc) {
 	if T == nil {
-		er.Message = er.Id
 		return
 	}
 

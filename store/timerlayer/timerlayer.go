@@ -21,10 +21,12 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 )
 
@@ -78,6 +80,7 @@ type TimerLayer struct {
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
 	MenuStore                          store.MenuStore
+	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
@@ -311,6 +314,10 @@ func (s *TimerLayer) Job() store.JobStore {
 
 func (s *TimerLayer) Menu() store.MenuStore {
 	return s.MenuStore
+}
+
+func (s *TimerLayer) MenuItem() store.MenuItemStore {
+	return s.MenuItemStore
 }
 
 func (s *TimerLayer) MenuItemTranslation() store.MenuItemTranslationStore {
@@ -725,6 +732,11 @@ type TimerLayerJobStore struct {
 
 type TimerLayerMenuStore struct {
 	store.MenuStore
+	Root *TimerLayer
+}
+
+type TimerLayerMenuItemStore struct {
+	store.MenuItemStore
 	Root *TimerLayer
 }
 
@@ -2870,6 +2882,133 @@ func (s *TimerLayerMenuStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerMenuStore) GetById(id string) (*menu.Menu, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuStore) GetByName(name string) (*menu.Menu, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuStore.GetByName(name)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetByName", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuStore) GetBySlug(slug string) (*menu.Menu, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuStore.GetBySlug(slug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetBySlug", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuStore.Save(menu)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuItemStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.MenuItemStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuItemStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuItemStore.GetByName(name)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.GetByName", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuItemStore.Save(menuItem)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
@@ -5864,6 +6003,54 @@ func (s *TimerLayerWishlistStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistStore.GetByUserID(userID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.GetByUserID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistStore.Save(wishlist)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWishlistItemStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -5879,6 +6066,54 @@ func (s *TimerLayerWishlistItemStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.Save(wishlistItem)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.WishlistItemsByWishlistId(wishlistID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.WishlistItemsByWishlistId", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -5892,6 +6127,38 @@ func (s *TimerLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistProductVariantStore.GetById(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistProductVariantStore.Save(wishlistVariant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayer) Close() {
@@ -5971,6 +6238,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.InvoiceEventStore = &TimerLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.MenuStore = &TimerLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemStore = &TimerLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &TimerLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
 	newStore.OrderStore = &TimerLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &TimerLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}

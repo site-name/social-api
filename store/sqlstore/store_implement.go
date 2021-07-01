@@ -83,6 +83,7 @@ type SqlStoreStores struct {
 	invoiceEvent                  store.InvoiceEventStore
 	job                           store.JobStore
 	menu                          store.MenuStore
+	menuItem                      store.MenuItemStore
 	menuItemTranslation           store.MenuItemTranslationStore
 	order                         store.OrderStore
 	orderDiscount                 store.OrderDiscountStore
@@ -180,6 +181,7 @@ func (store *SqlStore) setupTables() {
 		invoiceEvent:                  invoice.NewSqlInvoiceEventStore(store),
 		job:                           job.NewSqlJobStore(store),
 		menu:                          menu.NewSqlMenuStore(store),
+		menuItem:                      menu.NewSqlMenuItemStore(store),
 		menuItemTranslation:           menu.NewSqlMenuItemTranslationStore(store),
 		order:                         order.NewSqlOrderStore(store),
 		orderDiscount:                 discount.NewSqlOrderDiscountStore(store),
@@ -277,6 +279,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.invoiceEvent.CreateIndexesIfNotExists()
 	store.stores.job.CreateIndexesIfNotExists()
 	store.stores.menu.CreateIndexesIfNotExists()
+	store.stores.menuItem.CreateIndexesIfNotExists()
 	store.stores.menuItemTranslation.CreateIndexesIfNotExists()
 	store.stores.order.CreateIndexesIfNotExists()
 	store.stores.orderDiscount.CreateIndexesIfNotExists()
@@ -512,6 +515,10 @@ func (ss *SqlStore) Job() store.JobStore {
 
 func (ss *SqlStore) Menu() store.MenuStore {
 	return ss.stores.menu
+}
+
+func (ss *SqlStore) MenuItem() store.MenuItemStore {
+	return ss.stores.menuItem
 }
 
 func (ss *SqlStore) MenuItemTranslation() store.MenuItemTranslationStore {

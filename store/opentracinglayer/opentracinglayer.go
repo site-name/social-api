@@ -21,10 +21,12 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
 )
@@ -78,6 +80,7 @@ type OpenTracingLayer struct {
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
 	MenuStore                          store.MenuStore
+	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
@@ -311,6 +314,10 @@ func (s *OpenTracingLayer) Job() store.JobStore {
 
 func (s *OpenTracingLayer) Menu() store.MenuStore {
 	return s.MenuStore
+}
+
+func (s *OpenTracingLayer) MenuItem() store.MenuItemStore {
+	return s.MenuItemStore
 }
 
 func (s *OpenTracingLayer) MenuItemTranslation() store.MenuItemTranslationStore {
@@ -725,6 +732,11 @@ type OpenTracingLayerJobStore struct {
 
 type OpenTracingLayerMenuStore struct {
 	store.MenuStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerMenuItemStore struct {
+	store.MenuItemStore
 	Root *OpenTracingLayer
 }
 
@@ -2920,6 +2932,145 @@ func (s *OpenTracingLayerMenuStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.MenuStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerMenuStore) GetById(id string) (*menu.Menu, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.GetById")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuStore.GetById(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuStore) GetByName(name string) (*menu.Menu, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.GetByName")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuStore.GetByName(name)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuStore) GetBySlug(slug string) (*menu.Menu, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.GetBySlug")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuStore.GetBySlug(slug)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuStore.Save(menu)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuItemStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.MenuItemStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.GetById")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuItemStore.GetById(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.GetByName")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuItemStore.GetByName(name)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuItemStore.Save(menuItem)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
@@ -6092,6 +6243,60 @@ func (s *OpenTracingLayerWishlistStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.GetById")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistStore.GetById(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.GetByUserID")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistStore.GetByUserID(userID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistStore.Save(wishlist)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWishlistItemStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.CreateIndexesIfNotExists")
@@ -6105,6 +6310,60 @@ func (s *OpenTracingLayerWishlistItemStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.GetById")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistItemStore.GetById(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistItemStore.Save(wishlistItem)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.WishlistItemsByWishlistId")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistItemStore.WishlistItemsByWishlistId(wishlistID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistProductVariantStore.CreateIndexesIfNotExists")
@@ -6116,6 +6375,42 @@ func (s *OpenTracingLayerWishlistProductVariantStore) CreateIndexesIfNotExists()
 	defer span.Finish()
 	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistProductVariantStore.GetById")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistProductVariantStore.GetById(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistProductVariantStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistProductVariantStore.Save(wishlistVariant)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayer) Close() {
@@ -6194,6 +6489,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.InvoiceEventStore = &OpenTracingLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &OpenTracingLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.MenuStore = &OpenTracingLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
+	newStore.MenuItemStore = &OpenTracingLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &OpenTracingLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
 	newStore.OrderStore = &OpenTracingLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &OpenTracingLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}

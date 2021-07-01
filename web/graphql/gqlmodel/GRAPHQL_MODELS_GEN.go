@@ -1683,18 +1683,6 @@ type Margin struct {
 	Stop  *int `json:"stop"`
 }
 
-type Menu struct {
-	ID              string          `json:"id"`
-	Name            string          `json:"name"`
-	Slug            string          `json:"slug"`
-	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
-	Metadata        []*MetadataItem `json:"metadata"`
-	Items           []*MenuItem     `json:"items"`
-}
-
-func (Menu) IsNode()               {}
-func (Menu) IsObjectWithMetadata() {}
-
 type MenuBulkDelete struct {
 	Count  int         `json:"count"`
 	Errors []MenuError `json:"errors"`
@@ -1743,25 +1731,6 @@ type MenuInput struct {
 	Name *string `json:"name"`
 	Slug *string `json:"slug"`
 }
-
-type MenuItem struct {
-	ID              string               `json:"id"`
-	Name            string               `json:"name"`
-	Menu            *Menu                `json:"menu"`
-	Parent          *MenuItem            `json:"parent"`
-	Category        *Category            `json:"category"`
-	Collection      *Collection          `json:"collection"`
-	Page            *Page                `json:"page"`
-	Level           int                  `json:"level"`
-	PrivateMetadata []*MetadataItem      `json:"privateMetadata"`
-	Metadata        []*MetadataItem      `json:"metadata"`
-	Children        []*MenuItem          `json:"children"`
-	URL             *string              `json:"url"`
-	Translation     *MenuItemTranslation `json:"translation"`
-}
-
-func (MenuItem) IsNode()               {}
-func (MenuItem) IsObjectWithMetadata() {}
 
 type MenuItemBulkDelete struct {
 	Count  int         `json:"count"`

@@ -129,7 +129,7 @@ func buildStoreImplement() error {
 				return "giftcard"
 			case "InvoiceEvent":
 				return "invoice"
-			case "Menu", "MenuItemTranslation":
+			case "Menu", "MenuItemTranslation", "MenuItem":
 				return "menu"
 			case "Fulfillment", "FulfillmentLine", "OrderEvent", "Order", "OrderLine":
 				return "order"

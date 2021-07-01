@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/wishlist"
@@ -120,6 +121,9 @@ type OrderApp interface {
 }
 
 type MenuApp interface {
+	MenuById(id string) (*menu.Menu, *model.AppError)     // MenuById returns a menu with given id
+	MenuByName(name string) (*menu.Menu, *model.AppError) // MenuByName returns a menu with given name
+	MenuBySlug(slug string) (*menu.Menu, *model.AppError) // MenuBySlug returns a menu with given slug
 }
 
 type AppApp interface {
