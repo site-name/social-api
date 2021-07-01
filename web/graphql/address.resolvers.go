@@ -70,9 +70,9 @@ func (r *mutationResolver) AddressSetDefault(ctx context.Context, addressID stri
 
 func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode gqlmodel.CountryCode, countryArea *string, city *string, cityArea *string) (*gqlmodel.AddressValidationData, error) {
 	// only authenticated users can see
-	// if _, appErr := checkUserAuthenticated("AddressValidationRules", ctx); appErr != nil {
-	// 	return nil, appErr
-	// }
+	if _, appErr := checkUserAuthenticated("AddressValidationRules", ctx); appErr != nil {
+		return nil, appErr
+	}
 
 	var (
 		countryArea_ string

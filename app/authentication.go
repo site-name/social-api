@@ -45,7 +45,7 @@ func (tl TokenLocation) String() string {
 //
 // 1) If ServiceSettings.EnableDeveloper is enabled, return nil
 //
-// 2)
+// 2) checks if password satisfies all requirements specified by systems
 func (a *App) IsPasswordValid(password string) *model.AppError {
 	if *a.Config().ServiceSettings.EnableDeveloper {
 		return nil

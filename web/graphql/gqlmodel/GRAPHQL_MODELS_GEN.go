@@ -1053,13 +1053,11 @@ type ConfigurationItemInput struct {
 }
 
 type ConfirmAccount struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User *User `json:"user"`
 }
 
 type ConfirmEmailChange struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User *User `json:"user"`
 }
 
 type CountryDisplay struct {
@@ -1133,7 +1131,7 @@ type DateTimeRangeInput struct {
 }
 
 type DeactivateAllUserTokens struct {
-	Errors []AccountError `json:"errors"`
+	Ok bool `json:"ok"`
 }
 
 type DeleteMetadata struct {
@@ -1378,36 +1376,31 @@ type ExternalAuthentication struct {
 }
 
 type ExternalAuthenticationURL struct {
-	AuthenticationData *string        `json:"authenticationData"`
-	Errors             []AccountError `json:"errors"`
+	AuthenticationData *string `json:"authenticationData"`
 }
 
 type ExternalLogout struct {
-	LogoutData *string        `json:"logoutData"`
-	Errors     []AccountError `json:"errors"`
+	LogoutData *string `json:"logoutData"`
 }
 
 type ExternalObtainAccessTokens struct {
-	Token        *string        `json:"token"`
-	RefreshToken *string        `json:"refreshToken"`
-	CsrfToken    *string        `json:"csrfToken"`
-	User         *User          `json:"user"`
-	Errors       []AccountError `json:"errors"`
+	Token        *string `json:"token"`
+	RefreshToken *string `json:"refreshToken"`
+	CsrfToken    *string `json:"csrfToken"`
+	User         *User   `json:"user"`
 }
 
 type ExternalRefresh struct {
-	Token        *string        `json:"token"`
-	RefreshToken *string        `json:"refreshToken"`
-	CsrfToken    *string        `json:"csrfToken"`
-	User         *User          `json:"user"`
-	Errors       []AccountError `json:"errors"`
+	Token        *string `json:"token"`
+	RefreshToken *string `json:"refreshToken"`
+	CsrfToken    *string `json:"csrfToken"`
+	User         *User   `json:"user"`
 }
 
 type ExternalVerify struct {
-	User       *User          `json:"user"`
-	IsValid    bool           `json:"isValid"`
-	VerifyData *string        `json:"verifyData"`
-	Errors     []AccountError `json:"errors"`
+	User       *User   `json:"user"`
+	IsValid    bool    `json:"isValid"`
+	VerifyData *string `json:"verifyData"`
 }
 
 type File struct {
@@ -2447,8 +2440,7 @@ type PageUpdate struct {
 }
 
 type PasswordChange struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User *User `json:"user"`
 }
 
 type Payment struct {
@@ -3197,9 +3189,8 @@ type ReducedRate struct {
 }
 
 type RefreshToken struct {
-	Token  *string        `json:"token"`
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	Token *string `json:"token"`
+	User  *User   `json:"user"`
 }
 
 type ReorderInput struct {
@@ -3208,12 +3199,11 @@ type ReorderInput struct {
 }
 
 type RequestEmailChange struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User *User `json:"user"`
 }
 
 type RequestPasswordReset struct {
-	Errors []AccountError `json:"errors"`
+	Ok bool `json:"ok"`
 }
 
 type Sale struct {
@@ -3355,11 +3345,10 @@ type SeoInput struct {
 }
 
 type SetPassword struct {
-	Token        *string        `json:"token"`
-	RefreshToken *string        `json:"refreshToken"`
-	CsrfToken    *string        `json:"csrfToken"`
-	User         *User          `json:"user"`
-	Errors       []AccountError `json:"errors"`
+	Token        *string `json:"token"`
+	RefreshToken *string `json:"refreshToken"`
+	CsrfToken    *string `json:"csrfToken"`
+	User         *User   `json:"user"`
 }
 
 type ShippingError struct {
@@ -3938,10 +3927,9 @@ type VariantPricingInfo struct {
 }
 
 type VerifyToken struct {
-	User    *User          `json:"user"`
-	IsValid bool           `json:"isValid"`
-	Payload *string        `json:"payload"`
-	Errors  []AccountError `json:"errors"`
+	User    *User   `json:"user"`
+	IsValid bool    `json:"isValid"`
+	Payload *string `json:"payload"`
 }
 
 type Voucher struct {

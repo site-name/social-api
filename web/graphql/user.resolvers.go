@@ -10,21 +10,49 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("User", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		/*
+			if requesting user satisfies either:
+				1) requesting user's id == customer event's user id
+				2) requesting user has permission of managing users
+				3) requesting user has permission of managing staffs
+		*/
+		if obj.UserID != nil && *obj.UserID == session.UserId {
+			// TODO, there are two more conditions need implemented
+			user, appErr := r.AccountApp().UserById(ctx, *obj.UserID)
+			if appErr != nil {
+				return nil, appErr
+			}
+			return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+		}
+		return nil, permissionDenied("User")
+	}
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	panic("not implt")
+	if obj.OrderID != nil || !model.IsValidId(*obj.OrderID) {
+		return nil, nil
+	}
+
+	order, appErr := r.OrderApp().OrderById(*obj.OrderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.DatabaseOrderToGraphqlOrder(order), nil
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	if obj.OrderLineID == nil {
+	if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
 		return nil, nil
 	}
 	orderLine, appErr := r.OrderApp().OrderLineById(*obj.OrderLineID)
@@ -157,10 +185,14 @@ func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmo
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {
-	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil || session.UserId != obj.ID {
+	if session, appErr := checkUserAuthenticated("StoredPaymentSources", ctx); appErr != nil {
 		return nil, appErr
 	} else {
-		return nil, nil
+		if session.UserId != obj.ID {
+			return nil, permissionDenied("StoredPaymentSources")
+		}
+		// TODO: implement me
+		panic("not implemented")
 	}
 }
 

@@ -6,7 +6,6 @@ package graphql
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -50,15 +49,13 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 			addressType = account.ADDRESS_TYPE_SHIPPING
 
 		default:
-			return nil, model.NewAppError(
-				"AccountSetDefaultAddress",
-				"graphql.account.address_type_invalid.app_error",
-				map[string]interface{}{"type": typeArg}, "", http.StatusBadRequest)
+			return nil, invalidParameterError("AccountSetDefaultAddress", "address type", "Invalid address type")
 		}
 		updatedUser, appErr := r.AccountApp().UserSetDefaultAddress(session.UserId, id, addressType)
 		if appErr != nil {
 			return nil, appErr
 		}
+
 		return &gqlmodel.AccountSetDefaultAddress{
 			User: gqlmodel.DatabaseUserToGraphqlUser(updatedUser),
 		}, nil
@@ -68,9 +65,9 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	cleanedInput, cleanResErr := cleanAccountCreateInput(r, &input)
-	if cleanResErr != nil {
-		return nil, model.NewAppError("AccountRegister", cleanResErr.id, nil, "", cleanResErr.statusCode)
+	cleanedInput, appErr := cleanAccountCreateInput(r, &input)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// construct instance:

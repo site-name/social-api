@@ -343,6 +343,7 @@ func (a *App) PostActionCookieSecret() []byte {
 	return a.Srv().PostActionCookieSecret()
 }
 
+// GetCookieDomain
 func (a *App) GetCookieDomain() string {
 	if *a.Config().ServiceSettings.AllowCookiesForSubdomains {
 		if siteURL, err := url.Parse(*a.Config().ServiceSettings.SiteURL); err == nil {

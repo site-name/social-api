@@ -1,83 +1,27 @@
 package graphql
 
 import (
-	"net/http"
-	"net/url"
-
 	"github.com/sitename/sitename/model"
-	// "github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-type cleanAccountError struct {
-	id         string
-	statusCode int
-}
-
 // cleanAccountCreateInput cleans user registration input
-func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *cleanAccountError) {
+func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
 	// if signup email verification is disabled
 	if !*r.Config().EmailSettings.RequireEmailVerification {
 		return data, nil
 	}
 
-	// require verification email but no redirect url provided:
-	if data.RedirectURL == nil {
-		return nil, &cleanAccountError{
-			id:         "graphql.account.clean_input.redirect_url_required.app_error",
-			statusCode: http.StatusBadRequest,
-		}
-	}
-
-	// try check if provided redirect url is valid
-	parsedRedirectUrl, err := url.Parse(*data.RedirectURL)
-	if err != nil {
-		return nil, &cleanAccountError{
-			id:         "graphql.account.clean_input.redirect_url_invalid.app_error",
-			statusCode: http.StatusBadRequest,
-		}
-	}
-	parsedSitenameUrl, err := url.Parse(*r.Config().ServiceSettings.SiteURL)
-	if err != nil {
-		return nil, &cleanAccountError{
-			id:         "graphql.account.clean_input.system_url_invalid.app_error",
-			statusCode: http.StatusInternalServerError,
-		}
-	}
-	if parsedRedirectUrl.Hostname() != parsedSitenameUrl.Hostname() {
-		return nil, &cleanAccountError{
-			id:         "graphql.account.clean_input.redirect_url_forbidden.app_error",
-			statusCode: http.StatusBadRequest,
-		}
+	// clean redirect url
+	appErr := validateStoreFrontUrl(r.Config(), data.RedirectURL)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// clean channel
-	var channel *channel.Channel
-	var appErr *model.AppError
-
-	if data.Channel != nil {
-		channel, appErr = r.ChannelApp().GetChannelBySlug(*data.Channel)
-	} else {
-		channel, appErr = r.ChannelApp().GetDefaultActiveChannel()
-		if channel == nil {
-			return nil, &cleanAccountError{
-				id:         appErr.Id,
-				statusCode: appErr.StatusCode,
-			}
-		}
-	}
+	channel, appErr := r.ChannelApp().CleanChannel(data.Channel)
 	if appErr != nil {
-		return nil, &cleanAccountError{
-			id:         appErr.Id,
-			statusCode: appErr.StatusCode,
-		}
-	}
-	if channel != nil && !channel.IsActive {
-		return nil, &cleanAccountError{
-			id:         "graphql.account.clean_input.channel_inactive.app_error",
-			statusCode: http.StatusNotImplemented,
-		}
+		return nil, appErr
 	}
 	data.Channel = &channel.Slug
 

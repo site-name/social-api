@@ -21,6 +21,7 @@ import (
 
 const cwsTokenEnv = "CWS_CLOUD_TOKEN"
 
+// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	pem := r.Header.Get("X-SSL-Client-Cert")
 	subject := r.Header.Get("X-SSL-Client-Cert-Subject-DN")
@@ -38,6 +39,7 @@ func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	return pem, subject, email
 }
 
+// AuthenticateUserForLogin
 func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
 	// Do statistics
 	defer func() {

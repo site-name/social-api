@@ -38,23 +38,23 @@ type CreateToken {
 type RefreshToken {
   token: String
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type VerifyToken {
   user: User
   isValid: Boolean!
   payload: GenericScalar
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type DeactivateAllUserTokens {
-  errors: [AccountError!]!
+  ok: Boolean! # errors: [AccountError!]!
 }
 
 type ExternalAuthenticationUrl {
   authenticationData: JSONString
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type ExternalObtainAccessTokens {
@@ -62,7 +62,7 @@ type ExternalObtainAccessTokens {
   refreshToken: String
   csrfToken: String
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type ExternalRefresh {
@@ -70,28 +70,28 @@ type ExternalRefresh {
   refreshToken: String
   csrfToken: String
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type ExternalLogout {
   logoutData: JSONString
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type ExternalVerify {
   user: User
   isValid: Boolean!
   verifyData: JSONString
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type RequestPasswordReset {
-  errors: [AccountError!]!
+  ok: Boolean! # errors: [AccountError!]!
 }
 
 type ConfirmAccount {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type SetPassword {
@@ -99,20 +99,20 @@ type SetPassword {
   refreshToken: String
   csrfToken: String
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type PasswordChange {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type RequestEmailChange {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }
 
 type ConfirmEmailChange {
   user: User
-  errors: [AccountError!]!
+  # errors: [AccountError!]!
 }

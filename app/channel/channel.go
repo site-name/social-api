@@ -1,7 +1,6 @@
 package channel
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/sitename/sitename/app"
@@ -9,6 +8,11 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
+)
+
+const (
+	channelMissingErrorId  = "app.channel.missing_channel.app_error"
+	channelInactiveErrorId = "app.channel.channel_inactive.app_error"
 )
 
 type AppChannel struct {
@@ -25,12 +29,7 @@ func init() {
 func (a *AppChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) {
 	channel, err := a.Srv().Store.Channel().GetBySlug(slug)
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("GetChannelBySlug", "app.channel.missing_channel.app_error", nil, err.Error(), statusCode)
+		return nil, store.AppErrorFromDatabaseLookupError("GetChannelBySlug", channelMissingErrorId, err)
 	}
 
 	return channel, nil
@@ -40,12 +39,7 @@ func (a *AppChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.App
 func (a *AppChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppError) {
 	channel, err := a.Srv().Store.Channel().GetRandomActiveChannel()
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		statusCode := http.StatusInternalServerError
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("GetDefaultChannel", "app.channel.missing_channel.app_error", nil, err.Error(), statusCode)
+		return nil, store.AppErrorFromDatabaseLookupError("GetDefaultActiveChannel", channelMissingErrorId, err)
 	}
 
 	return channel, nil
@@ -66,7 +60,7 @@ func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model
 			return nil, err
 		}
 		if !channel.IsActive {
-			return nil, model.NewAppError("CleanChannel", "app.channel.channel_inactive.app_error", nil, "", 0)
+			return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
 		}
 		return channel, nil
 	}
@@ -76,7 +70,7 @@ func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model
 		return nil, err
 	}
 	if !channel.IsActive {
-		return nil, model.NewAppError("CleanChannel", "app.channel.channel_inactive.app_error", nil, "", 0)
+		return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
 	}
 	return channel, nil
 }

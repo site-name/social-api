@@ -11,6 +11,9 @@ import (
 // common id strings for creating AppErrors
 const (
 	userUnauthenticatedId = "graphql.account.user_unauthenticated.app_error"
+	invalidParameterId    = "graphql.invalid_parameter.app_error"
+	systemUrlInvalidID    = "app.system.site_url_invalid.app_error"
+	permissionDeniedId    = "app.account.permission_denied.app_error"
 )
 
 // newUserUnauthenticatedAppError is common method for creating user-unauthenticated app error
@@ -33,4 +36,14 @@ func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, 
 	} else {
 		return session, nil
 	}
+}
+
+// invalidParameterError is common utility function for creating app error that let user know their input parameter is invalid
+func invalidParameterError(where, paramName, message string) *model.AppError {
+	return model.NewAppError(where, invalidParameterId, map[string]interface{}{"Name": paramName}, message, http.StatusBadRequest)
+}
+
+// permissionDenied is utility function for creating app error, indicate that requesting user cannot perform specific operations
+func permissionDenied(where string) *model.AppError {
+	return model.NewAppError(where, permissionDeniedId, nil, "", http.StatusUnauthorized)
 }

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -58,7 +59,8 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 	user.Sanitize(map[string]bool{})
 
 	return &gqlmodel.CreateToken{
-		User: gqlmodel.DatabaseUserToGraphqlUser(user),
+		User:      gqlmodel.DatabaseUserToGraphqlUser(user),
+		CsrfToken: model.NewString(embedCtx.AppContext.Session().GetCSRF()),
 	}, nil
 }
 
@@ -107,7 +109,19 @@ func (r *mutationResolver) SetPassword(ctx context.Context, email string, passwo
 }
 
 func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword string, oldPassword string) (*gqlmodel.PasswordChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	if session, appErr := checkUserAuthenticated("PasswordChange", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		if strings.TrimSpace(oldPassword) == "" {
+			return nil, invalidParameterError("PasswordChange", "old password", "old password must not be empty")
+		}
+
+		if appErr = r.UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
+			return nil, appErr
+		}
+
+		return &gqlmodel.PasswordChange{}, nil
+	}
 }
 
 func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *string, newEmail string, password string, redirectURL string) (*gqlmodel.RequestEmailChange, error) {

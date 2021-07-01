@@ -152,11 +152,3 @@ func (c *StaffNotificationRecipient) PreSave() {
 		c.StaffEmail = model.NewString(model.NormalizeEmail(*c.StaffEmail))
 	}
 }
-
-// func (c *StaffNotificationRecipient) GetEmail() string {
-// 	if c.User != nil {
-// 		return c.User.Email
-// 	}
-
-// 	return *c.StaffEmail
-// }

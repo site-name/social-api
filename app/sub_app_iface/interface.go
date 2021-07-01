@@ -54,7 +54,7 @@ type AccountApp interface {
 	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)               // CustomerEventsByUser returns all customer event(s) belong to given user
 	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                        // AddressesByUserId returns list of address(es) (if found) that belong to given user
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
-	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser delete given address from addresses list of given user
+	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser deletes relationship between given user and address
 	UserByEmail(email string) (*account.User, *model.AppError)                                    // UserByEmail try finding user with given email and returns that user
 }
 
