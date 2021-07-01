@@ -21,7 +21,8 @@ require (
 	github.com/reflog/struct2interface v0.6.1 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
-	github.com/tinylib/msgp v1.1.5 // indirect
+	github.com/tinylib/msgp v1.1.6 // indirect
+	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31 // indirect
 	github.com/urfave/cli v1.20.0 // indirect
 	github.com/vektah/gqlparser v1.2.0 // indirect
 	github.com/vektra/mockery v1.1.2 // indirect

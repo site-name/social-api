@@ -2,8 +2,6 @@ package model
 
 import (
 	"io"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -28,19 +26,17 @@ type Status struct {
 func (o *Status) ToJson() string {
 	oCopy := *o
 	oCopy.ActiveChannel = ""
-	b, _ := json.JSON.Marshal(oCopy)
-	return string(b)
+	return ModelToJson(&oCopy)
 }
 
 func (o *Status) ToClusterJson() string {
 	oCopy := *o
-	b, _ := json.JSON.Marshal(oCopy)
-	return string(b)
+	return ModelToJson(&oCopy)
 }
 
 func StatusFromJson(data io.Reader) *Status {
 	var o *Status
-	json.JSON.NewDecoder(data).Decode(&o)
+	ModelFromJson(&o, data)
 	return o
 }
 
@@ -52,13 +48,12 @@ func StatusListToJson(u []*Status) string {
 		uCopy[i] = sCopy
 	}
 
-	b, _ := json.JSON.Marshal(uCopy)
-	return string(b)
+	return ModelToJson(uCopy)
 }
 
 func StatusListFromJson(data io.Reader) []*Status {
 	var statuses []*Status
-	json.JSON.NewDecoder(data).Decode(&statuses)
+	ModelFromJson(&statuses, data)
 	return statuses
 }
 
