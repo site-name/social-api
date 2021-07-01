@@ -9,7 +9,7 @@ import (
 func (a *AppWishlist) WishlistItemsByWishlistID(wishlistID string) ([]*wishlist.WishlistItem, *model.AppError) {
 	items, err := a.Srv().Store.WishlistItem().WishlistItemsByWishlistId(wishlistID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("", "app.wishlist.items_by_wishlist.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemsByWishlistID", "app.wishlist.items_by_wishlist.app_error", err)
 	}
 	return items, nil
 }

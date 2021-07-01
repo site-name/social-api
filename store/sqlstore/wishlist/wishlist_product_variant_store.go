@@ -14,7 +14,7 @@ type SqlWishlistProductVariantStore struct {
 }
 
 const (
-	WishlistProductVariantTableName = "WishlistProductVariants"
+	WishlistProductVariantTableName = "WishlistItemProductVariants"
 )
 
 func NewSqlWishlistProductVariantStore(s store.Store) store.WishlistProductVariantStore {
@@ -43,7 +43,7 @@ func (w *SqlWishlistProductVariantStore) Save(item *wishlist.WishlistProductVari
 	}
 
 	if err := w.GetMaster().Insert(item); err != nil {
-		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistproductvariants_wishlistitemid_productvariantid_key"}) {
+		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
 			return nil, store.NewErrInvalidInput(WishlistProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save wishlist product variant with id=%s", item.Id)

@@ -21,17 +21,16 @@ func init() {
 }
 
 func (a *AppWishlist) CreateWishlist(userID string) (*wishlist.Wishlist, *model.AppError) {
-	wl := &wishlist.Wishlist{
+	newWl, err := a.Srv().Store.Wishlist().Save(&wishlist.Wishlist{
 		UserID: &userID,
-	}
-	newWl, err := a.Srv().Store.Wishlist().Save(wl)
+	})
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
-			// invalid properties
+			// invalid properties in IsValid check
 			return nil, appErr
 		} else if invlErr, ok := err.(*store.ErrInvalidInput); ok {
 			// user id duplicate error
-			return nil, model.NewAppError("CreateWishlist", "app.wishlist.wishlist_duplicate.app_error", nil, invlErr.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("CreateWishlist", "app.wishlist.wishlist_userid_duplicate.app_error", nil, invlErr.Error(), http.StatusBadRequest)
 		} else {
 			// system saving error
 			return nil, model.NewAppError("CreateWishlist", "app.wishlist.wislist_saving_error.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -45,13 +44,15 @@ func (a *AppWishlist) WishlistByUserID(userID string) (*wishlist.Wishlist, *mode
 	wl, err := a.Srv().Store.Wishlist().GetByUserID(userID)
 	if err != nil {
 		if _, ok := err.(*store.ErrNotFound); ok {
+			// not found wishlist, so create one
 			wl, appErr := a.CreateWishlist(userID)
 			if appErr != nil {
 				return nil, appErr
 			}
 			return wl, nil
 		}
-		return nil, model.NewAppError("", "app.wishlist.wishlist_finding_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+		// other error means error in finding process
+		return nil, model.NewAppError("WishlistByUserID", "app.wishlist.wishlist_finding_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return wl, nil

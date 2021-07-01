@@ -24,7 +24,7 @@ func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 		table := db.AddTableWithName(wishlist.Wishlist{}, WishlistTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true) // one two one relation ship
+		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true) // one two one relationship
 	}
 	return ws
 }
@@ -41,7 +41,7 @@ func (ws *SqlWishlistStore) Save(wisl *wishlist.Wishlist) (*wishlist.Wishlist, e
 
 	for {
 		if err := ws.GetMaster().Insert(wisl); err != nil {
-			if ws.IsUniqueConstraintError(err, []string{"Token", "wishlists_email_key", "idx_wishlists_token_unique"}) {
+			if ws.IsUniqueConstraintError(err, []string{"Token", "wishlists_token_key", "idx_wishlists_token_unique"}) {
 				wisl.Token = model.NewId()
 				continue
 			}
