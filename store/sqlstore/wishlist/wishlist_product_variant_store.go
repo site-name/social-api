@@ -21,7 +21,7 @@ func NewSqlWishlistProductVariantStore(s store.Store) store.WishlistProductVaria
 	ws := &SqlWishlistProductVariantStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.WishlistProductVariant{}, WishlistProductVariantTableName).SetKeys(false, "id")
+		table := db.AddTableWithName(wishlist.WishlistProductVariant{}, WishlistProductVariantTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("WishlistItemID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)

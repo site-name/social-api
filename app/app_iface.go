@@ -52,10 +52,14 @@ type AppIface interface {
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	// Attribute returns attribute sub app
 	AttributeApp() sub_app_iface.AttributeApp
+	// AuthenticateUserForLogin
+	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// Channel returns channel sub app
 	ChannelApp() sub_app_iface.ChannelApp
+	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
+	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
 	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
 	// CheckProviderAttributes returns the empty string if the patch can be applied without
@@ -140,6 +144,8 @@ type AppIface interface {
 	FileSize(path string) (int64, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
+	// GetCookieDomain
+	GetCookieDomain() string
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
@@ -186,7 +192,7 @@ type AppIface interface {
 	//
 	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
 	//
-	// 2)
+	// 2) checks if password satisfies all requirements specified by systems
 	IsPasswordValid(password string) *model.AppError
 	// IsUserSignUpAllowed checks if system's signing up with email is allowed
 	IsUserSignUpAllowed() *model.AppError
@@ -309,8 +315,6 @@ type AppIface interface {
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
-	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
-	CheckForClientSideCert(r *http.Request) (string, string, string)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	ClientConfig() map[string]string
@@ -341,7 +345,6 @@ type AppIface interface {
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetClusterId() string
-	GetCookieDomain() string
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
 	GetFile(fileID string) ([]byte, *model.AppError)
 	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)

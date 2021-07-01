@@ -21,7 +21,7 @@ func NewSqlUserTermOfServiceStore(s store.Store) store.UserTermOfServiceStore {
 	uts := &SqlUserTermOfServiceStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.UserTermsOfService{}, UserTermOfServiceTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.UserTermsOfService{}, UserTermOfServiceTableName).SetKeys(false, "UserId")
 		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("TermsOfServiceId").SetMaxSize(store.UUID_MAX_LENGTH)
 	}
@@ -35,7 +35,7 @@ func (uts *SqlUserTermOfServiceStore) CreateIndexesIfNotExists() {
 func (s *SqlUserTermOfServiceStore) GetByUser(userId string) (*account.UserTermsOfService, error) {
 	var userTermsOfService *account.UserTermsOfService
 
-	err := s.GetReplica().SelectOne(&userTermsOfService, "SELECT * FROM UserTermsOfService WHERE UserId = :userId", map[string]interface{}{"userId": userId})
+	err := s.GetReplica().SelectOne(&userTermsOfService, "SELECT * FROM "+UserTermOfServiceTableName+" WHERE UserId = :userId", map[string]interface{}{"userId": userId})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("UserTermsOfService", "userId="+userId)
@@ -66,7 +66,7 @@ func (s *SqlUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOf
 }
 
 func (s *SqlUserTermOfServiceStore) Delete(userId, termsOfServiceId string) error {
-	if _, err := s.GetMaster().Exec("DELETE FROM UserTermsOfService WHERE UserId = :UserId AND TermsOfServiceId = :TermsOfServiceId", map[string]interface{}{"UserId": userId, "TermsOfServiceId": termsOfServiceId}); err != nil {
+	if _, err := s.GetMaster().Exec("DELETE FROM "+UserTermOfServiceTableName+" WHERE UserId = :UserId AND TermsOfServiceId = :TermsOfServiceId", map[string]interface{}{"UserId": userId, "TermsOfServiceId": termsOfServiceId}); err != nil {
 		return errors.Wrapf(err, "failed to delete UserTermsOfService with userId=%s and termsOfServiceId=%s", userId, termsOfServiceId)
 	}
 	return nil
