@@ -34,6 +34,7 @@ type User struct {
 	DefaultBillingAddressID  *string                             `json:"defaultBillingAddress"`  // *Address
 	PrivateMetadata          []*MetadataItem                     `json:"privateMetadata"`
 	Metadata                 []*MetadataItem                     `json:"metadata"`
+	WishlistID               *string                             `json:"wishlists"`            // *Wishlist
 	AddresseIDs              []string                            `json:"addresses"`            // []*Address
 	PermissionGroupIDs       []string                            `json:"permissionGroups"`     // []*Group
 	EditableGroupIDs         []string                            `json:"editableGroups"`       // []*Group

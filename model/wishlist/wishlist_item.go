@@ -4,15 +4,13 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 type WishlistItem struct {
-	Id         string                                 `json:"id"`
-	WishlistID string                                 `json:"wishlist_id"`
-	ProductID  string                                 `json:"product_id"`
-	Variants   []*product_and_discount.ProductVariant `json:"variants" db:"-"`
-	CreateAt   int64                                  `json:"create_at"`
+	Id         string `json:"id"`
+	WishlistID string `json:"wishlist_id"`
+	ProductID  string `json:"product_id"`
+	CreateAt   int64  `json:"create_at"`
 }
 
 func (w *WishlistItem) IsValid() *model.AppError {

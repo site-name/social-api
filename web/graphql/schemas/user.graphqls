@@ -35,6 +35,7 @@ type User implements Node & ObjectWithMetadata {
   events: [CustomerEvent]
   storedPaymentSources(channel: String): [PaymentSource]
   languageCode: LanguageCodeEnum!
+  wishlist: Wishlist
 }
 
 type UserPermission {

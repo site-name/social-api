@@ -122,6 +122,7 @@ type TimerLayer struct {
 	WarehouseStore                     store.WarehouseStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
+	WishlistProductVariantStore        store.WishlistProductVariantStore
 }
 
 func (s *TimerLayer) Address() store.AddressStore {
@@ -486,6 +487,10 @@ func (s *TimerLayer) Wishlist() store.WishlistStore {
 
 func (s *TimerLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
+}
+
+func (s *TimerLayer) WishlistProductVariant() store.WishlistProductVariantStore {
+	return s.WishlistProductVariantStore
 }
 
 type TimerLayerAddressStore struct {
@@ -940,6 +945,11 @@ type TimerLayerWishlistStore struct {
 
 type TimerLayerWishlistItemStore struct {
 	store.WishlistItemStore
+	Root *TimerLayer
+}
+
+type TimerLayerWishlistProductVariantStore struct {
+	store.WishlistProductVariantStore
 	Root *TimerLayer
 }
 
@@ -5869,6 +5879,21 @@ func (s *TimerLayerWishlistItemStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayer) Close() {
 	s.Store.Close()
 }
@@ -5990,5 +6015,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WishlistStore = &TimerLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &TimerLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
+	newStore.WishlistProductVariantStore = &TimerLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}
 	return &newStore
 }

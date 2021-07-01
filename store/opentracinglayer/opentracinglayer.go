@@ -122,6 +122,7 @@ type OpenTracingLayer struct {
 	WarehouseStore                     store.WarehouseStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
+	WishlistProductVariantStore        store.WishlistProductVariantStore
 }
 
 func (s *OpenTracingLayer) Address() store.AddressStore {
@@ -486,6 +487,10 @@ func (s *OpenTracingLayer) Wishlist() store.WishlistStore {
 
 func (s *OpenTracingLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
+}
+
+func (s *OpenTracingLayer) WishlistProductVariant() store.WishlistProductVariantStore {
+	return s.WishlistProductVariantStore
 }
 
 type OpenTracingLayerAddressStore struct {
@@ -940,6 +945,11 @@ type OpenTracingLayerWishlistStore struct {
 
 type OpenTracingLayerWishlistItemStore struct {
 	store.WishlistItemStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerWishlistProductVariantStore struct {
+	store.WishlistProductVariantStore
 	Root *OpenTracingLayer
 }
 
@@ -6095,6 +6105,19 @@ func (s *OpenTracingLayerWishlistItemStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistProductVariantStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *OpenTracingLayer) Close() {
 	s.Store.Close()
 }
@@ -6215,5 +6238,6 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.WarehouseStore = &OpenTracingLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WishlistStore = &OpenTracingLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &OpenTracingLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
+	newStore.WishlistProductVariantStore = &OpenTracingLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}
 	return &newStore
 }

@@ -196,6 +196,21 @@ func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.U
 	}
 }
 
+func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Wishlist, error) {
+	if session, appErr := checkUserAuthenticated("Wishlist", ctx); appErr != nil {
+		return nil, appErr
+	} else {
+		if session.UserId != obj.ID {
+			return nil, permissionDenied("Wishlist")
+		}
+		wl, appErr := r.WishlistApp().WishlistByUserID(obj.ID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return gqlmodel.DatabaseWishlistToGraphqlWishlist(wl), nil
+	}
+}
+
 // CustomerEvent returns CustomerEventResolver implementation.
 func (r *Resolver) CustomerEvent() CustomerEventResolver { return &customerEventResolver{r} }
 

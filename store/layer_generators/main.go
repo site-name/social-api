@@ -147,7 +147,7 @@ func buildStoreImplement() error {
 				return "shipping"
 			case "Warehouse", "Stock", "Allocation":
 				return "warehouse"
-			case "Wishlist", "WishlistItem":
+			case "Wishlist", "WishlistItem", "WishlistProductVariant":
 				return "wishlist"
 			case "PluginConfiguration":
 				return "plugin"

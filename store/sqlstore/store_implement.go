@@ -127,6 +127,7 @@ type SqlStoreStores struct {
 	warehouse                     store.WarehouseStore
 	wishlist                      store.WishlistStore
 	wishlistItem                  store.WishlistItemStore
+	wishlistProductVariant        store.WishlistProductVariantStore
 }
 
 // setup tables before performing database migration
@@ -223,6 +224,7 @@ func (store *SqlStore) setupTables() {
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
 		wishlist:                      wishlist.NewSqlWishlistStore(store),
 		wishlistItem:                  wishlist.NewSqlWishlistItemStore(store),
+		wishlistProductVariant:        wishlist.NewSqlWishlistProductVariantStore(store),
 	}
 }
 
@@ -320,6 +322,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.warehouse.CreateIndexesIfNotExists()
 	store.stores.wishlist.CreateIndexesIfNotExists()
 	store.stores.wishlistItem.CreateIndexesIfNotExists()
+	store.stores.wishlistProductVariant.CreateIndexesIfNotExists()
 
 }
 
@@ -685,4 +688,8 @@ func (ss *SqlStore) Wishlist() store.WishlistStore {
 
 func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
 	return ss.stores.wishlistItem
+}
+
+func (ss *SqlStore) WishlistProductVariant() store.WishlistProductVariantStore {
+	return ss.stores.wishlistProductVariant
 }

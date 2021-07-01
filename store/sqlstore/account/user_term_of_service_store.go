@@ -21,7 +21,7 @@ func NewSqlUserTermOfServiceStore(s store.Store) store.UserTermOfServiceStore {
 	uts := &SqlUserTermOfServiceStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.UserTermsOfService{}, UserTermOfServiceTableName)
+		table := db.AddTableWithName(account.UserTermsOfService{}, UserTermOfServiceTableName).SetKeys(false, "Id")
 		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("TermsOfServiceId").SetMaxSize(store.UUID_MAX_LENGTH)
 	}

@@ -1,0 +1,13 @@
+type Wishlist implements Node {
+  id: ID!
+  token: String!
+  createAt: DateTime!
+  items: [WishlistItem]!
+}
+
+type WishlistItem implements Node {
+  id: ID!
+  product: Product!
+  createAt: DateTime!
+  variants: [ProductVariant]!
+}

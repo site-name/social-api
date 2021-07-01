@@ -121,6 +121,7 @@ type RetryLayer struct {
 	WarehouseStore                     store.WarehouseStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
+	WishlistProductVariantStore        store.WishlistProductVariantStore
 }
 
 func (s *RetryLayer) Address() store.AddressStore {
@@ -485,6 +486,10 @@ func (s *RetryLayer) Wishlist() store.WishlistStore {
 
 func (s *RetryLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
+}
+
+func (s *RetryLayer) WishlistProductVariant() store.WishlistProductVariantStore {
+	return s.WishlistProductVariantStore
 }
 
 type RetryLayerAddressStore struct {
@@ -939,6 +944,11 @@ type RetryLayerWishlistStore struct {
 
 type RetryLayerWishlistItemStore struct {
 	store.WishlistItemStore
+	Root *RetryLayer
+}
+
+type RetryLayerWishlistProductVariantStore struct {
+	store.WishlistProductVariantStore
 	Root *RetryLayer
 }
 
@@ -5833,6 +5843,12 @@ func (s *RetryLayerWishlistItemStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
+
+	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayer) Close() {
 	s.Store.Close()
 }
@@ -5953,5 +5969,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WishlistStore = &RetryLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &RetryLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
+	newStore.WishlistProductVariantStore = &RetryLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}
 	return &newStore
 }

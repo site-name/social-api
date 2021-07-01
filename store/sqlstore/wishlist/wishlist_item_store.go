@@ -1,8 +1,16 @@
 package wishlist
 
 import (
+	"database/sql"
+
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/sqlstore/product"
+)
+
+const (
+	WishlistItemTableName = "WishlistItems"
 )
 
 type SqlWishlistItemStore struct {
@@ -12,7 +20,7 @@ type SqlWishlistItemStore struct {
 func NewSqlWishlistItemStore(s store.Store) store.WishlistItemStore {
 	ws := &SqlWishlistItemStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.WishlistItem{}, "WishlistItems").SetKeys(false, "Id")
+		table := db.AddTableWithName(wishlist.WishlistItem{}, WishlistItemTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("WishlistID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -23,5 +31,43 @@ func NewSqlWishlistItemStore(s store.Store) store.WishlistItemStore {
 }
 
 func (ws *SqlWishlistItemStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_wishlist_items", "WishlistItems", "CreateAt")
+	ws.CreateIndexIfNotExists("idx_wishlist_items", WishlistItemTableName, "CreateAt")
+	ws.CreateForeignKeyIfNotExists(WishlistItemTableName, "WishlistID", WishlistTableName, "Id", true)
+	ws.CreateForeignKeyIfNotExists(WishlistItemTableName, "ProductID", product.ProductVariantTableName, "Id", true)
+}
+
+func (ws *SqlWishlistItemStore) Save(item *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+	item.PreSave()
+	if err := item.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if err := ws.GetMaster().Insert(item); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (ws *SqlWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+	if res, err := ws.GetReplica().Get(wishlist.WishlistItem{}, id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(WishlistItemTableName, id)
+		}
+		return nil, errors.Wrapf(err, "failed to find wishlist item with id=%s", id)
+	} else {
+		return res.(*wishlist.WishlistItem), nil
+	}
+}
+
+func (ws *SqlWishlistItemStore) WishlistItemsByWishlistId(id string) ([]*wishlist.WishlistItem, error) {
+	var items []*wishlist.WishlistItem
+	if _, err := ws.GetReplica().Select(&items, "SELECT * FROM "+WishlistItemTableName+" WHERE WishlistID = :WishlistID", map[string]interface{}{"WishlistID": id}); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(WishlistItemTableName, "wishlistID="+id)
+		}
+		return nil, errors.Wrapf(err, "failed to find wishlist items belong to wishlistId=%s", id)
+	} else {
+		return items, nil
+	}
 }

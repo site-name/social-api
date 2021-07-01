@@ -8,7 +8,7 @@ import (
 
 type Wishlist struct {
 	Id       string  `json:"id"`
-	Token    string  `json:"token"` // uuid, unique
+	Token    string  `json:"token"` // uuid, unique, not editable
 	UserID   *string `json:"user_id"`
 	CreateAt int64   `json:"create_at"`
 }

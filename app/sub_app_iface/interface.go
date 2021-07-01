@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/wishlist"
 )
 
 // GiftCardApp defines methods for giftcard app
@@ -62,6 +63,9 @@ type ProductApp interface {
 }
 
 type WishlistApp interface {
+	CreateWishlist(userID string) (*wishlist.Wishlist, *model.AppError)                      // CreateWishlist creates new wishlist for given user and returns it
+	WishlistByUserID(userID string) (*wishlist.Wishlist, *model.AppError)                    // WishlistByUserID returns a wishlist belongs to given user
+	WishlistItemsByWishlistID(wishlistID string) ([]*wishlist.WishlistItem, *model.AppError) // WishlistItemsByWishlistID returns a list of wishlist items that belong to given wishlist
 }
 
 type AttributeApp interface {
