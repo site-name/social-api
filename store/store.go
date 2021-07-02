@@ -630,7 +630,7 @@ type (
 		GetMany(ctx context.Context, ids []string) ([]*account.User, error)
 		GetAll() ([]*account.User, error)
 		ClearCaches()
-		InvalidateProfileCacheForUser(userID string) // NOTE: maybe need a look
+		InvalidateProfileCacheForUser(userID string) // InvalidateProfileCacheForUser
 		GetByEmail(email string) (*account.User, error)
 		GetByAuth(authData *string, authService string) (*account.User, error)
 		GetAllUsingAuthService(authService string) ([]*account.User, error)

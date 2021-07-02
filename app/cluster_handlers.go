@@ -2,11 +2,13 @@ package app
 
 import "github.com/sitename/sitename/model"
 
+// invalidateCacheForUserSkipClusterSend
 func (s *Server) invalidateCacheForUserSkipClusterSend(userID string) {
 
 	s.invalidateWebConnSessionCacheForUser(userID)
 }
 
+// invalidateWebConnSessionCacheForUser
 func (s *Server) invalidateWebConnSessionCacheForUser(userID string) {
 	// TODO: fixme
 

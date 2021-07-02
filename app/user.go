@@ -290,6 +290,11 @@ func CheckUserDomain(user *account.User, domains string) bool {
 	return CheckEmailDomain(user.Email, domains)
 }
 
+// createUser performs:
+//
+// 1) populates some user's proeprties by calling user.MakeNonNill()
+//
+// 2) check if user's Password is valid
 func (a *App) createUser(user *account.User) (*account.User, *model.AppError) {
 	user.MakeNonNil()
 
@@ -401,6 +406,8 @@ func (a *App) VerifyUserEmail(userID, email string) *model.AppError {
 	return nil
 }
 
+// IsFirstUserAccount checks if current registering user is first user in the system.
+// This is for deciding whether to grant sdmin role to this user.
 func (a *App) IsFirstUserAccount() bool {
 	return a.Srv().IsFirstUserAccount()
 }
