@@ -16,14 +16,14 @@ func (s *Server) invalidateWebConnSessionCacheForUser(userID string) {
 	return
 }
 
-// clearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
-func (s *Server) clearSessionCacheForUserSkipClusterSend(userID string) {
-	if keys, err := s.sessionCache.Keys(); err == nil {
+// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
+func (s *Server) ClearSessionCacheForUserSkipClusterSend(userID string) {
+	if keys, err := s.SessionCache.Keys(); err == nil {
 		var session *model.Session
 		for _, key := range keys {
-			if err := s.sessionCache.Get(key, &session); err == nil {
+			if err := s.SessionCache.Get(key, &session); err == nil {
 				if session.UserId == userID {
-					s.sessionCache.Remove(key)
+					s.SessionCache.Remove(key)
 					if s.Metrics != nil {
 						s.Metrics.IncrementMemCacheInvalidationCounterSession()
 					}

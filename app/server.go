@@ -22,21 +22,17 @@ import (
 	"syscall"
 	"time"
 
+	sentry "github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/gorilla/handlers"
-	"github.com/rs/cors"
-	"golang.org/x/crypto/acme/autocert"
-
-	sentry "github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/rs/cors"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
-	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/mail"
@@ -44,21 +40,20 @@ import (
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/services/awsmeter"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/services/httpservice"
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
-
-	"github.com/sitename/sitename/services/awsmeter"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
-
 	"github.com/sitename/sitename/store/localcachelayer"
 	"github.com/sitename/sitename/store/retrylayer"
 	"github.com/sitename/sitename/store/searchlayer"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/sitename/sitename/store/timerlayer"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // declaring this as var to allow overriding in tests
@@ -113,12 +108,12 @@ type Server struct {
 	newStore func() (store.Store, error)
 
 	htmlTemplateWatcher *templates.Container
-	sessionCache        cache.Cache // cache for storing sessions
+	SessionCache        cache.Cache // cache for storing sessions
 	// seenPendingPostIdsCache cache.Cache
 	// licenseListenerId       string
 	// searchLicenseListenerId string
 	// loggerLicenseListenerId string
-	statusCache             cache.Cache
+	StatusCache             cache.Cache
 	configListenerId        string
 	logListenerId           string
 	clusterLeaderListenerId string
@@ -175,21 +170,13 @@ type Server struct {
 
 	tracer *tracing.Tracer
 
-	// These are used to prevent concurrent upload requests
-	// for a given upload session which could cause inconsistencies
-	// and data corruption.
-	uploadLockMapMut sync.Mutex
-	uploadLockMap    map[string]bool
-
 	// featureFlagSynchronizer      *featureflag.Synchronizer
 	featureFlagStop              chan struct{}
 	featureFlagStopped           chan struct{}
 	featureFlagSynchronizerMutex sync.Mutex
 
-	// licenseValue atomic.Value
-
-	imgDecoder *imaging.Decoder
-	imgEncoder *imaging.Encoder
+	ImgDecoder *imaging.Decoder
+	ImgEncoder *imaging.Encoder
 }
 
 // NewServer create new system server
@@ -200,7 +187,6 @@ func NewServer(options ...Option) (*Server, error) {
 		goroutineExitSignal: make(chan struct{}, 1),
 		RootRouter:          rootRouter,
 		hashSeed:            maphash.MakeSeed(),
-		uploadLockMap:       map[string]bool{},
 	}
 
 	for _, option := range options {
@@ -228,13 +214,13 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// initialize image encoder/decoder for processing file uploads
 	var imgErr error
-	s.imgDecoder, imgErr = imaging.NewDecoder(imaging.DecoderOptions{
+	s.ImgDecoder, imgErr = imaging.NewDecoder(imaging.DecoderOptions{
 		ConcurrencyLevel: runtime.NumCPU(),
 	})
 	if imgErr != nil {
 		return nil, errors.Wrap(imgErr, "failed to create image decoder")
 	}
-	s.imgEncoder, imgErr = imaging.NewEncoder(imaging.EncoderOptions{
+	s.ImgEncoder, imgErr = imaging.NewEncoder(imaging.EncoderOptions{
 		ConcurrencyLevel: runtime.NumCPU(),
 	})
 	if imgErr != nil {
@@ -306,7 +292,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	var err error
-	if s.sessionCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
+	if s.SessionCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.SESSION_CACHE_SIZE,
 		Striped:        true,
 		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
@@ -321,7 +307,7 @@ func NewServer(options ...Option) (*Server, error) {
 	// 	return nil, errors.Wrap(err, "Unable to create status cache")
 	// }
 
-	if s.statusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
+	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.STATUS_CACHE_SIZE,
 		Striped:        true,
 		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
@@ -497,21 +483,6 @@ func NewServer(options ...Option) (*Server, error) {
 
 	if _, err = url.ParseRequestURI(*s.Config().ServiceSettings.SiteURL); err != nil {
 		slog.Error("SiteURL must be set. Some features will operate incorrectly if the SiteURL is not set.")
-	}
-
-	backend, appErr := s.FileBackend()
-	if appErr != nil {
-		slog.Error("Problem with file storage settings", slog.Err(appErr))
-	} else {
-		nErr := backend.TestConnection()
-		if nErr != nil {
-			if _, ok := nErr.(*filestore.S3FileBackendNoBucketError); ok {
-				nErr = backend.(*filestore.S3FileBackend).MakeBucket()
-			}
-			if nErr != nil {
-				slog.Error("Problem with file storage settings", slog.Err(nErr))
-			}
-		}
 	}
 
 	s.timezones = timezones.New()
@@ -743,7 +714,7 @@ func (s *Server) runJobs() {
 	// 		s.ensureFirstServerRunTimestamp()
 	// 		firstRun = util.MillisFromTime(time.Now())
 	// 	}
-	// s.telemetryService.RunTelemetryJob(firstRun)
+	// 	s.telemetryService.RunTelemetryJob(firstRun)
 	// })
 	s.Go(func() {
 		runSessionCleanupJob(s)
@@ -897,15 +868,6 @@ func (s *Server) getLastWarnMetricTimestamp() (int64, *model.AppError) {
 		return 0, model.NewAppError("getLastWarnMetricTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return value, nil
-}
-
-// FileBackend creates and returns new filebackend
-func (s *Server) FileBackend() (filestore.FileBackend, *model.AppError) {
-	backend, err := filestore.NewFileBackend(s.Config().FileSettings.ToFileBackendSettings(true))
-	if err != nil {
-		return nil, model.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return backend, nil
 }
 
 func (s *Server) checkPushNotificationServerUrl() {
@@ -1482,12 +1444,4 @@ func (s *Server) StartSearchEngine() string {
 	})
 
 	return configListenerId
-}
-
-func (s *Server) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
-	img, appErr := CreateProfileImage(user.Username, user.Id, *s.Config().FileSettings.InitialFont)
-	if appErr != nil {
-		return nil, appErr
-	}
-	return img, nil
 }

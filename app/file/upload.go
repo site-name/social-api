@@ -1,4 +1,4 @@
-package app
+package file
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ import (
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
-func (a *App) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
+func (a *AppFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
 	uss, err := a.Srv().Store.UploadSession().GetForUser(userID)
 	if err != nil {
 		return nil, model.NewAppError(
@@ -31,7 +31,7 @@ func (a *App) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *m
 	return uss, nil
 }
 
-func (a *App) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
+func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
 	us, err := a.Srv().Store.UploadSession().Get(uploadId)
 	if err != nil {
 		var nfErr *store.ErrNotFound
@@ -47,7 +47,7 @@ func (a *App) GetUploadSession(uploadId string) (*file.UploadSession, *model.App
 	return us, nil
 }
 
-func (a *App) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
+func (a *AppFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
 	// if us.FileSize > *a.Config().FileSettings.MaxFileSize {
 	// 	return nil, model.NewAppError("CreateUploadSession", "app.upload.create.upload_too_large.app_error",
 	// 		nil, "", http.StatusRequestEntityTooLarge)
@@ -86,26 +86,26 @@ func (a *App) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, 
 	panic("not implemented") // TODO: fixme
 }
 
-func (a *App) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
+func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
-	a.Srv().uploadLockMapMut.Lock()
-	locked := a.Srv().uploadLockMap[us.Id]
+	a.uploadLockMapMut.Lock()
+	locked := a.uploadLockMap[us.Id]
 	if locked {
 		// session lock is already taken, return error.
-		a.Srv().uploadLockMapMut.Unlock()
+		a.uploadLockMapMut.Unlock()
 		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error",
 			nil, "", http.StatusBadRequest)
 	}
 	// grab the session lock.
-	a.Srv().uploadLockMap[us.Id] = true
-	a.Srv().uploadLockMapMut.Unlock()
+	a.uploadLockMap[us.Id] = true
+	a.uploadLockMapMut.Unlock()
 
 	// reset the session lock on exit.
 	defer func() {
-		a.Srv().uploadLockMapMut.Lock()
-		delete(a.Srv().uploadLockMap, us.Id)
-		a.Srv().uploadLockMapMut.Unlock()
+		a.uploadLockMapMut.Lock()
+		delete(a.uploadLockMap, us.Id)
+		a.uploadLockMapMut.Unlock()
 	}()
 
 	// fetch the session from store to check for inconsistencies.

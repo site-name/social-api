@@ -44,6 +44,7 @@ type App struct {
 	attribute sub_app_iface.AttributeApp
 	channel   sub_app_iface.ChannelApp
 	invoice   sub_app_iface.InvoiceApp
+	file      sub_app_iface.FileApp
 
 	// XXX: This is required because removing this needs BleveEngine
 	// to be registered in (h *MainHelper) setupStore, but that creates

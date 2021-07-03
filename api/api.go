@@ -48,7 +48,7 @@ func Init(a app.AppIface, root *mux.Router) *API {
 	api.BaseRoutes.Uploads = api.BaseRoutes.ApiRoot.PathPrefix("/uploads").Subrouter()
 	api.BaseRoutes.Upload = api.BaseRoutes.Uploads.PathPrefix("/{upload_id:[A-Za-z0-9]+}").Subrouter()
 
-	api.InitUser()
+	// api.InitUser()
 	api.InitUpload()
 
 	root.Handle("/api/{anything:.*}", http.HandlerFunc(api.Handle404))

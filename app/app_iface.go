@@ -4,144 +4,55 @@
 package app
 
 import (
-	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"reflect"
-	"time"
 
-	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
-	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/services/httpservice"
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
-	"github.com/sitename/sitename/store"
 )
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
-	// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
-	// // Ensure the zip file name ends with a .zip
-	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
 	// Account returns account sub app
 	AccountApp() sub_app_iface.AccountApp
-	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
-	AddSessionToCache(s *model.Session)
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
-	// AttachSessionCookies sets:
-	//
-	// 1) session cookie with value of given s's session's token to given w
-	//
-	// 2) user cookie with value of user id
-	//
-	// 3) csrf cookie with value of csrf in session
-	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	// Attribute returns attribute sub app
 	AttributeApp() sub_app_iface.AttributeApp
-	// AuthenticateUserForLogin
-	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
-	// Caller must close the first return value
-	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// Channel returns channel sub app
 	ChannelApp() sub_app_iface.ChannelApp
-	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
-	CheckForClientSideCert(r *http.Request) (string, string, string)
-	// CheckPasswordAndAllCriteria
-	CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError
-	// CheckProviderAttributes returns the empty string if the patch can be applied without
-	// overriding attributes set by the user's login provider; otherwise, the name of the offending
-	// field is returned.
-	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
 	// CheckRolesExist get role model instances with given roleNames,
 	// checks if at least one db role has name contained in given roleNames.
 	CheckRolesExist(roleNames []string) *model.AppError
-	// CheckUserMfa checks
-	//
-	// 1) if given user's `MfaActive` is false || multi factor authentication is not enabled => return nil
-	//
-	// 2) multi factor authentication is not enabled => return non-nil error
-	//
-	// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
-	CheckUserMfa(user *account.User, token string) *model.AppError
-	// CheckUserPostflightAuthenticationCriteria checks if:
-	//
-	// Given user's `EmailVerified` attribute is false && email verification is required,
-	// Then it return an error.
-	CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError
-	// CheckUserPreflightAuthenticationCriteria checks:
-	//
-	// 1) user is not disabled
-	//
-	// 2) numbers of failed logins is not exceed the limit
-	CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	// Checkout returns checkout sub app
 	CheckoutApp() sub_app_iface.CheckoutApp
-	// ClearSessionCacheForUser clears all sessions that have `UserID` attribute of given `userID` in server's `sessionCache`
-	ClearSessionCacheForUser(userID string)
-	// ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
-	ClearSessionCacheForUserSkipClusterSend(userID string)
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
 	// Configs return system's configurations
 	Config() *model.Config
-	// CreateGuest creates a guest and sets several fields of the returned User struct to
-	// their zero values.
-	CreateGuest(c *request.Context, user *account.User) (*account.User, *model.AppError)
 	// CreateRole takes a role struct and save it to database
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
-	// CreateSession try saving given session to the database. If success then add that session to cache.
-	CreateSession(session *model.Session) (*model.Session, *model.AppError)
-	// CreateUser creates a user and sets several fields of the returned User struct to
-	// their zero values.
-	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError)
-	// CreateUserAsAdmin create new user but with admin right
-	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
-	// CreateUserFromSignup creates new users with user-typed values (manual register)
-	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
-	// CreateUserWithToken creates new user, join system because of invitation
-	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
 	// Csv returns csv sub app
 	CsvApp() sub_app_iface.CsvApp
-	// DeleteToken delete given token from database. If error occur during deletion, returns concret error
-	DeleteToken(token *model.Token) *model.AppError
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
-	// DoubleCheckPassword performs:
-	//
-	// 1) check if number of failed login is not exceed the limit. If yes returns an error
-	//
-	// 2) check if user's password and given password don't match, update number of attempts failed in database, return an error
-	//
-	// otherwise: set number of failed attempts to 0
-	DoubleCheckPassword(user *account.User, password string) *model.AppError
-	// ExtendSessionExpiryIfNeeded extends Session.ExpiresAt based on session lengths in config.
-	// A new ExpiresAt is only written if enough time has elapsed since last update.
-	// Returns true only if the session was extended.
-	ExtendSessionExpiryIfNeeded(session *model.Session) bool
-	// FileBackend returns filebackend of the system
-	FileBackend() (filestore.FileBackend, *model.AppError)
-	// FileExists checks if given path exists
-	FileExists(path string) (bool, *model.AppError)
-	// FileModTime get last modification time of given path
-	FileModTime(path string) (time.Time, *model.AppError)
-	// FileSize checks size of given path
-	FileSize(path string) (int64, *model.AppError)
+	// FileApp returns file sub app
+	FileApp() sub_app_iface.FileApp
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetCookieDomain
@@ -149,10 +60,6 @@ type AppIface interface {
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
-	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
-	// GetFilteredUsersStats is used to get a count of users based on the set of filters supported by UserCountOptions.
-	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -161,45 +68,14 @@ type AppIface interface {
 	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model.Config
-	// GetSessionLengthInMillis returns the session length, in milliseconds,
-	// based on the type of session (Mobile, SSO, Web/LDAP).
-	GetSessionLengthInMillis(session *model.Session) int64
-	// GetSessions get session from database with UserID attribute of given `userID`
-	GetSessions(userID string) ([]*model.Session, *model.AppError)
 	// GetSiteURL returns service's siteurl configuration.
 	GetSiteURL() string
-	// GetUser get user with given userID
-	GetUser(userID string) (*account.User, *model.AppError)
-	// GetUserByAuth get user with given data.
-	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
-	// GetUserByEmail get user from database with given email
-	GetUserByEmail(email string) (*account.User, *model.AppError)
-	// GetUserByUsername get user from database with given username
-	GetUserByUsername(username string) (*account.User, *model.AppError)
-	// GetUserTermsOfService get user term of service from database with given userID
-	GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError)
 	// Giftcard returns giftcard sub app
 	GiftcardApp() sub_app_iface.GiftcardApp
-	// HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
-	HasPermissionTo(askingUserId string, permission *model.Permission) bool
-	// HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
-	HasPermissionToUser(askingUserId string, userID string) bool
 	// InvalidateCacheForUser
 	InvalidateCacheForUser(userID string)
 	// Invoice returns invoice sub app
 	InvoiceApp() sub_app_iface.InvoiceApp
-	// IsPasswordValid checks:
-	//
-	// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
-	//
-	// 2) checks if password satisfies all requirements specified by systems
-	IsPasswordValid(password string) *model.AppError
-	// IsUserSignUpAllowed checks if system's signing up with email is allowed
-	IsUserSignUpAllowed() *model.AppError
-	// IsUserSignupAllowed checks email settings if signing up with email is allowed
-	IsUserSignupAllowed() *model.AppError
-	// IsUsernameTaken checks if the username is already used by another user. Return false if the username is invalid.
-	IsUsernameTaken(name string) bool
 	// LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	LimitedClientConfigWithComputed() map[string]string
 	// Log returns system logger
@@ -212,8 +88,6 @@ type AppIface interface {
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
 	// Menu returns menu sub app
 	MenuApp() sub_app_iface.MenuApp
-	// MoveFile moves file from given oldPath to newPath
-	MoveFile(oldPath, newPath string) *model.AppError
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
 	// Order returns order sub app
@@ -222,81 +96,24 @@ type AppIface interface {
 	PageApp() sub_app_iface.PageApp
 	// Payment returns payment sub app
 	PaymentApp() sub_app_iface.PaymentApp
-	// PermanentDeleteAllUsers permanently deletes all user in system
-	PermanentDeleteAllUsers(c *request.Context) *model.AppError
-	// PermanentDeleteUser performs:
-	//
-	// 1) Update active status of given user
-	//
-	// 2) remove all sessions of user in database
-	//
-	// 3) remove all user access tokens of user
-	//
-	// 4) remove all uploaded files of user
-	//
-	// 5) delete user from database
-	//
-	// 6) delete audit belong to user
-	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	// Product returns product sub app
 	ProductApp() sub_app_iface.ProductApp
 	// ProductVariantById get a product variant with given id if exist
 	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)
-	// ReadFile read file content from given path
-	ReadFile(path string) ([]byte, *model.AppError)
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
-	// RevokeAllSessions get session from database that has UserID of given userID, then removes it
-	RevokeAllSessions(userID string) *model.AppError
-	// RevokeSession removes session from database
-	RevokeSession(session *model.Session) *model.AppError
-	// RevokeSessionById gets session with given sessionID then revokes it
-	RevokeSessionById(sessionID string) *model.AppError
-	// RolesGrantPermission gets all model.Role with given roleNames.
-	// Then checks if one of these model.Role satisfies:
-	//
-	// 1) Not deleted
-	//
-	// 2) one item in the role's Permissions is equal to given permissionId
-	RolesGrantPermission(roleNames []string, permissionId string) bool
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
-	// SaveUserTermsOfService saves given user term of service to database
-	SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError
 	// Seo returns order seo app
 	SeoApp() sub_app_iface.SeoApp
-	// SessionHasPermissionTo checks if this user has given permission to procceed
-	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
-	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool
-	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
-	SessionHasPermissionToUser(session *model.Session, userID string) bool
-	// SetSessionExpireInDays sets the session's expiry the specified number of days
-	// relative to either the session creation date or the current time, depending
-	// on the `ExtendSessionOnActivity` config setting.
-	SetSessionExpireInDays(session *model.Session, days int)
 	// Shipping returns shipping sub app
 	ShippingApp() sub_app_iface.ShippingApp
 	// Site returns site sub app
 	SiteApp() sub_app_iface.SiteApp
 	// Srv returns system server
 	Srv() *Server
-	// TestFileStoreConnection test if connection to file backend server is good
-	TestFileStoreConnection() *model.AppError
-	// TestFileStoreConnectionWithConfig test file backend connection with config
-	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
-	// UpdateUserRolesWithUser performs:
-	//
-	// 1) checks if there is at least one role model has name contained in given newRoles
-	//
-	// 2) update user by setting new roles
-	//
-	// 3) update user's sessions
-	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
-	// VerifyUserEmail veryfies that user's email is verified
-	VerifyUserEmail(userID, email string) *model.AppError
 	// Warehouse returns warehouse sub app
 	WarehouseApp() sub_app_iface.WarehouseApp
 	// Webhook returns webhook sub app
@@ -310,73 +127,27 @@ type AppIface interface {
 	// metrics for app
 	Metrics() einterfaces.MetricsInterface
 	AccountMigration() einterfaces.AccountMigrationInterface
-	ActivateMfa(userID, token string) *model.AppError
 	AddConfigListener(listener func(*model.Config, *model.Config)) string
-	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
-	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
-	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError
-	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
-	CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError
 	ClientConfig() map[string]string
 	ClientConfigHash() string
 	Cluster() einterfaces.ClusterInterface
 	Compliance() einterfaces.ComplianceInterface
-	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
-	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
-	CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError)
-	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
 	DBHealthCheckDelete() error
 	DBHealthCheckWrite() error
 	DataRetention() einterfaces.DataRetentionInterface
-	DeactivateGuests(c *request.Context) *model.AppError
-	DeactivateMfa(userID string) *model.AppError
-	DisableUserAccessToken(token *account.UserAccessToken) *model.AppError
-	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	DoSystemConsoleRolesCreationMigration()
-	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError)
-	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError)
-	EnableUserAccessToken(token *account.UserAccessToken) *model.AppError
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	ExtractContentFromFileInfo(fileInfo *file.FileInfo) error
-	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
-	GeneratePublicLink(siteURL string, info *file.FileInfo) string
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
-	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetClusterId() string
-	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
-	GetFile(fileID string) ([]byte, *model.AppError)
-	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)
-	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
-	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
-	GetSanitizeOptions(asAdmin bool) map[string]bool
-	GetSession(token string) (*model.Session, *model.AppError)
-	GetSessionById(sessionID string) (*model.Session, *model.AppError)
-	GetStatus(userID string) (*model.Status, *model.AppError)
-	GetStatusFromCache(userID string) *model.Status
-	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
-	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
-	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
-	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)
-	GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError)
-	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError)
-	GetUserForLogin(id, loginId string) (*account.User, *model.AppError)
-	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
-	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
-	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
-	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
-	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	ImageProxy() *imageproxy.ImageProxy
-	IsFirstUserAccount() bool
 	IsLeader() bool
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
-	ListDirectory(path string) ([]string, *model.AppError)
-	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
@@ -385,42 +156,11 @@ type AppIface interface {
 	Publish(message *model.WebSocketEvent)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
-	RemoveDirectory(path string) *model.AppError
-	RemoveFile(path string) *model.AppError
-	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
-	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
-	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
 	Saml() einterfaces.SamlInterface
-	SanitizeProfile(user *account.User, asAdmin bool)
 	SearchEngine() *searchengine.Broker
-	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
-	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
-	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
-	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
-	SessionCacheLength() int
-	SetDefaultProfileImage(user *account.User) *model.AppError
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
-	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
-	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
-	SetProfileImageFromMultiPartFile(userID string, file multipart.File) *model.AppError
 	SetServer(srv *Server)
 	Timezones() *timezones.Timezones
-	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
 	UpdateConfig(f func(*model.Config))
-	UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError
-	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError
-	UpdateLastActivityAtIfNeeded(session model.Session)
-	UpdateMfa(activate bool, userID, token string) *model.AppError
-	UpdatePassword(user *account.User, newPassword string) *model.AppError
-	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
-	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
-	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
 	UpdateRole(role *model.Role) (*model.Role, *model.AppError)
-	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
-	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
-	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
-	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
-	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
-	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
-	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

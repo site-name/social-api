@@ -1036,7 +1036,7 @@ func (a *App) HandleImages(previewPathList []string, thumbnailPathList []string,
 	wg := new(sync.WaitGroup)
 
 	for i := range fileData {
-		img, release, err := prepareImage(a.srv.imgDecoder, bytes.NewReader(fileData[i]))
+		img, release, err := prepareImage(a.Srv().ImgDecoder, bytes.NewReader(fileData[i]))
 		if err != nil {
 			slog.Debug("Failed to prepare image", slog.Err(err))
 			continue
@@ -1085,7 +1085,7 @@ func prepareImage(imgDecoder *imaging.Decoder, imgData io.ReadSeeker) (img image
 
 func (a *App) generateThumbnailImage(img image.Image, thumbnailPath string) {
 	var buf bytes.Buffer
-	if err := a.srv.imgEncoder.EncodeJPEG(&buf, imaging.GenerateThumbnail(img, imageThumbnailWidth, imageThumbnailHeight), jpegEncQuality); err != nil {
+	if err := a.Srv().ImgEncoder.EncodeJPEG(&buf, imaging.GenerateThumbnail(img, imageThumbnailWidth, imageThumbnailHeight), jpegEncQuality); err != nil {
 		slog.Error("Unable to encode image as jpeg", slog.String("path", thumbnailPath), slog.Err(err))
 		return
 	}
@@ -1100,7 +1100,7 @@ func (a *App) generatePreviewImage(img image.Image, previewPath string) {
 	var buf bytes.Buffer
 	preview := imaging.GeneratePreview(img, imagePreviewWidth)
 
-	if err := a.srv.imgEncoder.EncodeJPEG(&buf, preview, jpegEncQuality); err != nil {
+	if err := a.Srv().ImgEncoder.EncodeJPEG(&buf, preview, jpegEncQuality); err != nil {
 		slog.Error("Unable to encode image as preview jpg", slog.Err(err), slog.String("path", previewPath))
 		return
 	}
@@ -1121,7 +1121,7 @@ func (a *App) generateMiniPreview(fi *file.FileInfo) {
 			return
 		}
 		defer file.Close()
-		img, release, imgErr := prepareImage(a.srv.imgDecoder, file)
+		img, release, imgErr := prepareImage(a.Srv().ImgDecoder, file)
 		if imgErr != nil {
 			slog.Debug("generateMiniPreview: prepareImage failed", slog.Err(imgErr))
 			return

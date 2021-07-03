@@ -90,7 +90,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 	if cleanedInput.RedirectURL != nil {
 		redirect = *cleanedInput.RedirectURL
 	}
-	ruser, err := r.CreateUserFromSignup(embedContext.AppContext, user, redirect)
+	ruser, err := r.AccountApp().CreateUserFromSignup(embedContext.AppContext, user, redirect)
 	if err != nil {
 		return nil, err
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/account"
 	app_opentracing "github.com/sitename/sitename/app/opentracing"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -157,7 +158,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, *c.App.Config().FileSettings.MaxFileSize+bytes.MinRead)
 
 	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
-	siteURLHeader := app.GetProtocol(r) + "://" + r.Host + subpath
+	siteURLHeader := account.GetProtocol(r) + "://" + r.Host + subpath
 	c.SetSiteURLHeader(siteURLHeader)
 
 	w.Header().Set(model.HEADER_REQUEST_ID, c.AppContext.RequestId())
@@ -204,8 +205,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, tokenLocation := app.ParseAuthTokenFromRequest(r)
 
 	if token != "" && tokenLocation != app.TokenLocationCloudHeader && tokenLocation != app.TokenLocationRemoteClusterHeader {
-		session, err := c.App.GetSession(token)
-		defer app.ReturnSessionToPool(session)
+		session, err := c.App.AccountApp().GetSession(token)
+		defer c.App.AccountApp().ReturnSessionToPool(session)
 
 		if err != nil {
 			c.Logger.Info("Invalid session", slog.Err(err))
@@ -229,7 +230,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.checkCSRFToken(c, r, token, tokenLocation, session)
 	} else if token != "" && tokenLocation == app.TokenLocationCloudHeader {
 		// Check to see if this provided token matches our CWS Token
-		session, err := c.App.GetCloudSession(token)
+		session, err := c.App.AccountApp().GetCloudSession(token)
 		if err != nil {
 			c.Logger.Warn("Invalid SWS token", slog.Err(err))
 			c.Err = err

@@ -19,7 +19,7 @@ var platformNames = map[uasurfer.Platform]string{
 	uasurfer.PlatformWindowsPhone: "Windows Phone",
 }
 
-func getPlatformName(ua *uasurfer.UserAgent) string {
+func GetPlatformName(ua *uasurfer.UserAgent) string {
 	platform := ua.OS.Platform
 	name, ok := platformNames[platform]
 	if !ok {
@@ -42,7 +42,7 @@ var osNames = map[uasurfer.OSName]string{
 	uasurfer.OSLinux:        "Linux",
 }
 
-func getOSName(ua *uasurfer.UserAgent) string {
+func GetOSName(ua *uasurfer.UserAgent) string {
 	os := ua.OS
 
 	if os.Name == uasurfer.OSWindows {
@@ -79,7 +79,7 @@ func getOSName(ua *uasurfer.UserAgent) string {
 	return osNames[uasurfer.OSUnknown]
 }
 
-func getBrowserVersion(ua *uasurfer.UserAgent, userAgentString string) string {
+func GetBrowserVersion(ua *uasurfer.UserAgent, userAgentString string) string {
 	if index := strings.Index(userAgentString, "SiteName/"); index != -1 {
 		afterVersion := userAgentString[index+len("SiteName/"):]
 		return strings.Fields(afterVersion)[0]
@@ -95,10 +95,10 @@ func getBrowserVersion(ua *uasurfer.UserAgent, userAgentString string) string {
 		return strings.Fields(afterVersion)[0]
 	}
 
-	return getUAVersion(ua.Browser.Version)
+	return GetUAVersion(ua.Browser.Version)
 }
 
-func getUAVersion(version uasurfer.Version) string {
+func GetUAVersion(version uasurfer.Version) string {
 	if version.Patch == 0 {
 		return fmt.Sprintf("%v.%v", version.Major, version.Minor)
 	}
@@ -116,7 +116,7 @@ var browserNames = map[uasurfer.BrowserName]string{
 	uasurfer.BrowserBlackberry: "BlackBerry",
 }
 
-func getBrowserName(ua *uasurfer.UserAgent, userAgentString string) string {
+func GetBrowserName(ua *uasurfer.UserAgent, userAgentString string) string {
 	browser := ua.Browser.Name
 
 	if strings.Contains(userAgentString, "SiteName") {
