@@ -1,6 +1,7 @@
-package app
+package account
 
 import (
+	"context"
 	"crypto/subtle"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/avct/uasurfer"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -22,7 +24,7 @@ import (
 const cwsTokenEnv = "CWS_CLOUD_TOKEN"
 
 // CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
-func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
+func (a *AppAccount) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	pem := r.Header.Get("X-SSL-Client-Cert")
 	subject := r.Header.Get("X-SSL-Client-Cert-Subject-DN")
 	email := ""
@@ -40,7 +42,7 @@ func (a *App) CheckForClientSideCert(r *http.Request) (string, string, string) {
 }
 
 // AuthenticateUserForLogin
-func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
+func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
 	// Do statistics
 	defer func() {
 		if a.Metrics() != nil {
@@ -90,7 +92,7 @@ func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password
 			token = &model.Token{
 				Token:    cwsToken,
 				CreateAt: model.GetMillis(),
-				Type:     TokenTypeCWSAccess,
+				Type:     app.TokenTypeCWSAccess,
 			}
 			err := a.Srv().Store.Token().Save(token)
 			if err != nil {
@@ -129,13 +131,13 @@ func (a *App) AuthenticateUserForLogin(c *request.Context, id, loginId, password
 }
 
 // GetUserForLogin
-func (a *App) GetUserForLogin(id, loginId string) (*account.User, *model.AppError) {
+func (a *AppAccount) GetUserForLogin(id, loginId string) (*account.User, *model.AppError) {
 	enableUsername := *a.Config().EmailSettings.EnableSignInWithUsername
 	enableEmail := *a.Config().EmailSettings.EnableSignInWithEmail
 
 	// if we are given a userID then fail if we can't find a user with that ID
 	if id != "" {
-		user, err := a.GetUser(id)
+		user, err := a.UserById(context.Background(), id)
 		if err != nil {
 			if err.Id != MissingAccountError {
 				err.StatusCode = http.StatusInternalServerError
@@ -155,7 +157,7 @@ func (a *App) GetUserForLogin(id, loginId string) (*account.User, *model.AppErro
 	// Try to get the user with LDAP if enabled
 	if *a.Config().LdapSettings.Enable && a.Ldap() != nil {
 		if ldapUser, err := a.Ldap().GetUser(loginId); err == nil {
-			if user, err := a.GetUserByAuth(ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP); err == nil {
+			if user, err := a.AccountApp().GetUserByAuth(ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP); err == nil {
 				return user, nil
 			}
 			return ldapUser, nil
@@ -165,7 +167,7 @@ func (a *App) GetUserForLogin(id, loginId string) (*account.User, *model.AppErro
 	return nil, model.NewAppError("GetUserForLogin", "store.sql_user.get_for_login.app_error", nil, "", http.StatusBadRequest)
 }
 
-func (a *App) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
+func (a *AppAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
 	// TODO: implement more if plugins enabled
 	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
 	// 	var rejectionReason string
@@ -210,9 +212,9 @@ func (a *App) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request
 
 	ua := uasurfer.Parse(r.UserAgent())
 
-	session.AddProp(model.SESSION_PROP_PLATFORM, getPlatformName(ua))
-	session.AddProp(model.SESSION_PROP_OS, getOSName(ua))
-	session.AddProp(model.SESSION_PROP_BROWSER, fmt.Sprintf("%s/%s", getBrowserName(ua, r.UserAgent()), getBrowserVersion(ua, r.UserAgent())))
+	session.AddProp(model.SESSION_PROP_PLATFORM, app.GetPlatformName(ua))
+	session.AddProp(model.SESSION_PROP_OS, app.GetOSName(ua))
+	session.AddProp(model.SESSION_PROP_BROWSER, fmt.Sprintf("%s/%s", app.GetBrowserName(ua, r.UserAgent()), app.GetBrowserVersion(ua, r.UserAgent())))
 	if user.IsGuest() {
 		session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
 	} else {
@@ -264,7 +266,7 @@ func GetProtocol(r *http.Request) string {
 // 2) user cookie with value of user id
 //
 // 3) csrf cookie with value of csrf in session
-func (a *App) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
+func (a *AppAccount) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
 	secure := false
 	if GetProtocol(r) == "https" {
 		secure = true
@@ -312,6 +314,6 @@ func (a *App) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r 
 }
 
 // IsCWSLogin returns true if token != "" else false
-func IsCWSLogin(a *App, token string) bool {
+func IsCWSLogin(a *AppAccount, token string) bool {
 	return token != ""
 }

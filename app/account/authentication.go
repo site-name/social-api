@@ -1,4 +1,4 @@
-package app
+package account
 
 import (
 	"net/http"
@@ -10,52 +10,8 @@ import (
 	"github.com/sitename/sitename/modules/mfa"
 )
 
-type TokenLocation int
-
-const (
-	TokenLocationNotFound TokenLocation = iota
-	TokenLocationHeader
-	TokenLocationCookie
-	TokenLocationQueryString
-	TokenLocationCloudHeader
-	TokenLocationRemoteClusterHeader
-)
-
-// String implements fmt Stringer interface
-func (tl TokenLocation) String() string {
-	switch tl {
-	case TokenLocationNotFound:
-		return "Not Found"
-	case TokenLocationHeader:
-		return "Header"
-	case TokenLocationCookie:
-		return "Cookie"
-	case TokenLocationQueryString:
-		return "QueryString"
-	case TokenLocationCloudHeader:
-		return "CloudHeader"
-	case TokenLocationRemoteClusterHeader:
-		return "RemoteClusterHeader"
-	default:
-		return "Unknown"
-	}
-}
-
-// IsPasswordValid checks:
-//
-// 1) If ServiceSettings.EnableDeveloper is enabled, return nil
-//
-// 2) checks if password satisfies all requirements specified by systems
-func (a *App) IsPasswordValid(password string) *model.AppError {
-	if *a.Config().ServiceSettings.EnableDeveloper {
-		return nil
-	}
-
-	return IsPasswordValidWithSettings(password, &a.Config().PasswordSettings)
-}
-
 // CheckPasswordAndAllCriteria
-func (a *App) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
+func (a *AppAccount) CheckPasswordAndAllCriteria(user *account.User, password string, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
@@ -104,7 +60,7 @@ func (a *App) CheckPasswordAndAllCriteria(user *account.User, password string, m
 // 2) check if user's password and given password don't match, update number of attempts failed in database, return an error
 //
 // otherwise: set number of failed attempts to 0
-func (a *App) DoubleCheckPassword(user *account.User, password string) *model.AppError {
+func (a *AppAccount) DoubleCheckPassword(user *account.User, password string) *model.AppError {
 	if err := checkUserLoginAttempts(user, *a.Config().ServiceSettings.MaximumLoginAttempts); err != nil {
 		return err
 	}
@@ -129,7 +85,7 @@ func (a *App) DoubleCheckPassword(user *account.User, password string) *model.Ap
 }
 
 // checkUserPassword compares user's password to given password. If they dont match, return an error
-func (a *App) checkUserPassword(user *account.User, password string) *model.AppError {
+func (a *AppAccount) checkUserPassword(user *account.User, password string) *model.AppError {
 	if !account.ComparePassword(user.Password, password) {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
@@ -138,7 +94,7 @@ func (a *App) checkUserPassword(user *account.User, password string) *model.AppE
 }
 
 // checkLdapUserPasswordAndAllCriteria
-func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*account.User, *model.AppError) {
+func (a *AppAccount) checkLdapUserPasswordAndAllCriteria(ldapId *string, password string, mfaToken string) (*account.User, *model.AppError) {
 	if a.Ldap() == nil || ldapId == nil {
 		err := model.NewAppError("doLdapAuthentication", "api.user.login_ldap.not_available.app_error", nil, "", http.StatusNotImplemented)
 		return nil, err
@@ -162,7 +118,7 @@ func (a *App) checkLdapUserPasswordAndAllCriteria(ldapId *string, password strin
 	return ldapUser, nil
 }
 
-func (a *App) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
+func (a *AppAccount) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	if err := a.CheckUserPreflightAuthenticationCriteria(user, mfaToken); err != nil {
 		return err
 	}
@@ -179,7 +135,7 @@ func (a *App) CheckUserAllAuthenticationCriteria(user *account.User, mfaToken st
 // 1) user is not disabled
 //
 // 2) numbers of failed logins is not exceed the limit
-func (a *App) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
+func (a *AppAccount) CheckUserPreflightAuthenticationCriteria(user *account.User, mfaToken string) *model.AppError {
 	if err := checkUserNotDisabled(user); err != nil {
 		return err
 	}
@@ -212,7 +168,7 @@ func checkUserNotDisabled(user *account.User) *model.AppError {
 //
 // Given user's `EmailVerified` attribute is false && email verification is required,
 // Then it return an error.
-func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError {
+func (a *AppAccount) CheckUserPostflightAuthenticationCriteria(user *account.User) *model.AppError {
 	if !user.EmailVerified && *a.Config().EmailSettings.RequireEmailVerification {
 		return model.NewAppError("Login", "api.user.login.not_verified.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
@@ -227,7 +183,7 @@ func (a *App) CheckUserPostflightAuthenticationCriteria(user *account.User) *mod
 // 2) multi factor authentication is not enabled => return non-nil error
 //
 // 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
-func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
+func (a *AppAccount) CheckUserMfa(user *account.User, token string) *model.AppError {
 	if !user.MfaActive || !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return nil
 	}
@@ -249,7 +205,7 @@ func (a *App) CheckUserMfa(user *account.User, token string) *model.AppError {
 }
 
 // authenticateUser
-func (a *App) authenticateUser(c *request.Context, user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
+func (a *AppAccount) authenticateUser(c *request.Context, user *account.User, password, mfaToken string) (*account.User, *model.AppError) {
 	ldapAvailable := *a.Config().LdapSettings.Enable && a.Ldap() != nil
 
 	if user.IsLDAPUser() {
@@ -284,88 +240,4 @@ func (a *App) authenticateUser(c *request.Context, user *account.User, password,
 	}
 
 	return user, nil
-}
-
-// ParseAuthTokenFromRequest reads header "Authorization" from request's header, then parses it into token and token location
-func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
-	authHeader := r.Header.Get(model.HEADER_AUTH)
-
-	// Attempt to parse the token from the cookie
-	if cookie, err := r.Cookie(model.SESSION_COOKIE_TOKEN); err == nil {
-		return cookie.Value, TokenLocationCookie
-	}
-
-	// Parse the token from the header
-	if len(authHeader) > 6 && strings.ToUpper(authHeader[0:6]) == model.HEADER_BEARER {
-		// Default session token
-		return authHeader[7:], TokenLocationHeader
-	}
-
-	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model.HEADER_TOKEN {
-		// OAuth token
-		return authHeader[6:], TokenLocationHeader
-	}
-
-	// Attempt to parse token out of the query string
-	if token := r.URL.Query().Get("access_token"); token != "" {
-		return token, TokenLocationQueryString
-	}
-
-	if token := r.Header.Get(model.HEADER_CLOUD_TOKEN); token != "" {
-		return token, TokenLocationCloudHeader
-	}
-
-	if token := r.Header.Get(model.HEADER_REMOTECLUSTER_TOKEN); token != "" {
-		return token, TokenLocationRemoteClusterHeader
-	}
-
-	return "", TokenLocationNotFound
-}
-
-// IsPasswordValidWithSettings checks if given password satisfies system's requirements
-func IsPasswordValidWithSettings(password string, settings *model.PasswordSettings) *model.AppError {
-	id := "model.user.is_valid.pwd"
-	isError := false
-
-	if len(password) < *settings.MinimumLength || len(password) > model.PASSWORD_MAXIMUM_LENGTH {
-		isError = true
-	}
-
-	if *settings.Lowercase {
-		if !strings.ContainsAny(password, model.LOWERCASE_LETTERS) {
-			isError = true
-		}
-
-		id = id + "_lowercase"
-	}
-
-	if *settings.Uppercase {
-		if !strings.ContainsAny(password, model.UPPERCASE_LETTERS) {
-			isError = true
-		}
-
-		id = id + "_uppercase"
-	}
-
-	if *settings.Number {
-		if !strings.ContainsAny(password, model.NUMBERS) {
-			isError = true
-		}
-
-		id = id + "_number"
-	}
-
-	if *settings.Symbol {
-		if !strings.ContainsAny(password, model.SYMBOLS) {
-			isError = true
-		}
-
-		id = id + "_symbol"
-	}
-
-	if isError {
-		return model.NewAppError("User.IsValid", id+".app_error", map[string]interface{}{"Min": *settings.MinimumLength}, "", http.StatusBadRequest)
-	}
-
-	return nil
 }

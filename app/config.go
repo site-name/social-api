@@ -359,28 +359,43 @@ func (a *App) GetSiteURL() string {
 }
 
 // ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
-func (s *Server) ClientConfigWithComputed() map[string]string {
+// func (s *Server) ClientConfigWithComputed() map[string]string {
+// 	respCfg := map[string]string{}
+// 	for k, v := range s.clientConfig.Load().(map[string]string) {
+// 		respCfg[k] = v
+// 	}
+
+// 	// These properties are not configurable, but nevertheless represent configuration expected
+// 	// by the client.
+// 	respCfg["NoAccounts"] = strconv.FormatBool(s.IsFirstUserAccount())
+// 	// respCfg["MaxPostSize"] = strconv.Itoa(s.MaxPostSize())
+// 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
+// 	respCfg["InstallationDate"] = ""
+// 	if installationDate, err := s.getSystemInstallDate(); err == nil {
+// 		respCfg["InstallationDate"] = strconv.FormatInt(installationDate, 10)
+// 	}
+
+// 	return respCfg
+// }
+
+// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
+func (a *App) ClientConfigWithComputed() map[string]string {
 	respCfg := map[string]string{}
-	for k, v := range s.clientConfig.Load().(map[string]string) {
+	for k, v := range a.Srv().clientConfig.Load().(map[string]string) {
 		respCfg[k] = v
 	}
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(s.IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountApp().IsFirstUserAccount())
 	// respCfg["MaxPostSize"] = strconv.Itoa(s.MaxPostSize())
 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
 	respCfg["InstallationDate"] = ""
-	if installationDate, err := s.getSystemInstallDate(); err == nil {
+	if installationDate, err := a.Srv().getSystemInstallDate(); err == nil {
 		respCfg["InstallationDate"] = strconv.FormatInt(installationDate, 10)
 	}
 
 	return respCfg
-}
-
-// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
-func (a *App) ClientConfigWithComputed() map[string]string {
-	return a.Srv().ClientConfigWithComputed()
 }
 
 // LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
@@ -392,7 +407,7 @@ func (a *App) LimitedClientConfigWithComputed() map[string]string {
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(a.IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountApp().IsFirstUserAccount())
 
 	return respCfg
 }
@@ -437,6 +452,7 @@ func (a *App) HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	}
 }
 
+// MailServiceConfig returns SMTP config
 func (s *Server) MailServiceConfig() *mail.SMTPConfig {
 	emailSettings := s.Config().EmailSettings
 	hostname := util.GetHostnameFromSiteURL(*s.Config().ServiceSettings.SiteURL)

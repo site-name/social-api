@@ -19,7 +19,7 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
 	if *r.Config().ExperimentalSettings.ClientSideCertEnable {
-		certPem, certSubject, certEmail := r.CheckForClientSideCert(embedCtx.GetRequest())
+		certPem, certSubject, certEmail := r.AccountApp().CheckForClientSideCert(embedCtx.GetRequest())
 		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
 
 		if certPem == "" || certEmail == "" {
@@ -32,21 +32,21 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 		}
 	}
 
-	user, err := r.AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.Token, "", input.LdapOnly == "true")
+	user, err := r.AccountApp().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.Token, "", input.LdapOnly == "true")
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.DoLogin(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest(), user, input.DeviceID, false, false, false)
+	err = r.AccountApp().DoLogin(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest(), user, input.DeviceID, false, false, false)
 	if err != nil {
 		return nil, err
 	}
 
 	if embedCtx.GetRequest().Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
-		r.AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
+		r.AccountApp().AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
 	}
 
-	userTermOfService, err := r.GetUserTermsOfService(user.Id)
+	userTermOfService, err := r.AccountApp().GetUserTermsOfService(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 			return nil, invalidParameterError("PasswordChange", "old password", "old password must not be empty")
 		}
 
-		if appErr = r.UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
+		if appErr = r.AccountApp().UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
 			return nil, appErr
 		}
 

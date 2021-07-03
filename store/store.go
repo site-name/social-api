@@ -758,12 +758,12 @@ type SessionStore interface {
 	RemoveAllSessions() error
 	PermanentDeleteSessionsByUser(teamID string) error
 	UpdateExpiresAt(sessionID string, time int64) error
-	UpdateLastActivityAt(sessionID string, time int64) error                    //
+	UpdateLastActivityAt(sessionID string, time int64) error                    // UpdateLastActivityAt
 	UpdateRoles(userID string, roles string) (string, error)                    // UpdateRoles updates roles for all sessions that have userId of given userID,
-	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) //
-	UpdateProps(session *model.Session) error
-	AnalyticsSessionCount() (int64, error)
-	Cleanup(expiryTime int64, batchSize int64)
+	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) // UpdateDeviceId updates device id for sessions
+	UpdateProps(session *model.Session) error                                   // UpdateProps update session's props
+	AnalyticsSessionCount() (int64, error)                                      // AnalyticsSessionCount counts numbers of sessions
+	Cleanup(expiryTime int64, batchSize int64)                                  // Cleanup is called periodicly to remove sessions that are expired
 }
 
 type RoleStore interface {

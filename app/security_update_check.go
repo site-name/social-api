@@ -30,6 +30,7 @@ const (
 	PropSecurityUnitTests       = "ut"
 )
 
+// DoSecurityUpdateCheck
 func (s *Server) DoSecurityUpdateCheck() {
 	if !*s.Config().ServiceSettings.EnableSecurityFixAlert {
 		return
@@ -74,10 +75,6 @@ func (s *Server) DoSecurityUpdateCheck() {
 		if ucr, err := s.Store.Status().GetTotalActiveUsersCount(); err == nil {
 			v.Set(PropSecurityActiveUserCount, strconv.FormatInt(ucr, 10))
 		}
-
-		// if teamCount, err := s.Store.Team().AnalyticsTeamCount(nil); err == nil {
-		// 	v.Set(PropSecurityTeamCount, strconv.FormatInt(teamCount, 10))
-		// }
 
 		res, err := http.Get(PropSecurityURL + "/security?" + v.Encode())
 		if err != nil {

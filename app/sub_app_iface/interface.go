@@ -1,18 +1,27 @@
 package sub_app_iface
 
 import (
+	"bytes"
 	"context"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"time"
 
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/store"
 )
 
 // GiftCardApp defines methods for giftcard app
@@ -58,6 +67,79 @@ type AccountApp interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
 	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser deletes relationship between given user and address
 	UserByEmail(email string) (*account.User, *model.AppError)                                    // UserByEmail try finding user with given email and returns that user
+	// CreateUserFromSignup create new user with user input information by:
+	//
+	// 1) Checks if user signup is allowed
+	//
+	// 2) call to CreateUser
+	//
+	// 3) sends verification email to given email
+	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) // CreateUser
+	GetVerifyEmailToken(token string) (*model.Token, *model.AppError)
+	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
+	IsUserSignUpAllowed() *model.AppError
+	VerifyUserEmail(userID, email string) *model.AppError
+	GetUserByUsername(username string) (*account.User, *model.AppError)
+	IsUsernameTaken(name string) bool
+	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
+	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
+	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
+	DeactivateMfa(userID string) *model.AppError
+	ActivateMfa(userID, token string) *model.AppError
+	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
+	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
+	SetDefaultProfileImage(user *account.User) *model.AppError
+	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
+	SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError
+	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)
+	SetProfileImageFromFile(userID string, file io.Reader) *model.AppError
+	UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError)
+	UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError
+	UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError
+	UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
+	PermanentDeleteAllUsers(c *request.Context) *model.AppError
+	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
+	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
+	GetStatus(userID string) (*model.Status, *model.AppError)
+	GetStatusFromCache(userID string) *model.Status
+	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
+	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
+	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
+	UpdatePassword(user *account.User, newPassword string) *model.AppError
+	UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError
+	UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError
+	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
+	ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError
+	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
+	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
+	GetTotalUsersStats() (*account.UsersStats, *model.AppError)
+	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
+	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError)
+	SendPasswordReset(email string, siteURL string) (bool, *model.AppError)
+	CheckProviderAttributes(user *account.User, patch *account.UserPatch) string
+	CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError)
+	UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError)
+	UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError)
+	UpdateMfa(activate bool, userID, token string) *model.AppError
+	GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError)
+	SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError
+	DeleteToken(token *model.Token) *model.AppError
+	IsFirstUserAccount() bool
+	GetSanitizeOptions(asAdmin bool) map[string]bool
+	SanitizeProfile(user *account.User, asAdmin bool)
+	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
+	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
+	GetSession(token string) (*model.Session, *model.AppError)
+	GetCloudSession(token string) (*model.Session, *model.AppError)
+	ReturnSessionToPool(session *model.Session)
+	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
+	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
+	ExtendSessionExpiryIfNeeded(session *model.Session) bool
+	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
+	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
+	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
+	CheckForClientSideCert(r *http.Request) (string, string, string)
 }
 
 type ProductApp interface {
@@ -145,4 +227,35 @@ type PageApp interface {
 }
 
 type SeoApp interface {
+}
+
+type FileApp interface {
+	FileBackend() (filestore.FileBackend, *model.AppError)
+	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
+	TestFileStoreConnection() *model.AppError
+	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
+	ReadFile(path string) ([]byte, *model.AppError)
+	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
+	FileExists(path string) (bool, *model.AppError)
+	FileSize(path string) (int64, *model.AppError)
+	FileModTime(path string) (time.Time, *model.AppError)
+	MoveFile(oldPath, newPath string) *model.AppError
+	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
+	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
+	RemoveFile(path string) *model.AppError
+	ListDirectory(path string) ([]string, *model.AppError)
+	RemoveDirectory(path string) *model.AppError
+	GeneratePublicLink(siteURL string, info *file.FileInfo) string
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError)
+	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
+	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
+	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)
+	GetFile(fileID string) ([]byte, *model.AppError)
+	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
+	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	ExtractContentFromFileInfo(fileInfo *file.FileInfo) error
+	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
+	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
+	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
 }

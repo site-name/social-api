@@ -26,7 +26,13 @@ var (
 	attributeApp func(AppIface) sub_app_iface.AttributeApp
 	channelApp   func(AppIface) sub_app_iface.ChannelApp
 	invoiceApp   func(AppIface) sub_app_iface.InvoiceApp
+	fileApp      func(AppIface) sub_app_iface.FileApp
 )
+
+// RegisterFileApp
+func RegisterFileApp(f func(AppIface) sub_app_iface.FileApp) {
+	fileApp = f
+}
 
 // RegisterGiftcardApp
 func RegisterGiftcardApp(f func(AppIface) sub_app_iface.GiftcardApp) {
@@ -248,6 +254,13 @@ func registerAllSubApps() []AppOption {
 			}
 			a.invoice = invoiceApp(a)
 		},
+		func(a *App) {
+			if fileApp == nil {
+				criticalLog("file")
+				return
+			}
+			a.file = fileApp(a)
+		},
 	}
 }
 
@@ -339,4 +352,9 @@ func (a *App) AccountApp() sub_app_iface.AccountApp {
 // Invoice returns invoice sub app
 func (a *App) InvoiceApp() sub_app_iface.InvoiceApp {
 	return a.invoice
+}
+
+// FileApp returns file sub app
+func (a *App) FileApp() sub_app_iface.FileApp {
+	return a.file
 }

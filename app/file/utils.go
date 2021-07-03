@@ -1,4 +1,4 @@
-package app
+package file
 
 import (
 	"fmt"
@@ -19,7 +19,8 @@ func checkImageResolutionLimit(w, h int) error {
 	return nil
 }
 
-func checkImageLimits(imageData io.Reader) error {
+// CheckImageLimits
+func CheckImageLimits(imageData io.Reader) error {
 	w, h, err := imaging.GetDimensions(imageData)
 	if err != nil {
 		return fmt.Errorf("failed to get image dimensions: %w", err)

@@ -19,6 +19,13 @@ import (
 )
 
 const (
+	TokenTypePasswordRecovery = "password_recovery" // token type for password recorver
+	TokenTypeVerifyEmail      = "verify_email"      // type for creating user signup verification token
+	TokenTypeGuestInvitation  = "guest_invitation"  // type for creating invite token
+	TokenTypeCWSAccess        = "cws_access_token"
+)
+
+const (
 	emailRateLimitingMemstoreSize = 65536
 	emailRateLimitingPerHour      = 20
 	emailRateLimitingMaxBurst     = 20
@@ -41,6 +48,7 @@ type EmailService struct {
 	EmailBatching           *EmailBatchingJob
 }
 
+// NewEmailService create new email service and returns it
 func NewEmailService(srv *Server) (*EmailService, error) {
 	service := &EmailService{srv: srv}
 	if err := service.setUpRateLimiters(); err != nil {
@@ -81,7 +89,7 @@ func (es *EmailService) setUpRateLimiters() error {
 }
 
 // sendChangeUsernameEmail send email to let user know username changes
-func (es *EmailService) sendChangeUsernameEmail(newUsername, email, locale, siteURL string) *model.AppError {
+func (es *EmailService) SendChangeUsernameEmail(newUsername, email, locale, siteURL string) *model.AppError {
 	T := i18n.GetUserTranslations(locale)
 
 	subject := T(
@@ -111,12 +119,12 @@ func (es *EmailService) sendChangeUsernameEmail(newUsername, email, locale, site
 	return nil
 }
 
-func (es *EmailService) sendEmailChangeVerifyEmail(newUserEmail, locale, siteURL, token string) *model.AppError {
+func (es *EmailService) SendEmailChangeVerifyEmail(newUserEmail, locale, siteURL, token string) *model.AppError {
 	panic("not implemented")
 
 }
 
-func (es *EmailService) sendEmailChangeEmail(oldEmail, newEmail, locale, siteURL string) *model.AppError {
+func (es *EmailService) SendEmailChangeEmail(oldEmail, newEmail, locale, siteURL string) *model.AppError {
 	T := i18n.GetUserTranslations(locale)
 
 	subject := T("api.templates.email_change_subject",
@@ -145,7 +153,7 @@ func (es *EmailService) sendEmailChangeEmail(oldEmail, newEmail, locale, siteURL
 	return nil
 }
 
-func (es *EmailService) sendVerifyEmail(userEmail, locale, siteURL, token, redirect string) *model.AppError {
+func (es *EmailService) SendVerifyEmail(userEmail, locale, siteURL, token, redirect string) *model.AppError {
 	panic("not implemented")
 
 }
@@ -156,7 +164,7 @@ func (es *EmailService) SendSignInChangeEmail(email, method, locale, siteURL str
 }
 
 // after an user has signed up, send them an welcome email to newly registered user.
-func (es *EmailService) sendWelcomeEmail(userID string, email string, verified bool, disableWelcomeEmail bool, locale, siteURL, redirect string) *model.AppError {
+func (es *EmailService) SendWelcomeEmail(userID string, email string, verified bool, disableWelcomeEmail bool, locale, siteURL, redirect string) *model.AppError {
 	if disableWelcomeEmail {
 		return nil
 	}
@@ -214,12 +222,12 @@ func (es *EmailService) sendWelcomeEmail(userID string, email string, verified b
 	return nil
 }
 
-func (es *EmailService) sendPasswordChangeEmail(email, method, locale, siteURL string) *model.AppError {
+func (es *EmailService) SendPasswordChangeEmail(email, method, locale, siteURL string) *model.AppError {
 	panic("not implemented")
 
 }
 
-func (es *EmailService) sendUserAccessTokenAddedEmail(email, locale, siteURL string) *model.AppError {
+func (es *EmailService) SendUserAccessTokenAddedEmail(email, locale, siteURL string) *model.AppError {
 	panic("not implemented")
 
 }
@@ -255,7 +263,7 @@ func (es *EmailService) SendPasswordResetEmail(email string, token *model.Token,
 	return true, nil
 }
 
-func (es *EmailService) sendMfaChangeEmail(email string, activated bool, locale, siteURL string) *model.AppError {
+func (es *EmailService) SendMfaChangeEmail(email string, activated bool, locale, siteURL string) *model.AppError {
 	panic("not implemented")
 
 }
@@ -265,7 +273,7 @@ func (es *EmailService) SendDeactivateAccountEmail(email string, locale, siteURL
 
 }
 
-func (es *EmailService) sendNotificationMail(to, subject, htmlBody string) error {
+func (es *EmailService) SendNotificationMail(to, subject, htmlBody string) error {
 	panic("not implemented")
 
 }
@@ -298,6 +306,7 @@ func (es *EmailService) newEmailTemplateData(locale string) templates.Data {
 	}
 }
 
+// sendMail is common method for sending emails
 func (es *EmailService) sendMail(to, subject, htmlBody string) error {
 	return es.sendMailWithCC(to, subject, htmlBody, "")
 }
@@ -311,7 +320,7 @@ func (es *EmailService) sendMailWithCC(to, subject, htmlBody string, ccMail stri
 	)
 }
 
-func (es *EmailService) sendMailWithEmbeddedFiles(to, subject, htmlBody string, embeddedFiles map[string]io.Reader) error {
+func (es *EmailService) SendMailWithEmbeddedFiles(to, subject, htmlBody string, embeddedFiles map[string]io.Reader) error {
 	panic("not implemented")
 
 }
