@@ -48,6 +48,7 @@ type EmailService struct {
 	EmailBatching           *EmailBatchingJob
 }
 
+// NewEmailService create new email service and returns it
 func NewEmailService(srv *Server) (*EmailService, error) {
 	service := &EmailService{srv: srv}
 	if err := service.setUpRateLimiters(); err != nil {
@@ -305,6 +306,7 @@ func (es *EmailService) newEmailTemplateData(locale string) templates.Data {
 	}
 }
 
+// sendMail is common method for sending emails
 func (es *EmailService) sendMail(to, subject, htmlBody string) error {
 	return es.sendMailWithCC(to, subject, htmlBody, "")
 }

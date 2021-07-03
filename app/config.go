@@ -452,6 +452,7 @@ func (a *App) HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	}
 }
 
+// MailServiceConfig returns SMTP config
 func (s *Server) MailServiceConfig() *mail.SMTPConfig {
 	emailSettings := s.Config().EmailSettings
 	hostname := util.GetHostnameFromSiteURL(*s.Config().ServiceSettings.SiteURL)

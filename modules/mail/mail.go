@@ -231,6 +231,7 @@ func TestConnection(config *SMTPConfig) error {
 	return nil
 }
 
+// SendMailWithEmbeddedFilesUsingConfig
 func SendMailWithEmbeddedFilesUsingConfig(to, subject, htmlBody string, embeddedFiles map[string]io.Reader, config *SMTPConfig, enableComplianceFeatures bool, ccMail string) error {
 	fromMail := mail.Address{Name: config.FeedbackName, Address: config.FeedbackEmail}
 	replyTo := mail.Address{Name: config.FeedbackName, Address: config.ReplyToAddress}
@@ -249,11 +250,12 @@ func SendMailWithEmbeddedFilesUsingConfig(to, subject, htmlBody string, embedded
 	return sendMailUsingConfigAdvanced(mail, config)
 }
 
+// SendMailUsingConfig
 func SendMailUsingConfig(to, subject, htmlBody string, config *SMTPConfig, enableComplianceFeatures bool, ccMail string) error {
 	return SendMailWithEmbeddedFilesUsingConfig(to, subject, htmlBody, nil, config, enableComplianceFeatures, ccMail)
 }
 
-// allows for sending an email with differing MIME/SMTP recipients
+// sendMailUsingConfigAdvanced allows for sending an email with differing MIME/SMTP recipients
 func sendMailUsingConfigAdvanced(mail mailData, config *SMTPConfig) error {
 	if config.Server == "" {
 		return nil
@@ -281,6 +283,7 @@ func sendMailUsingConfigAdvanced(mail mailData, config *SMTPConfig) error {
 	return SendMail(c, mail, time.Now())
 }
 
+// SendMail
 func SendMail(c smtpClient, mail mailData, date time.Time) error {
 	slog.Debug("sending mail", slog.String("to", mail.smtpTo), slog.String("subject", mail.subject))
 

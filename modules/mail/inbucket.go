@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/model"
 )
 
 const (
@@ -45,12 +45,14 @@ type JSONMessageInbucket struct {
 	}
 }
 
+// ParseEmail returns all characters prior to @ charactar
 func ParseEmail(email string) string {
 	pos := strings.Index(email, "@")
 	parsedEmail := email[0:pos]
 	return parsedEmail
 }
 
+// GetMailBox
 func GetMailBox(email string) (results JSONMessageHeaderInbucket, err error) {
 
 	parsedEmail := ParseEmail(email)
@@ -72,7 +74,7 @@ func GetMailBox(email string) (results JSONMessageHeaderInbucket, err error) {
 	}
 
 	var record JSONMessageHeaderInbucket
-	err = json.JSON.NewDecoder(resp.Body).Decode(&record)
+	err = model.ModelFromJson(&record, resp.Body)
 	switch {
 	case err == io.EOF:
 		return nil, fmt.Errorf("error: %s", err)
@@ -101,7 +103,7 @@ func GetMessageFromMailbox(email, id string) (JSONMessageInbucket, error) {
 		emailResponse.Body.Close()
 	}()
 
-	if err = json.JSON.NewDecoder(emailResponse.Body).Decode(&record); err != nil {
+	if err = model.ModelFromJson(&record, emailResponse.Body); err != nil {
 		return record, err
 	}
 
@@ -133,6 +135,7 @@ func downloadAttachment(url string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DeleteMailBox
 func DeleteMailBox(email string) (err error) {
 
 	parsedEmail := ParseEmail(email)

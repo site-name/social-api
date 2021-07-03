@@ -19,6 +19,7 @@ var platformNames = map[uasurfer.Platform]string{
 	uasurfer.PlatformWindowsPhone: "Windows Phone",
 }
 
+// GetPlatformName returns name of os used by clients
 func GetPlatformName(ua *uasurfer.UserAgent) string {
 	platform := ua.OS.Platform
 	name, ok := platformNames[platform]
@@ -42,6 +43,7 @@ var osNames = map[uasurfer.OSName]string{
 	uasurfer.OSLinux:        "Linux",
 }
 
+// GetOSName
 func GetOSName(ua *uasurfer.UserAgent) string {
 	os := ua.OS
 
@@ -79,6 +81,7 @@ func GetOSName(ua *uasurfer.UserAgent) string {
 	return osNames[uasurfer.OSUnknown]
 }
 
+// GetBrowserVersion returns version of browsers used by clients
 func GetBrowserVersion(ua *uasurfer.UserAgent, userAgentString string) string {
 	if index := strings.Index(userAgentString, "SiteName/"); index != -1 {
 		afterVersion := userAgentString[index+len("SiteName/"):]
@@ -98,6 +101,7 @@ func GetBrowserVersion(ua *uasurfer.UserAgent, userAgentString string) string {
 	return GetUAVersion(ua.Browser.Version)
 }
 
+// GetUAVersion
 func GetUAVersion(version uasurfer.Version) string {
 	if version.Patch == 0 {
 		return fmt.Sprintf("%v.%v", version.Major, version.Minor)
@@ -116,6 +120,7 @@ var browserNames = map[uasurfer.BrowserName]string{
 	uasurfer.BrowserBlackberry: "BlackBerry",
 }
 
+// GetBrowserName returns name of browsers used by clients. Eg: chrome, firefox
 func GetBrowserName(ua *uasurfer.UserAgent, userAgentString string) string {
 	browser := ua.Browser.Name
 

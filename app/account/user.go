@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"image"
 	"image/color"
 	"io"
 	"mime/multipart"
@@ -13,11 +12,11 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/app"
+	fileApp "github.com/sitename/sitename/app/file"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
@@ -547,7 +546,7 @@ func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.A
 	}
 
 	path := "users/" + user.Id + "/profile.png"
-	data, err := a.ReadFile(path)
+	data, err := a.FileApp().ReadFile(path)
 	if err != nil {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
@@ -555,7 +554,7 @@ func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.A
 		}
 
 		if user.LastPictureUpdate == 0 {
-			if _, err := a.WriteFile(bytes.NewReader(img), path); err != nil {
+			if _, err := a.FileApp().WriteFile(bytes.NewReader(img), path); err != nil {
 				return nil, false, err
 			}
 		}
@@ -577,7 +576,7 @@ func (a *AppAccount) SetDefaultProfileImage(user *account.User) *model.AppError 
 
 	path := "users/" + user.Id + "/profile.png"
 
-	if _, err := a.WriteFile(bytes.NewReader(img), path); err != nil {
+	if _, err := a.FileApp().WriteFile(bytes.NewReader(img), path); err != nil {
 		return err
 	}
 
@@ -628,20 +627,9 @@ func (a *AppAccount) SetProfileImage(userID string, imageData *multipart.FileHea
 }
 
 func (a *AppAccount) SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError {
-	// Decode image config first to check dimensions before loading the whole thing into memory later on
-	config, _, err := image.DecodeConfig(f)
-	if err != nil {
-		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode_config.app_error", nil, err.Error(), http.StatusBadRequest)
+	if limitErr := fileApp.CheckImageLimits(f); limitErr != nil {
+		return model.NewAppError("SetProfileImage", "app.account.upload_profile_image.check_image_limits.app_error", nil, "", http.StatusBadRequest)
 	}
-
-	// This casting is done to prevent overflow on 32 bit systems (not needed
-	// in 64 bits systems because images can't have more than 32 bits height or
-	// width)
-	if int64(config.Width)*int64(config.Height) > file.MaxImageSize {
-		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.too_large.app_error", nil, "", http.StatusBadRequest)
-	}
-
-	f.Seek(0, 0)
 
 	return a.SetProfileImageFromFile(userID, f)
 }
@@ -676,7 +664,7 @@ func (a *AppAccount) SetProfileImageFromFile(userID string, file io.Reader) *mod
 
 	path := "users/" + userID + "/profile.png"
 
-	if _, err := a.WriteFile(buf, path); err != nil {
+	if _, err := a.FileApp().WriteFile(buf, path); err != nil {
 		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.upload_profile.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -994,7 +982,7 @@ func (a *AppAccount) PermanentDeleteUser(c *request.Context, user *account.User)
 	}
 
 	for _, info := range infos {
-		res, err := a.FileExists(info.Path)
+		res, err := a.FileApp().FileExists(info.Path)
 		if err != nil {
 			slog.Warn(
 				"Error checking existance of file",
@@ -1009,7 +997,7 @@ func (a *AppAccount) PermanentDeleteUser(c *request.Context, user *account.User)
 			continue
 		}
 
-		err = a.RemoveFile(info.Path)
+		err = a.FileApp().RemoveFile(info.Path)
 		if err != nil {
 			slog.Warn("Unable to remove file", slog.String("path", info.Path), slog.Err(err))
 		}

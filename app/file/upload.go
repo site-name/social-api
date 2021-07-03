@@ -20,13 +20,7 @@ const IncompleteUploadSuffix = ".tmp"
 func (a *AppFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
 	uss, err := a.Srv().Store.UploadSession().GetForUser(userID)
 	if err != nil {
-		return nil, model.NewAppError(
-			"GetUploadsForUser",
-			"app.upload.get_for_user.app_error",
-			nil,
-			err.Error(),
-			http.StatusInternalServerError,
-		)
+		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSessionForUser", "app.file.upload_session_for_user_missing.app_error", err)
 	}
 	return uss, nil
 }
@@ -34,57 +28,52 @@ func (a *AppFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession
 func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
 	us, err := a.Srv().Store.UploadSession().Get(uploadId)
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &nfErr):
-			return nil, model.NewAppError("GetUpload", "app.upload.get.app_error",
-				nil, nfErr.Error(), http.StatusNotFound)
-		default:
-			return nil, model.NewAppError("GetUpload", "app.upload.get.app_error",
-				nil, err.Error(), http.StatusInternalServerError)
-		}
+		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSession", "app.file.upload_session_missing.app_error", err)
 	}
+
 	return us, nil
 }
 
-func (a *AppFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
-	// if us.FileSize > *a.Config().FileSettings.MaxFileSize {
-	// 	return nil, model.NewAppError("CreateUploadSession", "app.upload.create.upload_too_large.app_error",
-	// 		nil, "", http.StatusRequestEntityTooLarge)
-	// }
+// func (a *AppFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
+// 	if us.FileSize > *a.Config().FileSettings.MaxFileSize {
+// 		return nil, model.NewAppError(
+// 			"CreateUploadSession",
+// 			"app.upload.create.upload_too_large.app_error",
+// 			nil, "", http.StatusRequestEntityTooLarge,
+// 		)
+// 	}
 
-	// us.FileOffset = 0
-	// now := time.Now()
-	// us.CreateAt = model.GetMillisForTime(now)
-	// if us.Type == model.UploadTypeAttachment {
-	// 	us.Path = now.Format("20060102") + "/teams/noteam/channels/" + us.ChannelId + "/users/" + us.UserId + "/" + us.Id + "/" + filepath.Base(us.Filename)
-	// } else if us.Type == model.UploadTypeImport {
-	// 	us.Path = filepath.Clean(*a.Config().ImportSettings.Directory) + "/" + us.Id + "_" + filepath.Base(us.Filename)
-	// }
-	// if err := us.IsValid(); err != nil {
-	// 	return nil, err
-	// }
+// 	us.FileOffset = 0
+// 	now := time.Now()
+// 	us.CreateAt = model.GetMillisForTime(now)
+// 	if us.Type == file.UploadTypeAttachment {
+// 		us.Path = now.Format("20060102") + "/teams/noteam/channels/" + us.ChannelId + "/users/" + us.UserId + "/" + us.Id + "/" + filepath.Base(us.Filename)
+// 	} else if us.Type == file.UploadTypeImport {
+// 		us.Path = filepath.Clean(*a.Config().ImportSettings.Directory) + "/" + us.Id + "_" + filepath.Base(us.Filename)
+// 	}
+// 	if err := us.IsValid(); err != nil {
+// 		return nil, err
+// 	}
 
-	// if us.Type == model.UploadTypeAttachment {
-	// 	channel, err := a.GetChannel(us.ChannelId)
-	// 	if err != nil {
-	// 		return nil, model.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
-	// 			map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
-	// 	}
-	// 	if channel.DeleteAt != 0 {
-	// 		return nil, model.NewAppError("CreateUploadSession", "app.upload.create.cannot_upload_to_deleted_channel.app_error",
-	// 			map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
-	// 	}
-	// }
+// 	if us.Type == file.UploadTypeAttachment {
+// 		channel, err := a.GetChannel(us.ChannelId)
+// 		if err != nil {
+// 			return nil, model.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
+// 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
+// 		}
+// 		if channel.DeleteAt != 0 {
+// 			return nil, model.NewAppError("CreateUploadSession", "app.upload.create.cannot_upload_to_deleted_channel.app_error",
+// 				map[string]interface{}{"channelId": us.ChannelId}, "", http.StatusBadRequest)
+// 		}
+// 	}
 
-	// us, storeErr := a.Srv().Store.UploadSession().Save(us)
-	// if storeErr != nil {
-	// 	return nil, model.NewAppError("CreateUploadSession", "app.upload.create.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
-	// }
+// 	us, storeErr := a.Srv().Store.UploadSession().Save(us)
+// 	if storeErr != nil {
+// 		return nil, model.NewAppError("CreateUploadSession", "app.upload.create.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
+// 	}
 
-	// return us, nil
-	panic("not implemented") // TODO: fixme
-}
+// 	return us, nil
+// }
 
 func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.

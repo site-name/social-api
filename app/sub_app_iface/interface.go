@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -14,10 +15,12 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/store"
 )
 
@@ -226,4 +229,33 @@ type PageApp interface {
 type SeoApp interface {
 }
 
-type FileApp interface{}
+type FileApp interface {
+	FileBackend() (filestore.FileBackend, *model.AppError)
+	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
+	TestFileStoreConnection() *model.AppError
+	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
+	ReadFile(path string) ([]byte, *model.AppError)
+	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
+	FileExists(path string) (bool, *model.AppError)
+	FileSize(path string) (int64, *model.AppError)
+	FileModTime(path string) (time.Time, *model.AppError)
+	MoveFile(oldPath, newPath string) *model.AppError
+	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
+	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
+	RemoveFile(path string) *model.AppError
+	ListDirectory(path string) ([]string, *model.AppError)
+	RemoveDirectory(path string) *model.AppError
+	GeneratePublicLink(siteURL string, info *file.FileInfo) string
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError)
+	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
+	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
+	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)
+	GetFile(fileID string) ([]byte, *model.AppError)
+	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
+	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	ExtractContentFromFileInfo(fileInfo *file.FileInfo) error
+	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
+	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
+	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
+}
