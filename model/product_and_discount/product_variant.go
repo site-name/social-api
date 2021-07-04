@@ -79,6 +79,7 @@ func (p *ProductVariant) PreSave() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
+	p.ModelMetadata.PreSave()
 }
 
 func (p *ProductVariant) PreUpdate() {
@@ -86,6 +87,7 @@ func (p *ProductVariant) PreUpdate() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
+	p.ModelMetadata.PreUpdate()
 }
 
 func ProductVariantFromJson(data io.Reader) *ProductVariant {
@@ -99,43 +101,10 @@ func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, c
 	panic("not impl")
 }
 
-// func (p *ProductVariant) GetWeight() *measurement.Weight {
-// 	if p.Weight != nil {
-// 		return &measurement.Weight{
-// 			Amount: *p.Weight,
-// 			Unit:   p.WeightUnit,
-// 		}
-// 	}
-
-// 	if p.Product != nil {
-// 		return &measurement.Weight{
-// 			Amount: *p.Product.Weight,
-// 			Unit:   p.Product.WeightUnit,
-// 		}
-// 	}
-
-// 	return &measurement.Weight{
-// 		Amount: *p.Product.ProductType.Weight,
-// 		Unit:   p.Product.ProductType.WeightUnit,
-// 	}
-// }
-
-// func (p *ProductVariant) IsShippingRequired() bool {
-// 	return *p.Product.ProductType.IsShippingRequired
-// }
-
-// func (p *ProductVariant) IsDigital() bool {
-// 	return !p.IsShippingRequired() && *p.Product.ProductType.IsDigital
-// }
-
 // TODO: fixme
 func (p *ProductVariant) DisplayProduct() {
 	panic("not implemented")
 }
-
-// func (p *ProductVariant) GetOrderingQuerySet() []*ProductVariant {
-// 	return p.Product.Variants
-// }
 
 // --------------------
 type ProductVariantTranslation struct {

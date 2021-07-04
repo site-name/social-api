@@ -326,7 +326,7 @@ func (a *App) AttributeApp() sub_app_iface.AttributeApp {
 
 // Warehouse returns warehouse sub app
 func (a *App) WarehouseApp() sub_app_iface.WarehouseApp {
-	return a.order
+	return a.warehouse
 }
 
 // Checkout returns checkout sub app

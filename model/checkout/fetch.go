@@ -7,19 +7,21 @@ import (
 	"github.com/sitename/sitename/model/shipping"
 )
 
+// CheckoutLineInfo contains information of a checkout line
 type CheckoutLineInfo struct {
-	Line           *CheckoutLine
-	Variant        *product_and_discount.ProductVariant
-	ChannelListing *product_and_discount.ProductVariantChannelListing
-	Product        *product_and_discount.Product
-	ProductType    *product_and_discount.ProductType
+	Line           CheckoutLine
+	Variant        product_and_discount.ProductVariant
+	ChannelListing product_and_discount.ProductVariantChannelListing
+	Product        product_and_discount.Product
+	ProductType    product_and_discount.ProductType
 	Collections    []*product_and_discount.Collection
 }
 
+// CheckoutInfo contains information of a checkout
 type CheckoutInfo struct {
-	Checkout                      *Checkout // required
+	Checkout                      Checkout
 	User                          *account.User
-	Channel                       *channel.Channel
+	Channel                       channel.Channel
 	BillingAddress                *account.Address
 	ShippingAddress               *account.Address
 	ShippingMethod                *shipping.ShippingMethod
@@ -28,18 +30,16 @@ type CheckoutInfo struct {
 }
 
 func (c *CheckoutInfo) GetCountry() string {
-	var add *account.Address
-	if c.ShippingAddress != nil {
-		add = c.ShippingAddress
-	} else if c.BillingAddress != nil {
-		add = c.BillingAddress
+	addr := c.ShippingAddress
+	if addr == nil {
+		addr = c.BillingAddress
 	}
 
-	if add == nil || add.Country == "" {
+	if addr == nil || addr.Country == "" {
 		return c.Checkout.Country
 	}
 
-	return add.Country
+	return addr.Country
 }
 
 func (c *CheckoutInfo) GetCustomerEmail() string {
@@ -47,16 +47,4 @@ func (c *CheckoutInfo) GetCustomerEmail() string {
 		return c.User.Email
 	}
 	return c.Checkout.Email
-}
-
-// Fetch checkout lines as CheckoutLineInfo objects.
-func FetchCheckoutLines(checkout *Checkout) []*CheckoutLineInfo {
-	// TODO: fixme
-	panic("not implemented")
-}
-
-// Fetch checkout as CheckoutInfo object.
-func FetchCheckoutInfo(checkout *Checkout, lines []*CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) *CheckoutInfo {
-	// TODO: fixme
-	panic("not implemented")
 }

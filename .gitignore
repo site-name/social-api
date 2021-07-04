@@ -121,4 +121,4 @@ report.xml
 go.*.orig
 config.override.mk
 
-study
+/study

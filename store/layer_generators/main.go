@@ -143,9 +143,9 @@ func buildStoreImplement() error {
 				"CollectionProduct", "Collection", "CollectionChannelListing", "CollectionTranslation":
 				return "product"
 			case "ShippingMethodTranslation", "ShippingMethodChannelListing",
-				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone":
+				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone", "ShippingZoneChannel":
 				return "shipping"
-			case "Warehouse", "Stock", "Allocation":
+			case "Warehouse", "Stock", "Allocation", "WarehouseShippingZone":
 				return "warehouse"
 			case "Wishlist", "WishlistItem", "WishlistProductVariant":
 				return "wishlist"

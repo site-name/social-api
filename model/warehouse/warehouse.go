@@ -6,7 +6,6 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 )
 
 // max lengths for some warehouse's fields
@@ -16,12 +15,11 @@ const (
 )
 
 type WareHouse struct {
-	Id            string                   `json:"id"`
-	Name          string                   `json:"name"` // unique
-	Slug          string                   `json:"slug"` // unique
-	ShippingZones []*shipping.ShippingZone `json:"shipping_zones" db:"-"`
-	AddressID     string                   `json:"address_id"`
-	Email         string                   `json:"email"`
+	Id        string `json:"id"`
+	Name      string `json:"name"` // unique
+	Slug      string `json:"slug"` // unique
+	AddressID string `json:"address_id"`
+	Email     string `json:"email"`
 	model.ModelMetadata
 }
 
@@ -56,11 +54,13 @@ func (w *WareHouse) PreSave() {
 	}
 	w.Name = model.SanitizeUnicode(w.Name)
 	w.Slug = slug.Make(w.Name)
+	w.ModelMetadata.PreSave()
 }
 
 func (w *WareHouse) PreUpdate() {
 	w.Name = model.SanitizeUnicode(w.Name)
 	w.Slug = slug.Make(w.Name)
+	w.ModelMetadata.PreUpdate()
 }
 
 func (w *WareHouse) ToJson() string {

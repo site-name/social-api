@@ -107,6 +107,7 @@ type RetryLayer struct {
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
+	ShippingZoneChannelStore           store.ShippingZoneChannelStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
@@ -122,6 +123,7 @@ type RetryLayer struct {
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
+	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
 	WishlistProductVariantStore        store.WishlistProductVariantStore
@@ -427,6 +429,10 @@ func (s *RetryLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
 }
 
+func (s *RetryLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
+	return s.ShippingZoneChannelStore
+}
+
 func (s *RetryLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return s.StaffNotificationRecipientStore
 }
@@ -485,6 +491,10 @@ func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
 
 func (s *RetryLayer) Warehouse() store.WarehouseStore {
 	return s.WarehouseStore
+}
+
+func (s *RetryLayer) WarehouseShippingZone() store.WarehouseShippingZoneStore {
+	return s.WarehouseShippingZoneStore
 }
 
 func (s *RetryLayer) Wishlist() store.WishlistStore {
@@ -874,6 +884,11 @@ type RetryLayerShippingZoneStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerShippingZoneChannelStore struct {
+	store.ShippingZoneChannelStore
+	Root *RetryLayer
+}
+
 type RetryLayerStaffNotificationRecipientStore struct {
 	store.StaffNotificationRecipientStore
 	Root *RetryLayer
@@ -946,6 +961,11 @@ type RetryLayerVoucherTranslationStore struct {
 
 type RetryLayerWarehouseStore struct {
 	store.WarehouseStore
+	Root *RetryLayer
+}
+
+type RetryLayerWarehouseShippingZoneStore struct {
+	store.WarehouseShippingZoneStore
 	Root *RetryLayer
 }
 
@@ -1507,9 +1527,69 @@ func (s *RetryLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.C
 
 }
 
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutLineStore) CreateIndexesIfNotExists() {
 
 	s.CheckoutLineStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutLineStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutLineStore) Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutLineStore.Save(checkoutLine)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -4089,6 +4169,12 @@ func (s *RetryLayerShippingZoneStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
+
+	s.ShippingZoneChannelStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
 
 	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
@@ -5989,6 +6075,12 @@ func (s *RetryLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.War
 
 }
 
+func (s *RetryLayerWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
+
+	s.WarehouseShippingZoneStore.CreateIndexesIfNotExists()
+
+}
+
 func (s *RetryLayerWishlistStore) CreateIndexesIfNotExists() {
 
 	s.WishlistStore.CreateIndexesIfNotExists()
@@ -6271,6 +6363,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ShippingMethodPostalCodeRuleStore = &RetryLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
+	newStore.ShippingZoneChannelStore = &RetryLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &RetryLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &RetryLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
@@ -6286,6 +6379,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
+	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &RetryLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &RetryLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
 	newStore.WishlistProductVariantStore = &RetryLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}

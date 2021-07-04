@@ -7,7 +7,6 @@ import (
 
 // Common abstract model for other models to inherit from
 type ModelMetadata struct {
-	Id              string    `json:"string"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
 
@@ -15,10 +14,18 @@ type ModelMetadata struct {
 	mutex sync.RWMutex `json:"-" db:"-"`
 }
 
+// PreSave must be called in objects's PreSave() calls
 func (m *ModelMetadata) PreSave() {
-	if m.Id == "" {
-		m.Id = NewId()
+	if m.PrivateMetadata == nil {
+		m.PrivateMetadata = make(map[string]string)
 	}
+	if m.Metadata == nil {
+		m.Metadata = make(map[string]string)
+	}
+}
+
+// PreUpdate should be called in objects's PreUpdate() calls
+func (m *ModelMetadata) PreUpdate() {
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
 	}

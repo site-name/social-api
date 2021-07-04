@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/store"
@@ -55,7 +56,10 @@ type PaymentApp interface {
 
 // CheckoutApp
 type CheckoutApp interface {
-	CheckoutbyId(id string) (*checkout.Checkout, *model.AppError) // CheckoutbyId returns checkout with given id
+	CheckoutbyId(id string) (*checkout.Checkout, *model.AppError)                             // CheckoutbyId returns checkout with given id
+	CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
+	CheckVariantInStock(variant *product_and_discount.ProductVariant, checkoutID, channelSlug string, quantity *uint, replace, checkQuantity bool) (interface{}, *checkout.CheckoutLine, *model.AppError)
+	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
 }
 
 // CheckoutApp
@@ -143,6 +147,7 @@ type AccountApp interface {
 }
 
 type ProductApp interface {
+	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError) // ProductVariantById returns a product variants with given id
 }
 
 type WishlistApp interface {
@@ -172,6 +177,7 @@ type ChannelApp interface {
 }
 
 type WarehouseApp interface {
+	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) *model.AppError // CheckStockQuantity checks stock for given product variant
 }
 
 type DiscountApp interface {

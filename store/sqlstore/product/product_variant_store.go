@@ -16,6 +16,19 @@ const (
 	ProductVariantTableName = "ProductVariants"
 )
 
+var ProductVariantQuery = []string{
+	"Pv.Id",
+	"Pv.Name",
+	"Pv.ProductID",
+	"Pv.Sku",
+	"Pv.Weight",
+	"Pv.WeightUnit",
+	"Pv.TrackInventory",
+	"Pv.SortOrder",
+	"Pv.Metadata",
+	"Pv.PrivateMetadata",
+}
+
 func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	pvs := &SqlProductVariantStore{s}
 

@@ -121,9 +121,11 @@ type Store interface {
 	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore   //
 	ShippingMethod() ShippingMethodStore                               //
 	ShippingZone() ShippingZoneStore                                   //
+	ShippingZoneChannel() ShippingZoneChannelStore                     //
 	Warehouse() WarehouseStore                                         // warehouse
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
+	WarehouseShippingZone() WarehouseShippingZoneStore                 //
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
 	WishlistProductVariant() WishlistProductVariantStore               //
@@ -269,14 +271,21 @@ type (
 type (
 	WarehouseStore interface {
 		CreateIndexesIfNotExists()
-		Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error)
-		Get(id string) (*warehouse.WareHouse, error)
-		GetWarehousesHeaders(ids []string) ([]string, error)
+		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) // Save inserts given warehouse into database then returns it.
+		Get(id string) (*warehouse.WareHouse, error)                       // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
+		GetWarehousesHeaders(ids []string) ([]string, error)               // GetWarehousesHeaders
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
+		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                                                                                               // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
+		Get(stockID string) (*warehouse.Stock, error)                                                                                                                                                        // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)    // FilterVariantStocksForCountry
+		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterProductStocksForCountryAndChannel
 	}
 	AllocationStore interface {
+		CreateIndexesIfNotExists()
+	}
+	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
 	}
 )
@@ -296,6 +305,9 @@ type (
 		CreateIndexesIfNotExists()
 	}
 	ShippingMethodTranslationStore interface {
+		CreateIndexesIfNotExists()
+	}
+	ShippingZoneChannelStore interface {
 		CreateIndexesIfNotExists()
 	}
 )
@@ -502,6 +514,9 @@ type (
 type (
 	CheckoutLineStore interface {
 		CreateIndexesIfNotExists()
+		Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)      // Save insert new checkout line into database
+		Get(id string) (*checkout.CheckoutLine, error)                                 // Get returns a checkout line with given id
+		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()

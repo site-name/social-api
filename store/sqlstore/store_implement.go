@@ -111,6 +111,7 @@ type SqlStoreStores struct {
 	shippingMethodPostalCodeRule  store.ShippingMethodPostalCodeRuleStore
 	shippingMethodTranslation     store.ShippingMethodTranslationStore
 	shippingZone                  store.ShippingZoneStore
+	shippingZoneChannel           store.ShippingZoneChannelStore
 	staffNotificationRecipient    store.StaffNotificationRecipientStore
 	status                        store.StatusStore
 	stock                         store.StockStore
@@ -126,6 +127,7 @@ type SqlStoreStores struct {
 	voucherChannelListing         store.VoucherChannelListingStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
+	warehouseShippingZone         store.WarehouseShippingZoneStore
 	wishlist                      store.WishlistStore
 	wishlistItem                  store.WishlistItemStore
 	wishlistProductVariant        store.WishlistProductVariantStore
@@ -209,6 +211,7 @@ func (store *SqlStore) setupTables() {
 		shippingMethodPostalCodeRule:  shipping.NewSqlShippingMethodPostalCodeRuleStore(store),
 		shippingMethodTranslation:     shipping.NewSqlShippingMethodTranslationStore(store),
 		shippingZone:                  shipping.NewSqlShippingZoneStore(store),
+		shippingZoneChannel:           shipping.NewSqlShippingZoneChannelStore(store),
 		staffNotificationRecipient:    account.NewSqlStaffNotificationRecipientStore(store),
 		status:                        status.NewSqlStatusStore(store),
 		stock:                         warehouse.NewSqlStockStore(store),
@@ -224,6 +227,7 @@ func (store *SqlStore) setupTables() {
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
+		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
 		wishlist:                      wishlist.NewSqlWishlistStore(store),
 		wishlistItem:                  wishlist.NewSqlWishlistItemStore(store),
 		wishlistProductVariant:        wishlist.NewSqlWishlistProductVariantStore(store),
@@ -308,6 +312,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.shippingMethodPostalCodeRule.CreateIndexesIfNotExists()
 	store.stores.shippingMethodTranslation.CreateIndexesIfNotExists()
 	store.stores.shippingZone.CreateIndexesIfNotExists()
+	store.stores.shippingZoneChannel.CreateIndexesIfNotExists()
 	store.stores.staffNotificationRecipient.CreateIndexesIfNotExists()
 	store.stores.status.CreateIndexesIfNotExists()
 	store.stores.stock.CreateIndexesIfNotExists()
@@ -323,6 +328,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.voucherChannelListing.CreateIndexesIfNotExists()
 	store.stores.voucherTranslation.CreateIndexesIfNotExists()
 	store.stores.warehouse.CreateIndexesIfNotExists()
+	store.stores.warehouseShippingZone.CreateIndexesIfNotExists()
 	store.stores.wishlist.CreateIndexesIfNotExists()
 	store.stores.wishlistItem.CreateIndexesIfNotExists()
 	store.stores.wishlistProductVariant.CreateIndexesIfNotExists()
@@ -629,6 +635,10 @@ func (ss *SqlStore) ShippingZone() store.ShippingZoneStore {
 	return ss.stores.shippingZone
 }
 
+func (ss *SqlStore) ShippingZoneChannel() store.ShippingZoneChannelStore {
+	return ss.stores.shippingZoneChannel
+}
+
 func (ss *SqlStore) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return ss.stores.staffNotificationRecipient
 }
@@ -687,6 +697,10 @@ func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {
 
 func (ss *SqlStore) Warehouse() store.WarehouseStore {
 	return ss.stores.warehouse
+}
+
+func (ss *SqlStore) WarehouseShippingZone() store.WarehouseShippingZoneStore {
+	return ss.stores.warehouseShippingZone
 }
 
 func (ss *SqlStore) Wishlist() store.WishlistStore {

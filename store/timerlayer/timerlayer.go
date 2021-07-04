@@ -108,6 +108,7 @@ type TimerLayer struct {
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
+	ShippingZoneChannelStore           store.ShippingZoneChannelStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
@@ -123,6 +124,7 @@ type TimerLayer struct {
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
+	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
 	WishlistProductVariantStore        store.WishlistProductVariantStore
@@ -428,6 +430,10 @@ func (s *TimerLayer) ShippingZone() store.ShippingZoneStore {
 	return s.ShippingZoneStore
 }
 
+func (s *TimerLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
+	return s.ShippingZoneChannelStore
+}
+
 func (s *TimerLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return s.StaffNotificationRecipientStore
 }
@@ -486,6 +492,10 @@ func (s *TimerLayer) VoucherTranslation() store.VoucherTranslationStore {
 
 func (s *TimerLayer) Warehouse() store.WarehouseStore {
 	return s.WarehouseStore
+}
+
+func (s *TimerLayer) WarehouseShippingZone() store.WarehouseShippingZoneStore {
+	return s.WarehouseShippingZoneStore
 }
 
 func (s *TimerLayer) Wishlist() store.WishlistStore {
@@ -875,6 +885,11 @@ type TimerLayerShippingZoneStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerShippingZoneChannelStore struct {
+	store.ShippingZoneChannelStore
+	Root *TimerLayer
+}
+
 type TimerLayerStaffNotificationRecipientStore struct {
 	store.StaffNotificationRecipientStore
 	Root *TimerLayer
@@ -947,6 +962,11 @@ type TimerLayerVoucherTranslationStore struct {
 
 type TimerLayerWarehouseStore struct {
 	store.WarehouseStore
+	Root *TimerLayer
+}
+
+type TimerLayerWarehouseShippingZoneStore struct {
+	store.WarehouseShippingZoneStore
 	Root *TimerLayer
 }
 
@@ -1615,6 +1635,22 @@ func (s *TimerLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.C
 	return result, err
 }
 
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByCheckoutID", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutLineStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1628,6 +1664,38 @@ func (s *TimerLayerCheckoutLineStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutLineStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutLineStore) Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutLineStore.Save(checkoutLine)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
@@ -4262,6 +4330,21 @@ func (s *TimerLayerShippingZoneStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShippingZoneChannelStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -5988,6 +6071,21 @@ func (s *TimerLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.War
 	return result, err
 }
 
+func (s *TimerLayerWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.WarehouseShippingZoneStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
 func (s *TimerLayerWishlistStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -6266,6 +6364,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ShippingMethodPostalCodeRuleStore = &TimerLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &TimerLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
+	newStore.ShippingZoneChannelStore = &TimerLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &TimerLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &TimerLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &TimerLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
@@ -6281,6 +6380,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
+	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &TimerLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &TimerLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
 	newStore.WishlistProductVariantStore = &TimerLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}

@@ -6,6 +6,10 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+const (
+	ShippingZoneTableName = "ShippingZones"
+)
+
 type SqlShippingZoneStore struct {
 	store.Store
 }
@@ -13,7 +17,7 @@ type SqlShippingZoneStore struct {
 func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	smls := &SqlShippingZoneStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingZone{}, "ShippingZones").SetKeys(false, "Id")
+		table := db.AddTableWithName(shipping.ShippingZone{}, ShippingZoneTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(shipping.SHIPPING_ZONE_NAME_MAX_LENGTH)
 		table.ColMap("Contries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
@@ -22,6 +26,6 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 }
 
 func (s *SqlShippingZoneStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_shipping_zone_name", "ShippingZones", "Name")
-	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", "ShippingZones", "lower(Name) text_pattern_ops")
+	s.CreateIndexIfNotExists("idx_shipping_zone_name", ShippingZoneTableName, "Name")
+	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", ShippingZoneTableName, "lower(Name) text_pattern_ops")
 }
