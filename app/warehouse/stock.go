@@ -17,7 +17,7 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 }
 
 func (a *AppWarehouse) GetVariantStocksForCountry(countryCode string, channelSlug string, variantID string) (interface{}, *model.AppError) {
-	stocks, warehouses, productVariants, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(
+	_, _, _, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(
 		&warehouse.ForCountryAndChannelFilter{
 			CountryCode: countryCode,
 			ChannelSlug: channelSlug,

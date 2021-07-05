@@ -9,18 +9,21 @@ import (
 )
 
 func (a *AppCheckout) FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
-
+	panic("not implt")
 }
 
 func (a *AppCheckout) FetCheckoutInfo(ckout *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*checkout.CheckoutInfo, *model.AppError) {
+	panic("not implt")
 
 }
 
 func (a *AppCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo) *model.AppError {
+	panic("not implt")
 
 }
 
 func (a *AppCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+	panic("not implt")
 
 }
 
@@ -29,6 +32,9 @@ func (a *AppCheckout) UpdateCheckoutInfoShippingMethod(checkoutInfo *checkout.Ch
 	checkoutInfo.ShippingMethodChannelListings = nil
 
 	if shippingMethod != nil {
+		panic("not implt")
 
 	}
+	panic("not implt")
+
 }

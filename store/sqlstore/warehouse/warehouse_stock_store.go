@@ -56,7 +56,7 @@ func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) 
 	}
 
 	if err := ws.GetMaster().Insert(stock); err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID"}) {
+		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
 			return nil, store.NewErrInvalidInput(StockTableName, "WarehouseID/ProductVariantID", stock.WarehouseID+"/"+stock.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save stock object with id=%s", stock.Id)

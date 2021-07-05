@@ -46,7 +46,7 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 	}
 
 	if newQuantity > 0 && checkQuantity {
-		a.WarehouseApp().CheckStockQuantity()
+		// a.WarehouseApp().CheckStockQuantity()
 	}
 
 	return newQuantity, lineWithVariant, nil
