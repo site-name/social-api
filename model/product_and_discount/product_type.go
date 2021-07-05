@@ -19,7 +19,7 @@ type ProductType struct {
 	Name               string                 `json:"name"`
 	Slug               string                 `json:"slug"`
 	HasVariants        *bool                  `json:"has_variants"`
-	IsShippingRequired *bool                  `json:"is_shipping_required"`
+	IsShippingRequired *bool                  `json:"is_shipping_required"` // *default true
 	IsDigital          *bool                  `json:"is_digital"`
 	Weight             *float32               `json:"weight"`
 	WeightUnit         measurement.WeightUnit `json:"weight_unit"`
@@ -71,8 +71,10 @@ func (p *ProductType) PreSave() {
 	if p.IsDigital == nil {
 		p.IsDigital = model.NewBool(false)
 	}
+	if p.Weight == nil {
+		p.Weight = model.NewFloat32(0)
+	}
 	if p.Weight != nil && p.WeightUnit == "" {
-		// p.Weight = model.NewFloat32(0)
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 }

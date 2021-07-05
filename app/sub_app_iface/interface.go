@@ -56,10 +56,11 @@ type PaymentApp interface {
 
 // CheckoutApp
 type CheckoutApp interface {
-	CheckoutbyId(id string) (*checkout.Checkout, *model.AppError)                             // CheckoutbyId returns checkout with given id
-	CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
-	CheckVariantInStock(variant *product_and_discount.ProductVariant, checkoutID, channelSlug string, quantity *uint, replace, checkQuantity bool) (interface{}, *checkout.CheckoutLine, *model.AppError)
+	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError)
+	// CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
 	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
+	CheckVariantInStock(variant *product_and_discount.ProductVariant, ckout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)
+	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) // CheckoutShippingRequired checks if given checkout requires shipping
 }
 
 // CheckoutApp
@@ -147,7 +148,8 @@ type AccountApp interface {
 }
 
 type ProductApp interface {
-	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError) // ProductVariantById returns a product variants with given id
+	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)                    // ProductVariantById returns a product variants with given id
+	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) // ProductTypesByCheckoutToken returns all product types related to given checkout
 }
 
 type WishlistApp interface {

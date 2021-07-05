@@ -15,16 +15,11 @@ type SqlCheckoutStore struct {
 	store.Store
 }
 
-const (
-	CheckoutTableName = "Checkouts"
-)
-
 func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 	cs := &SqlCheckoutStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(checkout.Checkout{}, CheckoutTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table := db.AddTableWithName(checkout.Checkout{}, store.CheckoutTableName).SetKeys(false, "Token")
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -42,18 +37,18 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 }
 
 func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_checkouts_userid", CheckoutTableName, "UserID")
-	cs.CreateIndexIfNotExists("idx_checkouts_token", CheckoutTableName, "Token")
-	cs.CreateIndexIfNotExists("idx_checkouts_channelid", CheckoutTableName, "ChannelID")
-	cs.CreateIndexIfNotExists("idx_checkouts_billing_address_id", CheckoutTableName, "BillingAddressID")
-	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", CheckoutTableName, "ShippingAddressID")
-	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", CheckoutTableName, "ShippingMethodID")
+	cs.CreateIndexIfNotExists("idx_checkouts_userid", store.CheckoutTableName, "UserID")
+	cs.CreateIndexIfNotExists("idx_checkouts_token", store.CheckoutTableName, "Token")
+	cs.CreateIndexIfNotExists("idx_checkouts_channelid", store.CheckoutTableName, "ChannelID")
+	cs.CreateIndexIfNotExists("idx_checkouts_billing_address_id", store.CheckoutTableName, "BillingAddressID")
+	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", store.CheckoutTableName, "ShippingAddressID")
+	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", store.CheckoutTableName, "ShippingMethodID")
 
-	cs.CreateForeignKeyIfNotExists(CheckoutTableName, "UserID", account.UserTableName, "Id", true)
-	cs.CreateForeignKeyIfNotExists(CheckoutTableName, "ChannelID", channel.ChannelTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(CheckoutTableName, "BillingAddressID", account.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(CheckoutTableName, "ShippingAddressID", account.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(CheckoutTableName, "ShippingMethodID", shipping.ShippingMethodTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", account.UserTableName, "Id", true)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", channel.ChannelTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", account.AddressTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", account.AddressTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", shipping.ShippingMethodTableName, "Id", false)
 }
 
 func (cs *SqlCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
@@ -71,7 +66,7 @@ func (cs *SqlCheckoutStore) Get(id string) (*checkout.Checkout, error) {
 	iface, err := cs.GetReplica().Get(checkout.Checkout{}, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(CheckoutTableName, id)
+			return nil, store.NewErrNotFound(store.CheckoutTableName, id)
 		}
 		return nil, err
 	}

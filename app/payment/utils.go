@@ -10,23 +10,17 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
-	modelPayment "github.com/sitename/sitename/model/payment"
 )
 
-func (a *AppPayment) CreatePaymentInformation(
-	payment *modelPayment.Payment, paymentToken *string,
-	amount *decimal.Decimal, customerId *string,
-	storeSource bool, additionalData map[string]string,
-) (*modelPayment.PaymentData, *model.AppError) {
-
+func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
 	var (
 		billingAddress  *account.Address
 		shippingAddress *account.Address
-		amount_         *decimal.Decimal = payment.Total
+		amount_         *decimal.Decimal = pm.Total
 
 		billingAddressID  string
 		shippingAddressID string
-		email             string = payment.BillingEmail
+		email             string = pm.BillingEmail
 		orderId           string
 		customerIpAddress string
 		appErr            *model.AppError
@@ -36,9 +30,9 @@ func (a *AppPayment) CreatePaymentInformation(
 		amount_ = amount
 	}
 
-	// checks if payment has checkout
-	if payment.CheckoutID != nil && model.IsValidId(*payment.CheckoutID) {
-		checkout, appErr := a.CheckoutApp().CheckoutbyId(*payment.CheckoutID)
+	// checks if pm has checkout
+	if pm.CheckoutID != nil && model.IsValidId(*pm.CheckoutID) {
+		checkout, appErr := a.CheckoutApp().CheckoutbyToken(*pm.CheckoutID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -58,8 +52,8 @@ func (a *AppPayment) CreatePaymentInformation(
 			billingAddressID = *checkout.BillingAddressID
 			shippingAddressID = *checkout.ShippingAddressID
 		}
-	} else if payment.OrderID != nil && model.IsValidId(*payment.OrderID) { // checks if payment has order
-		order, appErr := a.OrderApp().OrderById(*payment.OrderID)
+	} else if pm.OrderID != nil && model.IsValidId(*pm.OrderID) { // checks if pm has order
+		order, appErr := a.OrderApp().OrderById(*pm.OrderID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -74,8 +68,8 @@ func (a *AppPayment) CreatePaymentInformation(
 	}
 
 	var (
-		billingAddressData  *modelPayment.AddressData
-		shippingAddressData *modelPayment.AddressData
+		billingAddressData  *payment.AddressData
+		shippingAddressData *payment.AddressData
 	)
 
 	if model.IsValidId(billingAddressID) && model.IsValidId(shippingAddressID) {
@@ -91,24 +85,24 @@ func (a *AppPayment) CreatePaymentInformation(
 	}
 
 	if billingAddress != nil {
-		billingAddressData = modelPayment.AddressDataFromAddress(billingAddress)
+		billingAddressData = payment.AddressDataFromAddress(billingAddress)
 	}
 	if shippingAddress != nil {
-		shippingAddressData = modelPayment.AddressDataFromAddress(shippingAddress)
+		shippingAddressData = payment.AddressDataFromAddress(shippingAddress)
 	}
 
-	if payment.CustomerIpAddress != nil {
-		customerIpAddress = *payment.CustomerIpAddress
+	if pm.CustomerIpAddress != nil {
+		customerIpAddress = *pm.CustomerIpAddress
 	}
 
-	return &modelPayment.PaymentData{
-		Gateway:           payment.GateWay,
+	return &payment.PaymentData{
+		Gateway:           pm.GateWay,
 		Amount:            *amount_,
-		Currency:          payment.Currency,
+		Currency:          pm.Currency,
 		Billing:           billingAddressData,
 		Shipping:          shippingAddressData,
-		PaymentID:         payment.Id,
-		GraphqlPaymentID:  payment.Id,
+		PaymentID:         pm.Id,
+		GraphqlPaymentID:  pm.Id,
 		OrderID:           orderId,
 		CustomerIpAddress: customerIpAddress,
 		CustomerEmail:     email,
@@ -119,7 +113,7 @@ func (a *AppPayment) CreatePaymentInformation(
 	}, nil
 }
 
-func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *modelPayment.GatewayResponse) (*modelPayment.PaymentTransaction, *model.AppError) {
+func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
 	// get all transactions that belong to given payment
 
 	trans, appErr := a.PaymentApp().GetAllPaymentTransactions(paymentID)
@@ -127,7 +121,7 @@ func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayRes
 		return nil, appErr
 	}
 
-	var processedTran *modelPayment.PaymentTransaction
+	var processedTran *payment.PaymentTransaction
 
 	// find the most recent transaction
 	for _, tran := range trans {
@@ -146,7 +140,7 @@ func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayRes
 	return processedTran, nil
 }
 
-func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*modelPayment.Payment, *model.AppError) {
+func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError) {
 	// must at least provider either checkout or order, both is best :))
 	if checkOut == nil && orDer == nil {
 		return nil, model.NewAppError("CreatePayment", "app.payment.checkout_order_required.app_error", nil, "", http.StatusBadRequest)
@@ -176,7 +170,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		return nil, appErr
 	}
 
-	payment := &modelPayment.Payment{
+	payment := &payment.Payment{
 		BillingEmail:       email,
 		BillingFirstName:   billingAddress.FirstName,
 		BillingLastName:    billingAddress.LastName,
@@ -198,7 +192,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		Token:              paymentToken,
 	}
 	if checkOut != nil {
-		payment.CheckoutID = &checkOut.Id
+		payment.CheckoutID = &checkOut.Token
 	}
 	if orDer != nil {
 		payment.OrderID = &orDer.Id
@@ -207,13 +201,13 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 	return a.PaymentApp().SavePayment(payment)
 }
 
-func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, paymentInformation *modelPayment.PaymentData, actionRequired bool, gatewayResponse *modelPayment.GatewayResponse, errorMsg string, isSuccess bool) (*modelPayment.PaymentTransaction, *model.AppError) {
+func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
 	if gatewayResponse == nil {
 		var transactionId string
 		if paymentInformation.Token != nil {
 			transactionId = *paymentInformation.Token
 		}
-		gatewayResponse = &modelPayment.GatewayResponse{
+		gatewayResponse = &payment.GatewayResponse{
 			Kind:           kind,
 			ActionRequired: false,
 			IsSucess:       isSuccess,
@@ -250,7 +244,7 @@ func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymen
 	return a.CreatePaymentTransaction(paymentID, kind, paymentInformation, actionRequired, gatewayResponse, errorMsg, false)
 }
 
-func (a *AppPayment) CleanCapture(pm *modelPayment.Payment, amount decimal.Decimal) *model.AppError {
+func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *model.AppError {
 	// where := "CleanCapture"
 	// if amount.LessThanOrEqual(decimal.Zero) {
 	// 	return model.NewAppError(where, "", )

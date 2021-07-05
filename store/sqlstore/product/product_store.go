@@ -17,7 +17,7 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	ps := &SqlProductStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Product{}, "Products").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.Product{}, store.ProductTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductTypeID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("DefaultVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -31,11 +31,11 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 }
 
 func (ps *SqlProductStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_products_name", "Products", "Name")
-	ps.CreateIndexIfNotExists("idx_products_slug", "Products", "Slug")
-	ps.CreateIndexIfNotExists("idx_products_name_lower_textpattern", "Products", "lower(Name) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_products_name", store.ProductTableName, "Name")
+	ps.CreateIndexIfNotExists("idx_products_slug", store.ProductTableName, "Slug")
+	ps.CreateIndexIfNotExists("idx_products_name_lower_textpattern", store.ProductTableName, "lower(Name) text_pattern_ops")
 
-	ps.CommonMetaDataIndex("Products")
+	ps.CommonMetaDataIndex(store.ProductTableName)
 }
 
 func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
@@ -72,7 +72,7 @@ func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error)
 func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
 	sqlQuery, args, err := ps.GetQueryBuilder().
 		Select("*").
-		From("Products").
+		From(store.ProductTableName).
 		Where(squirrel.Eq{"Id": ids}).
 		ToSql()
 	if err != nil {

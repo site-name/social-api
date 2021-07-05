@@ -357,6 +357,9 @@ type (
 	}
 	ProductTypeStore interface {
 		CreateIndexesIfNotExists()
+		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)    // Save try inserting new product type into database then returns it
+		Get(productTypeID string) (*product_and_discount.ProductType, error)                              // Get try finding product type with given id and returns it
+		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
 	}
 	CategoryTranslationStore interface {
 		CreateIndexesIfNotExists()

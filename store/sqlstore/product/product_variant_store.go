@@ -12,10 +12,6 @@ type SqlProductVariantStore struct {
 	store.Store
 }
 
-const (
-	ProductVariantTableName = "ProductVariants"
-)
-
 var ProductVariantQuery = []string{
 	"Pv.Id",
 	"Pv.Name",
@@ -33,7 +29,7 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	pvs := &SqlProductVariantStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductVariant{}, ProductVariantTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.ProductVariant{}, store.ProductVariantTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Sku").SetMaxSize(product_and_discount.PRODUCT_VARIANT_SKU_MAX_LENGTH).SetUnique(true)
@@ -43,9 +39,9 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 }
 
 func (ps *SqlProductVariantStore) CreateIndexesIfNotExists() {
-	// ps.CreateIndexIfNotExists("idx_product_variants_name", ProductVariantTableName, "Name")
-	// ps.CreateIndexIfNotExists("idx_product_variants_name_lower_textpattern", ProductVariantTableName, "lower(Name) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_product_variants_sku", ProductVariantTableName, "Sku")
+	// ps.CreateIndexIfNotExists("idx_product_variants_name", store.ProductVariantTableName, "Name")
+	// ps.CreateIndexIfNotExists("idx_product_variants_name_lower_textpattern", store.ProductVariantTableName, "lower(Name) text_pattern_ops")
+	ps.CreateIndexIfNotExists("idx_product_variants_sku", store.ProductVariantTableName, "Sku")
 }
 
 func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
@@ -56,7 +52,7 @@ func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVari
 
 	if err := ps.GetMaster().Insert(variant); err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
-			return nil, store.NewErrInvalidInput(ProductVariantTableName, "Sku", variant.Sku)
+			return nil, store.NewErrInvalidInput(store.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant with id=%s", variant.Id)
 	}
@@ -66,10 +62,10 @@ func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVari
 
 func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	var variant product_and_discount.ProductVariant
-	if err := ps.GetReplica().SelectOne(&variant, "SELECT * FROM "+ProductVariantTableName+" WHERE Id = :id",
+	if err := ps.GetReplica().SelectOne(&variant, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :id",
 		map[string]interface{}{"id": id}); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(ProductVariantTableName, id)
+			return nil, store.NewErrNotFound(store.ProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant with id=%s", id)
 	}

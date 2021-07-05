@@ -14,10 +14,6 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
 
-const (
-	StockTableName = "Stocks"
-)
-
 type SqlStockStore struct {
 	store.Store
 }
@@ -34,7 +30,7 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 		Store: s,
 	}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.Stock{}, StockTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(warehouse.Stock{}, store.StockTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("WarehouseID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -45,8 +41,8 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 }
 
 func (ws *SqlStockStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(StockTableName, "WarehouseID", WarehouseTableName, "Id", true)
-	ws.CreateForeignKeyIfNotExists(StockTableName, "ProductVariantID", product.ProductVariantTableName, "Id", true)
+	ws.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
+	ws.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
 }
 
 func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
@@ -57,7 +53,7 @@ func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) 
 
 	if err := ws.GetMaster().Insert(stock); err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
-			return nil, store.NewErrInvalidInput(StockTableName, "WarehouseID/ProductVariantID", stock.WarehouseID+"/"+stock.ProductVariantID)
+			return nil, store.NewErrInvalidInput(store.StockTableName, "WarehouseID/ProductVariantID", stock.WarehouseID+"/"+stock.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save stock object with id=%s", stock.Id)
 	}
@@ -68,7 +64,7 @@ func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) 
 func (ws *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	if res, err := ws.GetReplica().Get(warehouse.Stock{}, stockID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(StockTableName, stockID)
+			return nil, store.NewErrNotFound(store.StockTableName, stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find stock with id=%s", stockID)
 	} else {
@@ -81,12 +77,12 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 	// check if valid country code is provided
 	_, exist := model.Countries[options.CountryCode]
 	if !exist {
-		return "", store.NewErrInvalidInput(StockTableName, "countryCode", options.CountryCode)
+		return "", store.NewErrInvalidInput(store.StockTableName, "countryCode", options.CountryCode)
 	}
 
 	subQueryCondition := `Sz.Countries :: text ILIKE :CountryCode`
-	subQuery := `SELECT Wh.Id FROM ` + WarehouseTableName + ` AS Wh
-		INNER JOIN ` + WarehouseShippingZoneTableName + ` AS WhSz ON (
+	subQuery := `SELECT Wh.Id FROM ` + store.WarehouseTableName + ` AS Wh
+		INNER JOIN ` + store.WarehouseShippingZoneTableName + ` AS WhSz ON (
 			WhSz.WarehouseID = Wh.Id
 		)
 		INNER JOIN ` + shipping.ShippingZoneTableName + ` AS Sz ON (
@@ -165,11 +161,11 @@ func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCou
 	selectStr := strings.Join(selects, ", ")
 
 	mainQuery := `SELECT ` + selectStr +
-		` FROM ` + StockTableName + ` AS St 
-		INNER JOIN ` + WarehouseTableName + ` AS Wh ON (
+		` FROM ` + store.StockTableName + ` AS St 
+		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
 			St.WarehouseID = Wh.Id
 		)
-		INNER JOIN ` + product.ProductVariantTableName + ` AS Pv ON (
+		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
 			Pv.Id = St.ProductVariantID
 		)
 		WHERE (
@@ -203,11 +199,11 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 	selectStr := strings.Join(selects, ", ")
 
 	mainQuery := `SELECT ` + selectStr +
-		` FROM ` + StockTableName + ` AS St 
-		INNER JOIN ` + WarehouseTableName + ` AS Wh ON (
+		` FROM ` + store.StockTableName + ` AS St 
+		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
 			St.WarehouseID = Wh.Id
 		)
-		INNER JOIN ` + product.ProductVariantTableName + ` AS Pv ON (
+		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
 			Pv.Id = St.ProductVariantID
 		)
 		WHERE (

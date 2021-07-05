@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -103,8 +102,7 @@ func WildcardSearchTerm(term string) string {
 // Must be used with database LOOLUP errors.
 func AppErrorFromDatabaseLookupError(where, errId string, err error) *model.AppError {
 	statusCode := http.StatusInternalServerError
-	var nfErr *ErrNotFound
-	if errors.As(err, &nfErr) {
+	if _, ok := err.(*ErrNotFound); ok {
 		statusCode = http.StatusNotFound
 	}
 

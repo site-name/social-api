@@ -9,10 +9,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	WarehouseTableName = "Warehouses"
-)
-
 var WarehouseQuery = []string{
 	"Wh.Id",
 	"Wh.Name",
@@ -31,7 +27,7 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 	ws := &SqlWareHouseStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.WareHouse{}, WarehouseTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(warehouse.WareHouse{}, store.WarehouseTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(warehouse.WAREHOUSE_NAME_MAX_LENGTH)
@@ -42,11 +38,11 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 }
 
 func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_warehouses_name", WarehouseTableName, "Name")
-	ws.CreateIndexIfNotExists("idx_warehouses_name_lower_textpattern", WarehouseTableName, "lower(Name) text_pattern_ops")
-	ws.CreateIndexIfNotExists("idx_warehouses_slug", WarehouseTableName, "Slug")
-	ws.CreateIndexIfNotExists("idx_warehouses_email", WarehouseTableName, "Email")
-	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", WarehouseTableName, "lower(Email) text_pattern_ops")
+	ws.CreateIndexIfNotExists("idx_warehouses_name", store.WarehouseTableName, "Name")
+	ws.CreateIndexIfNotExists("idx_warehouses_name_lower_textpattern", store.WarehouseTableName, "lower(Name) text_pattern_ops")
+	ws.CreateIndexIfNotExists("idx_warehouses_slug", store.WarehouseTableName, "Slug")
+	ws.CreateIndexIfNotExists("idx_warehouses_email", store.WarehouseTableName, "Email")
+	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", store.WarehouseTableName, "lower(Email) text_pattern_ops")
 }
 
 func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {

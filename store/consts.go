@@ -14,3 +14,27 @@ type StoreResult struct {
 	Data interface{}
 	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
 }
+
+// all system product related table names
+const (
+	ProductTypeTableName    = "ProductTypes"
+	ProductTableName        = "Products"
+	ProductVariantTableName = "ProductVariants"
+)
+
+const (
+	WishlistItemTableName           = "WishlistItems"
+	WishlistProductVariantTableName = "WishlistItemProductVariants"
+	WishlistTableName               = "Wishlists"
+)
+
+const (
+	StockTableName                 = "Stocks"
+	WarehouseTableName             = "Warehouses"
+	WarehouseShippingZoneTableName = "WarehouseShippingZones"
+)
+
+const (
+	CheckoutLineTableName = "CheckoutLines"
+	CheckoutTableName     = "Checkouts"
+)

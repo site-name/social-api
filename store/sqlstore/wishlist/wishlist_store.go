@@ -10,10 +10,6 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/account"
 )
 
-const (
-	WishlistTableName = "Wishlists"
-)
-
 type SqlWishlistStore struct {
 	store.Store
 }
@@ -21,7 +17,7 @@ type SqlWishlistStore struct {
 func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 	ws := &SqlWishlistStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.Wishlist{}, WishlistTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(wishlist.Wishlist{}, store.WishlistTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true) // one two one relationship
@@ -30,7 +26,7 @@ func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 }
 
 func (ws *SqlWishlistStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(WishlistTableName, "UserID", account.UserTableName, "Id", true)
+	ws.CreateForeignKeyIfNotExists(store.WishlistTableName, "UserID", account.UserTableName, "Id", true)
 }
 
 func (ws *SqlWishlistStore) Save(wisl *wishlist.Wishlist) (*wishlist.Wishlist, error) {
@@ -46,7 +42,7 @@ func (ws *SqlWishlistStore) Save(wisl *wishlist.Wishlist) (*wishlist.Wishlist, e
 				continue
 			}
 			if ws.IsUniqueConstraintError(err, []string{"UserID", "wishlists_userid_key", "idx_wishlists_userid_unique"}) {
-				return nil, store.NewErrInvalidInput(WishlistTableName, "UserID", wisl.UserID)
+				return nil, store.NewErrInvalidInput(store.WishlistTableName, "UserID", wisl.UserID)
 			}
 			return nil, errors.Wrapf(err, "failed to save new wishlist with id=%s", wisl.Id)
 		}
@@ -60,7 +56,7 @@ func (ws *SqlWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 	res, err := ws.GetReplica().Get(wishlist.Wishlist{}, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(WishlistTableName, id)
+			return nil, store.NewErrNotFound(store.WishlistTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist with id=%s", id)
 	}
@@ -70,10 +66,10 @@ func (ws *SqlWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 
 func (ws *SqlWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
 	var wh *wishlist.Wishlist
-	err := ws.GetReplica().SelectOne(&wh, "SELECT * FROM "+WishlistTableName+" WHERE UserID = :UserID", map[string]interface{}{"UserID": userID})
+	err := ws.GetReplica().SelectOne(&wh, "SELECT * FROM "+store.WishlistTableName+" WHERE UserID = :UserID", map[string]interface{}{"UserID": userID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(WishlistTableName, "UserID="+userID)
+			return nil, store.NewErrNotFound(store.WishlistTableName, "UserID="+userID)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist with userId=%s", userID)
 	}
