@@ -25,7 +25,7 @@ type ProductVariant struct {
 	Sku            string                 `json:"sku"`
 	Weight         *float32               `json:"weight"`
 	WeightUnit     measurement.WeightUnit `json:"weight_unit"`
-	TrackInventory *bool                  `json:"track_inventory"`
+	TrackInventory *bool                  `json:"track_inventory"` // default *true
 	model.Sortable
 	model.ModelMetadata
 }

@@ -277,13 +277,19 @@ type (
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
-		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                                                                                               // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
-		Get(stockID string) (*warehouse.Stock, error)                                                                                                                                                        // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)    // FilterVariantStocksForCountry
-		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterProductStocksForCountryAndChannel
+		Save(stock *warehouse.Stock) (*warehouse.Stock, error) // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
+		Get(stockID string) (*warehouse.Stock, error)          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		// FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
+		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
+		// FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
+		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
+		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                              // Save inserts new allocation into database and returns it
+		Get(allocationID string) (*warehouse.Allocation, error)                                            // Get find and returns allocation with given id
+		AllocationsByWhich(parentID string, toWhich AllocationsBy) ([]*warehouse.Allocation, error)        // AllocationsByWhich finds all allocations that belong to given order line or stock
+		AllocationsByParentIDs(parentIDs []string, toWhich AllocationsBy) ([]*warehouse.Allocation, error) // AllocationsByParentIDs is similar to AllocationsByWhich but it finds for all given parent ids, not just one
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()

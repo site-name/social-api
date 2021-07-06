@@ -61,6 +61,7 @@ type CheckoutApp interface {
 	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	CheckVariantInStock(variant *product_and_discount.ProductVariant, ckout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)
 	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) // CheckoutShippingRequired checks if given checkout requires shipping
+	CheckoutsByUser(userID string) (*checkout.Checkout, *model.AppError)   // CheckoutsByUser returns a list of checkouts that their channels are active and belong to given user.
 }
 
 // CheckoutApp

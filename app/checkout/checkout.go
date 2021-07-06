@@ -21,6 +21,10 @@ func init() {
 	})
 }
 
+func (a *AppCheckout) CheckoutsByUser(userID string) (*checkout.Checkout, *model.AppError) {
+	panic("not implt")
+}
+
 func (a *AppCheckout) CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) {
 	checkout, err := a.Srv().Store.Checkout().Get(checkoutToken)
 	if err != nil {

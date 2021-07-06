@@ -13,14 +13,10 @@ type SqlOrderLineStore struct {
 	store.Store
 }
 
-const (
-	orderLineTableName = "OrderLines"
-)
-
 func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	ols := &SqlOrderLineStore{sqlStore}
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.OrderLine{}, orderLineTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.OrderLine{}, store.OrderLineTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -39,13 +35,13 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 }
 
 func (ols *SqlOrderLineStore) CreateIndexesIfNotExists() {
-	ols.CreateIndexIfNotExists("idx_order_lines_product_name", orderLineTableName, "ProductName")
-	ols.CreateIndexIfNotExists("idx_order_lines_translated_product_name", orderLineTableName, "TranslatedProductName")
-	ols.CreateIndexIfNotExists("idx_order_lines_variant_name", orderLineTableName, "VariantName")
-	ols.CreateIndexIfNotExists("idx_order_lines_translated_variant_name", orderLineTableName, "TranslatedVariantName")
+	ols.CreateIndexIfNotExists("idx_order_lines_product_name", store.OrderLineTableName, "ProductName")
+	ols.CreateIndexIfNotExists("idx_order_lines_translated_product_name", store.OrderLineTableName, "TranslatedProductName")
+	ols.CreateIndexIfNotExists("idx_order_lines_variant_name", store.OrderLineTableName, "VariantName")
+	ols.CreateIndexIfNotExists("idx_order_lines_translated_variant_name", store.OrderLineTableName, "TranslatedVariantName")
 
-	ols.CreateIndexIfNotExists("idx_order_lines_product_name_lower_textpattern", orderLineTableName, "lower(ProductName) text_pattern_ops")
-	ols.CreateIndexIfNotExists("idx_order_lines_variant_name_lower_textpattern", orderLineTableName, "lower(VariantName) text_pattern_ops")
+	ols.CreateIndexIfNotExists("idx_order_lines_product_name_lower_textpattern", store.OrderLineTableName, "lower(ProductName) text_pattern_ops")
+	ols.CreateIndexIfNotExists("idx_order_lines_variant_name_lower_textpattern", store.OrderLineTableName, "lower(VariantName) text_pattern_ops")
 }
 
 func (ols *SqlOrderLineStore) Save(odl *order.OrderLine) (*order.OrderLine, error) {
@@ -62,10 +58,10 @@ func (ols *SqlOrderLineStore) Save(odl *order.OrderLine) (*order.OrderLine, erro
 
 func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	var odl order.OrderLine
-	err := ols.GetReplica().SelectOne(&odl, "SELECT * FROM "+orderLineTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	err := ols.GetReplica().SelectOne(&odl, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(orderLineTableName, id)
+			return nil, store.NewErrNotFound(store.OrderLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order line with id=%s", id)
 	}
@@ -75,10 +71,10 @@ func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 func (ols *SqlOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
 	var orderLines []*order.OrderLine
-	_, err := ols.GetReplica().Select(&orderLines, "SELECT * FROM "+orderLineTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
+	_, err := ols.GetReplica().Select(&orderLines, "SELECT * FROM "+store.OrderLineTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(orderLineTableName, "orderID="+orderID)
+			return nil, store.NewErrNotFound(store.OrderLineTableName, "orderID="+orderID)
 		}
 		return nil, errors.Wrapf(err, "failed to find order lines with parent order id=%s", orderID)
 	}

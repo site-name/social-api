@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/account"
 	"github.com/sitename/sitename/store/sqlstore/channel"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
@@ -44,10 +43,10 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", store.CheckoutTableName, "ShippingAddressID")
 	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", store.CheckoutTableName, "ShippingMethodID")
 
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", account.UserTableName, "Id", true)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", store.UserTableName, "Id", true)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", channel.ChannelTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", account.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", account.AddressTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", shipping.ShippingMethodTableName, "Id", false)
 }
 

@@ -43,6 +43,8 @@ func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {
 	ws.CreateIndexIfNotExists("idx_warehouses_slug", store.WarehouseTableName, "Slug")
 	ws.CreateIndexIfNotExists("idx_warehouses_email", store.WarehouseTableName, "Email")
 	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", store.WarehouseTableName, "lower(Email) text_pattern_ops")
+
+	ws.CreateForeignKeyIfNotExists(store.WarehouseTableName, "AddressID", store.AddressTableName, "Id", false)
 }
 
 func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {

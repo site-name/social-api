@@ -23,10 +23,6 @@ var (
 	UserSearchTypeAll                = []string{"Username", "FirstName", "LastName", "Nickname", "Email"}
 )
 
-const (
-	UserTableName = "Users"
-)
-
 type SqlUserStore struct {
 	store.Store
 	metrics einterfaces.MetricsInterface
@@ -56,10 +52,10 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 			"u.LastActivityAt", "u.TermsOfServiceId", "u.TermsOfServiceCreateAt", "u.DisableWelcomeEmail",
 			"u.Metadata", "u.PrivateMetadata",
 		).
-		From(UserTableName + " AS u")
+		From(store.UserTableName + " AS u")
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(account.User{}, UserTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.User{}, store.UserTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("DefaultShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("DefaultBillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -88,21 +84,21 @@ func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 }
 
 func (us *SqlUserStore) CreateIndexesIfNotExists() {
-	us.CreateIndexIfNotExists("idx_users_email", UserTableName, "Email")
-	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", UserTableName, "lower(Email) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", UserTableName, "lower(Username) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", UserTableName, "lower(Nickname) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", UserTableName, "lower(FirstName) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", UserTableName, "lower(LastName) text_pattern_ops")
-	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", UserTableName, strings.Join(UserSearchTypeAll, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", UserTableName, strings.Join(UserSearchTypeAll_NO_FULL_NAME, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", UserTableName, strings.Join(UserSearchTypeNames, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", UserTableName, strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
+	us.CreateIndexIfNotExists("idx_users_email", store.UserTableName, "Email")
+	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", store.UserTableName, "lower(Email) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", store.UserTableName, "lower(Username) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", store.UserTableName, "lower(Nickname) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", store.UserTableName, "lower(FirstName) text_pattern_ops")
+	us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", store.UserTableName, "lower(LastName) text_pattern_ops")
+	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", store.UserTableName, strings.Join(UserSearchTypeAll, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", store.UserTableName, strings.Join(UserSearchTypeAll_NO_FULL_NAME, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", store.UserTableName, strings.Join(UserSearchTypeNames, ", "))
+	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", store.UserTableName, strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
 
-	us.CreateForeignKeyIfNotExists(UserTableName, "DefaultShippingAddressID", "Addresses", "Id", false)
-	us.CreateForeignKeyIfNotExists(UserTableName, "DefaultBillingAddressID", "Addresses", "Id", false)
+	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultShippingAddressID", "Addresses", "Id", false)
+	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultBillingAddressID", "Addresses", "Id", false)
 	// create indexes for metadata
-	us.CommonMetaDataIndex(UserTableName)
+	us.CommonMetaDataIndex(store.UserTableName)
 }
 
 // DeactivateGuests
@@ -110,7 +106,7 @@ func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	curTime := model.GetMillis()
 	updateQuery := us.
 		GetQueryBuilder().
-		Update(UserTableName).
+		Update(store.UserTableName).
 		Set("UpdateAt", curTime).
 		Set("DeleteAt", curTime).
 		Where(squirrel.Eq{"Roles": "system_guest"}).
@@ -129,7 +125,7 @@ func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	selectQuery := us.
 		GetQueryBuilder().
 		Select("Id").
-		From(UserTableName).
+		From(store.UserTableName).
 		Where(squirrel.Eq{"DeleteAt": curTime})
 
 	queryString, args, err = selectQuery.ToSql()
@@ -164,7 +160,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 		builder := us.
 			GetQueryBuilder().
 			Select("COUNT(*)").
-			From(UserTableName).
+			From(store.UserTableName).
 			Where(whereEquals)
 		query, args, err := builder.ToSql()
 		if err != nil {
@@ -175,7 +171,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 	}
 	builder := us.
 		GetQueryBuilder().
-		Update(UserTableName).
+		Update(store.UserTableName).
 		Set("AuthData", squirrel.Expr("Email")).
 		Where(whereEquals)
 	query, args, err := builder.ToSql()
@@ -203,7 +199,7 @@ func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
 }
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
-	updateAt, err := us.GetReplica().SelectInt("SELECT UpdateAt FROM " + UserTableName + " ORDER BY UpdateAt DESC LIMIT 1")
+	updateAt, err := us.GetReplica().SelectInt("SELECT UpdateAt FROM " + store.UserTableName + " ORDER BY UpdateAt DESC LIMIT 1")
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 	}
@@ -298,7 +294,7 @@ func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*acc
 
 func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
 	now := model.GetMillis()
-	if _, err := us.GetMaster().Exec("UPDATE "+UserTableName+" SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": now, "UserId": userId}); err != nil {
+	if _, err := us.GetMaster().Exec("UPDATE "+store.UserTableName+" SET LastPictureUpdate = :Time, UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": now, "UserId": userId}); err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -307,7 +303,7 @@ func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
 
 func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
 	now := model.GetMillis()
-	if _, err := us.GetMaster().Exec("UPDATE "+UserTableName+" SET LastPictureUpdate = :PictureUpdateTime, UpdateAt = :UpdateTime WHERE Id = :UserId", map[string]interface{}{"PictureUpdateTime": 0, "UpdateTime": now, "UserId": userId}); err != nil {
+	if _, err := us.GetMaster().Exec("UPDATE "+store.UserTableName+" SET LastPictureUpdate = :PictureUpdateTime, UpdateAt = :UpdateTime WHERE Id = :UserId", map[string]interface{}{"PictureUpdateTime": 0, "UpdateTime": now, "UserId": userId}); err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -316,7 +312,7 @@ func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
 
 func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
 	now := model.GetMillis()
-	if _, err := us.GetMaster().Exec("UPDATE "+UserTableName+" SET UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": now, "UserId": userId}); err != nil {
+	if _, err := us.GetMaster().Exec("UPDATE "+store.UserTableName+" SET UpdateAt = :Time WHERE Id = :UserId", map[string]interface{}{"Time": now, "UserId": userId}); err != nil {
 		return now, errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -325,7 +321,7 @@ func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
 
 func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 	now := model.GetMillis()
-	if _, err := us.GetMaster().Exec("UPDATE "+UserTableName+" SET Password = :Password, LastPasswordUpdate = :LastPasswordUpdate, UpdateAt = :UpdateAt, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = :UserId", map[string]interface{}{
+	if _, err := us.GetMaster().Exec("UPDATE "+store.UserTableName+" SET Password = :Password, LastPasswordUpdate = :LastPasswordUpdate, UpdateAt = :UpdateAt, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = :UserId", map[string]interface{}{
 		"Password":           hashedPassword,
 		"LastPasswordUpdate": now,
 		"UpdateAt":           now,
@@ -339,7 +335,7 @@ func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 
 func (us *SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int) error {
 	if _, err := us.GetMaster().Exec(
-		"UPDATE "+UserTableName+" SET FailedAttempts = :FailedAttempts WHERE Id = :UserId",
+		"UPDATE "+store.UserTableName+" SET FailedAttempts = :FailedAttempts WHERE Id = :UserId",
 		map[string]interface{}{
 			"FailedAttempts": attempts,
 			"UserId":         userId,
@@ -353,7 +349,7 @@ func (us *SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int
 // UpdateAuthData updates auth data of user
 func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *string, email string, resetMfa bool) (string, error) {
 	updateAt := model.GetMillis()
-	query := `UPDATE ` + UserTableName +
+	query := `UPDATE ` + store.UserTableName +
 		` SET
 			Password = '',
 			LastPasswordUpdate = :LastPasswordUpdate,
@@ -394,7 +390,7 @@ func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
 
 	if _, err := us.
 		GetMaster().
-		Exec("UPDATE "+UserTableName+" SET MfaSecret = :Secret, UpdateAt = :UpdateAt WHERE Id = :UserId",
+		Exec("UPDATE "+store.UserTableName+" SET MfaSecret = :Secret, UpdateAt = :UpdateAt WHERE Id = :UserId",
 			map[string]interface{}{"Secret": secret, "UpdateAt": updateAt, "userId": userId}); err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
@@ -404,7 +400,7 @@ func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
 
 func (us *SqlUserStore) UpdateMfaActive(userId string, active bool) error {
 	updateAt := model.GetMillis()
-	if _, err := us.GetMaster().Exec("UPDATE "+UserTableName+" SET MfaActive = :Active, UpdateAt = :UpdateAt WHERE Id = :UserId",
+	if _, err := us.GetMaster().Exec("UPDATE "+store.UserTableName+" SET MfaActive = :Active, UpdateAt = :UpdateAt WHERE Id = :UserId",
 		map[string]interface{}{"Active": active, "UpdateAt": updateAt, "UserId": userId}); err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
@@ -710,7 +706,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 	if _, err := us.
 		GetMaster().
 		Exec(
-			"UPDATE "+UserTableName+" SET Email = lower(:email), EmailVerified = true, UpdateAt = :Time WHERE Id = :UserId",
+			"UPDATE "+store.UserTableName+" SET Email = lower(:email), EmailVerified = true, UpdateAt = :Time WHERE Id = :UserId",
 			map[string]interface{}{
 				"email":  email,
 				"Time":   now,
@@ -724,7 +720,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 }
 
 func (us *SqlUserStore) PermanentDelete(userId string) error {
-	if _, err := us.GetMaster().Exec("DELETE FROM "+UserTableName+" WHERE Id = :UserId", map[string]interface{}{"UserId": userId}); err != nil {
+	if _, err := us.GetMaster().Exec("DELETE FROM "+store.UserTableName+" WHERE Id = :UserId", map[string]interface{}{"UserId": userId}); err != nil {
 		return errors.Wrapf(err, "failed to delete User with userId=%s", userId)
 	}
 	return nil
@@ -740,7 +736,7 @@ func applyViewRestrictionsFilter(query squirrel.SelectBuilder, distinct bool) sq
 }
 
 func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
-	query := us.GetQueryBuilder().Select("COUNT(DISTINCT u.Id)").From(UserTableName + " AS u")
+	query := us.GetQueryBuilder().Select("COUNT(DISTINCT u.Id)").From(store.UserTableName + " AS u")
 
 	if !options.IncludeDeleted {
 		query = query.Where("u.DeleteAt = 0")

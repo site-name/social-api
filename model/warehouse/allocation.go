@@ -8,9 +8,9 @@ import (
 
 type Allocation struct {
 	Id                string `json:"id"`
-	OrderLineID       string `json:"order_ldine_id"` // NOT NULL
-	StockID           string `json:"stock_id"`       // NOT NULL
-	QuantityAllocated uint64 `json:"quantity_allocated"`
+	OrderLineID       string `json:"order_ldine_id"`     // NOT NULL
+	StockID           string `json:"stock_id"`           // NOT NULL
+	QuantityAllocated uint   `json:"quantity_allocated"` // default 0
 }
 
 func (a *Allocation) IsValid() *model.AppError {

@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/account"
 )
 
 type SqlWishlistStore struct {
@@ -26,7 +25,7 @@ func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 }
 
 func (ws *SqlWishlistStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(store.WishlistTableName, "UserID", account.UserTableName, "Id", true)
+	ws.CreateForeignKeyIfNotExists(store.WishlistTableName, "UserID", store.UserTableName, "Id", true)
 }
 
 func (ws *SqlWishlistStore) Save(wisl *wishlist.Wishlist) (*wishlist.Wishlist, error) {

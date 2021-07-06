@@ -99,11 +99,20 @@ func WildcardSearchTerm(term string) string {
 
 // AppErrorFromDatabaseLookupError is a utility function that create *model.AppError with given error.
 //
-// Must be used with database LOOLUP errors.
+// NOTE: ONLY SUPPORTS 3 TYPES OF ERRORS:
+//
+// 1) not found database lookup error (*ErrNotFound - 404)
+//
+// 2) invalid input param(s) error (*ErrInvalidInput - 400)
+//
+// 3) system error while performing lookup operations (500)
 func AppErrorFromDatabaseLookupError(where, errId string, err error) *model.AppError {
 	statusCode := http.StatusInternalServerError
+
 	if _, ok := err.(*ErrNotFound); ok {
 		statusCode = http.StatusNotFound
+	} else if _, ok := err.(*ErrInvalidInput); ok {
+		statusCode = http.StatusBadRequest
 	}
 
 	return model.NewAppError(where, errId, nil, err.Error(), statusCode)

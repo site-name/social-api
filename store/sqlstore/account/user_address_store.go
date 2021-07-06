@@ -29,8 +29,8 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 }
 
 func (uas *SqlUserAddressStore) CreateIndexesIfNotExists() {
-	uas.CreateForeignKeyIfNotExists(userAddressTableName, "UserID", UserTableName, "Id", true)
-	uas.CreateForeignKeyIfNotExists(userAddressTableName, "AddressID", AddressTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(userAddressTableName, "UserID", store.UserTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(userAddressTableName, "AddressID", store.AddressTableName, "Id", true)
 }
 
 func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {

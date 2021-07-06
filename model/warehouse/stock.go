@@ -8,9 +8,9 @@ import (
 
 type Stock struct {
 	Id               string `json:"id"`
-	WarehouseID      string `json:"warehouse_id"`
+	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
-	Quantity         uint64 `json:"quantity"`
+	Quantity         uint   `json:"quantity"`           // DEFAULT 0
 }
 
 func (s *Stock) IsValid() *model.AppError {

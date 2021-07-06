@@ -15,11 +15,11 @@ const (
 )
 
 type WareHouse struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"` // unique
-	Slug      string `json:"slug"` // unique
-	AddressID string `json:"address_id"`
-	Email     string `json:"email"`
+	Id        string  `json:"id"`
+	Name      string  `json:"name"`       // unique
+	Slug      string  `json:"slug"`       // unique
+	AddressID *string `json:"address_id"` // nullable
+	Email     string  `json:"email"`
 	model.ModelMetadata
 }
 
@@ -32,7 +32,7 @@ func (w *WareHouse) IsValid() *model.AppError {
 	if !model.IsValidId(w.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(w.AddressID) {
+	if w.AddressID != nil && !model.IsValidId(*w.AddressID) {
 		return outer("address_id", nil)
 	}
 	if utf8.RuneCountInString(w.Name) > WAREHOUSE_NAME_MAX_LENGTH {
