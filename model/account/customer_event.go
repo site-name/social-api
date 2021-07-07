@@ -77,6 +77,9 @@ func (ce *CustomerEvent) IsValid() *model.AppError {
 	if !model.IsValidId(ce.Id) {
 		return outer("id", nil)
 	}
+	if ce.Date == 0 {
+		return outer("date", &ce.Id)
+	}
 	if ce.UserID != nil && !model.IsValidId(*ce.UserID) {
 		return outer("usder_id", &ce.Id)
 	}

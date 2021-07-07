@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/NYTimes/gziphandler"
+	"github.com/mattermost/gziphandler"
 	"github.com/sitename/sitename/web"
 	"github.com/sitename/sitename/web/shared"
 )

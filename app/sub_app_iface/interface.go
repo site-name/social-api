@@ -85,6 +85,8 @@ type AccountApp interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
 	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser deletes relationship between given user and address
 	UserByEmail(email string) (*account.User, *model.AppError)                                    // UserByEmail try finding user with given email and returns that user
+	// CommonCustomerCreateEvent is common method for creating customer events
+	CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError)
 	// CreateUserFromSignup create new user with user input information by:
 	//
 	// 1) Checks if user signup is allowed

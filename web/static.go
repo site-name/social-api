@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/avct/uasurfer"
+	"github.com/mattermost/gziphandler"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
