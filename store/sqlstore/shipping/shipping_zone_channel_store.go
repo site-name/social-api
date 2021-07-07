@@ -3,7 +3,6 @@ package shipping
 import (
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/channel"
 )
 
 const (
@@ -31,5 +30,5 @@ func NewSqlShippingZoneChannelStore(s store.Store) store.ShippingZoneChannelStor
 
 func (ss *SqlShippingZoneChannelStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(ShippingZoneChannelTableName, "ShippingZoneID", ShippingZoneTableName, "Id", false)
-	ss.CreateForeignKeyIfNotExists(ShippingZoneChannelTableName, "ChannelID", channel.ChannelTableName, "Id", false)
+	ss.CreateForeignKeyIfNotExists(ShippingZoneChannelTableName, "ChannelID", store.ChannelTableName, "Id", false)
 }

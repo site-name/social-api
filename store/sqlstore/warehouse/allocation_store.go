@@ -61,11 +61,11 @@ func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
 	return res.(*warehouse.Allocation), nil
 }
 
-func (as *SqlAllocationStore) AllocationsByWhich(parentID string, toWhich store.AllocationsBy) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
 	var id string
-	if toWhich == store.ByOrderLine {
+	if toWhich == warehouse.ByOrderLine {
 		id = "OrderLineID"
-	} else if toWhich == store.ByStock {
+	} else if toWhich == warehouse.ByStock {
 		id = "StockID"
 	} else {
 		return nil, store.NewErrInvalidInput(store.AllocationTableName, "to which", toWhich)
@@ -83,11 +83,11 @@ func (as *SqlAllocationStore) AllocationsByWhich(parentID string, toWhich store.
 	return allocations, nil
 }
 
-func (as *SqlAllocationStore) AllocationsByParentIDs(parentIDs []string, which store.AllocationsBy) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) AllocationsByParentIDs(parentIDs []string, which warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
 	var id string
-	if which == store.ByOrderLine {
+	if which == warehouse.ByOrderLine {
 		id = "OrderLineID"
-	} else if which == store.ByStock {
+	} else if which == warehouse.ByStock {
 		id = "StockID"
 	} else {
 		return nil, store.NewErrInvalidInput(store.AllocationTableName, "to which", which)

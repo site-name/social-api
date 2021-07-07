@@ -158,3 +158,11 @@ func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError)
 
 	return tran.Token, nil
 }
+
+func (a *AppPayment) GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError) {
+	payments, err := a.Srv().Store.Payment().GetPaymentsByCheckoutID(checkoutID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("GetAllPaymentsByCheckout", "app.payment.payments_by_checkout_missing.app_error", err)
+	}
+	return payments, nil
+}

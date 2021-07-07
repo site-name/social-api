@@ -125,7 +125,7 @@ func buildStoreImplement() error {
 			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation",
 				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount":
 				return "discount"
-			case "GiftCard":
+			case "GiftCard", "GiftCardOrder", "GiftCardCheckout":
 				return "giftcard"
 			case "InvoiceEvent":
 				return "invoice"

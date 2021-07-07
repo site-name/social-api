@@ -13,15 +13,11 @@ type SqlGiftCardStore struct {
 	store.Store
 }
 
-const (
-	giftcardTableName = "GiftCards"
-)
-
 func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	gcs := &SqlGiftCardStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(giftcard.GiftCard{}, giftcardTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(giftcard.GiftCard{}, store.GiftcardTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Code").SetMaxSize(giftcard.GIFT_CARD_CODE_MAX_LENGTH).SetUnique(true)
@@ -32,7 +28,7 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 }
 
 func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
-	gcs.CreateIndexIfNotExists("idx_giftcards_code", giftcardTableName, "Code")
+	gcs.CreateIndexIfNotExists("idx_giftcards_code", store.GiftcardTableName, "Code")
 }
 
 func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
@@ -42,7 +38,7 @@ func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCa
 	}
 	if err := gcs.GetMaster().Insert(giftCard); err != nil {
 		if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
-			return nil, store.NewErrInvalidInput(giftcardTableName, "Code", giftCard.Code)
+			return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
 		}
 		return nil, errors.Wrapf(err, "failed to save giftcard with id=%s", giftCard.Id)
 	}
@@ -53,7 +49,7 @@ func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCa
 func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 	if res, err := gcs.GetReplica().Get(giftcard.GiftCard{}, id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(giftcardTableName, id)
+			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)
 	} else {
@@ -63,14 +59,52 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 
 func (gcs *SqlGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
 	var giftcards []*giftcard.GiftCard
-	if _, err := gcs.GetReplica().Select(&giftcards, "SELECT * FROM "+giftcardTableName+" WHERE UserID = :userID",
+	if _, err := gcs.GetReplica().Select(&giftcards, "SELECT * FROM "+store.GiftcardTableName+" WHERE UserID = :userID",
 		map[string]interface{}{"userID": userID}); err != nil {
 		if err != nil {
 			if err == sql.ErrNoRows {
-				return nil, store.NewErrNotFound(giftcardTableName, "userID="+userID)
+				return nil, store.NewErrNotFound(store.GiftcardTableName, "userID="+userID)
 			}
 			return nil, errors.Wrapf(err, "failed to find giftcards with userID=%s", userID)
 		}
 	}
+	return giftcards, nil
+}
+
+func (gs *SqlGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
+	query := `SELECT * FROM ` + store.GiftcardTableName + ` AS Gc
+		WHERE Gc.Id IN (
+			SELECT GcCk.GiftcardID FROM ` + store.GiftcardCheckoutTableName + ` AS GcCk
+		)
+		WHERE GcCk.CheckoutID = :CheckoutID`
+
+	var giftcards []*giftcard.GiftCard
+	_, err := gs.GetReplica().Select(&giftcards, query, map[string]interface{}{"CheckoutID": checkoutID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.GiftcardTableName, "checkoutID="+checkoutID)
+		}
+		return nil, errors.Wrapf(err, "failed to find giftcards belong to checkout with id=%s", checkoutID)
+	}
+
+	return giftcards, nil
+}
+
+func (gs *SqlGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error) {
+	query := `SELECT * FROM ` + store.GiftcardTableName + ` AS Gc
+		WHERE Gc.Id IN (
+			SELECT GcOd.GiftcardID FROM ` + store.OrderGiftCardTableName + ` AS GcOd
+		)
+		WHERE GcOd.OrderID = :OrderID`
+
+	var giftcards []*giftcard.GiftCard
+	_, err := gs.GetReplica().Select(&giftcards, query, map[string]interface{}{"OrderID": orderID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.GiftcardTableName, "checkoutID="+orderID)
+		}
+		return nil, errors.Wrapf(err, "failed to find giftcards belong to order with id=%s", orderID)
+	}
+
 	return giftcards, nil
 }

@@ -14,15 +14,11 @@ type SqlPaymentStore struct {
 	store.Store
 }
 
-const (
-	paymentTableName = "Payments"
-)
-
 func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 	ps := &SqlPaymentStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(payment.Payment{}, paymentTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(payment.Payment{}, store.PaymentTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CheckoutID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -54,13 +50,13 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 }
 
 func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_payments_order_id", paymentTableName, "OrderID")
-	ps.CreateIndexIfNotExists("idx_payments_is_active", paymentTableName, "IsActive")
-	ps.CreateIndexIfNotExists("idx_payments_charge_status", paymentTableName, "ChargeStatus")
-	ps.CreateIndexIfNotExists("idx_payments_psp_reference", paymentTableName, "PspReference")
+	ps.CreateIndexIfNotExists("idx_payments_order_id", store.PaymentTableName, "OrderID")
+	ps.CreateIndexIfNotExists("idx_payments_is_active", store.PaymentTableName, "IsActive")
+	ps.CreateIndexIfNotExists("idx_payments_charge_status", store.PaymentTableName, "ChargeStatus")
+	ps.CreateIndexIfNotExists("idx_payments_psp_reference", store.PaymentTableName, "PspReference")
 
-	ps.CreateForeignKeyIfNotExists(paymentTableName, "OrderID", "Orders", "Id", false)
-	ps.CreateForeignKeyIfNotExists(paymentTableName, "CheckoutID", "Checkouts", "Id", false)
+	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "OrderID", "Orders", "Id", false)
+	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "CheckoutID", "Checkouts", "Id", false)
 }
 
 func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
@@ -77,10 +73,10 @@ func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, err
 
 func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 	var payment payment.Payment
-	err := ps.GetReplica().SelectOne(&payment, "SELECT * FROM "+paymentTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	err := ps.GetReplica().SelectOne(&payment, "SELECT * FROM "+store.PaymentTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(paymentTableName, id)
+			return nil, store.NewErrNotFound(store.PaymentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
 	}
@@ -90,10 +86,10 @@ func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 
 func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
 	var payments []*payment.Payment
-	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+paymentTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
+	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(paymentTableName, "orderID="+orderID)
+			return nil, store.NewErrNotFound(store.PaymentTableName, "orderID="+orderID)
 		}
 		return nil, errors.Wrapf(err, "failed to find payments belong to order with Id=%s", orderID)
 	}
@@ -142,4 +138,17 @@ func (ps *SqlPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOp
 		return false, nil
 	}
 	return true, nil
+}
+
+func (ps *SqlPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
+	var payments []*payment.Payment
+	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE CheckoutID = :CheckoutID", map[string]interface{}{"CheckoutID": checkoutID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.PaymentTableName, "checkoutID="+checkoutID)
+		}
+		return nil, errors.Wrapf(err, "failed to find payments for checkout with id=%s", checkoutID)
+	}
+
+	return payments, nil
 }

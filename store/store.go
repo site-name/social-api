@@ -85,6 +85,8 @@ type Store interface {
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore       //
 	OrderDiscount() OrderDiscountStore                                 //
 	GiftCard() GiftCardStore                                           // giftcard
+	GiftCardOrder() GiftCardOrderStore                                 //
+	GiftCardCheckout() GiftCardCheckoutStore                           //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
 	Menu() MenuStore                                                   // menu
 	MenuItem() MenuItemStore                                           //
@@ -287,10 +289,10 @@ type (
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
-		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                              // Save inserts new allocation into database and returns it
-		Get(allocationID string) (*warehouse.Allocation, error)                                            // Get find and returns allocation with given id
-		AllocationsByWhich(parentID string, toWhich AllocationsBy) ([]*warehouse.Allocation, error)        // AllocationsByWhich finds all allocations that belong to given order line or stock
-		AllocationsByParentIDs(parentIDs []string, toWhich AllocationsBy) ([]*warehouse.Allocation, error) // AllocationsByParentIDs is similar to AllocationsByWhich but it finds for all given parent ids, not just one
+		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                                        // Save inserts new allocation into database and returns it
+		Get(allocationID string) (*warehouse.Allocation, error)                                                      // Get find and returns allocation with given id
+		AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error)        // AllocationsByWhich finds all allocations that belong to given order line or stock
+		AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) // AllocationsByParentIDs is similar to AllocationsByWhich but it finds for all given parent ids, not just one
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
@@ -391,6 +393,7 @@ type (
 		Get(id string) (*payment.Payment, error)                                                // Get returns a payment with given id
 		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error)                        // GetPaymentsByOrderID returns all payments that belong to given order
 		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
+		GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error)                  // GetPaymentsByCheckoutID returns all payments belong to given checkout
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
@@ -468,12 +471,28 @@ type InvoiceEventStore interface {
 	CreateIndexesIfNotExists()
 }
 
-type GiftCardStore interface {
-	CreateIndexesIfNotExists()
-	Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)     // Save insert new giftcard to database
-	GetById(id string) (*giftcard.GiftCard, error)              // GetById returns a giftcard instance that has id of given id
-	GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) // GetAllByUserId returns a slice aff giftcards that belong to given user
-}
+// giftcard related stores
+type (
+	GiftCardStore interface {
+		CreateIndexesIfNotExists()
+		Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)           // Save insert new giftcard to database
+		GetById(id string) (*giftcard.GiftCard, error)                    // GetById returns a giftcard instance that has id of given id
+		GetAllByUserId(userID string) ([]*giftcard.GiftCard, error)       // GetAllByUserId returns a slice aff giftcards that belong to given user
+		GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) // GetAllByCheckout returns all giftcards belong to given checkout
+		GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error)       // GetAllByOrder returns all giftcards belong to given order
+	}
+	GiftCardOrderStore interface {
+		CreateIndexesIfNotExists()
+		Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) // Save inserts new giftcard-order relation into database then returns it
+		Get(id string) (*giftcard.OrderGiftCard, error)                              // Get returns giftcard-order relation table with given id
+	}
+	GiftCardCheckoutStore interface {
+		CreateIndexesIfNotExists()
+		Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) // Save inserts new giftcard-checkout relation into database then returns it
+		Get(id string) (*giftcard.GiftCardCheckout, error)                                 // Get returns giftcard-checkout relation table with given id
+
+	}
+)
 
 type OrderDiscountStore interface {
 	CreateIndexesIfNotExists()
@@ -530,10 +549,10 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
-		Save(checkout *checkout.Checkout) (*checkout.Checkout, error)   // Save inserts checkout instance to database
-		Get(id string) (*checkout.Checkout, error)                      // Get returns checkout by given id
-		Update(checkout *checkout.Checkout) (*checkout.Checkout, error) // Update updates given checkout and returns it
-		CheckoutsByUserID(userID string) ([]*checkout.Checkout, error)  // CheckoutsByUserID returns a list of check outs that belong to given user
+		Save(checkout *checkout.Checkout) (*checkout.Checkout, error)                      // Save inserts checkout instance to database
+		Get(id string) (*checkout.Checkout, error)                                         // Get returns checkout by given id
+		Update(checkout *checkout.Checkout) (*checkout.Checkout, error)                    // Update updates given checkout and returns it
+		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) // CheckoutsByUserID returns a list of check outs that belong to given user
 	}
 )
 

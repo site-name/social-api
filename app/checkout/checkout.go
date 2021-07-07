@@ -5,10 +5,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store"
 )
 
@@ -22,8 +25,21 @@ func init() {
 	})
 }
 
-func (a *AppCheckout) CheckoutsByUser(userID string) (*checkout.Checkout, *model.AppError) {
-	panic("not implt")
+func (a *AppCheckout) CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError) {
+	checkouts, err := a.Srv().Store.Checkout().CheckoutsByUserID(userID, channelActive)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("CheckoutsByUser", "app.checkout.checkout_by_user_missing.app_error", err)
+	}
+	return checkouts, nil
+}
+
+func (a *AppCheckout) CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError) {
+	checkouts, appErr := a.CheckoutsByUser(userID, true)
+	if appErr != nil || checkouts == nil {
+		return nil, appErr
+	}
+
+	return checkouts[0], nil
 }
 
 func (a *AppCheckout) CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) {
@@ -124,4 +140,62 @@ func (a *AppCheckout) UpdateCheckout(ckout *checkout.Checkout) (*checkout.Checko
 	}
 
 	return newCkout, nil
+}
+
+func (a *AppCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError) {
+	gcs, appErr := a.GiftcardApp().GiftcardsByCheckout(checkout.Token)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	balanceAmount := decimal.Zero
+	for _, gc := range gcs {
+		if gc.CurrentBalanceAmount != nil {
+			balanceAmount = balanceAmount.Add(*gc.CurrentBalanceAmount)
+		}
+	}
+
+	return &goprices.Money{
+		Amount:   &balanceAmount,
+		Currency: checkout.Currency,
+	}, nil
+}
+
+func (a *AppCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) {
+	checkoutLines, appErr := a.CheckoutLinesByCheckoutID(checkout.Token)
+	if appErr != nil {
+		// in case checkout has no checkout lines:
+		if appErr.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, appErr
+	}
+
+	for _, line := range checkoutLines {
+		if line.VariantID == productVariantID {
+			return line, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
+	payments, appErr := a.PaymentApp().GetAllPaymentsByCheckout(checkout.Token)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, appErr
+	}
+
+	// find latest payment by comparing their creation time
+	var latestPayment *payment.Payment
+	for _, pm := range payments {
+		if pm.IsActive && (latestPayment == nil || latestPayment.CreateAt < pm.CreateAt) {
+			latestPayment = pm
+		}
+	}
+
+	return latestPayment, nil
 }

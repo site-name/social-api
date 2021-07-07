@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/file"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -28,7 +29,9 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardApp interface {
-	Save(id string) error
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                   // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsByCheckout returns all giftcards belong to given checkout
+	GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *model.AppError)       // GiftcardsByOrder returns all giftcards belong to given order
 }
 
 // PaymentApp defines methods for payment app
@@ -51,22 +54,26 @@ type PaymentApp interface {
 	CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)
 	// GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
-	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError // CleanCapture Checks if payment can be captured.
-	GetPaymentToken(paymentID string) (string, *model.AppError)                    // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
+	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError    // CleanCapture Checks if payment can be captured.
+	GetPaymentToken(paymentID string) (string, *model.AppError)                       // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
+	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError) // GetAllPaymentsByCheckout returns all payments have been made for given checkout
 }
 
 // CheckoutApp
 type CheckoutApp interface {
-	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError)
+	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) // CheckoutbyToken returns 1 checkout by its token (checkout's pripary key)
 	// CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
 	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	CheckVariantInStock(variant *product_and_discount.ProductVariant, ckout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)
-	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                 // CheckoutShippingRequired checks if given checkout requires shipping
-	CheckoutsByUser(userID string) ([]*checkout.Checkout, *model.AppError)                 // CheckoutsByUser returns a list of checkouts belong to given user.
-	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                    // CheckoutByUser returns a checkout that is active and belongs to given user
-	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                 // CheckoutCountry returns country code for given checkout
-	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError // CheckoutSetCountry set new country code for checkout
-	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)      // UpdateCheckout updates given checkout and returns it
+	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                  // CheckoutShippingRequired checks if given checkout requires shipping
+	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                              // CheckoutsByUser returns a list of checkouts belong to given user.
+	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                                                     // CheckoutByUser returns a checkout that is active and belongs to given user
+	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                  // CheckoutCountry returns country code for given checkout
+	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                  // CheckoutSetCountry set new country code for checkout
+	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                       // UpdateCheckout updates given checkout and returns it
+	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                 // GetCustomerEmail returns either checkout owner's email or checkout's Email property
+	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                           // CheckoutTotalGiftCardsBalance returns giftcards balance money
+	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
 }
 
 // CheckoutApp

@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/channel"
 	"github.com/sitename/sitename/store/sqlstore/product"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
@@ -99,7 +98,7 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 		query += ` INNER JOIN ` + shipping.ShippingZoneChannelTableName + ` AS SzCn ON (
 			SzCn.ShippingZoneID = Sz.Id
 		)
-		INNER JOIN ` + channel.ChannelTableName + ` AS Cn ON (
+		INNER JOIN ` + store.ChannelTableName + ` AS Cn ON (
 			Cn.Id = SzCn.ChannelID
 		)`
 		params["ChannelSlug"] = options.ChannelSlug

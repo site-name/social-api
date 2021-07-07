@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/channel"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
 
@@ -45,7 +44,7 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", store.CheckoutTableName, "ShippingMethodID")
 
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", store.UserTableName, "Id", true)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", channel.ChannelTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", store.ChannelTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", shipping.ShippingMethodTableName, "Id", false)
@@ -89,9 +88,24 @@ func (cs *SqlCheckoutStore) Update(ckout *checkout.Checkout) (*checkout.Checkout
 	return ckout, nil
 }
 
-func (cs *SqlCheckoutStore) CheckoutsByUserID(userID string) ([]*checkout.Checkout, error) {
+func (cs *SqlCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
 	var checkouts []*checkout.Checkout
-	_, err := cs.GetReplica().Select(&checkouts, "SELECT * FROM "+store.CheckoutTableName+" WHERE UserID = :UserID", map[string]interface{}{"UserID": userID})
+
+	query := `SELECT * FROM ` + store.CheckoutTableName + ` AS Ck 
+	INNER JOIN ` + store.ChannelTableName + ` AS Cn ON (
+		Cn.Id = Ck.ChannelID
+	)`
+	condition := `Ck.UserID = :UserID`
+
+	if channelActive {
+		condition += ` AND Cn.IsActive`
+	} else {
+		condition += ` AND NOT Cn.IsActive`
+	}
+
+	query += `WHERE (` + condition + `)`
+
+	_, err := cs.GetReplica().Select(&checkouts, query, map[string]interface{}{"UserID": userID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CheckoutTableName, "userID="+userID)

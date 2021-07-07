@@ -40,14 +40,23 @@ func (gc *GiftCard) ToJson() string {
 	return model.ModelToJson(gc)
 }
 
-// PopulateNonDbFields populates non-database fields contained in giftcard
+// PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
+	money := gc.InitialBalanceAmount
+	if money == nil {
+		money = &decimal.Zero
+	}
 	gc.InitialBalance = &goprices.Money{
-		Amount:   gc.InitialBalanceAmount,
+		Amount:   money,
 		Currency: gc.Currency,
 	}
+
+	money = gc.CurrentBalanceAmount
+	if money == nil {
+		money = &decimal.Zero
+	}
 	gc.CurrentBalance = &goprices.Money{
-		Amount:   gc.CurrentBalanceAmount,
+		Amount:   money,
 		Currency: gc.Currency,
 	}
 }
@@ -62,7 +71,8 @@ func (gc *GiftCard) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.gift_card.is_valid.%s.app_error",
 		"gift_card_id=",
-		"GiftCard.IsValid")
+		"GiftCard.IsValid",
+	)
 
 	if !model.IsValidId(gc.Id) {
 		return outer("id", nil)
@@ -97,5 +107,10 @@ func (gc *GiftCard) PreSave() {
 	if gc.StartDate == nil {
 		today := time.Now()
 		gc.StartDate = &today
+	}
+	if gc.Currency == "" {
+		gc.Currency = model.DEFAULT_CURRENCY
+	} else {
+		gc.Currency = strings.ToUpper(strings.TrimSpace(gc.Currency))
 	}
 }

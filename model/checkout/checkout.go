@@ -128,6 +128,11 @@ func (c *Checkout) PreSave() {
 	} else {
 		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
 	}
+	if c.Currency == "" {
+		c.Currency = model.DEFAULT_CURRENCY
+	} else {
+		c.Currency = strings.ToUpper(strings.TrimSpace(c.Currency))
+	}
 	c.Note = model.SanitizeUnicode(c.Note)
 
 	c.Email = model.NormalizeEmail(c.Email)
@@ -144,5 +149,10 @@ func (c *Checkout) PreUpdate() {
 		c.Country = model.DEFAULT_COUNTRY
 	} else {
 		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
+	}
+	if c.Currency == "" {
+		c.Currency = model.DEFAULT_CURRENCY
+	} else {
+		c.Currency = strings.ToUpper(strings.TrimSpace(c.Currency))
 	}
 }

@@ -5,8 +5,8 @@ import "github.com/sitename/sitename/model"
 // OrderGiftCard is a relationship model between Order & GiftCard (m2m)
 type OrderGiftCard struct {
 	Id         string `json:"id"`
-	GiftCardID string `json:"giftcard_id"`
-	OrderID    string `json:"order_id"`
+	GiftCardID string `json:"giftcard_id"` // unique together with orderID
+	OrderID    string `json:"order_id"`    // unique together with GiftCardID
 }
 
 func (o *OrderGiftCard) IsValid() *model.AppError {

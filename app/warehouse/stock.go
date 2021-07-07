@@ -71,7 +71,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 		totalQuantity += stock.Quantity
 	}
 
-	allocations, err := a.Srv().Store.Allocation().AllocationsByParentIDs(stockIDs, store.ByStock)
+	allocations, err := a.Srv().Store.Allocation().AllocationsByParentIDs(stockIDs, warehouse.ByStock)
 	if err != nil {
 		// 2 types of errors could happend here: not found OR server error
 		appErr := store.AppErrorFromDatabaseLookupError("getAvailableQuantity", "app.warehouse.allocations_by_stocks_missing.app_error", err)

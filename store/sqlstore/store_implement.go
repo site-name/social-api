@@ -80,6 +80,8 @@ type SqlStoreStores struct {
 	fulfillment                   store.FulfillmentStore
 	fulfillmentLine               store.FulfillmentLineStore
 	giftCard                      store.GiftCardStore
+	giftCardCheckout              store.GiftCardCheckoutStore
+	giftCardOrder                 store.GiftCardOrderStore
 	invoiceEvent                  store.InvoiceEventStore
 	job                           store.JobStore
 	menu                          store.MenuStore
@@ -180,6 +182,8 @@ func (store *SqlStore) setupTables() {
 		fulfillment:                   order.NewSqlFulfillmentStore(store),
 		fulfillmentLine:               order.NewSqlFulfillmentLineStore(store),
 		giftCard:                      giftcard.NewSqlGiftCardStore(store),
+		giftCardCheckout:              giftcard.NewSqlGiftCardCheckoutStore(store),
+		giftCardOrder:                 giftcard.NewSqlGiftCardOrderStore(store),
 		invoiceEvent:                  invoice.NewSqlInvoiceEventStore(store),
 		job:                           job.NewSqlJobStore(store),
 		menu:                          menu.NewSqlMenuStore(store),
@@ -280,6 +284,8 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.fulfillment.CreateIndexesIfNotExists()
 	store.stores.fulfillmentLine.CreateIndexesIfNotExists()
 	store.stores.giftCard.CreateIndexesIfNotExists()
+	store.stores.giftCardCheckout.CreateIndexesIfNotExists()
+	store.stores.giftCardOrder.CreateIndexesIfNotExists()
 	store.stores.invoiceEvent.CreateIndexesIfNotExists()
 	store.stores.job.CreateIndexesIfNotExists()
 	store.stores.menu.CreateIndexesIfNotExists()
@@ -509,6 +515,14 @@ func (ss *SqlStore) FulfillmentLine() store.FulfillmentLineStore {
 
 func (ss *SqlStore) GiftCard() store.GiftCardStore {
 	return ss.stores.giftCard
+}
+
+func (ss *SqlStore) GiftCardCheckout() store.GiftCardCheckoutStore {
+	return ss.stores.giftCardCheckout
+}
+
+func (ss *SqlStore) GiftCardOrder() store.GiftCardOrderStore {
+	return ss.stores.giftCardOrder
 }
 
 func (ss *SqlStore) InvoiceEvent() store.InvoiceEventStore {

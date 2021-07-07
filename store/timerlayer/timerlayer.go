@@ -77,6 +77,8 @@ type TimerLayer struct {
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
 	GiftCardStore                      store.GiftCardStore
+	GiftCardCheckoutStore              store.GiftCardCheckoutStore
+	GiftCardOrderStore                 store.GiftCardOrderStore
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
 	MenuStore                          store.MenuStore
@@ -304,6 +306,14 @@ func (s *TimerLayer) FulfillmentLine() store.FulfillmentLineStore {
 
 func (s *TimerLayer) GiftCard() store.GiftCardStore {
 	return s.GiftCardStore
+}
+
+func (s *TimerLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
+	return s.GiftCardCheckoutStore
+}
+
+func (s *TimerLayer) GiftCardOrder() store.GiftCardOrderStore {
+	return s.GiftCardOrderStore
 }
 
 func (s *TimerLayer) InvoiceEvent() store.InvoiceEventStore {
@@ -730,6 +740,16 @@ type TimerLayerGiftCardStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerGiftCardCheckoutStore struct {
+	store.GiftCardCheckoutStore
+	Root *TimerLayer
+}
+
+type TimerLayerGiftCardOrderStore struct {
+	store.GiftCardOrderStore
+	Root *TimerLayer
+}
+
 type TimerLayerInvoiceEventStore struct {
 	store.InvoiceEventStore
 	Root *TimerLayer
@@ -1064,6 +1084,54 @@ func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Addres
 	return result, err
 }
 
+func (s *TimerLayerAddressStore) Update(address *account.Address) (*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.Update(address)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAllocationStore) AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.AllocationsByParentIDs(parentIDs, toWhich)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.AllocationsByParentIDs", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.AllocationsByWhich(parentID, toWhich)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.AllocationsByWhich", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAllocationStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1077,6 +1145,38 @@ func (s *TimerLayerAllocationStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.Get(allocationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAllocationStore) Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.Save(allocation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerAppStore) CreateIndexesIfNotExists() {
@@ -1588,6 +1688,22 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.CheckoutsByUserID(userID, channelActive)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.CheckoutsByUserID", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1631,6 +1747,22 @@ func (s *TimerLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.C
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutStore) Update(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.Update(checkout)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Update", success, elapsed)
 	}
 	return result, err
 }
@@ -2635,6 +2767,38 @@ func (s *TimerLayerGiftCardStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.GetAllByCheckout(checkoutID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByCheckout", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.GetAllByOrder(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByOrder", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
@@ -2679,6 +2843,100 @@ func (s *TimerLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCar
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardCheckoutStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.GiftCardCheckoutStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardCheckoutStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardCheckoutStore.Save(giftcardOrder)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardOrderStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.GiftCardOrderStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardOrderStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardOrderStore.Save(giftcardOrder)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -3342,6 +3600,22 @@ func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 	return result, err
 }
 
+func (s *TimerLayerPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.GetPaymentsByCheckoutID(checkoutID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.GetPaymentsByCheckoutID", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
 	start := timemodule.Now()
 
@@ -3763,6 +4037,54 @@ func (s *TimerLayerProductTypeStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) Get(productTypeID string) (*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.Get(productTypeID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.Save(productType)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerProductVariantStore) CreateIndexesIfNotExists() {
@@ -4516,6 +4838,86 @@ func (s *TimerLayerStockStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, resultVar2, err := s.StockStore.FilterForCountryAndChannel(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterForCountryAndChannel", success, elapsed)
+	}
+	return result, resultVar1, resultVar2, err
+}
+
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, resultVar2, err := s.StockStore.FilterProductStocksForCountryAndChannel(options, productID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterProductStocksForCountryAndChannel", success, elapsed)
+	}
+	return result, resultVar1, resultVar2, err
+}
+
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, resultVar2, err := s.StockStore.FilterVariantStocksForCountry(options, productVariantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterVariantStocksForCountry", success, elapsed)
+	}
+	return result, resultVar1, resultVar2, err
+}
+
+func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.Get(stockID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.Save(stock)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerSystemStore) CreateIndexesIfNotExists() {
@@ -6055,10 +6457,10 @@ func (s *TimerLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string,
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
-	result, err := s.WarehouseStore.Save(wh)
+	result, err := s.WarehouseStore.Save(warehouse)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6333,6 +6735,8 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.FulfillmentStore = &TimerLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &TimerLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
 	newStore.GiftCardStore = &TimerLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
+	newStore.GiftCardCheckoutStore = &TimerLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
+	newStore.GiftCardOrderStore = &TimerLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
 	newStore.InvoiceEventStore = &TimerLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.MenuStore = &TimerLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}

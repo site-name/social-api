@@ -15,15 +15,6 @@ type StoreResult struct {
 	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
 }
 
-// AllocationsBy is used for finding stock or order line's allocations
-type AllocationsBy string
-
-// consts to know finding allocations for stock or order line
-const (
-	ByStock     AllocationsBy = "stock"
-	ByOrderLine AllocationsBy = "order_line"
-)
-
 // all system product related table names
 const (
 	ProductTypeTableName    = "ProductTypes"
@@ -61,4 +52,22 @@ const (
 const (
 	AddressTableName = "Addresses"
 	UserTableName    = "Users"
+)
+
+// channel-related table names
+const (
+	ChannelTableName = "Channels"
+)
+
+// giftcard-related table names
+const (
+	GiftcardTableName         = "GiftCards"
+	OrderGiftCardTableName    = "OrderGiftCards"
+	GiftcardCheckoutTableName = "GiftcardCheckouts"
+)
+
+// payment-related table names
+const (
+	PaymentTableName     = "Payments"
+	TransactionTableName = "Transactions"
 )
