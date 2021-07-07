@@ -45,13 +45,20 @@ const (
 
 // order-related table names
 const (
-	OrderLineTableName = "Orderlines"
+	OrderLineTableName       = "Orderlines"
+	OrderTableName           = "Orders"
+	FulfillmentLineTableName = "FulfillmentLines"
+	FulfillmentTableName     = "Fulfillments"
+	OrderEventTableName      = "OrderEvents"
 )
 
 // account-related table names
 const (
-	AddressTableName = "Addresses"
-	UserTableName    = "Users"
+	AddressTableName                    = "Addresses"
+	UserTableName                       = "Users"
+	CustomerEventTableName              = "CustomerEvents"
+	StaffNotificationRecipientTableName = "StaffNotificationRecipients"
+	CustomerNoteTableName               = "CustomerNotes"
 )
 
 // channel-related table names

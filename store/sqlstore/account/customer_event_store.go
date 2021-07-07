@@ -12,15 +12,11 @@ type SqlCustomerEventStore struct {
 	store.Store
 }
 
-const (
-	customerEventTableName = "CustomerEvents"
-)
-
 func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	cs := &SqlCustomerEventStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.CustomerEvent{}, customerEventTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.CustomerEvent{}, store.CustomerEventTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -29,7 +25,10 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return cs
 }
 
-func (cs *SqlCustomerEventStore) CreateIndexesIfNotExists() {}
+func (cs *SqlCustomerEventStore) CreateIndexesIfNotExists() {
+	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "OrderID", store.OrderTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "UserID", store.UserTableName, "Id", false)
+}
 
 func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.CustomerEvent, error) {
 	event.PreSave()
@@ -44,22 +43,21 @@ func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.Cu
 }
 
 func (cs *SqlCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
-	var event account.CustomerEvent
-	err := cs.GetReplica().SelectOne(&event, "SELECT * FROM "+customerEventTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	res, err := cs.GetReplica().Get(account.CustomerEvent{}, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(customerEventTableName, id)
+			return nil, store.NewErrNotFound(store.CustomerEventTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find CustomerEvent with Id=%s", id)
 	}
 
-	return &event, nil
+	return res.(*account.CustomerEvent), nil
 }
 
 func (cs *SqlCustomerEventStore) Count() (int64, error) {
-	count, err := cs.GetReplica().SelectInt("SELECT COUNT(Id) FROM " + customerEventTableName)
+	count, err := cs.GetReplica().SelectInt("SELECT COUNT(Id) FROM " + store.CustomerEventTableName)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of "+customerEventTableName)
+		return 0, errors.Wrap(err, "failed to count number of "+store.CustomerEventTableName)
 	}
 
 	return count, nil
@@ -67,10 +65,10 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 
 func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
 	var events []*account.CustomerEvent
-	_, err := cs.GetReplica().Select(&events, "SELECT * FROM "+customerEventTableName+" WHERE UserID = :userID", map[string]interface{}{"userID": userID})
+	_, err := cs.GetReplica().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = :userID", map[string]interface{}{"userID": userID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(customerEventTableName, "userId="+userID)
+			return nil, store.NewErrNotFound(store.CustomerEventTableName, "userId="+userID)
 		}
 		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)
 	}

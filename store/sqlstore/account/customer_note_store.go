@@ -9,14 +9,10 @@ type SqlCustomerNoteStore struct {
 	store.Store
 }
 
-const (
-	customerNoteTableName = "CustomerNotes"
-)
-
 func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 	cs := &SqlCustomerNoteStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.CustomerNote{}, customerNoteTableName)
+		table := db.AddTableWithName(account.CustomerNote{}, store.CustomerNoteTableName)
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CustomerID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -26,7 +22,7 @@ func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 }
 
 func (cs *SqlCustomerNoteStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_customer_notes_date", customerNoteTableName, "Date")
-	cs.CreateForeignKeyIfNotExists(customerNoteTableName, "UserID", "Users", "Id", false)
-	cs.CreateForeignKeyIfNotExists(customerNoteTableName, "CustomerID", "Users", "Id", false)
+	cs.CreateIndexIfNotExists("idx_customer_notes_date", store.CustomerNoteTableName, "Date")
+	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "UserID", "Users", "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "CustomerID", "Users", "Id", false)
 }

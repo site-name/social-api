@@ -12,13 +12,11 @@ type SqlFulfillmentStore struct {
 	store.Store
 }
 
-const fulfillmentTableName = "Fulfillments"
-
 func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 	fs := &SqlFulfillmentStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.Fulfillment{}, fulfillmentTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.Fulfillment{}, store.FulfillmentTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Status").SetMaxSize(order.FULFILLMENT_STATUS_MAX_LENGTH)
@@ -29,8 +27,8 @@ func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 }
 
 func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
-	fs.CreateIndexIfNotExists("idx_fulfillments_status", fulfillmentTableName, "Status")
-	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", fulfillmentTableName, "TrackingNumber")
+	fs.CreateIndexIfNotExists("idx_fulfillments_status", store.FulfillmentTableName, "Status")
+	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", store.FulfillmentTableName, "TrackingNumber")
 }
 
 func (fs *SqlFulfillmentStore) Save(ffm *order.Fulfillment) (*order.Fulfillment, error) {
@@ -48,10 +46,10 @@ func (fs *SqlFulfillmentStore) Save(ffm *order.Fulfillment) (*order.Fulfillment,
 
 func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	var ffm order.Fulfillment
-	if err := fs.GetReplica().SelectOne(&ffm, "SELECT * FROM "+fulfillmentTableName+" WHERE Id = :id",
+	if err := fs.GetReplica().SelectOne(&ffm, "SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = :id",
 		map[string]interface{}{"id": id}); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(fulfillmentTableName, id)
+			return nil, store.NewErrNotFound(store.FulfillmentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment with id=%s", id)
 	}
@@ -64,7 +62,7 @@ func (fs *SqlFulfillmentStore) FilterByExcludeStatuses(orderId string, excludeSt
 
 	if _, err := fs.GetReplica().Select(
 		&ffms,
-		"SELECT * FROM "+fulfillmentTableName+" WHERE Status NOT IN :statuses AND OrderID = :orderID",
+		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Status NOT IN :statuses AND OrderID = :orderID",
 		map[string]interface{}{
 			"statuses": excludeStatuses,
 			"orderID":  orderId},

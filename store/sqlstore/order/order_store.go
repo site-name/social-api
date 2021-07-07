@@ -15,15 +15,11 @@ type SqlOrderStore struct {
 	store.Store
 }
 
-const (
-	orderTableName = "Orders"
-)
-
 func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	os := &SqlOrderStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.Order{}, orderTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.Order{}, store.OrderTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -47,9 +43,9 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 }
 
 func (os *SqlOrderStore) CreateIndexesIfNotExists() {
-	os.CommonMetaDataIndex(orderTableName)
-	os.CreateIndexIfNotExists("idx_orders_user_email", orderTableName, "UserEmail")
-	os.CreateIndexIfNotExists("idx_orders_status", orderTableName, "Status")
+	os.CommonMetaDataIndex(store.OrderTableName)
+	os.CreateIndexIfNotExists("idx_orders_user_email", store.OrderTableName, "UserEmail")
+	os.CreateIndexIfNotExists("idx_orders_status", store.OrderTableName, "Status")
 }
 
 func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
@@ -75,9 +71,9 @@ func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	var order order.Order
 
-	if err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+orderTableName+" WHERE Id = :id", map[string]interface{}{"id": id}); err != nil {
+	if err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :id", map[string]interface{}{"id": id}); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(orderTableName, id)
+			return nil, store.NewErrNotFound(store.OrderTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
@@ -96,7 +92,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	}
 
 	if oldOrderResult == nil {
-		return nil, store.NewErrInvalidInput(orderTableName, "id", newOrder.Id)
+		return nil, store.NewErrInvalidInput(store.OrderTableName, "id", newOrder.Id)
 	}
 
 	// set all NOT editable fields for newOrder:
@@ -114,7 +110,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	if err != nil {
 		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 			// this is user's intension to update token, he/she must be notified
-			return nil, store.NewErrInvalidInput(orderTableName, "token", newOrder.Token)
+			return nil, store.NewErrInvalidInput(store.OrderTableName, "token", newOrder.Token)
 		}
 		return nil, errors.Wrapf(err, "failed to update order with id=%s", newOrder.Id)
 	}
@@ -128,7 +124,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 }
 
 func (os *SqlOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-	result, err := os.GetMaster().Exec("UPDATE "+orderTableName+" SET TotalPaidAmount = :newTotalPaidAmount WHERE Id = :id",
+	result, err := os.GetMaster().Exec("UPDATE "+store.OrderTableName+" SET TotalPaidAmount = :newTotalPaidAmount WHERE Id = :id",
 		map[string]interface{}{"newTotalPaidAmount": *newTotalPaid, "id": orderId})
 	if err != nil {
 		return errors.Wrapf(err, "failed to update total paid amount for order with id=%s", orderId)

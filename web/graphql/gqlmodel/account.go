@@ -121,7 +121,7 @@ func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *
 		ID:          event.Id,
 		Date:        util.TimePointerFromMillis(event.Date),
 		Type:        &eventType,
-		UserID:      &event.UserID,
+		UserID:      event.UserID,
 		Message:     message,
 		Count:       count,
 		OrderID:     event.OrderID,

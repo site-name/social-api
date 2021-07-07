@@ -54,7 +54,7 @@ type CustomerEvent struct {
 	Date       int64                 `json:"date"`
 	Type       string                `json:"type"`
 	OrderID    *string               `json:"order_id"`
-	UserID     string                `json:"user_id"`
+	UserID     *string               `json:"user_id"`
 	Parameters model.StringInterface `json:"parameters"`
 }
 
@@ -77,7 +77,7 @@ func (ce *CustomerEvent) IsValid() *model.AppError {
 	if !model.IsValidId(ce.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(ce.UserID) {
+	if ce.UserID != nil && !model.IsValidId(*ce.UserID) {
 		return outer("usder_id", &ce.Id)
 	}
 	if ce.OrderID != nil && !model.IsValidId(*ce.OrderID) {

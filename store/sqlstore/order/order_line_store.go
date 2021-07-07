@@ -42,6 +42,9 @@ func (ols *SqlOrderLineStore) CreateIndexesIfNotExists() {
 
 	ols.CreateIndexIfNotExists("idx_order_lines_product_name_lower_textpattern", store.OrderLineTableName, "lower(ProductName) text_pattern_ops")
 	ols.CreateIndexIfNotExists("idx_order_lines_variant_name_lower_textpattern", store.OrderLineTableName, "lower(VariantName) text_pattern_ops")
+
+	ols.CreateForeignKeyIfNotExists(store.OrderLineTableName, "OrderID", store.OrderTableName, "Id", true)
+	ols.CreateForeignKeyIfNotExists(store.OrderLineTableName, "VariantID", store.ProductVariantTableName, "Id", false)
 }
 
 func (ols *SqlOrderLineStore) Save(odl *order.OrderLine) (*order.OrderLine, error) {

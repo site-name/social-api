@@ -12,15 +12,11 @@ type SqlFulfillmentLineStore struct {
 	store.Store
 }
 
-const (
-	fulfillmentLineTableName = "FulfillmentLines"
-)
-
 func NewSqlFulfillmentLineStore(s store.Store) store.FulfillmentLineStore {
 	fls := &SqlFulfillmentLineStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(order.FulfillmentLine{}, fulfillmentLineTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.FulfillmentLine{}, store.FulfillmentLineTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderLineID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("FulfillmentID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -30,7 +26,11 @@ func NewSqlFulfillmentLineStore(s store.Store) store.FulfillmentLineStore {
 	return fls
 }
 
-func (fls *SqlFulfillmentLineStore) CreateIndexesIfNotExists() {}
+func (fls *SqlFulfillmentLineStore) CreateIndexesIfNotExists() {
+	fls.CreateForeignKeyIfNotExists(store.FulfillmentLineTableName, "OrderLineID", store.OrderLineTableName, "Id", true)
+	fls.CreateForeignKeyIfNotExists(store.FulfillmentLineTableName, "FulfillmentID", store.FulfillmentTableName, "Id", true)
+	fls.CreateForeignKeyIfNotExists(store.FulfillmentLineTableName, "StockID", store.StockTableName, "Id", false)
+}
 
 func (fls *SqlFulfillmentLineStore) Save(ffml *order.FulfillmentLine) (*order.FulfillmentLine, error) {
 	ffml.PreSave()
@@ -45,16 +45,12 @@ func (fls *SqlFulfillmentLineStore) Save(ffml *order.FulfillmentLine) (*order.Fu
 }
 
 func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
-	var ffml order.FulfillmentLine
-	if err := fls.GetReplica().SelectOne(&ffml,
-		"SELECT * FROM "+fulfillmentLineTableName+" WHERE Id = :id",
-		map[string]interface{}{"id": id},
-	); err != nil {
+	if res, err := fls.GetReplica().Get(order.FulfillmentLine{}, id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(fulfillmentLineTableName, id)
+			return nil, store.NewErrNotFound(store.FulfillmentLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", id)
+	} else {
+		return res.(*order.FulfillmentLine), nil
 	}
-
-	return &ffml, nil
 }
