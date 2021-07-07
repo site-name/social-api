@@ -283,6 +283,7 @@ type (
 		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
 		// FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
 		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
+		FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterForCountryAndChannel
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()

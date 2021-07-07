@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/store"
@@ -180,7 +181,9 @@ type ChannelApp interface {
 }
 
 type WarehouseApp interface {
-	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) *model.AppError // CheckStockQuantity checks stock for given product variant
+	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) (*warehouse.InsufficientStock, *model.AppError)
+	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []uint, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
+	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)
 }
 
 type DiscountApp interface {

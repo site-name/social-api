@@ -47,3 +47,14 @@ func (s *Stock) PreSave() {
 		s.Id = model.NewId()
 	}
 }
+
+type InsufficientStockData struct {
+	Variant           string  // Product variant ID
+	OrderLine         *string // OrderLine id
+	WarehouseID       string
+	AvailableQuantity uint
+}
+
+type InsufficientStock struct {
+	Items []*InsufficientStockData
+}

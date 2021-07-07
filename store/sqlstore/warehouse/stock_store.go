@@ -74,35 +74,39 @@ func (ws *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 }
 
 // queryBuildHelperWithOptions common method for building sql query
-func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) (string, error) {
+func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) (string, map[string]interface{}, error) {
 	// check if valid country code is provided and valid
 	_, exist := model.Countries[options.CountryCode]
 	if !exist {
-		return "", store.NewErrInvalidInput(store.StockTableName, "countryCode", options.CountryCode)
+		return "", nil, store.NewErrInvalidInput(store.StockTableName, "countryCode", options.CountryCode)
 	}
 
 	subQueryCondition := `Sz.Countries :: text ILIKE :CountryCode`
-	subQuery := `SELECT Wh.Id FROM ` + store.WarehouseTableName + ` AS Wh
+	query := `SELECT Wh.Id FROM ` + store.WarehouseTableName + ` AS Wh
 		INNER JOIN ` + store.WarehouseShippingZoneTableName + ` AS WhSz ON (
 			WhSz.WarehouseID = Wh.Id
 		)
 		INNER JOIN ` + shipping.ShippingZoneTableName + ` AS Sz ON (
 			Sz.Id = WhSz.ShippingZoneID
 		)`
+	params := map[string]interface{}{
+		"CountryCode": "%" + options.CountryCode + "%",
+	}
 
 	// if channel slug is provided and valid
 	if options.ChannelSlug != "" {
 		subQueryCondition += ` AND Cn.Slug = :ChannelSlug`
-		subQuery += ` INNER JOIN ` + shipping.ShippingZoneChannelTableName + ` AS SzCn ON (
+		query += ` INNER JOIN ` + shipping.ShippingZoneChannelTableName + ` AS SzCn ON (
 			SzCn.ShippingZoneID = Sz.Id
 		)
 		INNER JOIN ` + channel.ChannelTableName + ` AS Cn ON (
 			Cn.Id = SzCn.ChannelID
 		)`
+		params["ChannelSlug"] = options.ChannelSlug
 	}
-	subQuery += ` WHERE (` + subQueryCondition + `)`
+	query += ` WHERE (` + subQueryCondition + `)`
 
-	return subQuery, nil
+	return query, params, nil
 }
 
 // commonLookup is not exported
@@ -129,9 +133,12 @@ func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{
 			pv product_and_discount.ProductVariant
 		)
 		err := rows.Scan(
-			&st.Id, &st.WarehouseID, &st.ProductVariantID, &st.Quantity, // scan for stock
-			&wh.Id, &wh.Name, &wh.Slug, &wh.AddressID, &wh.Email, &wh.Metadata, &wh.PrivateMetadata, // scan for warehouse
-			&pv.Id, &pv.Name, &pv.ProductID, &pv.Sku, &pv.Weight, &pv.WeightUnit, // scan for product variant
+			// scan for stock:
+			&st.Id, &st.WarehouseID, &st.ProductVariantID, &st.Quantity,
+			// scan for warehouse:
+			&wh.Id, &wh.Name, &wh.Slug, &wh.AddressID, &wh.Email, &wh.Metadata, &wh.PrivateMetadata,
+			// scan for product variant:
+			&pv.Id, &pv.Name, &pv.ProductID, &pv.Sku, &pv.Weight, &pv.WeightUnit,
 			&pv.TrackInventory, &pv.SortOrder, &pv.Metadata, &pv.PrivateMetadata,
 		)
 		if err != nil {
@@ -150,11 +157,40 @@ func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{
 	return stocks, warehouses, productVariants, nil
 }
 
+func (ss *SqlStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
+	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
+
+	subQuery, params, err := queryBuildHelperWithOptions(options)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	selects := StockQuery
+	selects = append(selects, WarehouseQuery...)
+	selects = append(selects, product.ProductVariantQuery...)
+	selectStr := strings.Join(selects, ", ")
+
+	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` AS St 
+		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
+			St.WarehouseID = Wh.Id
+		)
+		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
+			Pv.Id = St.ProductVariantID
+		)
+		WHERE (
+			St.WarehouseID IN (` + subQuery + `)
+		)
+		ORDER BY St.Id ASC`
+
+	return ss.commonLookup(mainQuery, params)
+}
+
 func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
 	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
 
-	subQuery, err := queryBuildHelperWithOptions(options)
+	subQuery, params, err := queryBuildHelperWithOptions(options)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -177,13 +213,7 @@ func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCou
 		)
 		ORDER BY St.Id ASC`
 
-	params := map[string]interface{}{
-		"CountryCode":      "%" + options.CountryCode + "%",
-		"ProductVariantID": productVariantID,
-	}
-	if options.ChannelSlug != "" {
-		params["ChannelSlug"] = options.ChannelSlug
-	}
+	params["ProductVariantID"] = productVariantID
 
 	return ss.commonLookup(mainQuery, params)
 }
@@ -192,7 +222,7 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
 	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
 
-	subQuery, err := queryBuildHelperWithOptions(options)
+	subQuery, params, err := queryBuildHelperWithOptions(options)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -215,13 +245,7 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 		)
 		ORDER BY St.Id ASC`
 
-	params := map[string]interface{}{
-		"CountryCode": "%" + options.CountryCode + "%",
-		"ProductID":   productID,
-	}
-	if options.ChannelSlug != "" {
-		params["ChannelSlug"] = options.ChannelSlug
-	}
+	params["ProductID"] = productID
 
 	return ss.commonLookup(mainQuery, params)
 }

@@ -49,15 +49,11 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 	}
 
 	if newQuantity > 0 && checkQuantity {
-		appErr := a.WarehouseApp().CheckStockQuantity(variant, ckout.Country, channelSlug, newQuantity)
+		insufficientStocks, appErr := a.WarehouseApp().CheckStockQuantity(variant, ckout.Country, channelSlug, newQuantity)
 		if appErr != nil {
 			return 0, nil, appErr
 		}
 	}
 
 	return newQuantity, lineWithVariant, nil
-}
-
-func (a *AppCheckout) AddVariantToCheckout() {
-
 }
