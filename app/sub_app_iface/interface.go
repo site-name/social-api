@@ -61,8 +61,12 @@ type CheckoutApp interface {
 	// CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
 	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	CheckVariantInStock(variant *product_and_discount.ProductVariant, ckout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)
-	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) // CheckoutShippingRequired checks if given checkout requires shipping
-	CheckoutsByUser(userID string) (*checkout.Checkout, *model.AppError)   // CheckoutsByUser returns a list of checkouts that their channels are active and belong to given user.
+	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                 // CheckoutShippingRequired checks if given checkout requires shipping
+	CheckoutsByUser(userID string) ([]*checkout.Checkout, *model.AppError)                 // CheckoutsByUser returns a list of checkouts belong to given user.
+	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                    // CheckoutByUser returns a checkout that is active and belongs to given user
+	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                 // CheckoutCountry returns country code for given checkout
+	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError // CheckoutSetCountry set new country code for checkout
+	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)      // UpdateCheckout updates given checkout and returns it
 }
 
 // CheckoutApp

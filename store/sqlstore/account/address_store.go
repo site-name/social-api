@@ -59,6 +59,21 @@ func (as *SqlAddressStore) Save(address *account.Address) (*account.Address, err
 	return address, nil
 }
 
+func (as *SqlAddressStore) Update(address *account.Address) (*account.Address, error) {
+	address.PreUpdate()
+	if err := address.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if numUpdate, err := as.GetMaster().Update(address); err != nil {
+		return nil, errors.Wrapf(err, "failed to update address with id=%s", address.Id)
+	} else if numUpdate > 1 {
+		return nil, errors.New("multiple addresses updated instead of one")
+	}
+
+	return address, nil
+}
+
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 	var address account.Address
 	err := as.GetReplica().SelectOne(&address, "SELECT * FROM "+store.AddressTableName+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})

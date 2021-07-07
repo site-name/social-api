@@ -530,8 +530,10 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
-		Save(checkout *checkout.Checkout) (*checkout.Checkout, error) // Save inserts checkout instance to database
-		Get(id string) (*checkout.Checkout, error)                    // Get returns checkout by given id
+		Save(checkout *checkout.Checkout) (*checkout.Checkout, error)   // Save inserts checkout instance to database
+		Get(id string) (*checkout.Checkout, error)                      // Get returns checkout by given id
+		Update(checkout *checkout.Checkout) (*checkout.Checkout, error) // Update updates given checkout and returns it
+		CheckoutsByUserID(userID string) ([]*checkout.Checkout, error)  // CheckoutsByUserID returns a list of check outs that belong to given user
 	}
 )
 
@@ -631,7 +633,7 @@ type (
 		Get(addressID string) (*account.Address, error)                      // Get returns an Address with given addressID is exist
 		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
 		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
-
+		Update(address *account.Address) (*account.Address, error)           // Update update given address and returns it
 	}
 	UserTermOfServiceStore interface {
 		CreateIndexesIfNotExists()                                                                //

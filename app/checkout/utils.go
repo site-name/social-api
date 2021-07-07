@@ -14,7 +14,7 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 		quantity = model.NewUint(1)
 	}
 
-	lines, appErr := a.CheckoutLinesByCheckoutID(ckout.Token)
+	checkoutLines, appErr := a.CheckoutLinesByCheckoutID(ckout.Token)
 	if appErr != nil {
 		return 0, nil, appErr
 	}
@@ -25,9 +25,9 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 		newQuantity     uint                   = *quantity //
 	)
 
-	for _, line := range lines {
-		if line.VariantID == variant.Id {
-			lineWithVariant = line
+	for _, checkoutLine := range checkoutLines {
+		if checkoutLine.VariantID == variant.Id {
+			lineWithVariant = checkoutLine
 			break
 		}
 	}
@@ -42,8 +42,12 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 
 	if newQuantity < 0 {
 		return 0, nil, model.NewAppError(
-			"CheckVariantInStock", "app.checkout.quantity_not_negative",
-			map[string]interface{}{"Quantity": *quantity, "NewQuantity": newQuantity},
+			"CheckVariantInStock",
+			"app.checkout.quantity_invalid",
+			map[string]interface{}{
+				"Quantity":    *quantity,
+				"NewQuantity": newQuantity,
+			},
 			"", http.StatusBadRequest,
 		)
 	}

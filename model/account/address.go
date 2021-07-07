@@ -82,12 +82,22 @@ func (add *Address) PreSave() {
 	add.LastName = model.SanitizeUnicode(CleanNamePart(add.LastName, model.LastName))
 	add.CreateAt = model.GetMillis()
 	add.UpdateAt = add.CreateAt
+	if add.Country == "" {
+		add.Country = model.DEFAULT_COUNTRY
+	} else {
+		add.Country = strings.TrimSpace(strings.ToUpper(add.Country))
+	}
 }
 
 func (a *Address) PreUpdate() {
 	a.FirstName = model.SanitizeUnicode(a.FirstName)
 	a.LastName = model.SanitizeUnicode(a.LastName)
 	a.UpdateAt = model.GetMillis()
+	if a.Country == "" {
+		a.Country = model.DEFAULT_COUNTRY
+	} else {
+		a.Country = strings.TrimSpace(strings.ToUpper(a.Country))
+	}
 }
 
 // IsValid validates address and returns an error if data is not processed
@@ -130,7 +140,7 @@ func (a *Address) IsValid() *model.AppError {
 	if utf8.RuneCountInString(a.PostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH || !model.IsAllNumbers(a.PostalCode) {
 		return outer("postal_code", &a.Id)
 	}
-	if _, ok := model.Countries[strings.ToUpper(a.Country)]; !ok {
+	if _, ok := model.Countries[a.Country]; !ok {
 		return outer("country", &a.Id)
 	}
 	if utf8.RuneCountInString(a.CountryArea) > ADDRESS_COUNTRY_AREA_MAX_LENGTH {

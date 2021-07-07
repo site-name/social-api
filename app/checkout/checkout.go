@@ -3,6 +3,7 @@ package checkout
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -70,4 +71,57 @@ func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *mod
 	}
 
 	return false, nil
+}
+
+func (a *AppCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError {
+	// no need to validate country code here, since checkout.IsValid() does that
+	countryCode := strings.ToUpper(strings.TrimSpace(newCountryCode))
+	ckout.Country = countryCode
+	_, appErr := a.UpdateCheckout(ckout)
+	return appErr
+}
+
+func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError) {
+	addressID := ckout.ShippingAddressID
+	if ckout.ShippingAddressID == nil {
+		addressID = ckout.BillingAddressID
+	}
+
+	if addressID == nil {
+		return ckout.Country, nil
+	}
+
+	address, appErr := a.AccountApp().AddressById(*addressID)
+	// ignore this error even when the lookup fail
+	if appErr != nil || address == nil || strings.TrimSpace(address.Country) == "" {
+		return ckout.Country, nil
+	}
+
+	countryCode := strings.TrimSpace(address.Country)
+	if countryCode != ckout.Country {
+		// set new country code for checkout:
+		appErr := a.CheckoutSetCountry(ckout, countryCode)
+		if appErr != nil {
+			return "", appErr
+		}
+	}
+
+	return countryCode, nil
+}
+
+func (a *AppCheckout) UpdateCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError) {
+	newCkout, err := a.Srv().Store.Checkout().Update(ckout)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		return nil, model.NewAppError(
+			"UpdateCheckout",
+			"app.checkout.checkout_update_failed.app_error",
+			nil, err.Error(),
+			http.StatusInternalServerError,
+		)
+	}
+
+	return newCkout, nil
 }

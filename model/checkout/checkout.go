@@ -8,7 +8,6 @@ import (
 	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -24,28 +23,27 @@ const (
 
 // A Shopping checkout
 type Checkout struct {
-	Token                  string               `json:"token"` // uuid4, primary_key
-	CreateAt               int64                `json:"create_at"`
-	UpdateAt               int64                `json:"update_at"`
-	UserID                 *string              `json:"user_id"`
-	Email                  string               `json:"email"`
-	Quantity               uint                 `json:"quantity"`
-	ChannelID              string               `json:"channel_id"`
-	BillingAddressID       *string              `json:"billing_address_id,omitempty"`
-	ShippingAddressID      *string              `json:"shipping_address_id,omitempty"`
-	ShippingMethodID       *string              `json:"shipping_method_id,omitempty"`
-	Note                   string               `json:"note"`
-	Currency               string               `json:"currency"`
-	Country                string               `json:"country"` // one country only
-	DiscountAmount         *decimal.Decimal     `json:"discount_amount"`
-	Discount               *goprices.Money      `db:"-" json:"discount,omitempty"`
-	DiscountName           *string              `json:"discount_name"`
-	TranslatedDiscountName *string              `json:"translated_discount_name"`
-	VoucherCode            *string              `json:"voucher_code"`
-	GiftCards              []*giftcard.GiftCard `json:"gift_cards,omitempty" db:"-"`
-	RedirectURL            *string              `json:"redirect_url"`
-	TrackingCode           *string              `json:"tracking_code"`
-	LanguageCode           string               `json:"language_code"`
+	Token                  string           `json:"token"` // uuid4, primary_key
+	CreateAt               int64            `json:"create_at"`
+	UpdateAt               int64            `json:"update_at"`
+	UserID                 *string          `json:"user_id"`
+	Email                  string           `json:"email"`
+	Quantity               uint             `json:"quantity"`
+	ChannelID              string           `json:"channel_id"`
+	BillingAddressID       *string          `json:"billing_address_id,omitempty"`
+	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"`
+	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
+	Note                   string           `json:"note"`
+	Currency               string           `json:"currency"`
+	Country                string           `json:"country"` // one country only
+	DiscountAmount         *decimal.Decimal `json:"discount_amount"`
+	Discount               *goprices.Money  `db:"-" json:"discount,omitempty"`
+	DiscountName           *string          `json:"discount_name"`
+	TranslatedDiscountName *string          `json:"translated_discount_name"`
+	VoucherCode            *string          `json:"voucher_code"`
+	RedirectURL            *string          `json:"redirect_url"`
+	TrackingCode           *string          `json:"tracking_code"`
+	LanguageCode           string           `json:"language_code"`
 	model.ModelMetadata
 }
 
@@ -85,13 +83,16 @@ func (c *Checkout) IsValid() *model.AppError {
 	if c.VoucherCode != nil && len(*c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH || *c.VoucherCode == "" {
 		return outer("voucher_code", &c.Token)
 	}
+	if c.RedirectURL != nil && len(*c.RedirectURL) > model.URL_LINK_MAX_LENGTH {
+		return outer("redirect_url", &c.Token)
+	}
 	if tag, err := language.Parse(c.LanguageCode); err != nil || !strings.EqualFold(tag.String(), c.LanguageCode) {
 		return outer("language_code", &c.Token)
 	}
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
 		return outer("tracking_code", &c.Token)
 	}
-	if _, ok := model.Countries[strings.ToUpper(c.Country)]; !ok { // since this model requires 1 country
+	if _, ok := model.Countries[c.Country]; !ok {
 		return outer("country", &c.Token)
 	}
 
@@ -117,13 +118,15 @@ func (c *Checkout) PreSave() {
 		c.Token = model.NewId()
 	}
 	if c.LanguageCode == "" {
-		c.LanguageCode = "en"
+		c.LanguageCode = model.DEFAULT_LOCALE
 	}
 	if c.DiscountAmount == nil {
 		c.DiscountAmount = &decimal.Zero
 	}
 	if c.Country == "" {
-		c.Country = "US"
+		c.Country = model.DEFAULT_COUNTRY
+	} else {
+		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
 	}
 	c.Note = model.SanitizeUnicode(c.Note)
 
@@ -137,4 +140,9 @@ func (c *Checkout) PreUpdate() {
 	c.Note = model.SanitizeUnicode(c.Note)
 	c.Email = model.NormalizeEmail(c.Email)
 	c.UpdateAt = model.GetMillis()
+	if c.Country == "" {
+		c.Country = model.DEFAULT_COUNTRY
+	} else {
+		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
+	}
 }

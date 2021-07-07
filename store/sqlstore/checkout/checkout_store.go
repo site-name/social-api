@@ -3,6 +3,7 @@ package checkout
 import (
 	"database/sql"
 
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
@@ -67,8 +68,36 @@ func (cs *SqlCheckoutStore) Get(id string) (*checkout.Checkout, error) {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CheckoutTableName, id)
 		}
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to find checkout with id=%s", id)
 	}
 
 	return iface.(*checkout.Checkout), nil
+}
+
+func (cs *SqlCheckoutStore) Update(ckout *checkout.Checkout) (*checkout.Checkout, error) {
+	ckout.PreUpdate()
+	if err := ckout.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if numUpdate, err := cs.GetMaster().Update(ckout); err != nil {
+		return nil, errors.Wrapf(err, "failed tp update checkout with token=%s", ckout.Token)
+	} else if numUpdate > 1 {
+		return nil, errors.New("multiple checkout was updated instead of one")
+	}
+
+	return ckout, nil
+}
+
+func (cs *SqlCheckoutStore) CheckoutsByUserID(userID string) ([]*checkout.Checkout, error) {
+	var checkouts []*checkout.Checkout
+	_, err := cs.GetReplica().Select(&checkouts, "SELECT * FROM "+store.CheckoutTableName+" WHERE UserID = :UserID", map[string]interface{}{"UserID": userID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CheckoutTableName, "userID="+userID)
+		}
+		return nil, errors.Wrapf(err, "failed to find checkouts for user with Id=%s", userID)
+	}
+
+	return checkouts, nil
 }
