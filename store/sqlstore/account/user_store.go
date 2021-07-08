@@ -95,8 +95,8 @@ func (us *SqlUserStore) CreateIndexesIfNotExists() {
 	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", store.UserTableName, strings.Join(UserSearchTypeNames, ", "))
 	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", store.UserTableName, strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
 
-	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultShippingAddressID", "Addresses", "Id", false)
-	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultBillingAddressID", "Addresses", "Id", false)
+	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultShippingAddressID", store.AddressTableName, "Id", false)
+	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultBillingAddressID", store.AddressTableName, "Id", false)
 	// create indexes for metadata
 	us.CommonMetaDataIndex(store.UserTableName)
 }

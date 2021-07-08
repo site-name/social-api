@@ -776,6 +776,8 @@ type (
 	}
 	CustomerNoteStore interface {
 		CreateIndexesIfNotExists()
+		Save(note *account.CustomerNote) (*account.CustomerNote, error) // Save insert given customer note into database and returns it
+		Get(id string) (*account.CustomerNote, error)                   // Get find customer note with given id and returns it
 	}
 )
 

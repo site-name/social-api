@@ -27,7 +27,7 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 
 func (cs *SqlCustomerEventStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "OrderID", store.OrderTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "UserID", store.UserTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "UserID", store.UserTableName, "Id", true)
 }
 
 func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.CustomerEvent, error) {

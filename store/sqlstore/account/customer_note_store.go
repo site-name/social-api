@@ -1,6 +1,9 @@
 package account
 
 import (
+	"database/sql"
+
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -23,6 +26,30 @@ func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 
 func (cs *SqlCustomerNoteStore) CreateIndexesIfNotExists() {
 	cs.CreateIndexIfNotExists("idx_customer_notes_date", store.CustomerNoteTableName, "Date")
-	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "UserID", "Users", "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "CustomerID", "Users", "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "UserID", store.UserTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "CustomerID", store.UserTableName, "Id", true)
+}
+
+func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+	note.PreSave()
+	if err := note.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if err := cs.GetMaster().Insert(note); err != nil {
+		return nil, errors.Wrapf(err, "failed to save customer note with id=%s", note.Id)
+	}
+
+	return note, nil
+}
+
+func (cs *SqlCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+	if res, err := cs.GetReplica().Get(account.CustomerNote{}, id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CustomerNoteTableName, id)
+		}
+		return nil, errors.Wrapf(err, "failed to find customer note with id=%s", id)
+	} else {
+		return res.(*account.CustomerNote), nil
+	}
 }
