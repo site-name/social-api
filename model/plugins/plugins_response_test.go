@@ -4,17 +4,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPluginsResponseJson(t *testing.T) {
-	manifest := &model.Manifest{
+	manifest := &Manifest{
 		Id: "theid",
-		Server: &model.ManifestServer{
+		Server: &ManifestServer{
 			Executable: "theexecutable",
 		},
-		Webapp: &model.ManifestWebapp{
+		Webapp: &ManifestWebapp{
 			BundlePath: "thebundlepath",
 		},
 	}

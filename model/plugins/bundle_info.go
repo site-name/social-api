@@ -1,12 +1,11 @@
-package model
+package plugins
 
 import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
 type BundleInfo struct {
-	Path string
-
+	Path          string
 	Manifest      *Manifest
 	ManifestPath  string
 	ManifestError error

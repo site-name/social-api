@@ -3,12 +3,10 @@ package plugins
 import (
 	"encoding/json"
 	"io"
-
-	"github.com/sitename/sitename/model"
 )
 
 type PluginInfo struct {
-	model.Manifest
+	Manifest
 }
 
 type PluginsResponse struct {

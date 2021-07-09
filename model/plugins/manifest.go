@@ -1,4 +1,4 @@
-package model
+package plugins
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"gopkg.in/yaml.v2"
 )
@@ -189,7 +190,7 @@ type Manifest struct {
 	// RequiredConfig defines any required server configuration fields for the plugin to function properly.
 	//
 	// Use the plugin helpers CheckRequiredServerConfiguration method to enforce this.
-	RequiredConfig *Config `json:"required_configuration,omitempty" yaml:"required_configuration,omitempty"`
+	RequiredConfig *model.Config `json:"required_configuration,omitempty" yaml:"required_configuration,omitempty"`
 }
 
 type ManifestServer struct {
@@ -402,7 +403,7 @@ func (m *Manifest) MeetMinServerVersion(serverVersion string) (bool, error) {
 }
 
 func (m *Manifest) IsValid() error {
-	if !IsValidId(m.Id) {
+	if !model.IsValidId(m.Id) {
 		return errors.New("invalid plugin ID")
 	}
 
@@ -410,15 +411,15 @@ func (m *Manifest) IsValid() error {
 		return errors.New("a plugin name is needed")
 	}
 
-	if m.HomepageURL != "" && !IsValidHttpUrl(m.HomepageURL) {
+	if m.HomepageURL != "" && !model.IsValidHttpUrl(m.HomepageURL) {
 		return errors.New("invalid HomepageURL")
 	}
 
-	if m.SupportURL != "" && !IsValidHttpUrl(m.SupportURL) {
+	if m.SupportURL != "" && !model.IsValidHttpUrl(m.SupportURL) {
 		return errors.New("invalid SupportURL")
 	}
 
-	if m.ReleaseNotesURL != "" && !IsValidHttpUrl(m.ReleaseNotesURL) {
+	if m.ReleaseNotesURL != "" && !model.IsValidHttpUrl(m.ReleaseNotesURL) {
 		return errors.New("invalid ReleaseNotesURL")
 	}
 
@@ -557,7 +558,7 @@ func FindManifest(dir string) (manifest *Manifest, path string, err error) {
 	}
 	defer f.Close()
 	var parsed Manifest
-	err = json.JSON.NewDecoder(f).Decode(&parsed)
+	err = model.ModelFromJson(&parsed, f)
 	if err != nil {
 		return nil, path, err
 	}

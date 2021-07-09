@@ -1,0 +1,77 @@
+package plugin
+
+import (
+	"sync"
+	"time"
+
+	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/modules/slog"
+)
+
+const (
+	HealthCheckInterval           = 30 * time.Second // How often the health check should run
+	HealthCheckDeactivationWindow = 60 * time.Minute // How long we wait for num fails to occur before deactivating the plugin
+	HealthCheckPingFailLimit      = 3                // How many times we call RPC ping in a row before it is considered a failure
+	HealthCheckNumRestartsLimit   = 3                // How many times we restart a plugin before we deactivate it
+)
+
+type PluginHealthCheckJob struct {
+	cancel            chan struct{}
+	cancelled         chan struct{}
+	cancelOnce        sync.Once
+	env               *Environment
+	failureTimestamps sync.Map
+}
+
+// run continuously performs health checks on all active plugins, on a timer.
+func (job *PluginHealthCheckJob) run() {
+	slog.Debug("Plugin health check job starting.")
+	defer close(job.cancel)
+
+	ticker := time.NewTicker(HealthCheckInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			activePlugins := job.env.Active()
+			for _, plugin := range activePlugins {
+				job.CheckPlugin(plugin.Manifest.Id)
+			}
+		case <-job.cancel:
+			return
+		}
+	}
+}
+
+// CheckPlugin determines the plugin's health status, then handles the error or success case.
+// If the plugin passes the health check, do nothing.
+// If the plugin fails the health check, the function either restarts or deactivates the plugin, based on the quantity and frequency of its failures.
+func (job *PluginHealthCheckJob) CheckPlugin(id string) {
+	err := job.env.PerformHealthCheck(id)
+	if err == nil {
+		return
+	}
+
+	slog.Warn("Health check failed for plugin", slog.String("id", id), slog.Err(err))
+	timestamps := job.getStoredTimestamps(id)
+	timestamps = append(timestamps, time.Now())
+
+	if shouldDeactivatePlugin(timestamps) {
+		// Order matters here, must deactivate first and then set plugin state
+		slog.Debug("Deactivating plugin due to multiple crashes", slog.String("id", id))
+		job.env.Deactivate(id)
+
+		// Reset timestamp state for this plugin
+		job.failureTimestamps.Delete(id)
+		job.env.setPluginState(id, plugins.PluginStateFailedToStayRunning)
+	} else {
+		slog.Debug("Restarting plugin due to failed health check", slog.String("id", id))
+		if err := job.env.RestartPlugin(id); err != nil {
+			slog.Error("Failed to restart plugin", slog.String("id", id), slog.Err(err))
+		}
+
+		// Store this failure so we can continue to monitor the plugin
+		job.failureTimestamps.Store(id, removeStaleTimestamps(timestamps))
+	}
+}
