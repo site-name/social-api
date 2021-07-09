@@ -30,6 +30,7 @@ require (
 	github.com/gosimple/slug v1.9.0
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/hashicorp/go-plugin v1.4.2
 	github.com/hashicorp/memberlist v0.2.4
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7
 	github.com/jmoiron/sqlx v1.3.4

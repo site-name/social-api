@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql/driver"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,12 +44,8 @@ func MapStringsToQueryParams(list []string, paramPrefix string) (string, map[str
 	return "(" + keys.String() + ")", params
 }
 
-type Rollbackable interface {
-	Rollback() error
-}
-
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-func FinalizeTransaction(transaction Rollbackable) {
+func FinalizeTransaction(transaction driver.Tx) {
 	if err := transaction.Rollback(); err != nil {
 		slog.Error("Failed to rollback transaction", slog.Err(err))
 	}
