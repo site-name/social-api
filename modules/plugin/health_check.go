@@ -26,7 +26,7 @@ type PluginHealthCheckJob struct {
 // run continuously performs health checks on all active plugins, on a timer.
 func (job *PluginHealthCheckJob) run() {
 	slog.Debug("Plugin health check job starting.")
-	defer close(job.cancel)
+	defer close(job.cancelled)
 
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
@@ -74,4 +74,48 @@ func (job *PluginHealthCheckJob) CheckPlugin(id string) {
 		// Store this failure so we can continue to monitor the plugin
 		job.failureTimestamps.Store(id, removeStaleTimestamps(timestamps))
 	}
+}
+
+// getStoredTimestamps returns the stored failure timestamps for a plugin.
+func (job *PluginHealthCheckJob) getStoredTimestamps(id string) []time.Time {
+	timestamps, ok := job.failureTimestamps.Load(id)
+	if !ok {
+		timestamps = []time.Time{}
+	}
+	return timestamps.([]time.Time)
+}
+
+func newPluginHealthCheckJob(env *Environment) *PluginHealthCheckJob {
+	return &PluginHealthCheckJob{
+		cancel:    make(chan struct{}),
+		cancelled: make(chan struct{}),
+		env:       env,
+	}
+}
+
+func (job *PluginHealthCheckJob) Cancel() {
+	job.cancelOnce.Do(func() {
+		close(job.cancel)
+	})
+	<-job.cancelled
+}
+
+// shouldDeactivatePlugin determines if a plugin needs to be deactivated after the plugin has failed (HealthCheckNumRestartsLimit) times,
+// within the configured time window (HealthCheckDeactivationWindow).
+func shouldDeactivatePlugin(failedTimestamps []time.Time) bool {
+	if len(failedTimestamps) < HealthCheckNumRestartsLimit {
+		return false
+	}
+
+	index := len(failedTimestamps) - HealthCheckNumRestartsLimit
+	return time.Since(failedTimestamps[index]) <= HealthCheckDeactivationWindow
+}
+
+// removeStaleTimestamps only keeps the last HealthCheckNumRestartsLimit items in timestamps.
+func removeStaleTimestamps(timestamps []time.Time) []time.Time {
+	if len(timestamps) > HealthCheckNumRestartsLimit {
+		timestamps = timestamps[len(timestamps)-HealthCheckNumRestartsLimit:]
+	}
+
+	return timestamps
 }

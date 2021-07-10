@@ -784,7 +784,7 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPlugins() ([]*model.Manifest, *model.AppError)
+	GetPlugins() ([]*plugins.Manifest, *model.AppError)
 
 	// EnablePlugin will enable an plugin installed.
 	//
@@ -815,7 +815,7 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.18
-	InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
+	InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError)
 
 	// KV Store Section
 

@@ -20,6 +20,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
+	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -764,11 +765,11 @@ type Z_InstallPluginArgs struct {
 }
 
 type Z_InstallPluginReturns struct {
-	A *model.Manifest
+	A *plugins.Manifest
 	B *model.AppError
 }
 
-func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
+func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError) {
 	pluginStreamID := g.muxBroker.NextId()
 
 	go func() {
@@ -792,7 +793,7 @@ func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model.Manif
 
 func (s *apiRPCServer) InstallPlugin(args *Z_InstallPluginArgs, returns *Z_InstallPluginReturns) error {
 	hook, ok := s.impl.(interface {
-		InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
+		InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError)
 	})
 	if !ok {
 		return encodableError(fmt.Errorf("API InstallPlugin called but not implemented"))

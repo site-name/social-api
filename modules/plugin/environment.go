@@ -2,15 +2,19 @@ package plugin
 
 import (
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 )
 
 var ErrnotFound = errors.New("item not found")
@@ -327,6 +331,196 @@ func (env *Environment) RestartPlugin(id string) error {
 // Shutdown deactivates all plugins and gracefully shuts down the environment.
 func (env *Environment) Shutdown() {
 	if env.pluginHealthCheckJob != nil {
-		env.pluginHealthCheckJob.Cance()
+		env.pluginHealthCheckJob.Cancel()
 	}
+
+	var wg sync.WaitGroup
+	env.registeredPlugins.Range(func(key, value interface{}) bool {
+		rp := value.(registeredPlugin)
+
+		if rp.supervisor == nil || !env.IsActive(rp.BundleInfo.Manifest.Id) {
+			return true
+		}
+
+		wg.Add(1)
+
+		done := make(chan bool)
+		go func() {
+			defer close(done)
+			if err := rp.supervisor.Hooks().OnDeactivate(); err != nil {
+				env.logger.Error("Plugin OnDeactivate() error", slog.String("plugin_id", rp.BundleInfo.Manifest.Id), slog.Err(err))
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			select {
+			case <-time.After(10 * time.Second):
+				env.logger.Warn("Plugin OnDeactivate() failed to complete in 10 seconds", slog.String("plugin_id", rp.BundleInfo.Manifest.Id))
+			case <-done:
+			}
+
+			rp.supervisor.Shutdown()
+		}()
+
+		return true
+	})
+
+	wg.Wait()
+
+	env.registeredPlugins.Range(func(key, value interface{}) bool {
+		env.registeredPlugins.Delete(key)
+
+		return true
+	})
+}
+
+// UnpackWebappBundle unpacks webapp bundle for a given plugin id on disk.
+func (env *Environment) UnpackWebappBundle(id string) (*plugins.Manifest, error) {
+	plgs, err := env.Available()
+	if err != nil {
+		return nil, errors.New("unable to get available plugins")
+	}
+	var manifest *plugins.Manifest
+	for _, p := range plgs {
+		if p.Manifest != nil && p.Manifest.Id == id {
+			if manifest != nil {
+				return nil, fmt.Errorf("multiple plugins found: %v", id)
+			}
+			manifest = p.Manifest
+		}
+	}
+	if manifest == nil {
+		return nil, fmt.Errorf("plugin not found: %v", id)
+	}
+
+	bundlePath := filepath.Clean(manifest.Webapp.BundlePath)
+	if bundlePath == "" || bundlePath[0] == '.' {
+		return nil, fmt.Errorf("invalid webapp bundle path")
+	}
+	bundlePath = filepath.Join(env.pluginDir, id, bundlePath)
+	destinationPath := filepath.Join(env.webappPluginDir, id)
+
+	if err = os.RemoveAll(destinationPath); err != nil {
+		return nil, errors.Wrapf(err, "unable to remove old webapp bundle directory: %v", destinationPath)
+	}
+
+	if err = util.CopyDir(filepath.Dir(bundlePath), destinationPath); err != nil {
+		return nil, errors.Wrapf(err, "unable to copy webapp bundle directory: %v", id)
+	}
+
+	sourceBundleFilepath := filepath.Join(destinationPath, filepath.Base(bundlePath))
+
+	sourceBundleFileContents, err := ioutil.ReadFile(sourceBundleFilepath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to read webapp bundle: %v", id)
+	}
+
+	hash := fnv.New64a()
+	if _, err = hash.Write(sourceBundleFileContents); err != nil {
+		return nil, errors.Wrapf(err, "unable to generate hash for webapp bundle: %v", id)
+	}
+	manifest.Webapp.BundleHash = hash.Sum([]byte{})
+
+	if err = os.Rename(
+		sourceBundleFilepath,
+		filepath.Join(destinationPath, fmt.Sprintf("%s_%x_bundle.js", id, manifest.Webapp.BundleHash)),
+	); err != nil {
+		return nil, errors.Wrapf(err, "unable to rename webapp bundle: %v", id)
+	}
+
+	return manifest, nil
+}
+
+// HooksForPlugin returns the hooks API for the plugin with the given id.
+//
+// Consider using RunMultiPluginHook instead.
+func (env *Environment) HooksForPlugin(id string) (Hooks, error) {
+	if p, ok := env.registeredPlugins.Load(id); ok {
+		rp := p.(registeredPlugin)
+		if rp.supervisor != nil && env.IsActive(id) {
+			return rp.supervisor.Hooks(), nil
+		}
+	}
+
+	return nil, fmt.Errorf("plugin not found: %v", id)
+}
+
+// RunMultiPluginHook invokes hookRunnerFunc for each active plugin that implements the given hookId.
+//
+// If hookRunnerFunc returns false, iteration will not continue. The iteration order among active
+// plugins is not specified.
+func (env *Environment) RunMultiPluginHook(hookRunnerFunc func(hooks Hooks) bool, hookId int) {
+	startTime := time.Now()
+
+	env.registeredPlugins.Range(func(key, value interface{}) bool {
+		rp := value.(registeredPlugin)
+
+		if rp.supervisor == nil || !rp.supervisor.Implements(hookId) || !env.IsActive(rp.BundleInfo.Manifest.Id) {
+			return true
+		}
+
+		hookStartTime := time.Now()
+		result := hookRunnerFunc(rp.supervisor.Hooks())
+
+		if env.metrics != nil {
+			elapsedTime := float64(time.Since(hookStartTime)) / float64(time.Second)
+			env.metrics.ObservePluginMultiHookIterationDuration(rp.BundleInfo.Manifest.Id, elapsedTime)
+		}
+
+		return result
+	})
+
+	if env.metrics != nil {
+		elapsedTime := float64(time.Since(startTime)) / float64(time.Second)
+		env.metrics.ObservePluginMultiHookDuration(elapsedTime)
+	}
+}
+
+// PerformHealthCheck uses the active plugin's supervisor to verify if the plugin has crashed.
+func (env *Environment) PerformHealthCheck(id string) error {
+	p, ok := env.registeredPlugins.Load(id)
+	if !ok {
+		return nil
+	}
+	rp := p.(registeredPlugin)
+
+	sup := rp.supervisor
+	if sup == nil {
+		return nil
+	}
+
+	return sup.PerformHealthCheck()
+}
+
+// SetPrepackagedPlugins saves prepackaged plugins in the environment.
+func (env *Environment) SetPrepackagedPlugins(plugins []*PrepackagedPlugin) {
+	env.prepackagedPluginsLock.Lock()
+	env.prepackagedPlugins = plugins
+	env.prepackagedPluginsLock.Unlock()
+}
+
+// InitPluginHealthCheckJob starts a new job if one is not running and is set to enabled, or kills an existing one if set to disabled.
+func (env *Environment) InitPluginHealthCheckJob(enable bool) {
+	// config is set to enable. No jobs exists, start a new job.
+	if enable && env.pluginHealthCheckJob == nil {
+		slog.Debug("Enabling plugin health check job", slog.Duration("interval_s", HealthCheckInterval))
+		job := newPluginHealthCheckJob(env)
+		env.pluginHealthCheckJob = job
+		go job.run()
+	}
+
+	// Config is set to disable. Job exists, kill existing job.
+	if !enable && env.pluginHealthCheckJob != nil {
+		slog.Debug("Disabling plugin health check job")
+
+		env.pluginHealthCheckJob.Cancel()
+		env.pluginHealthCheckJob = nil
+	}
+}
+
+// GetPluginHealthCheckJob returns the configured PluginHealthCheckJob, if any.
+func (env *Environment) GetPluginHealthCheckJob() *PluginHealthCheckJob {
+	return env.pluginHealthCheckJob
 }
