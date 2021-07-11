@@ -19,7 +19,12 @@ var (
 	jobsMigrationsInterface              func(*Server) tjobs.MigrationsJobInterface           //
 	jobsResendInvitationEmailInterface   func(*App) ejobs.ResendInvitationEmailJobInterface   //
 	csvExportInterface                   func(*Server) tjobs.CsvExportInterface               // csv export work
+	jobsPluginsInterface                 func(*Server) tjobs.PluginsJobInterface
 )
+
+func RegisterJobsPluginsJobInterface(f func(*Server) tjobs.PluginsJobInterface) {
+	jobsPluginsInterface = f
+}
 
 func RegisterAccountMigrationInterface(f func(*App) einterfaces.AccountMigrationInterface) {
 	accountMigrationInterface = f
@@ -68,8 +73,6 @@ func RegisterJobsActiveUsersInterface(f func(*Server) tjobs.ActiveUsersJobInterf
 	jobsActiveUsersInterface = f
 }
 
-// --------------------------------------------------
-
 // enterprise jobs -----------------
 
 var (
@@ -99,8 +102,6 @@ func RegisterDataRetentionInterface(f func(*Server) einterfaces.DataRetentionInt
 func RegisterMetricsInterface(f func(*Server) einterfaces.MetricsInterface) {
 	metricsInterface = f
 }
-
-// ------------------------------
 
 func (s *Server) initEnterprise() {
 	if metricsInterface != nil {

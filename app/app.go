@@ -46,6 +46,8 @@ type App struct {
 	invoice   sub_app_iface.InvoiceApp
 	file      sub_app_iface.FileApp
 
+	plugin sub_app_iface.PluginApp
+
 	// XXX: This is required because removing this needs BleveEngine
 	// to be registered in (h *MainHelper) setupStore, but that creates
 	// a cyclic dependency as bleve tests themselves import testlib.

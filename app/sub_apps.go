@@ -27,7 +27,13 @@ var (
 	channelApp   func(AppIface) sub_app_iface.ChannelApp
 	invoiceApp   func(AppIface) sub_app_iface.InvoiceApp
 	fileApp      func(AppIface) sub_app_iface.FileApp
+	pluginApp    func(AppIface) sub_app_iface.PluginApp
 )
+
+// RegisterPluginApp
+func RegisterPluginApp(f func(AppIface) sub_app_iface.PluginApp) {
+	pluginApp = f
+}
 
 // RegisterFileApp
 func RegisterFileApp(f func(AppIface) sub_app_iface.FileApp) {
@@ -261,7 +267,19 @@ func registerAllSubApps() []AppOption {
 			}
 			a.file = fileApp(a)
 		},
+		func(a *App) {
+			if pluginApp == nil {
+				criticalLog("plugin")
+				return
+			}
+			a.plugin = pluginApp(a)
+		},
 	}
+}
+
+// PluginApp returns order sub app
+func (a *App) PluginApp() sub_app_iface.PluginApp {
+	return a.plugin
 }
 
 // Order returns order sub app

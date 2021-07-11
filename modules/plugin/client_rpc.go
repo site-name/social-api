@@ -1,5 +1,7 @@
 package plugin
 
+//go:generate go run modules/plugin/interface_generator/main.go
+
 import (
 	"bytes"
 	"database/sql"

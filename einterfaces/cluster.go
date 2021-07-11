@@ -3,6 +3,7 @@ package einterfaces
 import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model/plugins"
 )
 
 type ClusterMessageHandler func(msg *cluster.ClusterMessage)
@@ -23,6 +24,6 @@ type ClusterInterface interface {
 	NotifyMsg(buf []byte)
 	GetClusterStats() ([]*cluster.ClusterStats, *model.AppError)
 	GetLogs(page, perPage int) ([]string, *model.AppError)
-	// GetPluginStatuses() (model.PluginStatuses, *model.AppError)
+	GetPluginStatuses() (plugins.PluginStatuses, *model.AppError)
 	ConfigChanged(previousConfig *model.Config, newConfig *model.Config, sendToOtherServer bool) *model.AppError
 }

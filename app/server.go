@@ -36,6 +36,7 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/mail"
+	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/modules/timezones"
@@ -86,9 +87,9 @@ type Server struct {
 	goroutineCount      int32
 	goroutineExitSignal chan struct{}
 
-	// PluginsEnvironment     *plugin.Environment
-	// PluginConfigListenerId string
-	// PluginsLock            sync.RWMutex
+	PluginsEnvironment     *plugin.Environment
+	PluginConfigListenerId string
+	PluginsLock            sync.RWMutex
 
 	EmailService *EmailService
 

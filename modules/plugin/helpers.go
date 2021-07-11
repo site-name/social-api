@@ -2,9 +2,18 @@ package plugin
 
 import (
 	"database/sql/driver"
+
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/plugins"
 )
 
 type Helpers interface {
+	KVCompareAndDeleteJSON(key string, oldValue interface{}) (bool, error)
+	KVListWithOptions(options ...KVListOption) ([]string, error)
+	CheckRequiredServerConfiguration(req *model.Config) (bool, error)
+	// ShouldProcessMessage(post *model.Post, options ...ShouldProcessMessageOption) (bool, error)
+	InstallPluginFromURL(downloadURL string, replace bool) (*plugins.Manifest, error)
+	GetPluginAssetURL(pluginID, asset string) (string, error)
 }
 
 // HelpersImpl implements the helpers interface with an API that retrieves data on behalf of the plugin.

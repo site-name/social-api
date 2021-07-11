@@ -24,6 +24,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/store"
 )
 
@@ -283,4 +284,15 @@ type FileApp interface {
 	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
 	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
 	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
+}
+
+type PluginApp interface {
+	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
+	// initialized.
+	//
+	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
+	// lock instead.
+	GetPluginsEnvironment() *plugin.Environment
+	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment) // SetPluginsEnvironment set plugins environment for server
+	SyncPluginsActiveState()                                      // SyncPluginsActiveState
 }
