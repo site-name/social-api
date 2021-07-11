@@ -107,13 +107,13 @@ type API interface {
 	//
 	// @tag Server
 	// Minimum server version: 5.10
-	GetDiagnosticId() string
+	// GetDiagnosticId() string
 
 	// GetTelemetryId returns a unique identifier used by the server for telemetry reports.
 	//
 	// @tag Server
 	// Minimum server version: 5.28
-	GetTelemetryId() string
+	// GetTelemetryId() string
 
 	// CreateUser creates a user.
 	//
@@ -162,7 +162,7 @@ type API interface {
 	// @tag User
 	// @tag Team
 	// Minimum server version: 5.6
-	GetUsersInTeam(teamID string, page int, perPage int) ([]*account.User, *model.AppError)
+	// GetUsersInTeam(teamID string, page int, perPage int) ([]*account.User, *model.AppError)
 
 	// GetPreferencesForUser gets a user's preferences.
 	//
@@ -232,7 +232,7 @@ type API interface {
 	// or another integration/plugin, sets it back to online.
 	// @tag User
 	// Minimum server version: 5.35
-	SetUserStatusTimedDND(userId string, endtime int64) (*model.Status, *model.AppError)
+	// SetUserStatusTimedDND(userId string, endtime int64) (*model.Status, *model.AppError)
 
 	// UpdateUserActive deactivates or reactivates an user.
 	//
@@ -246,7 +246,7 @@ type API interface {
 	// @tag User
 	// @tag Channel
 	// Minimum server version: 5.6
-	GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*account.User, *model.AppError)
+	// GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*account.User, *model.AppError)
 
 	// GetLDAPUserAttributes will return LDAP attributes for a user.
 	// The attributes parameter should be a list of attributes to pull.
@@ -762,14 +762,14 @@ type API interface {
 	//
 	// @tag Emoji
 	// Minimum server version: 5.6
-	GetEmojiImage(emojiId string) ([]byte, string, *model.AppError)
+	// GetEmojiImage(emojiId string) ([]byte, string, *model.AppError)
 
 	// UploadFile will upload a file to a channel using a multipart request, to be later attached to a post.
 	//
 	// @tag File
 	// @tag Channel
 	// Minimum server version: 5.6
-	UploadFile(data []byte, channelId string, filename string) (*file.FileInfo, *model.AppError)
+	// UploadFile(data []byte, channelId string, filename string) (*file.FileInfo, *model.AppError)
 
 	// OpenInteractiveDialog will open an interactive dialog on a user's client that
 	// generated the trigger ID. Used with interactive message buttons, menus
@@ -1087,7 +1087,7 @@ type API interface {
 	// RequestTrialLicense requests a trial license and installs it in the server
 	//
 	// Minimum server version: 5.36
-	RequestTrialLicense(requesterID string, users int, termsAccepted bool, receiveEmailsAccepted bool) *model.AppError
+	// RequestTrialLicense(requesterID string, users int, termsAccepted bool, receiveEmailsAccepted bool) *model.AppError
 }
 
 var handshake = plugin.HandshakeConfig{

@@ -2901,8 +2901,7 @@ func (o *Config) Clone() *Config {
 }
 
 func (o *Config) ToJson() string {
-	b, _ := json.JSON.Marshal(o)
-	return string(b)
+	return ModelToJson(o)
 }
 
 func (o *Config) ToJsonFiltered(tagType, tagValue string) string {
@@ -2913,8 +2912,7 @@ func (o *Config) ToJsonFiltered(tagType, tagValue string) string {
 			delete(filteredConfigMap, key)
 		}
 	}
-	b, _ := json.JSON.Marshal(filteredConfigMap)
-	return string(b)
+	return ModelToJson(filteredConfigMap)
 }
 
 func (o *Config) GetSSOService(service string) *SSOSettings {

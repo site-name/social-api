@@ -46,7 +46,8 @@ type App struct {
 	invoice   sub_app_iface.InvoiceApp
 	file      sub_app_iface.FileApp
 
-	plugin sub_app_iface.PluginApp
+	plugin     sub_app_iface.PluginApp
+	preference sub_app_iface.PreferenceApp
 
 	// XXX: This is required because removing this needs BleveEngine
 	// to be registered in (h *MainHelper) setupStore, but that creates
@@ -81,6 +82,10 @@ func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RenderWebAppError(a.Config(), w, r, model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
+}
+
+func (a *App) GetSystemInstallDate() (int64, *model.AppError) {
+	return a.Srv().getSystemInstallDate()
 }
 
 func (s *Server) getSystemInstallDate() (int64, *model.AppError) {

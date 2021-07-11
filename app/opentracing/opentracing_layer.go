@@ -665,6 +665,28 @@ func (a *OpenTracingAppLayer) GetSiteURL() string {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) GetSystemInstallDate() (int64, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetSystemInstallDate")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetSystemInstallDate()
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
 func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetWarnMetricsStatus")
@@ -1010,6 +1032,23 @@ func (a *OpenTracingAppLayer) PaymentApp() sub_app_iface.PaymentApp {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) PluginApp() sub_app_iface.PluginApp {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PluginApp")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.PluginApp()
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PostActionCookieSecret")
@@ -1023,6 +1062,23 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 
 	defer span.Finish()
 	resultVar0 := a.app.PostActionCookieSecret()
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) PreferenceApp() sub_app_iface.PreferenceApp {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PreferenceApp")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.PreferenceApp()
 
 	return resultVar0
 }

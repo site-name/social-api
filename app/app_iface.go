@@ -96,6 +96,10 @@ type AppIface interface {
 	PageApp() sub_app_iface.PageApp
 	// Payment returns payment sub app
 	PaymentApp() sub_app_iface.PaymentApp
+	// PluginApp returns order sub app
+	PluginApp() sub_app_iface.PluginApp
+	// PreferenceApp returns order sub app
+	PreferenceApp() sub_app_iface.PreferenceApp
 	// Product returns product sub app
 	ProductApp() sub_app_iface.ProductApp
 	// ProductVariantById get a product variant with given id if exist
@@ -141,6 +145,7 @@ type AppIface interface {
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetClusterId() string
+	GetSystemInstallDate() (int64, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)

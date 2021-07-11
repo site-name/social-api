@@ -161,6 +161,7 @@ type AccountApp interface {
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	CheckForClientSideCert(r *http.Request) (string, string, string)
+	HasPermissionTo(askingUserId string, permission *model.Permission) bool
 }
 
 type ProductApp interface {
@@ -295,4 +296,13 @@ type PluginApp interface {
 	GetPluginsEnvironment() *plugin.Environment
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment) // SetPluginsEnvironment set plugins environment for server
 	SyncPluginsActiveState()                                      // SyncPluginsActiveState
+	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)
+}
+
+type PreferenceApp interface {
+	GetPreferencesForUser(userID string) (model.Preferences, *model.AppError)
+	GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError)
+	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError)
+	UpdatePreferences(userID string, preferences model.Preferences) *model.AppError
+	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
 }
