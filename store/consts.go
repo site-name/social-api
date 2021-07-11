@@ -78,3 +78,8 @@ const (
 	PaymentTableName     = "Payments"
 	TransactionTableName = "Transactions"
 )
+
+// plugin-related table names
+const (
+	PluginKeyValueStoreTableName = "PluginKeyValueStore"
+)

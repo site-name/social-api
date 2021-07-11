@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -146,8 +147,23 @@ type Store interface {
 	AssignedProductAttributeValue() AssignedProductAttributeValueStore //
 	AssignedProductAttribute() AssignedProductAttributeStore           //
 	AttributeProduct() AttributeProductStore                           //
-	FileInfo() FileInfoStore                                           //
-	UploadSession() UploadSessionStore                                 // upload session
+	FileInfo() FileInfoStore                                           // upload session
+	UploadSession() UploadSessionStore                                 //
+	Plugin() PluginStore                                               //
+}
+
+// Plugin
+type PluginStore interface {
+	CreateIndexesIfNotExists()
+	SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error)
+	CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error)
+	CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error)
+	SetWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, error)
+	Get(pluginID, key string) (*plugins.PluginKeyValue, error)
+	Delete(pluginID, key string) error
+	DeleteAllForPlugin(PluginID string) error
+	DeleteAllExpired() error
+	List(pluginID string, page, perPage int) ([]string, error)
 }
 
 type UploadSessionStore interface {

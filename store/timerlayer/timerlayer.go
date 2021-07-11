@@ -93,6 +93,7 @@ type TimerLayer struct {
 	PageTypeStore                      store.PageTypeStore
 	PaymentStore                       store.PaymentStore
 	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
 	ProductStore                       store.ProductStore
@@ -370,6 +371,10 @@ func (s *TimerLayer) Payment() store.PaymentStore {
 
 func (s *TimerLayer) PaymentTransaction() store.PaymentTransactionStore {
 	return s.PaymentTransactionStore
+}
+
+func (s *TimerLayer) Plugin() store.PluginStore {
+	return s.PluginStore
 }
 
 func (s *TimerLayer) PluginConfiguration() store.PluginConfigurationStore {
@@ -817,6 +822,11 @@ type TimerLayerPaymentStore struct {
 
 type TimerLayerPaymentTransactionStore struct {
 	store.PaymentTransactionStore
+	Root *TimerLayer
+}
+
+type TimerLayerPluginStore struct {
+	store.PluginStore
 	Root *TimerLayer
 }
 
@@ -2284,6 +2294,38 @@ func (s *TimerLayerCustomerNoteStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerNoteStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerNoteStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerNoteStore.Save(note)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerNoteStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDigitalContentStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -3725,6 +3767,21 @@ func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTra
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerPluginStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.PluginStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.CreateIndexesIfNotExists", success, elapsed)
+	}
 }
 
 func (s *TimerLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
@@ -6751,6 +6808,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.PageTypeStore = &TimerLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
 	newStore.PaymentStore = &TimerLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
 	newStore.PaymentTransactionStore = &TimerLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginStore = &TimerLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &TimerLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
 	newStore.ProductStore = &TimerLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}

@@ -92,6 +92,7 @@ type RetryLayer struct {
 	PageTypeStore                      store.PageTypeStore
 	PaymentStore                       store.PaymentStore
 	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
 	ProductStore                       store.ProductStore
@@ -369,6 +370,10 @@ func (s *RetryLayer) Payment() store.PaymentStore {
 
 func (s *RetryLayer) PaymentTransaction() store.PaymentTransactionStore {
 	return s.PaymentTransactionStore
+}
+
+func (s *RetryLayer) Plugin() store.PluginStore {
+	return s.PluginStore
 }
 
 func (s *RetryLayer) PluginConfiguration() store.PluginConfigurationStore {
@@ -816,6 +821,11 @@ type RetryLayerPaymentStore struct {
 
 type RetryLayerPaymentTransactionStore struct {
 	store.PaymentTransactionStore
+	Root *RetryLayer
+}
+
+type RetryLayerPluginStore struct {
+	store.PluginStore
 	Root *RetryLayer
 }
 
@@ -2190,6 +2200,46 @@ func (s *RetryLayerCustomerEventStore) Save(customemrEvent *account.CustomerEven
 func (s *RetryLayerCustomerNoteStore) CreateIndexesIfNotExists() {
 
 	s.CustomerNoteStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerNoteStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+
+	tries := 0
+	for {
+		result, err := s.CustomerNoteStore.Save(note)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -3624,6 +3674,12 @@ func (s *RetryLayerPaymentTransactionStore) Save(transaction *payment.PaymentTra
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerPluginStore) CreateIndexesIfNotExists() {
+
+	s.PluginStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6820,6 +6876,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.PageTypeStore = &RetryLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
 	newStore.PaymentStore = &RetryLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
 	newStore.PaymentTransactionStore = &RetryLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginStore = &RetryLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &RetryLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
 	newStore.ProductStore = &RetryLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}

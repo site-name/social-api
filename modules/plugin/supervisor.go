@@ -44,6 +44,7 @@ func newSupervisor(pluginInfo *plugins.BundleInfo, apiImpl API, driver Driver, p
 	// 		},
 	// 	},
 	// }
+	panic("not implemented")
 }
 
 func (sup *supervisor) Shutdown() {

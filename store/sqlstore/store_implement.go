@@ -96,6 +96,7 @@ type SqlStoreStores struct {
 	pageType                      store.PageTypeStore
 	payment                       store.PaymentStore
 	paymentTransaction            store.PaymentTransactionStore
+	plugin                        store.PluginStore
 	pluginConfiguration           store.PluginConfigurationStore
 	preference                    store.PreferenceStore
 	product                       store.ProductStore
@@ -198,6 +199,7 @@ func (store *SqlStore) setupTables() {
 		pageType:                      page.NewSqlPageTypeStore(store),
 		payment:                       payment.NewSqlPaymentStore(store),
 		paymentTransaction:            payment.NewSqlPaymentTransactionStore(store),
+		plugin:                        plugin.NewSqlPluginStore(store),
 		pluginConfiguration:           plugin.NewSqlPluginConfigurationStore(store),
 		preference:                    preference.NewSqlPreferenceStore(store),
 		product:                       product.NewSqlProductStore(store),
@@ -300,6 +302,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.pageType.CreateIndexesIfNotExists()
 	store.stores.payment.CreateIndexesIfNotExists()
 	store.stores.paymentTransaction.CreateIndexesIfNotExists()
+	store.stores.plugin.CreateIndexesIfNotExists()
 	store.stores.pluginConfiguration.CreateIndexesIfNotExists()
 	store.stores.preference.CreateIndexesIfNotExists()
 	store.stores.preference.DeleteUnusedFeatures()
@@ -579,6 +582,10 @@ func (ss *SqlStore) Payment() store.PaymentStore {
 
 func (ss *SqlStore) PaymentTransaction() store.PaymentTransactionStore {
 	return ss.stores.paymentTransaction
+}
+
+func (ss *SqlStore) Plugin() store.PluginStore {
+	return ss.stores.plugin
 }
 
 func (ss *SqlStore) PluginConfiguration() store.PluginConfigurationStore {

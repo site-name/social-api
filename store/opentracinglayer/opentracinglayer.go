@@ -93,6 +93,7 @@ type OpenTracingLayer struct {
 	PageTypeStore                      store.PageTypeStore
 	PaymentStore                       store.PaymentStore
 	PaymentTransactionStore            store.PaymentTransactionStore
+	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
 	ProductStore                       store.ProductStore
@@ -370,6 +371,10 @@ func (s *OpenTracingLayer) Payment() store.PaymentStore {
 
 func (s *OpenTracingLayer) PaymentTransaction() store.PaymentTransactionStore {
 	return s.PaymentTransactionStore
+}
+
+func (s *OpenTracingLayer) Plugin() store.PluginStore {
+	return s.PluginStore
 }
 
 func (s *OpenTracingLayer) PluginConfiguration() store.PluginConfigurationStore {
@@ -817,6 +822,11 @@ type OpenTracingLayerPaymentStore struct {
 
 type OpenTracingLayerPaymentTransactionStore struct {
 	store.PaymentTransactionStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPluginStore struct {
+	store.PluginStore
 	Root *OpenTracingLayer
 }
 
@@ -2314,6 +2324,42 @@ func (s *OpenTracingLayerCustomerNoteStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.CustomerNoteStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerNoteStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CustomerNoteStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerNoteStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CustomerNoteStore.Save(note)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerDigitalContentStore) CreateIndexesIfNotExists() {
@@ -3825,6 +3871,19 @@ func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *payment.Paym
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerPluginStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.PluginStore.CreateIndexesIfNotExists()
+
 }
 
 func (s *OpenTracingLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
@@ -7044,6 +7103,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.PageTypeStore = &OpenTracingLayerPageTypeStore{PageTypeStore: childStore.PageType(), Root: &newStore}
 	newStore.PaymentStore = &OpenTracingLayerPaymentStore{PaymentStore: childStore.Payment(), Root: &newStore}
 	newStore.PaymentTransactionStore = &OpenTracingLayerPaymentTransactionStore{PaymentTransactionStore: childStore.PaymentTransaction(), Root: &newStore}
+	newStore.PluginStore = &OpenTracingLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &OpenTracingLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &OpenTracingLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
 	newStore.ProductStore = &OpenTracingLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
