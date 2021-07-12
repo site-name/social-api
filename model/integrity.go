@@ -1,9 +1,8 @@
 package model
 
 import (
+	"bytes"
 	"errors"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 type OrphanedRecord struct {
@@ -26,7 +25,7 @@ type IntegrityCheckResult struct {
 
 func (r *IntegrityCheckResult) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
-	if err := json.JSON.Unmarshal(b, &data); err != nil {
+	if err := ModelFromJson(&data, bytes.NewReader(b)); err != nil {
 		return err
 	}
 	if d, ok := data["data"]; ok && d != nil {

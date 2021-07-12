@@ -29,8 +29,8 @@ type FeatureFlags struct {
 	AppsEnabled bool
 
 	// Feature flags to control plugin versions
-	PluginIncidentManagement string `plugin_id:"com.mattermost.plugin-incident-management"`
-	PluginApps               string `plugin_id:"com.mattermost.apps"`
+	PluginIncidentManagement string `plugin_id:"com.sitename.plugin-incident-management"`
+	PluginApps               string `plugin_id:"com.sitename.apps"`
 
 	// Control support for custom data retention policies
 	CustomDataRetentionEnabled bool

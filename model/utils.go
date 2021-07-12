@@ -197,8 +197,7 @@ func ModelToJson(model interface{}) string {
 //
 // If decoding process encounter error, model will be nil
 func ModelFromJson(model interface{}, data io.Reader) error {
-	err := json.JSON.NewDecoder(data).Decode(&model)
-	return err
+	return json.JSON.NewDecoder(data).Decode(&model)
 }
 
 func (a *AppError) ToJson() string {
