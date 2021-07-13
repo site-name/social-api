@@ -8,10 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-const (
-	userNotOwnAddress = "app.account.user_not_own_address.app_error"
-)
-
 type AppAccount struct {
 	app.AppIface
 	sessionPool sync.Pool

@@ -7,34 +7,28 @@ import (
 
 // all sub applications of platform
 var (
-	accountApp    func(AppIface) sub_app_iface.AccountApp
-	giftcardApp   func(AppIface) sub_app_iface.GiftcardApp
-	paymentApp    func(AppIface) sub_app_iface.PaymentApp
-	checkoutApp   func(AppIface) sub_app_iface.CheckoutApp
-	warehouseApp  func(AppIface) sub_app_iface.WarehouseApp
-	productApp    func(AppIface) sub_app_iface.ProductApp
-	wishlistApp   func(AppIface) sub_app_iface.WishlistApp
-	orderApp      func(AppIface) sub_app_iface.OrderApp
-	webhookApp    func(AppIface) sub_app_iface.WebhookApp
-	menuApp       func(AppIface) sub_app_iface.MenuApp
-	pageApp       func(AppIface) sub_app_iface.PageApp
-	seoApp        func(AppIface) sub_app_iface.SeoApp
-	siteApp       func(AppIface) sub_app_iface.SiteApp
-	shippingApp   func(AppIface) sub_app_iface.ShippingApp
-	discountApp   func(AppIface) sub_app_iface.DiscountApp
-	csvApp        func(AppIface) sub_app_iface.CsvApp
-	attributeApp  func(AppIface) sub_app_iface.AttributeApp
-	channelApp    func(AppIface) sub_app_iface.ChannelApp
-	invoiceApp    func(AppIface) sub_app_iface.InvoiceApp
-	fileApp       func(AppIface) sub_app_iface.FileApp
-	pluginApp     func(AppIface) sub_app_iface.PluginApp
-	preferenceApp func(AppIface) sub_app_iface.PreferenceApp
+	accountApp   func(AppIface) sub_app_iface.AccountApp
+	giftcardApp  func(AppIface) sub_app_iface.GiftcardApp
+	paymentApp   func(AppIface) sub_app_iface.PaymentApp
+	checkoutApp  func(AppIface) sub_app_iface.CheckoutApp
+	warehouseApp func(AppIface) sub_app_iface.WarehouseApp
+	productApp   func(AppIface) sub_app_iface.ProductApp
+	wishlistApp  func(AppIface) sub_app_iface.WishlistApp
+	orderApp     func(AppIface) sub_app_iface.OrderApp
+	webhookApp   func(AppIface) sub_app_iface.WebhookApp
+	menuApp      func(AppIface) sub_app_iface.MenuApp
+	pageApp      func(AppIface) sub_app_iface.PageApp
+	seoApp       func(AppIface) sub_app_iface.SeoApp
+	siteApp      func(AppIface) sub_app_iface.SiteApp
+	shippingApp  func(AppIface) sub_app_iface.ShippingApp
+	discountApp  func(AppIface) sub_app_iface.DiscountApp
+	csvApp       func(AppIface) sub_app_iface.CsvApp
+	attributeApp func(AppIface) sub_app_iface.AttributeApp
+	channelApp   func(AppIface) sub_app_iface.ChannelApp
+	invoiceApp   func(AppIface) sub_app_iface.InvoiceApp
+	fileApp      func(AppIface) sub_app_iface.FileApp
+	pluginApp    func(AppIface) sub_app_iface.PluginApp
 )
-
-// RegisterPluginApp
-func RegisterPreferenceApp(f func(AppIface) sub_app_iface.PreferenceApp) {
-	preferenceApp = f
-}
 
 // RegisterPluginApp
 func RegisterPluginApp(f func(AppIface) sub_app_iface.PluginApp) {
@@ -280,19 +274,7 @@ func registerAllSubApps() []AppOption {
 			}
 			a.plugin = pluginApp(a)
 		},
-		func(a *App) {
-			if preferenceApp == nil {
-				criticalLog("preference")
-				return
-			}
-			a.preference = preferenceApp(a)
-		},
 	}
-}
-
-// PreferenceApp returns order sub app
-func (a *App) PreferenceApp() sub_app_iface.PreferenceApp {
-	return a.preference
 }
 
 // PluginApp returns order sub app

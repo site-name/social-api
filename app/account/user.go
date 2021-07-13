@@ -31,7 +31,7 @@ const (
 )
 
 const MissingAuthAccountError = "app.user.get_by_auth.missing_account.app_error"
-const MissingAccountError = "app.user.missing_account.const"
+const MissingAccountError = "app.user.missing_account.app_error"
 
 var colors = []color.NRGBA{
 	{197, 8, 126, 255},

@@ -98,8 +98,6 @@ type AppIface interface {
 	PaymentApp() sub_app_iface.PaymentApp
 	// PluginApp returns order sub app
 	PluginApp() sub_app_iface.PluginApp
-	// PreferenceApp returns order sub app
-	PreferenceApp() sub_app_iface.PreferenceApp
 	// Product returns product sub app
 	ProductApp() sub_app_iface.ProductApp
 	// ProductVariantById get a product variant with given id if exist

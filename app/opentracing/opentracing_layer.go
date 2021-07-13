@@ -1066,23 +1066,6 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) PreferenceApp() sub_app_iface.PreferenceApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PreferenceApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.PreferenceApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) ProductApp() sub_app_iface.ProductApp {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ProductApp")

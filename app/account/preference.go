@@ -1,25 +1,13 @@
-package preference
+package account
 
 import (
 	"errors"
 	"net/http"
 
-	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 )
 
-type AppPreference struct {
-	app.AppIface
-}
-
-func init() {
-	app.RegisterPreferenceApp(func(a app.AppIface) sub_app_iface.PreferenceApp {
-		return &AppPreference{a}
-	})
-}
-
-func (a *AppPreference) GetPreferencesForUser(userID string) (model.Preferences, *model.AppError) {
+func (a *AppAccount) GetPreferencesForUser(userID string) (model.Preferences, *model.AppError) {
 	preferences, err := a.Srv().Store.Preference().GetAll(userID)
 	if err != nil {
 		return nil, model.NewAppError("GetPreferencesForUser", "app.preference.get_all.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -27,7 +15,7 @@ func (a *AppPreference) GetPreferencesForUser(userID string) (model.Preferences,
 	return preferences, nil
 }
 
-func (a *AppPreference) GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError) {
+func (a *AppAccount) GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError) {
 	preferences, err := a.Srv().Store.Preference().GetCategory(userID, category)
 	if err != nil {
 		return nil, model.NewAppError("GetPreferenceByCategoryForUser", "app.preference.get_category.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -39,7 +27,7 @@ func (a *AppPreference) GetPreferenceByCategoryForUser(userID string, category s
 	return preferences, nil
 }
 
-func (a *AppPreference) GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError) {
+func (a *AppAccount) GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError) {
 	res, err := a.Srv().Store.Preference().Get(userID, category, preferenceName)
 	if err != nil {
 		return nil, model.NewAppError("GetPreferenceByCategoryAndNameForUser", "app.preference.get.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -47,7 +35,7 @@ func (a *AppPreference) GetPreferenceByCategoryAndNameForUser(userID string, cat
 	return res, nil
 }
 
-func (a *AppPreference) UpdatePreferences(userID string, preferences model.Preferences) *model.AppError {
+func (a *AppAccount) UpdatePreferences(userID string, preferences model.Preferences) *model.AppError {
 	for _, preference := range preferences {
 		if userID != preference.UserId {
 			return model.NewAppError("savePreferences", "api.preference.update_preferences.set.app_error", nil,
@@ -80,7 +68,7 @@ func (a *AppPreference) UpdatePreferences(userID string, preferences model.Prefe
 	return nil
 }
 
-func (a *AppPreference) DeletePreferences(userID string, preferences model.Preferences) *model.AppError {
+func (a *AppAccount) DeletePreferences(userID string, preferences model.Preferences) *model.AppError {
 	for _, preference := range preferences {
 		if userID != preference.UserId {
 			err := model.NewAppError("DeletePreferences", "api.preference.delete_preferences.delete.app_error", nil,
