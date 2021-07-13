@@ -3,7 +3,6 @@ package graphql
 import (
 	"net/http"
 	"net/url"
-	"sync"
 
 	"github.com/sitename/sitename/model"
 )
@@ -29,8 +28,6 @@ func validateStoreFrontUrl(config *model.Config, urlValue *string) *model.AppErr
 
 	return nil
 }
-
-var mutex sync.Mutex
 
 // oneOfArgumentsIsValid checks if there is only 1 item that is meaningful.
 //

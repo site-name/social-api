@@ -92,12 +92,12 @@ func (cs *SqlChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
 
 func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	var channels = []*channel.Channel{}
-	_, err := cs.GetReplica().Select(&channels, "SELECT * FROM "+store.ChannelTableName+" WHERE IsActive = true")
+	_, err := cs.GetReplica().Select(&channels, "SELECT * FROM "+store.ChannelTableName+" WHERE IsActive")
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ChannelTableName, "")
 		}
-		return nil, errors.Wrap(err, "Failed to get Channel with Active=true")
+		return nil, errors.Wrap(err, "failed to get Channel with Active=true")
 	}
 
 	return channels[0], nil

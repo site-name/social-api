@@ -44,12 +44,15 @@ func (a *AppChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppErro
 }
 
 func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError) {
-	var channel *channel.Channel
+	var (
+		channel *channel.Channel
+		appErr  *model.AppError
+	)
 
 	if channelSlug != nil {
-		channel, err := a.GetChannelBySlug(*channelSlug)
-		if err != nil {
-			return nil, err
+		channel, appErr = a.GetChannelBySlug(*channelSlug)
+		if appErr != nil {
+			return nil, appErr
 		}
 		if !channel.IsActive {
 			return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
@@ -57,12 +60,9 @@ func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model
 		return channel, nil
 	}
 
-	channel, err := a.GetDefaultActiveChannel()
-	if err != nil {
-		return nil, err
-	}
-	if !channel.IsActive {
-		return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
+	channel, appErr = a.GetDefaultActiveChannel()
+	if appErr != nil {
+		return nil, appErr
 	}
 	return channel, nil
 }
