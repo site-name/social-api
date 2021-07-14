@@ -24,6 +24,7 @@ import (
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -3873,6 +3874,42 @@ func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *payment.Paym
 	return result, err
 }
 
+func (s *OpenTracingLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.CompareAndDelete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.CompareAndDelete(keyVal, oldValue)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.CompareAndSet")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.CompareAndSet(keyVal, oldValue)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerPluginStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.CreateIndexesIfNotExists")
@@ -3884,6 +3921,132 @@ func (s *OpenTracingLayerPluginStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.PluginStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerPluginStore) Delete(pluginID string, key string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.PluginStore.Delete(pluginID, key)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerPluginStore) DeleteAllExpired() error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.DeleteAllExpired")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.PluginStore.DeleteAllExpired()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerPluginStore) DeleteAllForPlugin(PluginID string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.DeleteAllForPlugin")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.PluginStore.DeleteAllForPlugin(PluginID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerPluginStore) Get(pluginID string, key string) (*plugins.PluginKeyValue, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.Get(pluginID, key)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerPluginStore) List(pluginID string, page int, perPage int) ([]string, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.List")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.List(pluginID, page, perPage)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.SaveOrUpdate")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.SaveOrUpdate(keyVal)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.SetWithOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PluginStore.SetWithOptions(pluginID, key, value, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
@@ -4928,7 +5091,7 @@ func (s *OpenTracingLayerStatusStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *OpenTracingLayerStatusStore) Get(userID string) (*model.Status, error) {
+func (s *OpenTracingLayerStatusStore) Get(userID string) (*account.Status, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StatusStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -4946,7 +5109,7 @@ func (s *OpenTracingLayerStatusStore) Get(userID string) (*model.Status, error) 
 	return result, err
 }
 
-func (s *OpenTracingLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
+func (s *OpenTracingLayerStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StatusStore.GetByIds")
 	s.Root.Store.SetContext(newCtx)
@@ -5000,7 +5163,7 @@ func (s *OpenTracingLayerStatusStore) ResetAll() error {
 	return err
 }
 
-func (s *OpenTracingLayerStatusStore) SaveOrUpdate(status *model.Status) error {
+func (s *OpenTracingLayerStatusStore) SaveOrUpdate(status *account.Status) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StatusStore.SaveOrUpdate")
 	s.Root.Store.SetContext(newCtx)

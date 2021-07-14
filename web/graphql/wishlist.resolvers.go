@@ -19,7 +19,15 @@ func (r *wishlistResolver) Items(ctx context.Context, obj *gqlmodel.Wishlist) ([
 }
 
 func (r *wishlistItemResolver) Product(ctx context.Context, obj *gqlmodel.WishlistItem) (*gqlmodel.Product, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.ProductID == nil {
+		return nil, nil
+	}
+	product, appErr := r.ProductApp().ProductById(*obj.ProductID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemProductToGraphqlProduct(product), nil
 }
 
 func (r *wishlistItemResolver) Variants(ctx context.Context, obj *gqlmodel.WishlistItem) ([]*gqlmodel.ProductVariant, error) {

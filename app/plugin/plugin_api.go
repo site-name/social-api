@@ -186,15 +186,15 @@ func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*account.User, 
 }
 
 func (api *PluginAPI) GetPreferencesForUser(userID string) ([]model.Preference, *model.AppError) {
-	return api.app.PreferenceApp().GetPreferencesForUser(userID)
+	return api.app.AccountApp().GetPreferencesForUser(userID)
 }
 
 func (api *PluginAPI) UpdatePreferencesForUser(userID string, preferences []model.Preference) *model.AppError {
-	return api.app.PreferenceApp().UpdatePreferences(userID, preferences)
+	return api.app.AccountApp().UpdatePreferences(userID, preferences)
 }
 
 func (api *PluginAPI) DeletePreferencesForUser(userID string, preferences []model.Preference) *model.AppError {
-	return api.app.PreferenceApp().DeletePreferences(userID, preferences)
+	return api.app.AccountApp().DeletePreferences(userID, preferences)
 }
 
 func (api *PluginAPI) UpdateUser(user *account.User) (*account.User, *model.AppError) {
@@ -205,11 +205,11 @@ func (api *PluginAPI) UpdateUserActive(userID string, active bool) *model.AppErr
 	return api.app.AccountApp().UpdateUserActive(api.ctx, userID, active)
 }
 
-func (api *PluginAPI) GetUserStatus(userID string) (*model.Status, *model.AppError) {
+func (api *PluginAPI) GetUserStatus(userID string) (*account.Status, *model.AppError) {
 	return api.app.AccountApp().GetStatus(userID)
 }
 
-func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model.AppError) {
+func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) {
 	return api.app.AccountApp().GetUserStatusesByIds(userIDs)
 }
 
@@ -367,7 +367,7 @@ func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model.Manife
 }
 
 // KV Store Section
-func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError) {
+func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) {
 	return api.app.SetPluginKeyWithOptions(api.id, key, value, options)
 }
 
@@ -404,7 +404,7 @@ func (api *PluginAPI) KVList(page, perPage int) ([]string, *model.AppError) {
 }
 
 func (api *PluginAPI) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
-	ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", "", "", nil)
+	ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
 	ev = ev.SetBroadcast(broadcast).SetData(payload)
 	api.app.Publish(ev)
 }

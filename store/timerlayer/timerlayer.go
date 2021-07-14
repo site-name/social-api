@@ -24,6 +24,7 @@ import (
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -3769,6 +3770,38 @@ func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTra
 	return result, err
 }
 
+func (s *TimerLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.CompareAndDelete(keyVal, oldValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.CompareAndDelete", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.CompareAndSet(keyVal, oldValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.CompareAndSet", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPluginStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -3782,6 +3815,118 @@ func (s *TimerLayerPluginStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerPluginStore) Delete(pluginID string, key string) error {
+	start := timemodule.Now()
+
+	err := s.PluginStore.Delete(pluginID, key)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.Delete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerPluginStore) DeleteAllExpired() error {
+	start := timemodule.Now()
+
+	err := s.PluginStore.DeleteAllExpired()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.DeleteAllExpired", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerPluginStore) DeleteAllForPlugin(PluginID string) error {
+	start := timemodule.Now()
+
+	err := s.PluginStore.DeleteAllForPlugin(PluginID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.DeleteAllForPlugin", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerPluginStore) Get(pluginID string, key string) (*plugins.PluginKeyValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.Get(pluginID, key)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPluginStore) List(pluginID string, page int, perPage int) ([]string, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.List(pluginID, page, perPage)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.List", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.SaveOrUpdate(keyVal)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.SaveOrUpdate", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginStore.SetWithOptions(pluginID, key, value, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginStore.SetWithOptions", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
@@ -4786,7 +4931,7 @@ func (s *TimerLayerStatusStore) CreateIndexesIfNotExists() {
 	}
 }
 
-func (s *TimerLayerStatusStore) Get(userID string) (*model.Status, error) {
+func (s *TimerLayerStatusStore) Get(userID string) (*account.Status, error) {
 	start := timemodule.Now()
 
 	result, err := s.StatusStore.Get(userID)
@@ -4802,7 +4947,7 @@ func (s *TimerLayerStatusStore) Get(userID string) (*model.Status, error) {
 	return result, err
 }
 
-func (s *TimerLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
+func (s *TimerLayerStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
 	start := timemodule.Now()
 
 	result, err := s.StatusStore.GetByIds(userIds)
@@ -4850,7 +4995,7 @@ func (s *TimerLayerStatusStore) ResetAll() error {
 	return err
 }
 
-func (s *TimerLayerStatusStore) SaveOrUpdate(status *model.Status) error {
+func (s *TimerLayerStatusStore) SaveOrUpdate(status *account.Status) error {
 	start := timemodule.Now()
 
 	err := s.StatusStore.SaveOrUpdate(status)

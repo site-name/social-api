@@ -61,15 +61,15 @@ type Product implements Node & ObjectWithMetadata {
   pricing(address: AddressInput): ProductPricingInfo
   isAvailable(address: AddressInput): Boolean
   taxType: TaxType
-  attributes: [SelectedAttribute!]!
+  attributes(_: PlaceHolder): [SelectedAttribute!]! # attributes: [SelectedAttribute!]!
   channelListings: [ProductChannelListing!]
   mediaById(id: ID): ProductMedia
   variants: [ProductVariant]
   media: [ProductMedia!]
   collections: [Collection]
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
-  availableForPurchase: Date
-  isAvailableForPurchase: Boolean
+  availableForPurchase(_: PlaceHolder): Date # availableForPurchase: Date
+  isAvailableForPurchase(_: PlaceHolder): Boolean # isAvailableForPurchase: Boolean
 }
 
 type ProductPricingInfo {

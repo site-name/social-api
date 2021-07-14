@@ -910,9 +910,9 @@ func (a *AppAccount) SendEmailVerification(user *account.User, newEmail, redirec
 	return a.Srv().EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token)
 }
 
-func (a *AppAccount) GetStatus(userID string) (*model.Status, *model.AppError) {
+func (a *AppAccount) GetStatus(userID string) (*account.Status, *model.AppError) {
 	if !*a.Config().ServiceSettings.EnableUserStatuses {
-		return &model.Status{}, nil
+		return &account.Status{}, nil
 	}
 
 	status := a.GetStatusFromCache(userID)
@@ -934,10 +934,10 @@ func (a *AppAccount) GetStatus(userID string) (*model.Status, *model.AppError) {
 	return status, nil
 }
 
-func (a *AppAccount) GetStatusFromCache(userID string) *model.Status {
-	var status *model.Status
+func (a *AppAccount) GetStatusFromCache(userID string) *account.Status {
+	var status *account.Status
 	if err := a.Srv().StatusCache.Get(userID, &status); err == nil {
-		statusCopy := &model.Status{}
+		statusCopy := &account.Status{}
 		*statusCopy = *status
 		return statusCopy
 	}
@@ -1344,6 +1344,19 @@ func (a *AppAccount) SaveUserTermsOfService(userID, termsOfServiceId string, acc
 		if err := a.Srv().Store.UserTermOfService().Delete(userID, termsOfServiceId); err != nil {
 			return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
+	}
+
+	return nil
+}
+
+func (a *AppAccount) UpdateUserActive(c *request.Context, userID string, active bool) *model.AppError {
+	user, appErr := a.UserById(context.Background(), userID)
+	if appErr != nil {
+		return appErr
+	}
+
+	if _, appErr = a.UpdateActive(c, user, active); appErr != nil {
+		return appErr
 	}
 
 	return nil

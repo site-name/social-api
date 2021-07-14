@@ -28,6 +28,8 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gosimple/slug v1.9.0
+	github.com/graph-gophers/dataloader/v6 v6.0.0
+	github.com/graphql-go/graphql v0.7.9
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-multierror v1.1.1

@@ -652,9 +652,9 @@ type JobStore interface {
 
 type StatusStore interface {
 	CreateIndexesIfNotExists()
-	SaveOrUpdate(status *model.Status) error
-	Get(userID string) (*model.Status, error)
-	GetByIds(userIds []string) ([]*model.Status, error)
+	SaveOrUpdate(status *account.Status) error
+	Get(userID string) (*account.Status, error)
+	GetByIds(userIds []string) ([]*account.Status, error)
 	ResetAll() error
 	GetTotalActiveUsersCount() (int64, error)
 	UpdateLastActivityAt(userID string, lastActivityAt int64) error

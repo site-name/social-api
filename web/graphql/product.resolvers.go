@@ -6,8 +6,10 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
+	"github.com/sitename/sitename/web/graphql/scalars"
 )
 
 func (r *mutationResolver) ProductAttributeAssign(ctx context.Context, operations []*gqlmodel.ProductAttributeAssignInput, productTypeID string) (*gqlmodel.ProductAttributeAssign, error) {
@@ -46,6 +48,66 @@ func (r *mutationResolver) ProductReorderAttributeValues(ctx context.Context, at
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *productResolver) ProductType(ctx context.Context, obj *gqlmodel.Product) (*gqlmodel.ProductType, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Category(ctx context.Context, obj *gqlmodel.Product) (*gqlmodel.Category, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) DefaultVariant(ctx context.Context, obj *gqlmodel.Product) (*gqlmodel.ProductVariant, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Rating(ctx context.Context, obj *gqlmodel.Product) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Thumbnail(ctx context.Context, obj *gqlmodel.Product, size *int) (*gqlmodel.Image, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Pricing(ctx context.Context, obj *gqlmodel.Product, address *gqlmodel.AddressInput) (*gqlmodel.ProductPricingInfo, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) IsAvailable(ctx context.Context, obj *gqlmodel.Product, address *gqlmodel.AddressInput) (*bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) ChannelListings(ctx context.Context, obj *gqlmodel.Product) ([]gqlmodel.ProductChannelListing, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) MediaByID(ctx context.Context, obj *gqlmodel.Product, id *string) (*gqlmodel.ProductMedia, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Variants(ctx context.Context, obj *gqlmodel.Product) ([]*gqlmodel.ProductVariant, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Media(ctx context.Context, obj *gqlmodel.Product) ([]gqlmodel.ProductMedia, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Collections(ctx context.Context, obj *gqlmodel.Product) ([]*gqlmodel.Collection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) Translation(ctx context.Context, obj *gqlmodel.Product, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ProductTranslation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) AvailableForPurchase(ctx context.Context, obj *gqlmodel.Product, _ *scalars.PlaceHolder) (*time.Time, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *productResolver) IsAvailableForPurchase(ctx context.Context, obj *gqlmodel.Product, _ *scalars.PlaceHolder) (*bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, channel *string) (*gqlmodel.Product, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -53,3 +115,8 @@ func (r *queryResolver) Product(ctx context.Context, id *string, slug *string, c
 func (r *queryResolver) Products(ctx context.Context, filter *gqlmodel.ProductFilterInput, sortBy *gqlmodel.ProductOrder, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// Product returns ProductResolver implementation.
+func (r *Resolver) Product() ProductResolver { return &productResolver{r} }
+
+type productResolver struct{ *Resolver }

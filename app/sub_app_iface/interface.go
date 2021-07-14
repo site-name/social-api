@@ -122,8 +122,8 @@ type AccountApp interface {
 	PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError
-	GetStatus(userID string) (*model.Status, *model.AppError)
-	GetStatusFromCache(userID string) *model.Status
+	GetStatus(userID string) (*account.Status, *model.AppError)
+	GetStatusFromCache(userID string) *account.Status
 	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
 	PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError
 	UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError
@@ -162,17 +162,24 @@ type AccountApp interface {
 	DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	HasPermissionTo(askingUserId string, permission *model.Permission) bool
-
+	UpdateUserActive(c *request.Context, userID string, active bool) *model.AppError // UpdateUserActive updates given user's status to ...
 	GetPreferencesForUser(userID string) (model.Preferences, *model.AppError)
 	GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError)
 	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError)
 	UpdatePreferences(userID string, preferences model.Preferences) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
+
+	AddStatusCacheSkipClusterSend(status *account.Status)
+	GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) // GetUserStatusesByIds tries getting statuses from cache, if any cache for an user not found, it finds in database
+	AddStatusCache(status *account.Status)
+	StatusByID(statusID string) (*account.Status, *model.AppError)
+	StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError)
 }
 
 type ProductApp interface {
 	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)                    // ProductVariantById returns a product variants with given id
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) // ProductTypesByCheckoutToken returns all product types related to given checkout
+	ProductById(productID string) (*product_and_discount.Product, *model.AppError)                           // ProductById returns a product with id of given id
 }
 
 type WishlistApp interface {

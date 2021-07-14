@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -1081,28 +1080,6 @@ func (a *OpenTracingAppLayer) ProductApp() sub_app_iface.ProductApp {
 	resultVar0 := a.app.ProductApp()
 
 	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ProductVariantById")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.ProductVariantById(id)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
 }
 
 func (a *OpenTracingAppLayer) Publish(message *model.WebSocketEvent) {

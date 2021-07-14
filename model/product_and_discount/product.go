@@ -103,14 +103,19 @@ func (p *Product) PreSave() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
+	if p.ChargeTaxes == nil {
+		p.ChargeTaxes = model.NewBool(true)
+	}
 }
 
 func (p *Product) PreUpdate() {
 	p.UpdateAt = model.GetMillis()
 	p.Name = model.SanitizeUnicode(p.Name)
-	// p.Slug = slug.Make(p.Name)
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
+	}
+	if p.ChargeTaxes == nil {
+		p.ChargeTaxes = model.NewBool(true)
 	}
 }
 

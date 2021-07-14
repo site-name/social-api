@@ -31,6 +31,7 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
@@ -309,7 +310,7 @@ func NewServer(options ...Option) (*Server, error) {
 	// }
 
 	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-		Size:           model.STATUS_CACHE_SIZE,
+		Size:           account.STATUS_CACHE_SIZE,
 		Striped:        true,
 		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {

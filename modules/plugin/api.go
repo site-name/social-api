@@ -213,20 +213,20 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatus(userID string) (*model.Status, *model.AppError)
+	GetUserStatus(userID string) (*account.Status, *model.AppError)
 
 	// GetUserStatusesByIds will return a list of user statuses based on the provided slice of user IDs.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError)
+	GetUserStatusesByIds(userIds []string) ([]*account.Status, *model.AppError)
 
 	// UpdateUserStatus will set a user's status until the user, or another integration/plugin, sets it back to online.
 	// The status parameter can be: "online", "away", "dnd", or "offline".
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	UpdateUserStatus(userID, status string) (*model.Status, *model.AppError)
+	UpdateUserStatus(userID, status string) (*account.Status, *model.AppError)
 
 	// SetUserStatusTimedDND will set a user's status to dnd for given time until the user,
 	// or another integration/plugin, sets it back to online.

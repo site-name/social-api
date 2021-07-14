@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -100,8 +99,6 @@ type AppIface interface {
 	PluginApp() sub_app_iface.PluginApp
 	// Product returns product sub app
 	ProductApp() sub_app_iface.ProductApp
-	// ProductVariantById get a product variant with given id if exist
-	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.

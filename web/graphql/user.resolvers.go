@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
@@ -21,10 +22,11 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 		return nil, appErr
 	} else {
 		/*
-			if requesting user satisfies either:
-				1) requesting user's id == customer event's user id
-				2) requesting user has permission of managing users
-				3) requesting user has permission of managing staffs
+			TODO: fixme
+				if requesting user satisfies either:
+					1) requesting user's id == customer event's user id
+					2) requesting user has permission of managing users
+					3) requesting user has permission of managing staffs
 		*/
 		if obj.UserID != nil && *obj.UserID == session.UserId {
 			// TODO, there are two more conditions need implemented
@@ -92,14 +94,28 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 }
 
 func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*gqlmodel.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	var (
+		user   *account.User
+		appErr *model.AppError
+	)
+
+	if id != nil && model.IsValidId(*id) {
+		user, appErr = r.AccountApp().UserById(ctx, *id)
+	} else if email != nil && model.IsValidEmail(*email) {
+		user, appErr = r.AccountApp().UserByEmail(*email)
+	}
+
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
 	if session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx); appErr != nil || session.UserId != obj.ID {
 		return nil, appErr
 	} else {
-		if obj.DefaultShippingAddressID == nil {
+		if obj.DefaultShippingAddressID == nil || !model.IsValidId(*obj.DefaultShippingAddressID) {
 			return nil, nil
 		}
 
@@ -115,7 +131,7 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil || session.UserId != obj.ID {
 		return nil, appErr
 	} else {
-		if obj.DefaultBillingAddressID == nil {
+		if obj.DefaultBillingAddressID == nil || !model.IsValidId(*obj.DefaultBillingAddressID) {
 			return nil, nil
 		}
 
@@ -173,7 +189,7 @@ func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmo
 		return nil, appErr
 	} else {
 		if session.UserId != obj.ID {
-			return nil, newUserUnauthenticatedAppError("Events")
+			return nil, permissionDenied("Events")
 		}
 		events, appErr := r.AccountApp().CustomerEventsByUser(obj.ID)
 		if appErr != nil {
@@ -201,6 +217,7 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 		return nil, appErr
 	} else {
 		if session.UserId != obj.ID {
+			// users can only see their own wishlist
 			return nil, permissionDenied("Wishlist")
 		}
 		wl, appErr := r.WishlistApp().WishlistByUserID(obj.ID)
