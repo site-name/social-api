@@ -23,10 +23,6 @@ func (r *mutationResolver) CheckoutLinesUpdate(ctx context.Context, checkoutID *
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) CheckoutLine(ctx context.Context, id *string) (*gqlmodel.CheckoutLine, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *queryResolver) CheckoutLines(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.CheckoutLineCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

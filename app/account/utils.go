@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"hash/fnv"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
@@ -17,6 +19,40 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
+
+var (
+	// fontStore holds already parsed fonts for later use
+	fontStore sync.Map
+)
+
+var colors = []color.NRGBA{
+	{197, 8, 126, 255},
+	{227, 207, 18, 255},
+	{28, 181, 105, 255},
+	{35, 188, 224, 255},
+	{116, 49, 196, 255},
+	{197, 8, 126, 255},
+	{197, 19, 19, 255},
+	{250, 134, 6, 255},
+	{227, 207, 18, 255},
+	{123, 201, 71, 255},
+	{28, 181, 105, 255},
+	{35, 188, 224, 255},
+	{116, 49, 196, 255},
+	{197, 8, 126, 255},
+	{197, 19, 19, 255},
+	{250, 134, 6, 255},
+	{227, 207, 18, 255},
+	{123, 201, 71, 255},
+	{28, 181, 105, 255},
+	{35, 188, 224, 255},
+	{116, 49, 196, 255},
+	{197, 8, 126, 255},
+	{197, 19, 19, 255},
+	{250, 134, 6, 255},
+	{227, 207, 18, 255},
+	{123, 201, 71, 255},
+}
 
 func CheckEmailDomain(email string, domains string) bool {
 	if domains == "" {
@@ -54,13 +90,26 @@ func getFont(initialFont string) (*truetype.Font, error) {
 		initialFont = "nunito-bold.ttf"
 	}
 
+	// try getting font from memory
+	if value, ok := fontStore.Load(initialFont); ok {
+		return value.(*truetype.Font), nil
+	}
+
 	fontDir, _ := fileutils.FindDir("fonts")
 	fontBytes, err := ioutil.ReadFile(filepath.Join(fontDir, initialFont))
 	if err != nil {
 		return nil, err
 	}
 
-	return freetype.ParseFont(fontBytes)
+	parsed, err := freetype.ParseFont(fontBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	// put font into memory
+	fontStore.Store(initialFont, parsed)
+
+	return parsed, nil
 }
 
 func CreateProfileImage(username string, userID string, initialFont string) ([]byte, *model.AppError) {

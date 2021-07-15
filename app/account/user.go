@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"image/color"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -32,35 +31,6 @@ const (
 
 const MissingAuthAccountError = "app.user.get_by_auth.missing_account.app_error"
 const MissingAccountError = "app.user.missing_account.app_error"
-
-var colors = []color.NRGBA{
-	{197, 8, 126, 255},
-	{227, 207, 18, 255},
-	{28, 181, 105, 255},
-	{35, 188, 224, 255},
-	{116, 49, 196, 255},
-	{197, 8, 126, 255},
-	{197, 19, 19, 255},
-	{250, 134, 6, 255},
-	{227, 207, 18, 255},
-	{123, 201, 71, 255},
-	{28, 181, 105, 255},
-	{35, 188, 224, 255},
-	{116, 49, 196, 255},
-	{197, 8, 126, 255},
-	{197, 19, 19, 255},
-	{250, 134, 6, 255},
-	{227, 207, 18, 255},
-	{123, 201, 71, 255},
-	{28, 181, 105, 255},
-	{35, 188, 224, 255},
-	{116, 49, 196, 255},
-	{197, 8, 126, 255},
-	{197, 19, 19, 255},
-	{250, 134, 6, 255},
-	{227, 207, 18, 255},
-	{123, 201, 71, 255},
-}
 
 type tokenExtra struct {
 	UserId string
@@ -193,11 +163,26 @@ func (a *AppAccount) CreateUser(c *request.Context, user *account.User) (*accoun
 		user.Locale = *a.Config().LocalizationSettings.DefaultClientLocale
 	}
 
-	ruser, appErr := a.createUser(user)
+	user, appErr := a.createUser(user)
 	if appErr != nil {
 		return nil, appErr
 	}
 
+	if user.EmailVerified {
+		a.InvalidateCacheForUser(user.Id)
+	}
+
+	pref := model.Preference{
+		UserId:   user.Id,
+		Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
+		Name:     user.Id,
+		Value:    "0",
+	}
+	if err := a.Srv().Store.Preference().Save(&model.Preferences{pref}); err != nil {
+		slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
+	}
+
+	// TODO: fix me
 	// This message goes to everyone, so the teamID, channelID and userID are irrelevant
 	// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_NEW_USER, "", "", "", nil)
 	// message.Add("user_id", ruser.Id)
@@ -213,7 +198,7 @@ func (a *AppAccount) CreateUser(c *request.Context, user *account.User) (*accoun
 	// 	})
 	// }
 
-	return ruser, nil
+	return user, nil
 }
 
 func (a *AppAccount) createUser(user *account.User) (*account.User, *model.AppError) {
@@ -250,20 +235,7 @@ func (a *AppAccount) createUser(user *account.User) (*account.User, *model.AppEr
 		}
 	}
 
-	// pref := model.Preference{
-	// 	UserId:   ruser.Id,
-	// 	Category: model.PREFERENCE_CATEGORY_TUTORIAL_STEPS,
-	// 	Name:     ruser.Id,
-	// 	Value:    "0",
-	// }
-	// if err := a.Srv().Store.Preference().Save(&model.Preferences{pref}); err != nil {
-	// 	slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
-	// }
-
-	// go a.UpdateViewedProductNoticesForNewUser(ruser.Id)
 	ruser.Sanitize(map[string]bool{})
-
-	// Determine whether to send the created user a welcome email
 	ruser.DisableWelcomeEmail = user.DisableWelcomeEmail
 
 	return ruser, nil
@@ -392,21 +364,13 @@ func (a *AppAccount) VerifyUserEmail(userID, email string) *model.AppError {
 		return nil
 	}
 
-	// a.sendUpdatedUserEvent(user)
-
 	return nil
 }
 
 func (a *AppAccount) GetUserByUsername(username string) (*account.User, *model.AppError) {
 	result, err := a.Srv().Store.User().GetByUsername(username)
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &nfErr):
-			return nil, model.NewAppError("GetUserByUsername", "app.user.get_by_username.app_error", nil, nfErr.Error(), http.StatusNotFound)
-		default:
-			return nil, model.NewAppError("GetUserByUsername", "app.user.get_by_username.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		return nil, store.AppErrorFromDatabaseLookupError("GetUserByUsername", "app.account.user_by_username.app_error", err)
 	}
 	return result, nil
 }

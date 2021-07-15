@@ -109,8 +109,8 @@ type AccountApp interface {
 	DeactivateMfa(userID string) *model.AppError
 	ActivateMfa(userID, token string) *model.AppError
 	GetProfileImage(user *account.User) ([]byte, bool, *model.AppError)
-	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
-	SetDefaultProfileImage(user *account.User) *model.AppError
+	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) // GetDefaultProfileImage generate user's default prifile image (first character of their first name)
+	SetDefaultProfileImage(user *account.User) *model.AppError           // SetDefaultProfileImage sets default profile image for given user
 	SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError
 	SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError
 	AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError)

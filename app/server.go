@@ -134,7 +134,6 @@ type Server struct {
 	limitedClientConfig  atomic.Value
 
 	// telemetryService *telemetry.TelemetryService
-	// userService      *users.UserService
 
 	// serviceMux sync.RWMutex
 	// remoteClusterService remotecluster.RemoteClusterServiceIFace
@@ -377,25 +376,16 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrap(err, "cannot create store")
 	}
 
-	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
-	// 	s.configOrLicenseListener()
+	s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
+		s.configOrLicenseListener()
 
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
+		message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
 
-	// 	message.Add("config", s.ClientConfigWithComputed())
-	// 	s.Go(func() {
-	// 		s.Publish(message)
-	// 	})
-	// })
-	// s.licenseListenerId = s.AddLicenseListener(func(oldLicense, newLicense *model.License) {
-	// 	s.configOrLicenseListener()
-
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_LICENSE_CHANGED, "", "", "", nil)
-	// 	message.Add("license", s.GetSanitizedClientLicense())
-	// 	s.Go(func() {
-	// 		s.Publish(message)
-	// 	})
-	// })
+		message.Add("config", s.ClientConfigWithComputed())
+		s.Go(func() {
+			s.Publish(message)
+		})
+	})
 
 	// This enterprise init should happen after the store is set
 	// but we don't want to move the s.initEnterprise() call because
@@ -412,10 +402,6 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrapf(err, "unable to initialize email service")
 	}
 	s.EmailService = emailService
-
-	// if model.BuildEnterpriseReady == "true" {
-	// 	s.LoadLicense()
-	// }
 
 	// s.setupFeatureFlags()
 
