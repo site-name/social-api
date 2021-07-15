@@ -363,15 +363,9 @@ func (a *AppAccount) GetSessionLengthInMillis(session *model.Session) int64 {
 }
 
 func (a *AppAccount) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
-	user, nErr := a.Srv().Store.User().Get(context.Background(), token.UserId)
-	if nErr != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(nErr, &nfErr):
-			return nil, model.NewAppError("CreateUserAccessToken", MissingAccountError, nil, nfErr.Error(), http.StatusNotFound)
-		default:
-			return nil, model.NewAppError("CreateUserAccessToken", "app.user.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
-		}
+	user, appErr := a.UserById(context.Background(), token.UserId)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	if !*a.Config().ServiceSettings.EnableUserAccessTokens /*&& !user.IsBot*/ {
@@ -380,7 +374,7 @@ func (a *AppAccount) CreateUserAccessToken(token *account.UserAccessToken) (*acc
 
 	token.Token = model.NewId()
 
-	token, nErr = a.Srv().Store.UserAccessToken().Save(token)
+	token, nErr := a.Srv().Store.UserAccessToken().Save(token)
 	if nErr != nil {
 		var appErr *model.AppError
 		switch {
@@ -473,13 +467,7 @@ func (a *AppAccount) GetUserAccessTokensForUser(userID string, page, perPage int
 func (a *AppAccount) GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError) {
 	token, err := a.Srv().Store.UserAccessToken().Get(tokenID)
 	if err != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &nfErr):
-			return nil, model.NewAppError("GetUserAccessToken", "app.user_access_token.get_by_user.app_error", nil, nfErr.Error(), http.StatusNotFound)
-		default:
-			return nil, model.NewAppError("GetUserAccessToken", "app.user_access_token.get_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		return nil, store.AppErrorFromDatabaseLookupError("GetUserAccessToken", "app.user.accesstoken_missing.app_error", err)
 	}
 
 	if sanitize {

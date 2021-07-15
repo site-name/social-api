@@ -3,6 +3,7 @@ package preference
 import (
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ func NewSqlPreferenceStore(sqlStore store.Store) store.PreferenceStore {
 	s := &SqlPreferenceStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.Preference{}, "Preferences").SetKeys(false, "UserId", "Category", "Name")
+		table := db.AddTableWithName(model.Preference{}, store.PreferenceTableName).SetKeys(false, "UserId", "Category", "Name")
 		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Category").SetMaxSize(32)
 		table.ColMap("Name").SetMaxSize(32)
@@ -30,15 +31,15 @@ func NewSqlPreferenceStore(sqlStore store.Store) store.PreferenceStore {
 }
 
 func (s SqlPreferenceStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_preferences_user_id", "Preferences", "UserId")
-	s.CreateIndexIfNotExists("idx_preferences_category", "Preferences", "Category")
-	s.CreateIndexIfNotExists("idx_preferences_name", "Preferences", "Name")
+	s.CreateIndexIfNotExists("idx_preferences_user_id", store.PreferenceTableName, "UserId")
+	s.CreateIndexIfNotExists("idx_preferences_category", store.PreferenceTableName, "Category")
+	s.CreateIndexIfNotExists("idx_preferences_name", store.PreferenceTableName, "Name")
 }
 
 func (s SqlPreferenceStore) DeleteUnusedFeatures() {
 	slog.Debug("Deleting any unused pre-release features")
 	sql, args, err := s.GetQueryBuilder().
-		Delete("Preferences").
+		Delete(store.PreferenceTableName).
 		Where(sq.Eq{"Category": model.PREFERENCE_CATEGORY_ADVANCED_SETTINGS}).
 		Where(sq.Eq{"Value": "false"}).
 		Where(sq.Like{"Name": store.FeatureTogglePrefix + "%"}).ToSql()
@@ -80,26 +81,21 @@ func (s SqlPreferenceStore) save(transaction *gorp.Transaction, preference *mode
 	}
 	// postgres has no way to upsert values until version 9.5 and trying inserting and then updating causes transactions to abort
 	queryString, args, err := s.GetQueryBuilder().
-		Select("count(0)").
-		From("Preferences").
-		Where(sq.Eq{"UserId": preference.UserId}).
-		Where(sq.Eq{"Category": preference.Category}).
-		Where(sq.Eq{"Name": preference.Name}).
+		Insert("Preferences").
+		Columns("UserId", "Category", "Name", "Value").
+		Values(preference.UserId, preference.Category, preference.Name, preference.Value).
+		SuffixExpr(squirrel.Expr("ON CONFLICT (userid, category, name) DO UPDATE SET Value = ?", preference.Value)).
 		ToSql()
 
 	if err != nil {
 		return errors.Wrap(err, "failed to generate sqlquery")
 	}
 
-	count, err := transaction.SelectInt(queryString, args...)
-	if err != nil {
+	if _, err = transaction.Exec(queryString, args...); err != nil {
 		return errors.Wrap(err, "failed to count Preferences")
 	}
 
-	if count == 1 {
-		return s.update(transaction, preference)
-	}
-	return s.insert(transaction, preference)
+	return nil
 }
 
 func (s SqlPreferenceStore) insert(transaction *gorp.Transaction, preference *model.Preference) error {

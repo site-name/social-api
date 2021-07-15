@@ -174,6 +174,10 @@ type AccountApp interface {
 	AddStatusCache(status *account.Status)
 	StatusByID(statusID string) (*account.Status, *model.AppError)
 	StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError)
+
+	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) // CreateUserAccessToken creates new user access token for user
+	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)     // GetUserAccessToken get access token for user
+	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                             // RevokeUserAccessToken
 }
 
 type ProductApp interface {
@@ -298,6 +302,7 @@ type FileApp interface {
 	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
 	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
 	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
+	DownloadFromURL(downloadURL string) ([]byte, error) // DownloadFromURL
 }
 
 type PluginApp interface {

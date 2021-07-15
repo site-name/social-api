@@ -197,6 +197,40 @@ func (api *PluginAPI) DeletePreferencesForUser(userID string, preferences []mode
 	return api.app.AccountApp().DeletePreferences(userID, preferences)
 }
 
+func (api *PluginAPI) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
+	return api.app.AccountApp().CreateUserAccessToken(token)
+}
+
+func (api *PluginAPI) RevokeUserAccessToken(tokenID string) *model.AppError {
+	accessToken, err := api.app.AccountApp().GetUserAccessToken(tokenID, false)
+	if err != nil {
+		return err
+	}
+
+	return api.app.AccountApp().RevokeUserAccessToken(accessToken)
+}
+
+// func (api *PluginAPI) CreateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError) {
+// 	return api.app.CreateOAuthApp(app)
+// }
+
+// func (api *PluginAPI) GetOAuthApp(appID string) (*model.OAuthApp, *model.AppError) {
+// 	return api.app.GetOAuthApp(appID)
+// }
+
+// func (api *PluginAPI) UpdateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError) {
+// 	oldApp, err := api.GetOAuthApp(app.Id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return api.app.UpdateOauthApp(oldApp, app)
+// }
+
+// func (api *PluginAPI) DeleteOAuthApp(appID string) *model.AppError {
+// 	return api.app.DeleteOAuthApp(appID)
+// }
+
 func (api *PluginAPI) UpdateUser(user *account.User) (*account.User, *model.AppError) {
 	return api.app.AccountApp().UpdateUser(user, true)
 }
@@ -317,7 +351,6 @@ func (api *PluginAPI) GetFile(fileID string) ([]byte, *model.AppError) {
 	return api.app.FileApp().GetFile(fileID)
 }
 
-// TODO: fix this
 // func (api *PluginAPI) UploadFile(data []byte, channelID string, filename string) (*model.FileInfo, *model.AppError) {
 // 	return api.app.FileApp().UploadFile(api.ctx, data, channelID, filename)
 // }

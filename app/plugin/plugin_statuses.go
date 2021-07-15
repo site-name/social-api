@@ -75,17 +75,17 @@ func (a *AppPlugin) GetClusterPluginStatuses() (plugins.PluginStatuses, *model.A
 	return pluginStatuses, nil
 }
 
-// func (a *AppPlugin) notifyPluginStatusesChanged() error {
-// 	pluginStatuses, err := a.GetClusterPluginStatuses()
-// 	if err != nil {
-// 		return err
-// 	}
+func (a *AppPlugin) notifyPluginStatusesChanged() error {
+	pluginStatuses, err := a.GetClusterPluginStatuses()
+	if err != nil {
+		return err
+	}
 
-// 	// Notify any system admins.
-// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_STATUSES_CHANGED, "", "", "", nil)
-// 	message.Add("plugin_statuses", pluginStatuses)
-// 	message.GetBroadcast().ContainsSensitiveData = true
-// 	a.Srv().Publish(message)
+	// Notify any system admins.
+	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_STATUSES_CHANGED, "", nil)
+	message.Add("plugin_statuses", pluginStatuses)
+	message.GetBroadcast().ContainsSensitiveData = true
+	a.Srv().Publish(message)
 
-// 	return nil
-// }
+	return nil
+}

@@ -759,6 +759,7 @@ type (
 		GetByToken(token string) (*model.Token, error)
 		Cleanup()
 		RemoveAllTokensByType(tokenType string) error
+		GetAllTokensByType(tokenType string) ([]*model.Token, error)
 	}
 	UserAccessTokenStore interface {
 		CreateIndexesIfNotExists()

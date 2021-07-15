@@ -5,7 +5,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  checkoutLine(id: ID): CheckoutLine
+  # checkoutLine(id: ID): CheckoutLine
   checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection
 }
 

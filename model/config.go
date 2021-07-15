@@ -820,7 +820,7 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	}
 
 	if s.EnableReliableWebSockets == nil {
-		s.EnableReliableWebSockets = NewBool(false)
+		s.EnableReliableWebSockets = NewBool(true)
 	}
 }
 
@@ -2518,6 +2518,7 @@ type PluginSettings struct {
 	RequirePluginSignature      *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
 	MarketplaceUrl              *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
 	SignaturePublicKeyFiles     []string                          `access:"plugins,write_restrictable,cloud_restrictable"`
+	ChimeraOAuthProxyUrl        *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
 }
 
 func (s *PluginSettings) SetDefaults(ls LogSettings) {
@@ -2590,6 +2591,9 @@ func (s *PluginSettings) SetDefaults(ls LogSettings) {
 
 	if s.SignaturePublicKeyFiles == nil {
 		s.SignaturePublicKeyFiles = []string{}
+	}
+	if s.ChimeraOAuthProxyUrl == nil {
+		s.ChimeraOAuthProxyUrl = NewString("")
 	}
 }
 

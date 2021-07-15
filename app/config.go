@@ -36,7 +36,7 @@ const (
 
 // Configs return system's configurations
 func (s *Server) Config() *model.Config {
-	return s.configStore.Get()
+	return s.ConfigStore.Get()
 }
 
 // Configs return system's configurations
@@ -45,7 +45,7 @@ func (a *App) Config() *model.Config {
 }
 
 func (s *Server) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
-	return s.configStore.GetEnvironmentOverridesWithFilter(filter)
+	return s.ConfigStore.GetEnvironmentOverridesWithFilter(filter)
 }
 
 func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
@@ -53,13 +53,13 @@ func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[strin
 }
 
 func (s *Server) UpdateConfig(f func(*model.Config)) {
-	if s.configStore.IsReadOnly() {
+	if s.ConfigStore.IsReadOnly() {
 		return
 	}
 	old := s.Config()
 	updated := old.Clone()
 	f(updated)
-	if _, _, err := s.configStore.Set(updated); err != nil {
+	if _, _, err := s.ConfigStore.Set(updated); err != nil {
 		slog.Error("Failed to update config", slog.Err(err))
 	}
 }
@@ -69,7 +69,7 @@ func (a *App) UpdateConfig(f func(*model.Config)) {
 }
 
 func (s *Server) ReloadConfig() error {
-	if err := s.configStore.Load(); err != nil {
+	if err := s.ConfigStore.Load(); err != nil {
 		return err
 	}
 	return nil
@@ -95,7 +95,7 @@ func (a *App) LimitedClientConfig() map[string]string {
 // will be called with two arguments: the old config and the new config. AddConfigListener returns a unique ID
 // for the listener that can later be used to remove it.
 func (s *Server) AddConfigListener(listener func(*model.Config, *model.Config)) string {
-	return s.configStore.AddListener(listener)
+	return s.ConfigStore.AddListener(listener)
 }
 
 func (a *App) AddConfigListener(listener func(*model.Config, *model.Config)) string {
@@ -104,7 +104,7 @@ func (a *App) AddConfigListener(listener func(*model.Config, *model.Config)) str
 
 // Removes a listener function by the unique ID returned when AddConfigListener was called
 func (s *Server) RemoveConfigListener(id string) {
-	s.configStore.RemoveListener(id)
+	s.ConfigStore.RemoveListener(id)
 }
 
 func (a *App) RemoveConfigListener(id string) {
@@ -174,7 +174,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 // SaveConfig replaces the active configuration, optionally notifying cluster peers.
 // It returns both the previous and current configs.
 func (s *Server) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError) {
-	oldCfg, newCfg, err := s.configStore.Set(newCfg)
+	oldCfg, newCfg, err := s.ConfigStore.Set(newCfg)
 	if errors.Cause(err) == config.ErrReadOnlyConfiguration {
 		return nil, nil, model.NewAppError("saveConfig", "ent.cluster.save_config.error", nil, err.Error(), http.StatusForbidden)
 	} else if err != nil {
@@ -191,8 +191,8 @@ func (s *Server) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage
 	}
 
 	if s.Cluster != nil {
-		err := s.Cluster.ConfigChanged(s.configStore.RemoveEnvironmentOverrides(oldCfg),
-			s.configStore.RemoveEnvironmentOverrides(newCfg), sendConfigChangeClusterMessage)
+		err := s.Cluster.ConfigChanged(s.ConfigStore.RemoveEnvironmentOverrides(oldCfg),
+			s.ConfigStore.RemoveEnvironmentOverrides(newCfg), sendConfigChangeClusterMessage)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -414,7 +414,7 @@ func (a *App) LimitedClientConfigWithComputed() map[string]string {
 
 // GetConfigFile proxies access to the given configuration file to the underlying config store.
 func (a *App) GetConfigFile(name string) ([]byte, error) {
-	data, err := a.Srv().configStore.GetFile(name)
+	data, err := a.Srv().ConfigStore.GetFile(name)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get config file %s", name)
 	}

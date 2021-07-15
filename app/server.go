@@ -120,7 +120,7 @@ type Server struct {
 	logListenerId           string
 	clusterLeaderListenerId string
 	searchConfigListenerId  string
-	configStore             *config.Store
+	ConfigStore             *config.Store
 	postActionCookieSecret  []byte
 
 	advancedLogListenerCleanup func()
@@ -197,7 +197,7 @@ func NewServer(options ...Option) (*Server, error) {
 		}
 	}
 
-	if s.configStore == nil {
+	if s.ConfigStore == nil {
 		innerStore, err := config.NewFileStore("config.json", true)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to load config")
@@ -207,7 +207,7 @@ func NewServer(options ...Option) (*Server, error) {
 			return nil, errors.Wrap(err, "failed to load config")
 		}
 
-		s.configStore = configStoree
+		s.ConfigStore = configStoree
 	}
 
 	if err := s.initLogging(); err != nil {
@@ -531,7 +531,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	pwd, _ := os.Getwd()
 	slog.Info("Printing current working", slog.String("directory", pwd))
-	slog.Info("Loading config", slog.String("source", s.configStore.String()))
+	slog.Info("Loading config", slog.String("source", s.ConfigStore.String()))
 
 	s.checkPushNotificationServerUrl()
 
@@ -663,12 +663,12 @@ func (s *Server) initLogging() error {
 		isJson := config.IsJsonMap(dsn)
 
 		// If this is a file based config we need the full path so it can be watched.
-		if !isJson && strings.HasPrefix(s.configStore.String(), "file://") && !filepath.IsAbs(dsn) {
-			configPath := strings.TrimPrefix(s.configStore.String(), "file://")
+		if !isJson && strings.HasPrefix(s.ConfigStore.String(), "file://") && !filepath.IsAbs(dsn) {
+			configPath := strings.TrimPrefix(s.ConfigStore.String(), "file://")
 			dsn = filepath.Join(filepath.Dir(configPath), dsn)
 		}
 
-		cfg, err := config.NewLogConfigSrc(dsn, isJson, s.configStore)
+		cfg, err := config.NewLogConfigSrc(dsn, isJson, s.ConfigStore)
 		if err != nil {
 			return fmt.Errorf("invalid advanced logging config, %w", err)
 		}
@@ -966,7 +966,7 @@ func (s *Server) Shutdown() {
 	s.Audit.Shutdown()
 
 	// s.stopFeatureFlagUpdateJob()
-	s.configStore.Close()
+	s.ConfigStore.Close()
 
 	if s.Cluster != nil {
 		s.Cluster.StopInterNodeCommunication()

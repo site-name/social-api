@@ -459,30 +459,33 @@ type Z_PluginHTTPReturns struct {
 	ResponseBody []byte
 }
 
-func (g *apiRPCClient) PluginHTTP(r *http.Request) *http.Response {
+func (g *apiRPCClient) PluginHTTP(request *http.Request) *http.Response {
 	forwardedRequest := &http.Request{
-		Method:     r.Method,
-		URL:        r.URL,
-		Proto:      r.Proto,
-		ProtoMajor: r.ProtoMajor,
-		ProtoMinor: r.ProtoMinor,
-		Header:     r.Header,
-		Host:       r.Host,
-		RemoteAddr: r.RemoteAddr,
-		RequestURI: r.RequestURI,
+		Method:     request.Method,
+		URL:        request.URL,
+		Proto:      request.Proto,
+		ProtoMajor: request.ProtoMajor,
+		ProtoMinor: request.ProtoMinor,
+		Header:     request.Header,
+		Host:       request.Host,
+		RemoteAddr: request.RemoteAddr,
+		RequestURI: request.RequestURI,
 	}
-
-	requestBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("RPC call to PluginHTTP API failed: %s", err.Error())
-		return nil
-	}
-	r.Body.Close()
-	r.Body = nil
 
 	_args := &Z_PluginHTTPArgs{
-		Request:     forwardedRequest,
-		RequestBody: requestBody,
+		Request: forwardedRequest,
+	}
+
+	if request.Body != nil {
+		requestBody, err := ioutil.ReadAll(request.Body)
+		if err != nil {
+			log.Printf("RPC call to PluginHTTP API failed: %s", err.Error())
+			return nil
+		}
+		request.Body.Close()
+		request.Body = nil
+
+		_args.RequestBody = requestBody
 	}
 
 	_returns := &Z_PluginHTTPReturns{}

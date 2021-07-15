@@ -59,6 +59,7 @@ const (
 	CustomerEventTableName              = "CustomerEvents"
 	StaffNotificationRecipientTableName = "StaffNotificationRecipients"
 	CustomerNoteTableName               = "CustomerNotes"
+	TokenTableName                      = "Tokens"
 )
 
 // channel-related table names
@@ -83,3 +84,6 @@ const (
 const (
 	PluginKeyValueStoreTableName = "PluginKeyValueStore"
 )
+
+// preference table names
+const PreferenceTableName = "Preferences"

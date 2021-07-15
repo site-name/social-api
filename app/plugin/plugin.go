@@ -161,9 +161,9 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 	// }
 }
 
-func (a *AppPlugin) NewPluginAPI(c *request.Context, manifest *plugins.Manifest) plugin.API {
-	return NewPluginAPI(a, c, manifest)
-}
+// func (a *AppPlugin) NewPluginAPI(c *request.Context, manifest *plugins.Manifest) plugin.API {
+// 	return NewPluginAPI(a, c, manifest)
+// }
 
 func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir string) {
 	// Acquiring lock manually, as plugins might be disabled. See GetPluginsEnvironment.
@@ -188,7 +188,7 @@ func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir s
 	}
 
 	newApiFunc := func(manifest *plugins.Manifest) plugin.API {
-		return app.New(app.ServerConnector(s.Srv())).PluginApp().NewPluginAPI(c, manifest)
+		return NewPluginAPI(app.New(app.ServerConnector(s.Srv())), c, manifest)
 	}
 
 	env, err := plugin.NewEnvironment(newApiFunc, NewDriverImpl(s.Srv()), pluginDir, webappPluginDir, s.Log(), s.Metrics())
@@ -953,7 +953,7 @@ func (s *AppPlugin) installFeatureFlagPlugins() {
 				}
 			}
 
-			_, err := s.installMarketplacePlugin(&plugins.InstallMarketplacePluginRequest{
+			_, err := s.InstallMarketplacePlugin(&plugins.InstallMarketplacePluginRequest{
 				Id:      pluginID,
 				Version: version,
 			})

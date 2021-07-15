@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -14,6 +15,7 @@ import (
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/templates"
+	"github.com/sitename/sitename/store"
 	"github.com/throttled/throttled"
 	"github.com/throttled/throttled/store/memstore"
 )
@@ -364,4 +366,31 @@ func (es *EmailService) SendOverUserLimitWarningEmail(email string, locale strin
 func (es *EmailService) SendNoCardPaymentFailedEmail(email string, locale string, siteURL string) *model.AppError {
 	panic("not implemented")
 
+}
+
+func (es *EmailService) InvalidateVerifyEmailTokenForUser(userID string) *model.AppError {
+	tokens, err := es.srv.Store.Token().GetAllTokensByType(TokenTypeVerifyEmail)
+	if err != nil {
+		return store.AppErrorFromDatabaseLookupError("InvalidateVerifyEmailTokenForUser", "app.user.invalidate_verify_email_tokens.app_error", err)
+	}
+
+	var appErr *model.AppError
+
+	for _, token := range tokens {
+		var tokenExtra tokenExtra
+		if err := model.ModelFromJson(&tokenExtra, strings.NewReader(token.Extra)); err != nil {
+			appErr = model.NewAppError("InvalidateVerifyEmailTokenForUser", "app.user.invalidate_verify_email_tokens_parse.app_error", nil, err.Error(), http.StatusInternalServerError)
+			continue
+		}
+
+		if tokenExtra.UserId != userID {
+			continue
+		}
+
+		if err := es.srv.Store.Token().Delete(token.Token); err != nil {
+			appErr = model.NewAppError("InvalidateVerifyEmailTokenForUser", "app.user.invalidate_verify_email_tokens_delete.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	return appErr
 }

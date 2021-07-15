@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -49,15 +50,21 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *plugins.PluginKeyValue) (*plugins.Plu
 		return kv, nil
 	}
 
-	// Unfortunately PostgreSQL pre-9.5 does not have an atomic upsert, so we use
-	// separate update and insert queries to accomplish our upsert
-	if rowsAffected, err := ps.GetMaster().Update(kv); err != nil {
-		return nil, errors.Wrap(err, "failed to update PluginKeyValue")
-	} else if rowsAffected == 0 {
-		// No rows were affected by the update, so let's try an insert
-		if err := ps.GetMaster().Insert(kv); err != nil {
-			return nil, errors.Wrap(err, "failed to save PluginKeyValue")
-		}
+	query := ps.GetQueryBuilder().
+		Insert(store.PluginKeyValueStoreTableName).
+		Columns("PluginId", "PKey", "PValue", "ExpireAt").
+		Values(kv.PluginId, kv.Key, kv.Value, kv.ExpireAt).
+		SuffixExpr(
+			squirrel.Expr("ON CONFLICT (pluginid, pkey) DO UPDATE SET PValue = ?, ExpireAt = ?", kv.Value, kv.ExpireAt),
+		)
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "plugin_tosql")
+	}
+
+	if _, err := ps.GetMaster().Exec(queryString, args...); err != nil {
+		return nil, errors.Wrap(err, "failed to upsert PluginKeyValue")
 	}
 
 	return kv, nil
