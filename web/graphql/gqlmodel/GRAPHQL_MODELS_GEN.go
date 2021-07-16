@@ -1650,12 +1650,12 @@ type LoginError struct {
 }
 
 type LoginInput struct {
-	ID       *string `json:"id"`
-	LoginID  *string `json:"loginId"`
-	Password string  `json:"password"`
-	MfaToken *string `json:"mfaToken"`
-	DeviceID *string `json:"deviceId"`
-	LdapOnly bool    `json:"ldapOnly"`
+	ID       string `json:"id"`
+	LoginID  string `json:"loginId"`
+	Password string `json:"password"`
+	MfaToken string `json:"mfaToken"`
+	DeviceID string `json:"deviceId"`
+	LdapOnly bool   `json:"ldapOnly"`
 }
 
 type LoginResponse struct {

@@ -71,6 +71,12 @@ const (
 	WEBSOCKET_FIRST_ADMIN_VISIT_MARKETPLACE_STATUS_RECEIVED  = "first_admin_visit_marketplace_status_received"
 )
 
+type WebSocketMessage interface {
+	ToJson() string
+	IsValid() bool
+	EventType() string
+}
+
 type WebsocketBroadcast struct {
 	OmitUsers             map[string]bool `json:"omit_users"` // broadcast is omitted for users listed here
 	UserId                string          `json:"user_id"`    // broadcast only occurs for this user

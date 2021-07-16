@@ -118,6 +118,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.AppContext.SetPath(r.URL.Path)
 	c.SetRequest(r)
 	c.SetHttpResponse(w)
+	// TODO: consider this line:
 	// c.Params = shared.ParamsFromRquest(r)
 	c.Logger = c.App.Log()
 

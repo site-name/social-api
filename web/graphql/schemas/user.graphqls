@@ -55,11 +55,11 @@ type LoginResponse {
 }
 
 input LoginInput {
-  id: String
-  loginId: String
+  id: String!
+  loginId: String!
   password: String!
-  mfaToken: String
-  deviceId: String
+  mfaToken: String!
+  deviceId: String!
   ldapOnly: Boolean!
 }
 

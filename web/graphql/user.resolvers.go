@@ -66,7 +66,26 @@ func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.Cus
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
-	panic(fmt.Errorf("not implemented"))
+	// NOTE: this mutation is borrowed from mattermost
+	// embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	// if *r.Config().ExperimentalSettings.ClientSideCertEnable {
+	// 	certPem, certSubject, certEmail := r.AccountApp().CheckForClientSideCert(embedCtx.GetRequest())
+	// 	slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
+
+	// 	if certPem == "" || certEmail == "" {
+	// 		return nil, model.NewAppError("Login", "graphql.account.login.client_side_cert.app_error", nil, "", http.StatusBadRequest)
+	// 	}
+
+	// 	if *r.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+	// 		input.LoginID = certEmail
+	// 		input.Password = "certificate"
+	// 	}
+
+	// 	user, err := r.AccountApp().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.MfaToken, "", input.LdapOnly)
+
+	// }
+	panic("not implt")
 }
 
 func (r *mutationResolver) UserAvatarUpdate(ctx context.Context, image graphql.Upload) (*gqlmodel.UserAvatarUpdate, error) {

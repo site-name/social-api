@@ -1,9 +1,22 @@
 package app
 
 import (
+	"time"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/cluster"
 )
+
+const (
+	broadcastQueueSize         = 4096
+	inactiveConnReaperInterval = 5 * time.Minute
+)
+
+type webConnActivityMessage struct {
+	userID       string
+	sessionToken string
+	activityAt   int64
+}
 
 // InvalidateCacheForUser
 func (a *App) InvalidateCacheForUser(userID string) {

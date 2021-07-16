@@ -376,16 +376,17 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrap(err, "cannot create store")
 	}
 
-	s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
-		s.configOrLicenseListener()
+	// TODO: fixme
+	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
+	// 	s.configOrLicenseListener()
 
-		message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
+	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
 
-		message.Add("config", s.ClientConfigWithComputed())
-		s.Go(func() {
-			s.Publish(message)
-		})
-	})
+	// 	message.Add("config", s.ClientConfigWithComputed())
+	// 	s.Go(func() {
+	// 		s.Publish(message)
+	// 	})
+	// })
 
 	// This enterprise init should happen after the store is set
 	// but we don't want to move the s.initEnterprise() call because
