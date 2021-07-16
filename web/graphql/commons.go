@@ -25,7 +25,7 @@ func newUserUnauthenticatedAppError(where string) *model.AppError {
 //
 // 1) extracts value embedded in given ctx
 //
-// 2) checks whether session inside that value is nil or concret
+// 2) checks whether session inside that value is nil or concrete
 //
 // 3) checks whether UserId property of session is valid uuid
 func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, *model.AppError) {

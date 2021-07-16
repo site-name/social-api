@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -41,28 +40,44 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	if obj.OrderID != nil || !model.IsValidId(*obj.OrderID) {
-		return nil, nil
-	}
-
-	order, appErr := r.OrderApp().OrderById(*obj.OrderID)
-	if appErr != nil {
+	if session, appErr := checkUserAuthenticated("Order", ctx); appErr != nil {
 		return nil, appErr
-	}
+	} else {
+		// check if current user relates to this customer event
+		if obj.UserID == nil || session.UserId != *obj.UserID {
+			return nil, permissionDenied("Order")
+		}
+		if obj.OrderID != nil || !model.IsValidId(*obj.OrderID) {
+			return nil, nil
+		}
 
-	return gqlmodel.DatabaseOrderToGraphqlOrder(order), nil
+		order, appErr := r.OrderApp().OrderById(*obj.OrderID)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return gqlmodel.DatabaseOrderToGraphqlOrder(order), nil
+	}
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
-		return nil, nil
-	}
-	orderLine, appErr := r.OrderApp().OrderLineById(*obj.OrderLineID)
-	if appErr != nil {
+	if session, appErr := checkUserAuthenticated("OrderLine", ctx); appErr != nil {
 		return nil, appErr
-	}
+	} else {
+		// check if current user relates to this customer event
+		if obj.UserID == nil || session.UserId != *obj.UserID {
+			return nil, permissionDenied("OrderLine")
+		}
+		if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
+			return nil, nil
+		}
+		orderLine, appErr := r.OrderApp().OrderLineById(*obj.OrderLineID)
+		if appErr != nil {
+			return nil, appErr
+		}
 
-	return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
+		return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
+	}
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
@@ -106,7 +121,7 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 	} else {
 		user, err := r.AccountApp().UserById(ctx, session.UserId)
 		if err != nil {
-			return nil, store.AppErrorFromDatabaseLookupError("Me", "graphql.account.user_not_found.app_error", err)
+			return nil, err
 		}
 		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
 	}
@@ -124,16 +139,21 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 		user, appErr = r.AccountApp().UserByEmail(*email)
 	}
 
-	if appErr != nil {
+	if appErr != nil || user == nil {
 		return nil, appErr
 	}
 	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx); appErr != nil || session.UserId != obj.ID {
+	if session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		// checks if current user has right to perform this action
+		if session.UserId != obj.ID {
+			return nil, permissionDenied("DefaultShippingAddress")
+		}
+
 		if obj.DefaultShippingAddressID == nil || !model.IsValidId(*obj.DefaultShippingAddressID) {
 			return nil, nil
 		}
@@ -147,9 +167,14 @@ func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil || session.UserId != obj.ID {
+	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		// checks if current user has right to perform this action
+		if session.UserId != obj.ID {
+			return nil, permissionDenied("DefaultBillingAddress")
+		}
+
 		if obj.DefaultBillingAddressID == nil || !model.IsValidId(*obj.DefaultBillingAddressID) {
 			return nil, nil
 		}
@@ -164,9 +189,13 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("Addresses", ctx); appErr != nil || session.UserId != obj.ID {
+	if session, appErr := checkUserAuthenticated("Addresses", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		// check if current user has right to perform this action:
+		if session.UserId != obj.ID {
+			return nil, permissionDenied("Addresses")
+		}
 		addresses, AppErr := r.AccountApp().AddressesByUserId(obj.ID)
 		if AppErr != nil {
 			return nil, AppErr
@@ -204,9 +233,10 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil || session.UserId != obj.ID {
+	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		// check if requesting user is performing this operation on himself
 		if session.UserId != obj.ID {
 			return nil, permissionDenied("Events")
 		}
@@ -235,8 +265,8 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 	if session, appErr := checkUserAuthenticated("Wishlist", ctx); appErr != nil {
 		return nil, appErr
 	} else {
+		// users can ONLY see their own wishlist
 		if session.UserId != obj.ID {
-			// users can only see their own wishlist
 			return nil, permissionDenied("Wishlist")
 		}
 		wl, appErr := r.WishlistApp().WishlistByUserID(obj.ID)
