@@ -164,8 +164,6 @@ func (a *App) DoAppMigrations() {
 
 func (s *Server) doAppMigrations() {
 	s.doAdvancedPermissionsMigration()
-	// s.doEmojisPermissionsMigration()
-	// s.doGuestRolesCreationMigration()
 	s.doSystemConsoleRolesCreationMigration()
 	// This migration always must be the last, because can be based on previous
 	// migrations. For example, it needs the guest roles migration.

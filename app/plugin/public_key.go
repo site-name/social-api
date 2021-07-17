@@ -1,6 +1,7 @@
 package plugin
 
-var sitenamePluginPublicKey []byte = []byte(`-----BEGIN PGP PUBLIC KEY BLOCK-----
+var sitenamePluginPublicKey []byte = []byte(
+	`-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBF3YTiEBEACgkhnZ5+xylKZhLVj193b6d/rSQuCU/zwWeZJnqyR8wRsPotXO
 CMXOUM9bTTaGfItCP9KlPPcyrshNEIgqcqhB6TSKkWSyrV5XS95Opd9Esbjw1VZq

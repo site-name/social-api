@@ -519,11 +519,11 @@ func (a *App) getAddEnvironmentSubsectionPermissions() (permissionsMap, error) {
 
 func (a *App) getAddAboutSubsectionPermissions() (permissionsMap, error) {
 	transformations := []permissionTransformation{
-		permissionTransformation{
+		{
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_READ_ABOUT.Id),
 			Add: []string{},
 		},
-		permissionTransformation{
+		{
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_ABOUT.Id),
 			Add: []string{},
 		},
@@ -573,7 +573,7 @@ func (a *App) getAddReportingSubsectionPermissions() (permissionsMap, error) {
 
 func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error) {
 	transformations := []permissionTransformation{
-		permissionTransformation{ // Give the new subsection READ permissions to any user with READ_AUTHENTICATION
+		{ // Give the new subsection READ permissions to any user with READ_AUTHENTICATION
 			On: permissionExists(model.PERMISSION_SYSCONSOLE_READ_AUTHENTICATION.Id),
 			Add: []string{
 				model.PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP.Id,
@@ -586,7 +586,7 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 				model.PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS.Id,
 			},
 		},
-		permissionTransformation{ // Give the new subsection WRITE permissions to any user with WRITE_AUTHENTICATION
+		{ // Give the new subsection WRITE permissions to any user with WRITE_AUTHENTICATION
 			On: permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION.Id),
 			Add: []string{
 				model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SIGNUP.Id,
@@ -599,19 +599,19 @@ func (a *App) getAddAuthenticationSubsectionPermissions() (permissionsMap, error
 				model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_GUEST_ACCESS.Id,
 			},
 		},
-		permissionTransformation{ // Give the ancillary permissions for LDAP to anyone with WRITE_AUTHENTICATION_LDAP
+		{ // Give the ancillary permissions for LDAP to anyone with WRITE_AUTHENTICATION_LDAP
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_LDAP.Id),
 			Add: []string{model.PERMISSION_CREATE_LDAP_SYNC_JOB.Id, model.PERMISSION_TEST_LDAP.Id, model.PERMISSION_ADD_LDAP_PUBLIC_CERT.Id, model.PERMISSION_ADD_LDAP_PRIVATE_CERT.Id, model.PERMISSION_REMOVE_LDAP_PUBLIC_CERT.Id, model.PERMISSION_REMOVE_LDAP_PRIVATE_CERT.Id},
 		},
-		permissionTransformation{ // Give the ancillary permissions PERMISSION_TEST_LDAP to anyone with READ_AUTHENTICATION_LDAP
+		{ // Give the ancillary permissions PERMISSION_TEST_LDAP to anyone with READ_AUTHENTICATION_LDAP
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP.Id),
 			Add: []string{model.PERMISSION_READ_LDAP_SYNC_JOB.Id},
 		},
-		permissionTransformation{
+		{
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_EMAIL.Id),
 			Add: []string{model.PERMISSION_INVALIDATE_EMAIL_INVITE.Id},
 		},
-		permissionTransformation{ // Give the ancillary permissions for SAML to anyone with WRITE_AUTHENTICATION_SAML
+		{ // Give the ancillary permissions for SAML to anyone with WRITE_AUTHENTICATION_SAML
 			On:  permissionExists(model.PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SAML.Id),
 			Add: []string{model.PERMISSION_GET_SAML_METADATA_FROM_IDP.Id, model.PERMISSION_ADD_SAML_PUBLIC_CERT.Id, model.PERMISSION_ADD_SAML_PRIVATE_CERT.Id, model.PERMISSION_ADD_SAML_IDP_CERT.Id, model.PERMISSION_REMOVE_SAML_PUBLIC_CERT.Id, model.PERMISSION_REMOVE_SAML_PRIVATE_CERT.Id, model.PERMISSION_REMOVE_SAML_IDP_CERT.Id, model.PERMISSION_GET_SAML_CERT_STATUS.Id},
 		},

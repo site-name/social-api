@@ -3,7 +3,6 @@ package plugin
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -90,7 +89,7 @@ func (api *PluginAPI) LoadPluginConfiguration(dest interface{}) error {
 // }
 
 func (api *PluginAPI) GetSession(sessionID string) (*model.Session, *model.AppError) {
-	session, err := api.app.AccountApp().GetSession(sessionID)
+	session, err := api.app.AccountApp().GetSessionById(sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -356,15 +355,15 @@ func (api *PluginAPI) GetFile(fileID string) ([]byte, *model.AppError) {
 // }
 
 func (api *PluginAPI) GetPlugins() ([]*plugins.Manifest, *model.AppError) {
-	plugins, err := api.app.PluginApp().GetPlugins()
+	plgs, err := api.app.PluginApp().GetPlugins()
 	if err != nil {
 		return nil, err
 	}
 	var manifests []*plugins.Manifest
-	for _, manifest := range plugins.Active {
+	for _, manifest := range plgs.Active {
 		manifests = append(manifests, &manifest.Manifest)
 	}
-	for _, manifest := range plugins.Inactive {
+	for _, manifest := range plgs.Inactive {
 		manifests = append(manifests, &manifest.Manifest)
 	}
 	return manifests, nil
@@ -386,7 +385,7 @@ func (api *PluginAPI) GetPluginStatus(id string) (*plugins.PluginStatus, *model.
 	return api.app.PluginApp().GetPluginStatus(id)
 }
 
-func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
+func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError) {
 	if !*api.app.Config().PluginSettings.Enable || !*api.app.Config().PluginSettings.EnableUploads {
 		return nil, model.NewAppError("installPlugin", "app.plugin.upload_disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -401,45 +400,46 @@ func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model.Manife
 
 // KV Store Section
 func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) {
-	return api.app.SetPluginKeyWithOptions(api.id, key, value, options)
+	return api.app.PluginApp().SetPluginKeyWithOptions(api.id, key, value, options)
 }
 
 func (api *PluginAPI) KVSet(key string, value []byte) *model.AppError {
-	return api.app.SetPluginKey(api.id, key, value)
+	return api.app.PluginApp().SetPluginKey(api.id, key, value)
 }
 
 func (api *PluginAPI) KVCompareAndSet(key string, oldValue, newValue []byte) (bool, *model.AppError) {
-	return api.app.CompareAndSetPluginKey(api.id, key, oldValue, newValue)
+	return api.app.PluginApp().CompareAndSetPluginKey(api.id, key, oldValue, newValue)
 }
 
 func (api *PluginAPI) KVCompareAndDelete(key string, oldValue []byte) (bool, *model.AppError) {
-	return api.app.CompareAndDeletePluginKey(api.id, key, oldValue)
+	return api.app.PluginApp().CompareAndDeletePluginKey(api.id, key, oldValue)
 }
 
 func (api *PluginAPI) KVSetWithExpiry(key string, value []byte, expireInSeconds int64) *model.AppError {
-	return api.app.SetPluginKeyWithExpiry(api.id, key, value, expireInSeconds)
+	return api.app.PluginApp().SetPluginKeyWithExpiry(api.id, key, value, expireInSeconds)
 }
 
 func (api *PluginAPI) KVGet(key string) ([]byte, *model.AppError) {
-	return api.app.GetPluginKey(api.id, key)
+	return api.app.PluginApp().GetPluginKey(api.id, key)
 }
 
 func (api *PluginAPI) KVDelete(key string) *model.AppError {
-	return api.app.DeletePluginKey(api.id, key)
+	return api.app.PluginApp().DeletePluginKey(api.id, key)
 }
 
 func (api *PluginAPI) KVDeleteAll() *model.AppError {
-	return api.app.DeleteAllKeysForPlugin(api.id)
+	return api.app.PluginApp().DeleteAllKeysForPlugin(api.id)
 }
 
 func (api *PluginAPI) KVList(page, perPage int) ([]string, *model.AppError) {
-	return api.app.ListPluginKeys(api.id, page, perPage)
+	return api.app.PluginApp().ListPluginKeys(api.id, page, perPage)
 }
 
 func (api *PluginAPI) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
-	ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
-	ev = ev.SetBroadcast(broadcast).SetData(payload)
-	api.app.Publish(ev)
+	// ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
+	// ev = ev.SetBroadcast(broadcast).SetData(payload)
+	// api.app.Publish(ev)
+	panic("not implemented") // TODO: fixme
 }
 
 func (api *PluginAPI) HasPermissionTo(userID string, permission *model.Permission) bool {
@@ -484,4 +484,26 @@ func (api *PluginAPI) PluginHTTP(request *http.Request) *http.Response {
 	responseTransfer := &PluginResponseWriter{}
 	api.app.PluginApp().ServeInterPluginRequest(responseTransfer, request, api.id, destinationPluginId)
 	return responseTransfer.GenerateResponse()
+}
+
+// Mail Section
+
+func (api *PluginAPI) SendMail(to, subject, htmlBody string) *model.AppError {
+	if to == "" {
+		return model.NewAppError("SendMail", "plugin_api.send_mail.missing_to", nil, "", http.StatusBadRequest)
+	}
+
+	if subject == "" {
+		return model.NewAppError("SendMail", "plugin_api.send_mail.missing_subject", nil, "", http.StatusBadRequest)
+	}
+
+	if htmlBody == "" {
+		return model.NewAppError("SendMail", "plugin_api.send_mail.missing_htmlbody", nil, "", http.StatusBadRequest)
+	}
+
+	if err := api.app.Srv().EmailService.SendNotificationMail(to, subject, htmlBody); err != nil {
+		return model.NewAppError("SendMail", "plugin_api.send_mail.missing_htmlbody", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

@@ -59,6 +59,7 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 	}
 }
 
+// Publish puplish websocket events
 func (a *App) Publish(message *model.WebSocketEvent) {
 	a.Srv().Publish(message)
 }

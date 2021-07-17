@@ -194,7 +194,7 @@ func (s *AppPlugin) installExtractedPlugin(manifest *plugins.Manifest, fromPlugi
 
 		// Otherwise remove the existing installation prior to install below.
 		slog.Debug("Removing existing installation of plugin before local install", slog.String("plugin_id", existingManifest.Id), slog.String("version", existingManifest.Version))
-		if err := s.RemovePluginLocally(existingManifest.Id); err != nil {
+		if err := s.removePluginLocally(existingManifest.Id); err != nil {
 			return nil, model.NewAppError("installExtractedPlugin", "app.plugin.install_id_failed_remove.app_error", nil, "", http.StatusBadRequest)
 		}
 	}
@@ -312,42 +312,6 @@ func extractTarGz(gzipStream io.Reader, dst string) error {
 	return nil
 }
 
-func (a *AppPlugin) RemovePluginLocally(id string) *model.AppError {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("removePlugin", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
-	}
-
-	bundles, err := pluginsEnvironment.Available()
-	if err != nil {
-		return model.NewAppError("removePlugin", "app.plugin.deactivate.app_error", nil, err.Error(), http.StatusBadRequest)
-	}
-
-	var manifest *plugins.Manifest
-	var pluginPath string
-	for _, p := range bundles {
-		if p.Manifest != nil && p.Manifest.Id == id {
-			manifest = p.Manifest
-			pluginPath = filepath.Dir(p.ManifestPath)
-			break
-		}
-	}
-
-	if manifest == nil {
-		return model.NewAppError("removePlugin", "app.plugin.not_installed.app_error", nil, "", http.StatusNotFound)
-	}
-
-	pluginsEnvironment.Deactivate(id)
-	pluginsEnvironment.RemovePlugin(id)
-	a.unregisterPluginCommands(id)
-
-	if err := os.RemoveAll(pluginPath); err != nil {
-		return model.NewAppError("removePlugin", "app.plugin.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
 func (s *AppPlugin) removePluginLocally(id string) *model.AppError {
 	pluginsEnvironment := s.GetPluginsEnvironment()
 	if pluginsEnvironment == nil {
@@ -375,12 +339,69 @@ func (s *AppPlugin) removePluginLocally(id string) *model.AppError {
 
 	pluginsEnvironment.Deactivate(id)
 	pluginsEnvironment.RemovePlugin(id)
-	s.unregisterPluginCommands(id)
+	// s.unregisterPluginCommands(id)
 
 	if err := os.RemoveAll(pluginPath); err != nil {
 		return model.NewAppError("removePlugin", "app.plugin.remove.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
+	return nil
+}
+
+func (s *AppPlugin) RemovePlugin(id string) *model.AppError {
+	// Disable plugin before removal to make sure this
+	// plugin remains disabled on re-install.
+	if err := s.DisablePlugin(id); err != nil {
+		return err
+	}
+
+	if err := s.removePluginLocally(id); err != nil {
+		return err
+	}
+
+	// Remove bundle from the file store.
+	storePluginFileName := getBundleStorePath(id)
+	bundleExist, err := s.FileApp().FileExists(storePluginFileName)
+	if err != nil {
+		return model.NewAppError("removePlugin", "app.plugin.remove_bundle.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if !bundleExist {
+		return nil
+	}
+	if err = s.FileApp().RemoveFile(storePluginFileName); err != nil {
+		return model.NewAppError("removePlugin", "app.plugin.remove_bundle.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if err = s.removeSignature(id); err != nil {
+		slog.Warn("Can't remove signature", slog.Err(err))
+	}
+
+	s.notifyClusterPluginEvent(
+		cluster.CLUSTER_EVENT_REMOVE_PLUGIN,
+		plugins.PluginEventData{
+			Id: id,
+		},
+	)
+
+	if err := s.notifyPluginStatusesChanged(); err != nil {
+		slog.Warn("Failed to notify plugin status changed", slog.Err(err))
+	}
+
+	return nil
+}
+
+func (s *AppPlugin) removeSignature(pluginID string) *model.AppError {
+	filePath := getSignatureStorePath(pluginID)
+	exists, err := s.FileApp().FileExists(filePath)
+	if err != nil {
+		return model.NewAppError("removeSignature", "app.plugin.remove_bundle.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if !exists {
+		slog.Debug("no plugin signature to remove", slog.String("plugin_id", pluginID))
+		return nil
+	}
+	if err = s.FileApp().RemoveFile(filePath); err != nil {
+		return model.NewAppError("removeSignature", "app.plugin.remove_bundle.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
 	return nil
 }
 
