@@ -99,6 +99,8 @@ type AppIface interface {
 	PluginApp() sub_app_iface.PluginApp
 	// Product returns product sub app
 	ProductApp() sub_app_iface.ProductApp
+	// Publish puplish websocket events
+	Publish(message *model.WebSocketEvent)
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
@@ -153,7 +155,6 @@ type AppIface interface {
 	OriginChecker() func(*http.Request) bool
 	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
 	PostActionCookieSecret() []byte
-	Publish(message *model.WebSocketEvent)
 	ReloadConfig() error
 	RemoveConfigListener(id string)
 	Saml() einterfaces.SamlInterface
