@@ -21,6 +21,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
@@ -80,9 +81,7 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 		return
 	}
 
-	config := s.Config().PluginSettings
-
-	if *config.Enable {
+	if *s.Config().PluginSettings.Enable {
 		availablePlugins, err := pluginsEnvironment.Available()
 		if err != nil {
 			s.Log().Error("Unable to get available plugins", slog.Err(err))
@@ -92,10 +91,11 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 		// Determine which plugins need to be activated or deactivated.
 		disabledPlugins := []*plugins.BundleInfo{}
 		enabledPlugins := []*plugins.BundleInfo{}
+
 		for _, plugin := range availablePlugins {
 			pluginID := plugin.Manifest.Id
 			pluginEnabled := false
-			if state, ok := config.PluginStates[pluginID]; ok {
+			if state, ok := s.Config().PluginSettings.PluginStates[pluginID]; ok {
 				pluginEnabled = state.Enable
 			}
 
@@ -122,12 +122,12 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 			go func(plugin *plugins.BundleInfo) {
 				defer wg.Done()
 
-				deactivated := pluginsEnvironment.Deactivate(plugin.Manifest.Id)
-				if deactivated && plugin.Manifest.HasClient() {
-					// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_DISABLED, "", nil)
-					// message.Add("manifest", plugin.Manifest.ClientManifest())
-					// s.Srv().Publish(message)
-				}
+				pluginsEnvironment.Deactivate(plugin.Manifest.Id)
+				// if deactivated && plugin.Manifest.HasClient() {
+				// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_DISABLED, "", nil)
+				// message.Add("manifest", plugin.Manifest.ClientManifest())
+				// s.Srv().Publish(message)
+				// }
 			}(plugin)
 		}
 
@@ -217,7 +217,7 @@ func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir s
 	// Sync plugin active state when config changes. Also notify plugins.
 	s.Srv().PluginsLock.Lock()
 	s.Srv().RemoveConfigListener(s.Srv().PluginConfigListenerId)
-	s.Srv().PluginConfigListenerId = s.AddConfigListener(func(old, new *model.Config) {
+	s.Srv().PluginConfigListenerId = s.Srv().AddConfigListener(func(old, new *model.Config) {
 		// If plugin status remains unchanged, only then run this.
 		// Because (*AppPlugin).InitPlugins is already run as a config change hook.
 		if *old.PluginSettings.Enable == *new.PluginSettings.Enable {
@@ -424,7 +424,7 @@ func (s *AppPlugin) DisablePlugin(id string) *model.AppError {
 	s.UpdateConfig(func(cfg *model.Config) {
 		cfg.PluginSettings.PluginStates[id] = &model.PluginState{Enable: false}
 	})
-	s.unregisterPluginCommands(id)
+	// s.unregisterPluginCommands(id)
 
 	// This call will implicitly invoke SyncPluginsActiveState which will deactivate disabled plugins.
 	if _, _, err := s.SaveConfig(s.Config(), true); err != nil {
@@ -433,6 +433,8 @@ func (s *AppPlugin) DisablePlugin(id string) *model.AppError {
 
 	return nil
 }
+
+// plugin section
 
 func (a *AppPlugin) GetPlugins() (*plugins.PluginsResponse, *model.AppError) {
 	pluginsEnvironment := a.GetPluginsEnvironment()
@@ -1016,4 +1018,21 @@ func getIcon(iconPath string) (string, error) {
 	}
 
 	return fmt.Sprintf("data:image/svg+xml;base64,%s", base64.StdEncoding.EncodeToString(icon)), nil
+}
+
+func (api *PluginAPI) UpdateUserStatus(userID, status string) (*account.Status, *model.AppError) {
+	switch status {
+	case account.STATUS_ONLINE:
+		api.app.AccountApp().SetStatusOnline(userID, true)
+	case account.STATUS_OFFLINE:
+		api.app.AccountApp().SetStatusOffline(userID, true)
+	// case account.STATUS_AWAY:
+	// 	api.app.AccountApp().SetStatusAwayIfNeeded(userID, true)
+	// case account.STATUS_DND:
+	// 	api.app.AccountApp().SetStatusDoNotDisturb(userID)
+	default:
+		return nil, model.NewAppError("UpdateUserStatus", "plugin.api.update_user_status.bad_status", nil, "unrecognized status", http.StatusBadRequest)
+	}
+
+	return api.app.AccountApp().GetStatus(userID)
 }
