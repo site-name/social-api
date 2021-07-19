@@ -313,24 +313,22 @@ type ManifestWebapp struct {
 }
 
 func (m *Manifest) ToJson() string {
-	b, _ := json.JSON.Marshal(m)
-	return string(b)
+	return model.ModelToJson(m)
 }
 
 func ManifestListToJson(m []*Manifest) string {
-	b, _ := json.JSON.Marshal(m)
-	return string(b)
+	return model.ModelToJson(m)
 }
 
 func ManifestFromJson(data io.Reader) *Manifest {
 	var m *Manifest
-	json.JSON.NewDecoder(data).Decode(&m)
+	model.ModelFromJson(&m, data)
 	return m
 }
 
 func ManifestListFromJson(data io.Reader) []*Manifest {
 	var manifests []*Manifest
-	json.JSON.NewDecoder(data).Decode(&manifests)
+	model.ModelFromJson(&manifests, data)
 	return manifests
 }
 
@@ -382,10 +380,13 @@ func (m *Manifest) GetExecutableForRuntime(goOs, goArch string) string {
 	return executable
 }
 
+// HasServer checks either current m's Server or Backend is not nil
+// NOTE: you should avoid using `Backend` since it is deprecated
 func (m *Manifest) HasServer() bool {
 	return m.Server != nil || m.Backend != nil
 }
 
+// HasWebapp returns m's Webapp != nil
 func (m *Manifest) HasWebapp() bool {
 	return m.Webapp != nil
 }

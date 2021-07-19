@@ -9,13 +9,12 @@ import (
 )
 
 func (a *AppPlugin) ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string) {
-	pluginEnvironment := a.GetPluginsEnvironment()
-	if pluginEnvironment == nil {
-		err := model.NewAppError("ServeInterPluginRequest", "app.plugin.disabled.app_error", nil, "Plugin environment not found.", http.StatusNotImplemented)
-		a.Log().Error(err.Error())
-		w.WriteHeader(err.StatusCode)
+	pluginEnvironment, appErr := a.GetPluginsEnvironment()
+	if appErr != nil {
+		a.Log().Error(appErr.Error())
+		w.WriteHeader(appErr.StatusCode)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(err.ToJson()))
+		w.Write([]byte(appErr.ToJson()))
 		return
 	}
 

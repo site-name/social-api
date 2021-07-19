@@ -248,23 +248,6 @@ func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*account.Status,
 	return api.app.AccountApp().GetUserStatusesByIds(userIDs)
 }
 
-// func (api *PluginAPI) UpdateUserStatus(userID, status string) (*model.Status, *model.AppError) {
-// 	switch status {
-// 	case model.STATUS_ONLINE:
-// 		api.app.SetStatusOnline(userID, true)
-// 	case model.STATUS_OFFLINE:
-// 		api.app.SetStatusOffline(userID, true)
-// 	case model.STATUS_AWAY:
-// 		api.app.SetStatusAwayIfNeeded(userID, true)
-// 	case model.STATUS_DND:
-// 		api.app.SetStatusDoNotDisturb(userID)
-// 	default:
-// 		return nil, model.NewAppError("UpdateUserStatus", "plugin.api.update_user_status.bad_status", nil, "unrecognized status", http.StatusBadRequest)
-// 	}
-
-// 	return api.app.GetStatus(userID)
-// }
-
 func (api *PluginAPI) GetLDAPUserAttributes(userID string, attributes []string) (map[string]string, *model.AppError) {
 	if api.app.Ldap() == nil {
 		return nil, model.NewAppError("GetLdapUserAttributes", "ent.ldap.disabled.app_error", nil, "", http.StatusNotImplemented)
@@ -508,4 +491,21 @@ func (api *PluginAPI) SendMail(to, subject, htmlBody string) *model.AppError {
 	}
 
 	return nil
+}
+
+func (api *PluginAPI) UpdateUserStatus(userID, status string) (*account.Status, *model.AppError) {
+	switch status {
+	case account.STATUS_ONLINE:
+		api.app.AccountApp().SetStatusOnline(userID, true)
+	case account.STATUS_OFFLINE:
+		api.app.AccountApp().SetStatusOffline(userID, true)
+	// case account.STATUS_AWAY:
+	// 	api.app.AccountApp().SetStatusAwayIfNeeded(userID, true)
+	// case account.STATUS_DND:
+	// 	api.app.AccountApp().SetStatusDoNotDisturb(userID)
+	default:
+		return nil, model.NewAppError("UpdateUserStatus", "plugin.api.update_user_status.bad_status", nil, "unrecognized status", http.StatusBadRequest)
+	}
+
+	return api.app.AccountApp().GetStatus(userID)
 }

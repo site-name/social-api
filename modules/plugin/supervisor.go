@@ -2,7 +2,12 @@ package plugin
 
 import (
 	"fmt"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/sitename/sitename/einterfaces"
@@ -19,32 +24,78 @@ type supervisor struct {
 }
 
 func newSupervisor(pluginInfo *plugins.BundleInfo, apiImpl API, driver Driver, parentLogger *slog.Logger, metrics einterfaces.MetricsInterface) (retSupervisor *supervisor, retErr error) {
-	// sup := supervisor{}
-	// defer func() {
-	// 	if retErr != nil {
-	// 		sup.Shutdown()
-	// 	}
-	// }()
+	sup := supervisor{}
+	defer func() {
+		if retErr != nil {
+			sup.Shutdown()
+		}
+	}()
 
-	// wrappedLogger := pluginInfo.WrapLogger(parentLogger)
+	wrappedLogger := pluginInfo.WrapLogger(parentLogger)
 
-	// hclogAdaptedLogger := &hclogAdapter{
-	// 	wrappedLogger: wrappedLogger.WithCallerSkip(1),
-	// 	extrasKey:     "wrapped_extras",
-	// }
+	hclogAdaptedLogger := &hclogAdapter{
+		wrappedLogger: wrappedLogger.WithCallerSkip(1),
+		extrasKey:     "wrapped_extras",
+	}
 
-	// pluginMap := map[string]plugin.Plugin{
-	// 	"hooks": &hooksPlugin{
-	// 		log:        wrappedLogger,
-	// 		driverImpl: driver,
-	// 		apiImpl: &apiTimerLayer{
-	// 			pluginInfo.Manifest.Id,
-	// 			apiImpl,
-	// 			metrics,
-	// 		},
-	// 	},
-	// }
-	panic("not implemented")
+	pluginMap := map[string]plugin.Plugin{
+		"hooks": &hooksPlugin{
+			log:        wrappedLogger,
+			driverImpl: driver,
+			apiImpl: &apiTimerLayer{
+				pluginInfo.Manifest.Id,
+				apiImpl,
+				metrics,
+			},
+		},
+	}
+
+	executable := filepath.Clean(filepath.Join(
+		".",
+		pluginInfo.Manifest.GetExecutableForRuntime(runtime.GOOS, runtime.GOARCH),
+	))
+	if strings.HasPrefix(executable, "..") {
+		return nil, fmt.Errorf("invalid backend executable")
+	}
+	executable = filepath.Join(pluginInfo.Path, executable)
+
+	cmd := exec.Command(executable)
+
+	sup.client = plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig: handshake,
+		Plugins:         pluginMap,
+		Cmd:             cmd,
+		SyncStdout:      wrappedLogger.With(slog.String("source", "plugin_stdout")).StdLogWriter(),
+		SyncStderr:      wrappedLogger.With(slog.String("source", "plugin_stderr")).StdLogWriter(),
+		Logger:          hclogAdaptedLogger,
+		StartTimeout:    time.Second * 3,
+	})
+
+	rpcClient, err := sup.client.Client()
+	if err != nil {
+		return nil, err
+	}
+
+	sup.pid = cmd.Process.Pid
+
+	raw, err := rpcClient.Dispense("hooks")
+	if err != nil {
+		return nil, err
+	}
+
+	sup.hooks = &hooksTimerLayer{pluginInfo.Manifest.Id, raw.(Hooks), metrics}
+
+	impl, err := sup.hooks.Implemented()
+	if err != nil {
+		return nil, err
+	}
+	for _, hookName := range impl {
+		if hookId, ok := hookNameToId[hookName]; ok {
+			sup.implemented[hookId] = true
+		}
+	}
+
+	return &sup, nil
 }
 
 func (sup *supervisor) Shutdown() {

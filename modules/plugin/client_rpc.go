@@ -157,6 +157,7 @@ func init() {
 	gob.Register(&mysql.MySQLError{})
 	gob.Register(&ErrorString{})
 	gob.Register(&opengraph.OpenGraph{})
+	// TODO: fix this
 	// gob.Register(&model.AutocompleteDynamicListArg{})
 	// gob.Register(&model.AutocompleteStaticListArg{})
 	// gob.Register(&model.AutocompleteTextArg{})

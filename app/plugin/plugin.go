@@ -21,7 +21,6 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
@@ -53,15 +52,18 @@ type pluginSignaturePath struct {
 //
 // To get the plugins environment when the plugins are disabled, manually acquire the plugins
 // lock instead.
-func (a *AppPlugin) GetPluginsEnvironment() *plugin.Environment {
+func (a *AppPlugin) GetPluginsEnvironment() (*plugin.Environment, *model.AppError) {
 	if !*a.Config().PluginSettings.Enable {
-		return nil
+		return nil, model.NewAppError("GetPluginsEnvironment", "app.plugin.plugin_disabled.app_error", nil, "", http.StatusLocked)
 	}
 
 	a.Srv().PluginsLock.RLock()
 	defer a.Srv().PluginsLock.RUnlock()
 
-	return a.Srv().PluginsEnvironment
+	if a.Srv().PluginsEnvironment == nil {
+		return nil, model.NewAppError("GetPluginEnvironment", "app.plugin.plugin_not_set.app_error", nil, "", http.StatusNotImplemented)
+	}
+	return a.Srv().PluginsEnvironment, nil
 }
 
 func (a *AppPlugin) SetPluginsEnvironment(pluginsEnvironment *plugin.Environment) {
@@ -196,17 +198,15 @@ func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir s
 		slog.Error("Failed to start up plugins", slog.Err(err))
 		return
 	}
-	s.Srv().PluginsLock.Lock()
-	s.Srv().PluginsEnvironment = env
-	s.Srv().PluginsLock.Unlock()
+	s.SetPluginsEnvironment(env)
 
 	if err := s.SyncPlugins(); err != nil {
 		slog.Error("Failed to sync plugins from the file store", slog.Err(err))
 	}
 
 	plugins := s.processPrepackagedPlugins(prepackagedPluginsDir)
-	pluginsEnvironment = s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
 		slog.Info("Plugins environment not found, server is likely shutting down")
 		return
 	}
@@ -224,7 +224,7 @@ func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir s
 			s.installFeatureFlagPlugins()
 			s.SyncPluginsActiveState()
 		}
-		if pluginsEnvironment := s.GetPluginsEnvironment(); pluginsEnvironment != nil {
+		if pluginsEnvironment, _ := s.GetPluginsEnvironment(); pluginsEnvironment != nil {
 			pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
 				if err := hooks.OnConfigurationChange(); err != nil {
 					s.Log().Error("Plugin OnConfigurationChange hook failed", slog.Err(err))
@@ -243,9 +243,9 @@ func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir s
 func (s *AppPlugin) SyncPlugins() *model.AppError {
 	slog.Info("Syncing plugins from the file store")
 
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("SyncPlugins", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	availablePlugins, err := pluginsEnvironment.Available()
@@ -313,7 +313,7 @@ func (s *AppPlugin) SyncPlugins() *model.AppError {
 }
 
 func (s *AppPlugin) ShutDownPlugins() {
-	pluginsEnvironment := s.GetPluginsEnvironment()
+	pluginsEnvironment, _ := s.GetPluginsEnvironment()
 	if pluginsEnvironment == nil {
 		return
 	}
@@ -336,9 +336,9 @@ func (s *AppPlugin) ShutDownPlugins() {
 }
 
 func (a *AppPlugin) GetActivePluginManifests() ([]*plugins.Manifest, *model.AppError) {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("GetActivePluginManifests", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	plgs := pluginsEnvironment.Active()
@@ -355,9 +355,9 @@ func (a *AppPlugin) GetActivePluginManifests() ([]*plugins.Manifest, *model.AppE
 // activation if inactive anywhere in the cluster.
 // Notifies cluster peers through config change.
 func (s *AppPlugin) EnablePlugin(id string) *model.AppError {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("EnablePlugin", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	availablePlugins, err := pluginsEnvironment.Available()
@@ -397,9 +397,9 @@ func (s *AppPlugin) EnablePlugin(id string) *model.AppError {
 // DisablePlugin will set the config for an installed plugin to disabled, triggering deactivation if active.
 // Notifies cluster peers through config change.
 func (s *AppPlugin) DisablePlugin(id string) *model.AppError {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("DisablePlugin", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	availablePlugins, err := pluginsEnvironment.Available()
@@ -437,9 +437,9 @@ func (s *AppPlugin) DisablePlugin(id string) *model.AppError {
 // plugin section
 
 func (a *AppPlugin) GetPlugins() (*plugins.PluginsResponse, *model.AppError) {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("GetPlugins", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
+	if appErr == nil {
+		return nil, appErr
 	}
 
 	availablePlugins, err := pluginsEnvironment.Available()
@@ -515,9 +515,9 @@ func (a *AppPlugin) GetMarketplacePlugins(filter *plugins.MarketplacePluginFilte
 
 // getPrepackagedPlugin returns a pre-packaged plugin.
 func (s *AppPlugin) getPrepackagedPlugin(pluginID, version string) (*plugin.PrepackagedPlugin, *model.AppError) {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("getPrepackagedPlugin", "app.plugin.config.app_error", nil, "plugin environment is nil", http.StatusInternalServerError)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	prepackagedPlugins := pluginsEnvironment.PrepackagedPlugins()
@@ -555,9 +555,9 @@ func (s *AppPlugin) getRemoteMarketplacePlugin(pluginID, version string) (*plugi
 func (a *AppPlugin) getRemotePlugins() (map[string]*plugins.MarketplacePlugin, *model.AppError) {
 	result := map[string]*plugins.MarketplacePlugin{}
 
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("getRemotePlugins", "app.plugin.config.app_error", nil, "", http.StatusInternalServerError)
+	_, appErr := a.GetPluginsEnvironment()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	marketplaceClient, err := marketplace.NewClient(
@@ -590,9 +590,9 @@ func (a *AppPlugin) getRemotePlugins() (map[string]*plugins.MarketplacePlugin, *
 
 // mergePrepackagedPlugins merges pre-packaged plugins to remote marketplace plugins list.
 func (a *AppPlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]*plugins.MarketplacePlugin) *model.AppError {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("mergePrepackagedPlugins", "app.plugin.config.app_error", nil, "", http.StatusInternalServerError)
+	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	for _, prepackaged := range pluginsEnvironment.PrepackagedPlugins() {
@@ -637,9 +637,9 @@ func (a *AppPlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]
 
 // mergeLocalPlugins merges locally installed plugins to remote marketplace plugins list.
 func (a *AppPlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*plugins.MarketplacePlugin) *model.AppError {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("GetMarketplacePlugins", "app.plugin.config.app_error", nil, "", http.StatusInternalServerError)
+	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	localPlugins, err := pluginsEnvironment.Available()
@@ -736,9 +736,9 @@ func pluginMatchesFilter(manifest *plugins.Manifest, filter string) bool {
 // There is a small chance that this never occurs, because the last server to finish installing dies before it can announce.
 // There is also a chance that multiple servers notify, but the webapp handles this idempotently.
 func (s *AppPlugin) notifyPluginEnabled(manifest *plugins.Manifest) error {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return errors.New("pluginsEnvironment is nil")
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 	if !manifest.HasClient() || !pluginsEnvironment.IsActive(manifest.Id) {
 		return nil
@@ -1018,21 +1018,4 @@ func getIcon(iconPath string) (string, error) {
 	}
 
 	return fmt.Sprintf("data:image/svg+xml;base64,%s", base64.StdEncoding.EncodeToString(icon)), nil
-}
-
-func (api *PluginAPI) UpdateUserStatus(userID, status string) (*account.Status, *model.AppError) {
-	switch status {
-	case account.STATUS_ONLINE:
-		api.app.AccountApp().SetStatusOnline(userID, true)
-	case account.STATUS_OFFLINE:
-		api.app.AccountApp().SetStatusOffline(userID, true)
-	// case account.STATUS_AWAY:
-	// 	api.app.AccountApp().SetStatusAwayIfNeeded(userID, true)
-	// case account.STATUS_DND:
-	// 	api.app.AccountApp().SetStatusDoNotDisturb(userID)
-	default:
-		return nil, model.NewAppError("UpdateUserStatus", "plugin.api.update_user_status.bad_status", nil, "unrecognized status", http.StatusBadRequest)
-	}
-
-	return api.app.AccountApp().GetStatus(userID)
 }

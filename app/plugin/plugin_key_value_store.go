@@ -134,10 +134,6 @@ func (a *AppPlugin) DeleteAllKeysForPlugin(pluginID string) *model.AppError {
 }
 
 func (a *AppPlugin) DeleteAllExpiredPluginKeys() *model.AppError {
-	if a.Srv() == nil {
-		return nil
-	}
-
 	if err := a.Srv().Store.Plugin().DeleteAllExpired(); err != nil {
 		slog.Error("Failed to delete all expired plugin key values", slog.Err(err))
 		return model.NewAppError("DeleteAllExpiredPluginKeys", "app.plugin_store.delete.app_error", nil, err.Error(), http.StatusInternalServerError)

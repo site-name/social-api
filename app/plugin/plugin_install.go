@@ -88,9 +88,9 @@ func (a *AppPlugin) InstallPluginFromData(data plugins.PluginEventData) {
 }
 
 func (a *AppPlugin) installPluginLocally(pluginFile, signature io.ReadSeeker, installationStrategy pluginInstallationStrategy) (*plugins.Manifest, *model.AppError) {
-	pluginsEnvironment := a.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("installPluginLocally", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	_, appErr := a.GetPluginsEnvironment()
+	if appErr == nil {
+		return nil, appErr
 	}
 
 	// verify signature
@@ -147,9 +147,9 @@ func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*plugins.Manife
 }
 
 func (s *AppPlugin) installExtractedPlugin(manifest *plugins.Manifest, fromPluginDir string, installationStrategy pluginInstallationStrategy) (*plugins.Manifest, *model.AppError) {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return nil, model.NewAppError("installExtractedPlugin", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	bundles, err := pluginsEnvironment.Available()
@@ -313,9 +313,9 @@ func extractTarGz(gzipStream io.Reader, dst string) error {
 }
 
 func (s *AppPlugin) removePluginLocally(id string) *model.AppError {
-	pluginsEnvironment := s.GetPluginsEnvironment()
-	if pluginsEnvironment == nil {
-		return model.NewAppError("removePlugin", "app.plugin.disabled.app_error", nil, "", http.StatusNotImplemented)
+	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
+	if appErr != nil {
+		return appErr
 	}
 
 	plgs, err := pluginsEnvironment.Available()

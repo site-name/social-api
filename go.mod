@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210708011750-e3d1acc33807 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.0
+	github.com/aws/aws-sdk-go v1.40.2
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -31,6 +31,7 @@ require (
 	github.com/gosimple/slug v1.9.0
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
+	github.com/hashicorp/go-hclog v0.16.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-plugin v1.4.2
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -62,7 +63,7 @@ require (
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/go-prices v0.0.0-20210616032024-5891e0c6d6c8
-	github.com/site-name/i18naddress v0.0.0-20210626153134-ce7a01a19aa8
+	github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0

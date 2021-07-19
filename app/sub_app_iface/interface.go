@@ -317,7 +317,7 @@ type PluginApp interface {
 	//
 	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
 	// lock instead.
-	GetPluginsEnvironment() *plugin.Environment
+	GetPluginsEnvironment() (*plugin.Environment, *model.AppError)                                                                 // GetPluginsEnvironment return plugin environment of Server
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)                                                                  // SetPluginsEnvironment set plugins environment for server
 	SyncPluginsActiveState()                                                                                                       // SyncPluginsActiveState
 	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)                    // ServeInterPluginRequest
