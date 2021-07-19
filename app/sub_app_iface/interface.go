@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -180,6 +181,9 @@ type AccountApp interface {
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) // CreateUserAccessToken creates new user access token for user
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)     // GetUserAccessToken get access token for user
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                             // RevokeUserAccessToken
+
+	SetStatusOnline(userID string, manual bool)  // SetStatusOnline sets given user's status to online
+	SetStatusOffline(userID string, manual bool) // SetStatusOffline sets user's status to offline
 }
 
 type ProductApp interface {
@@ -314,7 +318,25 @@ type PluginApp interface {
 	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
 	// lock instead.
 	GetPluginsEnvironment() *plugin.Environment
-	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment) // SetPluginsEnvironment set plugins environment for server
-	SyncPluginsActiveState()                                      // SyncPluginsActiveState
-	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)
+	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)                                                                  // SetPluginsEnvironment set plugins environment for server
+	SyncPluginsActiveState()                                                                                                       // SyncPluginsActiveState
+	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)                    // ServeInterPluginRequest
+	InitPlugins(c *request.Context, pluginDir, webappPluginDir string)                                                             // InitPlugins creates new plugin api
+	GetPlugins() (*plugins.PluginsResponse, *model.AppError)                                                                       // GetPlugins returns active/inactive plugins
+	GetMarketplacePlugins(filter *plugins.MarketplacePluginFilter) ([]*plugins.MarketplacePlugin, *model.AppError)                 // GetMarketplacePlugins returns a list of available plugins on marketplace
+	EnablePlugin(id string) *model.AppError                                                                                        // EnablePlugin will set the config for an installed plugin to enabled, triggering asynchronous activation if inactive anywhere in the cluster. Notifies cluster peers through config change.
+	DisablePlugin(id string) *model.AppError                                                                                       // DisablePlugin will set the config for an installed plugin to disabled, triggering deactivation if active. Notifies cluster peers through config change.
+	RemovePlugin(id string) *model.AppError                                                                                        // RemovePlugin removes given plugin
+	GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError)                                                            // GetPluginStatus returns status for given plugin
+	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*plugins.Manifest, *model.AppError)                                     // InstallPlugin installs plugins from given file
+	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) // SetPluginKeyWithOptions
+	SetPluginKey(pluginID string, key string, value []byte) *model.AppError                                                        // SetPluginKey
+	CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model.AppError)                         //
+	CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model.AppError)
+	GetPluginKey(pluginID string, key string) ([]byte, *model.AppError)
+	DeletePluginKey(pluginID string, key string) *model.AppError
+	DeleteAllKeysForPlugin(pluginID string) *model.AppError
+	DeleteAllExpiredPluginKeys() *model.AppError
+	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model.AppError)
+	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model.AppError
 }

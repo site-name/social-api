@@ -4,6 +4,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -97,4 +98,95 @@ func (a *AppAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, 
 	}
 
 	return statusMap, nil
+}
+
+func (a *AppAccount) SetStatusOnline(userID string, manual bool) {
+	if !*a.Config().ServiceSettings.EnableUserStatuses {
+		return
+	}
+
+	broadcast := false
+
+	var oldStatus string = account.STATUS_OFFLINE
+	var oldTime int64
+	var oldManual bool
+	var status *account.Status
+	var err *model.AppError
+
+	if status, err = a.GetStatus(userID); err != nil {
+		status = &account.Status{UserId: userID, Status: account.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
+		broadcast = true
+	} else {
+		if status.Manual && !manual {
+			return // manually set status always overrides non-manual one
+		}
+
+		if status.Status != account.STATUS_ONLINE {
+			broadcast = true
+		}
+
+		oldStatus = status.Status
+		oldTime = status.LastActivityAt
+		oldManual = status.Manual
+
+		status.Status = account.STATUS_ONLINE
+		status.Manual = false // for "online" there's no manual setting
+		status.LastActivityAt = model.GetMillis()
+	}
+
+	a.AddStatusCache(status)
+
+	// Only update the database if the status has changed, the status has been manually set,
+	// or enough time has passed since the previous action
+	if status.Status != oldStatus || status.Manual != oldManual || status.LastActivityAt-oldTime > account.STATUS_MIN_UPDATE_TIME {
+		if broadcast {
+			if err := a.Srv().Store.Status().SaveOrUpdate(status); err != nil {
+				slog.Warn("Failed to save status", slog.String("user_id", userID), slog.Err(err), slog.String("user_id", userID))
+			}
+		} else {
+			if err := a.Srv().Store.Status().UpdateLastActivityAt(status.UserId, status.LastActivityAt); err != nil {
+				slog.Error("Failed to save status", slog.String("user_id", userID), slog.Err(err), slog.String("user_id", userID))
+			}
+		}
+	}
+
+	if broadcast {
+		a.BroadcastStatus(status)
+	}
+}
+
+func (a *AppAccount) SetStatusOffline(userID string, manual bool) {
+	if !*a.Config().ServiceSettings.EnableUserStatuses {
+		return
+	}
+
+	status, err := a.GetStatus(userID)
+	if err == nil && status.Manual && !manual {
+		return // manually set status always overrides non-manual one
+	}
+
+	status = &account.Status{UserId: userID, Status: account.STATUS_OFFLINE, Manual: manual, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
+
+	a.SaveAndBroadcastStatus(status)
+}
+
+func (a *AppAccount) SaveAndBroadcastStatus(status *account.Status) {
+	a.AddStatusCache(status)
+
+	if err := a.Srv().Store.Status().SaveOrUpdate(status); err != nil {
+		slog.Warn("Failed to save status", slog.String("user_id", status.UserId), slog.Err(err))
+	}
+
+	a.BroadcastStatus(status)
+}
+
+func (a *AppAccount) BroadcastStatus(status *account.Status) {
+	if a.Srv().Busy.IsBusy() {
+		// this is considered a non-critical service and will be disabled when server busy.
+		return
+	}
+	event := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_STATUS_CHANGE, status.UserId, nil)
+	event.Add("status", status.Status)
+	event.Add("user_id", status.UserId)
+	a.Publish(event)
 }

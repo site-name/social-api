@@ -87,3 +87,6 @@ const (
 
 // preference table names
 const PreferenceTableName = "Preferences"
+
+// role related table names
+const RoleTableName = "Roles"
