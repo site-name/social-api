@@ -151,7 +151,9 @@ type AccountApp interface {
 	SanitizeProfile(user *account.User, asAdmin bool)
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
-	GetSession(token string) (*model.Session, *model.AppError)
+	GetSession(token string) (*model.Session, *model.AppError)                         // GetSession finds a session with given token and returns it
+	GetSessionById(sessionID string) (*model.Session, *model.AppError)                 // GetSessionById finds a sessionw ith given id and returns it
+	AttachDeviceId(sessionID string, deviceID string, expiresAt int64) *model.AppError // AttachDeviceId add device id to given session and returns updated session
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	ReturnSessionToPool(session *model.Session)
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool

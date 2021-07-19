@@ -21,6 +21,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
+// PluginAPI
 type PluginAPI struct {
 	id       string
 	app      app.AppIface
@@ -29,6 +30,7 @@ type PluginAPI struct {
 	manifest *plugins.Manifest
 }
 
+// NewPluginAPI creates and returns a new PlginAPI
 func NewPluginAPI(a app.AppIface, c *request.Context, manifest *plugins.Manifest) *PluginAPI {
 	return &PluginAPI{
 		id:       manifest.Id,

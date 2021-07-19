@@ -43,11 +43,8 @@ const (
 	URL_LINK_MAX_LENGTH            = 200
 	SINGLE_COUNTRY_CODE_MAX_LENGTH = 2
 	IP_ADDRESS_MAX_LENGTH          = 39
-)
-
-const (
-	DEFAULT_LOCALE  = "en" // this is default language also
-	DEFAULT_COUNTRY = "US"
+	DEFAULT_LOCALE                 = "en" // this is default language also
+	DEFAULT_COUNTRY                = "US"
 )
 
 var (
@@ -60,7 +57,7 @@ var (
 )
 
 func init() {
-	// copied from django_countries
+	// borrowed from django_countries
 	Countries = map[string]string{
 		"AF": "Afghanistan",
 		"AX": "Åland Islands",
@@ -402,6 +399,6 @@ type NamePart string
 
 // two name parts
 const (
-	FirstName NamePart = "first name"
-	LastName  NamePart = "last name"
+	FirstName NamePart = "first"
+	LastName  NamePart = "last"
 )
