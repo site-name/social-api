@@ -1,3 +1,6 @@
+/*
+	this package used for registering all sub applications for main app
+*/
 package imports
 
 import (
@@ -17,6 +20,7 @@ import (
 	_ "github.com/sitename/sitename/app/order"
 	_ "github.com/sitename/sitename/app/page"
 	_ "github.com/sitename/sitename/app/payment"
+	_ "github.com/sitename/sitename/app/plugin"
 	_ "github.com/sitename/sitename/app/product"
 	_ "github.com/sitename/sitename/app/seo"
 	_ "github.com/sitename/sitename/app/shipping"

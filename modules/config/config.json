@@ -58,7 +58,6 @@
         "GfycatApiSecret": "3wLVZPiswc3DnaiaFoLkDvB4X0IV6CpMkj4tf2inJRsBY6-FnkT08zGmppWFgeof",
         "EnableCustomEmoji": true,
         "EnableEmojiPicker": true,
-        "RestrictCustomEmojiCreation": "all",
         "RestrictPostDelete": "all",
         "AllowEditPost": "always",
         "PostEditTimeLimit": -1,
@@ -509,7 +508,8 @@
         "AutomaticPrepackagedPlugins": true,
         "RequirePluginSignature": false,
         "MarketplaceUrl": "https://api.integrations.mattermost.com",
-        "SignaturePublicKeyFiles": []
+        "SignaturePublicKeyFiles": [],
+        "ChimeraOAuthProxyUrl": ""
     },
     "DisplaySettings": {
         "CustomUrlSchemes": [],
