@@ -201,3 +201,6 @@ update-dependencies: ## Uses go get -u to update all the dependencies while hold
 
 	# Tidy up
 	$(GO) mod tidy
+
+pluginapi: ## Generates api and hooks glue code for plugins
+	$(GO) generate $(GOFLAGS) ./modules/plugin

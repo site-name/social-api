@@ -8,13 +8,14 @@ import (
 	"database/sql/driver"
 	"encoding/gob"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/rpc"
 	"os"
 	"reflect"
+
+	"io"
+	"net/http"
+	"net/rpc"
 
 	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/go-sql-driver/mysql"
@@ -23,6 +24,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/plugins"
+
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -44,7 +46,7 @@ type hooksRPCServer struct {
 	apiRPCClient *apiRPCClient
 }
 
-// Implements hashicorp/go-plugin/plugin.Plugin interface to connect the hooks of a plugin
+// // Implements hashicorp/go-plugin/plugin.Plugin interface to connect the hooks of a plugin
 type hooksPlugin struct {
 	hooks      interface{}
 	apiImpl    API
@@ -617,39 +619,6 @@ func (s *hooksRPCServer) FileWillBeUploaded(args *Z_FileWillBeUploadedArgs, retu
 func init() {
 	hookNameToId["MessageWillBePosted"] = MessageWillBePostedID
 }
-
-// type Z_MessageWillBePostedArgs struct {
-// 	A *Context
-// 	B *model.Post
-// }
-
-// type Z_MessageWillBePostedReturns struct {
-// 	A *model.Post
-// 	B string
-// }
-
-// func (g *hooksRPCClient) MessageWillBeUpdated(c *Context, newPost, oldPost *model.Post) (*model.Post, string) {
-// 	_args := &Z_MessageWillBeUpdatedArgs{c, newPost, oldPost}
-// 	_returns := &Z_MessageWillBeUpdatedReturns{A: _args.B}
-// 	if g.implemented[MessageWillBeUpdatedID] {
-// 		if err := g.client.Call("Plugin.MessageWillBeUpdated", _args, _returns); err != nil {
-// 			g.log.Error("RPC call MessageWillBeUpdated to plugin failed.", mlog.Err(err))
-// 		}
-// 	}
-// 	return _returns.A, _returns.B
-// }
-
-// func (s *hooksRPCServer) MessageWillBeUpdated(args *Z_MessageWillBeUpdatedArgs, returns *Z_MessageWillBeUpdatedReturns) error {
-// 	if hook, ok := s.impl.(interface {
-// 		MessageWillBeUpdated(c *Context, newPost, oldPost *model.Post) (*model.Post, string)
-// 	}); ok {
-// 		returns.A, returns.B = hook.MessageWillBeUpdated(args.A, args.B, args.C)
-
-// 	} else {
-// 		return encodableError(fmt.Errorf("hook MessageWillBeUpdated called but not implemented"))
-// 	}
-// 	return nil
-// }
 
 type Z_LogDebugArgs struct {
 	A string
