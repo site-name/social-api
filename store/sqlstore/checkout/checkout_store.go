@@ -19,9 +19,9 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(checkout.Checkout{}, store.CheckoutTableName).SetKeys(false, "Token")
+		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)

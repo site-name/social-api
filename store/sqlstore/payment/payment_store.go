@@ -55,8 +55,8 @@ func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_payments_charge_status", store.PaymentTableName, "ChargeStatus")
 	ps.CreateIndexIfNotExists("idx_payments_psp_reference", store.PaymentTableName, "PspReference")
 
-	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "OrderID", "Orders", "Id", false)
-	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "CheckoutID", "Checkouts", "Id", false)
+	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "OrderID", store.OrderTableName, "Id", false)
+	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "CheckoutID", store.CheckoutTableName, "Token", false)
 }
 
 func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {

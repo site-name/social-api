@@ -29,7 +29,7 @@ func (cls *SqlCheckoutLineStore) CreateIndexesIfNotExists() {
 	cls.CreateIndexIfNotExists("idx_checkoutlines_variant_id", store.CheckoutLineTableName, "VariantID")
 
 	// foreign keys:
-	cls.CreateForeignKeyIfNotExists(store.CheckoutLineTableName, "CheckoutID", store.CheckoutTableName, "Id", true)
+	cls.CreateForeignKeyIfNotExists(store.CheckoutLineTableName, "CheckoutID", store.CheckoutTableName, "Token", true)
 	cls.CreateForeignKeyIfNotExists(store.CheckoutLineTableName, "VariantID", store.ProductVariantTableName, "Id", true)
 }
 

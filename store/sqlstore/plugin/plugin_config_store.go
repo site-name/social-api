@@ -1,3 +1,4 @@
+// this plugin config is borrowed from saleor
 package plugin
 
 import (
