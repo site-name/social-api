@@ -18,6 +18,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
@@ -73,13 +74,14 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 type StringInterface map[string]interface{}
 type StringArray []string
 
-func NewBool(b bool) *bool          { return &b }
-func NewInt(n int) *int             { return &n }
-func NewUint(n uint) *uint          { return &n }
-func NewInt64(n int64) *int64       { return &n }
-func NewInt32(n int32) *int32       { return &n }
-func NewFloat32(n float32) *float32 { return &n }
-func NewString(s string) *string    { return &s }
+func NewBool(b bool) *bool                          { return &b }
+func NewInt(n int) *int                             { return &n }
+func NewUint(n uint) *uint                          { return &n }
+func NewInt64(n int64) *int64                       { return &n }
+func NewInt32(n int32) *int32                       { return &n }
+func NewFloat32(n float32) *float32                 { return &n }
+func NewString(s string) *string                    { return &s }
+func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
 
 // Remove removes input from the array
 func (sa StringArray) Remove(input string) StringArray {

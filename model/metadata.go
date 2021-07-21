@@ -5,13 +5,15 @@ import (
 	"sync"
 )
 
+var (
+	// mutex is used for safe access concurrenly
+	mutex sync.RWMutex
+)
+
 // Common abstract model for other models to inherit from
 type ModelMetadata struct {
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
-
-	// mutex is used for safe access concurrenly
-	mutex sync.RWMutex `json:"-" db:"-"`
 }
 
 // PreSave must be called in objects's PreSave() calls
@@ -52,8 +54,8 @@ const (
 )
 
 func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which WhichMeta) string {
-	p.mutex.RLock()
-	defer p.mutex.RUnlock()
+	mutex.RLock()
+	defer mutex.RUnlock()
 
 	if which == PrivateMetadata { // get from private metadata
 		if p.PrivateMetadata == nil {
@@ -77,8 +79,8 @@ func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which 
 }
 
 func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMeta) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	if which == PrivateMetadata {
 		if p.PrivateMetadata == nil {
@@ -100,8 +102,8 @@ func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMet
 }
 
 func (p *ModelMetadata) ClearMeta(which WhichMeta) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	if which == PrivateMetadata {
 		for k := range p.PrivateMetadata {
@@ -115,8 +117,8 @@ func (p *ModelMetadata) ClearMeta(which WhichMeta) {
 }
 
 func (p *ModelMetadata) DeleteValueFromMeta(key string, which WhichMeta) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	if which == PrivateMetadata {
 		delete(p.PrivateMetadata, key)

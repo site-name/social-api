@@ -34,6 +34,7 @@ type GatewayResponse struct {
 	ActionRequiredData          map[string]string
 	TransactionAlreadyProcessed bool
 	SearchableKey               string
+	PspReference                string
 }
 
 type AddressData struct {

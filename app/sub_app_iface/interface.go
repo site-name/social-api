@@ -50,15 +50,20 @@ type PaymentApp interface {
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
 	// CreatePayment creates new payment inside database with given data and returned it
 	CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError)
-	SavePayment(payment *payment.Payment) (*payment.Payment, *model.AppError)                               // SavePayment save new payment into database
 	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) // SaveTransaction save new payment transaction into database
 	// CreatePaymentTransaction save new payment transaction into database and returns it
 	CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)
 	// GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
-	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError    // CleanCapture Checks if payment can be captured.
-	GetPaymentToken(paymentID string) (string, *model.AppError)                       // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
-	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError) // GetAllPaymentsByCheckout returns all payments have been made for given checkout
+	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError                            // CleanCapture Checks if payment can be captured.
+	GetPaymentToken(paymentID string) (string, *model.AppError)                                               // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
+	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError)                         // GetAllPaymentsByCheckout returns all payments have been made for given checkout
+	CleanAuthorize(payment *payment.Payment) *model.AppError                                                  // CleanAuthorize checks if payment can be authorized
+	ValidateGatewayResponse(response *payment.GatewayResponse) *model.AppError                                // ValidateGatewayResponse validates given response to be correct format for system to process
+	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError     // GatewayPostProcess
+	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) // UpdateTransaction updates given transaction and returns updated on
+	CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                            // CreateOrUpdatePayment depends on whether given payment's Id is set or not to decide to update/save payment
+	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError              // UpdatePayment updates given payment based on given `gatewayResponse`
 }
 
 // CheckoutApp

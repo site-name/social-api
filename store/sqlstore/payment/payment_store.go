@@ -37,7 +37,6 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 		table.ColMap("BillingPostalCode").SetMaxSize(account.ADDRESS_POSTAL_CODE_MAX_LENGTH)
 		table.ColMap("BillingCountryCode").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
 		table.ColMap("BillingCountryArea").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-
 		table.ColMap("CcFirstDigits").SetMaxSize(payment.MAX_LENGTH_CC_FIRST_DIGITS)
 		table.ColMap("CcLastDigits").SetMaxSize(payment.MAX_LENGTH_CC_LAST_DIGITS)
 		table.ColMap("CcBrand").SetMaxSize(payment.MAX_LENGTH_CC_BRAND)
@@ -71,9 +70,34 @@ func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, err
 	return payment, nil
 }
 
+func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+	payment.PreUpdate()
+	if err := payment.IsValid(); err != nil {
+		return nil, err
+	}
+
+	oldPayment, err := ps.Get(payment.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	payment.CreateAt = oldPayment.CreateAt
+	payment.OrderID = oldPayment.OrderID
+	payment.CheckoutID = oldPayment.CheckoutID
+
+	numUpdated, err := ps.GetMaster().Update(payment)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update payment with PaymentId=%s", payment.Id)
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("more than one payment updated: %d", numUpdated)
+	}
+
+	return payment, nil
+}
+
 func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
-	var payment payment.Payment
-	err := ps.GetReplica().SelectOne(&payment, "SELECT * FROM "+store.PaymentTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	result, err := ps.GetReplica().Get(payment.Payment{}, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.PaymentTableName, id)
@@ -81,7 +105,7 @@ func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
 	}
 
-	return &payment, nil
+	return result.(*payment.Payment), nil
 }
 
 func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {

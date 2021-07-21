@@ -39,12 +39,12 @@ const (
 
 // Choices for charge status
 const (
-	NOT_CHARGED        = "not-charged"
+	NOT_CHARGED        = "not_charged"
 	PENDING            = "pending"
-	PARTIALLY_CHARGED  = "partially-charged"
-	FULLY_CHARGED      = "fully-charged"
-	PARTIALLY_REFUNDED = "partially-refunded"
-	FULLY_REFUNDED     = "fully-refunded"
+	PARTIALLY_CHARGED  = "partially_charged"
+	FULLY_CHARGED      = "fully_charged"
+	PARTIALLY_REFUNDED = "partially_refunded"
+	FULLY_REFUNDED     = "fully_refunded"
 	REFUSED            = "refused"
 	CANCELLED          = "cancelled"
 )
@@ -70,8 +70,8 @@ type Payment struct {
 	UpdateAt           int64            `json:"update_at"`
 	ChargeStatus       string           `json:"charge_status"`
 	Token              string           `json:"token"`
-	Total              *decimal.Decimal `json:"total"`
-	CapturedAmount     *decimal.Decimal `json:"captured_amount"`
+	Total              *decimal.Decimal `json:"total"`           // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal `json:"captured_amount"` // DEFAULT decimal(0)
 	Currency           string           `json:"currency"`
 	CheckoutID         *string          `json:"checkout_id"`
 	OrderID            *string          `json:"order_id"`
@@ -274,18 +274,15 @@ func (p *Payment) PreSave() {
 	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
 	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
 
-	if p.Total == nil {
+	if p.Total == nil || p.Total.LessThanOrEqual(decimal.Zero) {
 		p.Total = &decimal.Zero
 	}
-
-	if p.CapturedAmount == nil {
+	if p.CapturedAmount == nil || p.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 		p.CapturedAmount = &decimal.Zero
 	}
-
-	if ChargeStatuString[strings.ToLower(p.ChargeStatus)] == "" {
+	if _, ok := ChargeStatuString[strings.ToLower(p.ChargeStatus)]; !ok {
 		p.ChargeStatus = NOT_CHARGED
 	}
-
 	p.CreateAt = model.GetMillis()
 	p.UpdateAt = p.CreateAt
 }
@@ -294,7 +291,15 @@ func (p *Payment) PreUpdate() {
 	p.BillingEmail = model.NormalizeEmail(p.BillingEmail)
 	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
 	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
-
+	if p.Total == nil || p.Total.LessThanOrEqual(decimal.Zero) {
+		p.Total = &decimal.Zero
+	}
+	if p.CapturedAmount == nil || p.CapturedAmount.LessThanOrEqual(decimal.Zero) {
+		p.CapturedAmount = &decimal.Zero
+	}
+	if _, ok := ChargeStatuString[strings.ToLower(p.ChargeStatus)]; !ok {
+		p.ChargeStatus = NOT_CHARGED
+	}
 	p.UpdateAt = model.GetMillis()
 }
 

@@ -67,29 +67,6 @@ func (api *PluginAPI) LoadPluginConfiguration(dest interface{}) error {
 	return nil
 }
 
-// func (api *PluginAPI) RegisterCommand(command *model.Command) error {
-// 	return api.app.RegisterPluginCommand(api.id, command)
-// }
-
-// func (api *PluginAPI) UnregisterCommand(teamID, trigger string) error {
-// 	api.app.UnregisterPluginCommand(api.id, teamID, trigger)
-// 	return nil
-// }
-
-// func (api *PluginAPI) ExecuteSlashCommand(commandArgs *model.CommandArgs) (*model.CommandResponse, error) {
-// 	user, appErr := api.app.GetUser(commandArgs.UserId)
-// 	if appErr != nil {
-// 		return nil, appErr
-// 	}
-// 	commandArgs.T = i18n.GetUserTranslations(user.Locale)
-// 	commandArgs.SiteURL = api.app.GetSiteURL()
-// 	response, appErr := api.app.ExecuteCommand(api.ctx, commandArgs)
-// 	if appErr != nil {
-// 		return response, appErr
-// 	}
-// 	return response, nil
-// }
-
 func (api *PluginAPI) GetSession(sessionID string) (*model.Session, *model.AppError) {
 	session, err := api.app.AccountApp().GetSessionById(sessionID)
 	if err != nil {
@@ -144,14 +121,6 @@ func (api *PluginAPI) GetServerVersion() string {
 func (api *PluginAPI) GetSystemInstallDate() (int64, *model.AppError) {
 	return api.app.GetSystemInstallDate()
 }
-
-// func (api *PluginAPI) GetDiagnosticId() string {
-// 	return api.app.TelemetryId()
-// }
-
-// func (api *PluginAPI) GetTelemetryId() string {
-// 	return api.app.TelemetryId()
-// }
 
 func (api *PluginAPI) CreateUser(user *account.User) (*account.User, *model.AppError) {
 	return api.app.AccountApp().CreateUser(api.ctx, user)
@@ -210,27 +179,6 @@ func (api *PluginAPI) RevokeUserAccessToken(tokenID string) *model.AppError {
 
 	return api.app.AccountApp().RevokeUserAccessToken(accessToken)
 }
-
-// func (api *PluginAPI) CreateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError) {
-// 	return api.app.CreateOAuthApp(app)
-// }
-
-// func (api *PluginAPI) GetOAuthApp(appID string) (*model.OAuthApp, *model.AppError) {
-// 	return api.app.GetOAuthApp(appID)
-// }
-
-// func (api *PluginAPI) UpdateOAuthApp(app *model.OAuthApp) (*model.OAuthApp, *model.AppError) {
-// 	oldApp, err := api.GetOAuthApp(app.Id)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return api.app.UpdateOauthApp(oldApp, app)
-// }
-
-// func (api *PluginAPI) DeleteOAuthApp(appID string) *model.AppError {
-// 	return api.app.DeleteOAuthApp(appID)
-// }
 
 func (api *PluginAPI) UpdateUser(user *account.User) (*account.User, *model.AppError) {
 	return api.app.AccountApp().UpdateUser(user, true)

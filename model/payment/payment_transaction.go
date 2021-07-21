@@ -19,7 +19,6 @@ const (
 	CAPTURE_FAILED    string = "capture_failed" // ?
 	ACTION_TO_CONFIRM string = "action_to_confirm"
 	VOID              string = "void"
-	PENDING_          string = "pending"
 	REFUND            string = "refund"
 	REFUND_ONGOING    string = "refund_ongoing"
 	REFUND_FAILED     string = "refund_failed"   // ?
@@ -31,7 +30,7 @@ const (
 var TransactionKindString = map[string]string{
 	EXTERNAL:          "External reference",
 	AUTH:              "Authorization",
-	PENDING_:          "Pending",
+	PENDING:           "Pending", // transaction and payment share this value
 	ACTION_TO_CONFIRM: "Action to confirm",
 	REFUND:            "Refund",
 	REFUND_ONGOING:    "Refund in progress",
@@ -61,7 +60,7 @@ type PaymentTransaction struct {
 	ActionRequired     bool             `json:"action_required"`
 	ActionRequiredData model.StringMap  `json:"action_required_data"`
 	Currency           string           `json:"currency"`
-	Amount             *decimal.Decimal `json:"amount"`
+	Amount             *decimal.Decimal `json:"amount"` // DEFAULT decimal(0)
 	Error              *string          `json:"error"`
 	CustomerID         *string          `json:"customer_id"`
 	GatewayResponse    model.StringMap  `json:"gateway_response"`
@@ -126,7 +125,7 @@ func (p *PaymentTransaction) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
-	if p.Amount == nil {
+	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
 		p.Amount = &decimal.Zero
 	}
 	p.CreateAt = model.GetMillis()
@@ -136,6 +135,12 @@ func (p *PaymentTransaction) PreSave() {
 	}
 	if p.Error != nil {
 		*p.Error = model.SanitizeUnicode(*p.Error)
+	}
+}
+
+func (p *PaymentTransaction) PreUpdate() {
+	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
+		p.Amount = &decimal.Zero
 	}
 }
 

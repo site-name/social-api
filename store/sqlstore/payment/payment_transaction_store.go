@@ -29,7 +29,9 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	return ps
 }
 
-func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {}
+func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
+	ps.CreateForeignKeyIfNotExists(store.TransactionTableName, "PaymentID", store.PaymentTableName, "Id", false)
+}
 
 func (ps *SqlPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	transaction.PreSave()
@@ -39,6 +41,36 @@ func (ps *SqlPaymentTransactionStore) Save(transaction *payment.PaymentTransacti
 
 	if err := ps.GetMaster().Insert(transaction); err != nil {
 		return nil, errors.Wrapf(err, "failed to save payment transaction with id=%s", transaction.Id)
+	}
+
+	return transaction, nil
+}
+
+func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+	transaction.PreUpdate()
+	if err := transaction.IsValid(); err != nil {
+		return nil, err
+	}
+
+	oldResult, err := ps.GetReplica().Get(payment.PaymentTransaction{}, transaction.Id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrInvalidInput(store.TransactionTableName, "id", transaction.Id)
+		}
+		return nil, errors.Wrapf(err, "failed to find transaction with id=%s", transaction.Id)
+	}
+
+	oldTran := oldResult.(*payment.PaymentTransaction)
+	transaction.CreateAt = oldTran.CreateAt
+	transaction.PaymentID = oldTran.PaymentID
+
+	numUpdates, err := ps.GetMaster().Update(transaction)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update transaction with id=%s", transaction.Id)
+	}
+
+	if numUpdates > 1 {
+		return nil, errors.Errorf("multiple transactions updated: %d", numUpdates)
 	}
 
 	return transaction, nil

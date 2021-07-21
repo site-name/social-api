@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 )
 
@@ -18,7 +17,8 @@ import (
 // Plugins obtain access to the API by embedding SitenamePlugin and accessing the API member
 // directly.
 type API interface {
-	payment.PaymentInterface
+	// plugins
+	// payment.PaymentInterface
 	// LoadPluginConfiguration loads the plugin's configuration. dest should be a pointer to a
 	// struct that the configuration JSON can be unmarshalled to.
 	//

@@ -410,12 +410,14 @@ type (
 		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error)                        // GetPaymentsByOrderID returns all payments that belong to given order
 		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
 		GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error)                  // GetPaymentsByCheckoutID returns all payments belong to given checkout
+		Update(payment *payment.Payment) (*payment.Payment, error)                              // Update updates given payment and returns new updated payment
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
-		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                                // Get returns a payment transaction with given id
-		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error)         // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
+		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)   // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                  // Get returns a payment transaction with given id
+		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error)           // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
+		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Update updates given transaction and returns updated one
 	}
 )
 

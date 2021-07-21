@@ -15,7 +15,7 @@ import (
 )
 
 type AppPayment struct {
-	app.AppIface
+	app app.AppIface
 }
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 }
 
 func (a *AppPayment) GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.Srv().Store.Payment().GetPaymentsByOrderID(orderID)
+	payments, err := a.app.Srv().Store.Payment().GetPaymentsByOrderID(orderID)
 	if err != nil {
 		var statusCode int = http.StatusInternalServerError
 		var nfErr *store.ErrNotFound
@@ -125,16 +125,32 @@ func (a *AppPayment) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
 	return pm.IsActive && pm.IsNotCharged() && authorized, nil
 }
 
-func (a *AppPayment) SavePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {
-	newPm, err := a.Srv().Store.Payment().Save(pm)
-	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
-			return nil, appErr
+func (a *AppPayment) CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {
+	var (
+		returnedPayment *payment.Payment
+		appErr          *model.AppError
+		err             error
+	)
+
+	if pm.Id == "" { // id not set mean creating new payment
+		returnedPayment, err = a.app.Srv().Store.Payment().Save(pm)
+		if err != nil {
+			if apErr, ok := err.(*model.AppError); ok {
+				return nil, apErr
+			}
+			appErr = model.NewAppError("CreateOrUpdatePayment", "app.payment.save_payment_error.app_error", nil, "", http.StatusInternalServerError)
 		}
-		return nil, model.NewAppError("SavePayment", "app.payment.save_payment_error.app_error", nil, "", http.StatusInternalServerError)
+	} else { // otherwise update
+		returnedPayment, err = a.app.Srv().Store.Payment().Update(pm)
+		if err != nil {
+			if apErr, ok := err.(*model.AppError); ok {
+				return nil, apErr
+			}
+			appErr = model.NewAppError("CreateOrUpdatePayment", "app.payment.update_payment_error.app_error", nil, "", http.StatusInternalServerError)
+		}
 	}
 
-	return newPm, nil
+	return returnedPayment, appErr
 }
 
 func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError) {
@@ -160,7 +176,7 @@ func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError)
 }
 
 func (a *AppPayment) GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.Srv().Store.Payment().GetPaymentsByCheckoutID(checkoutID)
+	payments, err := a.app.Srv().Store.Payment().GetPaymentsByCheckoutID(checkoutID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetAllPaymentsByCheckout", "app.payment.payments_by_checkout_missing.app_error", err)
 	}

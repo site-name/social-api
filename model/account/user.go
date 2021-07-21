@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
@@ -12,6 +13,11 @@ import (
 	"github.com/sitename/sitename/modules/timezones"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/language"
+)
+
+var (
+	// mutex for get values from user's metadate fields
+	mutex sync.RWMutex
 )
 
 // constants used in package account
@@ -40,17 +46,95 @@ const (
 	ADDRESS_TYPE_BILLING  = "billing"
 )
 
-// NOTE: don't delete this
+// this field is for serialize, don't delete
 type StringMap map[string]string
 
-// NOTE: don't delete this
+// this field is for serialize, don't delete
 type ModelMetadata struct {
 	// Id              string    `json:"string,omitempty"`
 	Metadata        StringMap `json:"metadata"`
 	PrivateMetadata StringMap `json:"private_metadata"`
+}
 
-	// mutex is used for safe access concurrenly
-	// mutex sync.RWMutex `json:"-" db:"-"`
+type WhichMeta string
+
+const (
+	PrivateMetadata WhichMeta = "private"
+	Metadata        WhichMeta = "metadata"
+)
+
+func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which WhichMeta) string {
+	mutex.RLock()
+	defer mutex.RUnlock()
+
+	if which == PrivateMetadata { // get from private metadata
+		if p.PrivateMetadata == nil {
+			return defaultValue
+		}
+
+		if vl, ok := p.PrivateMetadata[key]; ok {
+			return vl
+		}
+	} else if which == Metadata { // get from metadata
+		if p.Metadata == nil {
+			return defaultValue
+		}
+
+		if vl, ok := p.Metadata[key]; ok {
+			return vl
+		}
+	}
+
+	return defaultValue
+}
+
+func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMeta) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if which == PrivateMetadata {
+		if p.PrivateMetadata == nil {
+			p.PrivateMetadata = make(map[string]string)
+		}
+
+		for k, vl := range items {
+			p.PrivateMetadata[k] = vl
+		}
+	} else if which == Metadata {
+		if p.Metadata == nil {
+			p.Metadata = make(map[string]string)
+		}
+
+		for k, vl := range items {
+			p.Metadata[k] = vl
+		}
+	}
+}
+
+func (p *ModelMetadata) ClearMeta(which WhichMeta) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if which == PrivateMetadata {
+		for k := range p.PrivateMetadata {
+			delete(p.PrivateMetadata, k)
+		}
+	} else if which == Metadata {
+		for k := range p.Metadata {
+			delete(p.Metadata, k)
+		}
+	}
+}
+
+func (p *ModelMetadata) DeleteValueFromMeta(key string, which WhichMeta) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if which == PrivateMetadata {
+		delete(p.PrivateMetadata, key)
+	} else if which == Metadata {
+		delete(p.Metadata, key)
+	}
 }
 
 // User contains the details about the user.

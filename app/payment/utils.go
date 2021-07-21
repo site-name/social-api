@@ -3,13 +3,19 @@ package payment
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
@@ -32,14 +38,14 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 
 	// checks if pm has checkout
 	if pm.CheckoutID != nil && model.IsValidId(*pm.CheckoutID) {
-		checkout, appErr := a.CheckoutApp().CheckoutbyToken(*pm.CheckoutID)
+		checkout, appErr := a.app.CheckoutApp().CheckoutbyToken(*pm.CheckoutID)
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		// get checkout user
 		if checkout.UserID != nil {
-			user, appErr := a.AccountApp().UserById(context.Background(), *checkout.UserID)
+			user, appErr := a.app.AccountApp().UserById(context.Background(), *checkout.UserID)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -53,7 +59,7 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 			shippingAddressID = *checkout.ShippingAddressID
 		}
 	} else if pm.OrderID != nil && model.IsValidId(*pm.OrderID) { // checks if pm has order
-		order, appErr := a.OrderApp().OrderById(*pm.OrderID)
+		order, appErr := a.app.OrderApp().OrderById(*pm.OrderID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -73,12 +79,12 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 	)
 
 	if model.IsValidId(billingAddressID) && model.IsValidId(shippingAddressID) {
-		billingAddress, appErr = a.AccountApp().AddressById(billingAddressID)
+		billingAddress, appErr = a.app.AccountApp().AddressById(billingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		shippingAddress, appErr = a.AccountApp().AddressById(shippingAddressID)
+		shippingAddress, appErr = a.app.AccountApp().AddressById(shippingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -115,15 +121,14 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 
 func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
 	// get all transactions that belong to given payment
-
-	trans, appErr := a.PaymentApp().GetAllPaymentTransactions(paymentID)
+	trans, appErr := a.app.PaymentApp().GetAllPaymentTransactions(paymentID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	var processedTran *payment.PaymentTransaction
 
-	// find the most recent transaction
+	// find the most recent transaction that satifies:
 	for _, tran := range trans {
 		if tran.IsSuccess == gatewayResponse.IsSucess &&
 			tran.ActionRequired == gatewayResponse.ActionRequired &&
@@ -137,6 +142,9 @@ func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayRes
 		}
 	}
 
+	if processedTran == nil {
+		return nil, model.NewAppError("GetAlreadyProcessedTransaction", "app.payment.last_transaction_missing.app_error", nil, "", http.StatusNotFound)
+	}
 	return processedTran, nil
 }
 
@@ -165,7 +173,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		return nil, model.NewAppError("CreatePayment", "app.payment.order_billing_address_not_set.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	billingAddress, appErr := a.AccountApp().AddressById(billingAddressID)
+	billingAddress, appErr := a.app.AccountApp().AddressById(billingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -198,7 +206,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		payment.OrderID = &orDer.Id
 	}
 
-	return a.PaymentApp().SavePayment(payment)
+	return a.app.PaymentApp().CreateOrUpdatePayment(payment)
 }
 
 func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
@@ -233,22 +241,300 @@ func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, pay
 		ActionRequiredData: gatewayResponse.ActionRequiredData,
 	}
 
-	return a.PaymentApp().SaveTransaction(tran)
+	return a.app.PaymentApp().SaveTransaction(tran)
 }
 
 func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
-		return a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
+		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
+		if appErr == nil {
+			return transaction, nil
+		} else if appErr.StatusCode == http.StatusInternalServerError {
+			// if error caused by internal server, still have to return it
+			return nil, appErr
+		}
 	}
 
 	return a.CreatePaymentTransaction(paymentID, kind, paymentInformation, actionRequired, gatewayResponse, errorMsg, false)
 }
 
 func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *model.AppError {
-	// where := "CleanCapture"
-	// if amount.LessThanOrEqual(decimal.Zero) {
-	// 	return model.NewAppError(where, "", )
+	if amount.LessThanOrEqual(decimal.Zero) {
+		return model.NewAppError("CleanCapture", "app.payment.amount_non_negative.app_error", nil, "", http.StatusNotAcceptable)
+	}
+	if !pm.CanCapture() {
+		return model.NewAppError("CleanCapture", "app.payment.cannot_capture.app_error", nil, "", http.StatusNotAcceptable)
+	}
+	// amount > payment's total || amount > payment's Total - payment's CapturedAmount
+	if amount.GreaterThan(*pm.Total) || amount.GreaterThan((*pm.Total).Sub(*pm.CapturedAmount)) {
+		return model.NewAppError("CleanCapture", "app.payment.un-captured_must_greater_than_charge.app_error", nil, "", http.StatusNotAcceptable)
+	}
+
+	return nil
+}
+
+func (a *AppPayment) CleanAuthorize(payment *payment.Payment) *model.AppError {
+	if !payment.CanAuthorize() {
+		return model.NewAppError("CleanAuthorize", "app.payment.cannot_authorized_again.app_error", nil, "", http.StatusNotAcceptable)
+	}
+	return nil
+}
+
+func (a *AppPayment) ValidateGatewayResponse(response *payment.GatewayResponse) *model.AppError {
+	if response == nil {
+		return model.NewAppError("ValidateGatewayResponse", "app.payment.argument_required.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	// checks if response's Kind is valid transaction kind:
+	if _, ok := payment.TransactionKindString[response.Kind]; !ok {
+		validTransactionKinds := make([]string, len(payment.TransactionKindString))
+		i := 0
+		for key := range payment.TransactionKindString {
+			validTransactionKinds[i] = key
+			i++
+		}
+
+		return model.NewAppError("ValidateGatewayResponse",
+			"app.payment.invalid_gateway_response_kind.app_error",
+			map[string]interface{}{
+				"ValidKinds": strings.Join(validTransactionKinds, ","),
+			}, "",
+			http.StatusNotAcceptable,
+		)
+	}
+
+	// checks if response's RawResponse is json encodable
+	_, err := json.JSON.Marshal(response.RawResponse)
+	if err != nil {
+		return model.NewAppError("", "app.payment.gateway_response_not_serializable.app_error", nil, err.Error(), http.StatusNotAcceptable)
+	}
+
+	return nil
+}
+
+func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction, pm *payment.Payment) *model.AppError {
+	if transaction == nil || pm == nil {
+		return model.NewAppError("GatewayPostProcess", "app.payment.invalid_arguments.app_error", nil, "", http.StatusBadRequest)
+	}
+
+	changedFields := []string{}
+	var appErr *model.AppError
+
+	if !transaction.IsSuccess || transaction.AlreadyProcessed {
+		if len(changedFields) > 0 {
+			if _, appErr = a.CreateOrUpdatePayment(pm); appErr != nil {
+				return appErr
+			}
+		}
+		return nil
+	}
+
+	if transaction.ActionRequired {
+		pm.ToConfirm = true
+		changedFields = append(changedFields, "to_confirm")
+		if _, appErr = a.CreateOrUpdatePayment(pm); appErr != nil {
+			return appErr
+		}
+	}
+
+	// to_confirm is defined by the transaction.action_required. Payment doesn't
+	// require confirmation when we got action_required == False
+	if pm.ToConfirm {
+		pm.ToConfirm = true
+		changedFields = append(changedFields, "to_confirm")
+	}
+
+	switch transaction.Kind {
+	case payment.CAPTURE, payment.REFUND_REVERSED:
+		pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Add(*transaction.Amount))
+		pm.IsActive = true
+		// Set payment charge status to fully charged
+		// only if there is no more amount needs to charge
+		pm.ChargeStatus = payment.PARTIALLY_CHARGED
+		if pm.GetChargeAmount().LessThanOrEqual(decimal.Zero) {
+			pm.ChargeStatus = payment.FULLY_CHARGED
+		}
+		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
+	case payment.VOID:
+		pm.IsActive = false
+		changedFields = append(changedFields, "is_active", "update_at")
+	case payment.REFUND:
+		changedFields = append(changedFields, "captured_amount", "update_at")
+		pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Sub(*transaction.Amount))
+		pm.ChargeStatus = payment.PARTIALLY_REFUNDED
+		if pm.CapturedAmount.LessThanOrEqual(decimal.Zero) {
+			pm.CapturedAmount = &decimal.Zero
+			pm.ChargeStatus = payment.FULLY_REFUNDED
+			pm.IsActive = false
+		}
+	case payment.PENDING:
+		pm.ChargeStatus = payment.PENDING
+		changedFields = append(changedFields, "charge_status")
+	case payment.CANCEL:
+		pm.ChargeStatus = payment.CANCELLED
+		pm.IsActive = false
+		changedFields = append(changedFields, "charge_status", "is_active")
+	case payment.CAPTURE_FAILED:
+		if pm.ChargeStatus == payment.PARTIALLY_CHARGED || pm.ChargeStatus == payment.FULLY_CHARGED {
+			pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Sub(*transaction.Amount))
+			pm.ChargeStatus = payment.PARTIALLY_CHARGED
+			if pm.CapturedAmount.LessThanOrEqual(decimal.Zero) {
+				pm.CapturedAmount = &decimal.Zero
+			}
+			changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
+		}
+	}
+
+	if len(changedFields) > 0 {
+		if _, appErr := a.CreateOrUpdatePayment(pm); appErr != nil {
+			return appErr
+		}
+	}
+
+	transaction.AlreadyProcessed = true
+	if _, appErr = a.UpdateTransaction(transaction); appErr != nil {
+		return appErr
+	}
+
+	if util.StringInSlice("captured_amount", changedFields) && pm.OrderID != nil {
+		if appErr = a.app.OrderApp().UpdateOrderTotalPaid(*pm.OrderID); appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
+// FetchCustomerId
+// user must be either: *model.User OR *gqlmodel.User
+// returning string could be "" or long string
+func FetchCustomerId(user interface{}, gateway string) (string, *model.AppError) {
+	if user == nil {
+		return "", model.NewAppError("FetchCustomerId", app.InvalidArgumentAppErrorID,
+			map[string]interface{}{
+				"Fields": "user",
+			},
+			"",
+			http.StatusBadRequest,
+		)
+	}
+
+	metaKey := prepareKeyForGatewayCustomerId(gateway)
+
+	switch v := user.(type) {
+	case *account.User:
+		return v.ModelMetadata.GetValueFromMeta(metaKey, "", account.PrivateMetadata), nil
+	case *gqlmodel.User:
+		// create new ModelMetadata for concurrent accessing
+		meta := &model.ModelMetadata{
+			PrivateMetadata: gqlmodel.MetaDataToStringMap(v.PrivateMetadata),
+		}
+		return meta.GetValueFromMeta(metaKey, "", model.PrivateMetadata), nil
+	default:
+		return "", model.NewAppError("FetchCustomerId", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "user"}, "user param must be wither *account.User or *gqlmodel.User", http.StatusBadRequest)
+	}
+}
+
+// StoreCustomerId stores new value into given user's PrivateMetadata
+func (a *AppPayment) StoreCustomerId(user interface{}, gateway string, customerID string) *model.AppError {
+	// TODO: implement this
+	// if user == nil {
+	// 	return model.NewAppError("StoreCustomerId", app.InvalidArgumentAppErrorID,
+	// 		map[string]interface{}{
+	// 			"Fields": "user",
+	// 		},
+	// 		"",
+	// 		http.StatusBadRequest,
+	// 	)
 	// }
-	// TODO: fixme
+
+	// metaKey := prepareKeyForGatewayCustomerId(gateway)
+
+	// switch v := user.(type) {
+	// case *account.User:
+	// 	v.ModelMetadata.StoreValueInMeta(
+	// 		map[string]string{
+	// 			metaKey: customerID,
+	// 		},
+	// 		account.PrivateMetadata,
+	// 	)
+
+	// case *gqlmodel.User:
+
+	// }
 	panic("not implemented")
+}
+
+func prepareKeyForGatewayCustomerId(gatewayName string) string {
+	return strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
+}
+
+func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
+
+	var changed bool
+	var appErr *model.AppError
+
+	if gatewayResponse.PspReference != "" {
+		pm.PspReference = &gatewayResponse.PspReference
+		changed = true
+	}
+
+	if gatewayResponse.PaymentMethodInfo != nil {
+		if brand := gatewayResponse.PaymentMethodInfo.Brand; brand != "" {
+			pm.CcBrand = brand
+			changed = true
+
+		}
+		if last4 := gatewayResponse.PaymentMethodInfo.Last4; last4 != "" {
+			pm.CcLastDigits = last4
+			changed = true
+
+		}
+		if expYear := gatewayResponse.PaymentMethodInfo.ExpYear; expYear > 0 {
+			pm.CcExpYear = &expYear
+			changed = true
+
+		}
+		if expMonth := gatewayResponse.PaymentMethodInfo.ExpMonth; expMonth > 0 {
+			pm.CcExpMonth = &expMonth
+			changed = true
+
+		}
+		if type_ := gatewayResponse.PaymentMethodInfo.Type; type_ != "" {
+			pm.PaymentMethodType = type_
+			changed = true
+
+		}
+	}
+
+	if changed {
+		_, appErr = a.CreateOrUpdatePayment(pm)
+	}
+
+	return appErr
+}
+
+// Convert minor unit (smallest unit of currency) to decimal value.
+// (value: 1000, currency: USD) will be converted to 10.00
+func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error) {
+	d, err := decimal.NewFromString(value)
+	if err != nil {
+		return nil, err
+	}
+
+	precision, err := goprices.GetCurrencyPrecision(currency)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewDecimal(d.Round(-int32(precision))), nil
+}
+
+// Convert decimal value to the smallest unit of currency.
+//
+// Take the value, discover the precision of currency and multiply value by
+// Decimal('10.0'), then change quantization to remove the comma.
+// Decimal(10.0) -> str(1000)
+func PriceToMinorUnit(value *decimal.Decimal, currency string) {
+
 }
