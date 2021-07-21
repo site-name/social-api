@@ -216,6 +216,7 @@ type ChannelApp interface {
 	//
 	// 2) If given slug if nil, it try
 	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
+	ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError) // ValidateChannel finds a channel with given slug, then check if the channel is active. If no channel found or found but not active, return an error
 }
 
 type WarehouseApp interface {

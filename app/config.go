@@ -52,6 +52,7 @@ func (a *App) EnvironmentConfig(filter func(reflect.StructField) bool) map[strin
 	return a.Srv().EnvironmentConfig(filter)
 }
 
+// UpdateConfig updates config
 func (s *Server) UpdateConfig(f func(*model.Config)) {
 	if s.ConfigStore.IsReadOnly() {
 		return
@@ -64,6 +65,7 @@ func (s *Server) UpdateConfig(f func(*model.Config)) {
 	}
 }
 
+// UpdateConfig updates config
 func (a *App) UpdateConfig(f func(*model.Config)) {
 	a.Srv().UpdateConfig(f)
 }

@@ -73,6 +73,9 @@ func (a *AppPlugin) SetPluginsEnvironment(pluginsEnvironment *plugin.Environment
 	a.Srv().PluginsEnvironment = pluginsEnvironment
 }
 
+// SyncPluginsActiveState checks if Server's PluginsEnvironment property is set
+// and plugin system are enabled in settings.
+// Then
 func (s *AppPlugin) SyncPluginsActiveState() {
 	// Acquiring lock manually, as plugins might be disabled. See GetPluginsEnvironment.
 	s.Srv().PluginsLock.RLock()

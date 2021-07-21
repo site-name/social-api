@@ -8,15 +8,17 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/file"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 )
 
 // The API can be used to retrieve data or perform actions on behalf of the plugin. Most methods
 // have direct counterparts in the REST API and very similar behavior.
 //
-// Plugins obtain access to the API by embedding MattermostPlugin and accessing the API member
+// Plugins obtain access to the API by embedding SitenamePlugin and accessing the API member
 // directly.
 type API interface {
+	payment.PaymentInterface
 	// LoadPluginConfiguration loads the plugin's configuration. dest should be a pointer to a
 	// struct that the configuration JSON can be unmarshalled to.
 	//

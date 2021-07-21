@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/sitename/sitename/app"
-	// "github.com/sitename/sitename/app/request"
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
@@ -17,7 +17,7 @@ func initDBCommandContextCobra(command *cobra.Command, readOnlyConfigStore bool)
 		panic(err)
 	}
 
-	// a.InitPlugins(&request.Context{}, *a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
+	a.PluginApp().InitPlugins(&request.Context{}, *a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
 	a.DoAppMigrations()
 
 	return a, nil

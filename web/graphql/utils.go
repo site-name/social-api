@@ -8,13 +8,13 @@ import (
 )
 
 // validateStoreFrontUrl is common function for validating urls in user's inputs
-func validateStoreFrontUrl(config *model.Config, urlValue *string) *model.AppError {
-	if urlValue == nil {
+func validateStoreFrontUrl(config *model.Config, urlValue string) *model.AppError {
+	if urlValue == "" {
 		return invalidParameterError("validateStoreFrontUrl", "redirect url", "Please provide redirect url")
 	}
 
 	// try check if provided redirect url is valid
-	parsedRedirectUrl, err := url.Parse(*urlValue)
+	parsedRedirectUrl, err := url.Parse(urlValue)
 	if err != nil {
 		return invalidParameterError("validateStoreFrontUrl", "redirect url", "Please provide a valid url")
 	}

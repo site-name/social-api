@@ -43,26 +43,35 @@ func (a *AppChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppErro
 	return channel, nil
 }
 
+func (a *AppChannel) ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError) {
+	channel, appErr := a.GetChannelBySlug(channelSlug)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// check if channel is active
+	if !channel.IsActive {
+		return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
+	}
+
+	return channel, nil
+}
+
 func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError) {
 	var (
 		channel *channel.Channel
 		appErr  *model.AppError
 	)
 
-	if channelSlug != nil {
-		channel, appErr = a.GetChannelBySlug(*channelSlug)
-		if appErr != nil {
-			return nil, appErr
-		}
-		if !channel.IsActive {
-			return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
-		}
-		return channel, nil
+	if channelSlug != nil && *channelSlug != "" {
+		channel, appErr = a.ValidateChannel(*channelSlug)
+	} else {
+		channel, appErr = a.GetDefaultActiveChannel()
 	}
 
-	channel, appErr = a.GetDefaultActiveChannel()
 	if appErr != nil {
 		return nil, appErr
 	}
+
 	return channel, nil
 }

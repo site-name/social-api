@@ -88,7 +88,8 @@ func (a *AppAccount) UserSetDefaultAddress(userID, addressID, addressType string
 				"app.account.invalid_input.app_error",
 				map[string]interface{}{
 					"field": errInput.Field,
-					"value": errInput.Value}, "",
+					"value": errInput.Value,
+				}, "",
 				http.StatusBadRequest,
 			)
 		} else {

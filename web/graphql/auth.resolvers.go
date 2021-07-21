@@ -97,7 +97,39 @@ func (r *mutationResolver) ExternalVerify(ctx context.Context, input string, plu
 }
 
 func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *string, email string, redirectURL string) (*gqlmodel.RequestPasswordReset, error) {
-	panic(fmt.Errorf("not implemented"))
+	appErr := validateStoreFrontUrl(r.Config(), redirectURL)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	userWithEmail, appErr := r.AccountApp().UserByEmail(email)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// checks if user is active to perform this:
+	if !userWithEmail.IsActive {
+		return nil, userInactiveAppError("RequestPasswordReset")
+	}
+
+	if !userWithEmail.IsStaff {
+		activeChannel, appErr := r.ChannelApp().CleanChannel(channel)
+		if appErr != nil {
+			return nil, appErr
+		}
+		channel = &activeChannel.Slug
+	} else if channel != nil {
+		channelBySlug, appErr := r.ChannelApp().ValidateChannel(*channel)
+		if appErr != nil {
+			return nil, appErr
+		}
+		channel = &channelBySlug.Slug
+	}
+	// TODO: send password reset event to user
+
+	return &gqlmodel.RequestPasswordReset{
+		Ok: true,
+	}, nil
 }
 
 func (r *mutationResolver) ConfirmAccount(ctx context.Context, email string, token string) (*gqlmodel.ConfirmAccount, error) {

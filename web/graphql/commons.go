@@ -14,7 +14,13 @@ const (
 	invalidParameterId    = "graphql.invalid_parameter.app_error"
 	systemUrlInvalidID    = "app.system.site_url_invalid.app_error"
 	permissionDeniedId    = "app.account.permission_denied.app_error"
+	userInactiveID        = "app.account.user_inactive.app_error"
 )
+
+// userInactiveAppError is a common utility function for creating user-inactive app error
+func userInactiveAppError(where string) *model.AppError {
+	return model.NewAppError(where, userInactiveID, nil, "", http.StatusForbidden)
+}
 
 // newUserUnauthenticatedAppError is common method for creating user-unauthenticated app error
 func newUserUnauthenticatedAppError(where string) *model.AppError {
