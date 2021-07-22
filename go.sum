@@ -122,8 +122,6 @@ github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1 h1:9h8f71kuF1pqovnn9
 github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1/go.mod h1:noBAuukeYOXa0aXGqxr24tADqkwDO2KRD15FsuaZ5a8=
 github.com/aws/aws-sdk-go v1.17.7/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.19.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
-github.com/aws/aws-sdk-go v1.40.0 h1:nTCSQAeahNt15SOYxuDwJ8XvMhOU3Uqe7eJUPv7+Vsk=
-github.com/aws/aws-sdk-go v1.40.0/go.mod h1:585smgzpB/KqRA+K3y/NL/oYRqQvpNJYvLm+LY1U59Q=
 github.com/aws/aws-sdk-go v1.40.2 h1:iNaJUKjUeULTsuTGrGbAFG1H5AVSWgo5kwyUDmtJrwk=
 github.com/aws/aws-sdk-go v1.40.2/go.mod h1:585smgzpB/KqRA+K3y/NL/oYRqQvpNJYvLm+LY1U59Q=
 github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible/go.mod h1:osfaiScAUVup+UC9Nfq76eWqDhXlp+4UYaA8uhTBO6g=
@@ -458,7 +456,6 @@ github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyN
 github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/go-cleanhttp v0.5.1/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
-github.com/hashicorp/go-hclog v0.14.1 h1:nQcJDQwIAGnmoUWp8ubocEX40cCml/17YkF6csQLReU=
 github.com/hashicorp/go-hclog v0.14.1/go.mod h1:whpDNt7SSdeAju8AWKIWsul05p54N/39EeqMAyrmvFQ=
 github.com/hashicorp/go-hclog v0.16.2 h1:K4ev2ib4LdQETX5cSZBG0DVLk1jwGqSPXBjdah3veNs=
 github.com/hashicorp/go-hclog v0.16.2/go.mod h1:whpDNt7SSdeAju8AWKIWsul05p54N/39EeqMAyrmvFQ=
@@ -898,8 +895,8 @@ github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/site-name/go-prices v0.0.0-20210616032024-5891e0c6d6c8 h1:VGIhow3R5UkHZqnLNUOKkGc+1ag1d6qKg7nRLHpErNY=
 github.com/site-name/go-prices v0.0.0-20210616032024-5891e0c6d6c8/go.mod h1:H787oHKVAYzJxNuLgMvZbsBtKUvycg8Nctk4qqQJgBs=
-github.com/site-name/i18naddress v0.0.0-20210626153134-ce7a01a19aa8 h1:Bz/z0EienHESPE3X7yLyaXraBaGN9NSC3dq90w2tijY=
-github.com/site-name/i18naddress v0.0.0-20210626153134-ce7a01a19aa8/go.mod h1:D88xo9JpEDVN3Q5sDjwU6H/CxjnB7gtDHNBuQSDY5iQ=
+github.com/site-name/go-prices v0.0.0-20210722081319-cce771fbc863 h1:+Wz8+EncFgKUEcWp3nO4bLCsGP8TYFmH0vuWsU8uFP0=
+github.com/site-name/go-prices v0.0.0-20210722081319-cce771fbc863/go.mod h1:H787oHKVAYzJxNuLgMvZbsBtKUvycg8Nctk4qqQJgBs=
 github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3 h1:4SffFvDRYn8gyiCH5Q1OPpMmjlNNUBiMDC5sqHw4xUk=
 github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3/go.mod h1:D88xo9JpEDVN3Q5sDjwU6H/CxjnB7gtDHNBuQSDY5iQ=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=

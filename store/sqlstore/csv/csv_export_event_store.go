@@ -14,7 +14,7 @@ func NewSqlCsvExportEventStore(sqlStore store.Store) store.CsvExportEventStore {
 	cs := &SqlCsvExportEventStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(csv.ExportEvent{}, "ExportEvents").SetKeys(false, "Id")
+		table := db.AddTableWithName(csv.ExportEvent{}, store.CsvExportEventTablename).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ExportFileID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -24,7 +24,10 @@ func NewSqlCsvExportEventStore(sqlStore store.Store) store.CsvExportEventStore {
 	return cs
 }
 
-func (cs *SqlCsvExportEventStore) CreateIndexesIfNotExists() {}
+func (cs *SqlCsvExportEventStore) CreateIndexesIfNotExists() {
+	cs.CreateForeignKeyIfNotExists(store.CsvExportEventTablename, "UserID", store.UserTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CsvExportEventTablename, "ExportFileID", store.CsvExportFileTablename, "Id", false)
+}
 
 func (s *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 	event.PreSave()

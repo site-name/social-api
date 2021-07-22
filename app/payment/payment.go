@@ -3,7 +3,6 @@ package payment
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -14,6 +13,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// AppPayment handle all logics related to payment
 type AppPayment struct {
 	app app.AppIface
 }
@@ -82,16 +82,10 @@ func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.
 	if err != nil {
 		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
+
 	trans, appErr := a.GetAllPaymentTransactions(pm.Id)
 	if appErr != nil {
 		return nil, appErr
-	}
-
-	// check if payment's Currency is same as transactions's currencies
-	for _, tran := range trans {
-		if !strings.EqualFold(tran.Currency, pm.Currency) {
-			return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.payment_transactions_currency_integrity.app_error", nil, "payment and its transactions must have same money currencies", http.StatusInternalServerError)
-		}
 	}
 
 	// There is no authorized amount anymore when capture is succeeded
@@ -105,11 +99,13 @@ func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.
 	// Filter the succeeded auth transactions
 	for _, tran := range trans {
 		if tran.Kind == payment.AUTH && tran.IsSuccess && !tran.ActionRequired {
-			// resulting error can be ignored here:
-			authorizedMoney, _ = authorizedMoney.Add(&goprices.Money{
+			authorizedMoney, err = authorizedMoney.Add(&goprices.Money{
 				Amount:   tran.Amount,
 				Currency: tran.Currency,
 			})
+			if err != nil {
+				return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.error_calculation_payment_authorized_amount.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
 		}
 	}
 
@@ -160,9 +156,11 @@ func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError)
 	}
 
 	var tran *payment.PaymentTransaction
+
+	// find most recent transaction that has kind = "auth" and was made successfully
 	for _, tr := range trans {
 		if tr.Kind == payment.AUTH && tr.IsSuccess {
-			if tran == nil || tran.CreateAt > tr.CreateAt {
+			if tran == nil || tran.CreateAt <= tr.CreateAt {
 				tran = tr
 			}
 		}

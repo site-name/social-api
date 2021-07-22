@@ -4,16 +4,10 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
-
-	// "crypto/elliptic"
-	// "crypto/md5"
-	"crypto/rand"
-	// "crypto/x509"
-	// "encoding/base64"
-	// "fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -21,7 +15,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/json"
@@ -359,26 +352,6 @@ func (a *App) GetCookieDomain() string {
 func (a *App) GetSiteURL() string {
 	return *a.Config().ServiceSettings.SiteURL
 }
-
-// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
-// func (s *Server) ClientConfigWithComputed() map[string]string {
-// 	respCfg := map[string]string{}
-// 	for k, v := range s.clientConfig.Load().(map[string]string) {
-// 		respCfg[k] = v
-// 	}
-
-// 	// These properties are not configurable, but nevertheless represent configuration expected
-// 	// by the client.
-// 	respCfg["NoAccounts"] = strconv.FormatBool(s.IsFirstUserAccount())
-// 	// respCfg["MaxPostSize"] = strconv.Itoa(s.MaxPostSize())
-// 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
-// 	respCfg["InstallationDate"] = ""
-// 	if installationDate, err := s.getSystemInstallDate(); err == nil {
-// 		respCfg["InstallationDate"] = strconv.FormatInt(installationDate, 10)
-// 	}
-
-// 	return respCfg
-// }
 
 // ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 func (a *App) ClientConfigWithComputed() map[string]string {

@@ -62,7 +62,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/site-name/go-prices v0.0.0-20210616032024-5891e0c6d6c8
+	github.com/site-name/go-prices v0.0.0-20210722081319-cce771fbc863
 	github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spf13/cobra v1.2.1

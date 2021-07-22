@@ -27,13 +27,9 @@ func (a *AppPayment) GetLastPaymentTransaction(paymentID string) (*payment.Payme
 		return nil, nil
 	}
 
-	if len(trans) == 1 {
-		return trans[0], nil
-	}
-
-	lastTran := trans[0]
+	var lastTran *payment.PaymentTransaction
 	for _, tran := range trans {
-		if tran != nil && tran.CreateAt >= lastTran.CreateAt {
+		if lastTran == nil || tran.CreateAt >= lastTran.CreateAt {
 			lastTran = tran
 		}
 	}

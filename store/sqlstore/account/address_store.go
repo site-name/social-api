@@ -38,8 +38,8 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 func (as *SqlAddressStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_address_lastname", store.AddressTableName, "LastName")
 	as.CreateIndexIfNotExists("idx_address_firstname", store.AddressTableName, "FirstName")
-	as.CreateIndexIfNotExists("idx_address_create_at", store.AddressTableName, "CreateAt")
-	as.CreateIndexIfNotExists("idx_address_update_at", store.AddressTableName, "UpdateAt")
+	as.CreateIndexIfNotExists("idx_address_city", store.AddressTableName, "City")
+	as.CreateIndexIfNotExists("idx_address_country", store.AddressTableName, "Country")
 
 	as.CreateIndexIfNotExists("idx_address_firstname_lower_textpattern", store.AddressTableName, "lower(FirstName) text_pattern_ops")
 	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", store.AddressTableName, "lower(LastName) text_pattern_ops")

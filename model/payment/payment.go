@@ -114,11 +114,12 @@ func (p *Payment) GetChargeAmount() decimal.Decimal {
 	return res
 }
 
-// IsNotCharged checks if payment's char status is "not-charged"
+// IsNotCharged checks if current payment's charge status is "not_charged"
 func (p *Payment) IsNotCharged() bool {
 	return p.ChargeStatus == NOT_CHARGED
 }
 
+// CanAuthorize checks if current payment is active and not charged
 func (p *Payment) CanAuthorize() bool {
 	return p.IsActive && p.IsNotCharged()
 }
@@ -132,6 +133,7 @@ func (p *Payment) CanCapture() bool {
 	return true
 }
 
+// CanRefund checks if current payment is active && (partially charged || fully charged || partially refunded)
 func (p *Payment) CanRefund() bool {
 	canRefundChargeStatuses := []string{
 		PARTIALLY_CHARGED,
@@ -142,14 +144,23 @@ func (p *Payment) CanRefund() bool {
 	return p.IsActive && util.StringInSlice(p.ChargeStatus, canRefundChargeStatuses)
 }
 
+// CanConfirm checks if current payment is active && not charged
 func (p *Payment) CanConfirm() bool {
 	return p.IsActive && p.IsNotCharged()
 }
 
+// IsManual checks if current payment's gateway == "manual"
 func (p *Payment) IsManual() bool {
 	return p.GateWay == GATE_WAY_MANUAL
 }
 
+/*
+  GetTotal returns:
+  	&goprices.Money{
+			Amount:   p.Total,
+			Currency: p.Currency,
+		}
+*/
 func (p *Payment) GetTotal() *goprices.Money {
 	return &goprices.Money{
 		Amount:   p.Total,
@@ -157,6 +168,13 @@ func (p *Payment) GetTotal() *goprices.Money {
 	}
 }
 
+/*
+	GetCapturedAmount returns:
+		&goprices.Money{
+			Amount:   p.CapturedAmount,
+			Currency: p.Currency,
+		}
+*/
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{
 		Amount:   p.CapturedAmount,

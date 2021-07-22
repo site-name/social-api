@@ -465,6 +465,9 @@ func (a *AppPayment) StoreCustomerId(user interface{}, gateway string, customerI
 	panic("not implemented")
 }
 
+// prepareKeyForGatewayCustomerId just trims spaces, upper then concatenates ".customer_id" to given `gatewayName`.
+//
+//  strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 func prepareKeyForGatewayCustomerId(gatewayName string) string {
 	return strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 }
@@ -483,22 +486,18 @@ func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment
 		if brand := gatewayResponse.PaymentMethodInfo.Brand; brand != "" {
 			pm.CcBrand = brand
 			changed = true
-
 		}
 		if last4 := gatewayResponse.PaymentMethodInfo.Last4; last4 != "" {
 			pm.CcLastDigits = last4
 			changed = true
-
 		}
 		if expYear := gatewayResponse.PaymentMethodInfo.ExpYear; expYear > 0 {
 			pm.CcExpYear = &expYear
 			changed = true
-
 		}
 		if expMonth := gatewayResponse.PaymentMethodInfo.ExpMonth; expMonth > 0 {
 			pm.CcExpMonth = &expMonth
 			changed = true
-
 		}
 		if type_ := gatewayResponse.PaymentMethodInfo.Type; type_ != "" {
 			pm.PaymentMethodType = type_
@@ -515,6 +514,7 @@ func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment
 }
 
 // Convert minor unit (smallest unit of currency) to decimal value.
+//
 // (value: 1000, currency: USD) will be converted to 10.00
 func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error) {
 	d, err := decimal.NewFromString(value)
@@ -527,7 +527,15 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 		return nil, err
 	}
 
-	return model.NewDecimal(d.Round(-int32(precision))), nil
+	d = d.
+		Mul(
+			decimal.
+				NewFromInt32(10).
+				Pow(decimal.NewFromInt32(-int32(precision))),
+		).
+		Round(int32(precision))
+
+	return &d, nil
 }
 
 // Convert decimal value to the smallest unit of currency.
@@ -535,6 +543,23 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 // Take the value, discover the precision of currency and multiply value by
 // Decimal('10.0'), then change quantization to remove the comma.
 // Decimal(10.0) -> str(1000)
-func PriceToMinorUnit(value *decimal.Decimal, currency string) {
+func PriceToMinorUnit(value *decimal.Decimal, currency string) (string, error) {
+	precision, err := goprices.GetCurrencyPrecision(currency)
+	if err != nil {
+		return "", err
+	}
 
+	return value.
+		Mul(
+			decimal.
+				NewFromFloat(10.0).
+				Pow(decimal.NewFromInt32(int32(precision))),
+		).
+		String(), nil
+}
+
+// IsCurrencySupported checks if given currency is supported by system
+// TODO: implement me
+func IsCurrencySupported() bool {
+	panic("not implemented")
 }

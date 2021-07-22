@@ -90,3 +90,9 @@ const PreferenceTableName = "Preferences"
 
 // role related table names
 const RoleTableName = "Roles"
+
+// csv-related table names
+const (
+	CsvExportEventTablename = "ExportEvents"
+	CsvExportFileTablename  = "ExportFiles"
+)

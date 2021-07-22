@@ -36,7 +36,7 @@ type Address struct {
 	PostalCode     string `json:"postal_code"`
 	Country        string `json:"country"` // single value
 	CountryArea    string `json:"country_area"`
-	Phone          string `json:"phone"`
+	Phone          string `json:"phone"` // db_index
 	CreateAt       int64  `json:"create_at,omitempty"`
 	UpdateAt       int64  `json:"update_at,omitempty"`
 }

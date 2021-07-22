@@ -36,64 +36,59 @@ type GiftcardApp interface {
 	GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *model.AppError)       // GiftcardsByOrder returns all giftcards belong to given order
 }
 
-// PaymentApp defines methods for payment app
+// PaymentApp defines methods for payment sub app
 type PaymentApp interface {
-	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)                // GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
-	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)                      // GetLastOrderPayment get most recent payment made for given order
-	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) // GetAllPaymentTransactions returns all transactions belong to given payment
-	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)   // GetLastPaymentTransaction return most recent transaction made for given payment
-	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)                                // PaymentIsAuthorized checks if given payment is authorized
-	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)           // PaymentGetAuthorizedAmount calculates authorized amount
-	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                  // PaymentCanVoid check if payment can void
-	// Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
-	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError)
-	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
-	// CreatePayment creates new payment inside database with given data and returned it
-	CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError)
-	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) // SaveTransaction save new payment transaction into database
-	// CreatePaymentTransaction save new payment transaction into database and returns it
-	CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)
-	// GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
-	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
-	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError                            // CleanCapture Checks if payment can be captured.
-	GetPaymentToken(paymentID string) (string, *model.AppError)                                               // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
-	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError)                         // GetAllPaymentsByCheckout returns all payments have been made for given checkout
-	CleanAuthorize(payment *payment.Payment) *model.AppError                                                  // CleanAuthorize checks if payment can be authorized
-	ValidateGatewayResponse(response *payment.GatewayResponse) *model.AppError                                // ValidateGatewayResponse validates given response to be correct format for system to process
-	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError     // GatewayPostProcess
-	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) // UpdateTransaction updates given transaction and returns updated on
-	CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                            // CreateOrUpdatePayment depends on whether given payment's Id is set or not to decide to update/save payment
-	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError              // UpdatePayment updates given payment based on given `gatewayResponse`
+	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)                                                                                                                                                                          // GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
+	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)                                                                                                                                                                                // GetLastOrderPayment get most recent payment made for given order
+	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)                                                                                                                                                           // GetAllPaymentTransactions returns all transactions belong to given payment
+	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                                             // GetLastPaymentTransaction return most recent transaction made for given payment
+	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)                                                                                                                                                                                          // PaymentIsAuthorized checks if given payment is authorized
+	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)                                                                                                                                                                     // PaymentGetAuthorizedAmount calculates authorized amount
+	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                                                                                                                                                                            // PaymentCanVoid check if payment can void
+	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError)                                      // Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
+	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError)                                                                                                              // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
+	CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError) // CreatePayment creates new payment inside database with given data and returned it
+	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                                // SaveTransaction save new payment transaction into database
+	CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)        // CreatePaymentTransaction save new payment transaction into database and returns it
+	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)   // GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
+	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError                                                                                                                                                                         // CleanCapture Checks if payment can be captured.
+	GetPaymentToken(paymentID string) (string, *model.AppError)                                                                                                                                                                                            // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
+	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError)                                                                                                                                                                      // GetAllPaymentsByCheckout returns all payments have been made for given checkout
+	CleanAuthorize(payment *payment.Payment) *model.AppError                                                                                                                                                                                               // CleanAuthorize checks if payment can be authorized
+	ValidateGatewayResponse(response *payment.GatewayResponse) *model.AppError                                                                                                                                                                             // ValidateGatewayResponse validates given response to be correct format for system to process
+	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError                                                                                                                                                  // GatewayPostProcess
+	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                              // UpdateTransaction updates given transaction and returns updated on
+	CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                                         // CreateOrUpdatePayment depends on whether given payment's Id is set or not to decide to update/save payment
+	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError                                                                                                                                                           // UpdatePayment updates given payment based on given `gatewayResponse`
+
 }
 
 // CheckoutApp
 type CheckoutApp interface {
-	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) // CheckoutbyToken returns 1 checkout by its token (checkout's pripary key)
-	// CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
-	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
-	CheckVariantInStock(variant *product_and_discount.ProductVariant, ckout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)
-	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                  // CheckoutShippingRequired checks if given checkout requires shipping
-	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                              // CheckoutsByUser returns a list of checkouts belong to given user.
-	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                                                     // CheckoutByUser returns a checkout that is active and belongs to given user
-	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                  // CheckoutCountry returns country code for given checkout
-	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                  // CheckoutSetCountry set new country code for checkout
-	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                       // UpdateCheckout updates given checkout and returns it
-	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                 // GetCustomerEmail returns either checkout owner's email or checkout's Email property
-	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                           // CheckoutTotalGiftCardsBalance returns giftcards balance money
-	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
+	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError)                                                                                                                                     // CheckoutbyToken returns 1 checkout by its token (checkout's pripary key)
+	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)                                                                                                                 // CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
+	CheckVariantInStock(variant *product_and_discount.ProductVariant, checkout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError) // CheckVariantInStock
+	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                                                                                                          // CheckoutShippingRequired checks if given checkout requires shipping
+	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                                                                                                                      // CheckoutsByUser returns a list of checkouts belong to given user.
+	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                                                                                                                                             // CheckoutByUser returns a checkout that is active and belongs to given user
+	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                          // CheckoutCountry returns country code for given checkout
+	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                                                                                                          // CheckoutSetCountry set new country code for checkout
+	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                                                                                                               // UpdateCheckout updates given checkout and returns it
+	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                         // GetCustomerEmail returns either checkout owner's email or checkout's Email property
+	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                                                                                                                   // CheckoutTotalGiftCardsBalance returns giftcards balance money
+	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)                                                                                         // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
 }
 
 // CheckoutApp
 type AccountApp interface {
-	AddressById(id string) (*account.Address, *model.AppError)                                    // GetAddressById returns address with given id. If not found returns nil and concret error
-	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                 // GetUserById get user from database with given userId
-	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)               // CustomerEventsByUser returns all customer event(s) belong to given user
-	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                        // AddressesByUserId returns list of address(es) (if found) that belong to given user
-	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) // UserSetDefaultAddress set given address to be default for given user
-	AddressDeleteForUser(userID, addressID string) *model.AppError                                // AddressDeleteForUser deletes relationship between given user and address
-	UserByEmail(email string) (*account.User, *model.AppError)                                    // UserByEmail try finding user with given email and returns that user
-	// CommonCustomerCreateEvent is common method for creating customer events
-	CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError)
+	AddressById(id string) (*account.Address, *model.AppError)                                                                                           // GetAddressById returns address with given id. If not found returns nil and concret error
+	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                                                                        // GetUserById get user from database with given userId
+	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)                                                                      // CustomerEventsByUser returns all customer event(s) belong to given user
+	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                                                                               // AddressesByUserId returns list of address(es) (if found) that belong to given user
+	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError)                                                        // UserSetDefaultAddress set given address to be default for given user
+	AddressDeleteForUser(userID, addressID string) *model.AppError                                                                                       // AddressDeleteForUser deletes relationship between given user and address
+	UserByEmail(email string) (*account.User, *model.AppError)                                                                                           // UserByEmail try finding user with given email and returns that user
+	CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError) // CommonCustomerCreateEvent is common method for creating customer events
 	// CreateUserFromSignup create new user with user input information by:
 	//
 	// 1) Checks if user signup is allowed
@@ -176,19 +171,16 @@ type AccountApp interface {
 	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError)
 	UpdatePreferences(userID string, preferences model.Preferences) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
-
 	AddStatusCacheSkipClusterSend(status *account.Status)
 	GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) // GetUserStatusesByIds tries getting statuses from cache, if any cache for an user not found, it finds in database
 	AddStatusCache(status *account.Status)
 	StatusByID(statusID string) (*account.Status, *model.AppError)
 	StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError)
-
 	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) // CreateUserAccessToken creates new user access token for user
 	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)     // GetUserAccessToken get access token for user
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                             // RevokeUserAccessToken
-
-	SetStatusOnline(userID string, manual bool)  // SetStatusOnline sets given user's status to online
-	SetStatusOffline(userID string, manual bool) // SetStatusOffline sets user's status to offline
+	SetStatusOnline(userID string, manual bool)                                                       // SetStatusOnline sets given user's status to online
+	SetStatusOffline(userID string, manual bool)                                                      // SetStatusOffline sets user's status to offline
 }
 
 type ProductApp interface {
@@ -210,10 +202,8 @@ type InvoiceApp interface {
 }
 
 type ChannelApp interface {
-	// GetChannelBySlug returns a channel (if found) from database with given slug
-	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError)
-	// GetDefaultChannel get random channel that is active
-	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)
+	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) // GetChannelBySlug returns a channel (if found) from database with given slug
+	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)     // GetDefaultChannel get random channel that is active
 	// CleanChannel performs:
 	//
 	// 1) If given slug is not nil, try getting a channel with that slug.
