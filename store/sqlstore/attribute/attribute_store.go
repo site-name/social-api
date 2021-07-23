@@ -18,7 +18,7 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	as := &SqlAttributeStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.Attribute{}, "Attributes").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.Attribute{}, store.AttributeTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(attribute.ATTRIBUTE_SLUG_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Name").SetMaxSize(attribute.ATTRIBUTE_NAME_MAX_LENGTH)
@@ -32,9 +32,9 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 }
 
 func (as *SqlAttributeStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_attributes_name", "Attributes", "Name")
-	as.CreateIndexIfNotExists("idx_attributes_name_lower_textpattern", "Attributes", "lower(Name) text_pattern_ops")
-	as.CreateIndexIfNotExists("idx_attributes_slug", "Attributes", "Slug")
+	as.CreateIndexIfNotExists("idx_attributes_name", store.AttributeTableName, "Name")
+	as.CreateIndexIfNotExists("idx_attributes_name_lower_textpattern", store.AttributeTableName, "lower(Name) text_pattern_ops")
+	as.CreateIndexIfNotExists("idx_attributes_slug", store.AttributeTableName, "Slug")
 }
 
 func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
@@ -66,7 +66,7 @@ func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
 }
 
 func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	query, args, err := as.GetQueryBuilder().Select("*").From("Attributes").Where(squirrel.Eq{"Id": ids}).ToSql()
+	query, args, err := as.GetQueryBuilder().Select("*").From(store.AttributeTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "get_attributes_by_ids")
 	}

@@ -13,7 +13,7 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 	as := &SqlAssignedPageAttributeValueStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedPageAttributeValue{}, "AssignedPageAttributeValues").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AssignedPageAttributeValue{}, store.AssignedPageAttributeValueTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ValueID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -24,6 +24,6 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 }
 
 func (as *SqlAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists("AssignedPageAttributeValues", "ValueID", "AttributeValues", "Id", true)
-	as.CreateForeignKeyIfNotExists("AssignedPageAttributeValues", "AssignmentID", "AssignedPageAttributes", "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeValueTableName, "ValueID", store.AttributeValueTableName, "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeValueTableName, "AssignmentID", store.AssignedPageAttributeTableName, "Id", true)
 }

@@ -13,7 +13,7 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 	as := &SqlAssignedProductAttributeValueStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedProductAttributeValue{}, "AssignedProductAttributeValues").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AssignedProductAttributeValue{}, store.AssignedProductAttributeValueTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ValueID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -24,6 +24,6 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 }
 
 func (as *SqlAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists("AssignedProductAttributeValues", "ValueID", "AttributeValues", "Id", true)
-	as.CreateForeignKeyIfNotExists("AssignedProductAttributeValues", "AssignmentID", "AssignedProductAttributes", "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedProductAttributeValueTableName, "ValueID", store.AttributeValueTableName, "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedProductAttributeValueTableName, "AssignmentID", store.AssignedProductAttributeTableName, "Id", true)
 }

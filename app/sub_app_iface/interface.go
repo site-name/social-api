@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/file"
@@ -196,6 +197,7 @@ type WishlistApp interface {
 }
 
 type AttributeApp interface {
+	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) // AttributeValuesOfAttribute finds all attribute values of given attribute, it may return an app-error indicates error occured. returned error could be either (*store.ErrNotFound or system error)
 }
 
 type InvoiceApp interface {

@@ -13,7 +13,7 @@ func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVaria
 	as := &SqlAssignedVariantAttributeValueStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedVariantAttributeValue{}, "AssignedVariantAttributeValues").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AssignedVariantAttributeValue{}, store.AssignedVariantAttributeValueTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ValueID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -24,6 +24,6 @@ func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVaria
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists("AssignedVariantAttributeValues", "ValueID", "AttributeValues", "Id", true)
-	as.CreateForeignKeyIfNotExists("AssignedVariantAttributeValues", "AssignmentID", "AssignedVariantAttributes", "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeValueTableName, "ValueID", store.AttributeValueTableName, "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeValueTableName, "AssignmentID", store.AssignedVariantAttributeTableName, "Id", true)
 }

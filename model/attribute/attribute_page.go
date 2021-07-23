@@ -2,16 +2,20 @@ package attribute
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/page"
 )
 
 // AttributeID unique with PageTypeID
 type AttributePage struct {
-	Id            string       `json:"id"`
-	AttributeID   string       `json:"attribute_id"`          // to attribute.Attribute
-	PageTypeID    string       `json:"page_type_id"`          // to page.PageType
-	AssignedPages []*page.Page `json:"assigned_pages" db:"-"` // through attribute.AssignedPageAttribute
+	Id          string `json:"id"`
+	AttributeID string `json:"attribute_id"` // to attribute.Attribute
+	PageTypeID  string `json:"page_type_id"` // to page.PageType
 	model.Sortable
+}
+
+// AttributePageFilterOption is used for lookup AttributePage
+type AttributePageFilterOption struct {
+	PageTypeID  string `json:"page_type_id"`
+	AttributeID string `json:"attribute_id"`
 }
 
 func (a *AttributePage) IsValid() *model.AppError {

@@ -6,11 +6,13 @@ import (
 )
 
 type AppAttribute struct {
-	app.AppIface
+	app app.AppIface
 }
 
 func init() {
 	app.RegisterAttributeApp(func(a app.AppIface) sub_app_iface.AttributeApp {
-		return &AppAttribute{a}
+		return &AppAttribute{
+			app: a,
+		}
 	})
 }

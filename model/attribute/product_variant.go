@@ -36,13 +36,22 @@ func (a *AssignedVariantAttributeValue) PreSave() {
 	}
 }
 
+func (a *AssignedVariantAttributeValue) ToJson() string {
+	return model.ModelToJson(a)
+}
+
 // Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
-	Id                    string            `json:"id"`
-	VariantID             string            `json:"variant_id"`    // to product.ProductVariant
-	AssignmentID          string            `json:"assignment_id"` // to attribute.AttributeVariant
-	Values                []*AttributeValue `json:"values"`
+	Id                    string `json:"id"`
+	VariantID             string `json:"variant_id"`    // to product.ProductVariant
+	AssignmentID          string `json:"assignment_id"` // to attribute.AttributeVariant
 	BaseAssignedAttribute `db:"-"`
+}
+
+// AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance
+type AssignedVariantAttributeFilterOption struct {
+	VariantID    string `json:"variant_id"`
+	AssignmentID string `json:"assignment_id"`
 }
 
 func (a *AssignedVariantAttribute) IsValid() *model.AppError {
@@ -66,4 +75,10 @@ func (a *AssignedVariantAttribute) IsValid() *model.AppError {
 
 func (a *AssignedVariantAttribute) ToJson() string {
 	return model.ModelToJson(a)
+}
+
+func (a *AssignedVariantAttribute) PreSave() {
+	if a.Id == "" {
+		a.Id = model.NewId()
+	}
 }

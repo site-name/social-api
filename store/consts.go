@@ -96,3 +96,21 @@ const (
 	CsvExportEventTablename = "ExportEvents"
 	CsvExportFileTablename  = "ExportFiles"
 )
+
+// attribute-related table names
+const (
+	BaseAssignedAttributeTableName         = "BaseAssignedAttributes"
+	AttributeTableName                     = "Attributes"
+	AttributeTranslationTableName          = "AttributeTranslations"
+	AttributeValueTableName                = "AttributeValues"
+	AttributeValueTranslationTableName     = "AttributeValueTranslations"
+	AssignedPageAttributeValueTableName    = "AssignedPageAttributeValues"
+	AssignedPageAttributeTableName         = "AssignedPageAttributes"
+	AttributePageTableName                 = "AttributePages"
+	AssignedVariantAttributeValueTableName = "AssignedVariantAttributeValues"
+	AssignedVariantAttributeTableName      = "AssignedVariantAttributes"
+	AttributeVariantTableName              = "AttributeVariants"
+	AssignedProductAttributeValueTableName = "AssignedProductAttributeValues"
+	AssignedProductAttributeTableName      = "AssignedProductAttributes"
+	AttributeProductTableName              = "AttributeProducts"
+)

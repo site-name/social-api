@@ -16,6 +16,14 @@ type AttributeVariant struct {
 	model.Sortable
 }
 
+// AttributeVariantFilterOption is used to find `AttributeVariant`.
+//
+// properties can be provided partially or fully
+type AttributeVariantFilterOption struct {
+	AttributeID string `json:"attribute_id"`
+	ProductID   string `json:"product_id"` // required
+}
+
 func (a *AttributeVariant) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.attribute_variant.is_valid.%s.app_error",

@@ -75,7 +75,6 @@ func (a *AppPlugin) SetPluginsEnvironment(pluginsEnvironment *plugin.Environment
 
 // SyncPluginsActiveState checks if Server's PluginsEnvironment property is set
 // and plugin system are enabled in settings.
-// Then
 func (s *AppPlugin) SyncPluginsActiveState() {
 	// Acquiring lock manually, as plugins might be disabled. See GetPluginsEnvironment.
 	s.Srv().PluginsLock.RLock()
@@ -165,10 +164,6 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 	// 	slog.Warn("failed to notify plugin status changed", slog.Err(err))
 	// }
 }
-
-// func (a *AppPlugin) NewPluginAPI(c *request.Context, manifest *plugins.Manifest) plugin.API {
-// 	return NewPluginAPI(a, c, manifest)
-// }
 
 func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir string) {
 	// Acquiring lock manually, as plugins might be disabled. See GetPluginsEnvironment.
@@ -749,7 +744,7 @@ func (s *AppPlugin) notifyPluginEnabled(manifest *plugins.Manifest) error {
 
 	var statuses plugins.PluginStatuses
 
-	if s.Cluster != nil {
+	if s.Cluster() != nil {
 		var err *model.AppError
 		statuses, err = s.Cluster().GetPluginStatuses()
 		if err != nil {

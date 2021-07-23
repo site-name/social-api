@@ -14,7 +14,7 @@ func NewSqlAttributeTranslationStore(s store.Store) store.AttributeTranslationSt
 	as := &SqlAttributeTranslationStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeTranslation{}, "AttributeTranslations").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AttributeTranslation{}, store.AttributeTranslationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
@@ -26,6 +26,6 @@ func NewSqlAttributeTranslationStore(s store.Store) store.AttributeTranslationSt
 }
 
 func (as *SqlAttributeTranslationStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_attributetranslations_name", "AttributeTranslations", "Name")
-	as.CreateIndexIfNotExists("idx_attributetranslations_name_lower_textpattern", "AttributeTranslations", "lower(Name) text_pattern_ops")
+	as.CreateIndexIfNotExists("idx_attributetranslations_name", store.AttributeTranslationTableName, "Name")
+	as.CreateIndexIfNotExists("idx_attributetranslations_name_lower_textpattern", store.AttributeTranslationTableName, "lower(Name) text_pattern_ops")
 }

@@ -11,6 +11,12 @@ import (
 	"github.com/sitename/sitename/model/plugins"
 )
 
+type PluginIface interface {
+	SetAPI(api API)
+	SetHelpers(helpers Helpers)
+	SetDriver(driver Driver)
+}
+
 // The API can be used to retrieve data or perform actions on behalf of the plugin. Most methods
 // have direct counterparts in the REST API and very similar behavior.
 //

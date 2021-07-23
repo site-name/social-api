@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/plugin"
 )
 
 type TokenLocation int
@@ -72,4 +74,15 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	}
 
 	return "", TokenLocationNotFound
+}
+
+// PluginContext
+func PluginContext(c *request.Context) *plugin.Context {
+	return &plugin.Context{
+		RequestId:      c.RequestId(),
+		SessionId:      c.Session().Id,
+		IpAddress:      c.IpAddress(),
+		AcceptLanguage: c.AcceptLanguage(),
+		UserAgent:      c.UserAgent(),
+	}
 }

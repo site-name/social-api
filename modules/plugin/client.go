@@ -10,11 +10,7 @@ const (
 
 // Call this when your plugin is ready to start.
 func ClientMain(pluginImplementation interface{}) {
-	if impl, ok := pluginImplementation.(interface {
-		SetAPI(api API)
-		SetHelpers(helpers Helpers)
-		SetDriver(driver Driver)
-	}); !ok {
+	if impl, ok := pluginImplementation.(PluginIface); !ok {
 		panic("Plugin implementation given must embed plugin.SitenamePlugin")
 	} else {
 		impl.SetAPI(nil)
@@ -22,16 +18,15 @@ func ClientMain(pluginImplementation interface{}) {
 		impl.SetDriver(nil)
 	}
 
-	pluginMap := map[string]plugin.Plugin{
-		"hooks": &hooksPlugin{hooks: pluginImplementation},
-	}
-
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: handshake,
-		Plugins:         pluginMap,
+		Plugins: map[string]plugin.Plugin{
+			"hooks": &hooksPlugin{hooks: pluginImplementation},
+		},
 	})
 }
 
+// SitenamePlugin: embed this type in your plugins
 type SitenamePlugin struct {
 	API     API     // API exposes the plugin api, and becomes available just prior to the OnActive hook.
 	Helpers Helpers //

@@ -8,14 +8,13 @@ import (
 	"database/sql/driver"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
-	"os"
-	"reflect"
-
-	"io"
 	"net/http"
 	"net/rpc"
+	"os"
+	"reflect"
 
 	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/go-sql-driver/mysql"
@@ -24,7 +23,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/plugins"
-
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -46,7 +44,7 @@ type hooksRPCServer struct {
 	apiRPCClient *apiRPCClient
 }
 
-// // Implements hashicorp/go-plugin/plugin.Plugin interface to connect the hooks of a plugin
+// Implements hashicorp/go-plugin/plugin.Plugin interface to connect the hooks of a plugin
 type hooksPlugin struct {
 	hooks      interface{}
 	apiImpl    API
@@ -279,11 +277,7 @@ func (s *hooksRPCServer) OnActivate(args *Z_OnActivateArgs, returns *Z_OnActivat
 		client: rpc.NewClient(conn2),
 	}
 
-	if snplugin, ok := s.impl.(interface {
-		SetAPI(api API)
-		SetHelpers(helpers Helpers)
-		SetDriver(driver Driver)
-	}); ok {
+	if snplugin, ok := s.impl.(PluginIface); ok {
 		snplugin.SetAPI(s.apiRPCClient)
 		snplugin.SetHelpers(&HelpersImpl{
 			API: s.apiRPCClient,
@@ -616,9 +610,9 @@ func (s *hooksRPCServer) FileWillBeUploaded(args *Z_FileWillBeUploadedArgs, retu
 // MessageWillBePosted is in this file because of the difficulty of identifying which fields need special behaviour.
 // The special behaviour needed is decoding the returned post into the original one to avoid the unintentional removal
 // of fields by older plugins.
-func init() {
-	hookNameToId["MessageWillBePosted"] = MessageWillBePostedID
-}
+// func init() {
+// 	hookNameToId["MessageWillBePosted"] = MessageWillBePostedID
+// }
 
 type Z_LogDebugArgs struct {
 	A string

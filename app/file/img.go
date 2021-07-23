@@ -21,11 +21,13 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/docextractor"
 	"github.com/sitename/sitename/store"
@@ -960,30 +962,30 @@ func (a *AppFile) DoUploadFileExpectModification(c *request.Context, now time.Ti
 		info.ThumbnailPath = pathPrefix + nameWithoutExtension + "_thumb.jpg"
 	}
 
-	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-	// 	var rejectionError *model.AppError
-	// 	pluginContext := pluginContext(c)
-	// 	pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
-	// 		var newBytes bytes.Buffer
-	// 		replacementInfo, rejectionReason := hooks.FileWillBeUploaded(pluginContext, info, bytes.NewReader(data), &newBytes)
-	// 		if rejectionReason != "" {
-	// 			rejectionError = model.NewAppError("DoUploadFile", "File rejected by plugin. "+rejectionReason, nil, "", http.StatusBadRequest)
-	// 			return false
-	// 		}
-	// 		if replacementInfo != nil {
-	// 			info = replacementInfo
-	// 		}
-	// 		if newBytes.Len() != 0 {
-	// 			data = newBytes.Bytes()
-	// 			info.Size = int64(len(data))
-	// 		}
+	if pluginsEnvironment, appErr := a.PluginApp().GetPluginsEnvironment(); appErr == nil && pluginsEnvironment != nil {
+		var rejectionError *model.AppError
+		pluginContext := app.PluginContext(c)
+		pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
+			var newBytes bytes.Buffer
+			replacementInfo, rejectionReason := hooks.FileWillBeUploaded(pluginContext, info, bytes.NewReader(data), &newBytes)
+			if rejectionReason != "" {
+				rejectionError = model.NewAppError("DoUploadFile", "File rejected by plugin. "+rejectionReason, nil, "", http.StatusBadRequest)
+				return false
+			}
+			if replacementInfo != nil {
+				info = replacementInfo
+			}
+			if newBytes.Len() != 0 {
+				data = newBytes.Bytes()
+				info.Size = int64(len(data))
+			}
 
-	// 		return true
-	// 	}, plugin.FileWillBeUploadedID)
-	// 	if rejectionError != nil {
-	// 		return nil, data, rejectionError
-	// 	}
-	// }
+			return true
+		}, plugin.FileWillBeUploadedID)
+		if rejectionError != nil {
+			return nil, data, rejectionError
+		}
+	}
 
 	if _, err := a.WriteFile(bytes.NewReader(data), info.Path); err != nil {
 		return nil, data, err

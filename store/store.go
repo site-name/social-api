@@ -215,6 +215,9 @@ type (
 	}
 	AttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) // Save inserts given attribute value into database, then returns inserted value and an error
+		Get(attributeID string) (*attribute.AttributeValue, error)                   // Get finds an attribute value with given id then returns it with an error
+		GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) // GetAllByAttributeID finds all attribute values that belong to given attribute then returns them withh an error
 	}
 	AttributeValueTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -227,24 +230,39 @@ type (
 	}
 	AttributePageStore interface {
 		CreateIndexesIfNotExists()
+		Save(page *attribute.AttributePage) (*attribute.AttributePage, error)
+		Get(pageID string) (*attribute.AttributePage, error)
+		GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error)
 	}
 	AssignedVariantAttributeValueStore interface {
 		CreateIndexesIfNotExists()
 	}
 	AssignedVariantAttributeStore interface {
 		CreateIndexesIfNotExists()
+		Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error)    // Save insert new instance into database then returns it with an error
+		Get(id string) (*attribute.AssignedVariantAttribute, error)                                                        // Get find assigned variant attribute from database then returns it with an error
+		GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) // GetWithOption try finding an assigned variant attribute with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
 	}
 	AttributeVariantStore interface {
 		CreateIndexesIfNotExists()
+		Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error)
+		Get(attributeVariantID string) (*attribute.AttributeVariant, error)
+		GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) // GetByOption finds 1 attribute variant with given option.
 	}
 	AssignedProductAttributeValueStore interface {
 		CreateIndexesIfNotExists()
 	}
 	AssignedProductAttributeStore interface {
 		CreateIndexesIfNotExists()
+		Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error)    // Save inserts new assgignedProductAttribute into database and returns it with an error
+		Get(id string) (*attribute.AssignedProductAttribute, error)                                                        // Get finds and returns an assignedProductAttribute with en error
+		GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
 	}
 	AttributeProductStore interface {
 		CreateIndexesIfNotExists()
+		Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error)       // Save inserts given attribute product relationship into database then returns it and an error
+		Get(attributeProductID string) (*attribute.AttributeProduct, error)                           // Get finds an attributeProduct relationship and returns it with an error
+		GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition
 	}
 )
 

@@ -1,6 +1,10 @@
 package attribute
 
 import (
+	"database/sql"
+	"strings"
+
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -14,7 +18,7 @@ func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	as := &SqlAttributeValueStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeValue{}, "AttributeValues").SetKeys(false, "Id")
+		table := db.AddTableWithName(attribute.AttributeValue{}, store.AttributeValueTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(attribute.ATTRIBUTE_VALUE_NAME_MAX_LENGTH)
@@ -29,10 +33,53 @@ func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 }
 
 func (as *SqlAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_attributevalues_name", "AttributeValues", "Name")
-	as.CreateIndexIfNotExists("idx_attributevalues_name_lower_textpattern", "AttributeValues", "lower(Name) text_pattern_ops")
-	as.CreateIndexIfNotExists("idx_attributevalues_slug", "AttributeValues", "Slug")
-	as.CreateIndexIfNotExists("idx_attributevalues_value", "AttributeValues", "Value")
+	as.CreateIndexIfNotExists("idx_attributevalues_name", store.AttributeValueTableName, "Name")
+	as.CreateIndexIfNotExists("idx_attributevalues_slug", store.AttributeValueTableName, "Slug")
+	as.CreateIndexIfNotExists("idx_attributevalues_name_lower_textpattern", store.AttributeValueTableName, "lower(Name) text_pattern_ops")
 
-	as.CreateForeignKeyIfNotExists("AttributeValues", "AttributeID", "Attributes", "Id", true)
+	as.CreateForeignKeyIfNotExists(store.AttributeValueTableName, "AttributeID", store.AttributeTableName, "Id", true)
+}
+
+func (as *SqlAttributeValueStore) Save(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+	av.PreSave()
+	if err := av.IsValid(); err != nil {
+		return nil, err
+	}
+
+	if err := as.GetMaster().Insert(av); err != nil {
+		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
+			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "slug/AttributeID", av.Slug+"/"+av.Attribute.IsValid().RequestId)
+		}
+		return nil, errors.Wrapf(err, "failed to save attribute value with id=%s", av.Id)
+	}
+
+	return av, nil
+}
+
+func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, error) {
+	result, err := as.GetReplica().Get(attribute.AttributeValue{}, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.AttributeValueTableName, id)
+		}
+		return nil, errors.Wrapf(err, "failed to find attribute value with id=%s", id)
+	}
+
+	return result.(*attribute.AttributeValue), nil
+}
+
+func (as *SqlAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
+	var avs []*attribute.AttributeValue
+	if _, err := as.GetReplica().Select(
+		&avs, "SELECT * FROM "+store.AttributeValueTableName+" WHERE AttributeID = :AttributeID",
+		map[string]interface{}{
+			"AttributeID": attributeID,
+		}); err != nil {
+		if err == sql.ErrNoRows {
+			return []*attribute.AttributeValue{}, store.NewErrNotFound(store.AttributeValueTableName, "attibuteId="+attributeID)
+		}
+		return nil, errors.Wrapf(err, "failed to find attribute values belong to attribute with id=%s", attribute.REFERENCE)
+	}
+
+	return avs, nil
 }

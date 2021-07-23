@@ -100,16 +100,17 @@ func WildcardSearchTerm(term string) string {
 //
 // 1) not found database lookup error (*ErrNotFound - 404)
 //
-// 2) invalid input param(s) error (*ErrInvalidInput - 400)
+// 2) system error while performing lookup operations (500)
 //
-// 3) system error while performing lookup operations (500)
+// 3) *model.AppError, returns directly
 func AppErrorFromDatabaseLookupError(where, errId string, err error) *model.AppError {
 	statusCode := http.StatusInternalServerError
 
-	if _, ok := err.(*ErrNotFound); ok {
+	switch t := err.(type) {
+	case *ErrNotFound:
 		statusCode = http.StatusNotFound
-	} else if _, ok := err.(*ErrInvalidInput); ok {
-		statusCode = http.StatusBadRequest
+	case *model.AppError:
+		return t
 	}
 
 	return model.NewAppError(where, errId, nil, err.Error(), statusCode)
