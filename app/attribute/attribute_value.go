@@ -7,9 +7,10 @@ import (
 )
 
 func (a *AppAttribute) AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) {
-	attrValues, appErr := a.app.Srv().Store.AttributeValue().GetAllByAttributeID(attributeID)
-	if appErr != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AttributeValuesOfAttribute", "app.attribute.attribute_values_of_attribute_lookup_error.app_error", appErr)
+	attrValues, err := a.app.Srv().Store.AttributeValue().GetAllByAttributeID(attributeID)
+	if err != nil {
+		// since err can be wither `store.ErrNotFound` or `system error`, so use this shortcut
+		return nil, store.AppErrorFromDatabaseLookupError("AttributeValuesOfAttribute", "app.attribute.attribute_values_of_attribute_lookup_error.app_error", err)
 	}
 
 	return attrValues, nil

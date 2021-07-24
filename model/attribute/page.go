@@ -46,12 +46,16 @@ func (a *AssignedPageAttributeValue) PreSave() {
 // Associate a page type attribute and selected values to a given page.
 // PageID unique together with AssignmentID
 type AssignedPageAttribute struct {
-	Id                    string            `json:"id"`
-	PageID                string            `json:"page_id"`
-	AssignmentID          string            `json:"assignment_id"` // AttributePage
-	Values                []*AttributeValue `json:"values"`
-	Assignment            *AttributePage    `db:"-"`
-	BaseAssignedAttribute `json:"-" db:"-"`
+	Id                    string `json:"id"`
+	PageID                string `json:"page_id"`
+	AssignmentID          string `json:"assignment_id"` // AttributePage
+	BaseAssignedAttribute `db:"-"`
+}
+
+// AssignedPageAttributeFilterOption is used to find or creat new AssignedPageAttribute
+type AssignedPageAttributeFilterOption struct {
+	PageID       string `json:"page_id"`
+	AssignmentID string `json:"assignment_id"`
 }
 
 func (a *AssignedPageAttribute) IsValid() *model.AppError {

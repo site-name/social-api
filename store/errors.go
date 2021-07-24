@@ -20,7 +20,7 @@ func NewErrInvalidInput(entity, field string, value interface{}) *ErrInvalidInpu
 }
 
 func (e *ErrInvalidInput) Error() string {
-	return fmt.Sprintf("invalid input: entity: %s field: %s value: %s", e.Entity, e.Field, e.Value)
+	return fmt.Sprintf("invalid input: entity: %s field: %s value: %v", e.Entity, e.Field, e.Value)
 }
 
 func (e *ErrInvalidInput) InvalidInputInfo() (entity string, field string, value interface{}) {

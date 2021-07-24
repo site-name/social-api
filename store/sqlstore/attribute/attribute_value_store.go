@@ -14,6 +14,21 @@ type SqlAttributeValueStore struct {
 	store.Store
 }
 
+var (
+	AttributeValueSelect = []string{
+		"AV.Id",
+		"AV.Name",
+		"AV.Value",
+		"AV.Slug",
+		"AV.FileUrl",
+		"AV.ContentType",
+		"AV.AttributeID",
+		"AV.RichText",
+		"AV.Boolean",
+		"AV.SortOrder",
+	}
+)
+
 func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	as := &SqlAttributeValueStore{s}
 
@@ -48,7 +63,7 @@ func (as *SqlAttributeValueStore) Save(av *attribute.AttributeValue) (*attribute
 
 	if err := as.GetMaster().Insert(av); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "slug/AttributeID", av.Slug+"/"+av.Attribute.IsValid().RequestId)
+			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
 		}
 		return nil, errors.Wrapf(err, "failed to save attribute value with id=%s", av.Id)
 	}
@@ -74,7 +89,8 @@ func (as *SqlAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*at
 		&avs, "SELECT * FROM "+store.AttributeValueTableName+" WHERE AttributeID = :AttributeID",
 		map[string]interface{}{
 			"AttributeID": attributeID,
-		}); err != nil {
+		},
+	); err != nil {
 		if err == sql.ErrNoRows {
 			return []*attribute.AttributeValue{}, store.NewErrNotFound(store.AttributeValueTableName, "attibuteId="+attributeID)
 		}

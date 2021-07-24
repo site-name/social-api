@@ -60,11 +60,10 @@ func (a *AttributeProduct) PreSave() {
 // Associate a product type attribute and selected values to a given product
 // ProductID unique with AssignmentID
 type AssignedProductAttribute struct {
-	Id           string            `json:"id"`
-	ProductID    string            `json:"product_id"`    // to product.Product
-	AssignmentID string            `json:"assignment_id"` // to attribute.AttributeProduct
-	Values       []*AttributeValue `json:"values"`        // through attribute.AssignedProductAttributeValue
-	// BaseAssignedAttribute
+	Id           string `json:"id"`
+	ProductID    string `json:"product_id"`    // to product.Product
+	AssignmentID string `json:"assignment_id"` // to attribute.AttributeProduct
+	BaseAssignedAttribute
 }
 
 // AssignedProductAttributeFilterOption is used to filter or creat new AssignedProductAttribute

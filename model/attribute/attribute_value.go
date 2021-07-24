@@ -26,7 +26,6 @@ type AttributeValue struct {
 	FileUrl     *string                `json:"file_url"`
 	ContentType *string                `json:"content_file"`
 	AttributeID string                 `json:"attribute_id"`
-	Attribute   *Attribute             `json:"attribute" db:"-"`
 	RichText    *model.StringInterface `json:"rich_text"`
 	Boolean     *bool                  `json:"boolean"`
 	model.Sortable
@@ -34,10 +33,6 @@ type AttributeValue struct {
 
 func (a *AttributeValue) String() string {
 	return a.Name
-}
-
-func (a *AttributeValue) InputType() string {
-	return a.Attribute.InputType
 }
 
 func (a *AttributeValue) IsValid() *model.AppError {
