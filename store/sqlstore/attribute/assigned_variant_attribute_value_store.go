@@ -1,10 +1,12 @@
 package attribute
 
 import (
+	"bytes"
 	"database/sql"
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -15,6 +17,13 @@ type SqlAssignedVariantAttributeValueStore struct {
 
 var (
 	assignedVariantAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", strings.ToLower(store.AssignedVariantAttributeValueTableName) + "_valueid_assignmentid_key"}
+	// "AVAV" part is acronym for the table name. Make sure to make alias when building query with table name
+	AssignedVariantAttributeValueSelectList = []string{
+		"AVAV.Id",
+		"AVAV.ValueID",
+		"AVAV.AssignmentID",
+		"AVAV.SortOrder",
+	}
 )
 
 func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVariantAttributeValueStore {
@@ -100,4 +109,119 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 	}
 
 	return res, nil
+}
+
+func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
+	selectValues := strings.Join(
+		append(AssignedVariantAttributeValueSelectList, AttributeValueSelect...),
+		", ",
+	)
+	query := `SELECT ` + selectValues + ` FROM ` +
+		store.AssignedVariantAttributeValueTableName + ` AS AVAV INNER JOIN ` +
+		store.AttributeValueTableName + ` AS AV ON(
+			AVAV.ValueID = AV.Id
+		)
+		WHERE (
+			AVAV.AssignmentID = :AssignmentID
+		)`
+
+	rows, err := as.GetReplica().Query(query, map[string]interface{}{"AssignmentID": assignmentID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = store.NewErrNotFound(store.AssignedVariantAttributeValueTableName, "AssignmentID="+assignmentID)
+			return
+		}
+		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
+		return
+	}
+
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			if err == nil {
+				err = errors.Wrap(closeErr, "error closing rows")
+				return
+			}
+		}
+		if rowsErr := rows.Err(); rowsErr != nil {
+			if err == nil {
+				err = errors.Wrap(rowsErr, "rows error")
+				return
+			}
+		}
+	}()
+
+	var (
+		assignedVariantAttributeValue attribute.AssignedVariantAttributeValue
+		attributeValue                attribute.AttributeValue
+	)
+
+	for rows.Next() {
+		var richText []byte
+
+		scanErr := rows.Scan(
+			&assignedVariantAttributeValue.Id,
+			&assignedVariantAttributeValue.ValueID,
+			&assignedVariantAttributeValue.AssignmentID,
+			&assignedVariantAttributeValue.SortOrder,
+
+			&attributeValue.Id,
+			&attributeValue.Name,
+			&attributeValue.Value,
+			&attributeValue.Slug,
+			&attributeValue.FileUrl,
+			&attributeValue.ContentType,
+			&attributeValue.AttributeID,
+			&richText, // NOTE this is because Scan() may not support parsing map[string]interface{}
+			&attributeValue.Boolean,
+			&attributeValue.SortOrder,
+		)
+		if scanErr != nil {
+			err = errors.Wrapf(scanErr, "error scanning values")
+			return
+		}
+
+		parseErr := model.ModelFromJson(&attributeValue.RichText, bytes.NewReader(richText))
+		if parseErr != nil {
+			err = parseErr
+			return
+		}
+
+		assignedVariantAttributeValues = append(assignedVariantAttributeValues, &assignedVariantAttributeValue)
+		attributeValues = append(attributeValues, &attributeValue)
+	}
+
+	return
+}
+
+func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+	tx, err := as.GetMaster().Begin()
+	if err != nil {
+		return errors.Wrapf(err, "begin_transaction")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, value := range attributeValues {
+		// try validating if the value exist:
+		_, err := tx.Get(attribute.AssignedVariantAttributeValue{}, value.Id)
+		if err != nil {
+			return errors.Wrapf(err, "failed to find value with id=%s", value.Id)
+		}
+		numUpdated, err := tx.Update(value)
+		if err != nil {
+			// check if error is duplicate conflict error:
+			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
+				return store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
+			}
+			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
+		}
+		if numUpdated > 1 {
+			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap(err, "commit_transaction")
+	}
+
+	return nil
 }

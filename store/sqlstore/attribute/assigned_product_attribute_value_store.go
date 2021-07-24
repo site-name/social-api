@@ -115,6 +115,39 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 	return res, nil
 }
 
+func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+	tx, err := as.GetMaster().Begin()
+	if err != nil {
+		return errors.Wrapf(err, "begin_transaction")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, value := range attributeValues {
+		// try validating if the value exist:
+		_, err := tx.Get(attribute.AssignedProductAttributeValue{}, value.Id)
+		if err != nil {
+			return errors.Wrapf(err, "failed to find value with id=%s", value.Id)
+		}
+		numUpdated, err := tx.Update(value)
+		if err != nil {
+			// check if error is duplicate conflict error:
+			if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {
+				return store.NewErrInvalidInput(store.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
+			}
+			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
+		}
+		if numUpdated > 1 {
+			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap(err, "commit_transaction")
+	}
+
+	return nil
+}
+
 func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (assignedProductAttributeValues []*attribute.AssignedProductAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
 	selectValues := strings.Join(
 		append(AssignedProductAttributeValueSelectList, AttributeValueSelect...),
@@ -175,7 +208,7 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 			&attributeValue.FileUrl,
 			&attributeValue.ContentType,
 			&attributeValue.AttributeID,
-			&richText, // NOTE this is because Scan() may not supports parsing map[string]interface{}
+			&richText, // NOTE this is because Scan() may not support parsing map[string]interface{}
 			&attributeValue.Boolean,
 			&attributeValue.SortOrder,
 		)

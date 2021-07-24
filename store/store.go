@@ -224,9 +224,11 @@ type (
 	}
 	AssignedPageAttributeValueStore interface {
 		CreateIndexesIfNotExists()
-		Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) // Save insert given value into database then returns it with an error
-		Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error)                               // Get try finding an value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error)     // SaveInBulk inserts multiple values into database then returns them with an error
+		Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
+		Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error)                                                                               // Get try finding an value with given id then returns it with an error
+		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error)                                                     // SaveInBulk inserts multiple values into database then returns them with an error
+		SelectForSort(assignmentID string) (assignedPageAttributeValues []*attribute.AssignedPageAttributeValue, attributeValues []*attribute.AttributeValue, err error) // SelectForSort uses inner join to find two list: []*assignedPageAttributeValue and []*attributeValue. With given assignedPageAttributeID
+		UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error                                                                                      // UpdateInBulk use transaction to update all given assigned page attribute values
 	}
 	AssignedPageAttributeStore interface {
 		CreateIndexesIfNotExists()
@@ -242,9 +244,11 @@ type (
 	}
 	AssignedVariantAttributeValueStore interface {
 		CreateIndexesIfNotExists()
-		Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) // Save inserts new value into database then returns it with an error
-		Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error)                                  // Get try finding a value with given id then returns it with an error
-		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error)           // SaveInBulk save multiple values into database then returns them
+		Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
+		Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error)                                                                               // Get try finding a value with given id then returns it with an error
+		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error)                                                        // SaveInBulk save multiple values into database then returns them
+		SelectForSort(assignmentID string) (assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue, attributeValues []*attribute.AttributeValue, err error) // SelectForSort
+		UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error                                                                                         // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
 	}
 	AssignedVariantAttributeStore interface {
 		CreateIndexesIfNotExists()
@@ -264,6 +268,7 @@ type (
 		Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error)                                  // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error)           // SaveInBulk save multiple values into database
 		SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error)       // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
+		UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error                                            // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
 	}
 	AssignedProductAttributeStore interface {
 		CreateIndexesIfNotExists()

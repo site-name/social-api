@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	// "github.com/sitename/sitename/model"
 )
 
 // OptionalBool a boolean that can be "null"
