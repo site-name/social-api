@@ -1,4 +1,4 @@
-module go.tools.mod
+module github.com/sitename/sitename
 
 go 1.16
 

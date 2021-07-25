@@ -61,7 +61,8 @@ type PaymentApp interface {
 	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                              // UpdateTransaction updates given transaction and returns updated on
 	CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                                         // CreateOrUpdatePayment depends on whether given payment's Id is set or not to decide to update/save payment
 	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError                                                                                                                                                           // UpdatePayment updates given payment based on given `gatewayResponse`
-
+	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError                                                                                                                                                                      // StoreCustomerId process
+	FetchCustomerId(user interface{}, gateway string) (string, *model.AppError)                                                                                                                                                                            // FetchCustomerId Retrieve users customer_id stored for desired gateway
 }
 
 // CheckoutApp
@@ -214,6 +215,7 @@ type ChannelApp interface {
 	// 2) If given slug if nil, it try
 	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
 	ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError) // ValidateChannel finds a channel with given slug, then check if the channel is active. If no channel found or found but not active, return an error
+	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)         // GetDefaultChannelSlugOrGraphqlError returns a default channel slug
 }
 
 type WarehouseApp interface {

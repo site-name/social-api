@@ -204,3 +204,7 @@ update-dependencies: ## Uses go get -u to update all the dependencies while hold
 
 pluginapi: ## Generates api and hooks glue code for plugins
 	$(GO) run modules/plugin/interface_generator/main.go
+
+server:
+	@echo Starting the server...
+	$(GO) run cmd/sitename/main.go server

@@ -367,7 +367,6 @@ type ServiceSettings struct {
 	ManagedResourcePaths                              *string `access:"environment_web_server,write_restrictable,cloud_restrictable"`
 	EnableLegacySidebar                               *bool   `access:"experimental_features"`
 	EnableReliableWebSockets                          *bool   `access:"experimental_features"` // telemetry: none
-	ApiCacheSize                                      *int    `json:"ApiCacheSize"`
 }
 
 func (s *ServiceSettings) SetDefaults(isUpdate bool) {

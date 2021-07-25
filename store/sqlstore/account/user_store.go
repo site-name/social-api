@@ -225,16 +225,6 @@ func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
 	return user, nil
 }
 
-// func (us *SqlUserStore) UpdateField(userID string, fieldName string, updateValue interface{}) (*account.UserUpdate, error) {
-// 	oldUserResult, err := us.GetMaster().Get(account.User{}, userID)
-// 	if err != nil {
-// 		return nil, errors.Wrapf(err, "failed to get user with userId=%s", userID)
-// 	}
-
-// 	oldUser := oldUserResult.(*account.User)
-
-// }
-
 // Update updates user
 func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*account.UserUpdate, error) {
 	user.PreUpdate()
@@ -1040,5 +1030,4 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 
 func (us *SqlUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
 	panic("not implemented")
-
 }

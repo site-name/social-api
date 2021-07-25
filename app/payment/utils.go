@@ -408,14 +408,21 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 // FetchCustomerId
 // user must be either: *model.User OR *gqlmodel.User
 // returning string could be "" or long string
-func FetchCustomerId(user interface{}, gateway string) (string, *model.AppError) {
+func (a *AppPayment) FetchCustomerId(user interface{}, gateway string) (string, *model.AppError) {
+	// validate arguments are valid
+	var argumentErrorFields string
 	if user == nil {
+		argumentErrorFields = "'user'"
+	}
+	if gateway == "" {
+		argumentErrorFields += ", 'gateway'"
+	}
+
+	if argumentErrorFields != "" {
 		return "", model.NewAppError("FetchCustomerId", app.InvalidArgumentAppErrorID,
 			map[string]interface{}{
-				"Fields": "user",
-			},
-			"",
-			http.StatusBadRequest,
+				"Fields": argumentErrorFields,
+			}, "", http.StatusBadRequest,
 		)
 	}
 
@@ -436,33 +443,45 @@ func FetchCustomerId(user interface{}, gateway string) (string, *model.AppError)
 }
 
 // StoreCustomerId stores new value into given user's PrivateMetadata
-func (a *AppPayment) StoreCustomerId(user interface{}, gateway string, customerID string) *model.AppError {
-	// TODO: implement this
-	// if user == nil {
-	// 	return model.NewAppError("StoreCustomerId", app.InvalidArgumentAppErrorID,
-	// 		map[string]interface{}{
-	// 			"Fields": "user",
-	// 		},
-	// 		"",
-	// 		http.StatusBadRequest,
-	// 	)
-	// }
+func (a *AppPayment) StoreCustomerId(userID string, gateway string, customerID string) *model.AppError {
+	// validate arguments are valid:
+	var argumentErrFields string
+	if !model.IsValidId(userID) {
+		argumentErrFields = "'userID'"
+	}
+	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" || len(trimmedGateway) > payment.MAX_LENGTH_PAYMENT_GATEWAY {
+		argumentErrFields += ", 'gateway'"
+	}
+	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" || len(trimmedCustomerID) > payment.TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
+		argumentErrFields += ", 'customerID'"
+	}
 
-	// metaKey := prepareKeyForGatewayCustomerId(gateway)
+	if argumentErrFields != "" {
+		return model.NewAppError(
+			"StoreCustomerId", app.InvalidArgumentAppErrorID,
+			map[string]interface{}{
+				"Fields": argumentErrFields,
+			}, "", http.StatusBadRequest,
+		)
+	}
 
-	// switch v := user.(type) {
-	// case *account.User:
-	// 	v.ModelMetadata.StoreValueInMeta(
-	// 		map[string]string{
-	// 			metaKey: customerID,
-	// 		},
-	// 		account.PrivateMetadata,
-	// 	)
+	metaKey := prepareKeyForGatewayCustomerId(gateway)
+	user, appErr := a.app.AccountApp().UserById(context.Background(), userID)
+	if appErr != nil {
+		return appErr
+	}
+	user.StoreValueInMeta(
+		map[string]string{
+			metaKey: customerID,
+		},
+		account.PrivateMetadata,
+	)
+	_, appErr = a.app.AccountApp().UpdateUser(user, false)
+	if appErr != nil {
+		return appErr
+	}
 
-	// case *gqlmodel.User:
-
-	// }
-	panic("not implemented")
+	return nil
 }
 
 // prepareKeyForGatewayCustomerId just trims spaces, upper then concatenates ".customer_id" to given `gatewayName`.
@@ -502,7 +521,6 @@ func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment
 		if type_ := gatewayResponse.PaymentMethodInfo.Type; type_ != "" {
 			pm.PaymentMethodType = type_
 			changed = true
-
 		}
 	}
 

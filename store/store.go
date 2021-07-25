@@ -765,33 +765,8 @@ type (
 		AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error)
 		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error)
 		GetProfilesByUsernames(usernames []string) ([]*account.User, error)
-
-		GetUnreadCount(userID string) (int64, error) // gonna be removed
-
-		// GetTeamGroupUsers(teamID string) ([]*model.User, error)
-		// GetProfileByGroupChannelIdsForUser(userID string, channelIds []string) (map[string][]*model.User, error)
-		// GetEtagForProfilesNotInTeam(teamID string) string
-		// GetChannelGroupUsers(channelID string) ([]*model.User, error)
-		// GetUnreadCountForChannel(userID string, channelID string) (int64, error)
-		// GetAnyUnreadPostCountForChannel(userID string, channelID string) (int64, error)
-		// GetRecentlyActiveUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-		// GetNewUsersForTeam(teamID string, offset, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-		// SearchNotInTeam(notInTeamID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-		// SearchInChannel(channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-		// SearchNotInChannel(teamID string, channelID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-		// SearchWithoutTeam(term string, options *model.UserSearchOptions) ([]*model.User, error)
-		// SearchInGroup(groupID string, term string, options *model.UserSearchOptions) ([]*model.User, error)
-		// InvalidateProfilesInChannelCacheByUser(userID string)
-		// InvalidateProfilesInChannelCache(channelID string)
-		// GetProfilesInChannel(options *model.UserGetOptions) ([]*model.User, error)
-		// GetProfilesInChannelByStatus(options *model.UserGetOptions) ([]*model.User, error)
-		// GetAllProfilesInChannel(ctx context.Context, channelID string, allowFromCache bool) (map[string]*model.User, error)
-		// GetProfilesNotInChannel(teamID string, channelId string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-		// GetProfilesWithoutTeam(options *model.UserGetOptions) ([]*model.User, error)
-		// GetProfiles(options *model.UserGetOptions) ([]*model.User, error)
-		// AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
-		// GetProfilesNotInTeam(teamID string, groupConstrained bool, offset int, limit int, viewRestrictions *model.ViewUsersRestrictions) ([]*model.User, error)
-		// AutocompleteUsersInChannel(teamID, channelID, term string, options *model.UserSearchOptions) (*model.UserAutocompleteInChannel, error)
+		GetProfiles(options *account.UserGetOptions) ([]*account.User, error)
+		GetUnreadCount(userID string) (int64, error) // TODO: consider me
 	}
 	TokenStore interface {
 		CreateIndexesIfNotExists()

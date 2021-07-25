@@ -56,13 +56,15 @@ type ModelMetadata struct {
 	PrivateMetadata StringMap `json:"private_metadata"`
 }
 
+// WhichMeta indicates which metadata to work on (private or normal metadata)
 type WhichMeta string
 
 const (
-	PrivateMetadata WhichMeta = "private"
-	Metadata        WhichMeta = "metadata"
+	PrivateMetadata WhichMeta = "private"  // PrivateMetadata indicate private metadata
+	Metadata        WhichMeta = "metadata" // Metadata indicates normal metadata
 )
 
+// GetValueFromMeta safely get data from user's meta data fields
 func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which WhichMeta) string {
 	mutex.RLock()
 	defer mutex.RUnlock()
@@ -88,6 +90,7 @@ func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which 
 	return defaultValue
 }
 
+// StoreValueInMeta safely adding given items to user's metadata fields
 func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMeta) {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -111,6 +114,7 @@ func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMet
 	}
 }
 
+// ClearMeta safely delete user's metadata
 func (p *ModelMetadata) ClearMeta(which WhichMeta) {
 	mutex.Lock()
 	defer mutex.Unlock()
