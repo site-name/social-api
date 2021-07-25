@@ -8,7 +8,7 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -1276,9 +1276,169 @@ func (s *RetryLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeStore.Save(assignedPageAttr)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
 
 	s.AssignedPageAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeValueStore.Get(assignedPageAttrValueID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeValueStore.Save(assignedPageAttrValue)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedPageAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.AssignedPageAttributeValueStore.SelectForSort(assignmentID)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
+
+	tries := 0
+	for {
+		err := s.AssignedPageAttributeValueStore.UpdateInBulk(attributeValues)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
@@ -1288,9 +1448,169 @@ func (s *RetryLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeStore.GetWithOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
 
 	s.AssignedProductAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeValueStore.Get(assignedProductAttrValueID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.AssignedProductAttributeValueStore.SelectForSort(assignmentID)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+
+	tries := 0
+	for {
+		err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
@@ -1300,9 +1620,169 @@ func (s *RetryLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
 
 	s.AssignedVariantAttributeValueStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
+		if err == nil {
+			return result, resultVar1, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+
+	tries := 0
+	for {
+		err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
@@ -1398,9 +1878,129 @@ func (s *RetryLayerAttributePageStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributePageStore.Get(pageID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributePageStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributePageStore) Save(page *attribute.AttributePage) (*attribute.AttributePage, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributePageStore.Save(page)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeProductStore) CreateIndexesIfNotExists() {
 
 	s.AttributeProductStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*attribute.AttributeProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeProductStore.Get(attributeProductID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeProductStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeProductStore.Save(attributeProduct)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -1416,6 +2016,66 @@ func (s *RetryLayerAttributeValueStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeValueStore.Get(attributeID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeValueStore.GetAllByAttributeID(attributeID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeValueStore) Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeValueStore.Save(attribute)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
 
 	s.AttributeValueTranslationStore.CreateIndexesIfNotExists()
@@ -1425,6 +2085,66 @@ func (s *RetryLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
 func (s *RetryLayerAttributeVariantStore) CreateIndexesIfNotExists() {
 
 	s.AttributeVariantStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeVariantStore.Get(attributeVariantID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeVariantStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeVariantStore.Save(attributeVariant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -3612,6 +4332,26 @@ func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 
 }
 
+func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.Update(payment)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
 
 	s.PaymentTransactionStore.CreateIndexesIfNotExists()
@@ -3663,6 +4403,26 @@ func (s *RetryLayerPaymentTransactionStore) Save(transaction *payment.PaymentTra
 	tries := 0
 	for {
 		result, err := s.PaymentTransactionStore.Save(transaction)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentTransactionStore.Update(transaction)
 		if err == nil {
 			return result, nil
 		}

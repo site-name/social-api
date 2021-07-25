@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -71,7 +71,7 @@ type CheckoutApp interface {
 	CheckVariantInStock(variant *product_and_discount.ProductVariant, checkout *checkout.Checkout, channelSlug string, quantity *uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError) // CheckVariantInStock
 	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                                                                                                          // CheckoutShippingRequired checks if given checkout requires shipping
 	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                                                                                                                      // CheckoutsByUser returns a list of checkouts belong to given user.
-	CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError)                                                                                                                                             // CheckoutByUser returns a checkout that is active and belongs to given user
+	GetUserCheckout(userID string) (*checkout.Checkout, *model.AppError)                                                                                                                                            // GetUserCheckout returns a checkout that is active and belongs to given user
 	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                          // CheckoutCountry returns country code for given checkout
 	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                                                                                                          // CheckoutSetCountry set new country code for checkout
 	UpdateCheckout(checkout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                                                                                                               // UpdateCheckout updates given checkout and returns it

@@ -17,7 +17,6 @@ import (
 	"reflect"
 
 	"github.com/dyatlov/go-opengraph/opengraph"
-	"github.com/go-sql-driver/mysql"
 	"github.com/hashicorp/go-plugin"
 	"github.com/lib/pq"
 	"github.com/sitename/sitename/model"
@@ -99,7 +98,8 @@ func encodableError(err error) error {
 	}
 
 	switch err.(type) {
-	case *model.AppError, *pq.Error, *mysql.MySQLError:
+	case *model.AppError, *pq.Error
+	// , *mysql.MySQLError:
 		return err
 	}
 
@@ -154,7 +154,7 @@ func init() {
 	gob.Register(map[string]interface{}{})
 	gob.Register(&model.AppError{})
 	gob.Register(&pq.Error{})
-	gob.Register(&mysql.MySQLError{})
+	// gob.Register(&mysql.MySQLError{})
 	gob.Register(&ErrorString{})
 	gob.Register(&opengraph.OpenGraph{})
 	// TODO: fix this

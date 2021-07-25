@@ -18,7 +18,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"

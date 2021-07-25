@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210708011750-e3d1acc33807 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.2
+	github.com/aws/aws-sdk-go v1.40.7
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -52,7 +52,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/nyaruka/phonenumbers v1.0.70
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/olivere/elastic v6.2.35+incompatible // indirect
+	github.com/olivere/elastic v6.2.36+incompatible // indirect
 	github.com/oov/psd v0.0.0-20210618170533-9fb823ddb631
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -60,7 +60,6 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/russellhaering/goxmldsig v1.1.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
-	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/go-prices v0.0.0-20210722081319-cce771fbc863
 	github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3
@@ -86,7 +85,7 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-	gopkg.in/olivere/elastic.v6 v6.2.35
+	gopkg.in/olivere/elastic.v6 v6.2.36
 	gopkg.in/yaml.v2 v2.4.0
 	willnorris.com/go/imageproxy v0.10.0
 )

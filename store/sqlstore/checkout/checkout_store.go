@@ -79,9 +79,24 @@ func (cs *SqlCheckoutStore) Update(ckout *checkout.Checkout) (*checkout.Checkout
 		return nil, err
 	}
 
-	if numUpdate, err := cs.GetMaster().Update(ckout); err != nil {
-		return nil, errors.Wrapf(err, "failed tp update checkout with token=%s", ckout.Token)
-	} else if numUpdate > 1 {
+	// try finding if checkeout exist:
+	result, err := cs.GetReplica().Get(checkout.Checkout{}, ckout.Token)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CheckoutTableName, "Token="+ckout.Token)
+		}
+		return nil, errors.Wrapf(err, "failed to find a checkout with token=%s", ckout.Token)
+	}
+	// Found a checkout. now set fields that cannot be modified:
+	oldCheckout := result.(*checkout.Checkout)
+	ckout.BillingAddressID = oldCheckout.BillingAddressID
+	ckout.ShippingAddressID = oldCheckout.ShippingAddressID
+
+	numUpdate, err := cs.GetMaster().Update(ckout)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update checkout with token=%s", ckout.Token)
+	}
+	if numUpdate > 1 {
 		return nil, errors.New("multiple checkout was updated instead of one")
 	}
 

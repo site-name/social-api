@@ -3,9 +3,10 @@ package checkout
 import (
 	"context"
 	"net/http"
+	"sort"
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -33,13 +34,17 @@ func (a *AppCheckout) CheckoutsByUser(userID string, channelActive bool) ([]*che
 	return checkouts, nil
 }
 
-func (a *AppCheckout) CheckoutByUser(userID string) (*checkout.Checkout, *model.AppError) {
+func (a *AppCheckout) GetUserCheckout(userID string) (*checkout.Checkout, *model.AppError) {
 	checkouts, appErr := a.CheckoutsByUser(userID, true)
-	if appErr != nil || checkouts == nil {
+	if appErr != nil {
 		return nil, appErr
 	}
-
-	return checkouts[0], nil
+	// sort checkouts by creation time ascending
+	sort.Slice(checkouts, func(i, j int) bool {
+		return checkouts[i].CreateAt < checkouts[j].CreateAt
+	})
+	// last checkout is the most recent made by user
+	return checkouts[len(checkouts)-1], nil
 }
 
 func (a *AppCheckout) CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) {
@@ -91,8 +96,7 @@ func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *mod
 
 func (a *AppCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError {
 	// no need to validate country code here, since checkout.IsValid() does that
-	countryCode := strings.ToUpper(strings.TrimSpace(newCountryCode))
-	ckout.Country = countryCode
+	ckout.Country = strings.ToUpper(strings.TrimSpace(newCountryCode))
 	_, appErr := a.UpdateCheckout(ckout)
 	return appErr
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -412,6 +412,9 @@ type (
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) // Save inserts given product channel listing into database then returns it with an error
+		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                     // Get try finding a product channel listing, then returns it with an error
+
 	}
 	ProductTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -606,7 +609,7 @@ type (
 		Save(checkout *checkout.Checkout) (*checkout.Checkout, error)                      // Save inserts checkout instance to database
 		Get(id string) (*checkout.Checkout, error)                                         // Get returns checkout by given id
 		Update(checkout *checkout.Checkout) (*checkout.Checkout, error)                    // Update updates given checkout and returns it
-		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) // CheckoutsByUserID returns a list of check outs that belong to given user
+		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) // CheckoutsByUserID returns a list of check outs that belong to given user and have channels active
 	}
 )
 

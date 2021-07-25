@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 

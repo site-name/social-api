@@ -53,7 +53,7 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 	}
 
 	if newQuantity > 0 && checkQuantity {
-		// TODO: fix me
+		// NOTE: have a look at ckout.Country below
 		_, appErr := a.WarehouseApp().CheckStockQuantity(variant, ckout.Country, channelSlug, newQuantity)
 		if appErr != nil {
 			return 0, nil, appErr
@@ -61,4 +61,11 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 	}
 
 	return newQuantity, lineWithVariant, nil
+}
+
+// AddVariantToCheckout adds a product variant to checkout
+//
+// `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
+func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) {
+
 }

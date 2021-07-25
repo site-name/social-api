@@ -115,6 +115,8 @@ type AppIface interface {
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
+	// UpdateConfig updates config
+	UpdateConfig(f func(*model.Config))
 	// Warehouse returns warehouse sub app
 	WarehouseApp() sub_app_iface.WarehouseApp
 	// Webhook returns webhook sub app
@@ -162,6 +164,5 @@ type AppIface interface {
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetServer(srv *Server)
 	Timezones() *timezones.Timezones
-	UpdateConfig(f func(*model.Config))
 	UpdateRole(role *model.Role) (*model.Role, *model.AppError)
 }

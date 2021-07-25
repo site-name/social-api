@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
@@ -23,15 +23,15 @@ const (
 
 // A Shopping checkout
 type Checkout struct {
-	Token                  string           `json:"token"` // uuid4, primary_key
+	Token                  string           `json:"token"` // uuid4, primary_key, NO EDITABLE
 	CreateAt               int64            `json:"create_at"`
 	UpdateAt               int64            `json:"update_at"`
 	UserID                 *string          `json:"user_id"`
 	Email                  string           `json:"email"`
 	Quantity               uint             `json:"quantity"`
 	ChannelID              string           `json:"channel_id"`
-	BillingAddressID       *string          `json:"billing_address_id,omitempty"`
-	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"`
+	BillingAddressID       *string          `json:"billing_address_id,omitempty"`  // NO EDITABLE
+	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"` // NO EDITABLE
 	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
 	Note                   string           `json:"note"`
 	Currency               string           `json:"currency"`

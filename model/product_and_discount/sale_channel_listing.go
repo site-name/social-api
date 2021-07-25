@@ -1,6 +1,6 @@
 package product_and_discount
 
-import "github.com/shopspring/decimal"
+import "github.com/site-name/decimal"
 
 type SaleChannelListing struct {
 	Id            string           `json:"id"`

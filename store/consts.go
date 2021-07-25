@@ -17,9 +17,23 @@ type StoreResult struct {
 
 // all system product related table names
 const (
-	ProductTypeTableName    = "ProductTypes"
-	ProductTableName        = "Products"
-	ProductVariantTableName = "ProductVariants"
+	ProductCategoryTableName                 = "ProductCategoryies"
+	ProductCategoryTranslationTableName      = "ProductCategoryTranslations"
+	ProductChannelListingTableName           = "ProductChannelListings"
+	ProductCollectionChannelListingTableName = "ProductCollectionChannelListings"
+	ProductCollectionProductTableName        = "ProductCollections"
+	ProductCollectionTableName               = "Collections"
+	ProductCollectionTranslationTableName    = "ProductCollectionTranslations"
+	ProductDigitalContentTableName           = "DigitalContents"
+	ProductDigitalContentURLTableName        = "DigitalContentURLs"
+	ProductMediaTableName                    = "ProductMedias"
+	ProductTableName                         = "Products"
+	ProductTranslationTableName              = "ProductTranslations"
+	ProductTypeTableName                     = "ProductTypes"
+	ProductVariantChannelListingTableName    = "ProductVariantChannelListings"
+	ProductVariantMediaTbaleName             = "ProductVariantMedias"
+	ProductVariantTableName                  = "ProductVariants"
+	ProductVariantTranslactionTableName      = "ProductVariantTranslations"
 )
 
 // wishlist-related table names

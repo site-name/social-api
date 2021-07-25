@@ -7,7 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -1267,6 +1267,54 @@ func (s *TimerLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeStore.Save(assignedPageAttr)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1280,6 +1328,86 @@ func (s *TimerLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeValueStore.Get(assignedPageAttrValueID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeValueStore.Save(assignedPageAttrValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedPageAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.SaveInBulk", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.AssignedPageAttributeValueStore.SelectForSort(assignmentID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.SelectForSort", success, elapsed)
+	}
+	return result, resultVar1, err
+}
+
+func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
+	start := timemodule.Now()
+
+	err := s.AssignedPageAttributeValueStore.UpdateInBulk(attributeValues)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedPageAttributeValueStore.UpdateInBulk", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
@@ -1297,6 +1425,54 @@ func (s *TimerLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeStore.GetWithOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.GetWithOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1310,6 +1486,86 @@ func (s *TimerLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists(
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeValueStore.Get(assignedProductAttrValueID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.SaveInBulk", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.AssignedProductAttributeValueStore.SelectForSort(assignmentID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.SelectForSort", success, elapsed)
+	}
+	return result, resultVar1, err
+}
+
+func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+	start := timemodule.Now()
+
+	err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.UpdateInBulk", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
@@ -1327,6 +1583,54 @@ func (s *TimerLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.GetWithOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1340,6 +1644,86 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists(
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.SaveInBulk", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.SelectForSort", success, elapsed)
+	}
+	return result, resultVar1, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+	start := timemodule.Now()
+
+	err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.UpdateInBulk", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerAttributeStore) CreateIndexesIfNotExists() {
@@ -1436,6 +1820,54 @@ func (s *TimerLayerAttributePageStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributePageStore.Get(pageID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributePageStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributePageStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributePageStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributePageStore) Save(page *attribute.AttributePage) (*attribute.AttributePage, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributePageStore.Save(page)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributePageStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeProductStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1449,6 +1881,54 @@ func (s *TimerLayerAttributeProductStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*attribute.AttributeProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeProductStore.Get(attributeProductID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeProductStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeProductStore.Save(attributeProduct)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerAttributeTranslationStore) CreateIndexesIfNotExists() {
@@ -1481,6 +1961,54 @@ func (s *TimerLayerAttributeValueStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeValueStore.Get(attributeID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeValueStore.GetAllByAttributeID(attributeID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.GetAllByAttributeID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeValueStore) Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeValueStore.Save(attribute)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -1509,6 +2037,54 @@ func (s *TimerLayerAttributeVariantStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeVariantStore.Get(attributeVariantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeVariantStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeVariantStore.Save(attributeVariant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerAuditStore) CreateIndexesIfNotExists() {
@@ -3707,6 +4283,22 @@ func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 	return result, err
 }
 
+func (s *TimerLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.Update(payment)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -3766,6 +4358,22 @@ func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTra
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentTransactionStore.Update(transaction)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Update", success, elapsed)
 	}
 	return result, err
 }
