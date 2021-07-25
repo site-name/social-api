@@ -1,7 +1,6 @@
 package discount
 
 import (
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -17,7 +16,7 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 		table := db.AddTableWithName(product_and_discount.Sale{}, "Sales").SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.SALE_NAME_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(10).SetDefaultConstraint(model.NewString(product_and_discount.FIXED))
+		table.ColMap("Type").SetMaxSize(10)
 
 	}
 	return ss

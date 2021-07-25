@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 )
 
 func TestMarshalPositiveDecimal(t *testing.T) {

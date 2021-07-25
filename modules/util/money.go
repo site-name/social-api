@@ -1,7 +1,7 @@
 package util
 
 import (
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 )
 

@@ -25,9 +25,7 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 		table.ColMap("TranslatedProductName").SetMaxSize(order.ORDER_LINE_PRODUCT_NAME_MAX_LENGTH)
 		table.ColMap("TranslatedVariantName").SetMaxSize(order.ORDER_LINE_VARIANT_NAME_MAX_LENGTH)
 		table.ColMap("ProductSku").SetMaxSize(order.ORDER_LINE_PRODUCT_SKU_MAX_LENGTH)
-		table.ColMap("UnitDiscountType").
-			SetMaxSize(order.ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH).
-			SetDefaultConstraint(model.NewString(order.FIXED))
+		table.ColMap("UnitDiscountType").SetMaxSize(order.ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH)
 		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 	}
 

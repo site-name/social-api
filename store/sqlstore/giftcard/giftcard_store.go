@@ -21,7 +21,7 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Code").SetMaxSize(giftcard.GIFT_CARD_CODE_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH).SetDefaultConstraint(model.NewString(model.DEFAULT_CURRENCY))
+		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 	}
 
 	return gcs

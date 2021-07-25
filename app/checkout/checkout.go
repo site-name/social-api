@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/stretchr/testify/require"
 )

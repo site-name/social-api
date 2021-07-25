@@ -98,8 +98,7 @@ func encodableError(err error) error {
 	}
 
 	switch err.(type) {
-	case *model.AppError, *pq.Error
-	// , *mysql.MySQLError:
+	case *model.AppError, *pq.Error: // , *mysql.MySQLError:
 		return err
 	}
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/modules/measurement"
 )
 

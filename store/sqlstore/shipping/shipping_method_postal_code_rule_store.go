@@ -1,7 +1,6 @@
 package shipping
 
 import (
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
 )
@@ -18,8 +17,7 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Start").SetMaxSize(shipping.SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH)
 		table.ColMap("End").SetMaxSize(shipping.SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH)
-		table.ColMap("InclusionType").SetMaxSize(shipping.SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH).
-			SetDefaultConstraint(model.NewString(shipping.EXCLUDE))
+		table.ColMap("InclusionType").SetMaxSize(shipping.SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH)
 
 		table.SetUniqueTogether("ShippingMethodID", "Start", "End")
 	}

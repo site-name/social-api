@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/model"
 )
 

@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/site-name/decimal"
+	"github.com/shopspring/decimal"
 )
 
 func MarshalPositiveDecimal(d *decimal.Decimal) graphql.Marshaler {

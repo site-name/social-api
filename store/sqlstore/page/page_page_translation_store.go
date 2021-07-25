@@ -18,8 +18,7 @@ func NewSqlPageTranslationStore(s store.Store) store.PageTranslationStore {
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("PageID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Title").SetMaxSize(page.PAGE_TITLE_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH).
-			SetDefaultConstraint(model.NewString(model.DEFAULT_LOCALE))
+		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
 
 		s.CommonSeoMaxLength(table)
 	}
