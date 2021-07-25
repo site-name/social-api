@@ -4804,6 +4804,38 @@ func (s *TimerLayerProductChannelListingStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductChannelListingStore.Get(channelListingID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductChannelListingStore.Save(channelListing)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductMediaStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 

@@ -4894,6 +4894,46 @@ func (s *RetryLayerProductChannelListingStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductChannelListingStore.Get(channelListingID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductChannelListingStore.Save(channelListing)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductMediaStore) CreateIndexesIfNotExists() {
 
 	s.ProductMediaStore.CreateIndexesIfNotExists()
