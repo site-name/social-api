@@ -74,6 +74,7 @@ const (
 	StaffNotificationRecipientTableName = "StaffNotificationRecipients"
 	CustomerNoteTableName               = "CustomerNotes"
 	TokenTableName                      = "Tokens"
+	UserAddressTableName                = "UserAddresses"
 )
 
 // channel-related table names
@@ -127,4 +128,9 @@ const (
 	AssignedProductAttributeValueTableName = "AssignedProductAttributeValues"
 	AssignedProductAttributeTableName      = "AssignedProductAttributes"
 	AttributeProductTableName              = "AttributeProducts"
+)
+
+// discount-related table names
+const (
+	VoucherTableName = "Vouchers"
 )

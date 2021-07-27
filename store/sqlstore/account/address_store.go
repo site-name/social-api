@@ -98,16 +98,14 @@ func (as *SqlAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.
 }
 
 func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-
 	var addresses []*account.Address
 	_, err := as.GetReplica().Select(
 		&addresses,
-		`SELECT * 
-		FROM `+store.AddressTableName+` AS a
+		`SELECT * FROM `+store.AddressTableName+` AS a
 		WHERE a.Id IN (
 			SELECT
 				ua.AddressID
-			FROM `+userAddressTableName+` AS ua
+			FROM `+store.UserAddressTableName+` AS ua
 			INNER JOIN `+store.UserTableName+` AS u ON (
 				u.Id = ua.UserID
 			)

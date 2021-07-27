@@ -552,37 +552,35 @@ type (
 	}
 )
 
-type OrderDiscountStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type DiscountSaleTranslationStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type DiscountSaleChannelListingStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type DiscountSaleStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type VoucherTranslationStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type DiscountVoucherCustomerStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type VoucherChannelListingStore interface {
-	CreateIndexesIfNotExists()
-}
-
-type DiscountVoucherStore interface {
-	CreateIndexesIfNotExists()
-}
+// discount
+type (
+	OrderDiscountStore interface {
+		CreateIndexesIfNotExists()
+	}
+	DiscountSaleTranslationStore interface {
+		CreateIndexesIfNotExists()
+	}
+	DiscountSaleChannelListingStore interface {
+		CreateIndexesIfNotExists()
+	}
+	DiscountSaleStore interface {
+		CreateIndexesIfNotExists()
+	}
+	VoucherTranslationStore interface {
+		CreateIndexesIfNotExists()
+	}
+	DiscountVoucherCustomerStore interface {
+		CreateIndexesIfNotExists()
+	}
+	VoucherChannelListingStore interface {
+		CreateIndexesIfNotExists()
+	}
+	DiscountVoucherStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) // Upsert saves or updates given voucher then returns it with an error
+		Get(voucherID string) (*product_and_discount.Voucher, error)                         // Get finds a voucher with given id, then returns it with an error
+	}
+)
 
 // csv
 type (

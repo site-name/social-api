@@ -63,7 +63,7 @@ type Voucher struct {
 	Name                     string        `json:"name"`
 	Code                     string        `json:"code"`
 	UsageLimit               uint          `json:"usage_limit"`
-	Used                     uint          `json:"used"`
+	Used                     uint          `json:"used"` // not editable
 	StartDate                int64         `json:"start_date"`
 	EndDate                  *int64        `json:"end_date"`
 	ApplyOncePerOrder        bool          `json:"apply_once_per_order"`

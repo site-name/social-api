@@ -1,3 +1,7 @@
+/*
+	NOTE: There are many methods or functions that are not implemented due to uncomplishment
+	of the plugin system. Remember to implement them as soon as possible
+*/
 package checkout
 
 import (
@@ -332,6 +336,6 @@ func (a *AppCheckout) ChangeBillingAddressInCheckout(ckout *checkout.Checkout, a
 	return nil
 }
 
-// func (a *AppCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo, ) (*model.AppError) {
+// func (a *AppCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo) *model.AppError {
 
 // }
