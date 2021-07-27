@@ -24,8 +24,8 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 		}
 		if quantity > availableQuantity {
 			return &warehouse.InsufficientStock{
-				Items: []*warehouse.InsufficientStockData{
-					{Variant: variant.Id},
+				Items: []warehouse.InsufficientStockData{
+					{Variant: *variant},
 				},
 			}, nil
 		}
@@ -99,7 +99,6 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,
 	})
-
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CheckStockQuantityBulk", "app.warehouse.stocks_filter_for_country_and_channel.app_error", err)
 	}
@@ -121,7 +120,7 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 		variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
 	}
 
-	insufficientStocks := []*warehouse.InsufficientStockData{}
+	insufficientStocks := []warehouse.InsufficientStockData{}
 	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
 		stocks_, ok := variantStocks[variants[i].Id]
 
@@ -131,15 +130,15 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 		}
 
 		if !ok {
-			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
-				Variant:           variants[i].Id,
-				AvailableQuantity: availableQuantity,
+			insufficientStocks = append(insufficientStocks, warehouse.InsufficientStockData{
+				Variant:           *variants[i],
+				AvailableQuantity: &availableQuantity,
 			})
 		} else if *variants[i].TrackInventory {
 			if quantities[i] > availableQuantity {
-				insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
-					Variant:           variants[i].Id,
-					AvailableQuantity: availableQuantity,
+				insufficientStocks = append(insufficientStocks, warehouse.InsufficientStockData{
+					Variant:           *variants[i],
+					AvailableQuantity: &availableQuantity,
 				})
 			}
 		}

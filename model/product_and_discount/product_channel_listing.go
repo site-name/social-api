@@ -20,6 +20,7 @@ type ProductChannelListing struct {
 	Currency              string           `json:"currency"`
 	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`
 	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"`
+	CreateAt              uint64           `json:"create_at"`
 	model.Publishable
 }
 
@@ -70,6 +71,9 @@ func (p *ProductChannelListing) IsValid() *model.AppError {
 func (p *ProductChannelListing) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
+	}
+	if p.CreateAt == 0 {
+		p.CreateAt = uint64(model.GetMillis())
 	}
 }
 

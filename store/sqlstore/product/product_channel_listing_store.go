@@ -162,7 +162,10 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 		andCondition = append(andCondition, squirrel.Eq{"PCL.IsPublished": *option.IsPublished})
 	}
 
-	sqlString, args, err := query.Where(andCondition).ToSql()
+	sqlString, args, err := query.
+		Where(andCondition).
+		OrderBy("PCL.CreateAt ASC").
+		ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "sql to string")
 	}

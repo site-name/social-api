@@ -2,8 +2,11 @@ package warehouse
 
 import (
 	"io"
+	"strings"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 type Stock struct {
@@ -49,12 +52,31 @@ func (s *Stock) PreSave() {
 }
 
 type InsufficientStockData struct {
-	Variant           string  // Product variant ID
-	OrderLine         *string // OrderLine id
-	WarehouseID       string
-	AvailableQuantity uint
+	Variant           product_and_discount.ProductVariant // Product variant ID
+	OrderLine         *order.OrderLine                    // OrderLine id
+	WarehouseID       *string
+	AvailableQuantity *uint
 }
 
+// InsufficientStock is an error indicating stock is insufficient
 type InsufficientStock struct {
-	Items []*InsufficientStockData
+	Items []InsufficientStockData
+}
+
+func (i *InsufficientStock) Error() string {
+	var builder strings.Builder
+
+	builder.WriteString("Insufficient stock for ")
+	for idx, item := range i.Items {
+		builder.WriteString(item.Variant.String())
+		if idx == 0 {
+			continue
+		}
+		if idx == len(i.Items)-1 {
+			break
+		}
+		builder.WriteString(", ")
+	}
+
+	return builder.String()
 }

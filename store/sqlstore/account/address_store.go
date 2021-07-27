@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -47,7 +48,6 @@ func (as *SqlAddressStore) CreateIndexesIfNotExists() {
 
 func (as *SqlAddressStore) Save(address *account.Address) (*account.Address, error) {
 	address.PreSave()
-
 	if err := address.IsValid(); err != nil {
 		return nil, err
 	}
@@ -98,23 +98,23 @@ func (as *SqlAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.
 }
 
 func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-	query := `SELECT * 
-	FROM ` + store.AddressTableName + ` AS a
-	WHERE
-		a.Id IN
-		(
+
+	var addresses []*account.Address
+	_, err := as.GetReplica().Select(
+		&addresses,
+		`SELECT * 
+		FROM `+store.AddressTableName+` AS a
+		WHERE a.Id IN (
 			SELECT
 				ua.AddressID
-			FROM ` + userAddressTableName + ` AS ua
-			INNER JOIN ` + store.UserTableName + ` AS u ON (
+			FROM `+userAddressTableName+` AS ua
+			INNER JOIN `+store.UserTableName+` AS u ON (
 				u.Id = ua.UserID
 			)
 			WHERE u.Id = :userID
-		)
-	`
-
-	var addresses []*account.Address
-	_, err := as.GetReplica().Select(&addresses, query, map[string]interface{}{"userID": userID})
+		)`,
+		map[string]interface{}{"userID": userID},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AddressTableName, "userID="+userID)
@@ -123,4 +123,41 @@ func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Addre
 	}
 
 	return addresses, nil
+}
+
+func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
+	tx, err := as.GetMaster().Begin()
+	if err != nil {
+		return errors.Wrap(err, "begin_transaction")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, id := range addressIDs {
+		if !model.IsValidId(id) {
+			return store.NewErrInvalidInput(store.AddressTableName, "addressIDs", "nil value")
+		}
+
+		result, err := tx.Get(account.Address{}, id)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return store.NewErrNotFound(store.AddressTableName, id)
+			}
+			return errors.Wrapf(err, "failed to find address with id=%s", id)
+		}
+		addr := result.(*account.Address)
+
+		numDeleted, err := tx.Delete(addr)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete address")
+		}
+		if numDeleted > 1 {
+			return errors.Errorf("multiple addresses deleted: %d, expect: 1", numDeleted)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap(err, "commit_transaction")
+	}
+
+	return nil
 }

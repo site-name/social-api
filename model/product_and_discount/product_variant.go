@@ -61,7 +61,10 @@ func (p *ProductVariant) IsValid() *model.AppError {
 }
 
 func (p *ProductVariant) String() string {
-	return p.Name
+	if p.Name != "" {
+		return p.Name
+	}
+	return p.Sku
 }
 
 func (p *ProductVariant) ToJson() string {

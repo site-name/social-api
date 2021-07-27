@@ -413,9 +413,9 @@ type (
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
-		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) // Save inserts given product channel listing into database then returns it with an error
-		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                     // Get try finding a product channel listing, then returns it with an error
-		// FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
+		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error)                 // Save inserts given product channel listing into database then returns it with an error
+		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                                     // Get try finding a product channel listing, then returns it with an error
+		FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -601,9 +601,12 @@ type (
 type (
 	CheckoutLineStore interface {
 		CreateIndexesIfNotExists()
-		Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)      // Save insert new checkout line into database
-		Get(id string) (*checkout.CheckoutLine, error)                                 // Get returns a checkout line with given id
-		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
+		Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)          // Upsert checks whether to update or insert given checkout line then performs according operation
+		Get(id string) (*checkout.CheckoutLine, error)                                       // Get returns a checkout line with given id
+		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
+		DeleteLines(checkoutLineIDs []string) error                                          // DeleteLines deletes all checkout lines with given uuids
+		BulkUpdate(checkoutLines []*checkout.CheckoutLine) error                             // BulkUpdate receives a list of modified checkout lines, updates them in bulk.
+		BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) // BulkCreate takes a list of raw checkout lines, save them into database then returns them fully with an error
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
@@ -711,6 +714,7 @@ type (
 		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
 		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
 		Update(address *account.Address) (*account.Address, error)           // Update update given address and returns it
+		DeleteAddresses(addressIDs []string) error                           // DeleteAddress deletes given address and returns an error
 	}
 	UserTermOfServiceStore interface {
 		CreateIndexesIfNotExists()                                                                //
