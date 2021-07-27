@@ -70,24 +70,23 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_dis
 	return result.(*product_and_discount.ProductChannelListing), nil
 }
 
-func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) (string, interface{}, error) {
+func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
 	if option == nil {
-		return "", nil, nil
+		return nil, nil
 	}
 
 	andCondition := squirrel.And{}
 
-	query := squirrel.
-		StatementBuilder.
-		PlaceholderFormat(squirrel.Dollar).
+	query := ps.
+		GetQueryBuilder().
 		Select("*").
 		From(store.ProductChannelListingTableName + " AS PCL")
 
 	// check product id
 	if option.ProductID != nil {
-		var eq []string
+		var eq interface{}
 		if model.IsValidId(option.ProductID.Eq) {
-			eq = []string{option.ProductID.Eq}
+			eq = option.ProductID.Eq
 		} else if len(option.ProductID.In) > 0 {
 			eq = option.ProductID.In
 		}
@@ -96,9 +95,9 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 
 	// check channel id
 	if option.ChannelID != nil {
-		var eq []string
+		var eq interface{}
 		if model.IsValidId(option.ChannelID.Eq) {
-			eq = []string{option.ChannelID.Eq}
+			eq = option.ChannelID.Eq
 		} else if len(option.ChannelID.In) > 0 {
 			eq = option.ChannelID.In
 		}
@@ -119,31 +118,31 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 
 	// check available for purchase
 	if pur := option.AvailableForPurchase; pur != nil {
-		pur.Parse()
-		andCondition = append(andCondition, pur.ToSquirrelCondition("PCL.AvailableForPurchase", true)...)
+		andCondition = append(andCondition, pur.ToSquirrelCondition("PCL.AvailableForPurchase")...)
 	}
 
 	// check currency
 	if option.Currency != nil {
-		var eq []string
+		var eq interface{}
 		// GetCurrencyPrecision() can check if a currency is valid too
 		if _, err := goprices.GetCurrencyPrecision(option.Currency.Eq); err == nil {
-			eq = []string{option.Currency.Eq}
+			eq = option.Currency.Eq
 		} else if len(option.Currency.In) > 0 {
-			for _, cur := range option.Currency.In {
-				if _, err := goprices.GetCurrencyPrecision(cur); err == nil {
-					eq = append(eq, cur)
+			for i, cur := range option.Currency.In {
+				if _, err := goprices.GetCurrencyPrecision(cur); err != nil {
+					option.Currency.In = append(option.Currency.In[:i], option.ProductID.In[i+1:]...)
 				}
 			}
+			eq = option.Currency.In
 		}
 		andCondition = append(andCondition, squirrel.Eq{"PCL.Currency": eq})
 	}
 
 	// check product variant
 	if option.ProductVariantsId != nil {
-		var eq []string
+		var eq interface{}
 		if model.IsValidId(option.ProductVariantsId.Eq) {
-			eq = []string{option.ProductVariantsId.Eq}
+			eq = option.ProductVariantsId.Eq
 		} else if len(option.ProductVariantsId.In) > 0 {
 			eq = option.ProductVariantsId.In
 		}
@@ -154,6 +153,27 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 			InnerJoin(store.ProductVariantTableName + " AS PV ON (PV.ProductID = P.Id)")
 	}
 
-	return query.Where(andCondition).ToSql()
+	// check publish
+	if option.PublicationDate != nil {
+		andCondition = append(andCondition, option.PublicationDate.ToSquirrelCondition("PCL.PublicationDate")...)
+	}
 
+	if option.IsPublished != nil {
+		andCondition = append(andCondition, squirrel.Eq{"PCL.IsPublished": *option.IsPublished})
+	}
+
+	sqlString, args, err := query.Where(andCondition).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "sql to string")
+	}
+
+	var listings []*product_and_discount.ProductChannelListing
+	if _, err = ps.GetReplica().Select(&listings, sqlString, args...); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductChannelListingTableName, "")
+		}
+		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
+	}
+
+	return listings, nil
 }

@@ -38,15 +38,13 @@ const (
 
 // TimeFilter is used for building time/timestamp sql queries
 type TimeFilter struct {
-	LtE  *time.Time // <=
-	Eq   *time.Time // ==
-	GtE  *time.Time // >=
-	Gt   *time.Time // >
-	Lt   *time.Time // <
-	Full bool       // if Full, compare timestamp otherwise compare year, month, day only
-
-	times  map[operator]*time.Time
-	parsed bool
+	LtE             *time.Time // <=
+	Eq              *time.Time // ==
+	GtE             *time.Time // >=
+	Gt              *time.Time // >
+	Lt              *time.Time // <
+	CompareFullTime bool       // if CompareFullTime, compare timestamp otherwise compare year, month, day only
+	SqlAnd          bool
 }
 
 func StartOfDay(t *time.Time) *time.Time {
@@ -54,55 +52,41 @@ func StartOfDay(t *time.Time) *time.Time {
 	return &ti
 }
 
-func (tf *TimeFilter) parse(t *time.Time, cmp operator) {
-	if t != nil {
-		if tf.Full {
-			tf.times[cmp] = t
-		} else {
-			tf.times[cmp] = StartOfDay(t)
-		}
-	}
-}
-
-func (t *TimeFilter) Parse() {
-	if t.parsed {
-		return
-	}
-	if t.times == nil {
-		t.times = make(map[operator]*time.Time)
+func (tf *TimeFilter) parse(t *time.Time) *time.Time {
+	if t == nil {
+		return t
 	}
 
-	t.parse(t.Eq, eq)
-	t.parse(t.Lt, lt)
-	t.parse(t.LtE, lte)
-	t.parse(t.Gt, gt)
-	t.parse(t.GtE, gte)
-
-	t.parsed = true
+	if tf.CompareFullTime {
+		return t
+	}
+	return StartOfDay(t)
 }
 
 // ToSquirrelCondition
-func (tf *TimeFilter) ToSquirrelCondition(key string, sqlAND bool) []squirrel.Sqlizer {
+func (tf *TimeFilter) ToSquirrelCondition(key string) []squirrel.Sqlizer {
 	var expr []squirrel.Sqlizer
-	if sqlAND {
+	if tf.SqlAnd {
 		expr = squirrel.And{}
 	} else {
 		expr = squirrel.Or{}
 	}
 
-	for k, value := range tf.times {
-		switch k {
-		case eq:
-			expr = append(expr, squirrel.Eq{string(key): value})
-		case lt:
-			expr = append(expr, squirrel.Lt{string(key): value})
-		case lte:
-			expr = append(expr, squirrel.LtOrEq{string(key): value})
-		case gte:
-			expr = append(expr, squirrel.GtOrEq{string(key): value})
-		case gt:
-			expr = append(expr, squirrel.Gt{string(key): value})
-		}
+	var t *time.Time
+	if t = tf.parse(tf.Eq); t != nil {
+		expr = append(expr, squirrel.Eq{key: t})
+	}
+	if t = tf.parse(tf.Lt); t != nil {
+		expr = append(expr, squirrel.Lt{key: t})
+	}
+	if t = tf.parse(tf.Gt); t != nil {
+		expr = append(expr, squirrel.Gt{key: t})
+	}
+	if t = tf.parse(tf.GtE); t != nil {
+		expr = append(expr, squirrel.GtOrEq{key: t})
+	}
+	if t = tf.parse(tf.LtE); t != nil {
+		expr = append(expr, squirrel.LtOrEq{key: t})
 	}
 
 	return expr

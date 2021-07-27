@@ -28,14 +28,6 @@ type StringFilter struct {
 	Eq string
 }
 
-// type DecimalFilter struct {
-// 	Gt  *decimal.Decimal
-// 	Lt  *decimal.Decimal
-// 	Eq  *decimal.Decimal
-// 	GtE *decimal.Decimal
-// 	LtE *decimal.Decimal
-// }
-
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
 	ProductID            *StringFilter
@@ -45,8 +37,8 @@ type ProductChannelListingFilterOption struct {
 	AvailableForPurchase *model.TimeFilter
 	Currency             *StringFilter
 	ProductVariantsId    *StringFilter // inner join product, product variant
-	model.PublishableFilter
-	// DiscountedPriceAmount *DecimalFilter
+	PublicationDate      *model.TimeFilter
+	IsPublished          *bool
 }
 
 // Check if product is can be bought now
