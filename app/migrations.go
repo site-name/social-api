@@ -6,7 +6,6 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 )
 
 const EmojisPermissionsMigrationKey = "EmojisPermissionsMigrationComplete"
@@ -27,7 +26,7 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 	slog.Info("Migrating roles to database.")
 	roles := model.MakeDefaultRoles()
-	roles = util.SetRolePermissionsFromConfig(roles, s.Config())
+	roles = SetRolePermissionsFromConfig(roles, s.Config())
 
 	allSucceeded := true
 	for _, role := range roles {
@@ -172,4 +171,23 @@ func (s *Server) doAppMigrations() {
 		slog.Critical("(app.App).DoPermissionsMigrations failed", slog.Err(err))
 	}
 	s.doContentExtractionConfigDefaultTrueMigration()
+}
+
+func SetRolePermissionsFromConfig(roles map[string]*model.Role, cfg *model.Config) map[string]*model.Role {
+	if !*cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_EnableOnlyAdminIntegrations {
+		roles[model.SYSTEM_USER_ROLE_ID].Permissions = append(
+			roles[model.SYSTEM_USER_ROLE_ID].Permissions,
+			model.PERMISSION_MANAGE_OAUTH.Id,
+		)
+	}
+
+	switch *cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_AllowEditPost {
+	case model.ALLOW_EDIT_POST_ALWAYS, model.ALLOW_EDIT_POST_TIME_LIMIT:
+		roles[model.SYSTEM_ADMIN_ROLE_ID].Permissions = append(
+			roles[model.SYSTEM_ADMIN_ROLE_ID].Permissions,
+			model.PERMISSION_EDIT_POST.Id,
+		)
+	}
+
+	return roles
 }

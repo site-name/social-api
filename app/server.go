@@ -42,6 +42,7 @@ import (
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/modules/util/api"
 	"github.com/sitename/sitename/services/awsmeter"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/services/httpservice"
@@ -1255,7 +1256,7 @@ func (a *App) OriginChecker() func(*http.Request) bool {
 				allowed += " " + siteURL.String()
 			}
 		}
-		return util.OriginChecker(allowed)
+		return api.OriginChecker(allowed)
 	}
 
 	return nil

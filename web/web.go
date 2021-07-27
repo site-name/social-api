@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/modules/util/api"
 	"github.com/sitename/sitename/services/configservice"
 )
 
@@ -70,7 +71,7 @@ func Handle404(config configservice.ConfigService, w http.ResponseWriter, r *htt
 	} else if *config.Config().ServiceSettings.WebserverMode == "disabled" {
 		http.NotFound(w, r)
 	} else {
-		util.RenderWebAppError(config.Config(), w, r, err, config.AsymmetricSigningKey())
+		api.RenderWebAppError(config.Config(), w, r, err, config.AsymmetricSigningKey())
 	}
 }
 

@@ -6,9 +6,29 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
+
+func (r *attributeResolver) ProductTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *attributeResolver) ProductVariantTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute, sortBy *gqlmodel.AttributeChoicesSortingInput, filter *gqlmodel.AttributeValueFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.AttributeValueCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *attributeResolver) Translation(ctx context.Context, obj *gqlmodel.Attribute, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.AttributeTranslation, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.AttributeCreateInput) (*gqlmodel.AttributeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -59,5 +79,30 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 }
 
 func (r *queryResolver) Attribute(ctx context.Context, id *string, slug *string) (*gqlmodel.Attribute, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate if either arguments are provided
+	if id == nil && slug == nil {
+		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "'id', 'slug'"}, "", http.StatusBadRequest)
+	}
+
+	var (
+		attr   *attribute.Attribute
+		appErr *model.AppError
+	)
+
+	// check if `id` is provided correctly:
+	if id != nil && model.IsValidId(*id) {
+		attr, appErr = r.AttributeApp().AttributeByID(*id)
+	} else if slug != nil {
+		attr, appErr = r.AttributeApp().AttributeBySlug(*slug)
+	}
+
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.ModelAttributeToGraphqlAttribute(attr), nil
 }
+
+// Attribute returns AttributeResolver implementation.
+func (r *Resolver) Attribute() AttributeResolver { return &attributeResolver{r} }
+
+type attributeResolver struct{ *Resolver }

@@ -8,8 +8,8 @@ import (
 var (
 	initOnce sync.Once
 
-	MeasurementUnitMap     map[string]string
-	MeasurementUnitChoices [][]string
+	MeasurementUnitMap     map[string]string // MeasurementUnitMap contains all measurement unit notations supported by this aplication
+	MeasurementUnitChoices [][]string        // MeasurementUnitChoices contains all measurements supported by this application
 )
 
 func init() {

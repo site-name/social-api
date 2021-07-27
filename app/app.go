@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/modules/util/api"
 	"github.com/sitename/sitename/services/httpservice"
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
@@ -80,7 +81,7 @@ func (a *App) Handle404(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.RenderWebAppError(a.Config(), w, r, model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
+	api.RenderWebAppError(a.Config(), w, r, model.NewAppError("Handle404", "api.context.404.app_error", nil, "", http.StatusNotFound), a.AsymmetricSigningKey())
 }
 
 func (a *App) GetSystemInstallDate() (int64, *model.AppError) {

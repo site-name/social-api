@@ -66,6 +66,6 @@ func (a *AppCheckout) CheckVariantInStock(variant *product_and_discount.ProductV
 // AddVariantToCheckout adds a product variant to checkout
 //
 // `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) {
-
+func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError) {
+	panic("not implt")
 }

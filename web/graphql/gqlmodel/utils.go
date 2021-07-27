@@ -45,6 +45,9 @@ func MetaDataToStringMap(metaList interface{}) map[string]string {
 
 // I18nAddressValidationRulesToGraphql convert *i18naddress.ValidationRules to *AddressValidationData
 func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *AddressValidationData {
+	if r == nil {
+		return nil
+	}
 
 	return &AddressValidationData{
 		CountryCode:        &r.CountryCode,
@@ -144,4 +147,15 @@ func StringSliceToStringPointerSlice(s []string) []*string {
 	}
 
 	return res
+}
+
+var repl = strings.NewReplacer("-", "_")
+
+// stringToGraphqlEnumString converts given s to version that is convertable to graphql enums
+//
+// E.g:
+//  "type_any" => "TYPE_ANY"
+//  "type-any" => "TYPE_ANY"
+func stringToGraphqlEnumString(s string) string {
+	return strings.ToUpper(repl.Replace(s))
 }

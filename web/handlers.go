@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/modules/util/api"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store/opentracinglayer"
 	"github.com/sitename/sitename/web/shared"
@@ -290,7 +291,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(c.Err.StatusCode)
 			w.Write([]byte(c.Err.ToJson()))
 		} else {
-			util.RenderWebAppError(c.App.Config(), w, r, c.Err, c.App.AsymmetricSigningKey())
+			api.RenderWebAppError(c.App.Config(), w, r, c.Err, c.App.AsymmetricSigningKey())
 		}
 
 		if c.App.Metrics() != nil {

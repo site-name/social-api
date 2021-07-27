@@ -44,7 +44,7 @@ func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribu
 
 	if err := as.GetMaster().Insert(attr); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Attribute", "slug", attr.Slug)
+			return nil, store.NewErrInvalidInput(store.AttributeTableName, "slug", attr.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to save Attribute with attributeId=%s", attr.Id)
 	}
@@ -53,7 +53,7 @@ func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribu
 }
 
 func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
-	fetchedRow, err := as.GetMaster().Get(attribute.Attribute{}, id)
+	fetchedRow, err := as.GetReplica().Get(attribute.Attribute{}, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Attribute", id)
@@ -75,6 +75,19 @@ func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attr
 	}
 
 	return attrs, nil
+}
+
+func (as *SqlAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
+	var attr *attribute.Attribute
+	err := as.GetReplica().SelectOne(&attr, "SELECT * FROM "+store.AttributeTableName+" WHERE Slug = :Slug", map[string]interface{}{"Slug": slug})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.AttributeTableName, "slug="+slug)
+		}
+		return nil, errors.Wrapf(err, "failed to find attribute with slug=%s", slug)
+	}
+
+	return attr, nil
 }
 
 // GetProductAndVariantHeaders is used for get headers for csv export preparation.

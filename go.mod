@@ -25,7 +25,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/gosimple/slug v1.9.0
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
@@ -56,7 +56,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rs/cors v1.6.0
+	github.com/rs/cors v1.8.0
 	github.com/russellhaering/goxmldsig v1.1.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shopspring/decimal v1.2.0
@@ -71,15 +71,15 @@ require (
 	github.com/tylerb/graceful v1.2.15
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.4
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1
 	go.uber.org/zap v1.18.1
-	golang.org/x/crypto v0.0.0-20201216223049-8b5274cf687f
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/text v0.3.6
-	golang.org/x/tools v0.1.2
+	golang.org/x/tools v0.1.5
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 	gopkg.in/mail.v2 v2.3.1

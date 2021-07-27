@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/page"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
 
@@ -24,8 +25,14 @@ const (
 
 // choices for attribute's type
 const (
-	PRODUCT_TYPE = "product-type"
-	PAGE_TYPE    = "page-type"
+	PRODUCT_TYPE = "product_type"
+	PAGE_TYPE    = "page_type"
+)
+
+// choices for attribute's entity type
+const (
+	PAGE    = "page"
+	PRODUCT = "product"
 )
 
 // choices for attribute's input type
@@ -35,7 +42,7 @@ const (
 	FILE        = "file"
 	REFERENCE   = "reference"
 	NUMERIC     = "numeric"
-	RICH_TEXT   = "rich-text"
+	RICH_TEXT   = "rich_text"
 	BOOLEAN     = "boolean"
 )
 
@@ -54,6 +61,12 @@ var AttributeTypeStrings = map[string]string{
 	PAGE_TYPE:    "Page type",
 }
 
+var AttributeEntityTypeStrings = map[string]string{
+	PAGE:    "Page",
+	PRODUCT: "Product",
+}
+
+// Attribute
 type Attribute struct {
 	Id                       string                              `json:"id"`
 	Slug                     string                              `json:"slug"` // unique
@@ -64,7 +77,7 @@ type Attribute struct {
 	ProductTypes             []*product_and_discount.ProductType `json:"product_types" db:"-"`
 	ProductVariantTypes      []*product_and_discount.ProductType `json:"product_variant_types" db:"-"`
 	PageTypes                []*page.PageType                    `json:"page_types" db:"-"`
-	Unit                     *string                             `json:"unit"`
+	Unit                     *string                             `json:"unit"` // lower cased
 	ValueRequired            bool                                `json:"value_required"`
 	IsVariantOnly            bool                                `json:"is_variant_only"`
 	VisibleInStoreFront      bool                                `json:"visible_in_storefront"`
@@ -90,16 +103,18 @@ func (a *Attribute) IsValid() *model.AppError {
 	if len(a.Slug) > ATTRIBUTE_SLUG_MAX_LENGTH {
 		return outer("slug", &a.Id)
 	}
-	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH {
+	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeTypeStrings[a.Type] == "" {
 		return outer("type", &a.Id)
 	}
 	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeInputTypeStrings[strings.ToLower(a.InputType)] == "" {
 		return outer("input_type", &a.Id)
 	}
-	if a.EntityType != nil && len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH {
+	if (a.EntityType != nil && len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH) ||
+		(a.EntityType != nil && AttributeEntityTypeStrings[*a.EntityType] == "") {
 		return outer("entity_type", &a.Id)
 	}
-	if a.Unit != nil && len(*a.Unit) > ATTRIBUTE_UNIT_MAX_LENGTH {
+	if (a.Unit != nil && len(*a.Unit) > ATTRIBUTE_UNIT_MAX_LENGTH) ||
+		(a.Unit != nil && measurement.MeasurementUnitMap[strings.ToUpper(*a.Unit)] == "") {
 		return outer("unit", &a.Id)
 	}
 
@@ -166,6 +181,9 @@ func (a *AttributeTranslation) IsValid() *model.AppError {
 	}
 	if tag, err := language.Parse(a.LanguageCode); err != nil || !strings.EqualFold(tag.String(), a.LanguageCode) {
 		return outer("language_code", &a.Id)
+	}
+	if model.Languages[strings.ToLower(a.LanguageCode)] == "" {
+		return outer("language_coce", &a.Id)
 	}
 
 	return nil

@@ -79,9 +79,10 @@ type CheckoutApp interface {
 	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                         // GetCustomerEmail returns either checkout owner's email or checkout's Email property
 	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                                                                                                                   // CheckoutTotalGiftCardsBalance returns giftcards balance money
 	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)                                                                                         // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
+	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError)                   // AddVariantToCheckout adds a product variant to given checkout. If `replace`, any previous quantity is discarded instead of added to
 }
 
-// CheckoutApp
+// AccountApp
 type AccountApp interface {
 	AddressById(id string) (*account.Address, *model.AppError)                                                                                           // GetAddressById returns address with given id. If not found returns nil and concret error
 	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                                                                        // GetUserById get user from database with given userId
@@ -199,6 +200,16 @@ type WishlistApp interface {
 
 type AttributeApp interface {
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) // AttributeValuesOfAttribute finds all attribute values of given attribute, it may return an app-error indicates error occured. returned error could be either (*store.ErrNotFound or system error)
+	// AssociateAttributeValuesToInstance assigns given attribute values to a product or variant.
+	//
+	// `instance` must be either `*product.Product` or `*product.ProductVariant` or `*page.Page`
+	//
+	// `attributeID` must be ID of processing `Attribute`
+	//
+	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
+	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError)
+	AttributeByID(id string) (*attribute.Attribute, *model.AppError)     // AttributeByID finds attribute with given id
+	AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) // AttributeBySlug finds an attribute with given slug
 }
 
 type InvoiceApp interface {

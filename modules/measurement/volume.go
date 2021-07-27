@@ -6,7 +6,7 @@ const (
 	CUBIC_CENTIMETER = "cubic_centimeter"
 	CUBIC_DECIMETER  = "cubic_decimeter"
 	CUBIC_METER      = "cubic_meter"
-	LITER            = "l"
+	LITER            = "liter"
 	CUBIC_FOOT       = "cubic_foot"
 	CUBIC_INCH       = "cubic_inch"
 	CUBIC_YARD       = "cubic_yard"

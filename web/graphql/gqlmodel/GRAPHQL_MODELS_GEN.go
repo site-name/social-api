@@ -312,31 +312,6 @@ type AssignNavigation struct {
 	Errors []MenuError `json:"errors"`
 }
 
-type Attribute struct {
-	ID                       string                             `json:"id"`
-	ProductTypes             *ProductTypeCountableConnection    `json:"productTypes"`
-	ProductVariantTypes      *ProductTypeCountableConnection    `json:"productVariantTypes"`
-	PrivateMetadata          []*MetadataItem                    `json:"privateMetadata"`
-	Metadata                 []*MetadataItem                    `json:"metadata"`
-	InputType                *AttributeInputTypeEnum            `json:"inputType"`
-	EntityType               *AttributeEntityTypeEnum           `json:"entityType"`
-	Name                     *string                            `json:"name"`
-	Slug                     *string                            `json:"slug"`
-	Type                     *AttributeTypeEnum                 `json:"type"`
-	Unit                     *MeasurementUnitsEnum              `json:"unit"`
-	Choices                  *AttributeValueCountableConnection `json:"choices"`
-	ValueRequired            bool                               `json:"valueRequired"`
-	VisibleInStorefront      bool                               `json:"visibleInStorefront"`
-	FilterableInStorefront   bool                               `json:"filterableInStorefront"`
-	FilterableInDashboard    bool                               `json:"filterableInDashboard"`
-	AvailableInGrid          bool                               `json:"availableInGrid"`
-	Translation              *AttributeTranslation              `json:"translation"`
-	StorefrontSearchPosition int                                `json:"storefrontSearchPosition"`
-}
-
-func (Attribute) IsNode()               {}
-func (Attribute) IsObjectWithMetadata() {}
-
 type AttributeBulkDelete struct {
 	Count  int              `json:"count"`
 	Errors []AttributeError `json:"errors"`

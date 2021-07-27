@@ -205,10 +205,11 @@ type FileInfoStore interface {
 type (
 	AttributeStore interface {
 		CreateIndexesIfNotExists()
-		Save(attr *attribute.Attribute) (*attribute.Attribute, error)
-		Get(id string) (*attribute.Attribute, error)
-		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)
-		GetProductAndVariantHeaders(ids []string) ([]string, error)
+		Save(attr *attribute.Attribute) (*attribute.Attribute, error)    // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
+		Get(id string) (*attribute.Attribute, error)                     // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
+		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) // GetAttributesByIds try finding all attributes with given `ids` then returns them. Returned error can be wither *store.ErrNotFound or system error
+		GetProductAndVariantHeaders(ids []string) ([]string, error)      // GetProductAndVariantHeaders
+		GetBySlug(slug string) (*attribute.Attribute, error)             // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
 	}
 	AttributeTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -414,7 +415,7 @@ type (
 		CreateIndexesIfNotExists()
 		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) // Save inserts given product channel listing into database then returns it with an error
 		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                     // Get try finding a product channel listing, then returns it with an error
-
+		// FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
 		CreateIndexesIfNotExists()

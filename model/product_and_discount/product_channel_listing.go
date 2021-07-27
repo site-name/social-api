@@ -23,6 +23,32 @@ type ProductChannelListing struct {
 	model.Publishable
 }
 
+type StringFilter struct {
+	In []string
+	Eq string
+}
+
+// type DecimalFilter struct {
+// 	Gt  *decimal.Decimal
+// 	Lt  *decimal.Decimal
+// 	Eq  *decimal.Decimal
+// 	GtE *decimal.Decimal
+// 	LtE *decimal.Decimal
+// }
+
+// ProductChannelListingFilterOption is option for filtering product channel listing
+type ProductChannelListingFilterOption struct {
+	ProductID            *StringFilter
+	ChannelID            *StringFilter
+	ChannelSlug          *string // inner join Channel
+	VisibleInListings    *bool
+	AvailableForPurchase *model.TimeFilter
+	Currency             *StringFilter
+	ProductVariantsId    *StringFilter // inner join product, product variant
+	model.PublishableFilter
+	// DiscountedPriceAmount *DecimalFilter
+}
+
 // Check if product is can be bought now
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(time.Now())

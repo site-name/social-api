@@ -58,22 +58,23 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 		return 0, nil
 	}
 
-	// try looking up all allocations of given stocks:
-	stockIDs := make([]string, len(stocks))
-	for i := range stocks {
-		stockIDs[i] = stocks[i].Id
-	}
-
-	// reference: https://github.com/mirumee/saleor/blob/master/saleor/warehouse/availability.py
+	// reference: https://github.com/mirumee/saleor/blob/master/saleor/warehouse/availability.py, function (_get_available_quantity)
+	// not sure yet why using SUM(DISTINCT 'quantity') on stocks
 	var totalQuantity uint
-	for _, stock := range stocks {
-		// TODO: check whether to use SUM DISTINCT here
-		totalQuantity += stock.Quantity
+	meetMap := make(map[uint]bool)
+	stockIDs := make([]string, len(stocks)) // get all stock ids from `stocks`
+
+	for i, stock := range stocks {
+		stockIDs[i] = stock.Id
+		if _, ok := meetMap[stock.Quantity]; !ok {
+			totalQuantity += stock.Quantity
+			meetMap[stock.Quantity] = true
+		}
 	}
 
 	allocations, err := a.Srv().Store.Allocation().AllocationsByParentIDs(stockIDs, warehouse.ByStock)
 	if err != nil {
-		// 2 types of errors could happend here: not found OR server error
+		// error can be of 2 type: *store.ErrNotFound or system error
 		appErr := store.AppErrorFromDatabaseLookupError("getAvailableQuantity", "app.warehouse.allocations_by_stocks_missing.app_error", err)
 		if appErr.StatusCode == http.StatusNotFound {
 			return totalQuantity, nil
@@ -86,8 +87,8 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 		allocatedQuantity += allocation.QuantityAllocated
 	}
 
-	if totalQuantity-allocatedQuantity > 0 {
-		return totalQuantity - allocatedQuantity, nil
+	if sub := totalQuantity - allocatedQuantity; sub > 0 {
+		return sub, nil
 	}
 
 	return 0, nil
