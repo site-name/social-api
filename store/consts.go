@@ -132,8 +132,9 @@ const (
 
 // discount-related table names
 const (
-	VoucherTableName           = "Vouchers"
-	VoucherCategoryTableName   = "VoucherCategories"
-	VoucherCollectionTableName = "VoucherCollections"
-	VoucherProductTableName    = "VoucherProducts"
+	VoucherTableName               = "Vouchers"
+	VoucherCategoryTableName       = "VoucherCategories"
+	VoucherCollectionTableName     = "VoucherCollections"
+	VoucherProductTableName        = "VoucherProducts"
+	VoucherChannelListingTableName = "VoucherChannelListings"
 )

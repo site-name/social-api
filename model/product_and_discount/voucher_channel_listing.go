@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 
 	"github.com/shopspring/decimal"
@@ -11,32 +10,24 @@ import (
 )
 
 type VoucherChannelListing struct {
-	Id            string               `json:"id"`
-	VoucherID     string               `json:"voucher_id"`
-	ChannelID     string               `json:"channel_id"`
-	DiscountValue *decimal.NullDecimal `json:"discount_value"`
-	Discount      *goprices.Money      `json:"discount,omitempty" db:"-"`
-	MinSpent      *goprices.Money      `json:"min_spent,omitempty" db:"-"`
-	Currency      string               `json:"currency"`
-	MinSpenAmount *decimal.NullDecimal `json:"min_spent_amount"`
+	Id            string           `json:"id"`
+	CreateAt      int64            `json:"create_at"` // this field is for ordering
+	VoucherID     string           `json:"voucher_id"`
+	ChannelID     string           `json:"channel_id"`
+	DiscountValue *decimal.Decimal `json:"discount_value"`
+	Discount      *goprices.Money  `json:"discount,omitempty" db:"-"`
+	MinSpent      *goprices.Money  `json:"min_spent,omitempty" db:"-"`
+	Currency      string           `json:"currency"`
+	MinSpenAmount *decimal.Decimal `json:"min_spent_amount"`
 }
 
-func (v *VoucherChannelListing) ToJson() string {
-	v.Discount = &goprices.Money{
-		Amount:   &v.DiscountValue.Decimal,
-		Currency: v.Currency,
+func (v *VoucherChannelListing) PreSave() {
+	if v.Id == "" {
+		v.Id = model.NewId()
 	}
-	v.MinSpent = &goprices.Money{
-		Amount:   &v.MinSpenAmount.Decimal,
-		Currency: v.Currency,
+	if v.CreateAt == 0 {
+		v.CreateAt = model.GetMillis()
 	}
-	return model.ModelToJson(v)
-}
-
-func VoucherChannelListingFromJson(data io.Reader) *VoucherChannelListing {
-	var vcl VoucherChannelListing
-	model.ModelFromJson(&vcl, data)
-	return &vcl
 }
 
 func (v *VoucherChannelListing) IsValid() *model.AppError {
@@ -47,6 +38,9 @@ func (v *VoucherChannelListing) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(v.Id) {
 		return outer("id", nil)
+	}
+	if v.CreateAt == 0 {
+		return outer("create_at", &v.Id)
 	}
 	if !model.IsValidId(v.VoucherID) {
 		return outer("voucher_id", &v.Id)

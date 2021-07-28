@@ -577,6 +577,9 @@ type (
 	}
 	VoucherChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
+		Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error)                                       // Get finds a listing with given id, then returns it with an error
+		FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error)           // FilterByVoucherAndChannel finds a list of listings that belong to given voucher and own given channel
 	}
 	DiscountVoucherStore interface {
 		CreateIndexesIfNotExists()
