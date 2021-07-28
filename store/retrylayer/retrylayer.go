@@ -124,7 +124,10 @@ type RetryLayer struct {
 	UserAddressStore                   store.UserAddressStore
 	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
+	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
+	VoucherCollectionStore             store.VoucherCollectionStore
+	VoucherProductStore                store.VoucherProductStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -497,8 +500,20 @@ func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
 	return s.VariantMediaStore
 }
 
+func (s *RetryLayer) VoucherCategory() store.VoucherCategoryStore {
+	return s.VoucherCategoryStore
+}
+
 func (s *RetryLayer) VoucherChannelListing() store.VoucherChannelListingStore {
 	return s.VoucherChannelListingStore
+}
+
+func (s *RetryLayer) VoucherCollection() store.VoucherCollectionStore {
+	return s.VoucherCollectionStore
+}
+
+func (s *RetryLayer) VoucherProduct() store.VoucherProductStore {
+	return s.VoucherProductStore
 }
 
 func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -980,8 +995,23 @@ type RetryLayerVariantMediaStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerVoucherCategoryStore struct {
+	store.VoucherCategoryStore
+	Root *RetryLayer
+}
+
 type RetryLayerVoucherChannelListingStore struct {
 	store.VoucherChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherCollectionStore struct {
+	store.VoucherCollectionStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherProductStore struct {
+	store.VoucherProductStore
 	Root *RetryLayer
 }
 
@@ -1029,6 +1059,26 @@ func isRepeatableError(err error) bool {
 func (s *RetryLayerAddressStore) CreateIndexesIfNotExists() {
 
 	s.AddressStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerAddressStore) DeleteAddresses(addressIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.AddressStore.DeleteAddresses(addressIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
 
 }
 
@@ -1832,6 +1882,26 @@ func (s *RetryLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribut
 
 }
 
+func (s *RetryLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.GetBySlug(slug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
 
 	tries := 0
@@ -2418,6 +2488,46 @@ func (s *RetryLayerCheckoutStore) Update(checkout *checkout.Checkout) (*checkout
 
 }
 
+func (s *RetryLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutLineStore.BulkCreate(checkoutLines)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.CheckoutLine) error {
+
+	tries := 0
+	for {
+		err := s.CheckoutLineStore.BulkUpdate(checkoutLines)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
 
 	tries := 0
@@ -2444,6 +2554,26 @@ func (s *RetryLayerCheckoutLineStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.CheckoutLineStore.DeleteLines(checkoutLineIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
 
 	tries := 0
@@ -2464,11 +2594,11 @@ func (s *RetryLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, er
 
 }
 
-func (s *RetryLayerCheckoutLineStore) Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutLineStore.Save(checkoutLine)
+		result, err := s.CheckoutLineStore.Upsert(checkoutLine)
 		if err == nil {
 			return result, nil
 		}
@@ -2997,6 +3127,46 @@ func (s *RetryLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
 func (s *RetryLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
 
 	s.DiscountVoucherStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountVoucherStore.Get(voucherID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountVoucherStore.Upsert(voucher)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -4894,6 +5064,26 @@ func (s *RetryLayerProductChannelListingStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductChannelListingStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
 
 	tries := 0
@@ -6776,6 +6966,26 @@ func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []str
 
 }
 
+func (s *RetryLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.GetProfiles(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
 
 	tries := 0
@@ -7506,9 +7716,207 @@ func (s *RetryLayerVariantMediaStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerVoucherCategoryStore) CreateIndexesIfNotExists() {
+
+	s.VoucherCategoryStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCategoryStore.Get(voucherCategoryID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCategoryStore.ProductCategoriesByVoucherID(voucherID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCategoryStore.Upsert(voucherCategory)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
 
 	s.VoucherChannelListingStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCollectionStore.CollectionsByVoucherID(voucherID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCollectionStore) CreateIndexesIfNotExists() {
+
+	s.VoucherCollectionStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCollectionStore.Get(voucherCollectionID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCollectionStore.Upsert(voucherCollection)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherProductStore) CreateIndexesIfNotExists() {
+
+	s.VoucherProductStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherProductStore.Get(voucherProductID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherProductStore.ProductsByVoucherID(voucherID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherProductStore.Upsert(voucherProduct)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -7888,7 +8296,10 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.UserTermOfServiceStore = &RetryLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VoucherCategoryStore = &RetryLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
+	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
+	newStore.VoucherProductStore = &RetryLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

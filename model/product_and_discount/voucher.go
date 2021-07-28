@@ -2,7 +2,6 @@ package product_and_discount
 
 import (
 	"fmt"
-	"io"
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
@@ -58,22 +57,20 @@ func (n *NotApplicable) Error() string {
 }
 
 type Voucher struct {
-	Id                       string        `json:"id"`
-	Type                     string        `json:"type"`
-	Name                     string        `json:"name"`
-	Code                     string        `json:"code"`
-	UsageLimit               uint          `json:"usage_limit"`
-	Used                     uint          `json:"used"` // not editable
-	StartDate                int64         `json:"start_date"`
-	EndDate                  *int64        `json:"end_date"`
-	ApplyOncePerOrder        bool          `json:"apply_once_per_order"`
-	ApplyOncePerCustomer     bool          `json:"apply_once_per_customer"`
-	DiscountValueType        string        `json:"discount_value_type"`
-	Countries                string        `json:"countries"` // multiple. E.g: "Vietnam America China"
-	MinCheckoutItemsQuantity uint          `json:"min_checkout_items_quantity"`
-	Products                 []*Product    `json:"products,omitempty" db:"-"`
-	Collections              []*Collection `json:"collections,omitempty" db:"-"`
-	Categories               []*Category   `json:"categories,omitempty" db:"-"`
+	Id                       string `json:"id"`
+	Type                     string `json:"type"`
+	Name                     string `json:"name"`
+	Code                     string `json:"code"`
+	UsageLimit               uint   `json:"usage_limit"`
+	Used                     uint   `json:"used"` // not editable
+	StartDate                int64  `json:"start_date"`
+	EndDate                  *int64 `json:"end_date"`
+	ApplyOncePerOrder        bool   `json:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool   `json:"apply_once_per_customer"`
+	DiscountValueType        string `json:"discount_value_type"`
+	Countries                string `json:"countries"` // multiple. E.g: "Vietnam America China"
+	MinCheckoutItemsQuantity uint   `json:"min_checkout_items_quantity"`
+	model.ModelMetadata
 }
 
 // ValidateMinCheckoutItemsQuantity checks if given `quantity` satisfies min items quantity required
@@ -86,16 +83,6 @@ func (v *Voucher) ValidateMinCheckoutItemsQuantity(quantity uint) *NotApplicable
 	}
 
 	return nil
-}
-
-func (v *Voucher) ToJson() string {
-	return model.ModelToJson(v)
-}
-
-func VoucherFromJson(data io.Reader) *Voucher {
-	var v Voucher
-	model.ModelFromJson(&v, data)
-	return &v
 }
 
 func (v *Voucher) IsValid() *model.AppError {
@@ -151,9 +138,6 @@ func (v *Voucher) PreSave() {
 }
 
 func (v *Voucher) PreUpdate() {
-	if v.Id == "" {
-		v.Id = model.NewId()
-	}
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
 	}
@@ -163,22 +147,12 @@ func (v *Voucher) PreUpdate() {
 	v.Name = model.SanitizeUnicode(v.Name)
 }
 
-// ------------------------------
+// VoucherTranslation represents translation for a voucher
 type VoucherTranslation struct {
 	Id           string `json:"id"`
 	LanguageCode string `json:"language_code"`
 	Name         string `json:"name"`
 	VoucherID    string `json:"voucher_id"`
-}
-
-func (v *VoucherTranslation) ToJson() string {
-	return model.ModelToJson(v)
-}
-
-func VoucherTranslationFromJson(data io.Reader) *VoucherTranslation {
-	var vt VoucherTranslation
-	model.ModelFromJson(&vt, data)
-	return &vt
 }
 
 func (v *VoucherTranslation) IsValid() *model.AppError {

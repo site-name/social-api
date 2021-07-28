@@ -339,3 +339,82 @@ func (a *AppCheckout) ChangeBillingAddressInCheckout(ckout *checkout.Checkout, a
 // func (a *AppCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo) *model.AppError {
 
 // }
+
+func (a *AppCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError) {
+	discountedProducts, appErr := a.app.ProductApp().ProductsByVoucherID(voucher.Id)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
+			return nil, appErr
+		}
+	}
+	discountedCategories, appErr := a.app.ProductApp().CategoriesByVoucherID(voucher.Id)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
+			return nil, appErr
+		}
+	}
+	discountedCollections, appErr := a.app.ProductApp().CollectionsByVoucherID(voucher.Id)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
+			return nil, appErr
+		}
+	}
+
+	var (
+		discountedProductIDs    []string
+		discountedCategoryIDs   []string
+		discountedCollectionIDs []string
+	)
+	for _, prd := range discountedProducts {
+		discountedProductIDs = append(discountedProductIDs, prd.Id)
+	}
+
+	// filter duplicates from discountedCategories:
+	meetMap := map[string]bool{}
+	for _, category := range discountedCategories {
+		if _, ok := meetMap[category.Id]; !ok {
+			discountedCategoryIDs = append(discountedCategoryIDs, category.Id)
+			meetMap[category.Id] = true
+		}
+	}
+	// filter duplicates from discountedCollections:
+	// NOTE: reuse meetMap here since UUIDs are unique
+	for _, collection := range discountedCollections {
+		if _, ok := meetMap[collection.Id]; !ok {
+			discountedCollectionIDs = append(discountedCollectionIDs, collection.Id)
+			meetMap[collection.Id] = true
+		}
+	}
+
+	var discountedLines []*checkout.CheckoutLineInfo
+	if len(discountedProductIDs) > 0 || len(discountedCategoryIDs) > 0 || len(discountedCollectionIDs) > 0 {
+		for _, lineInfo := range checkoutLineInfos {
+
+			var lineInfoCollections_have_common_with_discountedCollections bool
+			for _, collection := range lineInfo.Collections {
+				if yes, exist := meetMap[collection.Id]; yes && exist {
+					lineInfoCollections_have_common_with_discountedCollections = true
+					break
+				}
+			}
+
+			if lineInfo.Variant != nil && (util.StringInSlice(lineInfo.Product.Id, discountedProductIDs) ||
+				(lineInfo.Product.CategoryID != nil && util.StringInSlice(*lineInfo.Product.CategoryID, discountedCategoryIDs)) ||
+				lineInfoCollections_have_common_with_discountedCollections) {
+				discountedLines = append(discountedLines, lineInfo)
+			}
+		}
+		return discountedLines, nil
+	} else {
+		// If there's no discounted products, collections or categories,
+		// it means that all products are discounted
+		return checkoutLineInfos, nil
+	}
+}
+
+// GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
+func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError) {
+	if checkoutInfo.Checkout.VoucherCode != nil {
+
+	}
+}

@@ -125,7 +125,10 @@ type TimerLayer struct {
 	UserAddressStore                   store.UserAddressStore
 	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
+	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
+	VoucherCollectionStore             store.VoucherCollectionStore
+	VoucherProductStore                store.VoucherProductStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -498,8 +501,20 @@ func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
 	return s.VariantMediaStore
 }
 
+func (s *TimerLayer) VoucherCategory() store.VoucherCategoryStore {
+	return s.VoucherCategoryStore
+}
+
 func (s *TimerLayer) VoucherChannelListing() store.VoucherChannelListingStore {
 	return s.VoucherChannelListingStore
+}
+
+func (s *TimerLayer) VoucherCollection() store.VoucherCollectionStore {
+	return s.VoucherCollectionStore
+}
+
+func (s *TimerLayer) VoucherProduct() store.VoucherProductStore {
+	return s.VoucherProductStore
 }
 
 func (s *TimerLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -981,8 +996,23 @@ type TimerLayerVariantMediaStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerVoucherCategoryStore struct {
+	store.VoucherCategoryStore
+	Root *TimerLayer
+}
+
 type TimerLayerVoucherChannelListingStore struct {
 	store.VoucherChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherCollectionStore struct {
+	store.VoucherCollectionStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherProductStore struct {
+	store.VoucherProductStore
 	Root *TimerLayer
 }
 
@@ -1029,6 +1059,22 @@ func (s *TimerLayerAddressStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerAddressStore) DeleteAddresses(addressIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.AddressStore.DeleteAddresses(addressIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.DeleteAddresses", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error) {
@@ -1773,6 +1819,22 @@ func (s *TimerLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribut
 	return result, err
 }
 
+func (s *TimerLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.GetBySlug(slug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetBySlug", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
 	start := timemodule.Now()
 
@@ -2354,6 +2416,38 @@ func (s *TimerLayerCheckoutStore) Update(checkout *checkout.Checkout) (*checkout
 	return result, err
 }
 
+func (s *TimerLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutLineStore.BulkCreate(checkoutLines)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.BulkCreate", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.CheckoutLine) error {
+	start := timemodule.Now()
+
+	err := s.CheckoutLineStore.BulkUpdate(checkoutLines)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.BulkUpdate", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
 	start := timemodule.Now()
 
@@ -2385,6 +2479,22 @@ func (s *TimerLayerCheckoutLineStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.CheckoutLineStore.DeleteLines(checkoutLineIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.DeleteLines", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
 	start := timemodule.Now()
 
@@ -2401,10 +2511,10 @@ func (s *TimerLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, er
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) Save(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutLineStore.Save(checkoutLine)
+	result, err := s.CheckoutLineStore.Upsert(checkoutLine)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2412,7 +2522,7 @@ func (s *TimerLayerCheckoutLineStore) Save(checkoutLine *checkout.CheckoutLine) 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -2991,6 +3101,38 @@ func (s *TimerLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountVoucherStore.Get(voucherID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountVoucherStore.Upsert(voucher)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.Upsert", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerDiscountVoucherCustomerStore) CreateIndexesIfNotExists() {
@@ -4804,6 +4946,22 @@ func (s *TimerLayerProductChannelListingStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductChannelListingStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
 	start := timemodule.Now()
 
@@ -6587,6 +6745,22 @@ func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []str
 	return result, err
 }
 
+func (s *TimerLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.GetProfiles(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfiles", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
 	start := timemodule.Now()
 
@@ -7222,6 +7396,69 @@ func (s *TimerLayerVariantMediaStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerVoucherCategoryStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VoucherCategoryStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCategoryStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCategoryStore.Get(voucherCategoryID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCategoryStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCategoryStore.ProductCategoriesByVoucherID(voucherID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCategoryStore.ProductCategoriesByVoucherID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCategoryStore.Upsert(voucherCategory)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCategoryStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -7235,6 +7472,132 @@ func (s *TimerLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerVoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCollectionStore.CollectionsByVoucherID(voucherID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCollectionStore.CollectionsByVoucherID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherCollectionStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VoucherCollectionStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCollectionStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCollectionStore.Get(voucherCollectionID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCollectionStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCollectionStore.Upsert(voucherCollection)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCollectionStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherProductStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.VoucherProductStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherProductStore.Get(voucherProductID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherProductStore.ProductsByVoucherID(voucherID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.ProductsByVoucherID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherProductStore.Upsert(voucherProduct)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.Upsert", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
@@ -7624,7 +7987,10 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.UserTermOfServiceStore = &TimerLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VoucherCategoryStore = &TimerLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
+	newStore.VoucherCollectionStore = &TimerLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
+	newStore.VoucherProductStore = &TimerLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

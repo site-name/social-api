@@ -1,8 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -21,7 +19,7 @@ func (v *VoucherProduct) PreSave() {
 
 func (v *VoucherProduct) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
-		"model.voucher_product.is_valid.app_error",
+		"model.voucher_product.is_valid.%s.app_error",
 		"voucher_product_id=",
 		"VoucherProduct.IsValid",
 	)
@@ -37,16 +35,4 @@ func (v *VoucherProduct) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (v *VoucherProduct) ToJson() string {
-	return model.ModelToJson(v)
-}
-
-func VoucherProductFromJson(data io.Reader) *VoucherProduct {
-	var v *VoucherProduct
-	if err := model.ModelFromJson(&v, data); err != nil {
-		return nil
-	}
-	return v
 }

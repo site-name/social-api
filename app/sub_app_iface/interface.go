@@ -199,6 +199,9 @@ type ProductApp interface {
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)                                                        // ProductTypesByCheckoutToken returns all product types related to given checkout
 	ProductById(productID string) (*product_and_discount.Product, *model.AppError)                                                                                  // ProductById returns a product with id of given id
 	ProductChannelListingsByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, *model.AppError) // ProductChannelListingsByOption finds product channel listings by given options
+	CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, *model.AppError)                                                                  // CollectionsByVoucherID finds all collections that have relationships with given voucher
+	CategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, *model.AppError)                                                                     // CategoriesByVoucherID finds all categories that have relationship with given voucher
+	ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError)                                                                        // ProductsByVoucherID finds all products that have relationships with given voucher
 }
 
 type WishlistApp interface {

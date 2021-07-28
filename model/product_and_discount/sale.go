@@ -26,6 +26,7 @@ type Sale struct {
 	Collections []*Collection `json:"collections,omitempty" db:"-"`
 	StartDate   int64         `json:"start_date"`
 	EndDate     *int64        `json:"end_date"`
+	model.ModelMetadata
 }
 
 func (s *Sale) String() string {
@@ -73,16 +74,6 @@ func (s *Sale) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (s *Sale) ToJson() string {
-	return model.ModelToJson(s)
-}
-
-func SaleFromJson(data io.Reader) *Sale {
-	var s Sale
-	model.ModelFromJson(&s, data)
-	return &s
 }
 
 func (s *Sale) PreSave() {

@@ -85,6 +85,9 @@ type Store interface {
 	DiscountSaleTranslation() DiscountSaleTranslationStore             //
 	DiscountSaleChannelListing() DiscountSaleChannelListingStore       //
 	OrderDiscount() OrderDiscountStore                                 //
+	VoucherCategory() VoucherCategoryStore                             //
+	VoucherCollection() VoucherCollectionStore                         //
+	VoucherProduct() VoucherProductStore                               //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftCardOrder() GiftCardOrderStore                                 //
 	GiftCardCheckout() GiftCardCheckoutStore                           //
@@ -579,6 +582,24 @@ type (
 		CreateIndexesIfNotExists()
 		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*product_and_discount.Voucher, error)                         // Get finds a voucher with given id, then returns it with an error
+	}
+	VoucherCategoryStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
+		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
+		ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error)                     // ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
+	}
+	VoucherCollectionStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
+		Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error)                                   // Get finds a voucher collection with given id, then returns it with an error
+		CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error)                               // CollectionsByVoucherID finds all collections that have relationships with given voucher
+	}
+	VoucherProductStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error
+		Get(voucherProductID string) (*product_and_discount.VoucherProduct, error)                                // Get finds a voucher product with given id, then returns it with an error
+		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
 	}
 )
 

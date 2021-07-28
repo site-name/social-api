@@ -17,7 +17,7 @@ type StoreResult struct {
 
 // all system product related table names
 const (
-	ProductCategoryTableName                 = "ProductCategoryies"
+	ProductCategoryTableName                 = "ProductCategories"
 	ProductCategoryTranslationTableName      = "ProductCategoryTranslations"
 	ProductChannelListingTableName           = "ProductChannelListings"
 	ProductCollectionChannelListingTableName = "ProductCollectionChannelListings"
@@ -132,5 +132,8 @@ const (
 
 // discount-related table names
 const (
-	VoucherTableName = "Vouchers"
+	VoucherTableName           = "Vouchers"
+	VoucherCategoryTableName   = "VoucherCategories"
+	VoucherCollectionTableName = "VoucherCollections"
+	VoucherProductTableName    = "VoucherProducts"
 )

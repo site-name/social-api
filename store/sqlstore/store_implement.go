@@ -127,7 +127,10 @@ type SqlStoreStores struct {
 	userAddress                   store.UserAddressStore
 	userTermOfService             store.UserTermOfServiceStore
 	variantMedia                  store.VariantMediaStore
+	voucherCategory               store.VoucherCategoryStore
 	voucherChannelListing         store.VoucherChannelListingStore
+	voucherCollection             store.VoucherCollectionStore
+	voucherProduct                store.VoucherProductStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
 	warehouseShippingZone         store.WarehouseShippingZoneStore
@@ -230,7 +233,10 @@ func (store *SqlStore) setupTables() {
 		userAddress:                   account.NewSqlUserAddressStore(store),
 		userTermOfService:             account.NewSqlUserTermOfServiceStore(store),
 		variantMedia:                  product.NewSqlVariantMediaStore(store),
+		voucherCategory:               discount.NewSqlVoucherCategoryStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
+		voucherCollection:             discount.NewSqlVoucherCollectionStore(store),
+		voucherProduct:                discount.NewSqlVoucherProductStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
 		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
@@ -334,7 +340,10 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.userAddress.CreateIndexesIfNotExists()
 	store.stores.userTermOfService.CreateIndexesIfNotExists()
 	store.stores.variantMedia.CreateIndexesIfNotExists()
+	store.stores.voucherCategory.CreateIndexesIfNotExists()
 	store.stores.voucherChannelListing.CreateIndexesIfNotExists()
+	store.stores.voucherCollection.CreateIndexesIfNotExists()
+	store.stores.voucherProduct.CreateIndexesIfNotExists()
 	store.stores.voucherTranslation.CreateIndexesIfNotExists()
 	store.stores.warehouse.CreateIndexesIfNotExists()
 	store.stores.warehouseShippingZone.CreateIndexesIfNotExists()
@@ -708,8 +717,20 @@ func (ss *SqlStore) VariantMedia() store.VariantMediaStore {
 	return ss.stores.variantMedia
 }
 
+func (ss *SqlStore) VoucherCategory() store.VoucherCategoryStore {
+	return ss.stores.voucherCategory
+}
+
 func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
 	return ss.stores.voucherChannelListing
+}
+
+func (ss *SqlStore) VoucherCollection() store.VoucherCollectionStore {
+	return ss.stores.voucherCollection
+}
+
+func (ss *SqlStore) VoucherProduct() store.VoucherProductStore {
+	return ss.stores.voucherProduct
 }
 
 func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {

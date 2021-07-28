@@ -26,3 +26,13 @@ func (a *AppProduct) ProductById(productID string) (*product_and_discount.Produc
 
 	return product, nil
 }
+
+// ProductsByVoucherID finds all products that have relationships with given voucher
+func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
+	products, err := a.Srv().Store.VoucherProduct().ProductsByVoucherID(voucherID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("App.Product.ProductsByVoucherID", "app.error_finding_products_by_voucherID.app_error", err)
+	}
+
+	return products, nil
+}

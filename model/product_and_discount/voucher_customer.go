@@ -1,8 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -29,14 +27,4 @@ func (vc *VoucherCustomer) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (vc *VoucherCustomer) ToJson() string {
-	return model.ModelToJson(vc)
-}
-
-func VoucherCustomerFromJson(data io.Reader) *VoucherCustomer {
-	var vc VoucherCustomer
-	model.ModelFromJson(&vc, data)
-	return &vc
 }

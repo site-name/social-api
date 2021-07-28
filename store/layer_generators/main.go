@@ -123,7 +123,8 @@ func buildStoreImplement() error {
 			case "CsvExportEvent", "CsvExportFile":
 				return "csv"
 			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation",
-				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount":
+				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount",
+				"VoucherCollection", "VoucherCategory", "VoucherProduct":
 				return "discount"
 			case "GiftCard", "GiftCardOrder", "GiftCardCheckout":
 				return "giftcard"

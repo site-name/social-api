@@ -10,7 +10,7 @@ import (
 // CheckoutLineInfo contains information of a checkout line
 type CheckoutLineInfo struct {
 	Line           CheckoutLine
-	Variant        product_and_discount.ProductVariant
+	Variant        *product_and_discount.ProductVariant
 	ChannelListing product_and_discount.ProductVariantChannelListing
 	Product        product_and_discount.Product
 	ProductType    product_and_discount.ProductType

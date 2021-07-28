@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -44,16 +43,6 @@ func (p *Product) PlainTextDescription() string {
 
 func SortByAttributeFields() []string {
 	return []string{"concatenated_values_order", "concatenated_values", "name"}
-}
-
-func (p *Product) ToJson() string {
-	return model.ModelToJson(p)
-}
-
-func ProductFromJson(data io.Reader) *Product {
-	var p Product
-	model.ModelFromJson(&p, data)
-	return &p
 }
 
 func (p *Product) IsValid() *model.AppError {
