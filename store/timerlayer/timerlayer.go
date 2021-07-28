@@ -7474,6 +7474,54 @@ func (s *TimerLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherChannelListingStore.FilterByVoucherAndChannel(voucherID, channelID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.FilterByVoucherAndChannel", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherChannelListingStore.Get(voucherChannelListingID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
 	start := timemodule.Now()
 
