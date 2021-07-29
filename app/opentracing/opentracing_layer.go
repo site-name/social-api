@@ -1251,9 +1251,9 @@ func (a *OpenTracingAppLayer) ShippingApp() sub_app_iface.ShippingApp {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SiteApp() sub_app_iface.SiteApp {
+func (a *OpenTracingAppLayer) ShopApp() sub_app_iface.ShopApp {
 	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SiteApp")
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ShopApp")
 
 	a.ctx = newCtx
 	a.app.Srv().Store.SetContext(newCtx)
@@ -1263,7 +1263,7 @@ func (a *OpenTracingAppLayer) SiteApp() sub_app_iface.SiteApp {
 	}()
 
 	defer span.Finish()
-	resultVar0 := a.app.SiteApp()
+	resultVar0 := a.app.ShopApp()
 
 	return resultVar0
 }

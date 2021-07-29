@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/filestore"
@@ -287,7 +288,9 @@ type AppApp interface {
 type CsvApp interface {
 }
 
-type SiteApp interface {
+type ShopApp interface {
+	// ShopById finds shop by given id
+	ShopById(shopID string) (*shop.Shop, *model.AppError)
 }
 
 type ShippingApp interface {

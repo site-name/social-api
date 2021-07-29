@@ -24,7 +24,7 @@ import (
 	_ "github.com/sitename/sitename/app/product"
 	_ "github.com/sitename/sitename/app/seo"
 	_ "github.com/sitename/sitename/app/shipping"
-	_ "github.com/sitename/sitename/app/site"
+	_ "github.com/sitename/sitename/app/shop"
 	_ "github.com/sitename/sitename/app/warehouse"
 	_ "github.com/sitename/sitename/app/webhook"
 	_ "github.com/sitename/sitename/app/wishlist"

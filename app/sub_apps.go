@@ -19,7 +19,7 @@ var (
 	menuApp      func(AppIface) sub_app_iface.MenuApp
 	pageApp      func(AppIface) sub_app_iface.PageApp
 	seoApp       func(AppIface) sub_app_iface.SeoApp
-	siteApp      func(AppIface) sub_app_iface.SiteApp
+	shopApp      func(AppIface) sub_app_iface.ShopApp
 	shippingApp  func(AppIface) sub_app_iface.ShippingApp
 	discountApp  func(AppIface) sub_app_iface.DiscountApp
 	csvApp       func(AppIface) sub_app_iface.CsvApp
@@ -86,8 +86,8 @@ func RegisterSeoApp(f func(AppIface) sub_app_iface.SeoApp) {
 	seoApp = f
 }
 
-func RegisterSiteApp(f func(AppIface) sub_app_iface.SiteApp) {
-	siteApp = f
+func RegisterShopApp(f func(AppIface) sub_app_iface.ShopApp) {
+	shopApp = f
 }
 
 func RegisterShippingApp(f func(AppIface) sub_app_iface.ShippingApp) {
@@ -142,11 +142,11 @@ func registerAllSubApps() []AppOption {
 			a.seo = seoApp(a)
 		},
 		func(a *App) {
-			if siteApp == nil {
+			if shopApp == nil {
 				criticalLog("site")
 				return
 			}
-			a.site = siteApp(a)
+			a.shop = shopApp(a)
 		},
 		func(a *App) {
 			if paymentApp == nil {
@@ -307,9 +307,9 @@ func (a *App) GiftcardApp() sub_app_iface.GiftcardApp {
 	return a.giftcard
 }
 
-// Site returns site sub app
-func (a *App) SiteApp() sub_app_iface.SiteApp {
-	return a.site
+// ShopApp returns shop sub app
+func (a *App) ShopApp() sub_app_iface.ShopApp {
+	return a.shop
 }
 
 // Seo returns order seo app

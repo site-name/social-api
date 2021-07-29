@@ -40,7 +40,7 @@ type App struct {
 	menu      sub_app_iface.MenuApp
 	csv       sub_app_iface.CsvApp
 	page      sub_app_iface.PageApp
-	site      sub_app_iface.SiteApp
+	shop      sub_app_iface.ShopApp
 	seo       sub_app_iface.SeoApp
 	attribute sub_app_iface.AttributeApp
 	channel   sub_app_iface.ChannelApp

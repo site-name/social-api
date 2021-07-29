@@ -75,6 +75,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product
 		return nil, errors.Errorf("multiple voucher channel listings updated: %d instead of 1", numUpdated)
 	}
 
+	voucherChannelListing.PopulateNonDbFields()
 	return voucherChannelListing, nil
 }
 
@@ -88,7 +89,9 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with id=%s", voucherChannelListingID)
 	}
 
-	return result.(*product_and_discount.VoucherChannelListing), nil
+	listing := result.(*product_and_discount.VoucherChannelListing)
+	listing.PopulateNonDbFields()
+	return listing, nil
 }
 
 // FilterByVoucherAndChannel finds a list of listings that belong to given voucher and own given channel
@@ -113,5 +116,6 @@ func (vcls *SqlVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID s
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with VoucherID = %s, ChannelID = %s", voucherID, channelID)
 	}
 
+	product_and_discount.VoucherChannelListingList(listings).PopulateNonDbFields()
 	return listings, nil
 }

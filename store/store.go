@@ -25,6 +25,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 )
@@ -79,7 +80,6 @@ type Store interface {
 	CsvExportFile() CsvExportFileStore                                 //
 	DiscountVoucher() DiscountVoucherStore                             // discount
 	VoucherChannelListing() VoucherChannelListingStore                 //
-	DiscountVoucherCustomer() DiscountVoucherCustomerStore             //
 	VoucherTranslation() VoucherTranslationStore                       //
 	DiscountSale() DiscountSaleStore                                   //
 	DiscountSaleTranslation() DiscountSaleTranslationStore             //
@@ -88,6 +88,7 @@ type Store interface {
 	VoucherCategory() VoucherCategoryStore                             //
 	VoucherCollection() VoucherCollectionStore                         //
 	VoucherProduct() VoucherProductStore                               //
+	VoucherCustomer() VoucherCustomerStore                             //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftCardOrder() GiftCardOrderStore                                 //
 	GiftCardCheckout() GiftCardCheckoutStore                           //
@@ -153,7 +154,27 @@ type Store interface {
 	FileInfo() FileInfoStore                                           // upload session
 	UploadSession() UploadSessionStore                                 //
 	Plugin() PluginStore                                               //
+	Shop() ShopStore                                                   // shop
+	ShopTranslation() ShopTranslationStore                             //
+	ShopStaff() ShopStaffStore                                         //
 }
+
+// shop
+type (
+	ShopStaffStore interface {
+		CreateIndexesIfNotExists()
+	}
+	ShopStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(shop *shop.Shop) (*shop.Shop, error) // Upsert depends on shop's Id to decide to update/insert the given shop.
+		Get(shopID string) (*shop.Shop, error)      // Get finds a shop with given id and returns it
+	}
+	ShopTranslationStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
+		Get(id string) (*shop.ShopTranslation, error)                            // Get finds a shop translation with given id then return it with an error
+	}
+)
 
 // Plugin
 type PluginStore interface {
@@ -572,9 +593,6 @@ type (
 	VoucherTranslationStore interface {
 		CreateIndexesIfNotExists()
 	}
-	DiscountVoucherCustomerStore interface {
-		CreateIndexesIfNotExists()
-	}
 	VoucherChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
@@ -603,6 +621,12 @@ type (
 		Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error
 		Get(voucherProductID string) (*product_and_discount.VoucherProduct, error)                                // Get finds a voucher product with given id, then returns it with an error
 		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
+	}
+	VoucherCustomerStore interface {
+		CreateIndexesIfNotExists()
+		Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) // Save inserts given voucher customer instance into database ands returns it
+		Get(id string) (*product_and_discount.VoucherCustomer, error)                                              // Get finds a voucher customer with given id and returns it with an error
+		FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error)     // FilterByVoucherAndEmail finds a voucher customer with given voucherID and customer email then returns it with an error
 	}
 )
 

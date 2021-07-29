@@ -124,7 +124,7 @@ func buildStoreImplement() error {
 				return "csv"
 			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation",
 				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount",
-				"VoucherCollection", "VoucherCategory", "VoucherProduct":
+				"VoucherCollection", "VoucherCategory", "VoucherProduct", "VoucherCustomer":
 				return "discount"
 			case "GiftCard", "GiftCardOrder", "GiftCardCheckout":
 				return "giftcard"
@@ -161,6 +161,8 @@ func buildStoreImplement() error {
 				return "attribute"
 			case "FileInfo", "UploadSession":
 				return "file"
+			case "Shop", "ShopTranslation":
+				return "shop"
 			}
 			panic("not found package name")
 		},

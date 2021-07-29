@@ -29,6 +29,7 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/role"
 	"github.com/sitename/sitename/store/sqlstore/session"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
+	"github.com/sitename/sitename/store/sqlstore/shop"
 	"github.com/sitename/sitename/store/sqlstore/status"
 	"github.com/sitename/sitename/store/sqlstore/system"
 	"github.com/sitename/sitename/store/sqlstore/warehouse"
@@ -75,7 +76,6 @@ type SqlStoreStores struct {
 	discountSaleChannelListing    store.DiscountSaleChannelListingStore
 	discountSaleTranslation       store.DiscountSaleTranslationStore
 	discountVoucher               store.DiscountVoucherStore
-	discountVoucherCustomer       store.DiscountVoucherCustomerStore
 	fileInfo                      store.FileInfoStore
 	fulfillment                   store.FulfillmentStore
 	fulfillmentLine               store.FulfillmentLineStore
@@ -115,6 +115,8 @@ type SqlStoreStores struct {
 	shippingMethodTranslation     store.ShippingMethodTranslationStore
 	shippingZone                  store.ShippingZoneStore
 	shippingZoneChannel           store.ShippingZoneChannelStore
+	shop                          store.ShopStore
+	shopTranslation               store.ShopTranslationStore
 	staffNotificationRecipient    store.StaffNotificationRecipientStore
 	status                        store.StatusStore
 	stock                         store.StockStore
@@ -130,6 +132,7 @@ type SqlStoreStores struct {
 	voucherCategory               store.VoucherCategoryStore
 	voucherChannelListing         store.VoucherChannelListingStore
 	voucherCollection             store.VoucherCollectionStore
+	voucherCustomer               store.VoucherCustomerStore
 	voucherProduct                store.VoucherProductStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
@@ -181,7 +184,6 @@ func (store *SqlStore) setupTables() {
 		discountSaleChannelListing:    discount.NewSqlDiscountSaleChannelListingStore(store),
 		discountSaleTranslation:       discount.NewSqlDiscountSaleTranslationStore(store),
 		discountVoucher:               discount.NewSqlDiscountVoucherStore(store),
-		discountVoucherCustomer:       discount.NewSqlDiscountVoucherCustomerStore(store),
 		fileInfo:                      file.NewSqlFileInfoStore(store, store.metrics),
 		fulfillment:                   order.NewSqlFulfillmentStore(store),
 		fulfillmentLine:               order.NewSqlFulfillmentLineStore(store),
@@ -221,6 +223,8 @@ func (store *SqlStore) setupTables() {
 		shippingMethodTranslation:     shipping.NewSqlShippingMethodTranslationStore(store),
 		shippingZone:                  shipping.NewSqlShippingZoneStore(store),
 		shippingZoneChannel:           shipping.NewSqlShippingZoneChannelStore(store),
+		shop:                          shop.NewSqlShopStore(store),
+		shopTranslation:               shop.NewSqlShopTranslationStore(store),
 		staffNotificationRecipient:    account.NewSqlStaffNotificationRecipientStore(store),
 		status:                        status.NewSqlStatusStore(store),
 		stock:                         warehouse.NewSqlStockStore(store),
@@ -236,6 +240,7 @@ func (store *SqlStore) setupTables() {
 		voucherCategory:               discount.NewSqlVoucherCategoryStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
 		voucherCollection:             discount.NewSqlVoucherCollectionStore(store),
+		voucherCustomer:               discount.NewSqlVoucherCustomerStore(store),
 		voucherProduct:                discount.NewSqlVoucherProductStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
@@ -287,7 +292,6 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.discountSaleChannelListing.CreateIndexesIfNotExists()
 	store.stores.discountSaleTranslation.CreateIndexesIfNotExists()
 	store.stores.discountVoucher.CreateIndexesIfNotExists()
-	store.stores.discountVoucherCustomer.CreateIndexesIfNotExists()
 	store.stores.fileInfo.CreateIndexesIfNotExists()
 	store.stores.fulfillment.CreateIndexesIfNotExists()
 	store.stores.fulfillmentLine.CreateIndexesIfNotExists()
@@ -328,6 +332,8 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.shippingMethodTranslation.CreateIndexesIfNotExists()
 	store.stores.shippingZone.CreateIndexesIfNotExists()
 	store.stores.shippingZoneChannel.CreateIndexesIfNotExists()
+	store.stores.shop.CreateIndexesIfNotExists()
+	store.stores.shopTranslation.CreateIndexesIfNotExists()
 	store.stores.staffNotificationRecipient.CreateIndexesIfNotExists()
 	store.stores.status.CreateIndexesIfNotExists()
 	store.stores.stock.CreateIndexesIfNotExists()
@@ -343,6 +349,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.voucherCategory.CreateIndexesIfNotExists()
 	store.stores.voucherChannelListing.CreateIndexesIfNotExists()
 	store.stores.voucherCollection.CreateIndexesIfNotExists()
+	store.stores.voucherCustomer.CreateIndexesIfNotExists()
 	store.stores.voucherProduct.CreateIndexesIfNotExists()
 	store.stores.voucherTranslation.CreateIndexesIfNotExists()
 	store.stores.warehouse.CreateIndexesIfNotExists()
@@ -509,10 +516,6 @@ func (ss *SqlStore) DiscountVoucher() store.DiscountVoucherStore {
 	return ss.stores.discountVoucher
 }
 
-func (ss *SqlStore) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
-	return ss.stores.discountVoucherCustomer
-}
-
 func (ss *SqlStore) FileInfo() store.FileInfoStore {
 	return ss.stores.fileInfo
 }
@@ -669,6 +672,14 @@ func (ss *SqlStore) ShippingZoneChannel() store.ShippingZoneChannelStore {
 	return ss.stores.shippingZoneChannel
 }
 
+func (ss *SqlStore) Shop() store.ShopStore {
+	return ss.stores.shop
+}
+
+func (ss *SqlStore) ShopTranslation() store.ShopTranslationStore {
+	return ss.stores.shopTranslation
+}
+
 func (ss *SqlStore) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return ss.stores.staffNotificationRecipient
 }
@@ -727,6 +738,10 @@ func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
 
 func (ss *SqlStore) VoucherCollection() store.VoucherCollectionStore {
 	return ss.stores.voucherCollection
+}
+
+func (ss *SqlStore) VoucherCustomer() store.VoucherCustomerStore {
+	return ss.stores.voucherCustomer
 }
 
 func (ss *SqlStore) VoucherProduct() store.VoucherProductStore {

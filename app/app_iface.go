@@ -109,8 +109,8 @@ type AppIface interface {
 	SeoApp() sub_app_iface.SeoApp
 	// Shipping returns shipping sub app
 	ShippingApp() sub_app_iface.ShippingApp
-	// Site returns site sub app
-	SiteApp() sub_app_iface.SiteApp
+	// ShopApp returns shop sub app
+	ShopApp() sub_app_iface.ShopApp
 	// Srv returns system server
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.

@@ -28,6 +28,39 @@ func (v *VoucherChannelListing) PreSave() {
 	if v.CreateAt == 0 {
 		v.CreateAt = model.GetMillis()
 	}
+	if v.DiscountValue == nil {
+		if v.Discount != nil {
+			v.DiscountValue = v.Discount.Amount
+		}
+	}
+	if v.MinSpenAmount == nil {
+		if v.MinSpent != nil {
+			v.MinSpenAmount = v.MinSpent.Amount
+		}
+	}
+}
+
+func (v *VoucherChannelListing) PopulateNonDbFields() {
+	if v.MinSpent == nil && v.MinSpenAmount != nil {
+		v.MinSpent = &goprices.Money{
+			Amount:   v.MinSpenAmount,
+			Currency: v.Currency,
+		}
+	}
+	if v.Discount == nil && v.DiscountValue != nil {
+		v.Discount = &goprices.Money{
+			Amount:   v.DiscountValue,
+			Currency: v.Currency,
+		}
+	}
+}
+
+type VoucherChannelListingList []*VoucherChannelListing
+
+func (vs VoucherChannelListingList) PopulateNonDbFields() {
+	for _, v := range vs {
+		v.PopulateNonDbFields()
+	}
 }
 
 func (v *VoucherChannelListing) IsValid() *model.AppError {

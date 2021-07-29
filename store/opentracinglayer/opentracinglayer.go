@@ -26,6 +26,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/services/tracing"
@@ -73,7 +74,6 @@ type OpenTracingLayer struct {
 	DiscountSaleChannelListingStore    store.DiscountSaleChannelListingStore
 	DiscountSaleTranslationStore       store.DiscountSaleTranslationStore
 	DiscountVoucherStore               store.DiscountVoucherStore
-	DiscountVoucherCustomerStore       store.DiscountVoucherCustomerStore
 	FileInfoStore                      store.FileInfoStore
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
@@ -113,6 +113,8 @@ type OpenTracingLayer struct {
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
 	ShippingZoneChannelStore           store.ShippingZoneChannelStore
+	ShopStore                          store.ShopStore
+	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
@@ -128,6 +130,7 @@ type OpenTracingLayer struct {
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCollectionStore             store.VoucherCollectionStore
+	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
@@ -293,10 +296,6 @@ func (s *OpenTracingLayer) DiscountVoucher() store.DiscountVoucherStore {
 	return s.DiscountVoucherStore
 }
 
-func (s *OpenTracingLayer) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
-	return s.DiscountVoucherCustomerStore
-}
-
 func (s *OpenTracingLayer) FileInfo() store.FileInfoStore {
 	return s.FileInfoStore
 }
@@ -453,6 +452,14 @@ func (s *OpenTracingLayer) ShippingZoneChannel() store.ShippingZoneChannelStore 
 	return s.ShippingZoneChannelStore
 }
 
+func (s *OpenTracingLayer) Shop() store.ShopStore {
+	return s.ShopStore
+}
+
+func (s *OpenTracingLayer) ShopTranslation() store.ShopTranslationStore {
+	return s.ShopTranslationStore
+}
+
 func (s *OpenTracingLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return s.StaffNotificationRecipientStore
 }
@@ -511,6 +518,10 @@ func (s *OpenTracingLayer) VoucherChannelListing() store.VoucherChannelListingSt
 
 func (s *OpenTracingLayer) VoucherCollection() store.VoucherCollectionStore {
 	return s.VoucherCollectionStore
+}
+
+func (s *OpenTracingLayer) VoucherCustomer() store.VoucherCustomerStore {
+	return s.VoucherCustomerStore
 }
 
 func (s *OpenTracingLayer) VoucherProduct() store.VoucherProductStore {
@@ -736,11 +747,6 @@ type OpenTracingLayerDiscountVoucherStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerDiscountVoucherCustomerStore struct {
-	store.DiscountVoucherCustomerStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerFileInfoStore struct {
 	store.FileInfoStore
 	Root *OpenTracingLayer
@@ -936,6 +942,16 @@ type OpenTracingLayerShippingZoneChannelStore struct {
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerShopStore struct {
+	store.ShopStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShopTranslationStore struct {
+	store.ShopTranslationStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerStaffNotificationRecipientStore struct {
 	store.StaffNotificationRecipientStore
 	Root *OpenTracingLayer
@@ -1008,6 +1024,11 @@ type OpenTracingLayerVoucherChannelListingStore struct {
 
 type OpenTracingLayerVoucherCollectionStore struct {
 	store.VoucherCollectionStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVoucherCustomerStore struct {
+	store.VoucherCustomerStore
 	Root *OpenTracingLayer
 }
 
@@ -3243,19 +3264,6 @@ func (s *OpenTracingLayerDiscountVoucherStore) Upsert(voucher *product_and_disco
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerDiscountVoucherCustomerStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherCustomerStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DiscountVoucherCustomerStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerFileInfoStore) ClearCaches() {
@@ -5905,6 +5913,104 @@ func (s *OpenTracingLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerShopStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.ShopStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerShopStore) Get(shopID string) (*shop.Shop, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopStore.Get(shopID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopStore.Upsert(shop)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShopTranslationStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.ShopTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopTranslationStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopTranslationStore.Upsert(translation)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.CreateIndexesIfNotExists")
@@ -8001,6 +8107,73 @@ func (s *OpenTracingLayerVoucherCollectionStore) Upsert(voucherCollection *produ
 	return result, err
 }
 
+func (s *OpenTracingLayerVoucherCustomerStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.VoucherCustomerStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.FilterByVoucherAndEmail")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherCustomerStore.FilterByVoucherAndEmail(voucherID, email)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherCustomerStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVoucherCustomerStore) Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherCustomerStore.Save(voucherCustomer)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerVoucherProductStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductStore.CreateIndexesIfNotExists")
@@ -8412,7 +8585,6 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.DiscountSaleChannelListingStore = &OpenTracingLayerDiscountSaleChannelListingStore{DiscountSaleChannelListingStore: childStore.DiscountSaleChannelListing(), Root: &newStore}
 	newStore.DiscountSaleTranslationStore = &OpenTracingLayerDiscountSaleTranslationStore{DiscountSaleTranslationStore: childStore.DiscountSaleTranslation(), Root: &newStore}
 	newStore.DiscountVoucherStore = &OpenTracingLayerDiscountVoucherStore{DiscountVoucherStore: childStore.DiscountVoucher(), Root: &newStore}
-	newStore.DiscountVoucherCustomerStore = &OpenTracingLayerDiscountVoucherCustomerStore{DiscountVoucherCustomerStore: childStore.DiscountVoucherCustomer(), Root: &newStore}
 	newStore.FileInfoStore = &OpenTracingLayerFileInfoStore{FileInfoStore: childStore.FileInfo(), Root: &newStore}
 	newStore.FulfillmentStore = &OpenTracingLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &OpenTracingLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
@@ -8452,6 +8624,8 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.ShippingMethodTranslationStore = &OpenTracingLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &OpenTracingLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.ShippingZoneChannelStore = &OpenTracingLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
+	newStore.ShopStore = &OpenTracingLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
+	newStore.ShopTranslationStore = &OpenTracingLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &OpenTracingLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &OpenTracingLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &OpenTracingLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
@@ -8467,6 +8641,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.VoucherCategoryStore = &OpenTracingLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &OpenTracingLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCollectionStore = &OpenTracingLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
+	newStore.VoucherCustomerStore = &OpenTracingLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &OpenTracingLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
 	newStore.VoucherTranslationStore = &OpenTracingLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &OpenTracingLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}

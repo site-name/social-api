@@ -2,6 +2,7 @@ package product_and_discount
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
@@ -58,6 +59,7 @@ func (n *NotApplicable) Error() string {
 
 type Voucher struct {
 	Id                       string `json:"id"`
+	ShopID                   string `json:"shop_id"` // the shop which issued this voucher
 	Type                     string `json:"type"`
 	Name                     string `json:"name"`
 	Code                     string `json:"code"`
@@ -67,10 +69,19 @@ type Voucher struct {
 	EndDate                  *int64 `json:"end_date"`
 	ApplyOncePerOrder        bool   `json:"apply_once_per_order"`
 	ApplyOncePerCustomer     bool   `json:"apply_once_per_customer"`
+	OnlyForStaff             *bool  `json:"only_for_staff"` // default false
 	DiscountValueType        string `json:"discount_value_type"`
 	Countries                string `json:"countries"` // multiple. E.g: "Vietnam America China"
 	MinCheckoutItemsQuantity uint   `json:"min_checkout_items_quantity"`
 	model.ModelMetadata
+}
+
+// VoucherValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
+func (voucher *Voucher) VoucherValidateMinCheckoutItemsQuantity(quantity uint) *model.AppError {
+	if voucher.MinCheckoutItemsQuantity > quantity {
+		return model.NewAppError("VoucherValidateMinCheckoutItemsQuantity", "app.discount.voucher_not_applicable_for_quantity_below", map[string]interface{}{"MinQuantity": voucher.MinCheckoutItemsQuantity}, "", http.StatusNotAcceptable)
+	}
+	return nil
 }
 
 // ValidateMinCheckoutItemsQuantity checks if given `quantity` satisfies min items quantity required
@@ -93,6 +104,9 @@ func (v *Voucher) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(v.Id) {
 		return outer("id", nil)
+	}
+	if !model.IsValidId(v.ShopID) {
+		return outer("shop_id", &v.Id)
 	}
 	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !model.StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
 		return outer("type", &v.Id)
@@ -134,6 +148,9 @@ func (v *Voucher) PreSave() {
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
 	}
+	if v.OnlyForStaff == nil {
+		v.OnlyForStaff = model.NewBool(false)
+	}
 	v.Name = model.SanitizeUnicode(v.Name)
 }
 
@@ -143,6 +160,9 @@ func (v *Voucher) PreUpdate() {
 	}
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
+	}
+	if v.OnlyForStaff == nil {
+		v.OnlyForStaff = model.NewBool(false)
 	}
 	v.Name = model.SanitizeUnicode(v.Name)
 }

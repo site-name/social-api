@@ -1,7 +1,6 @@
 package seo
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
@@ -51,16 +50,6 @@ func (s *Seo) PreSave() {
 	}
 }
 
-func (s *Seo) ToJson() string {
-	return model.ModelToJson(s)
-}
-
-func SeoFromJson(data io.Reader) *Seo {
-	var seo Seo
-	model.ModelFromJson(&seo, data)
-	return &seo
-}
-
 // SeoTranslation represents translation for Seo
 type SeoTranslation struct {
 	Id             string  `json:"is"`
@@ -98,14 +87,4 @@ func (s *SeoTranslation) PreSave() {
 		st := model.SanitizeUnicode(*s.SeoDescription)
 		s.SeoDescription = &st
 	}
-}
-
-func (s *SeoTranslation) ToJson() string {
-	return model.ModelToJson(s)
-}
-
-func SeoTranslationFromJson(data io.Reader) *SeoTranslation {
-	var seo SeoTranslation
-	model.ModelFromJson(&seo, data)
-	return &seo
 }

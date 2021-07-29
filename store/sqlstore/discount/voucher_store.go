@@ -23,6 +23,7 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.Voucher{}, store.VoucherTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(product_and_discount.VOUCHER_TYPE_MAX_LENGTH)
 		table.ColMap("Code").SetMaxSize(product_and_discount.VOUCHER_CODE_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Name").SetMaxSize(product_and_discount.VOUCHER_NAME_MAX_LENGTH)
@@ -35,6 +36,7 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 
 func (vs *SqlVoucherStore) CreateIndexesIfNotExists() {
 	vs.CreateIndexIfNotExists("idx_vouchers_code", store.VoucherTableName, "Code")
+	vs.CreateForeignKeyIfNotExists(store.VoucherTableName, "ShopID", store.ShopTableName, "Id", true)
 }
 
 // Upsert saves or updates given voucher then returns it with an error

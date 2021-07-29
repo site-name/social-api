@@ -26,6 +26,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
@@ -72,7 +73,6 @@ type RetryLayer struct {
 	DiscountSaleChannelListingStore    store.DiscountSaleChannelListingStore
 	DiscountSaleTranslationStore       store.DiscountSaleTranslationStore
 	DiscountVoucherStore               store.DiscountVoucherStore
-	DiscountVoucherCustomerStore       store.DiscountVoucherCustomerStore
 	FileInfoStore                      store.FileInfoStore
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
@@ -112,6 +112,8 @@ type RetryLayer struct {
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
 	ShippingZoneChannelStore           store.ShippingZoneChannelStore
+	ShopStore                          store.ShopStore
+	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
 	StockStore                         store.StockStore
@@ -127,6 +129,7 @@ type RetryLayer struct {
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCollectionStore             store.VoucherCollectionStore
+	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
@@ -292,10 +295,6 @@ func (s *RetryLayer) DiscountVoucher() store.DiscountVoucherStore {
 	return s.DiscountVoucherStore
 }
 
-func (s *RetryLayer) DiscountVoucherCustomer() store.DiscountVoucherCustomerStore {
-	return s.DiscountVoucherCustomerStore
-}
-
 func (s *RetryLayer) FileInfo() store.FileInfoStore {
 	return s.FileInfoStore
 }
@@ -452,6 +451,14 @@ func (s *RetryLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
 	return s.ShippingZoneChannelStore
 }
 
+func (s *RetryLayer) Shop() store.ShopStore {
+	return s.ShopStore
+}
+
+func (s *RetryLayer) ShopTranslation() store.ShopTranslationStore {
+	return s.ShopTranslationStore
+}
+
 func (s *RetryLayer) StaffNotificationRecipient() store.StaffNotificationRecipientStore {
 	return s.StaffNotificationRecipientStore
 }
@@ -510,6 +517,10 @@ func (s *RetryLayer) VoucherChannelListing() store.VoucherChannelListingStore {
 
 func (s *RetryLayer) VoucherCollection() store.VoucherCollectionStore {
 	return s.VoucherCollectionStore
+}
+
+func (s *RetryLayer) VoucherCustomer() store.VoucherCustomerStore {
+	return s.VoucherCustomerStore
 }
 
 func (s *RetryLayer) VoucherProduct() store.VoucherProductStore {
@@ -735,11 +746,6 @@ type RetryLayerDiscountVoucherStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerDiscountVoucherCustomerStore struct {
-	store.DiscountVoucherCustomerStore
-	Root *RetryLayer
-}
-
 type RetryLayerFileInfoStore struct {
 	store.FileInfoStore
 	Root *RetryLayer
@@ -935,6 +941,16 @@ type RetryLayerShippingZoneChannelStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerShopStore struct {
+	store.ShopStore
+	Root *RetryLayer
+}
+
+type RetryLayerShopTranslationStore struct {
+	store.ShopTranslationStore
+	Root *RetryLayer
+}
+
 type RetryLayerStaffNotificationRecipientStore struct {
 	store.StaffNotificationRecipientStore
 	Root *RetryLayer
@@ -1007,6 +1023,11 @@ type RetryLayerVoucherChannelListingStore struct {
 
 type RetryLayerVoucherCollectionStore struct {
 	store.VoucherCollectionStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherCustomerStore struct {
+	store.VoucherCustomerStore
 	Root *RetryLayer
 }
 
@@ -3167,12 +3188,6 @@ func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Vo
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerDiscountVoucherCustomerStore) CreateIndexesIfNotExists() {
-
-	s.DiscountVoucherCustomerStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5754,6 +5769,98 @@ func (s *RetryLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerShopStore) CreateIndexesIfNotExists() {
+
+	s.ShopStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.Get(shopID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.Upsert(shop)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopTranslationStore) CreateIndexesIfNotExists() {
+
+	s.ShopTranslationStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopTranslationStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopTranslationStore.Upsert(translation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
 
 	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
@@ -7914,6 +8021,72 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 
 }
 
+func (s *RetryLayerVoucherCustomerStore) CreateIndexesIfNotExists() {
+
+	s.VoucherCustomerStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCustomerStore.FilterByVoucherAndEmail(voucherID, email)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCustomerStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherCustomerStore.Save(voucherCustomer)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherProductStore) CreateIndexesIfNotExists() {
 
 	s.VoucherProductStore.CreateIndexesIfNotExists()
@@ -8304,7 +8477,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.DiscountSaleChannelListingStore = &RetryLayerDiscountSaleChannelListingStore{DiscountSaleChannelListingStore: childStore.DiscountSaleChannelListing(), Root: &newStore}
 	newStore.DiscountSaleTranslationStore = &RetryLayerDiscountSaleTranslationStore{DiscountSaleTranslationStore: childStore.DiscountSaleTranslation(), Root: &newStore}
 	newStore.DiscountVoucherStore = &RetryLayerDiscountVoucherStore{DiscountVoucherStore: childStore.DiscountVoucher(), Root: &newStore}
-	newStore.DiscountVoucherCustomerStore = &RetryLayerDiscountVoucherCustomerStore{DiscountVoucherCustomerStore: childStore.DiscountVoucherCustomer(), Root: &newStore}
 	newStore.FileInfoStore = &RetryLayerFileInfoStore{FileInfoStore: childStore.FileInfo(), Root: &newStore}
 	newStore.FulfillmentStore = &RetryLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &RetryLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
@@ -8344,6 +8516,8 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.ShippingZoneChannelStore = &RetryLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
+	newStore.ShopStore = &RetryLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
+	newStore.ShopTranslationStore = &RetryLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &RetryLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}
 	newStore.StockStore = &RetryLayerStockStore{StockStore: childStore.Stock(), Root: &newStore}
@@ -8359,6 +8533,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.VoucherCategoryStore = &RetryLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
+	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &RetryLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}

@@ -4,10 +4,17 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
+// VoucherCustomer represents m2m relation ship between customers and vouchers
 type VoucherCustomer struct {
 	Id            string `json:"id"`
 	VoucherID     string `json:"voucher_id"`
 	CustomerEmail string `json:"customer_email"`
+}
+
+func (vc *VoucherCustomer) PreSave() {
+	if vc.Id == "" {
+		vc.Id = model.NewId()
+	}
 }
 
 func (vc *VoucherCustomer) IsValid() *model.AppError {
