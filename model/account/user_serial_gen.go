@@ -665,12 +665,6 @@ func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 				err = msgp.WrapError(err, "DeleteAt")
 				return
 			}
-		case "IsStaff":
-			z.IsStaff, err = dc.ReadBool()
-			if err != nil {
-				err = msgp.WrapError(err, "IsStaff")
-				return
-			}
 		case "IsActive":
 			z.IsActive, err = dc.ReadBool()
 			if err != nil {
@@ -744,9 +738,9 @@ func (z *User) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *User) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 34
+	// map header, size 33
 	// write "Id"
-	err = en.Append(0xde, 0x0, 0x22, 0xa2, 0x49, 0x64)
+	err = en.Append(0xde, 0x0, 0x21, 0xa2, 0x49, 0x64)
 	if err != nil {
 		return
 	}
@@ -1052,16 +1046,6 @@ func (z *User) EncodeMsg(en *msgp.Writer) (err error) {
 		err = msgp.WrapError(err, "DeleteAt")
 		return
 	}
-	// write "IsStaff"
-	err = en.Append(0xa7, 0x49, 0x73, 0x53, 0x74, 0x61, 0x66, 0x66)
-	if err != nil {
-		return
-	}
-	err = en.WriteBool(z.IsStaff)
-	if err != nil {
-		err = msgp.WrapError(err, "IsStaff")
-		return
-	}
 	// write "IsActive"
 	err = en.Append(0xa8, 0x49, 0x73, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65)
 	if err != nil {
@@ -1155,9 +1139,9 @@ func (z *User) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *User) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 34
+	// map header, size 33
 	// string "Id"
-	o = append(o, 0xde, 0x0, 0x22, 0xa2, 0x49, 0x64)
+	o = append(o, 0xde, 0x0, 0x21, 0xa2, 0x49, 0x64)
 	o = msgp.AppendString(o, z.Id)
 	// string "Email"
 	o = append(o, 0xa5, 0x45, 0x6d, 0x61, 0x69, 0x6c)
@@ -1255,9 +1239,6 @@ func (z *User) MarshalMsg(b []byte) (o []byte, err error) {
 	// string "DeleteAt"
 	o = append(o, 0xa8, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x74)
 	o = msgp.AppendInt64(o, z.DeleteAt)
-	// string "IsStaff"
-	o = append(o, 0xa7, 0x49, 0x73, 0x53, 0x74, 0x61, 0x66, 0x66)
-	o = msgp.AppendBool(o, z.IsStaff)
 	// string "IsActive"
 	o = append(o, 0xa8, 0x49, 0x73, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65)
 	o = msgp.AppendBool(o, z.IsActive)
@@ -1566,12 +1547,6 @@ func (z *User) UnmarshalMsg(bts []byte) (o []byte, err error) {
 				err = msgp.WrapError(err, "DeleteAt")
 				return
 			}
-		case "IsStaff":
-			z.IsStaff, bts, err = msgp.ReadBoolBytes(bts)
-			if err != nil {
-				err = msgp.WrapError(err, "IsStaff")
-				return
-			}
 		case "IsActive":
 			z.IsActive, bts, err = msgp.ReadBoolBytes(bts)
 			if err != nil {
@@ -1684,7 +1659,7 @@ func (z *User) Msgsize() (s int) {
 			s += msgp.StringPrefixSize + len(za0005) + msgp.StringPrefixSize + len(za0006)
 		}
 	}
-	s += 10 + msgp.BoolSize + 10 + msgp.StringPrefixSize + len(z.MfaSecret) + 9 + msgp.Int64Size + 9 + msgp.Int64Size + 9 + msgp.Int64Size + 8 + msgp.BoolSize + 9 + msgp.BoolSize + 5
+	s += 10 + msgp.BoolSize + 10 + msgp.StringPrefixSize + len(z.MfaSecret) + 9 + msgp.Int64Size + 9 + msgp.Int64Size + 9 + msgp.Int64Size + 9 + msgp.BoolSize + 5
 	if z.Note == nil {
 		s += msgp.NilSize
 	} else {
@@ -3383,5 +3358,57 @@ func (z *UserUpdate) Msgsize() (s int) {
 	} else {
 		s += z.New.Msgsize()
 	}
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
+func (z *WhichMeta) DecodeMsg(dc *msgp.Reader) (err error) {
+	{
+		var zb0001 string
+		zb0001, err = dc.ReadString()
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = WhichMeta(zb0001)
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z WhichMeta) EncodeMsg(en *msgp.Writer) (err error) {
+	err = en.WriteString(string(z))
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z WhichMeta) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	o = msgp.AppendString(o, string(z))
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *WhichMeta) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	{
+		var zb0001 string
+		zb0001, bts, err = msgp.ReadStringBytes(bts)
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = WhichMeta(zb0001)
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z WhichMeta) Msgsize() (s int) {
+	s = msgp.StringPrefixSize + len(string(z))
 	return
 }

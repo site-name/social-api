@@ -73,7 +73,18 @@ type Voucher struct {
 	DiscountValueType        string `json:"discount_value_type"`
 	Countries                string `json:"countries"` // multiple. E.g: "Vietnam America China"
 	MinCheckoutItemsQuantity uint   `json:"min_checkout_items_quantity"`
+	CreateAt                 int64  `json:"create_at"` // this field is for ordering
+	UpdateAt                 int64  `json:"update_at"`
 	model.ModelMetadata
+}
+
+// VoucherFilterOption
+type VoucherFilterOption struct {
+	UsageLimit           *model.NumberFilter
+	EndDate              *model.TimeFilter
+	StartDate            *model.TimeFilter
+	ChannelListingSlug   *model.StringFilter
+	ChannelListingActive *bool
 }
 
 // VoucherValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
@@ -131,6 +142,12 @@ func (v *Voucher) IsValid() *model.AppError {
 			return outer("countries", &v.Id)
 		}
 	}
+	if v.CreateAt == 0 {
+		return outer("create_at", &v.Id)
+	}
+	if v.UpdateAt == 0 {
+		return outer("update_at", &v.Id)
+	}
 
 	return nil
 }
@@ -139,6 +156,10 @@ func (v *Voucher) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()
 	}
+	if v.CreateAt == 0 {
+		v.CreateAt = model.GetMillis()
+	}
+	v.UpdateAt = v.CreateAt
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
 	}
@@ -165,6 +186,7 @@ func (v *Voucher) PreUpdate() {
 		v.OnlyForStaff = model.NewBool(false)
 	}
 	v.Name = model.SanitizeUnicode(v.Name)
+	v.UpdateAt = model.GetMillis()
 }
 
 // VoucherTranslation represents translation for a voucher

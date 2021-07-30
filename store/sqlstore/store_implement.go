@@ -116,6 +116,7 @@ type SqlStoreStores struct {
 	shippingZone                  store.ShippingZoneStore
 	shippingZoneChannel           store.ShippingZoneChannelStore
 	shop                          store.ShopStore
+	shopStaff                     store.ShopStaffStore
 	shopTranslation               store.ShopTranslationStore
 	staffNotificationRecipient    store.StaffNotificationRecipientStore
 	status                        store.StatusStore
@@ -224,6 +225,7 @@ func (store *SqlStore) setupTables() {
 		shippingZone:                  shipping.NewSqlShippingZoneStore(store),
 		shippingZoneChannel:           shipping.NewSqlShippingZoneChannelStore(store),
 		shop:                          shop.NewSqlShopStore(store),
+		shopStaff:                     shop.NewSqlShopStaffStore(store),
 		shopTranslation:               shop.NewSqlShopTranslationStore(store),
 		staffNotificationRecipient:    account.NewSqlStaffNotificationRecipientStore(store),
 		status:                        status.NewSqlStatusStore(store),
@@ -333,6 +335,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.shippingZone.CreateIndexesIfNotExists()
 	store.stores.shippingZoneChannel.CreateIndexesIfNotExists()
 	store.stores.shop.CreateIndexesIfNotExists()
+	store.stores.shopStaff.CreateIndexesIfNotExists()
 	store.stores.shopTranslation.CreateIndexesIfNotExists()
 	store.stores.staffNotificationRecipient.CreateIndexesIfNotExists()
 	store.stores.status.CreateIndexesIfNotExists()
@@ -674,6 +677,10 @@ func (ss *SqlStore) ShippingZoneChannel() store.ShippingZoneChannelStore {
 
 func (ss *SqlStore) Shop() store.ShopStore {
 	return ss.stores.shop
+}
+
+func (ss *SqlStore) ShopStaff() store.ShopStaffStore {
+	return ss.stores.shopStaff
 }
 
 func (ss *SqlStore) ShopTranslation() store.ShopTranslationStore {

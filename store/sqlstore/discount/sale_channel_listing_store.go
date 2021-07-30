@@ -9,7 +9,7 @@ type SqlSaleChannelListingStore struct {
 	store.Store
 }
 
-func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountSaleChannelListingStore {
+func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.SaleChannelListingStore {
 	scls := &SqlSaleChannelListingStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
@@ -27,4 +27,8 @@ func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountS
 func (scls *SqlSaleChannelListingStore) CreateIndexesIfNotExists() {
 	scls.CreateIndexIfNotExists("idx_sale_channel_listings_sale_id", "SaleChannelListings", "SaleID")
 	scls.CreateIndexIfNotExists("idx_sale_channel_listings_channel_id", "SaleChannelListings", "ChannelID")
+
+	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "SaleID", store.SaleTableName, "Id", true)
+	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+
 }

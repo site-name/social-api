@@ -48,7 +48,7 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 			"u.EmailVerified", "u.Nickname", "u.Roles", "u.Props", "u.NotifyProps",
 			"u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts", "u.Locale", "u.Timezone",
 			"u.MfaActive", "u.MfaSecret", "u.CreateAt", "u.UpdateAt", "u.DeleteAt",
-			"u.IsStaff", "u.IsActive", "u.Note", "u.JwtTokenKey",
+			"u.IsActive", "u.Note", "u.JwtTokenKey",
 			"u.LastActivityAt", "u.TermsOfServiceId", "u.TermsOfServiceCreateAt", "u.DisableWelcomeEmail",
 			"u.Metadata", "u.PrivateMetadata",
 		).
@@ -444,7 +444,7 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 		&user.LastPasswordUpdate, &user.LastPictureUpdate, &user.FailedAttempts, &user.Locale,
 		&timezone, // non primitive types
 		&user.MfaActive, &user.MfaSecret, &user.CreateAt, &user.UpdateAt, &user.DeleteAt,
-		&user.IsStaff, &user.IsActive, &user.Note, &user.JwtTokenKey,
+		&user.IsActive, &user.Note, &user.JwtTokenKey,
 		&user.LastActivityAt, &user.TermsOfServiceId, &user.TermsOfServiceCreateAt, &user.DisableWelcomeEmail,
 		&user.Metadata, &user.PrivateMetadata,
 	)

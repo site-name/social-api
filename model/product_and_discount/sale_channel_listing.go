@@ -1,11 +1,48 @@
 package product_and_discount
 
-import "github.com/shopspring/decimal"
+import (
+	"strings"
+
+	"github.com/shopspring/decimal"
+	"github.com/sitename/sitename/model"
+	"golang.org/x/text/currency"
+)
 
 type SaleChannelListing struct {
 	Id            string           `json:"id"`
 	SaleID        string           `json:"sale_id"`
 	ChannelID     string           `json:"channel_id"`
-	DiscountValue *decimal.Decimal `json:"discount_value"`
+	DiscountValue *decimal.Decimal `json:"discount_value"` // default decimal(0)
 	Currency      string           `json:"currency"`
+}
+
+func (s *SaleChannelListing) PreSave() {
+	if s.Id == "" {
+		s.Id = model.NewId()
+	}
+	if s.DiscountValue == nil || s.DiscountValue.LessThan(decimal.Zero) {
+		s.DiscountValue = &decimal.Zero
+	}
+}
+
+func (s *SaleChannelListing) IsValid() *model.AppError {
+	outer := model.CreateAppErrorForModel(
+		"model.sale_channel_listing.is_valid.%s.app_error",
+		"sale_channel_listing_id=",
+		"SaleChannelListing.IsValid",
+	)
+	if !model.IsValidId(s.Id) {
+		return outer("id", nil)
+	}
+	if !model.IsValidId(s.SaleID) {
+		return outer("sale_id", &s.Id)
+	}
+	if !model.IsValidId(s.ChannelID) {
+		return outer("channel_id", &s.Id)
+	}
+	if unit, err := currency.ParseISO(s.Currency); err == nil || !strings.EqualFold(unit.String(), s.Currency) {
+		return outer("currency", &s.Id)
+	}
+
+	return nil
 }

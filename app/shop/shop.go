@@ -1,4 +1,4 @@
-package site
+package shop
 
 import (
 	"github.com/sitename/sitename/app"

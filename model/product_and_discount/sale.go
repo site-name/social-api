@@ -1,12 +1,9 @@
 package product_and_discount
 
 import (
-	"errors"
-	"io"
 	"strings"
 	"unicode/utf8"
 
-	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -18,40 +15,26 @@ const (
 )
 
 type Sale struct {
-	Id          string        `json:"id"`
-	Name        string        `json:"name"`
-	Type        string        `json:"type"`
-	Products    []*Product    `json:"products,omitempty" db:"-"`
-	Categories  []*Category   `json:"categories,omitempty" db:"-"`
-	Collections []*Collection `json:"collections,omitempty" db:"-"`
-	StartDate   int64         `json:"start_date"`
-	EndDate     *int64        `json:"end_date"`
+	Id        string `json:"id"`
+	ShopID    string `json:"shop_id"` // shop which owns this sale
+	Name      string `json:"name"`
+	Type      string `json:"type"` // DEFAULT `fixed`
+	StartDate int64  `json:"start_date"`
+	EndDate   *int64 `json:"end_date"`
+	CreateAt  int64  `json:"create_at"`
+	UpdateAt  int64  `json:"update_at"`
 	model.ModelMetadata
+}
+
+// SaleFilterOption can be used to
+type SaleFilterOption struct {
+	StartDate *model.TimeFilter
+	EndDate   *model.TimeFilter
+	ShopID    model.StringFilter
 }
 
 func (s *Sale) String() string {
 	return s.Name
-}
-
-func (s *Sale) GetDiscount(scl *SaleChannelListing) (*goprices.Money, error) {
-	if scl == nil {
-		return nil, &NotApplicable{
-			Msg: "This sale if not assigned to this channel.",
-		}
-	}
-
-	// if s.Type == FIXED {
-	// 	discountAmount := &model.Money{
-	// 		Amount:   scl.DiscountValue,
-	// 		Currency: scl.Currency,
-	// 	}
-	// } else if s.Type == PERCENTAGE {
-
-	// }
-
-	// TODO: Fix me
-
-	return nil, errors.New("unknown discount type")
 }
 
 func (s *Sale) IsValid() *model.AppError {
@@ -63,6 +46,9 @@ func (s *Sale) IsValid() *model.AppError {
 	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
 	}
+	if !model.IsValidId(s.ShopID) {
+		return outer("shop_id", &s.Id)
+	}
 	if utf8.RuneCountInString(s.Name) > SALE_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
 	}
@@ -72,6 +58,12 @@ func (s *Sale) IsValid() *model.AppError {
 	if s.StartDate == 0 {
 		return outer("start_date", &s.Id)
 	}
+	if s.CreateAt == 0 {
+		return outer("create_at", &s.Id)
+	}
+	if s.UpdateAt == 0 {
+		return outer("update_at", &s.Id)
+	}
 
 	return nil
 }
@@ -80,12 +72,25 @@ func (s *Sale) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
+	if s.UpdateAt == 0 {
+		s.UpdateAt = model.GetMillis()
+	}
+	s.UpdateAt = s.CreateAt
 	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
 		s.Type = FIXED
 	}
 	if s.StartDate == 0 {
 		s.StartDate = model.GetMillis()
 	}
+	s.Name = model.SanitizeUnicode(s.Name)
+}
+
+func (s *Sale) PreUpdate() {
+	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
+		s.Type = FIXED
+	}
+	s.UpdateAt = model.GetMillis()
+	s.Name = model.SanitizeUnicode(s.Name)
 }
 
 type SaleTranslation struct {
@@ -115,14 +120,4 @@ func (s *SaleTranslation) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (s *SaleTranslation) ToJson() string {
-	return model.ModelToJson(s)
-}
-
-func SaleTranslationFromJson(data io.Reader) *SaleTranslation {
-	var st SaleTranslation
-	model.ModelFromJson(&st, data)
-	return &st
 }

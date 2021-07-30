@@ -114,6 +114,7 @@ type OpenTracingLayer struct {
 	ShippingZoneStore                  store.ShippingZoneStore
 	ShippingZoneChannelStore           store.ShippingZoneChannelStore
 	ShopStore                          store.ShopStore
+	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
@@ -454,6 +455,10 @@ func (s *OpenTracingLayer) ShippingZoneChannel() store.ShippingZoneChannelStore 
 
 func (s *OpenTracingLayer) Shop() store.ShopStore {
 	return s.ShopStore
+}
+
+func (s *OpenTracingLayer) ShopStaff() store.ShopStaffStore {
+	return s.ShopStaffStore
 }
 
 func (s *OpenTracingLayer) ShopTranslation() store.ShopTranslationStore {
@@ -944,6 +949,11 @@ type OpenTracingLayerShippingZoneChannelStore struct {
 
 type OpenTracingLayerShopStore struct {
 	store.ShopStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShopStaffStore struct {
+	store.ShopStaffStore
 	Root *OpenTracingLayer
 }
 
@@ -3191,6 +3201,24 @@ func (s *OpenTracingLayerDiscountSaleStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.FilterSalesByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.CreateIndexesIfNotExists")
@@ -3228,6 +3256,24 @@ func (s *OpenTracingLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.DiscountVoucherStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.FilterVouchersByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
@@ -5962,6 +6008,73 @@ func (s *OpenTracingLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) 
 	return result, err
 }
 
+func (s *OpenTracingLayerShopStaffStore) CreateIndexesIfNotExists() {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.CreateIndexesIfNotExists")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.ShopStaffStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *OpenTracingLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.FilterByShopAndStaff")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopStaffStore.Get(shopStaffID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShopStaffStore.Save(shopStaff)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerShopTranslationStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.CreateIndexesIfNotExists")
@@ -8254,6 +8367,60 @@ func (s *OpenTracingLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerVoucherTranslationStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.FilterSalesByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherTranslationStore.FilterSalesByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVoucherTranslationStore) Get(saleID string) (*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherTranslationStore.Get(saleID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVoucherTranslationStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherTranslationStore.Upsert(sale)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWarehouseStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.CreateIndexesIfNotExists")
@@ -8625,6 +8792,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.ShippingZoneStore = &OpenTracingLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.ShippingZoneChannelStore = &OpenTracingLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
 	newStore.ShopStore = &OpenTracingLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
+	newStore.ShopStaffStore = &OpenTracingLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &OpenTracingLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &OpenTracingLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &OpenTracingLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}

@@ -13,7 +13,7 @@ func NewSqlDiscountSaleTranslationStore(sqlStore store.Store) store.DiscountSale
 	sts := &SqlDiscountSaleTranslationStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.SaleTranslation{}, "SaleTranslations").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.SaleTranslation{}, store.SaleTranslationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("SaleID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(10)
@@ -26,6 +26,7 @@ func NewSqlDiscountSaleTranslationStore(sqlStore store.Store) store.DiscountSale
 }
 
 func (sts *SqlDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
-	sts.CreateIndexIfNotExists("idx_sale_translations_name", "SaleTranslations", "Name")
-	sts.CreateIndexIfNotExists("idx_sale_translations_language_code", "SaleTranslations", "LanguageCode")
+	sts.CreateIndexIfNotExists("idx_sale_translations_name", store.SaleTranslationTableName, "Name")
+	sts.CreateIndexIfNotExists("idx_sale_translations_language_code", store.SaleTranslationTableName, "LanguageCode")
+	sts.CreateForeignKeyIfNotExists(store.SaleTranslationTableName, "SaleID", store.SaleTableName, "Id", true)
 }

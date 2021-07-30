@@ -249,6 +249,14 @@ type WarehouseApp interface {
 }
 
 type DiscountApp interface {
+	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) // VouchersByOption finds all vouchers with given option then returns them
+	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customer *account.User) *model.AppError            // ValidateVoucherOnlyForStaff validate if voucher is only for staff
+	ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) *model.AppError // ValidateMinSpent validates if the order cost at least a specific amount of money
+	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError                  // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
+	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price *goprices.Money, channelID string) (*goprices.Money, *model.AppError)
+	// FilterSalesByOption should be used to filter active or expired sales
+	// refer: saleor/discount/models.SaleQueryset for details
+	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
 }
 
 type OrderApp interface {
@@ -289,8 +297,8 @@ type CsvApp interface {
 }
 
 type ShopApp interface {
-	// ShopById finds shop by given id
-	ShopById(shopID string) (*shop.Shop, *model.AppError)
+	ShopById(shopID string) (*shop.Shop, *model.AppError)                                                         // ShopById finds shop by given id
+	ShopStaffRelationByShopIDAndStaffID(shopID string, staffID string) (*shop.ShopStaffRelation, *model.AppError) // ShopStaffRelationByShopIDAndStaffID finds a shop-staff relation and returns it
 }
 
 type ShippingApp interface {

@@ -138,6 +138,9 @@ const (
 	VoucherProductTableName        = "VoucherProducts"
 	VoucherChannelListingTableName = "VoucherChannelListings"
 	VoucherCustomerTableName       = "VoucherCustomers"
+	SaleChannelListingTableName    = "SaleChannelListings"
+	SaleTableName                  = "Sales"
+	SaleTranslationTableName       = "SaleTranslations"
 )
 
 // shop-related table names

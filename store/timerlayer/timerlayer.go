@@ -114,6 +114,7 @@ type TimerLayer struct {
 	ShippingZoneStore                  store.ShippingZoneStore
 	ShippingZoneChannelStore           store.ShippingZoneChannelStore
 	ShopStore                          store.ShopStore
+	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
@@ -454,6 +455,10 @@ func (s *TimerLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
 
 func (s *TimerLayer) Shop() store.ShopStore {
 	return s.ShopStore
+}
+
+func (s *TimerLayer) ShopStaff() store.ShopStaffStore {
+	return s.ShopStaffStore
 }
 
 func (s *TimerLayer) ShopTranslation() store.ShopTranslationStore {
@@ -944,6 +949,11 @@ type TimerLayerShippingZoneChannelStore struct {
 
 type TimerLayerShopStore struct {
 	store.ShopStore
+	Root *TimerLayer
+}
+
+type TimerLayerShopStaffStore struct {
+	store.ShopStaffStore
 	Root *TimerLayer
 }
 
@@ -3079,6 +3089,22 @@ func (s *TimerLayerDiscountSaleStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.FilterSalesByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -3122,6 +3148,22 @@ func (s *TimerLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.FilterVouchersByOption", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
@@ -5704,6 +5746,69 @@ func (s *TimerLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
 	return result, err
 }
 
+func (s *TimerLayerShopStaffStore) CreateIndexesIfNotExists() {
+	start := timemodule.Now()
+
+	s.ShopStaffStore.CreateIndexesIfNotExists()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.CreateIndexesIfNotExists", success, elapsed)
+	}
+}
+
+func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.FilterByShopAndStaff", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStaffStore.Get(shopStaffID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStaffStore.Save(shopStaff)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShopTranslationStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -7826,6 +7931,54 @@ func (s *TimerLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerVoucherTranslationStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.FilterSalesByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.FilterSalesByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherTranslationStore) Get(saleID string) (*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.Get(saleID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherTranslationStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.Upsert(sale)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -8186,6 +8339,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.ShippingZoneChannelStore = &TimerLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
 	newStore.ShopStore = &TimerLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
+	newStore.ShopStaffStore = &TimerLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &TimerLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &TimerLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &TimerLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}

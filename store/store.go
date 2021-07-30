@@ -163,6 +163,9 @@ type Store interface {
 type (
 	ShopStaffStore interface {
 		CreateIndexesIfNotExists()
+		Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error)             // Save inserts given shopStaff into database then returns it with an error
+		Get(shopStaffID string) (*shop.ShopStaffRelation, error)                             // Get finds a shop staff with given id then returns it with an error
+		FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
 	}
 	ShopStore interface {
 		CreateIndexesIfNotExists()
@@ -587,11 +590,14 @@ type (
 	DiscountSaleChannelListingStore interface {
 		CreateIndexesIfNotExists()
 	}
-	DiscountSaleStore interface {
-		CreateIndexesIfNotExists()
-	}
 	VoucherTranslationStore interface {
 		CreateIndexesIfNotExists()
+	}
+	DiscountSaleStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error)                              // Upsert bases on sale's Id to decide to update or insert given sale
+		Get(saleID string) (*product_and_discount.Sale, error)                                                   // Get finds and returns a sale with given saleID
+		FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -601,8 +607,9 @@ type (
 	}
 	DiscountVoucherStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) // Upsert saves or updates given voucher then returns it with an error
-		Get(voucherID string) (*product_and_discount.Voucher, error)                         // Get finds a voucher with given id, then returns it with an error
+		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error)                              // Upsert saves or updates given voucher then returns it with an error
+		Get(voucherID string) (*product_and_discount.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
+		FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
 	}
 	VoucherCategoryStore interface {
 		CreateIndexesIfNotExists()

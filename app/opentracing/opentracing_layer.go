@@ -324,6 +324,23 @@ func (a *OpenTracingAppLayer) DBHealthCheckWrite() error {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) DiscountApp() sub_app_iface.DiscountApp {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DiscountApp")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.DiscountApp()
+
+	return resultVar0
+}
+
 func (a *OpenTracingAppLayer) DoAdvancedPermissionsMigration() {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DoAdvancedPermissionsMigration")

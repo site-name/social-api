@@ -25,7 +25,6 @@ type User struct {
 	Email                    string                              `json:"email"`
 	FirstName                string                              `json:"firstName"`
 	LastName                 string                              `json:"lastName"`
-	IsStaff                  bool                                `json:"isStaff"`
 	IsActive                 bool                                `json:"isActive"`
 	Note                     *string                             `json:"note"`
 	DateJoined               time.Time                           `json:"dateJoined"`
@@ -58,7 +57,6 @@ func DatabaseUserToGraphqlUser(u *account.User) *User {
 		Email:                    u.Email,
 		FirstName:                u.FirstName,
 		LastName:                 u.LastName,
-		IsStaff:                  u.IsStaff,
 		IsActive:                 u.IsActive,
 		Note:                     u.Note,
 		DateJoined:               util.TimeFromMillis(u.CreateAt),

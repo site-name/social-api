@@ -161,10 +161,10 @@ func buildStoreImplement() error {
 				return "attribute"
 			case "FileInfo", "UploadSession":
 				return "file"
-			case "Shop", "ShopTranslation":
+			case "Shop", "ShopTranslation", "ShopStaff":
 				return "shop"
 			}
-			panic("not found package name")
+			panic("not found package name: " + s)
 		},
 		"StoreNeedMetric": func(s string) string {
 			switch s {

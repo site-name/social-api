@@ -43,45 +43,46 @@ func (ss *SqlShopStore) CreateIndexesIfNotExists() {
 }
 
 // Upsert depends on shop's Id to decide to update/insert the given shop.
-func (ss *SqlShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
+func (ss *SqlShopStore) Upsert(shopInstance *shop.Shop) (*shop.Shop, error) {
 	var saving bool
-	if shop.Id == "" {
+	if shopInstance.Id == "" {
 		saving = true
-		shop.PreSave()
+		shopInstance.PreSave()
 	} else {
-		shop.PreUpdate()
+		shopInstance.PreUpdate()
 	}
 
-	if err := shop.IsValid(); err != nil {
+	if err := shopInstance.IsValid(); err != nil {
 		return nil, err
 	}
 
 	var (
 		err        error
 		numUpdated int64
+		oldShop    *shop.Shop
 	)
 	if saving {
-		err = ss.GetMaster().Insert(shop)
+		err = ss.GetMaster().Insert(shopInstance)
 	} else {
 		// validate there is a shop with this id exists
-		oldShop, err := ss.Get(shop.Id)
+		oldShop, err = ss.Get(shopInstance.Id)
 		if err != nil {
 			return nil, err
 		}
-		shop.CreateAt = oldShop.CreateAt
-		shop.UpdateAt = model.GetMillis()
-		numUpdated, err = ss.GetMaster().Update(shop)
+		shopInstance.CreateAt = oldShop.CreateAt
+		shopInstance.UpdateAt = model.GetMillis()
+		numUpdated, err = ss.GetMaster().Update(shopInstance)
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert shop with id=%s", shop.Id)
+		return nil, errors.Wrapf(err, "failed to upsert shop with id=%s", shopInstance.Id)
 	}
 
 	if numUpdated > 1 {
 		return nil, errors.Errorf("multiple shops updated: %d instead of 1", numUpdated)
 	}
 
-	return shop, nil
+	return shopInstance, nil
 }
 
 // Get finds a shop with given id and returns it

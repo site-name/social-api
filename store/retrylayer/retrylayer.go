@@ -113,6 +113,7 @@ type RetryLayer struct {
 	ShippingZoneStore                  store.ShippingZoneStore
 	ShippingZoneChannelStore           store.ShippingZoneChannelStore
 	ShopStore                          store.ShopStore
+	ShopStaffStore                     store.ShopStaffStore
 	ShopTranslationStore               store.ShopTranslationStore
 	StaffNotificationRecipientStore    store.StaffNotificationRecipientStore
 	StatusStore                        store.StatusStore
@@ -453,6 +454,10 @@ func (s *RetryLayer) ShippingZoneChannel() store.ShippingZoneChannelStore {
 
 func (s *RetryLayer) Shop() store.ShopStore {
 	return s.ShopStore
+}
+
+func (s *RetryLayer) ShopStaff() store.ShopStaffStore {
+	return s.ShopStaffStore
 }
 
 func (s *RetryLayer) ShopTranslation() store.ShopTranslationStore {
@@ -943,6 +948,11 @@ type RetryLayerShippingZoneChannelStore struct {
 
 type RetryLayerShopStore struct {
 	store.ShopStore
+	Root *RetryLayer
+}
+
+type RetryLayerShopStaffStore struct {
+	store.ShopStaffStore
 	Root *RetryLayer
 }
 
@@ -3133,6 +3143,26 @@ func (s *RetryLayerDiscountSaleStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountSaleStore.FilterSalesByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
 
 	s.DiscountSaleChannelListingStore.CreateIndexesIfNotExists()
@@ -3148,6 +3178,26 @@ func (s *RetryLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
 func (s *RetryLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
 
 	s.DiscountVoucherStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 
@@ -5815,6 +5865,72 @@ func (s *RetryLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
 
 }
 
+func (s *RetryLayerShopStaffStore) CreateIndexesIfNotExists() {
+
+	s.ShopStaffStore.CreateIndexesIfNotExists()
+
+}
+
+func (s *RetryLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStaffStore.Get(shopStaffID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStaffStore.Save(shopStaff)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerShopTranslationStore) CreateIndexesIfNotExists() {
 
 	s.ShopTranslationStore.CreateIndexesIfNotExists()
@@ -8159,6 +8275,66 @@ func (s *RetryLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *RetryLayerVoucherTranslationStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherTranslationStore.FilterSalesByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherTranslationStore) Get(saleID string) (*product_and_discount.Sale, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherTranslationStore.Get(saleID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherTranslationStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherTranslationStore.Upsert(sale)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerWarehouseStore) CreateIndexesIfNotExists() {
 
 	s.WarehouseStore.CreateIndexesIfNotExists()
@@ -8517,6 +8693,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
 	newStore.ShippingZoneChannelStore = &RetryLayerShippingZoneChannelStore{ShippingZoneChannelStore: childStore.ShippingZoneChannel(), Root: &newStore}
 	newStore.ShopStore = &RetryLayerShopStore{ShopStore: childStore.Shop(), Root: &newStore}
+	newStore.ShopStaffStore = &RetryLayerShopStaffStore{ShopStaffStore: childStore.ShopStaff(), Root: &newStore}
 	newStore.ShopTranslationStore = &RetryLayerShopTranslationStore{ShopTranslationStore: childStore.ShopTranslation(), Root: &newStore}
 	newStore.StaffNotificationRecipientStore = &RetryLayerStaffNotificationRecipientStore{StaffNotificationRecipientStore: childStore.StaffNotificationRecipient(), Root: &newStore}
 	newStore.StatusStore = &RetryLayerStatusStore{StatusStore: childStore.Status(), Root: &newStore}

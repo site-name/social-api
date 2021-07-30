@@ -3,6 +3,7 @@ package discount
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -53,32 +54,32 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 		return nil, appErr
 	}
 
+	var (
+		oldVoucher *product_and_discount.Voucher
+		err        error
+		numUpdated int64
+	)
+
 	if saving {
-		err := vs.GetMaster().Insert(voucher)
-		if err != nil {
-			if vs.IsUniqueConstraintError(err, VoucherUniqueList) {
-				return nil, store.NewErrInvalidInput(store.VoucherTableName, "code", voucher.Code)
-			}
-			return nil, errors.Wrapf(err, "failed to save voucher with id=%s", voucher.Id)
-		}
+		err = vs.GetMaster().Insert(voucher)
 	} else {
-		oldVoucher, err := vs.Get(voucher.Id)
+		oldVoucher, err = vs.Get(voucher.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		voucher.Used = oldVoucher.Used
+		numUpdated, err = vs.GetMaster().Update(voucher)
+	}
 
-		numUpdated, err := vs.GetMaster().Update(voucher)
-		if err != nil {
-			if vs.IsUniqueConstraintError(err, VoucherUniqueList) {
-				return nil, store.NewErrInvalidInput(store.VoucherTableName, "code", voucher.Code)
-			}
-			return nil, errors.Wrapf(err, "failed to update voucher with id=%s", voucher.Id)
+	if err != nil {
+		if vs.IsUniqueConstraintError(err, VoucherUniqueList) {
+			return nil, store.NewErrInvalidInput(store.VoucherTableName, "code", voucher.Code)
 		}
-		if numUpdated > 1 {
-			return nil, errors.Errorf("multiple vouchers were updated: %d instead of 1", numUpdated)
-		}
+		return nil, errors.Wrapf(err, "failed to upsert voucher with id=%s", voucher.Id)
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple vouchers were updated: %d instead of 1", numUpdated)
 	}
 
 	return voucher, nil
@@ -95,4 +96,59 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 	}
 
 	return result.(*product_and_discount.Voucher), nil
+}
+
+// FilterVouchersByOption finds vouchers bases on given option.
+func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+	query := vs.
+		GetQueryBuilder().
+		Select("*").
+		From(store.VoucherTableName + " AS V").
+		OrderBy("V.CreateAt ASC")
+
+	// check usage limit
+	if option.UsageLimit != nil {
+		query = query.Where(option.UsageLimit.ToSquirrel("V.UsageLimit"))
+	}
+
+	// check end date
+	if option.EndDate != nil {
+		query = query.Where(option.EndDate.ToSquirrel("V.EndDate"))
+	}
+
+	// check start date
+	if option.StartDate != nil {
+		query = query.Where(option.StartDate.ToSquirrel("V.StartDate"))
+	}
+
+	// check channel listing channel slug
+	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
+		query = query.
+			InnerJoin(store.VoucherChannelListingTableName + " AS VCL ON (VCL.VoucherID = V.Id)").
+			InnerJoin(store.ChannelTableName + "Cn ON (Cn.Id = VCL.ChannelID)")
+
+		if option.ChannelListingSlug != nil {
+			query = query.Where(option.ChannelListingSlug.ToSquirrel("Cn.Slug"))
+		}
+
+		if option.ChannelListingActive != nil {
+			query = query.Where(squirrel.Eq{"Cn.IsActive": *option.ChannelListingActive})
+		}
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "sql_tosql")
+	}
+
+	var vouchers []*product_and_discount.Voucher
+	_, err = vs.GetReplica().Select(&vouchers, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.VoucherTableName, "option")
+		}
+		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
+	}
+
+	return vouchers, nil
 }

@@ -376,3 +376,8 @@ func (a *App) InvoiceApp() sub_app_iface.InvoiceApp {
 func (a *App) FileApp() sub_app_iface.FileApp {
 	return a.file
 }
+
+// DiscountApp returns discount sub app
+func (a *App) DiscountApp() sub_app_iface.DiscountApp {
+	return a.discount
+}

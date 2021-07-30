@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 	"time"
 
@@ -24,20 +23,15 @@ type ProductChannelListing struct {
 	model.Publishable
 }
 
-type StringFilter struct {
-	In []string
-	Eq string
-}
-
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
-	ProductID            *StringFilter
-	ChannelID            *StringFilter
+	ProductID            *model.StringFilter
+	ChannelID            *model.StringFilter
 	ChannelSlug          *string // inner join Channel
 	VisibleInListings    *bool
 	AvailableForPurchase *model.TimeFilter
-	Currency             *StringFilter
-	ProductVariantsId    *StringFilter // inner join product, product variant
+	Currency             *model.StringFilter
+	ProductVariantsId    *model.StringFilter // inner join product, product variant
 	PublicationDate      *model.TimeFilter
 	IsPublished          *bool
 }
@@ -75,18 +69,4 @@ func (p *ProductChannelListing) PreSave() {
 	if p.CreateAt == 0 {
 		p.CreateAt = uint64(model.GetMillis())
 	}
-}
-
-func (p *ProductChannelListing) ToJson() string {
-	p.DiscountedPrice = &goprices.Money{
-		Amount:   p.DiscountedPriceAmount,
-		Currency: p.Currency,
-	}
-	return model.ModelToJson(p)
-}
-
-func ProductChannelListingFromJson(data io.Reader) *ProductChannelListing {
-	var p ProductChannelListing
-	model.ModelFromJson(&p, data)
-	return &p
 }

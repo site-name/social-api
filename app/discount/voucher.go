@@ -7,35 +7,12 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/store"
 )
 
-// WrapperFunc number of `args` must be 1 or 2
-//
-//  if len(args) == 1 {
-//		args[0].(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
-//  }
-//  if len(args) == 2 {
-//		(args[0].(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange) && args[0].(type) == bool
-//  }
-type WrapperFunc func(args ...interface{}) (interface{}, error)
-
-func decorator(preValue interface{}) WrapperFunc {
-	return func(args ...interface{}) (interface{}, error) {
-		// validating number of args
-		if l := len(args); l < 1 || l > 2 {
-			return nil, model.NewAppError("app.Discount.decorator", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, "you must provide either 1 or 2 arguments", http.StatusBadRequest)
-		}
-
-		if len(args) == 1 { // fixed discount
-			discount := preValue.(*goprices.Money)
-			return goprices.FixedDiscount(args[0], discount)
-		}
-		return goprices.PercentageDiscount(args[0], preValue, args[1].(bool))
-	}
-}
-
-func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (WrapperFunc, *model.AppError) {
+func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (DiscountCalculator, *model.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByVoucherAndChannel(voucher.Id, channelID)
 	if appErr != nil {
 		return nil, appErr
@@ -109,10 +86,47 @@ func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, va
 func (a *AppDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
 	_, appErr := a.VoucherCustomerByCustomerEmailAndVoucherID(voucher.Id, customerEmail)
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
+		if appErr.StatusCode == http.StatusInternalServerError { // must returns here since it's system error
 			return appErr
 		}
 	}
 
 	return nil
+}
+
+// ValidateVoucherOnlyForStaff validate if voucher is only for staff
+func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customer *account.User) *model.AppError {
+	if voucher.OnlyForStaff != nil && !*voucher.OnlyForStaff {
+		return nil
+	}
+
+	var violatVoucherOnlyForStaff bool
+	if customer == nil {
+		violatVoucherOnlyForStaff = true
+	}
+
+	_, appErr := a.ShopApp().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customer.Id)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusNotFound {
+			violatVoucherOnlyForStaff = true
+		} else {
+			return appErr
+		}
+	}
+
+	if violatVoucherOnlyForStaff {
+		return model.NewAppError("ValidateVoucherOnlyForStaff", "app.shop.voucher_for_staff_only.app_error", nil, "", http.StatusNotAcceptable)
+	}
+
+	return nil
+}
+
+// VouchersByOption finds all vouchers with given option then returns them
+func (a *AppDiscount) VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) {
+	vouchers, err := a.Srv().Store.DiscountVoucher().FilterVouchersByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("VouchersByOption", "app.discount.vouchers_by_option_error.app_error", err)
+	}
+
+	return vouchers, nil
 }

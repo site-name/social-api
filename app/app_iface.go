@@ -46,6 +46,8 @@ type AppIface interface {
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// Csv returns csv sub app
 	CsvApp() sub_app_iface.CsvApp
+	// DiscountApp returns discount sub app
+	DiscountApp() sub_app_iface.DiscountApp
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.

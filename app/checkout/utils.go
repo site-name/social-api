@@ -6,7 +6,9 @@ package checkout
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -83,14 +85,19 @@ func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, 
 		return nil, model.NewAppError("AddVariantToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
 	}
 
-	prdChannelListings, appErr := a.app.ProductApp().ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-		ChannelID: &product_and_discount.StringFilter{
-			Eq: checkoutInfo.Checkout.ChannelID,
-		},
-		ProductID: &product_and_discount.StringFilter{
-			Eq: variant.ProductID,
-		},
-	})
+	prdChannelListings, appErr := a.app.ProductApp().
+		ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
+			ChannelID: &model.StringFilter{
+				StringOption: (&model.StringOption{
+					Eq: checkoutInfo.Checkout.ChannelID,
+				}).WithFilter(model.IsValidId),
+			},
+			ProductID: &model.StringFilter{
+				StringOption: (&model.StringOption{
+					Eq: variant.ProductID,
+				}).WithFilter(model.IsValidId),
+			},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -185,11 +192,15 @@ func (a *AppCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, variants [
 	}
 	channelListings, appErr := a.app.ProductApp().
 		ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-			ChannelID: &product_and_discount.StringFilter{
-				Eq: ckout.ChannelID,
+			ChannelID: &model.StringFilter{
+				StringOption: (&model.StringOption{
+					Eq: ckout.ChannelID,
+				}).WithFilter(model.IsValidId),
 			},
-			ProductID: &product_and_discount.StringFilter{
-				In: productIDs,
+			ProductID: &model.StringFilter{
+				And: (&model.StringOption{
+					In: productIDs,
+				}).WithFilter(model.IsValidId),
 			},
 		})
 	if appErr != nil {
@@ -413,8 +424,48 @@ func (a *AppCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutL
 }
 
 // GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
+//
+// `withLock` default to false
 func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError) {
-	if checkoutInfo.Checkout.VoucherCode != nil {
 
+	now := model.NewTime(time.Now()) // NOTE: not sure to use UTC or system time
+
+	if checkoutInfo.Checkout.VoucherCode != nil {
+		// finds vouchers that are active in a channel
+		activeInChannelVouchers, appErr := a.app.DiscountApp().
+			VouchersByOption(&product_and_discount.VoucherFilterOption{
+				UsageLimit: &model.NumberFilter{
+					Or: &model.NumberOption{
+						NULL: model.NewBool(true),
+						ExtraExpr: []squirrel.Sqlizer{
+							squirrel.Expr("V.UsageLimit > V.Used"), // NOTE "V" is alias for "Vouchers"  table name
+						},
+					},
+				},
+				EndDate: &model.TimeFilter{
+					Or: &model.TimeOption{
+						NULL: model.NewBool(true),
+						GtE:  now,
+					},
+				},
+				StartDate: &model.TimeFilter{
+					TimeOption: &model.TimeOption{
+						LtE: now,
+					},
+				},
+				ChannelListingSlug: &model.StringFilter{
+					StringOption: &model.StringOption{
+						Eq: checkoutInfo.Channel.Slug,
+					},
+				},
+				ChannelListingActive: model.NewBool(true),
+			})
+
+		if appErr != nil || len(activeInChannelVouchers) == 0 {
+			appErr.Where = "GetVoucherForCheckout"
+			return nil, appErr
+		}
 	}
+
+	return nil, nil
 }

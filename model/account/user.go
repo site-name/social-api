@@ -170,7 +170,6 @@ type User struct {
 	CreateAt                 int64     `json:"create_at,omitempty"`
 	UpdateAt                 int64     `json:"update_at,omitempty"`
 	DeleteAt                 int64     `json:"delete_at"`
-	IsStaff                  bool      `json:"is_staff"`
 	IsActive                 bool      `json:"is_active"`
 	Note                     *string   `json:"note"`
 	JwtTokenKey              string    `json:"jwt_token_key"`

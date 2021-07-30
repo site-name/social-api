@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -75,97 +74,62 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 		return nil, nil
 	}
 
-	andCondition := squirrel.And{}
-
 	query := ps.
 		GetQueryBuilder().
 		Select("*").
-		From(store.ProductChannelListingTableName + " AS PCL")
+		From(store.ProductChannelListingTableName + " AS PCL").
+		OrderBy("PCL.CreateAt ASC") // since Ids are UUIDs, so order create at is a good option
 
 	// check product id
 	if option.ProductID != nil {
-		var eq interface{}
-		if model.IsValidId(option.ProductID.Eq) {
-			eq = option.ProductID.Eq
-		} else if len(option.ProductID.In) > 0 {
-			eq = option.ProductID.In
-		}
-		andCondition = append(andCondition, squirrel.Eq{"PCL.ProductID": eq})
+		query = query.Where(option.ProductID.ToSquirrel("PCL.ProductID"))
 	}
 
 	// check channel id
 	if option.ChannelID != nil {
-		var eq interface{}
-		if model.IsValidId(option.ChannelID.Eq) {
-			eq = option.ChannelID.Eq
-		} else if len(option.ChannelID.In) > 0 {
-			eq = option.ChannelID.In
-		}
-		andCondition = append(andCondition, squirrel.Eq{"PCL.ChannelID": eq})
+		query = query.Where(option.ChannelID.ToSquirrel("PCL.ChannelID"))
 	}
 
 	// check channel slug
 	if option.ChannelSlug != nil {
-		andCondition = append(andCondition, squirrel.Eq{"Cn.ChannelSlug": *option.ChannelSlug})
-
-		query = query.InnerJoin(store.ChannelTableName + " AS Cn ON (Cn.Id = PCL.ChannelID)")
+		query = query.
+			Where(squirrel.Eq{"Cn.ChannelSlug": *option.ChannelSlug}).
+			InnerJoin(store.ChannelTableName + " AS Cn ON (Cn.Id = PCL.ChannelID)")
 	}
 
 	// check visible in listing
 	if option.VisibleInListings != nil {
-		andCondition = append(andCondition, squirrel.Eq{"PCL.VisibleInListings": *option.VisibleInListings})
+		query = query.Where(squirrel.Eq{"PCL.VisibleInListings": *option.VisibleInListings})
 	}
 
 	// check available for purchase
 	if pur := option.AvailableForPurchase; pur != nil {
-		andCondition = append(andCondition, pur.ToSquirrelCondition("PCL.AvailableForPurchase")...)
+		query = query.Where(pur.ToSquirrel("PCL.AvailableForPurchase"))
 	}
 
 	// check currency
 	if option.Currency != nil {
-		var eq interface{}
-		// GetCurrencyPrecision() can check if a currency is valid too
-		if _, err := goprices.GetCurrencyPrecision(option.Currency.Eq); err == nil {
-			eq = option.Currency.Eq
-		} else if len(option.Currency.In) > 0 {
-			for i, cur := range option.Currency.In {
-				if _, err := goprices.GetCurrencyPrecision(cur); err != nil {
-					option.Currency.In = append(option.Currency.In[:i], option.ProductID.In[i+1:]...)
-				}
-			}
-			eq = option.Currency.In
-		}
-		andCondition = append(andCondition, squirrel.Eq{"PCL.Currency": eq})
+		query = query.Where(option.Currency.ToSquirrel("PCL.Currency"))
 	}
 
 	// check product variant
 	if option.ProductVariantsId != nil {
-		var eq interface{}
-		if model.IsValidId(option.ProductVariantsId.Eq) {
-			eq = option.ProductVariantsId.Eq
-		} else if len(option.ProductVariantsId.In) > 0 {
-			eq = option.ProductVariantsId.In
-		}
-		andCondition = append(andCondition, squirrel.Eq{"PV.Id": eq})
-
 		query = query.
 			InnerJoin(store.ProductTableName + " AS P ON (P.Id = PCL.ProductID)").
-			InnerJoin(store.ProductVariantTableName + " AS PV ON (PV.ProductID = P.Id)")
+			InnerJoin(store.ProductVariantTableName + " AS PV ON (PV.ProductID = P.Id)").
+			Where(option.ProductVariantsId.ToSquirrel("PV.Id"))
 	}
 
 	// check publish
 	if option.PublicationDate != nil {
-		andCondition = append(andCondition, option.PublicationDate.ToSquirrelCondition("PCL.PublicationDate")...)
+		query = query.Where(option.PublicationDate.ToSquirrel("PCL.PublicationDate"))
 	}
 
 	if option.IsPublished != nil {
-		andCondition = append(andCondition, squirrel.Eq{"PCL.IsPublished": *option.IsPublished})
+		query = query.Where(squirrel.Eq{"PCL.IsPublished": *option.IsPublished})
 	}
 
-	sqlString, args, err := query.
-		Where(andCondition).
-		OrderBy("PCL.CreateAt ASC").
-		ToSql()
+	sqlString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "sql to string")
 	}
