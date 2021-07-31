@@ -5,7 +5,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"golang.org/x/text/language"
 )
 
@@ -27,18 +26,24 @@ var ShippingMethodTypeString = map[string]string{
 }
 
 type ShippingMethod struct {
-	Id                  string                          `json:"id"`
-	Name                string                          `json:"name"`
-	Type                string                          `json:"type"`
-	ShippingZoneID      string                          `json:"shipping_zone_id"`
-	MinimumOrderWeight  *float32                        `json:"minimum_order_weight"`
-	MaximumOrderWeight  *float32                        `json:"maximum_order_weight"`
-	WeightUnit          string                          `json:"weight_unit"`
-	ExcludedProducts    []*product_and_discount.Product `json:"excluded_products" db:"-"`
-	MaximumDeliveryDays *uint                           `json:"maximum_delivery_days"`
-	MinimumDeliveryDays *uint                           `json:"minimum_delivery_days"`
-	Description         *model.StringInterface          `json:"description"`
+	Id                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	Type                string                 `json:"type"`
+	ShippingZoneID      string                 `json:"shipping_zone_id"`
+	MinimumOrderWeight  *float32               `json:"minimum_order_weight"`
+	MaximumOrderWeight  *float32               `json:"maximum_order_weight"`
+	WeightUnit          string                 `json:"weight_unit"`
+	MaximumDeliveryDays *uint                  `json:"maximum_delivery_days"`
+	MinimumDeliveryDays *uint                  `json:"minimum_delivery_days"`
+	Description         *model.StringInterface `json:"description"`
 	model.ModelMetadata
+}
+
+// ShippingMethodFilterOption is used for filtering shipping methods
+type ShippingMethodFilterOption struct {
+	Type                       *model.StringFilter // for filtering based on type
+	ShippingZoneChannelSlug    *model.StringFilter // for filtering based on inner joins
+	ChannelListingsChannelSlug *model.StringFilter
 }
 
 func (s *ShippingMethod) String() string {
@@ -65,10 +70,6 @@ func (s *ShippingMethod) IsValid() *model.AppError {
 		return outer("type", &s.Id)
 	}
 	return nil
-}
-
-func (s *ShippingMethod) ToJson() string {
-	return model.ModelToJson(s)
 }
 
 // --------------------

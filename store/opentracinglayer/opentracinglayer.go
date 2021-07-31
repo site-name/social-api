@@ -2479,7 +2479,7 @@ func (s *OpenTracingLayerCheckoutStore) CreateIndexesIfNotExists() {
 
 }
 
-func (s *OpenTracingLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
+func (s *OpenTracingLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -2488,7 +2488,7 @@ func (s *OpenTracingLayerCheckoutStore) Get(id string) (*checkout.Checkout, erro
 	}()
 
 	defer span.Finish()
-	result, err := s.CheckoutStore.Get(id)
+	result, err := s.CheckoutStore.Get(token)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2497,34 +2497,16 @@ func (s *OpenTracingLayerCheckoutStore) Get(id string) (*checkout.Checkout, erro
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+func (s *OpenTracingLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.CheckoutStore.Save(checkout)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerCheckoutStore) Update(checkout *checkout.Checkout) (*checkout.Checkout, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.CheckoutStore.Update(checkout)
+	result, err := s.CheckoutStore.Upsert(ckout)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3219,6 +3201,42 @@ func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *product_
 	return result, err
 }
 
+func (s *OpenTracingLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.DiscountSaleStore.Get(saleID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.DiscountSaleStore.Upsert(sale)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.CreateIndexesIfNotExists")
@@ -3714,6 +3732,24 @@ func (s *OpenTracingLayerGiftCardStore) CreateIndexesIfNotExists() {
 
 }
 
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.GiftCardStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.GetAllByCheckout")
@@ -3724,24 +3760,6 @@ func (s *OpenTracingLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*
 
 	defer span.Finish()
 	result, err := s.GiftCardStore.GetAllByCheckout(checkoutID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.GetAllByOrder")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardStore.GetAllByOrder(orderID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3786,16 +3804,16 @@ func (s *OpenTracingLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, 
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.GiftCardStore.Save(gc)
+	result, err := s.GiftCardStore.Upsert(giftCard)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3815,6 +3833,24 @@ func (s *OpenTracingLayerGiftCardCheckoutStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.GiftCardCheckoutStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.GiftCardCheckoutStore.Delete(giftcardID, checkoutID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
@@ -5353,6 +5389,24 @@ func (s *OpenTracingLayerProductTypeStore) Get(productTypeID string) (*product_a
 	return result, err
 }
 
+func (s *OpenTracingLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.ProductTypesByProductIDs")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Save")
@@ -5892,6 +5946,60 @@ func (s *OpenTracingLayerShippingMethodStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.ShippingMethodStore.CreateIndexesIfNotExists()
 
+}
+
+func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Get")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodStore.Get(methodID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.ShippingMethodsByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodStore.ShippingMethodsByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodStore.Upsert(method)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
@@ -8365,60 +8473,6 @@ func (s *OpenTracingLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
 	defer span.Finish()
 	s.VoucherTranslationStore.CreateIndexesIfNotExists()
 
-}
-
-func (s *OpenTracingLayerVoucherTranslationStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.FilterSalesByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.VoucherTranslationStore.FilterSalesByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerVoucherTranslationStore) Get(saleID string) (*product_and_discount.Sale, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.VoucherTranslationStore.Get(saleID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerVoucherTranslationStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.Upsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.VoucherTranslationStore.Upsert(sale)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
 }
 
 func (s *OpenTracingLayerWarehouseStore) CreateIndexesIfNotExists() {

@@ -13,7 +13,7 @@ type SqlShippingMethodChannelListingStore struct {
 func NewSqlShippingMethodChannelListingStore(s store.Store) store.ShippingMethodChannelListingStore {
 	smls := &SqlShippingMethodChannelListingStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingMethodChannelListing{}, "ShippingMethodChannelListings").SetKeys(false, "Id")
+		table := db.AddTableWithName(shipping.ShippingMethodChannelListing{}, store.ShippingMethodChannelListingTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)

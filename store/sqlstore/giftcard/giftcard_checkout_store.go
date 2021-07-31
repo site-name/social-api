@@ -2,6 +2,7 @@ package giftcard
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/giftcard"
@@ -26,7 +27,10 @@ func NewSqlGiftCardCheckoutStore(s store.Store) store.GiftCardCheckoutStore {
 	return gs
 }
 
-func (gs *SqlGiftCardCheckoutStore) CreateIndexesIfNotExists() {}
+func (gs *SqlGiftCardCheckoutStore) CreateIndexesIfNotExists() {
+	gs.CreateForeignKeyIfNotExists(store.GiftcardCheckoutTableName, "GiftcardID", store.GiftcardTableName, "Id", false)
+	gs.CreateForeignKeyIfNotExists(store.GiftcardCheckoutTableName, "CheckoutID", store.CheckoutTableName, "Token", false)
+}
 
 func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) {
 	giftcardCheckout.PreSave()
@@ -54,4 +58,37 @@ func (gs *SqlGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, 
 	}
 
 	return res.(*giftcard.GiftCardCheckout), nil
+}
+
+// Delete deletes a giftcard-checkout relation with given id
+func (gs *SqlGiftCardCheckoutStore) Delete(giftcardID string, checkoutToken string) error {
+	var oldRelation *giftcard.GiftCardCheckout
+	err := gs.GetReplica().SelectOne(
+		&oldRelation,
+		`SELECT * FROM `+store.GiftcardCheckoutTableName+`
+		WHERE (
+			GiftcardID = :GiftCardID AND CheckoutID = :CheckoutToken
+		)`,
+		map[string]interface{}{
+			"GiftCardID": giftcardID,
+			"CheckoutID": checkoutToken,
+		},
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return store.NewErrNotFound(store.GiftcardCheckoutTableName, fmt.Sprintf("GiftCardID=%s, CheckoutID=%s", giftcardID, checkoutToken))
+		}
+		return errors.Errorf("failed to delete giftcard-checkout relation with GiftCardID=%s, CheckoutID=%s", giftcardID, checkoutToken)
+	}
+
+	numDeleted, err := gs.GetMaster().Delete(oldRelation)
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete giftcard-checkout relation with GiftCardID=%s, CheckoutToken=%s", giftcardID, checkoutToken)
+	}
+
+	if numDeleted > 1 {
+		return errors.Errorf("multiple giftcard-checkout relations were deleted: %d instead of 1", numDeleted)
+	}
+
+	return nil
 }

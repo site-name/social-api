@@ -154,3 +154,13 @@ const (
 const (
 	MenuTableName = "Menus"
 )
+
+// shipping-related table names
+const (
+	ShippingMethodTableName               = "ShippingMethods"
+	ShippingZoneTableName                 = "ShippingZones"
+	ShippingZoneChannelTableName          = "ShippingZoneChannels"
+	ShippingMethodTranslationTableName    = "ShippingMethodTranslations"
+	ShippingMethodPostalCodeRuleTableName = "ShippingMethodPostalCodeRules"
+	ShippingMethodChannelListingTableName = "ShippingMethodChannelListings"
+)

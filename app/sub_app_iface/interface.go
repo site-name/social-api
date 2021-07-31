@@ -33,10 +33,12 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardApp interface {
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                   // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsByCheckout returns all giftcards belong to given checkout
-	GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *model.AppError)       // GiftcardsByOrder returns all giftcards belong to given order
-	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                       // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                  // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError)                // GiftcardsByCheckout returns all giftcards belong to given checkout
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                             // ToggleGiftcardStatus set status of given giftcard to inactive/active
+	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
 }
 
 // PaymentApp defines methods for payment sub app
@@ -204,6 +206,7 @@ type ProductApp interface {
 	CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, *model.AppError)                                                                  // CollectionsByVoucherID finds all collections that have relationships with given voucher
 	CategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, *model.AppError)                                                                     // CategoriesByVoucherID finds all categories that have relationship with given voucher
 	ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError)                                                                        // ProductsByVoucherID finds all products that have relationships with given voucher
+	ProductsRequireShipping(productIDs []string) (bool, *model.AppError)                                                                                            // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
 }
 
 type WishlistApp interface {

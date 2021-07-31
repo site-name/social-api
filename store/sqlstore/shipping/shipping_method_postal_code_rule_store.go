@@ -12,7 +12,7 @@ type SqlShippingMethodPostalCodeRuleStore struct {
 func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethodPostalCodeRuleStore {
 	smls := &SqlShippingMethodPostalCodeRuleStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingMethodPostalCodeRule{}, "ShippingMethodPostalCodeRules").SetKeys(false, "Id")
+		table := db.AddTableWithName(shipping.ShippingMethodPostalCodeRule{}, store.ShippingMethodPostalCodeRuleTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Start").SetMaxSize(shipping.SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH)
@@ -25,7 +25,6 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 }
 
 func (s *SqlShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_start", "ShippingMethodPostalCodeRules", "Start")
-	// s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_end", "ShippingMethodPostalCodeRules", "End")
-	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_inclusion_type", "ShippingMethodPostalCodeRules", "InclusionType")
+	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_start", store.ShippingMethodPostalCodeRuleTableName, "Start")
+	s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_inclusion_type", store.ShippingMethodPostalCodeRuleTableName, "InclusionType")
 }

@@ -12,7 +12,7 @@ type SqlDiscountSaleStore struct {
 	store.Store
 }
 
-func NewSqlSaleStore(sqlStore store.Store) store.DiscountSaleStore {
+func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 	ss := &SqlDiscountSaleStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {

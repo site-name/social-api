@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
 
 type SqlCheckoutStore struct {
@@ -47,57 +46,73 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", store.ChannelTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", shipping.ShippingMethodTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
 }
 
-func (cs *SqlCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
-	checkout.PreSave()
-	if err := checkout.IsValid(); err != nil {
-		return nil, err
-	}
-	if err := cs.GetMaster().Insert(checkout); err != nil {
-		return nil, err
-	}
-	return checkout, nil
-}
+// Upsert depends on given checkout's Token property to decide to update or insert it
+func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
+	var isSaving bool
 
-func (cs *SqlCheckoutStore) Get(id string) (*checkout.Checkout, error) {
-	iface, err := cs.GetReplica().Get(checkout.Checkout{}, id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find checkout with id=%s", id)
+	if ckout.Token == "" {
+		isSaving = true
+		ckout.PreSave()
+	} else {
+		ckout.PreUpdate()
 	}
 
-	return iface.(*checkout.Checkout), nil
-}
-
-func (cs *SqlCheckoutStore) Update(ckout *checkout.Checkout) (*checkout.Checkout, error) {
-	ckout.PreUpdate()
 	if err := ckout.IsValid(); err != nil {
 		return nil, err
 	}
 
-	// try finding if checkeout exist:
-	result, err := cs.GetReplica().Get(checkout.Checkout{}, ckout.Token)
+	var (
+		err         error
+		numUpdated  int64
+		oldCheckout *checkout.Checkout
+	)
+	if isSaving {
+		err = cs.GetMaster().Insert(ckout)
+	} else {
+		// validate if checkout exist
+		oldCheckout, err = cs.Get(ckout.Token)
+		if err != nil {
+			return nil, err
+		}
+
+		// set fields that CANNOT be changed
+		ckout.BillingAddressID = oldCheckout.BillingAddressID
+		ckout.ShippingAddressID = oldCheckout.ShippingAddressID
+
+		// update checkout
+		numUpdated, err = cs.GetMaster().Update(ckout)
+	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to upsert checout with token=%s", ckout.Token)
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple checkouts were updated: %d instead of 1", numUpdated)
+	}
+
+	return ckout, nil
+}
+
+// Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
+func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
+	var ckout *checkout.Checkout
+	err := cs.GetReplica().SelectOne(
+		&ckout,
+		`SELECT * FROM `+store.CheckoutTableName+` WHERE (
+			Token = :Token
+		)`,
+		map[string]interface{}{
+			"Token": token,
+		},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutTableName, "Token="+ckout.Token)
+			return nil, store.NewErrNotFound(store.CheckoutTableName, token)
 		}
-		return nil, errors.Wrapf(err, "failed to find a checkout with token=%s", ckout.Token)
-	}
-	// Found a checkout. now set fields that cannot be modified:
-	oldCheckout := result.(*checkout.Checkout)
-	ckout.BillingAddressID = oldCheckout.BillingAddressID
-	ckout.ShippingAddressID = oldCheckout.ShippingAddressID
-
-	numUpdate, err := cs.GetMaster().Update(ckout)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to update checkout with token=%s", ckout.Token)
-	}
-	if numUpdate > 1 {
-		return nil, errors.New("multiple checkout was updated instead of one")
+		return nil, errors.Wrapf(err, "failed to find checkout with token=%s", token)
 	}
 
 	return ckout, nil

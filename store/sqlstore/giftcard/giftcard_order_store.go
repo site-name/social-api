@@ -26,7 +26,10 @@ func NewSqlGiftCardOrderStore(s store.Store) store.GiftCardOrderStore {
 	return gs
 }
 
-func (gs *SqlGiftCardOrderStore) CreateIndexesIfNotExists() {}
+func (gs *SqlGiftCardOrderStore) CreateIndexesIfNotExists() {
+	gs.CreateForeignKeyIfNotExists(store.OrderGiftCardTableName, "GiftCardID", store.GiftcardTableName, "id", false)
+	gs.CreateForeignKeyIfNotExists(store.OrderGiftCardTableName, "OrderID", store.OrderTableName, "Id", false)
+}
 
 func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
 	giftCardOrder.PreSave()

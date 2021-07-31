@@ -14,3 +14,13 @@ func (a *AppProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*produ
 
 	return types, nil
 }
+
+// ProductTypesByProductIDs returns all product types that belong to given products
+func (a *AppProduct) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, *model.AppError) {
+	types, err := a.Srv().Store.ProductType().ProductTypesByProductIDs(productIDs)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductTypesByProductIDs", "app.product.product_types_by_product_ids.app_error", err)
+	}
+
+	return types, nil
+}

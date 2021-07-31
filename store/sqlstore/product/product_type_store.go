@@ -129,3 +129,28 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 
 	return productTypes, nil
 }
+
+func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
+	var productTypes []*product_and_discount.ProductType
+	_, err := pts.GetReplica().Select(
+		&productTypes,
+		`SELECT * FROM `+store.ProductTypeTableName+` AS PT 
+		INNER JOIN `+store.ProductTableName+` AS P ON (
+			PT.Id = P.ProductTypeID
+		) WHERE (
+			P.Id IN :IDs
+		)`,
+		map[string]interface{}{
+			"IDs": productIDs,
+		},
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductTypeTableName, "")
+		}
+		return nil, errors.Wrap(err, "failed to find product types with given product ids")
+	}
+
+	return productTypes, nil
+}

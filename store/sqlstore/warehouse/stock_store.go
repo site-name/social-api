@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore/product"
-	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
 
 type SqlStockStore struct {
@@ -85,7 +84,7 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 		INNER JOIN ` + store.WarehouseShippingZoneTableName + ` AS WhSz ON (
 			WhSz.WarehouseID = Wh.Id
 		)
-		INNER JOIN ` + shipping.ShippingZoneTableName + ` AS Sz ON (
+		INNER JOIN ` + store.ShippingZoneTableName + ` AS Sz ON (
 			Sz.Id = WhSz.ShippingZoneID
 		)`
 	params := map[string]interface{}{
@@ -95,7 +94,7 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 	// if channel slug is provided and valid
 	if options.ChannelSlug != "" {
 		subQueryCondition += ` AND Cn.Slug = :ChannelSlug`
-		query += ` INNER JOIN ` + shipping.ShippingZoneChannelTableName + ` AS SzCn ON (
+		query += ` INNER JOIN ` + store.ShippingZoneChannelTableName + ` AS SzCn ON (
 			SzCn.ShippingZoneID = Sz.Id
 		)
 		INNER JOIN ` + store.ChannelTableName + ` AS Cn ON (

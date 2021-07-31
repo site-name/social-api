@@ -71,6 +71,7 @@ func (a *AppCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model
 	return ckout.Email, nil
 }
 
+// CheckoutShippingRequired checks if given checkout require shipping
 func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) {
 	/*
 					checkout
@@ -105,14 +106,9 @@ func (a *AppCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCod
 	return appErr
 }
 
+// UpsertCheckout saves/updates given checkout
 func (a *AppCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError) {
-	var err error
-
-	if ckout.Token == "" {
-		ckout, err = a.app.Srv().Store.Checkout().Save(ckout)
-	} else {
-		ckout, err = a.app.Srv().Store.Checkout().Update(ckout)
-	}
+	ckout, err := a.app.Srv().Store.Checkout().Upsert(ckout)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

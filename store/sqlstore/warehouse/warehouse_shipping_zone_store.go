@@ -3,7 +3,6 @@ package warehouse
 import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/shipping"
 )
 
 type SqlWarehouseShippingZoneStore struct {
@@ -26,5 +25,5 @@ func NewSqlWarehouseShippingZoneStore(s store.Store) store.WarehouseShippingZone
 
 func (ws *SqlWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
 	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "WarehouseID", store.WarehouseTableName, "Id", false)
-	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "ShippingZoneID", shipping.ShippingZoneTableName, "Id", false)
+	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "ShippingZoneID", store.ShippingZoneTableName, "Id", false)
 }

@@ -3,6 +3,7 @@ package giftcard
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
@@ -32,17 +33,48 @@ func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
 	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UserID", store.UserTableName, "Id", false)
 }
 
-func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
-	giftCard.PreSave()
+// Upsert depends on given giftcard's Id property then perform according operation
+func (gcs *SqlGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+	var saving bool
+	if giftCard.Id == "" {
+		giftCard.PreSave()
+		saving = true
+	} else {
+		giftCard.PreUpdate()
+	}
+
 	if err := giftCard.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := gcs.GetMaster().Insert(giftCard); err != nil {
+	var (
+		err         error
+		oldGiftcard *giftcard.GiftCard
+		numUpdated  int64
+	)
+	if saving {
+		err = gcs.GetMaster().Insert(giftCard)
+	} else {
+		oldGiftcard, err = gcs.GetById(giftCard.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		giftCard.CreateAt = oldGiftcard.CreateAt
+		giftCard.Code = oldGiftcard.Code
+
+		numUpdated, err = gcs.GetMaster().Update(giftCard)
+	}
+
+	if err != nil {
 		if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
 			return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
 		}
-		return nil, errors.Wrapf(err, "failed to save giftcard with id=%s", giftCard.Id)
+		return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
+	}
+
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple giftcards were updated: %d instead of 1", numUpdated)
 	}
 
 	return giftCard, nil
@@ -92,31 +124,32 @@ func (gs *SqlGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.Gif
 	return giftcards, nil
 }
 
-func (gs *SqlGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error) {
-	query := `SELECT * FROM ` + store.GiftcardTableName + ` AS Gc
-		WHERE Gc.Id IN (
-			SELECT GcOd.GiftcardID FROM ` + store.OrderGiftCardTableName + ` AS GcOd
-		)
-		WHERE GcOd.OrderID = :OrderID`
-
-	var giftcards []*giftcard.GiftCard
-	_, err := gs.GetReplica().Select(&giftcards, query, map[string]interface{}{"OrderID": orderID})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.GiftcardTableName, "checkoutID="+orderID)
-		}
-		return nil, errors.Wrapf(err, "failed to find giftcards belong to order with id=%s", orderID)
-	}
-
-	return giftcards, nil
-}
-
 // FilterByOption finds giftcards wth option
 func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 
-	query := gs.GetQueryBuilder().Select(store.GiftcardTableName).OrderBy("CreateAt ASC")
+	query := gs.
+		GetQueryBuilder().
+		Select(store.GiftcardTableName).
+		OrderBy("CreateAt ASC")
+
+	// check code
 	if option.Code != nil {
 		query = query.Where(option.Code.ToSquirrel("Code"))
+	}
+
+	// check end date
+	if option.EndDate != nil {
+		query = query.Where(option.EndDate.ToSquirrel("EndDate"))
+	}
+
+	// check start date
+	if option.StartDate != nil {
+		query = query.Where(option.StartDate.ToSquirrel("StartDate"))
+	}
+
+	// check is active
+	if option.IsActive != nil {
+		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
 	}
 
 	queryString, args, err := query.ToSql()

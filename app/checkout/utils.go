@@ -10,6 +10,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/shopspring/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -481,6 +482,7 @@ func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo,
 
 // RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
 func (a *AppCheckout) RemovePromoCodeFromCheckout(checkoutInfo *checkout.CheckoutInfo, promoCode string) *model.AppError {
+	// check if promoCode is voucher:
 	promoCodeIsVoucher, appErr := a.app.DiscountApp().PromoCodeIsVoucher(promoCode)
 	if appErr != nil { // this error is system error
 		return appErr
@@ -489,12 +491,13 @@ func (a *AppCheckout) RemovePromoCodeFromCheckout(checkoutInfo *checkout.Checkou
 		return a.RemoveVoucherCodeFromCheckout(checkoutInfo, promoCode)
 	}
 
+	// check promoCode is giftcard
 	promoCodeIsGiftCard, appErr := a.app.GiftcardApp().PromoCodeIsGiftCard(promoCode)
 	if appErr != nil {
 		return appErr
 	}
 	if promoCodeIsGiftCard {
-		return
+		return a.app.GiftcardApp().RemoveGiftcardCodeFromCheckout(&checkoutInfo.Checkout, promoCode)
 	}
 
 	return nil
@@ -524,10 +527,12 @@ func (a *AppCheckout) RemoveVoucherFromCheckout(ckout *checkout.Checkout) *model
 	ckout.TranslatedDiscountName = nil
 	ckout.DiscountAmount = &decimal.Zero
 
-	_, err := a.app.Srv().Store.Checkout().Update(ckout)
-	if err != nil {
-		return model.NewAppError("RemoveVoucherFromCheckout", "app.checkout.error_updating_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	_, appErr := a.UpsertCheckout(ckout)
 
-	return nil
+	return appErr
+}
+
+// GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
+func (a *AppCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *checkout.Checkout, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) {
+
 }

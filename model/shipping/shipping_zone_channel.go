@@ -33,7 +33,3 @@ func (s *ShippingZoneChannel) PreSave() {
 		s.Id = model.NewId()
 	}
 }
-
-func (s *ShippingZoneChannel) ToJson() string {
-	return model.ModelToJson(s)
-}

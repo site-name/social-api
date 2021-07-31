@@ -5,10 +5,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	ShippingZoneChannelTableName = "ShippingZoneChannels"
-)
-
 type SqlShippingZoneChannelStore struct {
 	store.Store
 }
@@ -17,7 +13,7 @@ func NewSqlShippingZoneChannelStore(s store.Store) store.ShippingZoneChannelStor
 	ss := &SqlShippingZoneChannelStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingZoneChannel{}, ShippingZoneChannelTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(shipping.ShippingZoneChannel{}, store.ShippingZoneChannelTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingZoneID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -29,6 +25,6 @@ func NewSqlShippingZoneChannelStore(s store.Store) store.ShippingZoneChannelStor
 }
 
 func (ss *SqlShippingZoneChannelStore) CreateIndexesIfNotExists() {
-	ss.CreateForeignKeyIfNotExists(ShippingZoneChannelTableName, "ShippingZoneID", ShippingZoneTableName, "Id", false)
-	ss.CreateForeignKeyIfNotExists(ShippingZoneChannelTableName, "ChannelID", store.ChannelTableName, "Id", false)
+	ss.CreateForeignKeyIfNotExists(store.ShippingZoneChannelTableName, "ShippingZoneID", store.ShippingZoneTableName, "Id", false)
+	ss.CreateForeignKeyIfNotExists(store.ShippingZoneChannelTableName, "ChannelID", store.ChannelTableName, "Id", false)
 }

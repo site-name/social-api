@@ -25,6 +25,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -386,6 +387,9 @@ type (
 	}
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                // Upsert bases on given method's Id to decide update or insert it
+		Get(methodID string) (*shipping.ShippingMethod, error)                                                   // Get finds and returns a shipping method with given id
+		ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) // ShippingMethodsByOption finds and returns a list of shipping methods that satisfy given filtering option
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		CreateIndexesIfNotExists()
@@ -452,6 +456,7 @@ type (
 		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)    // Save try inserting new product type into database then returns it
 		Get(productTypeID string) (*product_and_discount.ProductType, error)                              // Get try finding product type with given id and returns it
 		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
+		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)        // ProductTypesByProductIDs returns all product types belong to given products
 	}
 	CategoryTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -464,7 +469,6 @@ type (
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
-		// FilterProducts(filterInput *webmodel.ProductFilterInput) ([]*product_and_discount.Product, error)
 	}
 )
 
@@ -560,11 +564,10 @@ type InvoiceEventStore interface {
 type (
 	GiftCardStore interface {
 		CreateIndexesIfNotExists()
-		Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)                             // Save insert new giftcard to database
+		Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error)                     // Upsert depends on given giftcard's Id property then perform according operation
 		GetById(id string) (*giftcard.GiftCard, error)                                      // GetById returns a giftcard instance that has id of given id
 		GetAllByUserId(userID string) ([]*giftcard.GiftCard, error)                         // GetAllByUserId returns a slice aff giftcards that belong to given user
 		GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error)                   // GetAllByCheckout returns all giftcards belong to given checkout
-		GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error)                         // GetAllByOrder returns all giftcards belong to given order
 		FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
 	}
 	GiftCardOrderStore interface {
@@ -576,6 +579,7 @@ type (
 		CreateIndexesIfNotExists()
 		Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) // Save inserts new giftcard-checkout relation into database then returns it
 		Get(id string) (*giftcard.GiftCardCheckout, error)                                 // Get returns giftcard-checkout relation table with given id
+		Delete(giftcardID string, checkoutID string) error                                 // Delete deletes a giftcard-checkout relation with given id
 	}
 )
 
@@ -663,10 +667,9 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
-		Save(checkout *checkout.Checkout) (*checkout.Checkout, error)                      // Save inserts checkout instance to database
-		Get(id string) (*checkout.Checkout, error)                                         // Get returns checkout by given id
-		Update(checkout *checkout.Checkout) (*checkout.Checkout, error)                    // Update updates given checkout and returns it
 		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) // CheckoutsByUserID returns a list of check outs that belong to given user and have channels active
+		Get(token string) (*checkout.Checkout, error)                                      // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
+		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                       // Upsert depends on given checkout's Token property to decide to update or insert it
 	}
 )
 

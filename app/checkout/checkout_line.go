@@ -9,14 +9,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// func (a *AppCheckout) CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) {
-// 	productVariant, appErr := a.ProductApp().ProductVariantById(checkoutLine.VariantID)
-// 	if appErr != nil {
-// 		return false, appErr
-// 	}
-
-// }
-
 func (a *AppCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError) {
 	lines, err := a.app.Srv().Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
 	if err != nil {

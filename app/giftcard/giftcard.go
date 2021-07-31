@@ -37,14 +37,6 @@ func (a *AppGiftcard) GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCa
 	return gcs, nil
 }
 
-func (a *AppGiftcard) GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *model.AppError) {
-	gcs, err := a.Srv().Store.GiftCard().GetAllByOrder(orderID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GiftcardsByOrder", "app.giftcard.giftcards_by_order_missing.app_error", err)
-	}
-	return gcs, nil
-}
-
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 	giftcards, err := a.Srv().Store.GiftCard().FilterByOption(&giftcard.GiftCardFilterOption{
@@ -63,4 +55,24 @@ func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 	}
 
 	return len(giftcards) != 0, nil
+}
+
+// GiftcardsByOption finds a list of giftcards with given option
+func (a *AppGiftcard) GiftcardsByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) {
+	giftcards, err := a.Srv().Store.GiftCard().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("GiftCardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", err)
+	}
+
+	return giftcards, nil
+}
+
+// UpdateGiftCard updates given giftcard. You must changed the giftcard's properties before giving it to me
+func (a *AppGiftcard) UpdateGiftCard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
+	giftcard, err := a.Srv().Store.GiftCard().Upsert(giftcard)
+	if err != nil {
+		return nil, model.NewAppError("UpdateGiftCard", "app.giftcard.error_updating_giftcard.app_error", nil, err.Error(), http.StatusExpectationFailed)
+	}
+
+	return giftcard, nil
 }

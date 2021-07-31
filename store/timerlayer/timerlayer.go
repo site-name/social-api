@@ -2399,10 +2399,10 @@ func (s *TimerLayerCheckoutStore) CreateIndexesIfNotExists() {
 	}
 }
 
-func (s *TimerLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.Get(id)
+	result, err := s.CheckoutStore.Get(token)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2415,10 +2415,10 @@ func (s *TimerLayerCheckoutStore) Get(id string) (*checkout.Checkout, error) {
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.Save(checkout)
+	result, err := s.CheckoutStore.Upsert(ckout)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2426,23 +2426,7 @@ func (s *TimerLayerCheckoutStore) Save(checkout *checkout.Checkout) (*checkout.C
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerCheckoutStore) Update(checkout *checkout.Checkout) (*checkout.Checkout, error) {
-	start := timemodule.Now()
-
-	result, err := s.CheckoutStore.Update(checkout)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Update", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -3105,6 +3089,38 @@ func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_di
 	return result, err
 }
 
+func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleStore.Get(saleID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleStore.Upsert(sale)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
 	start := timemodule.Now()
 
@@ -3576,6 +3592,22 @@ func (s *TimerLayerGiftCardStore) CreateIndexesIfNotExists() {
 	}
 }
 
+func (s *TimerLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
@@ -3588,22 +3620,6 @@ func (s *TimerLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftca
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByCheckout", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardStore.GetAllByOrder(orderID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByOrder", success, elapsed)
 	}
 	return result, err
 }
@@ -3640,10 +3656,10 @@ func (s *TimerLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error)
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.Save(gc)
+	result, err := s.GiftCardStore.Upsert(giftCard)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3651,7 +3667,7 @@ func (s *TimerLayerGiftCardStore) Save(gc *giftcard.GiftCard) (*giftcard.GiftCar
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -3669,6 +3685,22 @@ func (s *TimerLayerGiftCardCheckoutStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
+	start := timemodule.Now()
+
+	err := s.GiftCardCheckoutStore.Delete(giftcardID, checkoutID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
@@ -5119,6 +5151,22 @@ func (s *TimerLayerProductTypeStore) Get(productTypeID string) (*product_and_dis
 	return result, err
 }
 
+func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ProductTypesByProductIDs", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
@@ -5622,6 +5670,54 @@ func (s *TimerLayerShippingMethodStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.CreateIndexesIfNotExists", success, elapsed)
 	}
+}
+
+func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.Get(methodID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.ShippingMethodsByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.ShippingMethodsByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.Upsert(method)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Upsert", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
@@ -7929,54 +8025,6 @@ func (s *TimerLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.CreateIndexesIfNotExists", success, elapsed)
 	}
-}
-
-func (s *TimerLayerVoucherTranslationStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
-	start := timemodule.Now()
-
-	result, err := s.VoucherTranslationStore.FilterSalesByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.FilterSalesByOption", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerVoucherTranslationStore) Get(saleID string) (*product_and_discount.Sale, error) {
-	start := timemodule.Now()
-
-	result, err := s.VoucherTranslationStore.Get(saleID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerVoucherTranslationStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
-	start := timemodule.Now()
-
-	result, err := s.VoucherTranslationStore.Upsert(sale)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Upsert", success, elapsed)
-	}
-	return result, err
 }
 
 func (s *TimerLayerWarehouseStore) CreateIndexesIfNotExists() {

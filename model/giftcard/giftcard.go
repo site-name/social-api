@@ -22,7 +22,7 @@ type GiftCard struct {
 	StartDate            *time.Time       `json:"start_date"`
 	EndDate              *time.Time       `json:"end_date"`
 	LastUsedOn           int64            `json:"last_used_on"`
-	IsActive             *bool            `json:"is_active"`
+	IsActive             *bool            `json:"is_active"` // default true
 	Currency             string           `json:"currency"`
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
 	InitialBalance       *goprices.Money  `json:"initial_balance,omitempty" db:"-"`
@@ -31,7 +31,10 @@ type GiftCard struct {
 }
 
 type GiftCardFilterOption struct {
-	Code *model.StringFilter
+	EndDate   *model.TimeFilter
+	StartDate *model.TimeFilter
+	Code      *model.StringFilter
+	IsActive  *bool
 }
 
 func (gc *GiftCard) DisplayCode() string {
@@ -104,5 +107,11 @@ func (gc *GiftCard) PreSave() {
 		gc.Currency = model.DEFAULT_CURRENCY
 	} else {
 		gc.Currency = strings.ToUpper(strings.TrimSpace(gc.Currency))
+	}
+}
+
+func (gc *GiftCard) PreUpdate() {
+	if gc.IsActive == nil {
+		gc.IsActive = model.NewBool(true)
 	}
 }
