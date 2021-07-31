@@ -36,6 +36,7 @@ type GiftcardApp interface {
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                   // GetGiftCard returns a giftcard with given id
 	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsByCheckout returns all giftcards belong to given checkout
 	GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *model.AppError)       // GiftcardsByOrder returns all giftcards belong to given order
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                       // PromoCodeIsGiftCard checks whether there is giftcard with given code
 }
 
 // PaymentApp defines methods for payment sub app
@@ -257,6 +258,7 @@ type DiscountApp interface {
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
+	PromoCodeIsVoucher(code string) (bool, *model.AppError) // PromoCodeIsVoucher checks if given code is belong to a voucher
 }
 
 type OrderApp interface {

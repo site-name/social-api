@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/shopspring/decimal"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -459,13 +460,74 @@ func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo,
 					},
 				},
 				ChannelListingActive: model.NewBool(true),
+				WithLook:             withLock, // <--
 			})
 
 		if appErr != nil || len(activeInChannelVouchers) == 0 {
 			appErr.Where = "GetVoucherForCheckout"
 			return nil, appErr
 		}
+
+		// find voucher with code
+		for _, voucher := range activeInChannelVouchers {
+			if voucher.Code == *checkoutInfo.Checkout.VoucherCode {
+				return voucher, nil
+			}
+		}
 	}
 
 	return nil, nil
+}
+
+// RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
+func (a *AppCheckout) RemovePromoCodeFromCheckout(checkoutInfo *checkout.CheckoutInfo, promoCode string) *model.AppError {
+	promoCodeIsVoucher, appErr := a.app.DiscountApp().PromoCodeIsVoucher(promoCode)
+	if appErr != nil { // this error is system error
+		return appErr
+	}
+	if promoCodeIsVoucher {
+		return a.RemoveVoucherCodeFromCheckout(checkoutInfo, promoCode)
+	}
+
+	promoCodeIsGiftCard, appErr := a.app.GiftcardApp().PromoCodeIsGiftCard(promoCode)
+	if appErr != nil {
+		return appErr
+	}
+	if promoCodeIsGiftCard {
+		return
+	}
+
+	return nil
+}
+
+// RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
+func (a *AppCheckout) RemoveVoucherCodeFromCheckout(checkoutInfo *checkout.CheckoutInfo, voucherCode string) *model.AppError {
+	existingVoucher, appErr := a.GetVoucherForCheckout(checkoutInfo, false)
+	if appErr != nil {
+		return appErr
+	}
+	if existingVoucher != nil && existingVoucher.Code == voucherCode {
+		return a.RemoveVoucherFromCheckout(&checkoutInfo.Checkout)
+	}
+
+	return nil
+}
+
+// RemoveVoucherFromCheckout removes voucher data from checkout
+func (a *AppCheckout) RemoveVoucherFromCheckout(ckout *checkout.Checkout) *model.AppError {
+	if ckout == nil {
+		return nil
+	}
+
+	ckout.VoucherCode = nil
+	ckout.DiscountName = nil
+	ckout.TranslatedDiscountName = nil
+	ckout.DiscountAmount = &decimal.Zero
+
+	_, err := a.app.Srv().Store.Checkout().Update(ckout)
+	if err != nil {
+		return model.NewAppError("RemoveVoucherFromCheckout", "app.checkout.error_updating_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

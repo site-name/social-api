@@ -1,6 +1,8 @@
 package giftcard
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -41,4 +43,24 @@ func (a *AppGiftcard) GiftcardsByOrder(orderID string) ([]*giftcard.GiftCard, *m
 		return nil, store.AppErrorFromDatabaseLookupError("GiftcardsByOrder", "app.giftcard.giftcards_by_order_missing.app_error", err)
 	}
 	return gcs, nil
+}
+
+// PromoCodeIsGiftCard checks whether there is giftcard with given code
+func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
+	giftcards, err := a.Srv().Store.GiftCard().FilterByOption(&giftcard.GiftCardFilterOption{
+		Code: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: code,
+			},
+		},
+	})
+
+	if err != nil {
+		if _, ok := err.(*store.ErrNotFound); ok {
+			return false, nil
+		}
+		return false, model.NewAppError("PromoCodeIsGiftCard", "app.giftcard.error_finding_giftcards_with_option", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return len(giftcards) != 0, nil
 }

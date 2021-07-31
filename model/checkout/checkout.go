@@ -1,7 +1,6 @@
 package checkout
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -35,8 +34,8 @@ type Checkout struct {
 	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
 	Note                   string           `json:"note"`
 	Currency               string           `json:"currency"`
-	Country                string           `json:"country"` // one country only
-	DiscountAmount         *decimal.Decimal `json:"discount_amount"`
+	Country                string           `json:"country"`         // one country only
+	DiscountAmount         *decimal.Decimal `json:"discount_amount"` //  default decimal(0)
 	Discount               *goprices.Money  `db:"-" json:"discount,omitempty"`
 	DiscountName           *string          `json:"discount_name"`
 	TranslatedDiscountName *string          `json:"translated_discount_name"`
@@ -97,20 +96,6 @@ func (c *Checkout) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (c *Checkout) ToJson() string {
-	c.Discount = &goprices.Money{
-		Amount:   c.DiscountAmount,
-		Currency: c.Currency,
-	}
-	return model.ModelToJson(c)
-}
-
-func CheckoutFromJson(data io.Reader) *Checkout {
-	var checkout Checkout
-	model.ModelFromJson(&checkout, data)
-	return &checkout
 }
 
 func (c *Checkout) PreSave() {

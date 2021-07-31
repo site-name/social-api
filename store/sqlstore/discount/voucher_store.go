@@ -103,8 +103,7 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	query := vs.
 		GetQueryBuilder().
 		Select("*").
-		From(store.VoucherTableName + " AS V").
-		OrderBy("V.CreateAt ASC")
+		From(store.VoucherTableName + " AS V")
 
 	// check usage limit
 	if option.UsageLimit != nil {
@@ -121,6 +120,11 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 		query = query.Where(option.StartDate.ToSquirrel("V.StartDate"))
 	}
 
+	// check code
+	if option.Code != nil {
+		query = query.Where(option.Code.ToSquirrel("V.Code"))
+	}
+
 	// check channel listing channel slug
 	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
 		query = query.
@@ -135,6 +139,11 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 			query = query.Where(squirrel.Eq{"Cn.IsActive": *option.ChannelListingActive})
 		}
 	}
+
+	if option.WithLook {
+		query = query.Suffix("FOR UPDATE ORDER BY V.CreateAt ASC")
+	}
+	query = query.OrderBy("V.CreateAt ASC")
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

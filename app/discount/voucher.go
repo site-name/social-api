@@ -130,3 +130,22 @@ func (a *AppDiscount) VouchersByOption(option *product_and_discount.VoucherFilte
 
 	return vouchers, nil
 }
+
+// PromoCodeIsVoucher checks if given code is belong to a voucher
+func (a *AppDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
+	vouchers, err := a.Srv().Store.DiscountVoucher().FilterVouchersByOption(&product_and_discount.VoucherFilterOption{
+		Code: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: code,
+			},
+		},
+	})
+	if err != nil {
+		if _, ok := err.(*store.ErrNotFound); ok {
+			return false, nil
+		}
+		return false, store.AppErrorFromDatabaseLookupError("PromoCodeIsVoucher", "app.discount.error_finding_vouchers_with_promo_code.app_error", err)
+	}
+
+	return len(vouchers) != 0, nil
+}

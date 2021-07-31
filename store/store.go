@@ -560,11 +560,12 @@ type InvoiceEventStore interface {
 type (
 	GiftCardStore interface {
 		CreateIndexesIfNotExists()
-		Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)           // Save insert new giftcard to database
-		GetById(id string) (*giftcard.GiftCard, error)                    // GetById returns a giftcard instance that has id of given id
-		GetAllByUserId(userID string) ([]*giftcard.GiftCard, error)       // GetAllByUserId returns a slice aff giftcards that belong to given user
-		GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) // GetAllByCheckout returns all giftcards belong to given checkout
-		GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error)       // GetAllByOrder returns all giftcards belong to given order
+		Save(gc *giftcard.GiftCard) (*giftcard.GiftCard, error)                             // Save insert new giftcard to database
+		GetById(id string) (*giftcard.GiftCard, error)                                      // GetById returns a giftcard instance that has id of given id
+		GetAllByUserId(userID string) ([]*giftcard.GiftCard, error)                         // GetAllByUserId returns a slice aff giftcards that belong to given user
+		GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error)                   // GetAllByCheckout returns all giftcards belong to given checkout
+		GetAllByOrder(orderID string) ([]*giftcard.GiftCard, error)                         // GetAllByOrder returns all giftcards belong to given order
+		FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
 	}
 	GiftCardOrderStore interface {
 		CreateIndexesIfNotExists()
@@ -575,7 +576,6 @@ type (
 		CreateIndexesIfNotExists()
 		Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) // Save inserts new giftcard-checkout relation into database then returns it
 		Get(id string) (*giftcard.GiftCardCheckout, error)                                 // Get returns giftcard-checkout relation table with given id
-
 	}
 )
 

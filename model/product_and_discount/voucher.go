@@ -84,7 +84,9 @@ type VoucherFilterOption struct {
 	EndDate              *model.TimeFilter
 	StartDate            *model.TimeFilter
 	ChannelListingSlug   *model.StringFilter
+	Code                 *model.StringFilter
 	ChannelListingActive *bool
+	WithLook             bool
 }
 
 // VoucherValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement

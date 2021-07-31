@@ -1,7 +1,6 @@
 package giftcard
 
 import (
-	"io"
 	"strings"
 	"time"
 
@@ -31,13 +30,12 @@ type GiftCard struct {
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 }
 
-func (gc *GiftCard) DisplayCode() string {
-	return "****" + gc.Code[len(gc.Code)-4:]
+type GiftCardFilterOption struct {
+	Code *model.StringFilter
 }
 
-func (gc *GiftCard) ToJson() string {
-	gc.PopulateNonDbFields()
-	return model.ModelToJson(gc)
+func (gc *GiftCard) DisplayCode() string {
+	return "****" + gc.Code[len(gc.Code)-4:]
 }
 
 // PopulateNonDbFields populates money fields for giftcard
@@ -59,12 +57,6 @@ func (gc *GiftCard) PopulateNonDbFields() {
 		Amount:   money,
 		Currency: gc.Currency,
 	}
-}
-
-func GiftCardFromJson(data io.Reader) *GiftCard {
-	var gc GiftCard
-	model.ModelFromJson(&gc, data)
-	return &gc
 }
 
 func (gc *GiftCard) IsValid() *model.AppError {

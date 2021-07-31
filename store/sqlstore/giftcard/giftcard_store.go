@@ -29,6 +29,7 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 
 func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
 	gcs.CreateIndexIfNotExists("idx_giftcards_code", store.GiftcardTableName, "Code")
+	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UserID", store.UserTableName, "Id", false)
 }
 
 func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
@@ -36,6 +37,7 @@ func (gcs *SqlGiftCardStore) Save(giftCard *giftcard.GiftCard) (*giftcard.GiftCa
 	if err := giftCard.IsValid(); err != nil {
 		return nil, err
 	}
+
 	if err := gcs.GetMaster().Insert(giftCard); err != nil {
 		if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
 			return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
@@ -104,6 +106,31 @@ func (gs *SqlGiftCardStore) GetAllByOrder(orderID string) ([]*giftcard.GiftCard,
 			return nil, store.NewErrNotFound(store.GiftcardTableName, "checkoutID="+orderID)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcards belong to order with id=%s", orderID)
+	}
+
+	return giftcards, nil
+}
+
+// FilterByOption finds giftcards wth option
+func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+
+	query := gs.GetQueryBuilder().Select(store.GiftcardTableName).OrderBy("CreateAt ASC")
+	if option.Code != nil {
+		query = query.Where(option.Code.ToSquirrel("Code"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "query_toSql")
+	}
+
+	var giftcards []*giftcard.GiftCard
+	_, err = gs.GetReplica().Select(&giftcards, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.GiftcardTableName, "code")
+		}
+		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}
 
 	return giftcards, nil

@@ -41,6 +41,7 @@ func TestStringFilter(t *testing.T) {
 		Select("*").
 		From("Persons").
 		Where(filter.ToSquirrel("Name")).
+		Suffix("FOR UPDATE ORDER BY Id").
 		ToSql()
 
 	require.NoError(t, err)
