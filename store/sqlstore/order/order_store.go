@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"

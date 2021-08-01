@@ -8,7 +8,7 @@ import (
 
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"

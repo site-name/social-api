@@ -3,7 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
 )

@@ -12,23 +12,6 @@ type SqlShippingMethodStore struct {
 	store.Store
 }
 
-var (
-	ShippingMethodSelectFields = []string{
-		"SM.Id",
-		"SM.Name",
-		"SM.Type",
-		"SM.ShippingZoneID",
-		"SM.MinimumOrderWeight",
-		"SM.MaximumOrderWeight",
-		"SM.WeightUnit",
-		"SM.MaximumDeliveryDays",
-		"SM.MinimumDeliveryDays",
-		"SM.Description",
-		"SM.Metadata",
-		"SM.PrivateMetadata",
-	}
-)
-
 func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	smls := &SqlShippingMethodStore{s}
 	for _, db := range s.GetAllConns() {
@@ -39,6 +22,23 @@ func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 		table.ColMap("Type").SetMaxSize(shipping.SHIPPING_METHOD_TYPE_MAX_LENGTH)
 	}
 	return smls
+}
+
+func (s *SqlShippingMethodStore) ModelFields() []string {
+	return []string{
+		"ShippingMethods.Id",
+		"ShippingMethods.Name",
+		"ShippingMethods.Type",
+		"ShippingMethods.ShippingZoneID",
+		"ShippingMethods.MinimumOrderWeight",
+		"ShippingMethods.MaximumOrderWeight",
+		"ShippingMethods.WeightUnit",
+		"ShippingMethods.MaximumDeliveryDays",
+		"ShippingMethods.MinimumDeliveryDays",
+		"ShippingMethods.Description",
+		"ShippingMethods.Metadata",
+		"ShippingMethods.PrivateMetadata",
+	}
 }
 
 func (s *SqlShippingMethodStore) CreateIndexesIfNotExists() {
@@ -80,27 +80,35 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod,
 func (s *SqlShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
 	query := s.
 		GetQueryBuilder().
-		Select(ShippingMethodSelectFields...).
-		From(store.ShippingMethodTableName + " AS SM")
+		Select("*").
+		From(store.ShippingMethodTableName)
 
 	// check type:
 	if option.Type != nil {
-		query = query.Where(option.Type.ToSquirrel("SM.Type"))
+		query = query.Where(option.Type.ToSquirrel("ShippingMethods.Type"))
 	}
 
+	var joinedChannelTable bool
+
 	// check shipping zone channel
-	// if option.ShippingZoneChannelSlug != nil {
-	// 	query = query.
-	// 		InnerJoin(store.ShippingZoneTableName + " AS SZ ON (SZ.Id = SM.ShippingZoneID)").
-	// 		InnerJoin(store.ShippingZoneChannelTableName + " AS SZCn ON (SZ.Id = SZCn.ShippingZoneID)").
-	// 		InnerJoin(store.ChannelTableName + " AS Cn ON (Cn.Id = SZCn.ChannelID)").
-	// 		Where(option.ShippingZoneChannelSlug.ToSquirrel("Cn.Slug"))
-	// }
+	if option.ShippingZoneChannelSlug != nil {
+		query = query.
+			InnerJoin(store.ShippingZoneTableName + " ON (ShippingZones.Id = ShippingMethods.ShippingZoneID)").
+			InnerJoin(store.ShippingZoneChannelTableName + " ON (ShippingZones.Id = ShippingZoneChannels.ShippingZoneID)").
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ShippingZoneChannels.ChannelID)").
+			Where(option.ShippingZoneChannelSlug.ToSquirrel("Channels.Slug"))
+
+		joinedChannelTable = true
+	}
 
 	// check channel listing
-	// if option.ChannelListingsChannelSlug != nil {
-	// 	query = query.
-	// 		InnerJoin(store.ShippingMethodChannelListingTableName + " AS SMCL ON (SMCL.ShippingMethodID = SM.Id)").
-	// 		InnerJoin(store.ChannelTableName + " AS CN ON ")
-	// }
+	if option.ChannelListingsChannelSlug != nil {
+		query = query.
+			InnerJoin(store.ShippingMethodChannelListingTableName + " ON (ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id)").
+			InnerJoin(store.ChannelTableName + " ON (ShippingMethodChannelListings.ChannelID = Channels.Id)")
+
+		if !joinedChannelTable {
+			query = query.Where(option.ChannelListingsChannelSlug.ToSquirrel("channels.Slug"))
+		}
+	}
 }

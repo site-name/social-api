@@ -88,6 +88,6 @@ func (p *ProductMedia) PreSave() {
 	}
 }
 
-func (p *ProductMedia) GetOrderingQueryset() []*ProductMedia {
-	return p.Product.Medias
-}
+// func (p *ProductMedia) GetOrderingQueryset() []*ProductMedia {
+// 	return p.Product.Medias
+// }

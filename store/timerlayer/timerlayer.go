@@ -7,7 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"

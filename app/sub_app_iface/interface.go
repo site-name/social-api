@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"

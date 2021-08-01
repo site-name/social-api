@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
