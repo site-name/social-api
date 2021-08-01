@@ -26,6 +26,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -1087,12 +1088,6 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) CreateIndexesIfNotExists() {
-
-	s.AddressStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 
 	tries := 0
@@ -1253,12 +1248,6 @@ func (s *RetryLayerAllocationStore) AllocationsByWhich(parentID string, toWhich 
 
 }
 
-func (s *RetryLayerAllocationStore) CreateIndexesIfNotExists() {
-
-	s.AllocationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocation, error) {
 
 	tries := 0
@@ -1299,12 +1288,6 @@ func (s *RetryLayerAllocationStore) Save(allocation *warehouse.Allocation) (*war
 
 }
 
-func (s *RetryLayerAppStore) CreateIndexesIfNotExists() {
-
-	s.AppStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 	tries := 0
@@ -1325,12 +1308,6 @@ func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 }
 
-func (s *RetryLayerAppTokenStore) CreateIndexesIfNotExists() {
-
-	s.AppTokenStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
 
 	tries := 0
@@ -1348,12 +1325,6 @@ func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, e
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
-
-	s.AssignedPageAttributeStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1414,12 +1385,6 @@ func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
-
-	s.AssignedPageAttributeValueStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1523,12 +1488,6 @@ func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
-
-	s.AssignedProductAttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 
 	tries := 0
@@ -1586,12 +1545,6 @@ func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
-
-	s.AssignedProductAttributeValueStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1695,12 +1648,6 @@ func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
-
-	s.AssignedVariantAttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
 
 	tries := 0
@@ -1758,12 +1705,6 @@ func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
-
-	s.AssignedVariantAttributeValueStore.CreateIndexesIfNotExists()
 
 }
 
@@ -1867,12 +1808,6 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAttributeStore) CreateIndexesIfNotExists() {
-
-	s.AttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
 
 	tries := 0
@@ -1973,12 +1908,6 @@ func (s *RetryLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.A
 
 }
 
-func (s *RetryLayerAttributePageStore) CreateIndexesIfNotExists() {
-
-	s.AttributePageStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
 
 	tries := 0
@@ -2036,12 +1965,6 @@ func (s *RetryLayerAttributePageStore) Save(page *attribute.AttributePage) (*att
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAttributeProductStore) CreateIndexesIfNotExists() {
-
-	s.AttributeProductStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2105,18 +2028,6 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 
 }
 
-func (s *RetryLayerAttributeTranslationStore) CreateIndexesIfNotExists() {
-
-	s.AttributeTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerAttributeValueStore) CreateIndexesIfNotExists() {
-
-	s.AttributeValueStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
 
 	tries := 0
@@ -2174,18 +2085,6 @@ func (s *RetryLayerAttributeValueStore) Save(attribute *attribute.AttributeValue
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
-
-	s.AttributeValueTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerAttributeVariantStore) CreateIndexesIfNotExists() {
-
-	s.AttributeVariantStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2249,12 +2148,6 @@ func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *attribute.Attri
 
 }
 
-func (s *RetryLayerAuditStore) CreateIndexesIfNotExists() {
-
-	s.AuditStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
 
 	tries := 0
@@ -2312,24 +2205,6 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 			return err
 		}
 	}
-
-}
-
-func (s *RetryLayerCategoryStore) CreateIndexesIfNotExists() {
-
-	s.CategoryStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerCategoryTranslationStore) CreateIndexesIfNotExists() {
-
-	s.CategoryTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerChannelStore) CreateIndexesIfNotExists() {
-
-	s.ChannelStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2453,12 +2328,6 @@ func (s *RetryLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive
 
 }
 
-func (s *RetryLayerCheckoutStore) CreateIndexesIfNotExists() {
-
-	s.CheckoutStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 
 	tries := 0
@@ -2559,12 +2428,6 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID strin
 
 }
 
-func (s *RetryLayerCheckoutLineStore) CreateIndexesIfNotExists() {
-
-	s.CheckoutLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
 
 	tries := 0
@@ -2642,12 +2505,6 @@ func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
 			return err
 		}
 	}
-
-}
-
-func (s *RetryLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
-
-	s.ClusterDiscoveryStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2751,30 +2608,6 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 
 }
 
-func (s *RetryLayerCollectionStore) CreateIndexesIfNotExists() {
-
-	s.CollectionStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerCollectionChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.CollectionChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerCollectionProductStore) CreateIndexesIfNotExists() {
-
-	s.CollectionProductStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerCollectionTranslationStore) CreateIndexesIfNotExists() {
-
-	s.CollectionTranslationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 
 	tries := 0
@@ -2792,12 +2625,6 @@ func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Comp
 			return result, resultVar1, err
 		}
 	}
-
-}
-
-func (s *RetryLayerComplianceStore) CreateIndexesIfNotExists() {
-
-	s.ComplianceStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2901,12 +2728,6 @@ func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 
 }
 
-func (s *RetryLayerCsvExportEventStore) CreateIndexesIfNotExists() {
-
-	s.CsvExportEventStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 
 	tries := 0
@@ -2924,12 +2745,6 @@ func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.Expor
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerCsvExportFileStore) CreateIndexesIfNotExists() {
-
-	s.CsvExportFileStore.CreateIndexesIfNotExists()
 
 }
 
@@ -2993,12 +2808,6 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) CreateIndexesIfNotExists() {
-
-	s.CustomerEventStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
 
 	tries := 0
@@ -3059,12 +2868,6 @@ func (s *RetryLayerCustomerEventStore) Save(customemrEvent *account.CustomerEven
 
 }
 
-func (s *RetryLayerCustomerNoteStore) CreateIndexesIfNotExists() {
-
-	s.CustomerNoteStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
 
 	tries := 0
@@ -3102,24 +2905,6 @@ func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerDigitalContentStore) CreateIndexesIfNotExists() {
-
-	s.DigitalContentStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerDigitalContentUrlStore) CreateIndexesIfNotExists() {
-
-	s.DigitalContentUrlStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerDiscountSaleStore) CreateIndexesIfNotExists() {
-
-	s.DiscountSaleStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3180,24 +2965,6 @@ func (s *RetryLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.DiscountSaleChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
-
-	s.DiscountSaleTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
-
-	s.DiscountVoucherStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3284,12 +3051,6 @@ func (s *RetryLayerFileInfoStore) CountAll() (int64, error) {
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerFileInfoStore) CreateIndexesIfNotExists() {
-
-	s.FileInfoStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3539,12 +3300,6 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) CreateIndexesIfNotExists() {
-
-	s.FulfillmentStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
 
 	tries := 0
@@ -3605,12 +3360,6 @@ func (s *RetryLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*orde
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) CreateIndexesIfNotExists() {
-
-	s.FulfillmentLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
 
 	tries := 0
@@ -3648,12 +3397,6 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerGiftCardStore) CreateIndexesIfNotExists() {
-
-	s.GiftCardStore.CreateIndexesIfNotExists()
 
 }
 
@@ -3757,12 +3500,6 @@ func (s *RetryLayerGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard
 
 }
 
-func (s *RetryLayerGiftCardCheckoutStore) CreateIndexesIfNotExists() {
-
-	s.GiftCardCheckoutStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
 
 	tries := 0
@@ -3823,12 +3560,6 @@ func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) CreateIndexesIfNotExists() {
-
-	s.GiftCardOrderStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
 
 	tries := 0
@@ -3866,18 +3597,6 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerInvoiceEventStore) CreateIndexesIfNotExists() {
-
-	s.InvoiceEventStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerJobStore) CreateIndexesIfNotExists() {
-
-	s.JobStore.CreateIndexesIfNotExists()
 
 }
 
@@ -4161,12 +3880,6 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
-func (s *RetryLayerMenuStore) CreateIndexesIfNotExists() {
-
-	s.MenuStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerMenuStore) GetById(id string) (*menu.Menu, error) {
 
 	tries := 0
@@ -4247,12 +3960,6 @@ func (s *RetryLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 
 }
 
-func (s *RetryLayerMenuItemStore) CreateIndexesIfNotExists() {
-
-	s.MenuItemStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
 
 	tries := 0
@@ -4310,18 +4017,6 @@ func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
-
-	s.MenuItemTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerOrderStore) CreateIndexesIfNotExists() {
-
-	s.OrderStore.CreateIndexesIfNotExists()
 
 }
 
@@ -4405,24 +4100,6 @@ func (s *RetryLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *dec
 
 }
 
-func (s *RetryLayerOrderDiscountStore) CreateIndexesIfNotExists() {
-
-	s.OrderDiscountStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerOrderEventStore) CreateIndexesIfNotExists() {
-
-	s.OrderEventStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerOrderLineStore) CreateIndexesIfNotExists() {
-
-	s.OrderLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 	tries := 0
@@ -4480,30 +4157,6 @@ func (s *RetryLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.Orde
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerPageStore) CreateIndexesIfNotExists() {
-
-	s.PageStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerPageTranslationStore) CreateIndexesIfNotExists() {
-
-	s.PageTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerPageTypeStore) CreateIndexesIfNotExists() {
-
-	s.PageTypeStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerPaymentStore) CreateIndexesIfNotExists() {
-
-	s.PaymentStore.CreateIndexesIfNotExists()
 
 }
 
@@ -4627,12 +4280,6 @@ func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Paym
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
-
-	s.PaymentTransactionStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 
 	tries := 0
@@ -4750,12 +4397,6 @@ func (s *RetryLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyValue, ol
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerPluginStore) CreateIndexesIfNotExists() {
-
-	s.PluginStore.CreateIndexesIfNotExists()
 
 }
 
@@ -4899,12 +4540,6 @@ func (s *RetryLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
-
-	s.PluginConfigurationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
 
 	tries := 0
@@ -4922,12 +4557,6 @@ func (s *RetryLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerPreferenceStore) CreateIndexesIfNotExists() {
-
-	s.PreferenceStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5097,12 +4726,6 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
-func (s *RetryLayerProductStore) CreateIndexesIfNotExists() {
-
-	s.ProductStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 
 	tries := 0
@@ -5163,12 +4786,6 @@ func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 
 }
 
-func (s *RetryLayerProductChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.ProductChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
 
 	tries := 0
@@ -5226,24 +4843,6 @@ func (s *RetryLayerProductChannelListingStore) Save(channelListing *product_and_
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerProductMediaStore) CreateIndexesIfNotExists() {
-
-	s.ProductMediaStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerProductTranslationStore) CreateIndexesIfNotExists() {
-
-	s.ProductTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerProductTypeStore) CreateIndexesIfNotExists() {
-
-	s.ProductTypeStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5327,12 +4926,6 @@ func (s *RetryLayerProductTypeStore) Save(productType *product_and_discount.Prod
 
 }
 
-func (s *RetryLayerProductVariantStore) CreateIndexesIfNotExists() {
-
-	s.ProductVariantStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
@@ -5370,24 +4963,6 @@ func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.Produ
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerProductVariantChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.ProductVariantChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerProductVariantTranslationStore) CreateIndexesIfNotExists() {
-
-	s.ProductVariantTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerRoleStore) CreateIndexesIfNotExists() {
-
-	s.RoleStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5554,12 +5129,6 @@ func (s *RetryLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 func (s *RetryLayerSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 
 	s.SessionStore.Cleanup(expiryTime, batchSize)
-
-}
-
-func (s *RetryLayerSessionStore) CreateIndexesIfNotExists() {
-
-	s.SessionStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5843,12 +5412,6 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) CreateIndexesIfNotExists() {
-
-	s.ShippingMethodStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 
 	tries := 0
@@ -5909,42 +5472,6 @@ func (s *RetryLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) 
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.ShippingMethodChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
-
-	s.ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerShippingMethodTranslationStore) CreateIndexesIfNotExists() {
-
-	s.ShippingMethodTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerShippingZoneStore) CreateIndexesIfNotExists() {
-
-	s.ShippingZoneStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
-
-	s.ShippingZoneChannelStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerShopStore) CreateIndexesIfNotExists() {
-
-	s.ShopStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 
 	tries := 0
@@ -5982,12 +5509,6 @@ func (s *RetryLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerShopStaffStore) CreateIndexesIfNotExists() {
-
-	s.ShopStaffStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6051,12 +5572,6 @@ func (s *RetryLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*sho
 
 }
 
-func (s *RetryLayerShopTranslationStore) CreateIndexesIfNotExists() {
-
-	s.ShopTranslationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
 
 	tries := 0
@@ -6097,12 +5612,6 @@ func (s *RetryLayerShopTranslationStore) Upsert(translation *shop.ShopTranslatio
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
-
-	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
 
 	tries := 0
@@ -6140,12 +5649,6 @@ func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerStatusStore) CreateIndexesIfNotExists() {
-
-	s.StatusStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6269,12 +5772,6 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
-func (s *RetryLayerStockStore) CreateIndexesIfNotExists() {
-
-	s.StockStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 
 	tries := 0
@@ -6372,12 +5869,6 @@ func (s *RetryLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, e
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerSystemStore) CreateIndexesIfNotExists() {
-
-	s.SystemStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6541,12 +6032,6 @@ func (s *RetryLayerSystemStore) Update(system *model.System) error {
 
 }
 
-func (s *RetryLayerTermsOfServiceStore) CreateIndexesIfNotExists() {
-
-	s.TermsOfServiceStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 
 	tries := 0
@@ -6610,12 +6095,6 @@ func (s *RetryLayerTermsOfServiceStore) Save(termsOfService *model.TermsOfServic
 func (s *RetryLayerTokenStore) Cleanup() {
 
 	s.TokenStore.Cleanup()
-
-}
-
-func (s *RetryLayerTokenStore) CreateIndexesIfNotExists() {
-
-	s.TokenStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6716,12 +6195,6 @@ func (s *RetryLayerTokenStore) Save(recovery *model.Token) error {
 			return err
 		}
 	}
-
-}
-
-func (s *RetryLayerUploadSessionStore) CreateIndexesIfNotExists() {
-
-	s.UploadSessionStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6988,12 +6461,6 @@ func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, er
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerUserStore) CreateIndexesIfNotExists() {
-
-	s.UserStore.CreateIndexesIfNotExists()
 
 }
 
@@ -7735,12 +7202,6 @@ func (s *RetryLayerUserStore) VerifyEmail(userID string, email string) (string, 
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) CreateIndexesIfNotExists() {
-
-	s.UserAccessTokenStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerUserAccessTokenStore) Delete(tokenID string) error {
 
 	tries := 0
@@ -7941,12 +7402,6 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
-func (s *RetryLayerUserAddressStore) CreateIndexesIfNotExists() {
-
-	s.UserAddressStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
 
 	tries := 0
@@ -7984,12 +7439,6 @@ func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerUserTermOfServiceStore) CreateIndexesIfNotExists() {
-
-	s.UserTermOfServiceStore.CreateIndexesIfNotExists()
 
 }
 
@@ -8053,18 +7502,6 @@ func (s *RetryLayerUserTermOfServiceStore) Save(userTermsOfService *account.User
 
 }
 
-func (s *RetryLayerVariantMediaStore) CreateIndexesIfNotExists() {
-
-	s.VariantMediaStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerVoucherCategoryStore) CreateIndexesIfNotExists() {
-
-	s.VoucherCategoryStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
 
 	tries := 0
@@ -8122,12 +7559,6 @@ func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_dis
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
-
-	s.VoucherChannelListingStore.CreateIndexesIfNotExists()
 
 }
 
@@ -8211,12 +7642,6 @@ func (s *RetryLayerVoucherCollectionStore) CollectionsByVoucherID(voucherID stri
 
 }
 
-func (s *RetryLayerVoucherCollectionStore) CreateIndexesIfNotExists() {
-
-	s.VoucherCollectionStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
 
 	tries := 0
@@ -8254,12 +7679,6 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerVoucherCustomerStore) CreateIndexesIfNotExists() {
-
-	s.VoucherCustomerStore.CreateIndexesIfNotExists()
 
 }
 
@@ -8323,12 +7742,6 @@ func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *product_and_disco
 
 }
 
-func (s *RetryLayerVoucherProductStore) CreateIndexesIfNotExists() {
-
-	s.VoucherProductStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
 
 	tries := 0
@@ -8386,18 +7799,6 @@ func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
-
-	s.VoucherTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerWarehouseStore) CreateIndexesIfNotExists() {
-
-	s.WarehouseStore.CreateIndexesIfNotExists()
 
 }
 
@@ -8461,18 +7862,6 @@ func (s *RetryLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*wareho
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
-
-	s.WarehouseShippingZoneStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *RetryLayerWishlistStore) CreateIndexesIfNotExists() {
-
-	s.WishlistStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 
 	tries := 0
@@ -8533,12 +7922,6 @@ func (s *RetryLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.W
 
 }
 
-func (s *RetryLayerWishlistItemStore) CreateIndexesIfNotExists() {
-
-	s.WishlistItemStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *RetryLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
 
 	tries := 0
@@ -8596,12 +7979,6 @@ func (s *RetryLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID strin
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
-
-	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
 
 }
 

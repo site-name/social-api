@@ -17,6 +17,7 @@ type StringOption struct {
 	ExtraExpr []squirrel.Sqlizer
 	Eq        string   // ==
 	In        []string // IN ("1", "2", "3")
+	NotIn     []string // NOT IN (1, 2, 3, 4)
 	Like      string   // %HELLO%
 	ILike     string   // %Hello% or %hello%
 	NULL      *bool    // compare to NULL
@@ -50,6 +51,14 @@ func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
 			}
 		}
 		res = append(res, squirrel.Eq{key: st.In})
+	}
+	if len(st.NotIn) > 0 {
+		for i, notIn := range st.NotIn {
+			if !st.filter(notIn) {
+				st.NotIn = append(st.NotIn[:i], st.NotIn[i+1:]...)
+			}
+		}
+		res = append(res, squirrel.NotEq{key: st.NotIn})
 	}
 	if st.Like != "" {
 		res = append(res, squirrel.Like{key: st.Like})

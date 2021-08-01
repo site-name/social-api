@@ -12,19 +12,6 @@ type SqlProductVariantStore struct {
 	store.Store
 }
 
-var ProductVariantQuery = []string{
-	"Pv.Id",
-	"Pv.Name",
-	"Pv.ProductID",
-	"Pv.Sku",
-	"Pv.Weight",
-	"Pv.WeightUnit",
-	"Pv.TrackInventory",
-	"Pv.SortOrder",
-	"Pv.Metadata",
-	"Pv.PrivateMetadata",
-}
-
 func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	pvs := &SqlProductVariantStore{s}
 
@@ -42,6 +29,21 @@ func (ps *SqlProductVariantStore) CreateIndexesIfNotExists() {
 	// ps.CreateIndexIfNotExists("idx_product_variants_name", store.ProductVariantTableName, "Name")
 	// ps.CreateIndexIfNotExists("idx_product_variants_name_lower_textpattern", store.ProductVariantTableName, "lower(Name) text_pattern_ops")
 	ps.CreateIndexIfNotExists("idx_product_variants_sku", store.ProductVariantTableName, "Sku")
+}
+
+func (ps *SqlProductVariantStore) ModelFields() []string {
+	return []string{
+		"ProductVariants.Id",
+		"ProductVariants.Name",
+		"ProductVariants.ProductID",
+		"ProductVariants.Sku",
+		"ProductVariants.Weight",
+		"ProductVariants.WeightUnit",
+		"ProductVariants.TrackInventory",
+		"ProductVariants.SortOrder",
+		"ProductVariants.Metadata",
+		"ProductVariants.PrivateMetadata",
+	}
 }
 
 func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {

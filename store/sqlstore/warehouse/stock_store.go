@@ -10,22 +10,14 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/product"
 )
 
 type SqlStockStore struct {
 	store.Store
 }
 
-var StockQuery = []string{
-	"St.Id",
-	"St.WarehouseID",
-	"St.ProductVariantID",
-	"St.Quantity",
-}
-
 func NewSqlStockStore(s store.Store) store.StockStore {
-	ws := &SqlStockStore{
+	ss := &SqlStockStore{
 		Store: s,
 	}
 	for _, db := range s.GetAllConns() {
@@ -36,22 +28,31 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 
 		table.SetUniqueTogether("WarehouseID", "ProductVariantID")
 	}
-	return ws
+	return ss
 }
 
-func (ws *SqlStockStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
-	ws.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+func (ss *SqlStockStore) ModelFields() []string {
+	return []string{
+		"Stocks.Id",
+		"Stocks.WarehouseID",
+		"Stocks.ProductVariantID",
+		"Stocks.Quantity",
+	}
 }
 
-func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
+func (ss *SqlStockStore) CreateIndexesIfNotExists() {
+	ss.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
+	ss.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+}
+
+func (ss *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
 	stock.PreSave()
 	if err := stock.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ws.GetMaster().Insert(stock); err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
+	if err := ss.GetMaster().Insert(stock); err != nil {
+		if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
 			return nil, store.NewErrInvalidInput(store.StockTableName, "WarehouseID/ProductVariantID", stock.WarehouseID+"/"+stock.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save stock object with id=%s", stock.Id)
@@ -60,8 +61,8 @@ func (ws *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) 
 	return stock, nil
 }
 
-func (ws *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
-	if res, err := ws.GetReplica().Get(warehouse.Stock{}, stockID); err != nil {
+func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
+	if res, err := ss.GetReplica().Get(warehouse.Stock{}, stockID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.StockTableName, stockID)
 		}
@@ -164,22 +165,22 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *warehouse.ForCountr
 		return nil, nil, nil, err
 	}
 
-	selects := StockQuery
-	selects = append(selects, WarehouseQuery...)
-	selects = append(selects, product.ProductVariantQuery...)
+	selects := ss.ModelFields()
+	selects = append(selects, ss.Warehouse().ModelFields()...)
+	selects = append(selects, ss.ProductVariant().ModelFields()...)
 	selectStr := strings.Join(selects, ", ")
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` AS St 
-		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
-			St.WarehouseID = Wh.Id
+	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
+		INNER JOIN ` + store.WarehouseTableName + ` ON (
+			Stocks.WarehouseID = Warehouses.Id
 		)
-		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
-			Pv.Id = St.ProductVariantID
+		INNER JOIN ` + store.ProductVariantTableName + ` ON (
+			ProductVariants.Id = Stocks.ProductVariantID
 		)
 		WHERE (
-			St.WarehouseID IN (` + subQuery + `)
+			Stocks.WarehouseID IN (` + subQuery + `)
 		)
-		ORDER BY St.Id ASC`
+		ORDER BY Stocks.Id ASC`
 
 	return ss.commonLookup(mainQuery, params)
 }
@@ -193,23 +194,23 @@ func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCou
 		return nil, nil, nil, err
 	}
 
-	selects := StockQuery
-	selects = append(selects, WarehouseQuery...)
-	selects = append(selects, product.ProductVariantQuery...)
+	selects := ss.ModelFields()
+	selects = append(selects, ss.Warehouse().ModelFields()...)
+	selects = append(selects, ss.ProductVariant().ModelFields()...)
 	selectStr := strings.Join(selects, ", ")
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` AS St 
-		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
-			St.WarehouseID = Wh.Id
+	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
+		INNER JOIN ` + store.WarehouseTableName + ` ON (
+			Stocks.WarehouseID = Warehouses.Id
 		)
-		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
-			Pv.Id = St.ProductVariantID
+		INNER JOIN ` + store.ProductVariantTableName + ` ON (
+			ProductVariants.Id = Stocks.ProductVariantID
 		)
 		WHERE (
-			St.WarehouseID IN (` + subQuery + `)
-			AND St.ProductVariantID = :ProductVariantID
+			Stocks.WarehouseID IN (` + subQuery + `)
+			AND Stocks.ProductVariantID = :ProductVariantID
 		)
-		ORDER BY St.Id ASC`
+		ORDER BY Stocks.Id ASC`
 
 	params["ProductVariantID"] = productVariantID
 
@@ -225,23 +226,23 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 		return nil, nil, nil, err
 	}
 
-	selects := StockQuery
-	selects = append(selects, WarehouseQuery...)
-	selects = append(selects, product.ProductVariantQuery...)
+	selects := ss.ModelFields()
+	selects = append(selects, ss.Warehouse().ModelFields()...)
+	selects = append(selects, ss.ProductVariant().ModelFields()...)
 	selectStr := strings.Join(selects, ", ")
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` AS St 
-		INNER JOIN ` + store.WarehouseTableName + ` AS Wh ON (
-			St.WarehouseID = Wh.Id
+	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
+		INNER JOIN ` + store.WarehouseTableName + ` ON (
+			Stocks.WarehouseID = Warehouses.Id
 		)
-		INNER JOIN ` + store.ProductVariantTableName + ` AS Pv ON (
-			Pv.Id = St.ProductVariantID
+		INNER JOIN ` + store.ProductVariantTableName + ` ON (
+			ProductVariants.Id = Stocks.ProductVariantID
 		)
 		WHERE (
-			St.WarehouseID IN (` + subQuery + `)
-			AND Pv.ProductID = :ProductID
+			Stocks.WarehouseID IN (` + subQuery + `)
+			AND ProductVariants.ProductID = :ProductID
 		)
-		ORDER BY St.Id ASC`
+		ORDER BY Stocks.Id ASC`
 
 	params["ProductID"] = productID
 

@@ -30,9 +30,6 @@ type Product struct {
 	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
 	DefaultVariantID     *string                `json:"default_variant_id"`
 	Rating               *float32               `json:"rating"`
-	Medias               []*ProductMedia        `json:"medias" db:"-"`
-	ProductType          *ProductType           `db:"-"`
-	Variants             []*ProductVariant      `db:"-"`
 	model.ModelMetadata
 	seo.Seo
 }
@@ -115,12 +112,12 @@ func (p *Product) String() string {
 // returns 1 ProductMedia if one of them is image type
 //
 // else return nil
-func (p *Product) GetFirstImage() *ProductMedia {
-	for _, media := range p.Medias {
-		if media.Type == IMAGE {
-			return media
-		}
-	}
+// func (p *Product) GetFirstImage() *ProductMedia {
+// 	for _, media := range p.Medias {
+// 		if media.Type == IMAGE {
+// 			return media
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

@@ -26,6 +26,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -1077,19 +1078,6 @@ type OpenTracingLayerWishlistProductVariantStore struct {
 	Root *OpenTracingLayer
 }
 
-func (s *OpenTracingLayerAddressStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AddressStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.DeleteAddresses")
@@ -1234,19 +1222,6 @@ func (s *OpenTracingLayerAllocationStore) AllocationsByWhich(parentID string, to
 	return result, err
 }
 
-func (s *OpenTracingLayerAllocationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AllocationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAllocationStore) Get(allocationID string) (*warehouse.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.Get")
@@ -1283,19 +1258,6 @@ func (s *OpenTracingLayerAllocationStore) Save(allocation *warehouse.Allocation)
 	return result, err
 }
 
-func (s *OpenTracingLayerAppStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AppStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAppStore) Save(app *app.App) (*app.App, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppStore.Save")
@@ -1314,19 +1276,6 @@ func (s *OpenTracingLayerAppStore) Save(app *app.App) (*app.App, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerAppTokenStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppTokenStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AppTokenStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppTokenStore.Save")
@@ -1343,19 +1292,6 @@ func (s *OpenTracingLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppTo
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAssignedPageAttributeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedPageAttributeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedPageAttributeStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
@@ -1410,19 +1346,6 @@ func (s *OpenTracingLayerAssignedPageAttributeStore) Save(assignedPageAttr *attr
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedPageAttributeValueStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedPageAttributeValueStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
@@ -1515,19 +1438,6 @@ func (s *OpenTracingLayerAssignedPageAttributeValueStore) UpdateInBulk(attribute
 	return err
 }
 
-func (s *OpenTracingLayerAssignedProductAttributeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedProductAttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.Get")
@@ -1580,19 +1490,6 @@ func (s *OpenTracingLayerAssignedProductAttributeStore) Save(assignedProductAttr
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedProductAttributeValueStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
@@ -1685,19 +1582,6 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
-func (s *OpenTracingLayerAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedVariantAttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.Get")
@@ -1750,19 +1634,6 @@ func (s *OpenTracingLayerAssignedVariantAttributeStore) Save(assignedVariantAttr
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AssignedVariantAttributeValueStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
@@ -1855,19 +1726,6 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
-func (s *OpenTracingLayerAttributeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Get")
@@ -1958,19 +1816,6 @@ func (s *OpenTracingLayerAttributeStore) Save(attr *attribute.Attribute) (*attri
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributePageStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributePageStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributePageStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributePageStore.Get")
@@ -2023,19 +1868,6 @@ func (s *OpenTracingLayerAttributePageStore) Save(page *attribute.AttributePage)
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAttributeProductStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeProductStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAttributeProductStore) Get(attributeProductID string) (*attribute.AttributeProduct, error) {
@@ -2092,32 +1924,6 @@ func (s *OpenTracingLayerAttributeProductStore) Save(attributeProduct *attribute
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerAttributeValueStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeValueStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Get")
@@ -2170,32 +1976,6 @@ func (s *OpenTracingLayerAttributeValueStore) Save(attribute *attribute.Attribut
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerAttributeValueTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeValueTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerAttributeVariantStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeVariantStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AttributeVariantStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
@@ -2252,19 +2032,6 @@ func (s *OpenTracingLayerAttributeVariantStore) Save(attributeVariant *attribute
 	return result, err
 }
 
-func (s *OpenTracingLayerAuditStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AuditStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.AuditStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AuditStore.Get")
@@ -2317,45 +2084,6 @@ func (s *OpenTracingLayerAuditStore) Save(audit *audit.Audit) error {
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerCategoryStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CategoryStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerCategoryTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CategoryTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerChannelStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ChannelStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerChannelStore) Get(id string) (*channel.Channel, error) {
@@ -2466,19 +2194,6 @@ func (s *OpenTracingLayerCheckoutStore) CheckoutsByUserID(userID string, channel
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CheckoutStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Get")
@@ -2569,19 +2284,6 @@ func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutLineStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CheckoutLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.DeleteLines")
@@ -2652,19 +2354,6 @@ func (s *OpenTracingLayerClusterDiscoveryStore) Cleanup() error {
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerClusterDiscoveryStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ClusterDiscoveryStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ClusterDiscoveryStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
@@ -2757,58 +2446,6 @@ func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster
 	return err
 }
 
-func (s *OpenTracingLayerCollectionStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CollectionStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerCollectionChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CollectionChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerCollectionProductStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionProductStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CollectionProductStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerCollectionTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CollectionTranslationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.ComplianceExport")
@@ -2825,19 +2462,6 @@ func (s *OpenTracingLayerComplianceStore) ComplianceExport(compliance *complianc
 	}
 
 	return result, resultVar1, err
-}
-
-func (s *OpenTracingLayerComplianceStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ComplianceStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
@@ -2930,19 +2554,6 @@ func (s *OpenTracingLayerComplianceStore) Update(compliance *compliance.Complian
 	return result, err
 }
 
-func (s *OpenTracingLayerCsvExportEventStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportEventStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CsvExportEventStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportEventStore.Save")
@@ -2959,19 +2570,6 @@ func (s *OpenTracingLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerCsvExportFileStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CsvExportFileStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CsvExportFileStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
@@ -3028,19 +2626,6 @@ func (s *OpenTracingLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerCustomerEventStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerEventStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CustomerEventStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerEventStore.Get")
@@ -3095,19 +2680,6 @@ func (s *OpenTracingLayerCustomerEventStore) Save(customemrEvent *account.Custom
 	return result, err
 }
 
-func (s *OpenTracingLayerCustomerNoteStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerNoteStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CustomerNoteStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CustomerNoteStore.Get")
@@ -3142,45 +2714,6 @@ func (s *OpenTracingLayerCustomerNoteStore) Save(note *account.CustomerNote) (*a
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerDigitalContentStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DigitalContentStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerDigitalContentUrlStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentUrlStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DigitalContentUrlStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerDiscountSaleStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DiscountSaleStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
@@ -3235,45 +2768,6 @@ func (s *OpenTracingLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sa
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerDiscountSaleChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DiscountSaleChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerDiscountSaleTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DiscountSaleTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerDiscountVoucherStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.DiscountVoucherStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
@@ -3359,19 +2853,6 @@ func (s *OpenTracingLayerFileInfoStore) CountAll() (int64, error) {
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.FileInfoStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
@@ -3603,19 +3084,6 @@ func (s *OpenTracingLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileI
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.FulfillmentStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.FilterByExcludeStatuses")
@@ -3670,19 +3138,6 @@ func (s *OpenTracingLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) 
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentLineStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.FulfillmentLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.Get")
@@ -3717,19 +3172,6 @@ func (s *OpenTracingLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfi
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.GiftCardStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
@@ -3822,19 +3264,6 @@ func (s *OpenTracingLayerGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*gi
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardCheckoutStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.GiftCardCheckoutStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.Delete")
@@ -3889,19 +3318,6 @@ func (s *OpenTracingLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.Gif
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardOrderStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.GiftCardOrderStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.Get")
@@ -3936,32 +3352,6 @@ func (s *OpenTracingLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderG
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerInvoiceEventStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "InvoiceEventStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.InvoiceEventStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerJobStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "JobStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.JobStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerJobStore) Delete(id string) (string, error) {
@@ -4216,19 +3606,6 @@ func (s *OpenTracingLayerJobStore) UpdateStatusOptimistically(id string, current
 	return result, err
 }
 
-func (s *OpenTracingLayerMenuStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.MenuStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerMenuStore) GetById(id string) (*menu.Menu, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.GetById")
@@ -4301,19 +3678,6 @@ func (s *OpenTracingLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerMenuItemStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.MenuItemStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.GetById")
@@ -4366,32 +3730,6 @@ func (s *OpenTracingLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.Men
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerMenuItemTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.MenuItemTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerOrderStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.OrderStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerOrderStore) Get(id string) (*order.Order, error) {
@@ -4466,45 +3804,6 @@ func (s *OpenTracingLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPai
 	return err
 }
 
-func (s *OpenTracingLayerOrderDiscountStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderDiscountStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.OrderDiscountStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerOrderEventStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderEventStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.OrderEventStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerOrderLineStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.OrderLineStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Get")
@@ -4557,58 +3856,6 @@ func (s *OpenTracingLayerOrderLineStore) Save(orderLine *order.OrderLine) (*orde
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerPageStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PageStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PageStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerPageTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PageTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PageTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerPageTypeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PageTypeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PageTypeStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerPaymentStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PaymentStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerPaymentStore) Get(id string) (*payment.Payment, error) {
@@ -4719,19 +3966,6 @@ func (s *OpenTracingLayerPaymentStore) Update(payment *payment.Payment) (*paymen
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentTransactionStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PaymentTransactionStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Get")
@@ -4838,19 +4072,6 @@ func (s *OpenTracingLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyVal
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerPluginStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PluginStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerPluginStore) Delete(pluginID string, key string) error {
@@ -4979,19 +4200,6 @@ func (s *OpenTracingLayerPluginStore) SetWithOptions(pluginID string, key string
 	return result, err
 }
 
-func (s *OpenTracingLayerPluginConfigurationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PluginConfigurationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PluginConfigurationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreferenceStore.CleanupFlagsBatch")
@@ -5008,19 +4216,6 @@ func (s *OpenTracingLayerPreferenceStore) CleanupFlagsBatch(limit int64) (int64,
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerPreferenceStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreferenceStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.PreferenceStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerPreferenceStore) Delete(userID string, category string, name string) error {
@@ -5180,19 +4375,6 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	return err
 }
 
-func (s *OpenTracingLayerProductStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.Get")
@@ -5247,19 +4429,6 @@ func (s *OpenTracingLayerProductStore) Save(prd *product_and_discount.Product) (
 	return result, err
 }
 
-func (s *OpenTracingLayerProductChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductChannelListingStore.FilterByOption")
@@ -5312,45 +4481,6 @@ func (s *OpenTracingLayerProductChannelListingStore) Save(channelListing *produc
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerProductMediaStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductMediaStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductMediaStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerProductTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerProductTypeStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductTypeStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
@@ -5425,19 +4555,6 @@ func (s *OpenTracingLayerProductTypeStore) Save(productType *product_and_discoun
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductVariantStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Get")
@@ -5472,45 +4589,6 @@ func (s *OpenTracingLayerProductVariantStore) Save(variant *product_and_discount
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerProductVariantChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductVariantChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerProductVariantTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ProductVariantTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerRoleStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "RoleStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.RoleStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerRoleStore) Delete(roleID string) (*model.Role, error) {
@@ -5667,19 +4745,6 @@ func (s *OpenTracingLayerSessionStore) Cleanup(expiryTime int64, batchSize int64
 
 	defer span.Finish()
 	s.SessionStore.Cleanup(expiryTime, batchSize)
-
-}
-
-func (s *OpenTracingLayerSessionStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "SessionStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.SessionStore.CreateIndexesIfNotExists()
 
 }
 
@@ -5935,19 +5000,6 @@ func (s *OpenTracingLayerSessionStore) UpdateRoles(userID string, roles string) 
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingMethodStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Get")
@@ -6002,84 +5054,6 @@ func (s *OpenTracingLayerShippingMethodStore) Upsert(method *shipping.ShippingMe
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingMethodChannelListingStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingMethodPostalCodeRuleStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerShippingMethodTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingMethodTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerShippingZoneStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingZoneStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerShippingZoneChannelStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneChannelStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShippingZoneChannelStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerShopStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShopStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStore.Get")
@@ -6114,19 +5088,6 @@ func (s *OpenTracingLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) 
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerShopStaffStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShopStaffStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
@@ -6183,19 +5144,6 @@ func (s *OpenTracingLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation)
 	return result, err
 }
 
-func (s *OpenTracingLayerShopTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.ShopTranslationStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopTranslationStore.Get")
@@ -6232,19 +5180,6 @@ func (s *OpenTracingLayerShopTranslationStore) Upsert(translation *shop.ShopTran
 	return result, err
 }
 
-func (s *OpenTracingLayerStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.StaffNotificationRecipientStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.Get")
@@ -6279,19 +5214,6 @@ func (s *OpenTracingLayerStaffNotificationRecipientStore) Save(notificationRecip
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerStatusStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StatusStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.StatusStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerStatusStore) Get(userID string) (*account.Status, error) {
@@ -6402,19 +5324,6 @@ func (s *OpenTracingLayerStatusStore) UpdateLastActivityAt(userID string, lastAc
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.StockStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForCountryAndChannel")
@@ -6503,19 +5412,6 @@ func (s *OpenTracingLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.St
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerSystemStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "SystemStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.SystemStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerSystemStore) Get() (model.StringMap, error) {
@@ -6662,19 +5558,6 @@ func (s *OpenTracingLayerSystemStore) Update(system *model.System) error {
 	return err
 }
 
-func (s *OpenTracingLayerTermsOfServiceStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "TermsOfServiceStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.TermsOfServiceStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "TermsOfServiceStore.Get")
@@ -6739,19 +5622,6 @@ func (s *OpenTracingLayerTokenStore) Cleanup() {
 
 	defer span.Finish()
 	s.TokenStore.Cleanup()
-
-}
-
-func (s *OpenTracingLayerTokenStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "TokenStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.TokenStore.CreateIndexesIfNotExists()
 
 }
 
@@ -6843,19 +5713,6 @@ func (s *OpenTracingLayerTokenStore) Save(recovery *model.Token) error {
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerUploadSessionStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UploadSessionStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.UploadSessionStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerUploadSessionStore) Delete(id string) error {
@@ -7103,19 +5960,6 @@ func (s *OpenTracingLayerUserStore) Count(options account.UserCountOptions) (int
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerUserStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.UserStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerUserStore) DeactivateGuests() ([]string, error) {
@@ -7805,19 +6649,6 @@ func (s *OpenTracingLayerUserStore) VerifyEmail(userID string, email string) (st
 	return result, err
 }
 
-func (s *OpenTracingLayerUserAccessTokenStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAccessTokenStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.UserAccessTokenStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerUserAccessTokenStore) Delete(tokenID string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAccessTokenStore.Delete")
@@ -7998,19 +6829,6 @@ func (s *OpenTracingLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string)
 	return err
 }
 
-func (s *OpenTracingLayerUserAddressStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.UserAddressStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.DeleteForUser")
@@ -8045,19 +6863,6 @@ func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerUserTermOfServiceStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.UserTermOfServiceStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
@@ -8114,32 +6919,6 @@ func (s *OpenTracingLayerUserTermOfServiceStore) Save(userTermsOfService *accoun
 	return result, err
 }
 
-func (s *OpenTracingLayerVariantMediaStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VariantMediaStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VariantMediaStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerVoucherCategoryStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCategoryStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherCategoryStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCategoryStore.Get")
@@ -8192,19 +6971,6 @@ func (s *OpenTracingLayerVoucherCategoryStore) Upsert(voucherCategory *product_a
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerVoucherChannelListingStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherChannelListingStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherChannelListingStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
@@ -8279,19 +7045,6 @@ func (s *OpenTracingLayerVoucherCollectionStore) CollectionsByVoucherID(voucherI
 	return result, err
 }
 
-func (s *OpenTracingLayerVoucherCollectionStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCollectionStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherCollectionStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCollectionStore.Get")
@@ -8326,19 +7079,6 @@ func (s *OpenTracingLayerVoucherCollectionStore) Upsert(voucherCollection *produ
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerVoucherCustomerStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherCustomerStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
@@ -8395,19 +7135,6 @@ func (s *OpenTracingLayerVoucherCustomerStore) Save(voucherCustomer *product_and
 	return result, err
 }
 
-func (s *OpenTracingLayerVoucherProductStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherProductStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductStore.Get")
@@ -8460,32 +7187,6 @@ func (s *OpenTracingLayerVoucherProductStore) Upsert(voucherProduct *product_and
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerVoucherTranslationStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherTranslationStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.VoucherTranslationStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerWarehouseStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.WarehouseStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
@@ -8542,32 +7243,6 @@ func (s *OpenTracingLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.WarehouseShippingZoneStore.CreateIndexesIfNotExists()
-
-}
-
-func (s *OpenTracingLayerWishlistStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.WishlistStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.GetById")
@@ -8622,19 +7297,6 @@ func (s *OpenTracingLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wish
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.WishlistItemStore.CreateIndexesIfNotExists()
-
-}
-
 func (s *OpenTracingLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.GetById")
@@ -8687,19 +7349,6 @@ func (s *OpenTracingLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerWishlistProductVariantStore) CreateIndexesIfNotExists() {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistProductVariantStore.CreateIndexesIfNotExists")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.WishlistProductVariantStore.CreateIndexesIfNotExists()
-
 }
 
 func (s *OpenTracingLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {

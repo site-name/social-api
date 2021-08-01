@@ -9,16 +9,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-var WarehouseQuery = []string{
-	"Wh.Id",
-	"Wh.Name",
-	"Wh.Slug",
-	"Wh.AddressID",
-	"Wh.Email",
-	"Wh.Metadata",
-	"Wh.PrivateMetadata",
-}
-
 type SqlWareHouseStore struct {
 	store.Store
 }
@@ -35,6 +25,18 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 		table.ColMap("Email").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
 	}
 	return ws
+}
+
+func (ws *SqlWareHouseStore) ModelFields() []string {
+	return []string{
+		"Warehouses.Id",
+		"Warehouses.Name",
+		"Warehouses.Slug",
+		"Warehouses.AddressID",
+		"Warehouses.Email",
+		"Warehouses.Metadata",
+		"Warehouses.PrivateMetadata",
+	}
 }
 
 func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {

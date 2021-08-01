@@ -316,7 +316,9 @@ func extractStoreMetadata() (*storeMetadata, error) {
 				metadata.SubStores[subStoreName] = subStore{Methods: map[string]methodData{}}
 				for _, method := range x.Type.(*ast.InterfaceType).Methods.List {
 					methodName := method.Names[0].Name
-					metadata.SubStores[subStoreName].Methods[methodName] = extractMethodMetadata(method, src)
+					if methodName != "CreateIndexesIfNotExists" && methodName != "ModelFields" { // ignore these methods
+						metadata.SubStores[subStoreName].Methods[methodName] = extractMethodMetadata(method, src)
+					}
 				}
 			}
 		}

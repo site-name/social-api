@@ -30,6 +30,29 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return ps
 }
 
+func (ps *SqlProductStore) ModelFields() []string {
+	return []string{
+		"Products.Id",
+		"Products.ProductTypeID",
+		"Products.Name",
+		"Products.Slug",
+		"Products.Description",
+		"Products.DescriptionPlainText",
+		"Products.CategoryID",
+		"Products.CreateAt",
+		"Products.UpdateAt",
+		"Products.ChargeTaxes",
+		"Products.Weight",
+		"Products.WeightUnit",
+		"Products.DefaultVariantID",
+		"Products.Rating",
+		"Products.Metadata",
+		"Products.PrivateMetadata",
+		"Products.SeoTitle",
+		"Products.SeoDescription",
+	}
+}
+
 func (ps *SqlProductStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_products_name", store.ProductTableName, "Name")
 	ps.CreateIndexIfNotExists("idx_products_slug", store.ProductTableName, "Slug")

@@ -354,6 +354,7 @@ type (
 type (
 	WarehouseStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                       // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		GetWarehousesHeaders(ids []string) ([]string, error)               // GetWarehousesHeaders
@@ -387,6 +388,7 @@ type (
 	}
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*shipping.ShippingMethod, error)                                                   // Get finds and returns a shipping method with given id
 		ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) // ShippingMethodsByOption finds and returns a list of shipping methods that satisfy given filtering option
@@ -439,6 +441,7 @@ type (
 	}
 	ProductVariantStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                     // Get returns a product variant with given id
 	}
@@ -466,6 +469,7 @@ type (
 	}
 	ProductStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
@@ -509,9 +513,16 @@ type (
 type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(orderLine *order.OrderLine) (*order.OrderLine, error)  // Save save given order line instance into database and returns it
 		Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
 		GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
+		// OrderLinesByOrderWithPrefetch finds order lines belong to given order
+		//
+		// and preload `variants`, `products` related to these order lines
+		//
+		// this borrow the idea from Django's prefetch_related() method
+		OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()
@@ -658,12 +669,19 @@ type (
 type (
 	CheckoutLineStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)          // Upsert checks whether to update or insert given checkout line then performs according operation
 		Get(id string) (*checkout.CheckoutLine, error)                                       // Get returns a checkout line with given id
 		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
 		DeleteLines(checkoutLineIDs []string) error                                          // DeleteLines deletes all checkout lines with given uuids
 		BulkUpdate(checkoutLines []*checkout.CheckoutLine) error                             // BulkUpdate receives a list of modified checkout lines, updates them in bulk.
 		BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) // BulkCreate takes a list of raw checkout lines, save them into database then returns them fully with an error
+		// CheckoutLinesByCheckoutWithPrefetch finds all checkout lines belong to given checkout
+		//
+		// and prefetch all related product variants, products
+		//
+		// this borrows the idea from Django's prefetch_related() method
+		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()

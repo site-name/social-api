@@ -3,9 +3,11 @@ package order
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -45,6 +47,36 @@ func (ols *SqlOrderLineStore) CreateIndexesIfNotExists() {
 	ols.CreateForeignKeyIfNotExists(store.OrderLineTableName, "VariantID", store.ProductVariantTableName, "Id", false)
 }
 
+func (ols *SqlOrderLineStore) ModelFields() []string {
+	return []string{
+		"Orderlines.Id",
+		"Orderlines.OrderID",
+		"Orderlines.VariantID",
+		"Orderlines.ProductName",
+		"Orderlines.VariantName",
+		"Orderlines.TranslatedProductName",
+		"Orderlines.TranslatedVariantName",
+		"Orderlines.ProductSku",
+		"Orderlines.IsShippingRequired",
+		"Orderlines.Quantity",
+		"Orderlines.QuantityFulfilled",
+		"Orderlines.Currency",
+		"Orderlines.UnitDiscountAmount",
+		"Orderlines.UnitDiscountType",
+		"Orderlines.UnitDiscountReason",
+		"Orderlines.UnitPriceNetAmount",
+		"Orderlines.UnitDiscountValue",
+		"Orderlines.UnitPriceGrossAmount",
+		"Orderlines.TotalPriceNetAmount",
+		"Orderlines.TotalPriceGrossAmount",
+		"Orderlines.UnDiscountedUnitPriceGrossAmount",
+		"Orderlines.UnDiscountedUnitPriceNetAmount",
+		"Orderlines.UnDsicountedTotalPriceGrossAmount",
+		"Orderlines.UnDiscountedTotalPriceNetAmount",
+		"Orderlines.TaxRate",
+	}
+}
+
 func (ols *SqlOrderLineStore) Save(odl *order.OrderLine) (*order.OrderLine, error) {
 	odl.PreSave()
 	if err := odl.IsValid(); err != nil {
@@ -81,4 +113,129 @@ func (ols *SqlOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLin
 	}
 
 	return orderLines, nil
+}
+
+// OrderLinesByOrderWithPrefetch finds order lines belong to given order
+//
+// and preload `variants`, `products` related to these order lines
+//
+// this borrow the idea from Django's prefetch_related() method
+func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+
+	selectFields := append(
+		ols.ModelFields(),
+		append(
+			ols.ProductVariant().ModelFields(),
+			ols.Product().ModelFields()...,
+		)...,
+	)
+
+	rows, err := ols.
+		GetQueryBuilder().
+		Select(selectFields...).
+		From(store.OrderLineTableName).
+		InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id").
+		InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
+		Where(squirrel.Eq{"Orderlines.OrderID": orderID}).
+		RunWith(ols.GetReplica()).
+		Query()
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil, nil, store.NewErrNotFound(store.OrderLineTableName, "orderID="+orderID)
+		}
+		return nil, nil, nil, errors.Wrapf(err, "failed to finds order lines and prefetch related values, with orderId=%s", orderID)
+	}
+
+	var (
+		orderLines      []*order.OrderLine
+		productVariants []*product_and_discount.ProductVariant
+		products        []*product_and_discount.Product
+	)
+
+	for rows.Next() {
+		var (
+			orderLine      order.OrderLine
+			productVariant product_and_discount.ProductVariant
+			product        product_and_discount.Product
+		)
+		err = rows.Scan(
+			// scan order line
+			&orderLine.Id,
+			&orderLine.OrderID,
+			&orderLine.VariantID,
+			&orderLine.ProductName,
+			&orderLine.VariantName,
+			&orderLine.TranslatedProductName,
+			&orderLine.TranslatedVariantName,
+			&orderLine.ProductSku,
+			&orderLine.IsShippingRequired,
+			&orderLine.Quantity,
+			&orderLine.QuantityFulfilled,
+			&orderLine.Currency,
+			&orderLine.UnitDiscountAmount,
+			&orderLine.UnitDiscountType,
+			&orderLine.UnitDiscountReason,
+			&orderLine.UnitPriceNetAmount,
+			&orderLine.UnitDiscountValue,
+			&orderLine.UnitPriceGrossAmount,
+			&orderLine.TotalPriceNetAmount,
+			&orderLine.TotalPriceGrossAmount,
+			&orderLine.UnDiscountedUnitPriceGrossAmount,
+			&orderLine.UnDiscountedUnitPriceNetAmount,
+			&orderLine.UnDsicountedTotalPriceGrossAmount,
+			&orderLine.UnDiscountedTotalPriceNetAmount,
+			&orderLine.TaxRate,
+
+			// scan product variant
+			&productVariant.Id,
+			&productVariant.Name,
+			&productVariant.ProductID,
+			&productVariant.Sku,
+			&productVariant.Weight,
+			&productVariant.WeightUnit,
+			&productVariant.TrackInventory,
+			&productVariant.SortOrder,
+			&productVariant.Metadata,
+			&productVariant.PrivateMetadata,
+
+			// scan product
+			&product.Id,
+			&product.ProductTypeID,
+			&product.Name,
+			&product.Slug,
+			&product.Description,
+			&product.DescriptionPlainText,
+			&product.CategoryID,
+			&product.CreateAt,
+			&product.UpdateAt,
+			&product.ChargeTaxes,
+			&product.Weight,
+			&product.WeightUnit,
+			&product.DefaultVariantID,
+			&product.Rating,
+			&product.Metadata,
+			&product.PrivateMetadata,
+			&product.SeoTitle,
+			&product.SeoDescription,
+		)
+		if err != nil {
+			return nil, nil, nil, errors.Wrap(err, "failed to scan a row")
+		}
+		orderLines = append(orderLines, &orderLine)
+		productVariants = append(productVariants, &productVariant)
+		products = append(products, &product)
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return nil, nil, nil, errors.Wrap(err, "failed to close rows after scanning")
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, nil, nil, errors.Wrap(err, "there is an error occured during handling rows")
+	}
+
+	return orderLines, productVariants, products, nil
 }

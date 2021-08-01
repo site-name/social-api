@@ -3,9 +3,11 @@ package checkout
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -23,6 +25,15 @@ func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
 		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH)
 	}
 	return cls
+}
+
+func (cls *SqlCheckoutLineStore) ModelFields() []string {
+	return []string{
+		"CheckoutLines.Id",
+		"CheckoutLines.CheckoutID",
+		"CheckoutLines.VariantID",
+		"CheckoutLines.Quantity",
+	}
 }
 
 func (cls *SqlCheckoutLineStore) CreateIndexesIfNotExists() {
@@ -186,4 +197,105 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 	}
 
 	return lines, nil
+}
+
+// CheckoutLinesByCheckoutWithPrefetch finds all checkout lines belong to given checkout
+//
+// and prefetch all related product variants, products
+//
+// this borrows the idea from Django's prefetch_related() method
+func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+	selectFields := append(
+		cls.ModelFields(),
+		append(
+			cls.ProductVariant().ModelFields(),
+			cls.Product().ModelFields()...,
+		)...,
+	)
+
+	rows, err := cls.
+		GetQueryBuilder().
+		Select(selectFields...).
+		From(store.CheckoutLineTableName).
+		InnerJoin(store.ProductVariantTableName + " ON CheckoutLines.VariantID = ProductVariants.Id").
+		InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
+		Where(squirrel.Eq{"": checkoutID}).
+		RunWith(cls.GetReplica()).
+		Query()
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil, nil, store.NewErrNotFound(store.CheckoutLineTableName, "checkoutID="+checkoutID)
+		}
+		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutID=%s", checkoutID)
+	}
+
+	var (
+		checkoutLines   []*checkout.CheckoutLine
+		productVariants []*product_and_discount.ProductVariant
+		products        []*product_and_discount.Product
+	)
+
+	for rows.Next() {
+		var (
+			line    checkout.CheckoutLine
+			variant product_and_discount.ProductVariant
+			product product_and_discount.Product
+		)
+		err = rows.Scan(
+			// scan checkout line
+			&line.Id,
+			&line.CheckoutID,
+			&line.VariantID,
+			&line.Quantity,
+
+			// scan product variant
+			&variant.Id,
+			&variant.Name,
+			&variant.ProductID,
+			&variant.Sku,
+			&variant.Weight,
+			&variant.WeightUnit,
+			&variant.TrackInventory,
+			&variant.SortOrder,
+			&variant.Metadata,
+			&variant.PrivateMetadata,
+
+			// scan product
+			&product.Id,
+			&product.ProductTypeID,
+			&product.Name,
+			&product.Slug,
+			&product.Description,
+			&product.DescriptionPlainText,
+			&product.CategoryID,
+			&product.CreateAt,
+			&product.UpdateAt,
+			&product.ChargeTaxes,
+			&product.Weight,
+			&product.WeightUnit,
+			&product.DefaultVariantID,
+			&product.Rating,
+			&product.Metadata,
+			&product.PrivateMetadata,
+			&product.SeoTitle,
+			&product.SeoDescription,
+		)
+		if err != nil {
+			return nil, nil, nil, errors.Wrap(err, "failed to scan a row")
+		}
+
+		checkoutLines = append(checkoutLines, &line)
+		productVariants = append(productVariants, &variant)
+		products = append(products, &product)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "failed to close rows")
+	}
+	if err = rows.Err(); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "an error occured while handing rows")
+	}
+
+	return checkoutLines, productVariants, products, nil
 }

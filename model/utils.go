@@ -80,6 +80,7 @@ func NewUint(n uint) *uint                          { return &n }
 func NewInt64(n int64) *int64                       { return &n }
 func NewInt32(n int32) *int32                       { return &n }
 func NewFloat32(n float32) *float32                 { return &n }
+func NewFloat64(n float64) *float64                 { return &n }
 func NewString(s string) *string                    { return &s }
 func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
 

@@ -13,7 +13,6 @@ const (
 )
 
 type Seo struct {
-	Id             string  `json:"id"`
 	SeoTitle       *string `json:"seo_title"`
 	SeoDescription *string `json:"seo_description"`
 }
@@ -22,24 +21,20 @@ func (s *Seo) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.seo.is_valid.%s.app_error",
 		"seo_id=",
-		"Seo.IsValid")
-	if !model.IsValidId(s.Id) {
-		return outer("id", nil)
-	}
+		"Seo.IsValid",
+	)
+
 	if s.SeoTitle != nil && utf8.RuneCountInString(*s.SeoTitle) > SEO_TITLE_MAX_LENGTH {
-		return outer("seo_title", &s.Id)
+		return outer("seo_title", nil)
 	}
 	if s.SeoDescription != nil && utf8.RuneCountInString(*s.SeoDescription) > SEO_DESCRIPTION_MAX_LENGTH {
-		return outer("seo_description", &s.Id)
+		return outer("seo_description", nil)
 	}
 
 	return nil
 }
 
 func (s *Seo) PreSave() {
-	if s.Id == "" {
-		s.Id = model.NewId()
-	}
 	if s.SeoTitle != nil {
 		st := model.SanitizeUnicode(*s.SeoTitle)
 		s.SeoTitle = &st
