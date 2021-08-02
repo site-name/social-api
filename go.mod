@@ -62,7 +62,7 @@ require (
 	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v0.0.0-20210728111521-775f38e3c886
+	github.com/site-name/go-prices v0.0.0-20210801093830-972abfb34bd0
 	github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0

@@ -40,8 +40,9 @@ const (
 	USER_NAME_MIN_LENGTH           = 1
 	CURRENCY_CODE_MAX_LENGTH       = 3
 	LANGUAGE_CODE_MAX_LENGTH       = 5
+	WEIGHT_UNIT_MAX_LENGTH         = LANGUAGE_CODE_MAX_LENGTH
 	URL_LINK_MAX_LENGTH            = 200
-	SINGLE_COUNTRY_CODE_MAX_LENGTH = 2
+	SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
 	IP_ADDRESS_MAX_LENGTH          = 39
 	DEFAULT_LOCALE                 = "en" // this is default language also
 	DEFAULT_COUNTRY                = "US"

@@ -891,6 +891,8 @@ github.com/site-name/decimal v1.3.0 h1:z0WbTuLm2rN5ewOnKZ+2Q8lSpCajWewCwATEOyXrb
 github.com/site-name/decimal v1.3.0/go.mod h1:J/MYbjBTLhIKZVfU3p3zyGdAdrOt3aVgkRSD1hCmitU=
 github.com/site-name/go-prices v0.0.0-20210728111521-775f38e3c886 h1:4cghlH4y+6GSkLkiw42a5Wnw+cTNso/vYNhh+RPGcyA=
 github.com/site-name/go-prices v0.0.0-20210728111521-775f38e3c886/go.mod h1:H787oHKVAYzJxNuLgMvZbsBtKUvycg8Nctk4qqQJgBs=
+github.com/site-name/go-prices v0.0.0-20210801093830-972abfb34bd0 h1:LX3o/VDYjAVP4WGsekjM3dz/0V+XG/W6hXrwmSt8MXA=
+github.com/site-name/go-prices v0.0.0-20210801093830-972abfb34bd0/go.mod h1:7MC1Fdxv+s7G2bmByWE52wHsCikrCZddJO/l5g+R2ZA=
 github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3 h1:4SffFvDRYn8gyiCH5Q1OPpMmjlNNUBiMDC5sqHw4xUk=
 github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3/go.mod h1:D88xo9JpEDVN3Q5sDjwU6H/CxjnB7gtDHNBuQSDY5iQ=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d h1:zE9ykElWQ6/NYmHa3jpm/yHnI4xSofP+UP6SpjHcSeM=

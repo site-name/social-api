@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
 )
@@ -20,6 +21,7 @@ func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 		table.ColMap("ShippingZoneID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(shipping.SHIPPING_METHOD_NAME_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(shipping.SHIPPING_METHOD_TYPE_MAX_LENGTH)
+		table.ColMap("WeightUnit").SetMaxSize(model.WEIGHT_UNIT_MAX_LENGTH)
 	}
 	return smls
 }
@@ -111,4 +113,6 @@ func (s *SqlShippingMethodStore) ShippingMethodsByOption(option *shipping.Shippi
 			query = query.Where(option.ChannelListingsChannelSlug.ToSquirrel("channels.Slug"))
 		}
 	}
+
+	return nil, nil
 }
