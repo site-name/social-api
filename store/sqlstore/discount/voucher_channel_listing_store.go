@@ -81,7 +81,8 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product
 
 // Get finds a listing with given id, then returns it with an error
 func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
-	result, err := vcls.GetReplica().Get(product_and_discount.VoucherChannelListing{}, voucherChannelListingID)
+	var res product_and_discount.VoucherChannelListing
+	err := vcls.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherChannelListingID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherChannelListingTableName, voucherChannelListingID)
@@ -89,9 +90,8 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with id=%s", voucherChannelListingID)
 	}
 
-	listing := result.(*product_and_discount.VoucherChannelListing)
-	listing.PopulateNonDbFields()
-	return listing, nil
+	res.PopulateNonDbFields()
+	return &res, nil
 }
 
 // FilterByVoucherAndChannel finds a list of listings that belong to given voucher and own given channel
@@ -110,9 +110,6 @@ func (vcls *SqlVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID s
 		},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherChannelListingTableName, "voucherID="+voucherID+", channelID="+channelID)
-		}
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with VoucherID = %s, ChannelID = %s", voucherID, channelID)
 	}
 

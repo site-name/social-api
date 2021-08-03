@@ -3,8 +3,8 @@ package attribute
 import (
 	"bytes"
 	"database/sql"
-	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
@@ -16,13 +16,10 @@ type SqlAssignedVariantAttributeValueStore struct {
 }
 
 var (
-	assignedVariantAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", strings.ToLower(store.AssignedVariantAttributeValueTableName) + "_valueid_assignmentid_key"}
-	// "AVAV" part is acronym for the table name. Make sure to make alias when building query with table name
-	AssignedVariantAttributeValueSelectList = []string{
-		"AVAV.Id",
-		"AVAV.ValueID",
-		"AVAV.AssignmentID",
-		"AVAV.SortOrder",
+	assignedVariantAttrValueDuplicateKeys = []string{
+		"ValueID",
+		"AssignmentID",
+		"assignedvariantattributevalues_valueid_assignmentid_key",
 	}
 )
 
@@ -38,6 +35,15 @@ func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVaria
 		table.SetUniqueTogether("ValueID", "AssignmentID")
 	}
 	return as
+}
+
+func (as *SqlAssignedVariantAttributeValueStore) ModelFields() []string {
+	return []string{
+		"AssignedVariantAttributeValues.Id",
+		"AssignedVariantAttributeValues.ValueID",
+		"AssignedVariantAttributeValues.AssignmentID",
+		"AssignedVariantAttributeValues.SortOrder",
+	}
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
@@ -62,7 +68,8 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
-	res, err := as.GetReplica().Get(attribute.AssignedVariantAttributeValue{}, assignedVariantAttrValueID)
+	var res attribute.AssignedVariantAttributeValue
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedVariantAttributeValueTableName, assignedVariantAttrValueID)
@@ -70,7 +77,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID 
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute value with id=%s", assignedVariantAttrValueID)
 	}
 
-	return res.(*attribute.AssignedVariantAttributeValue), nil
+	return &res, nil
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
@@ -112,51 +119,28 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
-	selectValues := strings.Join(
-		append(AssignedVariantAttributeValueSelectList, AttributeValueSelect...),
-		", ",
-	)
-	query := `SELECT ` + selectValues + ` FROM ` +
-		store.AssignedVariantAttributeValueTableName + ` AS AVAV INNER JOIN ` +
-		store.AttributeValueTableName + ` AS AV ON(
-			AVAV.ValueID = AV.Id
-		)
-		WHERE (
-			AVAV.AssignmentID = :AssignmentID
-		)`
 
-	rows, err := as.GetReplica().Query(query, map[string]interface{}{"AssignmentID": assignmentID})
+	rows, err := as.GetQueryBuilder().
+		Select(
+			append(as.ModelFields(), as.AttributeValue().ModelFields()...)...,
+		).
+		From(store.AssignedVariantAttributeValueTableName).
+		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
+		Where(squirrel.Eq{"AssignedVariantAttributeValues.AssignmentID": assignmentID}).
+		RunWith(as.GetReplica()).
+		Query()
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			err = store.NewErrNotFound(store.AssignedVariantAttributeValueTableName, "AssignmentID="+assignmentID)
-			return
-		}
 		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 		return
 	}
 
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			if err == nil {
-				err = errors.Wrap(closeErr, "error closing rows")
-				return
-			}
-		}
-		if rowsErr := rows.Err(); rowsErr != nil {
-			if err == nil {
-				err = errors.Wrap(rowsErr, "rows error")
-				return
-			}
-		}
-	}()
-
-	var (
-		assignedVariantAttributeValue attribute.AssignedVariantAttributeValue
-		attributeValue                attribute.AttributeValue
-	)
-
 	for rows.Next() {
-		var richText []byte
+		var (
+			richText                      []byte
+			assignedVariantAttributeValue attribute.AssignedVariantAttributeValue
+			attributeValue                attribute.AttributeValue
+		)
 
 		scanErr := rows.Scan(
 			&assignedVariantAttributeValue.Id,
@@ -182,12 +166,22 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 
 		parseErr := model.ModelFromJson(&attributeValue.RichText, bytes.NewReader(richText))
 		if parseErr != nil {
-			err = parseErr
+			err = errors.Wrap(err, "error parsing value")
 			return
 		}
 
 		assignedVariantAttributeValues = append(assignedVariantAttributeValues, &assignedVariantAttributeValue)
 		attributeValues = append(attributeValues, &attributeValue)
+	}
+
+	if err = rows.Close(); err != nil {
+		err = errors.Wrap(err, "error closing rows")
+		return
+	}
+
+	if err = rows.Err(); err != nil {
+		err = errors.Wrap(err, "error occured during scanning iteration")
+		return
 	}
 
 	return

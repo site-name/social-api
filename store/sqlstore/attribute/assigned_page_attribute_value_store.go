@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
@@ -17,13 +18,6 @@ type SqlAssignedPageAttributeValueStore struct {
 
 var (
 	assignedPageAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", strings.ToLower(store.AssignedPageAttributeValueTableName) + "_valueid_assignmentid_key"}
-	// "APAV" is acronym for table name. Make sure to turn `AssignedPageAttributeValueTableName` to "APAV" when building queries
-	AssignedPageAttributeValueSelectList = []string{
-		"APAV.Id",
-		"APAV.ValueID",
-		"APAV.AssignmentID",
-		"APAV.SortOrder",
-	}
 )
 
 func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttributeValueStore {
@@ -38,6 +32,15 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 		table.SetUniqueTogether("ValueID", "AssignmentID")
 	}
 	return as
+}
+
+func (as *SqlAssignedPageAttributeValueStore) ModelFields() []string {
+	return []string{
+		"APAV.Id",
+		"APAV.ValueID",
+		"APAV.AssignmentID",
+		"APAV.SortOrder",
+	}
 }
 
 func (as *SqlAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
@@ -62,7 +65,8 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attrib
 }
 
 func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
-	res, err := as.GetReplica().Get(attribute.AssignedPageAttributeValue{}, assignedPageAttrValueID)
+	var res attribute.AssignedPageAttributeValue
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedPageAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedPageAttrValueID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedPageAttributeValueTableName, assignedPageAttrValueID)
@@ -70,7 +74,7 @@ func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute value with id=%s", assignedPageAttrValueID)
 	}
 
-	return res.(*attribute.AssignedPageAttributeValue), nil
+	return &res, nil
 }
 
 func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
@@ -112,51 +116,27 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 }
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) (assignedPageAttributeValues []*attribute.AssignedPageAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
-	selectValues := strings.Join(
-		append(AssignedPageAttributeValueSelectList, AttributeValueSelect...),
-		", ",
-	)
-	query := `SELECT ` + selectValues + ` FROM ` +
-		store.AssignedPageAttributeValueTableName + ` AS APAV INNER JOIN ` +
-		store.AttributeValueTableName + ` AS AV ON(
-			APAV.ValueID = AV.Id
-		)
-		WHERE (
-			APAV.AssignmentID = :AssignmentID
-		)`
+	rows, err := as.GetQueryBuilder().
+		Select(
+			append(as.ModelFields(), as.AttributeValue().ModelFields()...)...,
+		).
+		From(store.AssignedPageAttributeValueTableName).
+		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
+		Where(squirrel.Eq{"AssignedPageAttributeValues.AssignmentID": assignmentID}).
+		RunWith(as.GetReplica()).
+		Query()
 
-	rows, err := as.GetReplica().Query(query, map[string]interface{}{"AssignmentID": assignmentID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			err = store.NewErrNotFound(store.AssignedPageAttributeValueTableName, "AssignmentID="+assignmentID)
-			return
-		}
 		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 		return
 	}
 
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			if err == nil {
-				err = errors.Wrap(closeErr, "error closing rows")
-				return
-			}
-		}
-		if rowsErr := rows.Err(); rowsErr != nil {
-			if err == nil {
-				err = errors.Wrap(rowsErr, "rows error")
-				return
-			}
-		}
-	}()
-
-	var (
-		assignedPageAttributeValue attribute.AssignedPageAttributeValue
-		attributeValue             attribute.AttributeValue
-	)
-
 	for rows.Next() {
-		var richText []byte
+		var (
+			assignedPageAttributeValue attribute.AssignedPageAttributeValue
+			attributeValue             attribute.AttributeValue
+			richText                   []byte
+		)
 
 		scanErr := rows.Scan(
 			&assignedPageAttributeValue.Id,
@@ -188,6 +168,16 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 
 		assignedPageAttributeValues = append(assignedPageAttributeValues, &assignedPageAttributeValue)
 		attributeValues = append(attributeValues, &attributeValue)
+	}
+
+	if err = rows.Err(); err != nil {
+		err = errors.Wrap(err, "error closing rows")
+		return
+	}
+
+	if err = rows.Err(); err != nil {
+		err = errors.Wrap(err, "error occured during parsing rows operation")
+		return
 	}
 
 	return

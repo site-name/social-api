@@ -604,11 +604,13 @@ func (us *SqlUserStore) GetByAuth(authData *string, authService string) (*accoun
 	}
 
 	user := account.User{}
-	if err := us.GetReplica().SelectOne(&user, queryString, args...); err == sql.ErrNoRows {
-		return nil, store.NewErrNotFound("User", fmt.Sprintf("authData=%s, authService=%s", *authData, authService))
-	} else if err != nil {
+	if err := us.GetReplica().SelectOne(&user, queryString, args...); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound("User", fmt.Sprintf("authData=%s, authService=%s", *authData, authService))
+		}
 		return nil, errors.Wrapf(err, "failed to find User with authData=%s")
 	}
+
 	return &user, nil
 }
 

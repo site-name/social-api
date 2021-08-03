@@ -1,8 +1,6 @@
 package account
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
@@ -45,9 +43,6 @@ func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.Cu
 func (cs *SqlCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
 	res, err := cs.GetReplica().Get(account.CustomerEvent{}, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CustomerEventTableName, id)
-		}
 		return nil, errors.Wrapf(err, "failed to find CustomerEvent with Id=%s", id)
 	}
 
@@ -67,9 +62,6 @@ func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*account.Cu
 	var events []*account.CustomerEvent
 	_, err := cs.GetReplica().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = :userID", map[string]interface{}{"userID": userID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CustomerEventTableName, "userId="+userID)
-		}
 		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)
 	}
 

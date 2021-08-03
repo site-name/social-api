@@ -3,8 +3,8 @@ package attribute
 import (
 	"bytes"
 	"database/sql"
-	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
@@ -19,14 +19,7 @@ var (
 	assignedProductAttrValueDuplicateKeys = []string{
 		"ValueID",
 		"AssignmentID",
-		strings.ToLower(store.AssignedProductAttributeValueTableName) + "_valueid_assignmentid_key",
-	}
-	// prefixes "APAV" stand for the table name. When building queries using this variable, please make acronyms correctly
-	AssignedProductAttributeValueSelectList = []string{
-		"APAV.Id",
-		"APAV.ValueID",
-		"APAV.AssignmentID",
-		"APAV.SortOrder",
+		"assignedproductattributevalues_valueid_assignmentid_key",
 	}
 )
 
@@ -42,6 +35,15 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 		table.SetUniqueTogether("ValueID", "AssignmentID")
 	}
 	return as
+}
+
+func (as *SqlAssignedProductAttributeValueStore) ModelFields() []string {
+	return []string{
+		"AssignedProductAttributeValues.Id",
+		"AssignedProductAttributeValues.ValueID",
+		"AssignedProductAttributeValues.AssignmentID",
+		"AssignedProductAttributeValues.SortOrder",
+	}
 }
 
 func (as *SqlAssignedProductAttributeValueStore) CreateIndexesIfNotExists() {
@@ -66,7 +68,8 @@ func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *
 }
 
 func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
-	res, err := as.GetReplica().Get(attribute.AssignedProductAttributeValue{}, assignedProductAttrValueID)
+	var res attribute.AssignedProductAttributeValue
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedProductAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedProductAttrValueID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedProductAttributeValueTableName, assignedProductAttrValueID)
@@ -74,7 +77,7 @@ func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID 
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute value with id=%s", assignedProductAttrValueID)
 	}
 
-	return res.(*attribute.AssignedProductAttributeValue), nil
+	return &res, nil
 }
 
 func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
@@ -149,51 +152,28 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 }
 
 func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (assignedProductAttributeValues []*attribute.AssignedProductAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
-	selectValues := strings.Join(
-		append(AssignedProductAttributeValueSelectList, AttributeValueSelect...),
-		", ",
-	)
-	query := `SELECT ` + selectValues + ` FROM ` +
-		store.AssignedProductAttributeValueTableName + ` AS APAV INNER JOIN ` +
-		store.AttributeValueTableName + ` AS AV ON(
-			APAV.ValueID = AV.Id
-		)
-		WHERE (
-			APAV.AssignmentID = :AssignmentID
-		)`
 
-	rows, err := as.GetReplica().Query(query, map[string]interface{}{"AssignmentID": assignmentID})
+	rows, err := as.GetQueryBuilder().
+		Select(
+			append(as.ModelFields(), as.AttributeValue().ModelFields()...)...,
+		).
+		From(store.AssignedProductAttributeValueTableName).
+		InnerJoin(store.AttributeValueTableName + " ON (AssignedProductAttributeValues.Id = AttributeValues.ValueID)").
+		Where(squirrel.Eq{"AssignedProductAttributeValues.AssignmentID": assignmentID}).
+		RunWith(as.GetReplica()).
+		Query()
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			err = store.NewErrNotFound(store.AssignedProductAttributeValueTableName, "AssignmentID="+assignmentID)
-			return
-		}
 		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 		return
 	}
 
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			if err == nil {
-				err = errors.Wrap(closeErr, "error closing rows")
-				return
-			}
-		}
-		if rowsErr := rows.Err(); rowsErr != nil {
-			if err == nil {
-				err = errors.Wrap(rowsErr, "rows error")
-				return
-			}
-		}
-	}()
-
-	var (
-		assignedProductAttributeValue attribute.AssignedProductAttributeValue
-		attributeValue                attribute.AttributeValue
-	)
-
 	for rows.Next() {
-		var richText []byte
+		var (
+			richText                      []byte
+			assignedProductAttributeValue attribute.AssignedProductAttributeValue
+			attributeValue                attribute.AttributeValue
+		)
 
 		scanErr := rows.Scan(
 			&assignedProductAttributeValue.Id,
@@ -219,12 +199,22 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 
 		parseErr := model.ModelFromJson(&attributeValue.RichText, bytes.NewReader(richText))
 		if parseErr != nil {
-			err = parseErr
+			err = errors.Wrap(err, "error parsing field")
 			return
 		}
 
 		assignedProductAttributeValues = append(assignedProductAttributeValues, &assignedProductAttributeValue)
 		attributeValues = append(attributeValues, &attributeValue)
+	}
+
+	if err = rows.Close(); err != nil {
+		err = errors.Wrap(err, "error closing rows")
+		return
+	}
+
+	if err = rows.Err(); err != nil {
+		err = errors.Wrap(err, "error occured during rows iteration")
+		return
 	}
 
 	return

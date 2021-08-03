@@ -1,7 +1,6 @@
 package shipping
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -72,9 +71,6 @@ func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipp
 func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 	result, err := s.GetReplica().Get(shipping.ShippingMethod{}, methodID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShippingMethodTableName, methodID)
-		}
 		return nil, errors.Wrapf(err, "failed to find shipping method with id=%s", methodID)
 	}
 
@@ -84,8 +80,10 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod,
 // ApplicableShippingMethodsForCheckout finds all shipping method for given checkout
 //
 // sql queries here are borrowed. Please check the file .md
-func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
-
+func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
+	/*
+		NOTE: we also prefetch postal_code_rules, shipping zones for later use
+	*/
 	selectFields := append(s.ModelFields(), s.ShippingZone().ModelFields()...)
 	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields()...)
 
@@ -94,7 +92,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	params := map[string]interface{}{
 		"ChannelID":               channelID,
 		"Currency":                price.Currency,
-		"CountryCode":             countryCode,
+		"CountryCode":             "%" + countryCode + "%",
 		"MinimumOrderPriceAmount": priceAmount,
 		"MaximumOrderPriceAmount": priceAmount,
 		"MinimumOrderWeight":      weight.Amount,
@@ -120,7 +118,6 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 				LIMIT 1
 			)
 		)`
-
 		// update params also
 		params["ExcludedProductIDs"] = productIDs
 	}
@@ -208,4 +205,24 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 			)
 		)
 	ORDER BY PriceAmount ASC`
+
+	var results []*struct {
+
+		// postal code
+		Id               string
+		ShippingMethodID string
+		Start            string
+		End              string
+		InclusionType    string
+	}
+	_, err := s.GetReplica().Select(
+		&results,
+		query,
+		params,
+	)
+	if err != nil {
+		return nil, nil, nil, errors.Wrap(err, "failed to finds shipping methods and related values")
+	}
+
+	return nil, nil, nil, nil
 }

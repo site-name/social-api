@@ -65,7 +65,7 @@ func (cs *SqlChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) 
 }
 
 func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
-	var channel *channel.Channel
+	var channel channel.Channel
 	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -74,11 +74,11 @@ func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
 	}
 
-	return channel, nil
+	return &channel, nil
 }
 
 func (cs *SqlChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
-	var channel *channel.Channel
+	var channel channel.Channel
 	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Slug = :slug", map[string]interface{}{"slug": slug})
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -87,16 +87,13 @@ func (cs *SqlChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
 		return nil, errors.Wrapf(err, "Failed to get Channel with slug=%s", slug)
 	}
 
-	return channel, nil
+	return &channel, nil
 }
 
 func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	var channels = []*channel.Channel{}
 	_, err := cs.GetReplica().Select(&channels, "SELECT * FROM "+store.ChannelTableName+" WHERE IsActive")
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ChannelTableName, "")
-		}
 		return nil, errors.Wrap(err, "failed to get Channel with Active=true")
 	}
 

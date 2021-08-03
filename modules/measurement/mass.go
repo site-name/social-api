@@ -37,12 +37,16 @@ var WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
 const STANDARD_WEIGHT_UNIT = KG
 
 type Weight struct {
-	Amount float32    `json:"amount"`
+	Amount *float32   `json:"amount"`
 	Unit   WeightUnit `json:"unit"`
 }
 
 func (w *Weight) String() string {
-	return fmt.Sprintf("%.3f %s", w.Amount, w.Unit)
+	return fmt.Sprintf("%.3f %s", *w.Amount, w.Unit)
+}
+
+func newFloat32(f float32) *float32 {
+	return &f
 }
 
 var (
@@ -55,7 +59,7 @@ func (w *Weight) Add(other *Weight) *Weight {
 	// convert other's unit to w's unit
 	converted, _ := other.ConvertTo(w.Unit)
 	return &Weight{
-		Amount: w.Amount + converted.Amount,
+		Amount: newFloat32(*w.Amount + *converted.Amount),
 		Unit:   w.Unit,
 	}
 }
@@ -65,7 +69,7 @@ func (w *Weight) Sub(other *Weight) *Weight {
 	// convert other's unit to w's unit
 	converted, _ := other.ConvertTo(w.Unit)
 	return &Weight{
-		Amount: w.Amount - converted.Amount,
+		Amount: newFloat32(*w.Amount - *converted.Amount),
 		Unit:   w.Unit,
 	}
 }
@@ -73,7 +77,7 @@ func (w *Weight) Sub(other *Weight) *Weight {
 // Multiplies weight to current weight and returns new weight.
 func (w *Weight) Mul(quantity float32) *Weight {
 	return &Weight{
-		Amount: w.Amount * quantity,
+		Amount: newFloat32(*w.Amount * quantity),
 		Unit:   w.Unit,
 	}
 }
@@ -89,23 +93,23 @@ func (w *Weight) ConvertTo(unit WeightUnit) (*Weight, error) {
 		return w, nil
 	}
 
-	resAmount := w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
+	resAmount := *w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
 	return &Weight{
-		Amount: resAmount,
+		Amount: newFloat32(resAmount),
 		Unit:   unit,
 	}, nil
 }
 
 // Zero weight for unit (kg)
 var ZeroWeight = &Weight{
-	Amount: 0,
+	Amount: newFloat32(0),
 	Unit:   KG,
 }
 
 // NewWeight returns a customized weight user wants
 func NewWeight(amount float32, unit WeightUnit) *Weight {
 	return &Weight{
-		Amount: amount,
+		Amount: newFloat32(amount),
 		Unit:   unit,
 	}
 }

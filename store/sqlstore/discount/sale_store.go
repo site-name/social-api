@@ -74,7 +74,8 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*produc
 
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
-	result, err := ss.GetReplica().Get(product_and_discount.Sale{}, saleID)
+	var res product_and_discount.Sale
+	err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.SaleTableName+" WHERE id = :ID", map[string]interface{}{"ID": saleID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.SaleTableName, saleID)
@@ -82,7 +83,7 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, 
 		return nil, errors.Wrapf(err, "failed to finds sale with id=%s", saleID)
 	}
 
-	return result.(*product_and_discount.Sale), nil
+	return &res, nil
 }
 
 // FilterSalesByOption filter sales by option
@@ -114,9 +115,6 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 	var sales []*product_and_discount.Sale
 	_, err = ss.GetReplica().Select(&sales, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.SaleTableName, "")
-		}
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")
 	}
 

@@ -16,7 +16,7 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 	cs := &SqlCsvExportFileStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(csv.ExportFile{}, "ExportFiles").SetKeys(false, "Id")
+		table := db.AddTableWithName(csv.ExportFile{}, store.CsvExportFileTablename).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Data").SetMaxSize(csv.EXPORT_FILE_DATA_MAX_LENGTH)
@@ -39,7 +39,8 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 }
 
 func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
-	inface, err := cs.GetMaster().Get(csv.ExportFile{}, id)
+	var res csv.ExportFile
+	err := cs.GetMaster().SelectOne(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("ExportFile", id)
@@ -47,5 +48,5 @@ func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)
 	}
 
-	return inface.(*csv.ExportFile), nil
+	return &res, nil
 }

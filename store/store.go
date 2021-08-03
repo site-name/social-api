@@ -247,6 +247,7 @@ type (
 	}
 	AttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) // Save inserts given attribute value into database, then returns inserted value and an error
 		Get(attributeID string) (*attribute.AttributeValue, error)                   // Get finds an attribute value with given id then returns it with an error
 		GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) // GetAllByAttributeID finds all attribute values that belong to given attribute then returns them withh an error
@@ -256,6 +257,7 @@ type (
 	}
 	AssignedPageAttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
 		Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error)                                                                               // Get try finding an value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error)                                                     // SaveInBulk inserts multiple values into database then returns them with an error
@@ -296,6 +298,7 @@ type (
 	}
 	AssignedProductAttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error)                                  // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error)           // SaveInBulk save multiple values into database
@@ -393,9 +396,9 @@ type (
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
-		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
-		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethodsForCheckout finds all shipping method for given checkout
+		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) // Upsert bases on given method's Id to decide update or insert it
+		Get(methodID string) (*shipping.ShippingMethod, error)                    // Get finds and returns a shipping method with given id
+		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error)
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		CreateIndexesIfNotExists()
@@ -452,6 +455,7 @@ type (
 		ModelFields() []string
 		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                     // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                  // GetWeight returns weight of given product variant
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -464,6 +468,7 @@ type (
 	}
 	ProductTypeStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)    // Save try inserting new product type into database then returns it
 		Get(productTypeID string) (*product_and_discount.ProductType, error)                              // Get try finding product type with given id and returns it
 		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
@@ -690,6 +695,7 @@ type (
 		//
 		// this borrows the idea from Django's prefetch_related() method
 		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
+		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) // TotalWeightForCheckoutLines calculate total weight for given checkout lines
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()

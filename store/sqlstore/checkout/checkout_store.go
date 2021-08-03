@@ -137,9 +137,6 @@ func (cs *SqlCheckoutStore) CheckoutsByUserID(userID string, channelActive bool)
 
 	_, err := cs.GetReplica().Select(&checkouts, query, map[string]interface{}{"UserID": userID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutTableName, "userID="+userID)
-		}
 		return nil, errors.Wrapf(err, "failed to find checkouts for user with Id=%s", userID)
 	}
 

@@ -73,7 +73,8 @@ func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *product_and_discount
 
 // Get finds a voucher category with given id, then returns it with an error
 func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
-	result, err := vcs.GetReplica().Get(product_and_discount.VoucherCategory{}, voucherCategoryID)
+	var res product_and_discount.VoucherCategory
+	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCategoryTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherCategoryID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCategoryTableName, voucherCategoryID)
@@ -81,7 +82,7 @@ func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_
 		return nil, errors.Wrapf(err, "failed to find voucher-category relation with id=%s", voucherCategoryID)
 	}
 
-	return result.(*product_and_discount.VoucherCategory), nil
+	return &res, nil
 }
 
 // ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
@@ -100,9 +101,6 @@ func (vcs *SqlVoucherCategoryStore) ProductCategoriesByVoucherID(voucherID strin
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return []*product_and_discount.Category{}, store.NewErrNotFound(store.ProductCategoryTableName, "voucherID="+voucherID)
-		}
 		return nil, errors.Wrapf(err, "failed to find categories with relation to voucher with voucherId=%s", voucherID)
 	}
 

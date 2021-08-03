@@ -53,7 +53,8 @@ func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribu
 }
 
 func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
-	fetchedRow, err := as.GetReplica().Get(attribute.Attribute{}, id)
+	var res attribute.Attribute
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Attribute", id)
@@ -61,7 +62,7 @@ func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
 		return nil, errors.Wrapf(err, "failed to get Attribute with Id=%s", id)
 	}
 
-	return fetchedRow.(*attribute.Attribute), nil
+	return &res, nil
 }
 
 func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {

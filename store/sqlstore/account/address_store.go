@@ -1,8 +1,6 @@
 package account
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -75,23 +73,19 @@ func (as *SqlAddressStore) Update(address *account.Address) (*account.Address, e
 }
 
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
-	var address account.Address
-	err := as.GetReplica().SelectOne(&address, "SELECT * FROM "+store.AddressTableName+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
+	value, err := as.GetReplica().Get(account.Address{}, addressID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AddressTableName, addressID)
-		}
 		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", store.AddressTableName, addressID)
 	}
 
-	return &address, nil
+	return value.(*account.Address), nil
 }
 
 func (as *SqlAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
 	var addresses []*account.Address
 	_, err := as.GetReplica().Select(&addresses, "SELECT * FROM "+store.AddressTableName+" WHERE Id in :IDs", map[string]interface{}{"IDs": addressesIDs})
 	if err != nil {
-		return nil, errors.Wrap(err, "addresses_get_many_select")
+		return nil, errors.Wrap(err, "failed to finds addresses by ids")
 	}
 
 	return addresses, nil
@@ -114,9 +108,6 @@ func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Addre
 		map[string]interface{}{"userID": userID},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AddressTableName, "userID="+userID)
-		}
 		return nil, errors.Wrapf(err, "failed to get addresses belong to user with userID=%s", userID)
 	}
 
@@ -132,14 +123,11 @@ func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
 
 	for _, id := range addressIDs {
 		if !model.IsValidId(id) {
-			return store.NewErrInvalidInput(store.AddressTableName, "addressIDs", "nil value")
+			return store.NewErrInvalidInput(store.AddressTableName, "address id", id)
 		}
 
 		result, err := tx.Get(account.Address{}, id)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				return store.NewErrNotFound(store.AddressTableName, id)
-			}
 			return errors.Wrapf(err, "failed to find address with id=%s", id)
 		}
 		addr := result.(*account.Address)

@@ -7,7 +7,7 @@ import (
 
 func TestConvertTo(t *testing.T) {
 	w1 := Weight{
-		Amount: 2000,
+		Amount: newFloat32(2000),
 		Unit:   G,
 	}
 	res, err := w1.ConvertTo(KG)
@@ -17,26 +17,26 @@ func TestConvertTo(t *testing.T) {
 	if res.Unit != KG {
 		t.Fatal("res's unit must be 'kg'")
 	}
-	if res.Amount != float32(2) {
+	if *res.Amount != float32(2) {
 		t.Fatal("res's amount must be 2")
 	}
 }
 
 func TestAdd(t *testing.T) {
 	w1 := Weight{
-		Amount: 2000.87345,
+		Amount: newFloat32(2000.87345),
 		Unit:   OZ,
 	}
 	w2 := Weight{
-		Amount: 2000.3434,
+		Amount: newFloat32(2000.3434),
 		Unit:   LB,
 	}
 	addRes := w1.Add(&w2)
 	if addRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
-	resAmount := w2.Amount/WEIGHT_UNIT_CONVERSION[w2.Unit]*WEIGHT_UNIT_CONVERSION[w1.Unit] + w1.Amount
-	if addRes.Amount != resAmount {
+	resAmount := *w2.Amount/WEIGHT_UNIT_CONVERSION[w2.Unit]*WEIGHT_UNIT_CONVERSION[w1.Unit] + *w1.Amount
+	if *addRes.Amount != resAmount {
 		t.Fatal("res's amount is wrong")
 	}
 
@@ -46,19 +46,19 @@ func TestAdd(t *testing.T) {
 
 func TestSub(t *testing.T) {
 	w1 := Weight{
-		Amount: 2000.87345,
+		Amount: newFloat32(2000.87345),
 		Unit:   OZ,
 	}
 	w2 := Weight{
-		Amount: 2000.3434,
+		Amount: newFloat32(2000.3434),
 		Unit:   LB,
 	}
 	subRes := w1.Sub(&w2)
 	if subRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
-	resAmount := w1.Amount - w2.Amount/WEIGHT_UNIT_CONVERSION[w2.Unit]*WEIGHT_UNIT_CONVERSION[w1.Unit]
-	if subRes.Amount != resAmount {
+	resAmount := *w1.Amount - *w2.Amount/WEIGHT_UNIT_CONVERSION[w2.Unit]*WEIGHT_UNIT_CONVERSION[w1.Unit]
+	if *subRes.Amount != resAmount {
 		t.Fatal("res's amount is wrong")
 	}
 
@@ -68,7 +68,7 @@ func TestSub(t *testing.T) {
 
 func TestMul(t *testing.T) {
 	w1 := Weight{
-		Amount: 2000.87345,
+		Amount: newFloat32(2000.87345),
 		Unit:   OZ,
 	}
 	var quan float32 = 5
@@ -76,9 +76,9 @@ func TestMul(t *testing.T) {
 	if mulRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
-	resAmount := quan * w1.Amount
+	resAmount := newFloat32(quan * *w1.Amount)
 	if mulRes.Amount != resAmount {
-		t.Fatalf("res's amount must be %f\n", resAmount)
+		t.Fatalf("res's amount must be %f\n", *resAmount)
 	}
 
 	fmt.Println(resAmount)
@@ -87,7 +87,7 @@ func TestMul(t *testing.T) {
 
 func TestMassToString(t *testing.T) {
 	w1 := Weight{
-		Amount: 3.456,
+		Amount: newFloat32(3.456),
 		Unit:   KG,
 	}
 	w2, _ := w1.ConvertTo(G)

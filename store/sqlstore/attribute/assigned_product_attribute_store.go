@@ -50,7 +50,8 @@ func (as *SqlAssignedProductAttributeStore) Save(newInstance *attribute.Assigned
 }
 
 func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
-	result, err := as.GetReplica().Get(attribute.AssignedProductAttribute{}, id)
+	var res attribute.AssignedProductAttribute
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedProductAttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedProductAttributeTableName, id)
@@ -58,7 +59,7 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedP
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute with id=%s", id)
 	}
 
-	return result.(*attribute.AssignedProductAttribute), nil
+	return &res, nil
 }
 
 func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {

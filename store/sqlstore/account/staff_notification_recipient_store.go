@@ -1,8 +1,6 @@
 package account
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -32,6 +30,10 @@ func (ss *SqlStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
 
 func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
 	record.PreSave()
+	if err := record.IsValid(); err != nil {
+		return nil, err
+	}
+
 	if err := ss.GetMaster().Insert(record); err != nil {
 		return nil, errors.Wrapf(err, "failed to save StaffNotificationRecipient with Id=%s", record.Id)
 	}
@@ -40,14 +42,10 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotifica
 }
 
 func (ss *SqlStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
-	var record account.StaffNotificationRecipient
-	err := ss.GetReplica().SelectOne(&record, "SELECT * FROM "+store.StaffNotificationRecipientTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	result, err := ss.GetReplica().Get(account.StaffNotificationRecipient{}, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.StaffNotificationRecipientTableName, id)
-		}
 		return nil, errors.Wrapf(err, "failed to find StaffNotificationRecipient with Id=%s", id)
 	}
 
-	return &record, nil
+	return result.(*account.StaffNotificationRecipient), nil
 }

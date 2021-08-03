@@ -2210,6 +2210,22 @@ func (s *TimerLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, er
 	return result, err
 }
 
+func (s *TimerLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutLineStore.TotalWeightForCheckoutLines(checkoutLineIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.TotalWeightForCheckoutLines", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 	start := timemodule.Now()
 
@@ -4239,6 +4255,22 @@ func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.Pr
 	return result, err
 }
 
+func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.GetWeight(productVariantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.GetWeight", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
@@ -4622,10 +4654,10 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+	result, resultVar1, resultVar2, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4635,7 +4667,7 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.ApplicableShippingMethods", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, resultVar2, err
 }
 
 func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {

@@ -49,8 +49,8 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVa
 }
 
 func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
-
-	res, err := as.GetReplica().Get(attribute.AttributeVariant{}, attributeVariantID)
+	var res attribute.AttributeVariant
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeVariantTableName, attributeVariantID)
@@ -58,7 +58,7 @@ func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.A
 		return nil, errors.Wrapf(err, "failed to find attribute variant with id=%s", attributeVariantID)
 	}
 
-	return res.(*attribute.AttributeVariant), nil
+	return &res, nil
 }
 
 func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {

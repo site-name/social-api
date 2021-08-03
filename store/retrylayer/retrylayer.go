@@ -2500,6 +2500,26 @@ func (s *RetryLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, er
 
 }
 
+func (s *RetryLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutLineStore.TotalWeightForCheckoutLines(checkoutLineIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 
 	tries := 0
@@ -4998,6 +5018,26 @@ func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.Pr
 
 }
 
+func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.GetWeight(productVariantID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
@@ -5464,21 +5504,21 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+		result, resultVar1, resultVar2, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, resultVar2, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, resultVar2, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, resultVar2, err
 		}
 	}
 

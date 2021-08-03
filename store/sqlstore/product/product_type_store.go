@@ -9,19 +9,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-var ProductTypeQuery = []string{
-	"PT.Id",
-	"PT.Name",
-	"PT.Slug",
-	"PT.HasVariants",
-	"PT.IsShippingRequired",
-	"PT.IsDigital",
-	"PT.Weight",
-	"PT.WeightUnit",
-	"PT.Metadata",
-	"PT.PrivateMetadata",
-}
-
 type SqlProductTypeStore struct {
 	store.Store
 }
@@ -36,6 +23,21 @@ func NewSqlProductTypeStore(s store.Store) store.ProductTypeStore {
 		table.ColMap("Slug").SetMaxSize(product_and_discount.PRODUCT_TYPE_SLUG_MAX_LENGTH)
 	}
 	return pts
+}
+
+func (ps *SqlProductTypeStore) ModelFields() []string {
+	return []string{
+		"ProductTypes.Id",
+		"ProductTypes.Name",
+		"ProductTypes.Slug",
+		"ProductTypes.HasVariants",
+		"ProductTypes.IsShippingRequired",
+		"ProductTypes.IsDigital",
+		"ProductTypes.Weight",
+		"ProductTypes.WeightUnit",
+		"ProductTypes.Metadata",
+		"ProductTypes.PrivateMetadata",
+	}
 }
 
 func (ps *SqlProductTypeStore) CreateIndexesIfNotExists() {
@@ -77,10 +79,10 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 																							|												     |
 													 ...checkoutLine <--|              ...product <--|
 	*/
-	selectStr := strings.Join(ProductTypeQuery, ", ")
-	query := `SELECT ` + selectStr + ` FROM ` + store.ProductTypeTableName + `AS PT
+	query := `SELECT ` + strings.Join(ps.ModelFields(), ", ") +
+		` FROM ` + store.ProductTypeTableName + `
 		INNER JOIN ` + store.ProductTableName + ` AS P ON (
-			P.ProductTypeID = PT.Id
+			P.ProductTypeID = ProductTypes.Id
 		)
 		INNER JOIN ` + store.ProductVariantTableName + ` AS PV ON (
 			PV.ProductID = P.Id

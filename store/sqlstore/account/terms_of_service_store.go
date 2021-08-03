@@ -19,7 +19,7 @@ func NewSqlTermsOfServiceStore(sqlStore store.Store, metrics einterfaces.Metrics
 	s := &SqlTermsOfServiceStore{sqlStore, metrics}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.TermsOfService{}, "TermsOfServices").SetKeys(false, "Id")
+		table := db.AddTableWithName(model.TermsOfService{}, store.TermsOfServiceTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Text").SetMaxSize(model.POST_MESSAGE_MAX_BYTES_V2)
@@ -77,9 +77,6 @@ func (s *SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.Ter
 	obj, err := s.GetReplica().Get(model.TermsOfService{}, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not find TermsOfService with id=%s", id)
-	}
-	if obj == nil {
-		return nil, store.NewErrNotFound("TermsOfService", id)
 	}
 	return obj.(*model.TermsOfService), nil
 }

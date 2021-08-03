@@ -50,7 +50,8 @@ func (as *SqlAttributePageStore) Save(page *attribute.AttributePage) (*attribute
 }
 
 func (as *SqlAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
-	res, err := as.GetReplica().Get(attribute.AttributePage{}, pageID)
+	var res attribute.AttributePage
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributePageTableName+" WHERE Id=ID", map[string]interface{}{"ID": pageID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributePageTableName, pageID)
@@ -58,7 +59,7 @@ func (as *SqlAttributePageStore) Get(pageID string) (*attribute.AttributePage, e
 		return nil, errors.Wrapf(err, "failed to find attribute page with id=%s", pageID)
 	}
 
-	return res.(*attribute.AttributePage), nil
+	return &res, nil
 }
 
 func (as *SqlAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {

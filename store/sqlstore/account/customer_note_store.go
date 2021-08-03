@@ -1,8 +1,6 @@
 package account
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
@@ -45,9 +43,6 @@ func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.Custo
 
 func (cs *SqlCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
 	if res, err := cs.GetReplica().Get(account.CustomerNote{}, id); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CustomerNoteTableName, id)
-		}
 		return nil, errors.Wrapf(err, "failed to find customer note with id=%s", id)
 	} else {
 		return res.(*account.CustomerNote), nil

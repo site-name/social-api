@@ -14,21 +14,6 @@ type SqlAttributeValueStore struct {
 	store.Store
 }
 
-var (
-	AttributeValueSelect = []string{
-		"AV.Id",
-		"AV.Name",
-		"AV.Value",
-		"AV.Slug",
-		"AV.FileUrl",
-		"AV.ContentType",
-		"AV.AttributeID",
-		"AV.RichText",
-		"AV.Boolean",
-		"AV.SortOrder",
-	}
-)
-
 func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 	as := &SqlAttributeValueStore{s}
 
@@ -45,6 +30,21 @@ func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
 		table.SetUniqueTogether("Slug", "AttributeID")
 	}
 	return as
+}
+
+func (as *SqlAttributeValueStore) ModelFields() []string {
+	return []string{
+		"AttributeValues.Id",
+		"AttributeValues.Name",
+		"AttributeValues.Value",
+		"AttributeValues.Slug",
+		"AttributeValues.FileUrl",
+		"AttributeValues.ContentType",
+		"AttributeValues.AttributeID",
+		"AttributeValues.RichText",
+		"AttributeValues.Boolean",
+		"AttributeValues.SortOrder",
+	}
 }
 
 func (as *SqlAttributeValueStore) CreateIndexesIfNotExists() {
@@ -72,7 +72,8 @@ func (as *SqlAttributeValueStore) Save(av *attribute.AttributeValue) (*attribute
 }
 
 func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, error) {
-	result, err := as.GetReplica().Get(attribute.AttributeValue{}, id)
+	var res attribute.AttributeValue
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeValueTableName, id)
@@ -80,7 +81,7 @@ func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, err
 		return nil, errors.Wrapf(err, "failed to find attribute value with id=%s", id)
 	}
 
-	return result.(*attribute.AttributeValue), nil
+	return &res, nil
 }
 
 func (as *SqlAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
@@ -91,9 +92,6 @@ func (as *SqlAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*at
 			"AttributeID": attributeID,
 		},
 	); err != nil {
-		if err == sql.ErrNoRows {
-			return []*attribute.AttributeValue{}, store.NewErrNotFound(store.AttributeValueTableName, "attibuteId="+attributeID)
-		}
 		return nil, errors.Wrapf(err, "failed to find attribute values belong to attribute with id=%s", attribute.REFERENCE)
 	}
 

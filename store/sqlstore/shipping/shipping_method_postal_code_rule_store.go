@@ -32,10 +32,10 @@ func (s *SqlShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
 
 func (s *SqlShippingMethodPostalCodeRuleStore) ModelFields() []string {
 	return []string{
-		"ShippingMethodPostalCodeRulesId",
-		"ShippingMethodPostalCodeRulesShippingMethodID",
-		"ShippingMethodPostalCodeRulesStart",
-		"ShippingMethodPostalCodeRulesEnd",
-		"ShippingMethodPostalCodeRulesInclusionType",
+		"ShippingMethodPostalCodeRules.Id",
+		"ShippingMethodPostalCodeRules.ShippingMethodID",
+		"ShippingMethodPostalCodeRules.Start",
+		"ShippingMethodPostalCodeRules.End",
+		"ShippingMethodPostalCodeRules.InclusionType",
 	}
 }

@@ -3,8 +3,10 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -73,4 +75,51 @@ func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductV
 	}
 
 	return &variant, nil
+}
+
+func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
+	rowScanner := ps.GetQueryBuilder().
+		Select(
+			"ProductVariants.Weight",
+			"ProductVariants.WeightUnit",
+			"Products.Weight",
+			"Products.WeightUnit",
+			"ProductTypes.Weight",
+			"ProductTypes.WeightUnit",
+		).
+		From(store.ProductVariantTableName).
+		InnerJoin(store.ProductTableName + " ON Products.Id = ProductVariants.ProductID").
+		InnerJoin(store.ProductTypeTableName + " ON ProductTypes.Id = Products.ProductTypeID").
+		Where(squirrel.Eq{"ProductVariants.Id": productVariantID}).
+		RunWith(ps.GetReplica()).
+		QueryRow()
+
+	var (
+		variantWeight     measurement.Weight
+		productWeight     measurement.Weight
+		productTypeWeight measurement.Weight
+	)
+	err := rowScanner.Scan(
+		&variantWeight.Amount,
+		&variantWeight.Unit,
+		&productWeight.Amount,
+		&productWeight.Unit,
+		&productTypeWeight.Amount,
+		&productTypeWeight.Unit,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
+	}
+
+	if variantWeight.Amount != nil {
+		return &variantWeight, nil
+	}
+	if productWeight.Amount != nil {
+		return &productWeight, nil
+	}
+	if productTypeWeight.Amount != nil {
+		return &productTypeWeight, nil
+	}
+
+	return nil, errors.Errorf("weight for product variant with id=%s is not set", productVariantID)
 }

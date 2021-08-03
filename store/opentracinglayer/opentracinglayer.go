@@ -2350,6 +2350,24 @@ func (s *OpenTracingLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLi
 	return result, err
 }
 
+func (s *OpenTracingLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.TotalWeightForCheckoutLines")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutLineStore.TotalWeightForCheckoutLines(checkoutLineIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.Upsert")
@@ -4621,6 +4639,24 @@ func (s *OpenTracingLayerProductVariantStore) Get(id string) (*product_and_disco
 	return result, err
 }
 
+func (s *OpenTracingLayerProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.GetWeight")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantStore.GetWeight(productVariantID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Save")
@@ -5048,7 +5084,7 @@ func (s *OpenTracingLayerSessionStore) UpdateRoles(userID string, roles string) 
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.ApplicableShippingMethods")
 	s.Root.Store.SetContext(newCtx)
@@ -5057,13 +5093,13 @@ func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *g
 	}()
 
 	defer span.Finish()
-	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+	result, resultVar1, resultVar2, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, resultVar2, err
 }
 
 func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {

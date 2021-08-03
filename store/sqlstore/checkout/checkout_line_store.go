@@ -1,13 +1,12 @@
 package checkout
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -74,16 +73,13 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*c
 func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
 	res, err := cls.GetReplica().Get(checkout.CheckoutLine{}, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutLineTableName, id)
-		}
 		return nil, errors.Wrapf(err, "failed to to find checkout line with id=%s", id)
 	}
 
 	return res.(*checkout.CheckoutLine), nil
 }
 
-func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
+func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*checkout.CheckoutLine, error) {
 	var res []*checkout.CheckoutLine
 	_, err := cls.GetReplica().Select(
 		&res,
@@ -95,13 +91,10 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([
 			CkL.CheckoutID = :CheckoutID
 		) 
 		ORDER BY Ck.CreateAt ASC`,
-		map[string]interface{}{"CheckoutID": checkoutID},
+		map[string]interface{}{"CheckoutID": checkoutToken},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutLineTableName, "checkoutID="+checkoutID)
-		}
-		return nil, errors.Wrapf(err, "failed to get checkout lines belong to checkout with id=%s", checkoutID)
+		return nil, errors.Wrapf(err, "failed to get checkout lines belong to checkout with id=%s", checkoutToken)
 	}
 
 	return res, nil
@@ -204,7 +197,7 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 // and prefetch all related product variants, products
 //
 // this borrows the idea from Django's prefetch_related() method
-func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
 	selectFields := append(
 		cls.ModelFields(),
 		append(
@@ -219,15 +212,12 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID 
 		From(store.CheckoutLineTableName).
 		InnerJoin(store.ProductVariantTableName + " ON CheckoutLines.VariantID = ProductVariants.Id").
 		InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
-		Where(squirrel.Eq{"": checkoutID}).
+		Where(squirrel.Eq{"CheckoutLines.CheckoutID": checkoutToken}).
 		RunWith(cls.GetReplica()).
 		Query()
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil, nil, store.NewErrNotFound(store.CheckoutLineTableName, "checkoutID="+checkoutID)
-		}
-		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutID=%s", checkoutID)
+		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutToken=%s", checkoutToken)
 	}
 
 	var (
@@ -298,4 +288,74 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID 
 	}
 
 	return checkoutLines, productVariants, products, nil
+}
+
+// TotalWeightForCheckoutLines calculate total weight for given checkout lines
+func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
+	rows, err := cls.
+		GetQueryBuilder().
+		Select(
+			"CheckoutLines.Quantity",
+			"ProductVariants.Weight",
+			"ProductVariants.WeightUnit",
+			"Products.Weight",
+			"Products.WeightUnit",
+			"ProductTypes.Weight",
+			"ProductTypes.WeightUnit",
+		).
+		From(store.CheckoutLineTableName).
+		InnerJoin(store.ProductVariantTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
+		InnerJoin(store.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		InnerJoin(store.ProductTypeTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
+		Where(squirrel.Eq{"CheckoutLines.Id": checkoutLineIDs}).
+		RunWith(cls.GetReplica()).
+		Query()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find values")
+	}
+
+	var totalWeight = measurement.ZeroWeight
+
+	for rows.Next() {
+		var (
+			lineQuantity      uint
+			variantWeight     measurement.Weight
+			productWeight     measurement.Weight
+			productTypeWeight measurement.Weight
+		)
+
+		err = rows.Scan(
+			&lineQuantity,
+			&variantWeight.Amount,
+			&variantWeight.Unit,
+			&productWeight.Amount,
+			&productWeight.Unit,
+			&productTypeWeight.Amount,
+			&productTypeWeight.Unit,
+		)
+		if err != nil {
+			// return immediately if an error occured
+			return nil, errors.Wrap(err, "failed to scan a row")
+		}
+
+		if variantWeight.Amount != nil {
+			totalWeight = totalWeight.Add(variantWeight.Mul(float32(lineQuantity)))
+		} else if productWeight.Amount != nil {
+			totalWeight = totalWeight.Add(productWeight.Mul(float32(lineQuantity)))
+		} else if productTypeWeight.Amount != nil {
+			totalWeight = totalWeight.Add(productTypeWeight.Mul(float32(lineQuantity)))
+		} else {
+			return totalWeight, nil
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "error closing rows")
+	}
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "error occured during rows scanning iteration")
+	}
+
+	return totalWeight, nil
 }

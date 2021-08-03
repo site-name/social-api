@@ -75,6 +75,7 @@ const (
 	CustomerNoteTableName               = "CustomerNotes"
 	TokenTableName                      = "Tokens"
 	UserAddressTableName                = "UserAddresses"
+	TermsOfServiceTableName             = "TermsOfServices"
 )
 
 // channel-related table names

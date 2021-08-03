@@ -121,7 +121,6 @@ func (ols *SqlOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLin
 //
 // this borrow the idea from Django's prefetch_related() method
 func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
-
 	selectFields := append(
 		ols.ModelFields(),
 		append(

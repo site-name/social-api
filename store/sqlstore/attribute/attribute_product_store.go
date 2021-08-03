@@ -50,7 +50,8 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributePr
 }
 
 func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct, error) {
-	result, err := as.GetReplica().Get(attribute.AttributeProduct{}, id)
+	var res attribute.AttributeProduct
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeProductTableName, id)
@@ -58,7 +59,7 @@ func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct,
 		return nil, errors.Wrapf(err, "failed to find attribute product with id=%s", id)
 	}
 
-	return result.(*attribute.AttributeProduct), nil
+	return &res, nil
 }
 
 func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {

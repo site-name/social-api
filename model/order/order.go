@@ -120,8 +120,7 @@ func (o *Order) PopulateNonDbFields() {
 	if o.populatedNonDbFields {
 		return
 	}
-	// errors can be ignored since they are about invalid currencies,
-	// and order's Currency was checked before saving into database
+	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet, _ = goprices.NewMoney(o.ShippingPriceNetAmount, o.Currency)
 	o.ShippingPriceGross, _ = goprices.NewMoney(o.ShippingPriceGrossAmount, o.Currency)
 	o.ShippingPrice, _ = goprices.NewTaxedMoney(o.ShippingPriceNet, o.ShippingPriceGross)
@@ -132,8 +131,9 @@ func (o *Order) PopulateNonDbFields() {
 	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)
 	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross)
 	o.TotalPaid, _ = goprices.NewMoney(o.TotalPaidAmount, o.Currency)
+
 	o.Weight = &measurement.Weight{
-		Amount: o.WeightAmount,
+		Amount: &o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
 
@@ -321,7 +321,7 @@ func (o *Order) GetTotalWeight() *measurement.Weight {
 		return o.Weight
 	}
 	return &measurement.Weight{
-		Amount: o.WeightAmount,
+		Amount: &o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
 }

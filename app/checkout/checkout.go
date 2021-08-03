@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -129,7 +130,7 @@ func (a *AppCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checko
 
 func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError) {
 	addressID := ckout.ShippingAddressID
-	if ckout.ShippingAddressID == nil {
+	if addressID == nil {
 		addressID = ckout.BillingAddressID
 	}
 
@@ -138,9 +139,14 @@ func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.
 	}
 
 	address, appErr := a.app.AccountApp().AddressById(*addressID)
-	// ignore this error even when the lookup fail
-	if appErr != nil || address == nil || strings.TrimSpace(address.Country) == "" {
-		return ckout.Country, nil
+	if appErr != nil {
+		// return immediately if the error is caused by system
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return "", appErr
+		}
+		if address == nil || strings.TrimSpace(address.Country) == "" {
+			return ckout.Country, nil
+		}
 	}
 
 	countryCode := strings.TrimSpace(address.Country)
@@ -211,4 +217,25 @@ func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*p
 	}
 
 	return latestPayment, nil
+}
+
+// CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
+func (a *AppCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError) {
+	checkoutLineIDs := []string{}
+	for _, lineInfo := range checkoutLineInfos {
+		if !model.IsValidId(lineInfo.Line.Id) {
+			checkoutLineIDs = append(checkoutLineIDs, lineInfo.Line.Id)
+		}
+	}
+
+	totalWeight, err := a.app.Srv().Store.CheckoutLine().TotalWeightForCheckoutLines(checkoutLineIDs)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			status = http.StatusNotFound
+		}
+		return nil, model.NewAppError("CheckoutTotalWeight", "app.checkout.checkout_total_weight.app_error", nil, err.Error(), status)
+	}
+
+	return totalWeight, nil
 }
