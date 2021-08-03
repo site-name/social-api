@@ -39,34 +39,34 @@ func (cds *ClusterDiscoveryService) Start() {
 
 	exists, err := cds.srv.Store.ClusterDiscovery().Exists(&cds.ClusterDiscovery)
 	if err != nil {
-		slog.Warn("ClusterDiscoveryService failed to check if row exists", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()), slog.Err(err))
+		slog.Warn("ClusterDiscoveryService failed to check if row exists", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id), slog.Err(err))
 	} else if exists {
 		if _, err := cds.srv.Store.ClusterDiscovery().Delete(&cds.ClusterDiscovery); err != nil {
-			slog.Warn("ClusterDiscoveryService failed to start clean", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()), slog.Err(err))
+			slog.Warn("ClusterDiscoveryService failed to start clean", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id), slog.Err(err))
 		}
 	}
 
 	if err := cds.srv.Store.ClusterDiscovery().Save(&cds.ClusterDiscovery); err != nil {
-		slog.Error("ClusterDiscoveryService failed to save", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()), slog.Err(err))
+		slog.Error("ClusterDiscoveryService failed to save", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id), slog.Err(err))
 		return
 	}
 
 	go func() {
-		slog.Debug("ClusterDiscoveryService ping writer started", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()))
+		slog.Debug("ClusterDiscoveryService ping writer started", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id))
 		ticker := time.NewTicker(DiscoveryServiceWritePing)
 		defer func() {
 			ticker.Stop()
 			if _, err := cds.srv.Store.ClusterDiscovery().Delete(&cds.ClusterDiscovery); err != nil {
-				slog.Warn("ClusterDiscoveryService failed to cleanup", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()), slog.Err(err))
+				slog.Warn("ClusterDiscoveryService failed to cleanup", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id), slog.Err(err))
 			}
-			slog.Debug("ClusterDiscoveryService ping writer stopped", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()))
+			slog.Debug("ClusterDiscoveryService ping writer stopped", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id))
 		}()
 
 		for {
 			select {
 			case <-ticker.C:
 				if err := cds.srv.Store.ClusterDiscovery().SetLastPingAt(&cds.ClusterDiscovery); err != nil {
-					slog.Error("ClusterDiscoveryService failed to write ping", slog.String("ClusterDiscovery", cds.ClusterDiscovery.ToJson()), slog.Err(err))
+					slog.Error("ClusterDiscoveryService failed to write ping", slog.String("ClusterDiscoveryID", cds.ClusterDiscovery.Id), slog.Err(err))
 				}
 			case <-cds.stop:
 				return

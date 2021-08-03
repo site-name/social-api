@@ -13,6 +13,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/dyatlov/go-opengraph/opengraph"
+	"github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
@@ -35,7 +36,8 @@ const (
 	IndexTypeFullText              = "full_text"
 	IndexTypeFullTextFunc          = "full_text_func"
 	IndexTypeDefault               = "default"
-	PGDupTableErrorCode            = "42P07" // see https://github.com/lib/pq/blob/master/error.go#L268
+	PGDupTableErrorCode            = "42P07"      // see https://github.com/lib/pq/blob/master/error.go#L268
+	MySQLDupTableErrorCode         = uint16(1050) // see https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html#error_er_table_exists_error
 	PGForeignKeyViolationErrorCode = "23503"
 	PGDuplicateObjectErrorCode     = "42710"
 	DBPingAttempts                 = 18
@@ -134,13 +136,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		slog.Critical("Cannot get DB version.", slog.Err(err))
 		os.Exit(ExitGenericFailure)
 	}
-	intVer, err := strconv.Atoi(ver)
-	if err != nil {
-		slog.Critical("Cannot parse DB version.", slog.Err(err))
-		os.Exit(ExitGenericFailure)
-	}
-	if intVer < MinimumRequiredPostgresVersion {
-		slog.Critical("Minimum Postgres version requirements not met.", slog.String("Found", VersionString(intVer)), slog.String("Wanted", VersionString(MinimumRequiredPostgresVersion)))
+
+	ok, err := store.ensureMinimumDBVersion(ver)
+	if !ok {
+		slog.Critical("Error while checking DB version.", slog.Err(err))
 		os.Exit(ExitGenericFailure)
 	}
 
@@ -1020,14 +1019,35 @@ func IsDuplicate(err error) bool {
 	return false
 }
 
-// VersionString converts an integer representation of a DB version
+// ensureMinimumDBVersion gets the DB version and ensures it is
+// above the required minimum version requirements.
+func (ss *SqlStore) ensureMinimumDBVersion(ver string) (bool, error) {
+	switch *ss.settings.DriverName {
+	case model.DATABASE_DRIVER_POSTGRES:
+		intVer, err2 := strconv.Atoi(ver)
+		if err2 != nil {
+			return false, fmt.Errorf("cannot parse DB version: %v", err2)
+		}
+		if intVer < MinimumRequiredPostgresVersion {
+			return false, fmt.Errorf("minimum Postgres version requirements not met. Found: %s, Wanted: %s", versionString(intVer, *ss.settings.DriverName), versionString(MinimumRequiredPostgresVersion, *ss.settings.DriverName))
+		}
+	}
+	return true, nil
+}
+
+// versionString converts an integer representation of a DB version
 // to a pretty-printed string.
 // Postgres doesn't follow three-part version numbers from 10.0 onwards:
 // https://www.postgresql.org/docs/13/libpq-status.html#LIBPQ-PQSERVERVERSION.
-func VersionString(v int) string {
-	minor := v % 10000
-	major := v / 10000
-	return strconv.Itoa(major) + "." + strconv.Itoa(minor)
+// For MySQL, we consider a major*1000 + minor*100 + patch format.
+func versionString(v int, driver string) string {
+	switch driver {
+	case model.DATABASE_DRIVER_POSTGRES:
+		minor := v % 10000
+		major := v / 10000
+		return strconv.Itoa(major) + "." + strconv.Itoa(minor)
+	}
+	return ""
 }
 
 // indexing metadata fields for models
@@ -1041,4 +1061,85 @@ func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
 func (ss *SqlStore) CommonSeoMaxLength(table *gorp.TableMap) {
 	table.ColMap("SeoTitle").SetMaxSize(seo.SEO_TITLE_MAX_LENGTH)
 	table.ColMap("SeoDescription").SetMaxSize(seo.SEO_DESCRIPTION_MAX_LENGTH)
+}
+
+func (ss *SqlStore) appendMultipleStatementsFlag(dataSource string) (string, error) {
+	// We need to tell the MySQL driver that we want to use multiStatements
+	// in order to make migrations work.
+	if ss.DriverName() == model.DATABASE_DRIVER_MYSQL {
+		config, err := mysql.ParseDSN(dataSource)
+		if err != nil {
+			return "", err
+		}
+
+		if config.Params == nil {
+			config.Params = map[string]string{}
+		}
+
+		config.Params["multiStatements"] = "true"
+		return config.FormatDSN(), nil
+	}
+
+	return dataSource, nil
+}
+
+func (ss *SqlStore) AlterDefaultIfColumnExists(tableName string, columnName string, mySqlColDefault *string, postgresColDefault *string) bool {
+	if !ss.DoesColumnExist(tableName, columnName) {
+		return false
+	}
+
+	var defaultValue string
+	if ss.DriverName() == model.DATABASE_DRIVER_MYSQL {
+		// Some column types in MySQL cannot have defaults, so don't try to configure anything.
+		if mySqlColDefault == nil {
+			return true
+		}
+
+		defaultValue = *mySqlColDefault
+	} else if ss.DriverName() == model.DATABASE_DRIVER_POSTGRES {
+		// Postgres doesn't have the same limitation, but preserve the interface.
+		if postgresColDefault == nil {
+			return true
+		}
+
+		tableName = strings.ToLower(tableName)
+		columnName = strings.ToLower(columnName)
+		defaultValue = *postgresColDefault
+	} else {
+		slog.Critical("Failed to alter column default because of missing driver")
+		time.Sleep(time.Second)
+		os.Exit(ExitGenericFailure)
+		return false
+	}
+
+	if defaultValue == "" {
+		defaultValue = "''"
+	}
+
+	query := "ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " SET DEFAULT " + defaultValue
+	_, err := ss.GetMaster().ExecNoTimeout(query)
+	if err != nil {
+		slog.Critical("Failed to alter column default", slog.String("table", tableName), slog.String("column", columnName), slog.String("default value", defaultValue), slog.Err(err))
+		time.Sleep(time.Second)
+		os.Exit(ExitGenericFailure)
+		return false
+	}
+
+	return true
+}
+
+func (ss *SqlStore) RemoveDefaultIfColumnExists(tableName, columnName string) bool {
+	if !ss.DoesColumnExist(tableName, columnName) {
+		return false
+	}
+
+	_, err := ss.GetMaster().ExecNoTimeout("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP DEFAULT")
+	if err != nil {
+		slog.Critical("Failed to drop column default", slog.String("table", tableName), slog.String("column", columnName), slog.Err(err))
+		time.Sleep(time.Second)
+		os.Exit(ExitGenericFailure)
+		return false
+	}
+
+	return true
 }
