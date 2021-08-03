@@ -38,7 +38,7 @@ func NewSqlMenuItemStore(s store.Store) store.MenuItemStore {
 func (is *SqlMenuItemStore) CreateIndexesIfNotExists() {
 	is.CreateForeignKeyIfNotExists(MenuItemTableName, "MenuID", MenuTableName, "Id", true)
 	is.CreateForeignKeyIfNotExists(MenuItemTableName, "ParentID", MenuItemTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(MenuItemTableName, "CategoryID", product.CategoryTableName, "Id", true)
+	is.CreateForeignKeyIfNotExists(MenuItemTableName, "CategoryID", store.ProductCategoryTableName, "Id", true)
 	is.CreateForeignKeyIfNotExists(MenuItemTableName, "CollectionID", product.CollectionTableName, "Id", true)
 	is.CreateForeignKeyIfNotExists(MenuItemTableName, "PageID", page.PageTableName, "Id", true)
 }

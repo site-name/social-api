@@ -17,7 +17,7 @@ func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
 	sts := &SqlShopTranslationStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shop.ShopTranslation{}, store.ShopTranslationTableName).SetKeys(false, "id")
+		table := db.AddTableWithName(shop.ShopTranslation{}, store.ShopTranslationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)

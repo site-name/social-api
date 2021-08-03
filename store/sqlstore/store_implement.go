@@ -111,6 +111,7 @@ type SqlStoreStores struct {
 	session                       store.SessionStore
 	shippingMethod                store.ShippingMethodStore
 	shippingMethodChannelListing  store.ShippingMethodChannelListingStore
+	shippingMethodExcludedProduct store.ShippingMethodExcludedProductStore
 	shippingMethodPostalCodeRule  store.ShippingMethodPostalCodeRuleStore
 	shippingMethodTranslation     store.ShippingMethodTranslationStore
 	shippingZone                  store.ShippingZoneStore
@@ -220,6 +221,7 @@ func (store *SqlStore) setupTables() {
 		session:                       session.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
+		shippingMethodExcludedProduct: shipping.NewSqlShippingMethodExcludedProductStore(store),
 		shippingMethodPostalCodeRule:  shipping.NewSqlShippingMethodPostalCodeRuleStore(store),
 		shippingMethodTranslation:     shipping.NewSqlShippingMethodTranslationStore(store),
 		shippingZone:                  shipping.NewSqlShippingZoneStore(store),
@@ -330,6 +332,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.session.CreateIndexesIfNotExists()
 	store.stores.shippingMethod.CreateIndexesIfNotExists()
 	store.stores.shippingMethodChannelListing.CreateIndexesIfNotExists()
+	store.stores.shippingMethodExcludedProduct.CreateIndexesIfNotExists()
 	store.stores.shippingMethodPostalCodeRule.CreateIndexesIfNotExists()
 	store.stores.shippingMethodTranslation.CreateIndexesIfNotExists()
 	store.stores.shippingZone.CreateIndexesIfNotExists()
@@ -657,6 +660,10 @@ func (ss *SqlStore) ShippingMethod() store.ShippingMethodStore {
 
 func (ss *SqlStore) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
 	return ss.stores.shippingMethodChannelListing
+}
+
+func (ss *SqlStore) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
+	return ss.stores.shippingMethodExcludedProduct
 }
 
 func (ss *SqlStore) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {

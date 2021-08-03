@@ -9,6 +9,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -30,6 +31,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
 )
@@ -110,6 +112,7 @@ type OpenTracingLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
@@ -436,6 +439,10 @@ func (s *OpenTracingLayer) ShippingMethod() store.ShippingMethodStore {
 
 func (s *OpenTracingLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
 	return s.ShippingMethodChannelListingStore
+}
+
+func (s *OpenTracingLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
+	return s.ShippingMethodExcludedProductStore
 }
 
 func (s *OpenTracingLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
@@ -925,6 +932,11 @@ type OpenTracingLayerShippingMethodStore struct {
 
 type OpenTracingLayerShippingMethodChannelListingStore struct {
 	store.ShippingMethodChannelListingStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerShippingMethodExcludedProductStore struct {
+	store.ShippingMethodExcludedProductStore
 	Root *OpenTracingLayer
 }
 
@@ -2282,6 +2294,24 @@ func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, resultVar1, resultVar2, err
 }
 
 func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
@@ -3840,6 +3870,24 @@ func (s *OpenTracingLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*ord
 	return result, err
 }
 
+func (s *OpenTracingLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.OrderLinesByOrderWithPrefetch")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, resultVar1, resultVar2, err
+}
+
 func (s *OpenTracingLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Save")
@@ -5000,6 +5048,24 @@ func (s *OpenTracingLayerSessionStore) UpdateRoles(userID string, roles string) 
 	return result, err
 }
 
+func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.ApplicableShippingMethods")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Get")
@@ -5010,24 +5076,6 @@ func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.Sh
 
 	defer span.Finish()
 	result, err := s.ShippingMethodStore.Get(methodID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.ShippingMethodsByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ShippingMethodStore.ShippingMethodsByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7490,6 +7538,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.SessionStore = &OpenTracingLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &OpenTracingLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &OpenTracingLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodExcludedProductStore = &OpenTracingLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &OpenTracingLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &OpenTracingLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &OpenTracingLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}

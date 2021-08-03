@@ -16,7 +16,7 @@ type SqlShopStaffStore struct {
 func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
 	sss := &SqlShopStaffStore{s}
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shop.ShopStaffRelation{}, store.ShopStaffTableName).SetKeys(false, "id")
+		table := db.AddTableWithName(shop.ShopStaffRelation{}, store.ShopStaffTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("StaffID").SetMaxSize(store.UUID_MAX_LENGTH)

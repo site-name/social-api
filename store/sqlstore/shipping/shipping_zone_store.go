@@ -21,6 +21,18 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	return smls
 }
 
+func (s *SqlShippingZoneStore) ModelFields() []string {
+	return []string{
+		"ShippingZones.Id",
+		"ShippingZones.Name",
+		"ShippingZones.Contries",
+		"ShippingZones.Default",
+		"ShippingZones.Description",
+		"ShippingZones.Metadata",
+		"ShippingZones.PrivateMetadata",
+	}
+}
+
 func (s *SqlShippingZoneStore) CreateIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_shipping_zone_name", store.ShippingZoneTableName, "Name")
 	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", store.ShippingZoneTableName, "lower(Name) text_pattern_ops")

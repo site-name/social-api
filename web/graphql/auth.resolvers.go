@@ -112,13 +112,15 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 		return nil, userInactiveAppError("RequestPasswordReset")
 	}
 
-	if !userWithEmail.IsStaff {
-		activeChannel, appErr := r.ChannelApp().CleanChannel(channel)
-		if appErr != nil {
-			return nil, appErr
-		}
-		channel = &activeChannel.Slug
-	} else if channel != nil {
+	// if !userWithEmail.IsStaff {
+	// 	activeChannel, appErr := r.ChannelApp().CleanChannel(channel)
+	// 	if appErr != nil {
+	// 		return nil, appErr
+	// 	}
+	// 	channel = &activeChannel.Slug
+	// } else
+
+	if channel != nil {
 		channelBySlug, appErr := r.ChannelApp().ValidateChannel(*channel)
 		if appErr != nil {
 			return nil, appErr

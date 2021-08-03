@@ -157,10 +157,11 @@ const (
 
 // shipping-related table names
 const (
-	ShippingMethodTableName               = "ShippingMethods"
-	ShippingZoneTableName                 = "ShippingZones"
-	ShippingZoneChannelTableName          = "ShippingZoneChannels"
-	ShippingMethodTranslationTableName    = "ShippingMethodTranslations"
-	ShippingMethodPostalCodeRuleTableName = "ShippingMethodPostalCodeRules"
-	ShippingMethodChannelListingTableName = "ShippingMethodChannelListings"
+	ShippingMethodTableName                = "ShippingMethods"
+	ShippingZoneTableName                  = "ShippingZones"
+	ShippingZoneChannelTableName           = "ShippingZoneChannels"
+	ShippingMethodTranslationTableName     = "ShippingMethodTranslations"
+	ShippingMethodPostalCodeRuleTableName  = "ShippingMethodPostalCodeRules"
+	ShippingMethodChannelListingTableName  = "ShippingMethodChannelListings"
+	ShippingMethodExcludedProductTableName = "ShippingMethodExcludedProducts"
 )

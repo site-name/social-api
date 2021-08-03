@@ -9,6 +9,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -30,6 +31,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -109,6 +111,7 @@ type RetryLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
@@ -435,6 +438,10 @@ func (s *RetryLayer) ShippingMethod() store.ShippingMethodStore {
 
 func (s *RetryLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
 	return s.ShippingMethodChannelListingStore
+}
+
+func (s *RetryLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
+	return s.ShippingMethodExcludedProductStore
 }
 
 func (s *RetryLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
@@ -924,6 +931,11 @@ type RetryLayerShippingMethodStore struct {
 
 type RetryLayerShippingMethodChannelListingStore struct {
 	store.ShippingMethodChannelListingStore
+	Root *RetryLayer
+}
+
+type RetryLayerShippingMethodExcludedProductStore struct {
+	store.ShippingMethodExcludedProductStore
 	Root *RetryLayer
 }
 
@@ -2423,6 +2435,26 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID strin
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
+		if err == nil {
+			return result, resultVar1, resultVar2, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, resultVar2, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, resultVar2, err
 		}
 	}
 
@@ -4140,6 +4172,26 @@ func (s *RetryLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.Ord
 
 }
 
+func (s *RetryLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
+		if err == nil {
+			return result, resultVar1, resultVar2, nil
+		}
+		if !isRepeatableError(err) {
+			return result, resultVar1, resultVar2, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, resultVar1, resultVar2, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
 
 	tries := 0
@@ -5412,11 +5464,11 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodStore.Get(methodID)
+		result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 		if err == nil {
 			return result, nil
 		}
@@ -5432,11 +5484,11 @@ func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.Shipping
 
 }
 
-func (s *RetryLayerShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodStore.ShippingMethodsByOption(option)
+		result, err := s.ShippingMethodStore.Get(methodID)
 		if err == nil {
 			return result, nil
 		}
@@ -8125,6 +8177,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodExcludedProductStore = &RetryLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &RetryLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &RetryLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &RetryLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}

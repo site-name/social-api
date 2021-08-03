@@ -44,7 +44,8 @@ func applicablePriceBasedMethods(price *goprices.Money, channelID string) *shipp
 		PlaceholderFormat(squirrel.Dollar).
 		Select("Id").
 		From(store.ShippingMethodTableName).
-		Where(priceBasedMethodsFilterOption.ToSquirrel("Type")).ToSql()
+		Where(priceBasedMethodsFilterOption.ToSquirrel("Type")).
+		ToSql()
 
 	return &shipping.ShippingMethodChannelListingFilterOption{
 		ShippingMethodID: &model.StringFilter{

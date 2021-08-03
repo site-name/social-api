@@ -39,7 +39,7 @@ func (s *ShippingZone) IsValid() *model.AppError {
 		return outer("name", &s.Id)
 	}
 	for _, country := range strings.Fields(s.Contries) {
-		if model.Countries[strings.ToUpper(country)] == "" {
+		if _, ok := model.Countries[country]; !ok {
 			return outer("country", &s.Id)
 		}
 	}
@@ -56,9 +56,11 @@ func (s *ShippingZone) PreSave() {
 		s.Default = model.NewBool(false)
 	}
 	s.Description = model.SanitizeUnicode(s.Description)
+	s.Contries = strings.ToUpper(s.Contries)
 }
 
 func (s *ShippingZone) PreUpdate() {
 	s.Name = model.SanitizeUnicode(s.Name)
 	s.Description = model.SanitizeUnicode(s.Description)
+	s.Contries = strings.ToUpper(s.Contries)
 }

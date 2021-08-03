@@ -16,7 +16,7 @@ type User implements Node & ObjectWithMetadata {
   email: String!
   firstName: String!
   lastName: String!
-  isStaff: Boolean!
+  # isStaff: Boolean!
   isActive: Boolean!
   note: String
   dateJoined: DateTime!

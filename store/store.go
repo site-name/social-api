@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -29,6 +30,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/measurement"
 )
 
 // Store is database gateway of the system
@@ -130,6 +132,7 @@ type Store interface {
 	ShippingMethod() ShippingMethodStore                               //
 	ShippingZone() ShippingZoneStore                                   //
 	ShippingZoneChannel() ShippingZoneChannelStore                     //
+	ShippingMethodExcludedProduct() ShippingMethodExcludedProductStore //
 	Warehouse() WarehouseStore                                         // warehouse
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
@@ -385,16 +388,18 @@ type (
 type (
 	ShippingZoneStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 	}
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                // Upsert bases on given method's Id to decide update or insert it
-		Get(methodID string) (*shipping.ShippingMethod, error)                                                   // Get finds and returns a shipping method with given id
-		ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) // ShippingMethodsByOption finds and returns a list of shipping methods that satisfy given filtering option
+		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
+		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
+		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethodsForCheckout finds all shipping method for given checkout
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 	}
 	ShippingMethodChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -403,6 +408,9 @@ type (
 		CreateIndexesIfNotExists()
 	}
 	ShippingZoneChannelStore interface {
+		CreateIndexesIfNotExists()
+	}
+	ShippingMethodExcludedProductStore interface {
 		CreateIndexesIfNotExists()
 	}
 )

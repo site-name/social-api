@@ -5,46 +5,32 @@ import (
 	"testing"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/site-name/decimal"
-	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
+	"github.com/google/uuid"
 	"github.com/sitename/sitename/store"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_applicablePriceBasedMethods(t *testing.T) {
-	money, err := goprices.NewMoney(
-		model.NewDecimal(decimal.NewFromFloat(34.678)),
-		"USD",
-	)
-	require.NoError(t, err)
-	option := applicablePriceBasedMethods(money, model.NewId())
-
-	priceBasedMethodsFilterOption := &model.StringFilter{
-		StringOption: &model.StringOption{
-			Eq: shipping.PRICE_BASED,
-		},
-	}
-
+func applicableShippingMethodsByChannel(channelID string) squirrel.SelectBuilder {
 	subQuery := squirrel.
 		StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).
-		Select("Id").
-		From(store.ShippingMethodTableName).
-		Where(priceBasedMethodsFilterOption.ToSquirrel("Type"))
-
-	// squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-	query := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).Select("*").
+		Select("A", "B", fmt.Sprintf("%s.PriceAmount", store.ShippingMethodChannelListingTableName)).
 		From(store.ShippingMethodChannelListingTableName).
-		FromSelect(subQuery, "ALIAS").
-		// Where(option.ShippingMethodID.ToSquirrel("ShippingMethodID")).
-		Where(option.MaximumOrderPriceAmount.ToSquirrel("MaximumOrderPriceAmount")).
-		Where(option.MinimumOrderPriceAmount.ToSquirrel("MinimumOrderPriceAmount"))
+		Where(squirrel.And{
+			squirrel.Eq{fmt.Sprintf("%s.ChannelID", store.ShippingMethodChannelListingTableName): channelID},
+			squirrel.Eq{fmt.Sprintf("%s.ShippingMethodID", store.ShippingMethodChannelListingTableName): fmt.Sprintf("%s.Id", store.ShippingMethodTableName)},
+		})
 
-	queryString, args, err := query.ToSql()
+	return subQuery
+}
+
+func Test_applicablePriceBasedMethods(t *testing.T) {
+
+	query := applicableShippingMethodsByChannel(uuid.NewString())
+
+	str, args, err := query.ToSql()
 	require.NoError(t, err)
 
-	fmt.Println(queryString)
+	fmt.Println(str)
 	fmt.Println(args...)
 }

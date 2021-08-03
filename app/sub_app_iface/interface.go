@@ -27,6 +27,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/store"
 )
@@ -90,6 +91,7 @@ type CheckoutApp interface {
 	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (uint, *model.AppError)                                                                                                                                                 // CalculateCheckoutQuantity returns total sum of quantity of check out lines in given checkout infos
 	AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []uint, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) // AddVariantsToCheckout add variants to checkout
 	ChangeBillingAddressInCheckout(ckout *checkout.Checkout, address *account.Address) *model.AppError                                                                                                                                        // ChangeBillingAddressInCheckout update billing address of given checkout
+	CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError)
 }
 
 // AccountApp

@@ -2,10 +2,13 @@ package shipping
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/pkg/errors"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -78,41 +81,131 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod,
 	return result.(*shipping.ShippingMethod), nil
 }
 
-// ShippingMethodsByOption finds and returns a list of shipping methods that satisfy given filtering option
-func (s *SqlShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
-	query := s.
-		GetQueryBuilder().
-		Select("*").
-		From(store.ShippingMethodTableName)
+// ApplicableShippingMethodsForCheckout finds all shipping method for given checkout
+//
+// sql queries here are borrowed. Please check the file .md
+func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
 
-	// check type:
-	if option.Type != nil {
-		query = query.Where(option.Type.ToSquirrel("ShippingMethods.Type"))
+	selectFields := append(s.ModelFields(), s.ShippingZone().ModelFields()...)
+	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields()...)
+
+	priceAmount, _ := price.Amount.Float64()
+
+	params := map[string]interface{}{
+		"ChannelID":               channelID,
+		"Currency":                price.Currency,
+		"CountryCode":             countryCode,
+		"MinimumOrderPriceAmount": priceAmount,
+		"MaximumOrderPriceAmount": priceAmount,
+		"MinimumOrderWeight":      weight.Amount,
+		"MaximumOrderWeight":      weight.Amount,
+		"WeightBasedShippingType": shipping.WEIGHT_BASED,
+		"PriceBasedShipType":      shipping.PRICE_BASED,
 	}
 
-	var joinedChannelTable bool
+	// check if productIDs is provided:
+	var forExcludedProductQuery string
+	if len(productIDs) > 0 {
+		forExcludedProductQuery = `
+		AND NOT (
+			EXISTS(
+				SELECT
+					(1) AS a
+				FROM
+					ShippingMethodExcludedProducts
+				WHERE (
+					ShippingMethodExcludedProducts.ProductID IN :ExcludedProductIDs
+					AND ShippingMethodExcludedProducts.ShippingMethodID = ShippingMethods.Id
+				)
+				LIMIT 1
+			)
+		)`
 
-	// check shipping zone channel
-	if option.ShippingZoneChannelSlug != nil {
-		query = query.
-			InnerJoin(store.ShippingZoneTableName + " ON (ShippingZones.Id = ShippingMethods.ShippingZoneID)").
-			InnerJoin(store.ShippingZoneChannelTableName + " ON (ShippingZones.Id = ShippingZoneChannels.ShippingZoneID)").
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ShippingZoneChannels.ChannelID)").
-			Where(option.ShippingZoneChannelSlug.ToSquirrel("Channels.Slug"))
-
-		joinedChannelTable = true
+		// update params also
+		params["ExcludedProductIDs"] = productIDs
 	}
 
-	// check channel listing
-	if option.ChannelListingsChannelSlug != nil {
-		query = query.
-			InnerJoin(store.ShippingMethodChannelListingTableName + " ON (ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id)").
-			InnerJoin(store.ChannelTableName + " ON (ShippingMethodChannelListings.ChannelID = Channels.Id)")
-
-		if !joinedChannelTable {
-			query = query.Where(option.ChannelListingsChannelSlug.ToSquirrel("channels.Slug"))
-		}
-	}
-
-	return nil, nil
+	query := `SELECT ` + strings.Join(selectFields, ", ") + `,
+	(
+		SELECT
+			ShippingMethodChannelListings.PriceAmount
+		FROM
+			ShippingMethodChannelListings
+		WHERE (
+			ShippingMethodChannelListings.ChannelID = :ChannelID
+			AND ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
+		)
+	) AS PriceAmount
+	FROM
+		ShippingMethods
+	INNER JOIN ShippingMethodChannelListings ON (
+		ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
+	)
+	INNER JOIN ShippingZones ON (
+		ShippingZones.Id = ShippingMethods.ShippingZoneID
+	)
+	INNER JOIN ShippingZoneChannels ON (
+		ShippingZones.Id = ShippingZoneChannels.ShippingZoneID
+	)
+	WHERE 
+		(
+			(
+				ShippingMethodChannelListings.ChannelID = :ChannelID
+				AND ShippingMethodChannelListings.Currency = :Currency
+				AND ShippingZoneChannels.ChannelID = :ChannelID
+				AND ShippingZones.Countries :: text LIKE :CountryCode ` + forExcludedProductQuery + `
+				AND ShippingMethods.Type = :PriceBasedShipType
+				AND ShippingMethods.Id IN (
+				SELECT
+					ShippingMethodID
+				FROM
+					ShippingMethodChannelListings
+				WHERE (
+					ShippingMethodChannelListings.ChannelID = :ChannelID
+					AND ShippingMethodChannelListings.ShippingMethodID IN (
+						SELECT
+							Id
+						FROM
+							ShippingMethods
+						INNER JOIN ShippingMethodChannelListings ON (
+							ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
+						)
+						INNER JOIN ShippingZones ON (
+							ShippingMethods.ShippingZoneID = ShippingZones.Id
+						)
+						INNER JOIN ShippingZoneChannels ON (
+							ShippingZoneChannels.ShippingZoneID = ShippingZones.Id
+						)
+						WHERE (
+							ShippingMethodChannelListings.ChannelID = :ChannelID
+							AND ShippingMethodChannelListings.Currency = :Currency
+							AND ShippingZoneChannels.ChannelID = :ChannelID
+							AND ShippingZones.Countries :: text LIKE :CountryCode
+							AND ShippingMethods.Type = :PriceBasedShipType ` + forExcludedProductQuery + `
+						)
+					)
+					AND ShippingMethodChannelListings.MinimumOrderPriceAmount <= :MinimumOrderPriceAmount
+					AND (
+						ShippingMethodChannelListings.MaximumOrderPriceAmount IS NULL
+						OR ShippingMethodChannelListings.MaximumOrderPriceAmount >= :MaximumOrderPriceAmount
+					)
+				)
+			)
+			OR (
+				ShippingMethodChannelListings.ChannelID = :ChannelID
+				AND ShippingMethodChannelListings.Currency = :Currency
+				AND ShippingZoneChannels.ChannelID = :ChannelID
+				AND ShippingZones.Countries :: text LIKE :CountryCode ` + forExcludedProductQuery + `
+				AND ShippingMethods.Type = :WeightBasedShippingType
+				AND (
+					ShippingMethods.MinimumOrderWeight <= :MinimumOrderWeight
+					OR ShippingMethods.MinimumOrderWeight IS NULL
+				)
+				AND (
+					ShippingMethods.MaximumOrderWeight >= :MaximumOrderWeight
+					OR ShippingMethods.MaximumOrderWeight IS NULL
+				)
+			)
+		)
+	ORDER BY PriceAmount ASC`
 }

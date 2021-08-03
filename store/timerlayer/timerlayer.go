@@ -8,6 +8,7 @@ import (
 	timemodule "time"
 
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -30,6 +31,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -110,6 +112,7 @@ type TimerLayer struct {
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
+	ShippingMethodExcludedProductStore store.ShippingMethodExcludedProductStore
 	ShippingMethodPostalCodeRuleStore  store.ShippingMethodPostalCodeRuleStore
 	ShippingMethodTranslationStore     store.ShippingMethodTranslationStore
 	ShippingZoneStore                  store.ShippingZoneStore
@@ -436,6 +439,10 @@ func (s *TimerLayer) ShippingMethod() store.ShippingMethodStore {
 
 func (s *TimerLayer) ShippingMethodChannelListing() store.ShippingMethodChannelListingStore {
 	return s.ShippingMethodChannelListingStore
+}
+
+func (s *TimerLayer) ShippingMethodExcludedProduct() store.ShippingMethodExcludedProductStore {
+	return s.ShippingMethodExcludedProductStore
 }
 
 func (s *TimerLayer) ShippingMethodPostalCodeRule() store.ShippingMethodPostalCodeRuleStore {
@@ -925,6 +932,11 @@ type TimerLayerShippingMethodStore struct {
 
 type TimerLayerShippingMethodChannelListingStore struct {
 	store.ShippingMethodChannelListingStore
+	Root *TimerLayer
+}
+
+type TimerLayerShippingMethodExcludedProductStore struct {
+	store.ShippingMethodExcludedProductStore
 	Root *TimerLayer
 }
 
@@ -2148,6 +2160,22 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID strin
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByCheckoutID", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch", success, elapsed)
+	}
+	return result, resultVar1, resultVar2, err
 }
 
 func (s *TimerLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
@@ -3540,6 +3568,22 @@ func (s *TimerLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.Ord
 	return result, err
 }
 
+func (s *TimerLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.OrderLinesByOrderWithPrefetch", success, elapsed)
+	}
+	return result, resultVar1, resultVar2, err
+}
+
 func (s *TimerLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	start := timemodule.Now()
 
@@ -4578,6 +4622,22 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.ApplicableShippingMethods", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 	start := timemodule.Now()
 
@@ -4590,22 +4650,6 @@ func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.Shipping
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerShippingMethodStore) ShippingMethodsByOption(option *shipping.ShippingMethodFilterOption) ([]*shipping.ShippingMethod, error) {
-	start := timemodule.Now()
-
-	result, err := s.ShippingMethodStore.ShippingMethodsByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.ShippingMethodsByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -6823,6 +6867,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
+	newStore.ShippingMethodExcludedProductStore = &TimerLayerShippingMethodExcludedProductStore{ShippingMethodExcludedProductStore: childStore.ShippingMethodExcludedProduct(), Root: &newStore}
 	newStore.ShippingMethodPostalCodeRuleStore = &TimerLayerShippingMethodPostalCodeRuleStore{ShippingMethodPostalCodeRuleStore: childStore.ShippingMethodPostalCodeRule(), Root: &newStore}
 	newStore.ShippingMethodTranslationStore = &TimerLayerShippingMethodTranslationStore{ShippingMethodTranslationStore: childStore.ShippingMethodTranslation(), Root: &newStore}
 	newStore.ShippingZoneStore = &TimerLayerShippingZoneStore{ShippingZoneStore: childStore.ShippingZone(), Root: &newStore}
