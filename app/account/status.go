@@ -114,7 +114,7 @@ func (a *AppAccount) SetStatusOnline(userID string, manual bool) {
 	var err *model.AppError
 
 	if status, err = a.GetStatus(userID); err != nil {
-		status = &account.Status{UserId: userID, Status: account.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
+		status = &account.Status{UserId: userID, Status: account.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis()}
 		broadcast = true
 	} else {
 		if status.Manual && !manual {
@@ -165,7 +165,7 @@ func (a *AppAccount) SetStatusOffline(userID string, manual bool) {
 		return // manually set status always overrides non-manual one
 	}
 
-	status = &account.Status{UserId: userID, Status: account.STATUS_OFFLINE, Manual: manual, LastActivityAt: model.GetMillis(), ActiveChannel: ""}
+	status = &account.Status{UserId: userID, Status: account.STATUS_OFFLINE, Manual: manual, LastActivityAt: model.GetMillis()}
 
 	a.SaveAndBroadcastStatus(status)
 }

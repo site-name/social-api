@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
@@ -31,42 +32,40 @@ func NewSqlSystemStore(sqlStore store.Store) store.SystemStore {
 	return s
 }
 
-func (s SqlSystemStore) CreateIndexesIfNotExists() {
+func (s *SqlSystemStore) CreateIndexesIfNotExists() {
 }
 
-func (s SqlSystemStore) Save(system *model.System) error {
+func (s *SqlSystemStore) Save(system *model.System) error {
 	if err := s.GetMaster().Insert(system); err != nil {
 		return errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
 	}
 	return nil
 }
 
-func (s SqlSystemStore) SaveOrUpdate(system *model.System) error {
-	if err := s.GetMaster().SelectOne(&model.System{}, "SELECT * FROM Systems WHERE Name = :Name", map[string]interface{}{"Name": system.Name}); err == nil {
-		if _, err := s.GetMaster().Update(system); err != nil {
-			return errors.Wrapf(err, "failed to update system property with name=%s", system.Name)
-		}
-	} else {
-		if err := s.GetMaster().Insert(system); err != nil {
-			return errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
-		}
+func (s *SqlSystemStore) SaveOrUpdate(system *model.System) error {
+	_, err := s.GetQueryBuilder().
+		Insert("Systems").
+		Columns("Name", "Value").
+		Values(system.Name, system.Value).
+		SuffixExpr(squirrel.Expr("ON CONFLICT (name) DO UPDATE SET Value = ?", system.Value)).
+		RunWith(s.GetMaster()).Exec()
+	if err != nil {
+		return errors.Wrap(err, "failed to upsert system property")
 	}
 	return nil
 }
 
-func (s SqlSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System) error {
-	if err := s.GetMaster().SelectOne(&model.System{}, "SELECT * FROM Systems WHERE Name = :Name", map[string]interface{}{"Name": system.Name}); err == nil {
-		if _, err := s.GetMaster().Update(system); err != nil {
-			return errors.Wrapf(err, "failed to update system property with name=%s", system.Name)
-		}
-	} else {
-		if err := s.GetMaster().Insert(system); err != nil {
-			return errors.Wrapf(err, "failed to save system property with name=%s", system.Name)
-		}
+func (s *SqlSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System) error {
+	if err := s.SaveOrUpdate(system); err != nil {
+		return err
 	}
 
-	if strings.HasPrefix(system.Name, model.WARN_METRIC_STATUS_STORE_PREFIX) && (system.Value == model.WARN_METRIC_STATUS_RUNONCE || system.Value == model.WARN_METRIC_STATUS_LIMIT_REACHED) {
-		if err := s.SaveOrUpdate(&model.System{Name: model.SYSTEM_WARN_METRIC_LAST_RUN_TIMESTAMP_KEY, Value: strconv.FormatInt(util.MillisFromTime(time.Now()), 10)}); err != nil {
+	if strings.HasPrefix(system.Name, model.WARN_METRIC_STATUS_STORE_PREFIX) &&
+		(system.Value == model.WARN_METRIC_STATUS_RUNONCE || system.Value == model.WARN_METRIC_STATUS_LIMIT_REACHED) {
+		if err := s.SaveOrUpdate(&model.System{
+			Name:  model.SYSTEM_WARN_METRIC_LAST_RUN_TIMESTAMP_KEY,
+			Value: strconv.FormatInt(util.MillisFromTime(time.Now()), 10),
+		}); err != nil {
 			return errors.Wrapf(err, "failed to save system property with name=%s", model.SYSTEM_WARN_METRIC_LAST_RUN_TIMESTAMP_KEY)
 		}
 	}
@@ -74,14 +73,14 @@ func (s SqlSystemStore) SaveOrUpdateWithWarnMetricHandling(system *model.System)
 	return nil
 }
 
-func (s SqlSystemStore) Update(system *model.System) error {
+func (s *SqlSystemStore) Update(system *model.System) error {
 	if _, err := s.GetMaster().Update(system); err != nil {
 		return errors.Wrapf(err, "failed to update system property with name=%s", system.Name)
 	}
 	return nil
 }
 
-func (s SqlSystemStore) Get() (model.StringMap, error) {
+func (s *SqlSystemStore) Get() (model.StringMap, error) {
 	var systems []model.System
 	props := make(model.StringMap)
 	if _, err := s.GetReplica().Select(&systems, "SELECT * FROM Systems"); err != nil {
@@ -94,7 +93,7 @@ func (s SqlSystemStore) Get() (model.StringMap, error) {
 	return props, nil
 }
 
-func (s SqlSystemStore) GetByName(name string) (*model.System, error) {
+func (s *SqlSystemStore) GetByName(name string) (*model.System, error) {
 	var system model.System
 	if err := s.GetMaster().SelectOne(&system, "SELECT * FROM Systems WHERE Name = :Name", map[string]interface{}{"Name": name}); err != nil {
 		if err == sql.ErrNoRows {
@@ -106,7 +105,7 @@ func (s SqlSystemStore) GetByName(name string) (*model.System, error) {
 	return &system, nil
 }
 
-func (s SqlSystemStore) PermanentDeleteByName(name string) (*model.System, error) {
+func (s *SqlSystemStore) PermanentDeleteByName(name string) (*model.System, error) {
 	var system model.System
 	if _, err := s.GetMaster().Exec("DELETE FROM Systems WHERE Name = :Name", map[string]interface{}{"Name": name}); err != nil {
 		return nil, errors.Wrapf(err, "failed to permanent delete system property with name=%s", system.Name)
@@ -117,7 +116,7 @@ func (s SqlSystemStore) PermanentDeleteByName(name string) (*model.System, error
 
 // InsertIfExists inserts a given system value if it does not already exist. If a value
 // already exists, it returns the old one, else returns the new one.
-func (s SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
+func (s *SqlSystemStore) InsertIfExists(system *model.System) (*model.System, error) {
 	tx, err := s.GetMaster().Db.BeginTx(context.Background(), &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	})

@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"io"
 	"os"
 
 	"github.com/sitename/sitename/model"
@@ -111,14 +110,4 @@ func (o *ClusterDiscovery) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (o *ClusterDiscovery) ToJson() string {
-	return model.ModelToJson(o)
-}
-
-func ClusterDiscoveryFromJson(data io.Reader) *ClusterDiscovery {
-	var me *ClusterDiscovery
-	model.ModelFromJson(&me, data)
-	return me
 }

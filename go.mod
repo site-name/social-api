@@ -3,13 +3,13 @@ module github.com/sitename/sitename
 go 1.16
 
 require (
-	code.sajari.com/docconv v1.1.1-0.20200701232649-d9ea05fbd50a
+	code.sajari.com/docconv v1.1.1-0.20210427001343-7b3472bc323a
 	github.com/99designs/gqlgen v0.13.0
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210708011750-e3d1acc33807 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.12
+	github.com/aws/aws-sdk-go v1.40.13
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -41,7 +41,7 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20210621053716-e28cb8259002
 	github.com/lib/pq v1.10.2
 	github.com/mattermost/go-i18n v1.11.0
-	github.com/mattermost/gorp v1.6.2-0.20210419141818-0904a6a388d3
+	github.com/mattermost/gorp v1.6.2-0.20210714143452-8b50f5209a7f
 	github.com/mattermost/gosaml2 v0.3.3
 	github.com/mattermost/gziphandler v0.0.1
 	github.com/mattermost/ldap v3.0.4+incompatible
@@ -59,7 +59,6 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/russellhaering/goxmldsig v1.1.0 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
-	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
 	github.com/site-name/go-prices v0.0.0-20210801093830-972abfb34bd0

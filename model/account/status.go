@@ -13,9 +13,6 @@ const (
 	STATUS_CACHE_SIZE      = model.SESSION_CACHE_SIZE
 	STATUS_CHANNEL_TIMEOUT = 20000  // 20 seconds
 	STATUS_MIN_UPDATE_TIME = 120000 // 2 minutes
-
-	// STATUS_AWAY            = "away"
-	// STATUS_DND             = "dnd"
 )
 
 type Status struct {
@@ -23,12 +20,12 @@ type Status struct {
 	Status         string `json:"status"`
 	Manual         bool   `json:"manual"`
 	LastActivityAt int64  `json:"last_activity_at"`
-	ActiveChannel  string `json:"active_channel,omitempty" db:"-"`
+	// ActiveChannel  string `json:"active_channel,omitempty" db:"-"`
 }
 
 func (o *Status) ToJson() string {
 	oCopy := *o
-	oCopy.ActiveChannel = ""
+	// oCopy.ActiveChannel = ""
 	return model.ModelToJson(&oCopy)
 }
 
@@ -47,7 +44,7 @@ func StatusListToJson(u []*Status) string {
 	uCopy := make([]Status, len(u))
 	for i, s := range u {
 		sCopy := *s
-		sCopy.ActiveChannel = ""
+		// sCopy.ActiveChannel = ""
 		uCopy[i] = sCopy
 	}
 

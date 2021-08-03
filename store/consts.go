@@ -76,6 +76,7 @@ const (
 	TokenTableName                      = "Tokens"
 	UserAddressTableName                = "UserAddresses"
 	TermsOfServiceTableName             = "TermsOfServices"
+	StatusTableName                     = "Status"
 )
 
 // channel-related table names
@@ -165,4 +166,9 @@ const (
 	ShippingMethodPostalCodeRuleTableName  = "ShippingMethodPostalCodeRules"
 	ShippingMethodChannelListingTableName  = "ShippingMethodChannelListings"
 	ShippingMethodExcludedProductTableName = "ShippingMethodExcludedProducts"
+)
+
+// job-related table names
+const (
+	JobTableName = "Jobs"
 )

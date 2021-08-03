@@ -20,18 +20,18 @@ func NewSqlJobStore(sqlStore store.Store) store.JobStore {
 	s := &SqlJobStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.Job{}, "Jobs").SetKeys(false, "Id")
+		table := db.AddTableWithName(model.Job{}, store.JobTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(32)
 		table.ColMap("Status").SetMaxSize(32)
-		table.ColMap("Data").SetMaxSize(1024)
+		table.ColMap("Data").SetDataType("jsonb")
 	}
 
 	return s
 }
 
 func (jss SqlJobStore) CreateIndexesIfNotExists() {
-	jss.CreateIndexIfNotExists("idx_jobs_type", "Jobs", "Type")
+	jss.CreateIndexIfNotExists("idx_jobs_type", store.JobTableName, "Type")
 }
 
 func (jss SqlJobStore) Save(job *model.Job) (*model.Job, error) {
@@ -48,7 +48,7 @@ func (jss SqlJobStore) Save(job *model.Job) (*model.Job, error) {
 
 func (jss SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus string) (bool, error) {
 	query, args, err := jss.GetQueryBuilder().
-		Update("Jobs").
+		Update(store.JobTableName).
 		Set("LastActivityAt", model.GetMillis()).
 		Set("Status", job.Status).
 		Set("Data", job.ToJson()).
@@ -93,7 +93,7 @@ func (jss SqlJobStore) UpdateStatus(id string, status string) (*model.Job, error
 
 func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {
 	builder := jss.GetQueryBuilder().
-		Update("Jobs").
+		Update(store.JobTableName).
 		Set("LastActivityAt", model.GetMillis()).
 		Set("Status", newStatus).
 		Where(sq.Eq{"Id": id, "Status": currentStatus})
@@ -124,7 +124,7 @@ func (jss SqlJobStore) UpdateStatusOptimistically(id string, currentStatus strin
 func (jss SqlJobStore) Get(id string) (*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Id": id}).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "job_tosql")
@@ -142,7 +142,7 @@ func (jss SqlJobStore) Get(id string) (*model.Job, error) {
 func (jss SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		OrderBy("CreateAt DESC").
 		Limit(uint64(limit)).
 		Offset(uint64(offset)).ToSql()
@@ -160,7 +160,7 @@ func (jss SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
 func (jss SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Type": jobTypes}).
 		OrderBy("CreateAt DESC").
 		Limit(uint64(limit)).
@@ -179,7 +179,7 @@ func (jss SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit in
 func (jss SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Type": jobType}).
 		OrderBy("CreateAt DESC").ToSql()
 	if err != nil {
@@ -195,7 +195,7 @@ func (jss SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 func (jss SqlJobStore) GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Type": jobType}).
 		OrderBy("CreateAt DESC").
 		Limit(uint64(limit)).
@@ -215,7 +215,7 @@ func (jss SqlJobStore) GetAllByStatus(status string) ([]*model.Job, error) {
 	var statuses []*model.Job
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Status": status}).
 		OrderBy("CreateAt ASC").ToSql()
 	if err != nil {
@@ -237,7 +237,7 @@ func (jss SqlJobStore) GetNewestJobByStatusAndType(status string, jobType string
 func (jss SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Status": statuses, "Type": jobType}).
 		OrderBy("CreateAt DESC").
 		Limit(1).
@@ -259,7 +259,7 @@ func (jss SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType 
 func (jss SqlJobStore) GetCountByStatusAndType(status string, jobType string) (int64, error) {
 	query, args, err := jss.GetQueryBuilder().
 		Select("COUNT(*)").
-		From("Jobs").
+		From(store.JobTableName).
 		Where(sq.Eq{"Status": status, "Type": jobType}).ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "job_tosql")
@@ -273,7 +273,7 @@ func (jss SqlJobStore) GetCountByStatusAndType(status string, jobType string) (i
 
 func (jss SqlJobStore) Delete(id string) (string, error) {
 	query, args, err := jss.GetQueryBuilder().
-		Delete("Jobs").
+		Delete(store.JobTableName).
 		Where(sq.Eq{"Id": id}).ToSql()
 	if err != nil {
 		return "", errors.Wrap(err, "job_tosql")

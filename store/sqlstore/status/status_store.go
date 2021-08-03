@@ -21,18 +21,18 @@ func NewSqlStatusStore(sqlStore store.Store) store.StatusStore {
 	s := &SqlStatusStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(account.Status{}, "Status").SetKeys(false, "UserId")
+		table := db.AddTableWithName(account.Status{}, store.StatusTableName).SetKeys(false, "UserId")
 		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Status").SetMaxSize(32)
-		table.ColMap("ActiveChannel").SetMaxSize(26)
+		// table.ColMap("ActiveChannel").SetMaxSize(26)
 	}
 
 	return s
 }
 
-func (s SqlStatusStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_status_user_id", "Status", "UserId")
-	s.CreateIndexIfNotExists("idx_status_status", "Status", "Status")
+func (s *SqlStatusStore) CreateIndexesIfNotExists() {
+	s.CreateIndexIfNotExists("idx_status_user_id", store.StatusTableName, "UserId")
+	s.CreateIndexIfNotExists("idx_status_status", store.StatusTableName, "Status")
 }
 
 func (s SqlStatusStore) SaveOrUpdate(status *account.Status) error {
@@ -50,7 +50,7 @@ func (s SqlStatusStore) SaveOrUpdate(status *account.Status) error {
 	return nil
 }
 
-func (s SqlStatusStore) Get(userId string) (*account.Status, error) {
+func (s *SqlStatusStore) Get(userId string) (*account.Status, error) {
 	var status account.Status
 
 	if err := s.GetReplica().SelectOne(&status,
@@ -68,7 +68,7 @@ func (s SqlStatusStore) Get(userId string) (*account.Status, error) {
 	return &status, nil
 }
 
-func (s SqlStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
+func (s *SqlStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
 	query := s.GetQueryBuilder().
 		Select("UserId, Status, Manual, LastActivityAt").
 		From("Status").
@@ -97,14 +97,14 @@ func (s SqlStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
 	return statuses, nil
 }
 
-func (s SqlStatusStore) ResetAll() error {
+func (s *SqlStatusStore) ResetAll() error {
 	if _, err := s.GetMaster().Exec("UPDATE Status SET Status = :Status WHERE Manual = false", map[string]interface{}{"Status": account.STATUS_OFFLINE}); err != nil {
 		return errors.Wrap(err, "failed to update Statuses")
 	}
 	return nil
 }
 
-func (s SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
+func (s *SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
 	time := model.GetMillis() - (1000 * 60 * 60 * 24)
 	count, err := s.GetReplica().SelectInt("SELECT COUNT(UserId) FROM Status WHERE LastActivityAt > :Time", map[string]interface{}{"Time": time})
 	if err != nil {
@@ -113,7 +113,7 @@ func (s SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
 	return count, nil
 }
 
-func (s SqlStatusStore) UpdateLastActivityAt(userId string, lastActivityAt int64) error {
+func (s *SqlStatusStore) UpdateLastActivityAt(userId string, lastActivityAt int64) error {
 	if _, err := s.GetMaster().Exec("UPDATE Status SET LastActivityAt = :Time WHERE UserId = :UserId", map[string]interface{}{"UserId": userId, "Time": lastActivityAt}); err != nil {
 		return errors.Wrapf(err, "failed to update last activity for userId=%s", userId)
 	}

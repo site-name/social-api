@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -36,20 +37,18 @@ func UnmarshalWeightScalar(v interface{}) (*measurement.Weight, error) {
 		}
 		unit, ok1 := v["unit"]
 		amount, ok2 := v["amount"]
+
 		if ok1 && ok2 {
 			weight = &measurement.Weight{
 				Unit:   measurement.WeightUnit(strings.ToLower(unit.(string))),
-				Amount: float32(amount.(float64)),
+				Amount: model.NewFloat32(amount.(float32)),
 			}
 		} else {
 			err = errors.New("both 'amount' and 'unit' must be provided")
 		}
 	case string:
-		v = strings.ToLower(v)
-		err = json.JSON.Unmarshal([]byte(v), &weight)
-	// case []byte:
-	// 	v = []byte(strings.ToLower(string(v)))
-	// 	err = json.JSON.Unmarshal(v, &weight)
+		err = json.JSON.Unmarshal([]byte(strings.ToLower(v)), &weight)
+
 	default:
 		err = fmt.Errorf("value of type %T is not supported", v)
 	}

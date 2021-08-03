@@ -48,7 +48,7 @@ func SystemProductToGraphqlProduct(p *product_and_discount.Product) *Product {
 	var weight *Weight
 	if p.Weight != nil {
 		weight = NormalWeightToGraphqlWeight(&measurement.Weight{
-			Amount: *p.Weight,
+			Amount: p.Weight,
 			Unit:   p.WeightUnit,
 		})
 	}
