@@ -211,7 +211,7 @@ func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*p
 	// find latest payment by comparing their creation time
 	var latestPayment *payment.Payment
 	for _, pm := range payments {
-		if pm.IsActive && (latestPayment == nil || latestPayment.CreateAt < pm.CreateAt) {
+		if *pm.IsActive && (latestPayment == nil || latestPayment.CreateAt < pm.CreateAt) {
 			latestPayment = pm
 		}
 	}

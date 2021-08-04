@@ -396,9 +396,9 @@ type (
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) // Upsert bases on given method's Id to decide update or insert it
-		Get(methodID string) (*shipping.ShippingMethod, error)                    // Get finds and returns a shipping method with given id
-		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error)
+		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
+		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
+		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethods finds all shipping methods with given conditions
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		CreateIndexesIfNotExists()
@@ -406,6 +406,9 @@ type (
 	}
 	ShippingMethodChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing
+		Get(listingID string) (*shipping.ShippingMethodChannelListing, error)                                                       // Get finds a shipping method channel listing with given listingID
+		FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) // FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC
 	}
 	ShippingMethodTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -499,6 +502,7 @@ type (
 		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
 		GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error)                  // GetPaymentsByCheckoutID returns all payments belong to given checkout
 		Update(payment *payment.Payment) (*payment.Payment, error)                              // Update updates given payment and returns new updated payment
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                              // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()

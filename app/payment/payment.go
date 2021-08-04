@@ -118,7 +118,7 @@ func (a *AppPayment) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)
 		return false, err
 	}
 
-	return pm.IsActive && pm.IsNotCharged() && authorized, nil
+	return *pm.IsActive && pm.IsNotCharged() && authorized, nil
 }
 
 func (a *AppPayment) CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {

@@ -4654,10 +4654,10 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, resultVar2, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4667,7 +4667,7 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.ApplicableShippingMethods", success, elapsed)
 	}
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
 func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
@@ -4698,6 +4698,54 @@ func (s *TimerLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodChannelListingStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodChannelListingStore.Get(listingID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
 }

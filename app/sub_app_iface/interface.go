@@ -23,6 +23,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
@@ -309,6 +310,8 @@ type ShopApp interface {
 }
 
 type ShippingApp interface {
+	ShippingMethodChannelListingsByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, *model.AppError)                                                  // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
+	ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
 }
 
 type WebhookApp interface {

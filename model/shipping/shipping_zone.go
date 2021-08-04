@@ -15,7 +15,7 @@ const (
 type ShippingZone struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
-	Contries    string `json:"countries"` // multiple allowed
+	Countries   string `json:"countries"` // multiple allowed
 	Default     *bool  `json:"default"`
 	Description string `json:"description"`
 	model.ModelMetadata
@@ -38,7 +38,7 @@ func (s *ShippingZone) IsValid() *model.AppError {
 	if utf8.RuneCountInString(s.Name) > SHIPPING_ZONE_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
 	}
-	for _, country := range strings.Fields(s.Contries) {
+	for _, country := range strings.Fields(s.Countries) {
 		if _, ok := model.Countries[country]; !ok {
 			return outer("country", &s.Id)
 		}
@@ -56,11 +56,11 @@ func (s *ShippingZone) PreSave() {
 		s.Default = model.NewBool(false)
 	}
 	s.Description = model.SanitizeUnicode(s.Description)
-	s.Contries = strings.ToUpper(s.Contries)
+	s.Countries = strings.ToUpper(s.Countries)
 }
 
 func (s *ShippingZone) PreUpdate() {
 	s.Name = model.SanitizeUnicode(s.Name)
 	s.Description = model.SanitizeUnicode(s.Description)
-	s.Contries = strings.ToUpper(s.Contries)
+	s.Countries = strings.ToUpper(s.Countries)
 }

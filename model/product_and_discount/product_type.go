@@ -86,6 +86,9 @@ func (p *ProductType) PreUpdate() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
+	if p.IsShippingRequired == nil {
+		p.IsShippingRequired = model.NewBool(true)
+	}
 }
 
 func (p *ProductType) ToJson() string {

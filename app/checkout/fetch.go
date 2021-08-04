@@ -27,14 +27,31 @@ func (a *AppCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *ch
 
 }
 
+// UpdateCheckoutInfoShippingMethod set CheckoutInfo's ShippingMethod to given shippingMethod
+// and set new value for checkoutInfo's ShippingMethodChannelListings
 func (a *AppCheckout) UpdateCheckoutInfoShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
 	checkoutInfo.ShippingMethod = shippingMethod
+
 	checkoutInfo.ShippingMethodChannelListings = nil
-
 	if shippingMethod != nil {
-		panic("not implt")
+		listings, appErr := a.app.ShippingApp().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
+			ShippingMethodID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: shippingMethod.Id,
+				},
+			},
+			ChannelID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkoutInfo.Channel.Id,
+				},
+			},
+		})
 
+		if appErr != nil {
+			return appErr
+		}
+		checkoutInfo.ShippingMethodChannelListings = listings[0]
 	}
-	panic("not implt")
 
+	return nil
 }

@@ -1,8 +1,6 @@
 package product
 
 import (
-	"net/http"
-
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -42,10 +40,7 @@ func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_disco
 // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
 func (a *AppProduct) ProductsRequireShipping(productIDs []string) (bool, *model.AppError) {
 	productTypes, appErr := a.ProductTypesByProductIDs(productIDs)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
+	if appErr != nil { // this error caused by system
 		return false, appErr
 	}
 

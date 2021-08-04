@@ -194,7 +194,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		Total:              &total,
 		ReturnUrl:          &returnUrl,
 		PspReference:       &externalReference,
-		IsActive:           true,
+		IsActive:           model.NewBool(true),
 		CustomerIpAddress:  &customerIpAddress,
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
@@ -347,7 +347,7 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 	switch transaction.Kind {
 	case payment.CAPTURE, payment.REFUND_REVERSED:
 		pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Add(*transaction.Amount))
-		pm.IsActive = true
+		pm.IsActive = model.NewBool(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
 		pm.ChargeStatus = payment.PARTIALLY_CHARGED
@@ -356,7 +356,7 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 		}
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 	case payment.VOID:
-		pm.IsActive = false
+		pm.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "is_active", "update_at")
 	case payment.REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
@@ -365,14 +365,14 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 		if pm.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 			pm.CapturedAmount = &decimal.Zero
 			pm.ChargeStatus = payment.FULLY_REFUNDED
-			pm.IsActive = false
+			pm.IsActive = model.NewBool(false)
 		}
 	case payment.PENDING:
 		pm.ChargeStatus = payment.PENDING
 		changedFields = append(changedFields, "charge_status")
 	case payment.CANCEL:
 		pm.ChargeStatus = payment.CANCELLED
-		pm.IsActive = false
+		pm.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 	case payment.CAPTURE_FAILED:
 		if pm.ChargeStatus == payment.PARTIALLY_CHARGED || pm.ChargeStatus == payment.FULLY_CHARGED {

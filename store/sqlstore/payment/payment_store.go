@@ -3,6 +3,7 @@ package payment
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -165,4 +166,23 @@ func (ps *SqlPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*paymen
 	}
 
 	return payments, nil
+}
+
+// CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
+func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
+	_, err := ps.GetQueryBuilder().
+		Update(store.PaymentTableName).
+		Set("IsActive", false).
+		Where(squirrel.And{
+			squirrel.Eq{"CheckoutID": checkoutID},
+			squirrel.Eq{"IsActive": true},
+		}).
+		RunWith(ps.GetMaster()).
+		Exec()
+
+	if err != nil {
+		return errors.Wrapf(err, "failed to deactivate payments that are active and belong to checkout with id=%s", checkoutID)
+	}
+
+	return nil
 }

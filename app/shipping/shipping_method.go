@@ -6,11 +6,13 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) (interface{}, *model.AppError) {
+// ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
+func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
 	if ckout.ShippingAddressID == nil {
 		return nil, nil
 	}
@@ -58,7 +60,7 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 		totalWeight = measurement.ZeroWeight
 	}
 
-	a.Srv().Store.ShippingMethod().ApplicableShippingMethods(
+	shippingMethods, err := a.Srv().Store.ShippingMethod().ApplicableShippingMethods(
 		price,
 		channelID,
 		totalWeight,
@@ -66,5 +68,9 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 		checkoutLineIDs,
 	)
 
-	return nil, nil
+	if err != nil {
+		return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return a.FilterShippingMethodsByPostalCodeRules(shippingMethods, *ckout.ShippingAddressID) // already checked ShippingAddressID == nil
 }

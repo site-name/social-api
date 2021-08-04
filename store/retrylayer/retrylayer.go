@@ -5504,21 +5504,21 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, resultVar2, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
+		result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
 		if err == nil {
-			return result, resultVar1, resultVar2, nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
+			return result, err
 		}
 	}
 
@@ -5549,6 +5549,66 @@ func (s *RetryLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) 
 	tries := 0
 	for {
 		result, err := s.ShippingMethodStore.Upsert(method)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodChannelListingStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodChannelListingStore.Get(listingID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
 		if err == nil {
 			return result, nil
 		}

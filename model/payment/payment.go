@@ -1,7 +1,6 @@
 package payment
 
 import (
-	"fmt"
 	"io"
 	"strings"
 	"unicode/utf8"
@@ -64,7 +63,7 @@ var ChargeStatuString = map[string]string{
 type Payment struct {
 	Id                 string           `json:"id"`
 	GateWay            string           `json:"gate_way"`
-	IsActive           bool             `json:"is_active"`
+	IsActive           *bool            `json:"is_active"`
 	ToConfirm          bool             `json:"to_confirm"`
 	CreateAt           int64            `json:"create_at"`
 	UpdateAt           int64            `json:"update_at"`
@@ -98,16 +97,6 @@ type Payment struct {
 	PspReference       *string          `json:"psp_reference"` // db index
 }
 
-func (p *Payment) String() string {
-	return fmt.Sprintf(
-		"Payment(gateway=%s, is_active=%t, created=%d, charge_status=%s)",
-		p.GateWay,
-		p.IsActive,
-		p.CreateAt,
-		p.ChargeStatus,
-	)
-}
-
 // Retrieve the maximum capture possible.
 func (p *Payment) GetChargeAmount() decimal.Decimal {
 	res := p.Total.Sub(*p.CapturedAmount)
@@ -121,12 +110,12 @@ func (p *Payment) IsNotCharged() bool {
 
 // CanAuthorize checks if current payment is active and not charged
 func (p *Payment) CanAuthorize() bool {
-	return p.IsActive && p.IsNotCharged()
+	return *p.IsActive && p.IsNotCharged()
 }
 
 // CanCapture checks if payment is not active and is not charged => false, else => true.
 func (p *Payment) CanCapture() bool {
-	if !p.IsActive && !p.IsNotCharged() {
+	if !*p.IsActive && !p.IsNotCharged() {
 		return false
 	}
 
@@ -141,12 +130,12 @@ func (p *Payment) CanRefund() bool {
 		PARTIALLY_REFUNDED,
 	}
 
-	return p.IsActive && util.StringInSlice(p.ChargeStatus, canRefundChargeStatuses)
+	return *p.IsActive && util.StringInSlice(p.ChargeStatus, canRefundChargeStatuses)
 }
 
 // CanConfirm checks if current payment is active && not charged
 func (p *Payment) CanConfirm() bool {
-	return p.IsActive && p.IsNotCharged()
+	return *p.IsActive && p.IsNotCharged()
 }
 
 // IsManual checks if current payment's gateway == "manual"
@@ -303,6 +292,9 @@ func (p *Payment) PreSave() {
 	}
 	p.CreateAt = model.GetMillis()
 	p.UpdateAt = p.CreateAt
+	if p.IsActive == nil {
+		p.IsActive = model.NewBool(true)
+	}
 }
 
 func (p *Payment) PreUpdate() {
@@ -319,6 +311,9 @@ func (p *Payment) PreUpdate() {
 		p.ChargeStatus = NOT_CHARGED
 	}
 	p.UpdateAt = model.GetMillis()
+	if p.IsActive == nil {
+		p.IsActive = model.NewBool(true)
+	}
 }
 
 func (p *Payment) ToJson() string {

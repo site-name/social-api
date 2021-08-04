@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -533,6 +534,72 @@ func (a *AppCheckout) RemoveVoucherFromCheckout(ckout *checkout.Checkout) *model
 }
 
 // GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-func (a *AppCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *checkout.Checkout, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) {
+func (a *AppCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError) {
+	var productIDs []string
+	for _, line := range lineInfos {
+		productIDs = append(productIDs, line.Product.Id)
+	}
 
+	// check if any product in given lineInfos requires shipping:
+	requireShipping, appErr := a.app.ProductApp().ProductsRequireShipping(productIDs)
+	if appErr != nil || requireShipping {
+		return nil, appErr
+	}
+
+	// check if checkoutInfo
+	if checkoutInfo.ShippingAddress == nil {
+		return nil, nil
+	}
+
+	return a.app.ShippingApp().ApplicableShippingMethodsForCheckout(
+		&checkoutInfo.Checkout,
+		checkoutInfo.Checkout.ChannelID,
+		subTotal.Gross,
+		countryCode,
+		lineInfos,
+	)
+}
+
+// IsValidShippingMethod Check if shipping method is valid and remove (if not).
+func (a *AppCheckout) IsValidShippingMethod(checkoutInfo *checkout.CheckoutInfo) (bool, *model.AppError) {
+	if checkoutInfo.ShippingMethod == nil || checkoutInfo.ShippingAddress == nil {
+		return false, nil
+	}
+
+	var validShippingMethodIDs []string
+	if len(checkoutInfo.ValidShippingMethods) != 0 {
+		for _, method := range checkoutInfo.ValidShippingMethods {
+			validShippingMethodIDs = append(validShippingMethodIDs, method.Id)
+		}
+	}
+
+	if len(validShippingMethodIDs) == 0 || !util.StringInSlice(checkoutInfo.ShippingMethod.Id, validShippingMethodIDs) {
+		appErr := a.ClearShippingMethod(checkoutInfo)
+		return false, appErr
+	}
+
+	return true, nil
+}
+
+func (a *AppCheckout) ClearShippingMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+	ckout := checkoutInfo.Checkout
+	ckout.ShippingMethodID = nil
+
+	appErr := a.UpdateCheckoutInfoShippingMethod(checkoutInfo, nil)
+	if appErr != nil {
+		return nil
+	}
+
+	_, appErr = a.UpsertCheckout(&ckout)
+	return appErr
+}
+
+// CancelActivePayments set all active payments belong to given checkout
+func (a *AppCheckout) CancelActivePayments(ckout *checkout.Checkout) *model.AppError {
+	err := a.app.Srv().Store.Payment().CancelActivePaymentsOfCheckout(ckout.Token)
+	if err != nil {
+		return model.NewAppError("CancelActivePayments", "app.checkout.cancel_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

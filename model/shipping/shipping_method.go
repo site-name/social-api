@@ -26,16 +26,18 @@ var ShippingMethodTypeString = map[string]string{
 }
 
 type ShippingMethod struct {
-	Id                  string                 `json:"id"`
-	Name                string                 `json:"name"`
-	Type                string                 `json:"type"`
-	ShippingZoneID      string                 `json:"shipping_zone_id"`
-	MinimumOrderWeight  *float32               `json:"minimum_order_weight"`
-	MaximumOrderWeight  *float32               `json:"maximum_order_weight"`
-	WeightUnit          string                 `json:"weight_unit"`
-	MaximumDeliveryDays *uint                  `json:"maximum_delivery_days"`
-	MinimumDeliveryDays *uint                  `json:"minimum_delivery_days"`
-	Description         *model.StringInterface `json:"description"`
+	Id                            string                          `json:"id"`
+	Name                          string                          `json:"name"`
+	Type                          string                          `json:"type"`
+	ShippingZoneID                string                          `json:"shipping_zone_id"`
+	MinimumOrderWeight            *float32                        `json:"minimum_order_weight"`
+	MaximumOrderWeight            *float32                        `json:"maximum_order_weight"`
+	WeightUnit                    string                          `json:"weight_unit"`
+	MaximumDeliveryDays           *uint                           `json:"maximum_delivery_days"`
+	MinimumDeliveryDays           *uint                           `json:"minimum_delivery_days"`
+	Description                   *model.StringInterface          `json:"description"`
+	ShippingZones                 []*ShippingZone                 `json:"-" db:"-"` // this field is used for holding prefetched related instances
+	ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule `json:"-" db:"-"` // this field is used for holding prefetched related instances
 	model.ModelMetadata
 }
 

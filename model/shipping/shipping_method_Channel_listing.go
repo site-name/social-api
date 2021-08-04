@@ -20,14 +20,15 @@ type ShippingMethodChannelListing struct {
 	MaximumOrderPrice       *goprices.Money  `json:"maximum_order_price" db:"-"`
 	Price                   *goprices.Money  `json:"price" db:"-"`
 	PriceAmount             *decimal.Decimal `json:"price_amount"`
+	CreateAt                int64            `json:"create_at"`
 }
 
 // ShippingMethodChannelListingFilterOption is used to build sql queries
 type ShippingMethodChannelListingFilterOption struct {
-	ShippingMethodID        *model.StringFilter
-	ChannelID               *model.StringFilter
-	MinimumOrderPriceAmount *model.NumberFilter
-	MaximumOrderPriceAmount *model.NumberFilter
+	ShippingMethodID *model.StringFilter
+	ChannelID        *model.StringFilter
+	// MinimumOrderPriceAmount *model.NumberFilter
+	// MaximumOrderPriceAmount *model.NumberFilter
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *model.AppError {
@@ -38,6 +39,9 @@ func (s *ShippingMethodChannelListing) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
+	}
+	if s.CreateAt == 0 {
+		return outer("create_at", &s.Id)
 	}
 	if !model.IsValidId(s.ShippingMethodID) {
 		return outer("shipping_method_id", &s.Id)
@@ -69,12 +73,23 @@ func (s *ShippingMethodChannelListing) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
+	if s.CreateAt == 0 {
+		s.CreateAt = model.GetMillis()
+	}
+	s.commonPre()
+}
+
+func (s *ShippingMethodChannelListing) commonPre() {
 	if s.MinimumOrderPriceAmount == nil {
 		s.MinimumOrderPriceAmount = &decimal.Zero
 	}
 	if s.PriceAmount == nil {
 		s.PriceAmount = &decimal.Zero
 	}
+}
+
+func (s *ShippingMethodChannelListing) PreUpdate() {
+	s.commonPre()
 }
 
 func (s *ShippingMethodChannelListing) GetTotal() *goprices.Money {

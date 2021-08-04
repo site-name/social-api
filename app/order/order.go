@@ -253,7 +253,7 @@ func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *mod
 	if appErr != nil {
 		return nil, appErr
 	}
-	if lastPayment != nil && lastPayment.IsActive {
+	if lastPayment != nil && *lastPayment.IsActive {
 		return a.PaymentApp().PaymentGetAuthorizedAmount(lastPayment)
 	}
 

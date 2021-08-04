@@ -16,7 +16,7 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 		table := db.AddTableWithName(shipping.ShippingZone{}, store.ShippingZoneTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(shipping.SHIPPING_ZONE_NAME_MAX_LENGTH)
-		table.ColMap("Contries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
+		table.ColMap("Countries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
 	}
 	return smls
 }
@@ -25,7 +25,7 @@ func (s *SqlShippingZoneStore) ModelFields() []string {
 	return []string{
 		"ShippingZones.Id",
 		"ShippingZones.Name",
-		"ShippingZones.Contries",
+		"ShippingZones.Countries",
 		"ShippingZones.Default",
 		"ShippingZones.Description",
 		"ShippingZones.Metadata",

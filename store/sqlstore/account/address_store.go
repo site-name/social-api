@@ -1,6 +1,8 @@
 package account
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -73,12 +75,16 @@ func (as *SqlAddressStore) Update(address *account.Address) (*account.Address, e
 }
 
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
-	value, err := as.GetReplica().Get(account.Address{}, addressID)
+	var res account.Address
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AddressTableName+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.AddressTableName, addressID)
+		}
 		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", store.AddressTableName, addressID)
 	}
 
-	return value.(*account.Address), nil
+	return &res, nil
 }
 
 func (as *SqlAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
