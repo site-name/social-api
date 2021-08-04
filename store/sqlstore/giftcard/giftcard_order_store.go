@@ -48,7 +48,8 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*g
 }
 
 func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
-	res, err := gs.GetReplica().Get(giftcard.OrderGiftCard{}, id)
+	var res giftcard.OrderGiftCard
+	err := gs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.OrderGiftCardTableName, id)
@@ -56,5 +57,5 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error)
 		return nil, errors.Wrapf(err, "failed to get order-giftcard with id=%s", id)
 	}
 
-	return res.(*giftcard.OrderGiftCard), nil
+	return &res, nil
 }

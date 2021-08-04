@@ -58,7 +58,8 @@ func (ps *SqlProductChannelListingStore) Save(listing *product_and_discount.Prod
 }
 
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_discount.ProductChannelListing, error) {
-	result, err := ps.GetReplica().Get(product_and_discount.ProductChannelListing{}, listingID)
+	var res product_and_discount.ProductChannelListing
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listingID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductChannelListingTableName, listingID)
@@ -66,7 +67,7 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_dis
 		return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listingID)
 	}
 
-	return result.(*product_and_discount.ProductChannelListing), nil
+	return &res, nil
 }
 
 func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
@@ -136,9 +137,6 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 
 	var listings []*product_and_discount.ProductChannelListing
 	if _, err = ps.GetReplica().Select(&listings, sqlString, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductChannelListingTableName, "")
-		}
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
 	}
 

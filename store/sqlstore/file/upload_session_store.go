@@ -8,10 +8,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	UploadSessionTableName = "UploadSessions"
-)
-
 type SqlUploadSessionStore struct {
 	store.Store
 }
@@ -19,7 +15,7 @@ type SqlUploadSessionStore struct {
 func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 	s := &SqlUploadSessionStore{sqlStore}
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(file.UploadSession{}, UploadSessionTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(file.UploadSession{}, store.UploadSessionTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(32)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -30,9 +26,9 @@ func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 }
 
 func (us SqlUploadSessionStore) CreateIndexesIfNotExists() {
-	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", UploadSessionTableName, "Type")
-	us.CreateIndexIfNotExists("idx_uploadsessions_create_at", UploadSessionTableName, "CreateAt")
-	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", UploadSessionTableName, "UserID")
+	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", store.UploadSessionTableName, "Type")
+	us.CreateIndexIfNotExists("idx_uploadsessions_create_at", store.UploadSessionTableName, "CreateAt")
+	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", store.UploadSessionTableName, "UserID")
 }
 
 func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
@@ -61,7 +57,7 @@ func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
 
 func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	var session *file.UploadSession
-	if err := us.GetReplica().SelectOne(&session, "SELECT * FROM "+UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
+	if err := us.GetReplica().SelectOne(&session, "SELECT * FROM "+store.UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("UploadSession", id)
 		}
@@ -75,11 +71,11 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSessio
 
 	if _, err := us.GetReplica().Select(
 		&sessions,
-		"SELECT * FROM "+UploadSessionTableName+" WHERE UserId = :UserId ORDER BY CreateAt ASC",
+		"SELECT * FROM "+store.UploadSessionTableName+" WHERE UserId = :UserId ORDER BY CreateAt ASC",
 		map[string]interface{}{"UserId": userId},
 	); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(UploadSessionTableName, "UserId="+userId)
+			return nil, store.NewErrNotFound(store.UploadSessionTableName, "UserId="+userId)
 		}
 		return nil, errors.Wrap(err, "failed to find upload session for user id="+userId)
 	}
@@ -88,7 +84,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSessio
 
 func (us *SqlUploadSessionStore) Delete(id string) error {
 
-	if _, err := us.GetMaster().Exec("DELETE FROM "+UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
+	if _, err := us.GetMaster().Exec("DELETE FROM "+store.UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
 		return errors.Wrap(err, "failed to delete upload session with id="+id)
 	}
 

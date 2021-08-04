@@ -66,7 +66,8 @@ func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse
 }
 
 func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
-	inter, err := ws.GetMaster().Get(warehouse.WareHouse{}, id)
+	var res warehouse.WareHouse
+	err := ws.GetMaster().SelectOne(&res, "SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Warehouse", id)
@@ -74,7 +75,7 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 		return nil, errors.Wrapf(err, "failed to get warehouse with Id=%s", id)
 	}
 
-	return inter.(*warehouse.WareHouse), nil
+	return &res, nil
 }
 
 func (wh *SqlWareHouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {

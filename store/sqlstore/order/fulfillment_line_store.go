@@ -45,12 +45,13 @@ func (fls *SqlFulfillmentLineStore) Save(ffml *order.FulfillmentLine) (*order.Fu
 }
 
 func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
-	if res, err := fls.GetReplica().Get(order.FulfillmentLine{}, id); err != nil {
+	var res order.FulfillmentLine
+	if err := fls.GetReplica().SelectOne(&res, "SELECT * FROM "+store.FulfillmentLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.FulfillmentLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", id)
 	} else {
-		return res.(*order.FulfillmentLine), nil
+		return &res, nil
 	}
 }

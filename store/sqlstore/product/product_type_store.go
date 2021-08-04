@@ -2,8 +2,8 @@ package product
 
 import (
 	"database/sql"
-	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -60,7 +60,8 @@ func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductTyp
 }
 
 func (ps *SqlProductTypeStore) Get(id string) (*product_and_discount.ProductType, error) {
-	res, err := ps.GetReplica().Get(product_and_discount.ProductType{}, id)
+	var res product_and_discount.ProductType
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductTypeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductTypeTableName, id)
@@ -68,7 +69,7 @@ func (ps *SqlProductTypeStore) Get(id string) (*product_and_discount.ProductType
 		return nil, errors.Wrapf(err, "failed to find product type with id=%s", id)
 	}
 
-	return res.(*product_and_discount.ProductType), nil
+	return &res, nil
 }
 
 func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
@@ -79,27 +80,19 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 																							|												     |
 													 ...checkoutLine <--|              ...product <--|
 	*/
-	query := `SELECT ` + strings.Join(ps.ModelFields(), ", ") +
-		` FROM ` + store.ProductTypeTableName + `
-		INNER JOIN ` + store.ProductTableName + ` AS P ON (
-			P.ProductTypeID = ProductTypes.Id
-		)
-		INNER JOIN ` + store.ProductVariantTableName + ` AS PV ON (
-			PV.ProductID = P.Id
-		)
-		INNER JOIN ` + store.CheckoutLineTableName + `AS CkL ON (
-			CkL.VariantID = PV.Id
-		)
-		INNER JOIN ` + store.CheckoutTableName + `AS Ck ON (
-			CkL.CheckoutID = Ck.Token
-		)
-		WHERE Ck.Token = :CheckoutToken`
 
-	rows, err := ps.GetReplica().Query(query, map[string]interface{}{"CheckoutToken": checkoutToken})
+	rows, err := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductTypeTableName).
+		InnerJoin(store.ProductTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
+		InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.ProductID = Products.Id)").
+		InnerJoin(store.CheckoutLineTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
+		InnerJoin(store.CheckoutTableName + " ON (Checkouts.Token = CheckoutLines.CheckoutID)").
+		Where(squirrel.Eq{"Checkouts.Token": checkoutToken}).
+		RunWith(ps.GetReplica()).
+		Query()
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTypeTableName, "checkoutToken="+checkoutToken)
-		}
 		return nil, errors.Wrapf(err, "failed to find product types belong to given checkout with id=%s", checkoutToken)
 	}
 
@@ -119,14 +112,16 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 			&prdType.PrivateMetadata,
 		)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse a result row")
+			return nil, errors.Wrapf(err, "failed to parse a row")
 		}
 		productTypes = append(productTypes, &prdType)
 	}
 
-	rows.Close()
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "error closing rows")
+	}
 	if rows.Err() != nil {
-		return nil, errors.Wrapf(rows.Err(), "failed to parse rows result")
+		return nil, errors.Wrapf(rows.Err(), "error occured during rows iteration")
 	}
 
 	return productTypes, nil
@@ -148,9 +143,6 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTypeTableName, "")
-		}
 		return nil, errors.Wrap(err, "failed to find product types with given product ids")
 	}
 

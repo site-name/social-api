@@ -45,22 +45,20 @@ func (ws *SqlWishlistItemStore) Save(item *wishlist.WishlistItem) (*wishlist.Wis
 }
 
 func (ws *SqlWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
-	if res, err := ws.GetReplica().Get(wishlist.WishlistItem{}, id); err != nil {
+	var res wishlist.WishlistItem
+	if err := ws.GetReplica().SelectOne(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist item with id=%s", id)
 	} else {
-		return res.(*wishlist.WishlistItem), nil
+		return &res, nil
 	}
 }
 
 func (ws *SqlWishlistItemStore) WishlistItemsByWishlistId(id string) ([]*wishlist.WishlistItem, error) {
 	var items []*wishlist.WishlistItem
 	if _, err := ws.GetReplica().Select(&items, "SELECT * FROM "+store.WishlistItemTableName+" WHERE WishlistID = :WishlistID", map[string]interface{}{"WishlistID": id}); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistItemTableName, "wishlistID="+id)
-		}
 		return nil, errors.Wrapf(err, "failed to find wishlist items belong to wishlistId=%s", id)
 	} else {
 		return items, nil

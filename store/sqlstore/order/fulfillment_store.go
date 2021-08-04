@@ -46,8 +46,11 @@ func (fs *SqlFulfillmentStore) Save(ffm *order.Fulfillment) (*order.Fulfillment,
 
 func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	var ffm order.Fulfillment
-	if err := fs.GetReplica().SelectOne(&ffm, "SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = :id",
-		map[string]interface{}{"id": id}); err != nil {
+	if err := fs.GetReplica().SelectOne(
+		&ffm,
+		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = :id",
+		map[string]interface{}{"id": id},
+	); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.FulfillmentTableName, id)
 		}
@@ -67,11 +70,6 @@ func (fs *SqlFulfillmentStore) FilterByExcludeStatuses(orderId string, excludeSt
 			"statuses": excludeStatuses,
 			"orderID":  orderId},
 	); err != nil {
-		if err == sql.ErrNoRows {
-			// this error means there is no fulfillment satisfies requirements
-			return false, nil
-		}
-		// other errors mean system error
 		return false, errors.Wrap(err, "failed to find fulfillments satisfy given requirements")
 	}
 

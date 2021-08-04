@@ -2,7 +2,6 @@ package warehouse
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -62,13 +61,14 @@ func (ss *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) 
 }
 
 func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
-	if res, err := ss.GetReplica().Get(warehouse.Stock{}, stockID); err != nil {
+	var res warehouse.Stock
+	if err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.StockTableName+" WHERE Id = :ID", map[string]interface{}{"ID": stockID}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.StockTableName, stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find stock with id=%s", stockID)
 	} else {
-		return res.(*warehouse.Stock), nil
+		return &res, nil
 	}
 }
 
@@ -112,9 +112,6 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{}) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 	rows, err := ss.GetReplica().Query(query, params)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil, nil, store.NewErrNotFound(fmt.Sprintf("%s/%s/%s", store.StockTableName, store.WarehouseTableName, store.ProductVariantTableName), "")
-		}
 		return nil, nil, nil, errors.Wrapf(err, "failed to perform database lookup operation")
 	}
 

@@ -49,7 +49,8 @@ func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *giftcard.GiftCardChec
 }
 
 func (gs *SqlGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
-	res, err := gs.GetReplica().Get(giftcard.GiftCardCheckout{}, id)
+	var res giftcard.GiftCardCheckout
+	err := gs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.GiftcardCheckoutTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.GiftcardCheckoutTableName, id)
@@ -57,7 +58,7 @@ func (gs *SqlGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, 
 		return nil, errors.Wrapf(err, "failed to get order-checkout with id=%s", id)
 	}
 
-	return res.(*giftcard.GiftCardCheckout), nil
+	return &res, nil
 }
 
 // Delete deletes a giftcard-checkout relation with given id

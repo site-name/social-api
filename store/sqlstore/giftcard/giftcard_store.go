@@ -81,27 +81,29 @@ func (gcs *SqlGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.Gift
 }
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
-	if res, err := gcs.GetReplica().Get(giftcard.GiftCard{}, id); err != nil {
+	var res giftcard.GiftCard
+	if err := gcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)
 	} else {
-		return res.(*giftcard.GiftCard), nil
+		return &res, nil
 	}
 }
 
 func (gcs *SqlGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
 	var giftcards []*giftcard.GiftCard
-	if _, err := gcs.GetReplica().Select(&giftcards, "SELECT * FROM "+store.GiftcardTableName+" WHERE UserID = :userID",
-		map[string]interface{}{"userID": userID}); err != nil {
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, store.NewErrNotFound(store.GiftcardTableName, "userID="+userID)
-			}
-			return nil, errors.Wrapf(err, "failed to find giftcards with userID=%s", userID)
-		}
+	_, err := gcs.GetReplica().Select(
+		&giftcards,
+		"SELECT * FROM "+store.GiftcardTableName+" WHERE UserID = :userID",
+		map[string]interface{}{"userID": userID},
+	)
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find giftcards with userID=%s", userID)
 	}
+
 	return giftcards, nil
 }
 
@@ -115,9 +117,6 @@ func (gs *SqlGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.Gif
 	var giftcards []*giftcard.GiftCard
 	_, err := gs.GetReplica().Select(&giftcards, query, map[string]interface{}{"CheckoutID": checkoutID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.GiftcardTableName, "checkoutID="+checkoutID)
-		}
 		return nil, errors.Wrapf(err, "failed to find giftcards belong to checkout with id=%s", checkoutID)
 	}
 
@@ -160,9 +159,6 @@ func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption
 	var giftcards []*giftcard.GiftCard
 	_, err = gs.GetReplica().Select(&giftcards, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.GiftcardTableName, "code")
-		}
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}
 

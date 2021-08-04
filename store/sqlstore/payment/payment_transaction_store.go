@@ -52,15 +52,11 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 		return nil, err
 	}
 
-	oldResult, err := ps.GetReplica().Get(payment.PaymentTransaction{}, transaction.Id)
+	oldTran, err := ps.Get(transaction.Id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrInvalidInput(store.TransactionTableName, "id", transaction.Id)
-		}
-		return nil, errors.Wrapf(err, "failed to find transaction with id=%s", transaction.Id)
+		return nil, err
 	}
 
-	oldTran := oldResult.(*payment.PaymentTransaction)
 	transaction.CreateAt = oldTran.CreateAt
 	transaction.PaymentID = oldTran.PaymentID
 
@@ -77,7 +73,8 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 }
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
-	transacResult, err := ps.GetReplica().Get(payment.PaymentTransaction{}, id)
+	var res payment.PaymentTransaction
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.TransactionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.TransactionTableName, id)
@@ -85,7 +82,7 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransactio
 		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)
 	}
 
-	return transacResult.(*payment.PaymentTransaction), nil
+	return &res, nil
 }
 
 func (ps *SqlPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
@@ -96,9 +93,6 @@ func (ps *SqlPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*pa
 		"SELECT * FROM "+store.TransactionTableName+" WHERE PaymentID = :paymentID",
 		map[string]interface{}{"paymentID": paymentID},
 	); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.TransactionTableName, "paymentID="+paymentID)
-		}
 		return nil, errors.Wrapf(err, "failed to find transactions belong to payment with id=%s", paymentID)
 	}
 

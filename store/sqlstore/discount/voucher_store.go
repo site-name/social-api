@@ -87,7 +87,8 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 
 // Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
-	result, err := vs.GetReplica().Get(product_and_discount.Voucher{}, voucherID)
+	var res product_and_discount.Voucher
+	err := vs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherTableName, voucherID)
@@ -95,7 +96,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 		return nil, errors.Wrapf(err, "failed to find voucher with id=%s", voucherID)
 	}
 
-	return result.(*product_and_discount.Voucher), nil
+	return &res, nil
 }
 
 // FilterVouchersByOption finds vouchers bases on given option.
@@ -153,9 +154,6 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	var vouchers []*product_and_discount.Voucher
 	_, err = vs.GetReplica().Select(&vouchers, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherTableName, "option")
-		}
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
 	}
 

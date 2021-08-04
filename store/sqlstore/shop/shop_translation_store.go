@@ -80,7 +80,8 @@ func (sts *SqlShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*
 
 // Get finds a shop translation with given id then return it with an error
 func (sts *SqlShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
-	result, err := sts.GetReplica().Get(shop.ShopTranslation{}, id)
+	var res shop.ShopTranslation
+	err := sts.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShopTranslationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopTranslationTableName, id)
@@ -88,5 +89,5 @@ func (sts *SqlShopTranslationStore) Get(id string) (*shop.ShopTranslation, error
 		return nil, errors.Wrapf(err, "failed to find shop translation with id=%s", id)
 	}
 
-	return result.(*shop.ShopTranslation), nil
+	return &res, nil
 }

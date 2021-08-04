@@ -73,7 +73,8 @@ func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.V
 
 // Get finds a voucher product with given id, then returns it with an error
 func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
-	result, err := vps.GetReplica().Get(product_and_discount.VoucherProduct{}, voucherProductID)
+	var res product_and_discount.VoucherProduct
+	err := vps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherProductID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherProductTableName, voucherProductID)
@@ -81,7 +82,7 @@ func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*product_and_di
 		return nil, errors.Wrapf(err, "failed to find voucher-product relation with id=%s", voucherProductID)
 	}
 
-	return result.(*product_and_discount.VoucherProduct), nil
+	return &res, nil
 }
 
 // ProductsByVoucherID finds all products that have relationships with given voucher
@@ -100,9 +101,6 @@ func (vps *SqlVoucherProductStore) ProductsByVoucherID(voucherID string) ([]*pro
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return []*product_and_discount.Product{}, store.NewErrNotFound(store.ProductTableName, "voucherID="+voucherID)
-		}
 		return nil, errors.Wrapf(err, "failed to find products with relation to voucher with voucherId=%s", voucherID)
 	}
 

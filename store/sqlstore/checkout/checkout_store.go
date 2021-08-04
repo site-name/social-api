@@ -101,9 +101,7 @@ func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	var ckout *checkout.Checkout
 	err := cs.GetReplica().SelectOne(
 		&ckout,
-		`SELECT * FROM `+store.CheckoutTableName+` WHERE (
-			Token = :Token
-		)`,
+		`SELECT * FROM `+store.CheckoutTableName+` WHERE Token = :Token`,
 		map[string]interface{}{
 			"Token": token,
 		},

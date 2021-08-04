@@ -66,8 +66,13 @@ func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVari
 
 func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	var variant product_and_discount.ProductVariant
-	if err := ps.GetReplica().SelectOne(&variant, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :id",
-		map[string]interface{}{"id": id}); err != nil {
+	err := ps.GetReplica().SelectOne(
+		&variant,
+		"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :id",
+		map[string]interface{}{"id": id},
+	)
+
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, id)
 		}

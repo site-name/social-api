@@ -52,7 +52,8 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.V
 
 // Get finds a voucher customer with given id and returns it with an error
 func (vcs *SqlVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
-	result, err := vcs.GetReplica().Get(product_and_discount.VoucherCustomer{}, id)
+	var res product_and_discount.VoucherCustomer
+	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, id)
@@ -60,7 +61,7 @@ func (vcs *SqlVoucherCustomerStore) Get(id string) (*product_and_discount.Vouche
 		return nil, errors.Wrapf(err, "failed to finds voucher-customer relation with is=%s", id)
 	}
 
-	return result.(*product_and_discount.VoucherCustomer), nil
+	return &res, nil
 }
 
 // FilterByVoucherAndEmail finds a voucher customer with given voucherID and customer email then returns it with an error

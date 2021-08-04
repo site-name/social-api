@@ -48,12 +48,13 @@ func (w *SqlWishlistProductVariantStore) Save(item *wishlist.WishlistProductVari
 }
 
 func (w *SqlWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
-	if res, err := w.GetReplica().Get(wishlist.WishlistProductVariant{}, id); err != nil {
+	var res wishlist.WishlistProductVariant
+	if err := w.GetReplica().SelectOne(&res, "SELECT * FROM "+store.WishlistProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find item with Id=%s", id)
 	} else {
-		return res.(*wishlist.WishlistProductVariant), nil
+		return &res, nil
 	}
 }

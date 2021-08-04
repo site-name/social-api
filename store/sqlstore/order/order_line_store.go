@@ -106,9 +106,6 @@ func (ols *SqlOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLin
 	var orderLines []*order.OrderLine
 	_, err := ols.GetReplica().Select(&orderLines, "SELECT * FROM "+store.OrderLineTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderLineTableName, "orderID="+orderID)
-		}
 		return nil, errors.Wrapf(err, "failed to find order lines with parent order id=%s", orderID)
 	}
 

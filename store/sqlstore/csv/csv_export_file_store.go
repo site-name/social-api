@@ -43,7 +43,7 @@ func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 	err := cs.GetMaster().SelectOne(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("ExportFile", id)
+			return nil, store.NewErrNotFound(store.CsvExportFileTablename, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)
 	}

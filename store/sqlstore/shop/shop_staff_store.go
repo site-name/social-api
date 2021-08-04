@@ -51,7 +51,8 @@ func (sss *SqlShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.Sho
 
 // Get finds a shop staff with given id then returns it with an error
 func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
-	result, err := sss.GetReplica().Get(shop.ShopStaffRelation{}, shopStaffID)
+	var res shop.ShopStaffRelation
+	err := sss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = :ID", map[string]interface{}{"ID": shopStaffID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopStaffTableName, shopStaffID)
@@ -59,7 +60,7 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, 
 		return nil, errors.Wrapf(err, "failed to finds shop staff relation with id=%s", shopStaffID)
 	}
 
-	return result.(*shop.ShopStaffRelation), nil
+	return &res, nil
 }
 
 // FilterByShopAndStaff finds a relation ship with given shopId and staffId

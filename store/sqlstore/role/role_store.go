@@ -91,7 +91,7 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role model.Role
 	if err := s.GetReplica().SelectOne(&role, "SELECT * from Roles WHERE Id = :Id", map[string]interface{}{"Id": roleId}); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("Role", roleId)
+			return nil, store.NewErrNotFound(store.RoleTableName, roleId)
 		}
 		return nil, errors.Wrap(err, "failed to get Role")
 	}

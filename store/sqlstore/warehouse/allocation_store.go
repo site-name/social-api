@@ -50,7 +50,8 @@ func (as *SqlAllocationStore) Save(allocation *warehouse.Allocation) (*warehouse
 }
 
 func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
-	res, err := as.GetReplica().Get(warehouse.Allocation{}, id)
+	var res warehouse.Allocation
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AllocationTableName, id)
@@ -58,7 +59,7 @@ func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
 		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)
 	}
 
-	return res.(*warehouse.Allocation), nil
+	return &res, nil
 }
 
 func (as *SqlAllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
@@ -72,11 +73,12 @@ func (as *SqlAllocationStore) AllocationsByWhich(parentID string, toWhich wareho
 	}
 
 	var allocations []*warehouse.Allocation
-	if _, err := as.GetReplica().Select(&allocations, "SELECT * FROM "+store.AllocationTableName+" WHERE "+id+" = :ParentID",
-		map[string]interface{}{"ParentID": parentID}); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AllocationTableName, id+"="+parentID)
-		}
+	_, err := as.GetReplica().Select(
+		&allocations,
+		"SELECT * FROM "+store.AllocationTableName+" WHERE "+id+" = :ParentID",
+		map[string]interface{}{"ParentID": parentID},
+	)
+	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find allocations with %s = %s", id, parentID)
 	}
 
@@ -104,9 +106,6 @@ func (as *SqlAllocationStore) AllocationsByParentIDs(parentIDs []string, which w
 		)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AllocationTableName, fmt.Sprintf("id = (%s)", strings.Join(parentIDs, ", ")))
-		}
 		return nil, errors.Wrapf(err, "failed to find allocations with %s = (%s)", id, strings.Join(parentIDs, ", "))
 	}
 

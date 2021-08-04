@@ -81,7 +81,8 @@ func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and
 }
 
 func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error) {
-	productRes, err := ps.GetMaster().Get(product_and_discount.Product{}, id)
+	var res product_and_discount.Product
+	err := ps.GetMaster().SelectOne(&res, "SELECT * FROM "+store.ProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Product", id)
@@ -89,7 +90,7 @@ func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error)
 		return nil, errors.Wrapf(err, "failed to get Product with productId=%s", id)
 	}
 
-	return productRes.(*product_and_discount.Product), nil
+	return &res, nil
 }
 
 func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {

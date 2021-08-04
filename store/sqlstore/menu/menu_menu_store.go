@@ -55,7 +55,8 @@ func (ms *SqlMenuStore) Save(mnu *menu.Menu) (*menu.Menu, error) {
 }
 
 func (ms *SqlMenuStore) GetById(id string) (*menu.Menu, error) {
-	res, err := ms.GetReplica().Get(menu.Menu{}, id)
+	var res menu.Menu
+	err := ms.GetReplica().SelectOne(&res, "SELECT * FROM "+store.MenuTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(MenuTableName, id)
@@ -63,7 +64,7 @@ func (ms *SqlMenuStore) GetById(id string) (*menu.Menu, error) {
 		return nil, errors.Wrapf(err, "failed to find menu with id=&s", id)
 	}
 
-	return res.(*menu.Menu), nil
+	return &res, nil
 }
 
 func (ms *SqlMenuStore) GetByName(name string) (*menu.Menu, error) {

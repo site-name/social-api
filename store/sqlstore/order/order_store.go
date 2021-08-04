@@ -70,8 +70,8 @@ func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 
 func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	var order order.Order
-
-	if err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :id", map[string]interface{}{"id": id}); err != nil {
+	err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.OrderTableName, id)
 		}

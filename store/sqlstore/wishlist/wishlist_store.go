@@ -52,7 +52,8 @@ func (ws *SqlWishlistStore) Save(wisl *wishlist.Wishlist) (*wishlist.Wishlist, e
 }
 
 func (ws *SqlWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
-	res, err := ws.GetReplica().Get(wishlist.Wishlist{}, id)
+	var res wishlist.Wishlist
+	err := ws.GetReplica().SelectOne(&res, "SELECT * FROM "+store.WishlistTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistTableName, id)
@@ -60,7 +61,7 @@ func (ws *SqlWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 		return nil, errors.Wrapf(err, "failed to find wishlist with id=%s", id)
 	}
 
-	return res.(*wishlist.Wishlist), nil
+	return &res, nil
 }
 
 func (ws *SqlWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {

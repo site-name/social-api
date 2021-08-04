@@ -48,7 +48,7 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 	}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(file.FileInfo{}, "FileInfos").SetKeys(false, "Id")
+		table := db.AddTableWithName(file.FileInfo{}, store.FileInfoTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CreatorId").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Path").SetMaxSize(512)
@@ -65,14 +65,14 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 }
 
 func (fs *SqlFileInfoStore) CreateIndexesIfNotExists() {
-	fs.CreateIndexIfNotExists("idx_fileinfo_update_at", "FileInfos", "UpdateAt")
-	fs.CreateIndexIfNotExists("idx_fileinfo_create_at", "FileInfos", "CreateAt")
-	fs.CreateIndexIfNotExists("idx_fileinfo_delete_at", "FileInfos", "DeleteAt")
-	// fs.CreateIndexIfNotExists("idx_fileinfo_postid_at", "FileInfos", "PostId")
-	fs.CreateIndexIfNotExists("idx_fileinfo_extension_at", "FileInfos", "Extension")
-	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_name_txt", "FileInfos", "Name")
-	fs.CreateFullTextFuncIndexIfNotExists("idx_fileinfo_name_splitted", "FileInfos", "Translate(Name, '.,-', '   ')")
-	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_content_txt", "FileInfos", "Content")
+	fs.CreateIndexIfNotExists("idx_fileinfo_update_at", store.FileInfoTableName, "UpdateAt")
+	fs.CreateIndexIfNotExists("idx_fileinfo_create_at", store.FileInfoTableName, "CreateAt")
+	fs.CreateIndexIfNotExists("idx_fileinfo_delete_at", store.FileInfoTableName, "DeleteAt")
+	fs.CreateIndexIfNotExists("idx_fileinfo_extension_at", store.FileInfoTableName, "Extension")
+	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_name_txt", store.FileInfoTableName, "Name")
+	fs.CreateFullTextFuncIndexIfNotExists("idx_fileinfo_name_splitted", store.FileInfoTableName, "Translate(Name, '.,-', '   ')")
+	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_content_txt", store.FileInfoTableName, "Content")
+	// fs.CreateIndexIfNotExists("idx_fileinfo_postid_at", store.FileInfoTableName, "PostId")
 }
 
 func (fs *SqlFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
@@ -90,7 +90,7 @@ func (fs *SqlFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
 func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From("FileInfos").
+		From(store.FileInfoTableName).
 		Where(squirrel.Eq{"Id": ids}).
 		Where(squirrel.Eq{"DeleteAt": 0}).
 		OrderBy("CreateAt DESC")
@@ -130,7 +130,7 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*file.FileInfo, err
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From("FileInfo").
+		From(store.FileInfoTableName).
 		Where(squirrel.Eq{"Id": id}).
 		Where(squirrel.Eq{"DeleteAt": 0})
 	queryString, args, err := query.ToSql()
@@ -176,7 +176,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage int, opt *file.GetFileI
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From("FileInfo")
+		From(store.FileInfoTableName)
 
 	// if len(opt.ChannelIds) > 0 {
 	// 	query = query.Join("Posts ON FileInfo.PostId = Posts.Id").
@@ -232,7 +232,7 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From("FileInfos").
+		From(store.FileInfoTableName).
 		Where(squirrel.Eq{"Path": path}).
 		Where(squirrel.Eq{"DeleteAt": 0}).
 		Limit(1)
@@ -260,7 +260,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*file.FileInfo, error) 
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From("FileInfos").
+		From(store.FileInfoTableName).
 		Where(squirrel.Eq{"CreatorId": userId}).
 		Where(squirrel.Eq{"DeleteAt": 0}).
 		OrderBy("CreateAt")
@@ -278,7 +278,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*file.FileInfo, error) 
 
 func (fs *SqlFileInfoStore) SetContent(fileId, content string) error {
 	query := fs.GetQueryBuilder().
-		Update("FileInfos").
+		Update(store.FileInfoTableName).
 		Set("Content", content).
 		Where(squirrel.Eq{"Id": fileId})
 	queryString, args, err := query.ToSql()

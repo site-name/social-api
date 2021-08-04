@@ -97,7 +97,8 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 }
 
 func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
-	result, err := ps.GetReplica().Get(payment.Payment{}, id)
+	var res payment.Payment
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.PaymentTableName, id)
@@ -105,16 +106,13 @@ func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
 	}
 
-	return result.(*payment.Payment), nil
+	return &res, nil
 }
 
 func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
 	var payments []*payment.Payment
 	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.PaymentTableName, "orderID="+orderID)
-		}
 		return nil, errors.Wrapf(err, "failed to find payments belong to order with Id=%s", orderID)
 	}
 
@@ -150,11 +148,6 @@ func (ps *SqlPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOp
 		},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// not found means does not exist
-			return false, nil
-		}
-		// other errors mean system error
 		return false, errors.Wrap(err, "failed to find transactions with given options")
 	}
 
@@ -168,9 +161,6 @@ func (ps *SqlPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*paymen
 	var payments []*payment.Payment
 	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE CheckoutID = :CheckoutID", map[string]interface{}{"CheckoutID": checkoutID})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.PaymentTableName, "checkoutID="+checkoutID)
-		}
 		return nil, errors.Wrapf(err, "failed to find payments for checkout with id=%s", checkoutID)
 	}
 

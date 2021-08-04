@@ -73,7 +73,8 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 
 // Get finds a voucher collection with given id, then returns it with an error
 func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
-	result, err := vcs.GetReplica().Get(product_and_discount.VoucherProduct{}, voucherCollectionID)
+	var res product_and_discount.VoucherCollection
+	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherCollectionID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCollectionTableName, voucherCollectionID)
@@ -81,7 +82,7 @@ func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*product_
 		return nil, errors.Wrapf(err, "failed to find voucher-collection relation with id=%s", voucherCollectionID)
 	}
 
-	return result.(*product_and_discount.VoucherCollection), nil
+	return &res, nil
 }
 
 // CollectionsByVoucherID finds all collections that have relationships with given voucher
@@ -100,9 +101,6 @@ func (vcs *SqlVoucherCollectionStore) CollectionsByVoucherID(voucherID string) (
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return []*product_and_discount.Collection{}, store.NewErrNotFound(store.ProductCollectionTableName, "voucherID="+voucherID)
-		}
 		return nil, errors.Wrapf(err, "failed to find collections with relation to voucher with voucherId=%s", voucherID)
 	}
 

@@ -87,7 +87,8 @@ func (ss *SqlShopStore) Upsert(shopInstance *shop.Shop) (*shop.Shop, error) {
 
 // Get finds a shop with given id and returns it
 func (ss *SqlShopStore) Get(shopID string) (*shop.Shop, error) {
-	result, err := ss.GetReplica().Get(shop.Shop{}, shopID)
+	var res shop.Shop
+	err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShopTableName+" WHERE Id = :ID", map[string]interface{}{"ID": shopID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopTableName, shopID)
@@ -95,5 +96,5 @@ func (ss *SqlShopStore) Get(shopID string) (*shop.Shop, error) {
 		return nil, errors.Wrapf(err, "failed to find shop with id=%s", shopID)
 	}
 
-	return result.(*shop.Shop), nil
+	return &res, nil
 }

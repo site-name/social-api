@@ -51,7 +51,7 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVari
 
 func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.AssignedVariantAttribute, error) {
 	var res attribute.AssignedVariantAttribute
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id=:ID", map[string]interface{}{"ID": variantID})
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": variantID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, variantID)

@@ -154,7 +154,8 @@ const (
 
 // menu-related table names
 const (
-	MenuTableName = "Menus"
+	MenuTableName     = "Menus"
+	MenuItemTableName = "MenuItems"
 )
 
 // shipping-related table names
@@ -171,4 +172,10 @@ const (
 // job-related table names
 const (
 	JobTableName = "Jobs"
+)
+
+// file-related table names
+const (
+	FileInfoTableName      = "FileInfos"
+	UploadSessionTableName = "UploadSessions"
 )
