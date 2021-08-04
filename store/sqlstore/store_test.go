@@ -387,7 +387,7 @@ func TestGetReplica(t *testing.T) {
 func TestGetDbVersion(t *testing.T) {
 	testDrivers := []string{
 		model.DATABASE_DRIVER_POSTGRES,
-		model.DATABASE_DRIVER_MYSQL,
+		// model.DATABASE_DRIVER_MYSQL,
 	}
 
 	for _, driver := range testDrivers {
@@ -481,7 +481,7 @@ func TestEnsureMinimumDBVersion(t *testing.T) {
 func TestUpAndDownMigrations(t *testing.T) {
 	testDrivers := []string{
 		model.DATABASE_DRIVER_POSTGRES,
-		model.DATABASE_DRIVER_MYSQL,
+		// model.DATABASE_DRIVER_MYSQL,
 	}
 
 	for _, driver := range testDrivers {

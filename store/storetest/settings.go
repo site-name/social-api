@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -207,6 +208,8 @@ func MakeSqlSettings(driver string, withReplica bool) *model.SqlSettings {
 		panic("unsupported driver " + driver)
 	}
 
+	dbName = strings.ReplaceAll(dbName, "-", "_")
+
 	if err := execAsRoot(settings, "CREATE DATABASE "+dbName); err != nil {
 		panic("failed to create temporary database " + dbName + ": " + err.Error())
 	}
@@ -241,6 +244,8 @@ func CleanupSqlSettings(settings *model.SqlSettings) {
 	default:
 		panic("unsupported driver " + driver)
 	}
+
+	dbName = strings.ReplaceAll(dbName, "-", "_")
 
 	if err := execAsRoot(settings, "DROP DATABASE "+dbName); err != nil {
 		panic("failed to drop temporary database " + dbName + ": " + err.Error())

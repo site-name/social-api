@@ -50,7 +50,7 @@ func (s *SqlTokenStore) Delete(token string) error {
 }
 
 func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
-	token := new(model.Token)
+	var token model.Token
 
 	if err := s.GetReplica().SelectOne(token, "SELECT * FROM "+store.TokenTableName+" WHERE Token = :Token", map[string]interface{}{"Token": tokenString}); err != nil {
 		if err == sql.ErrNoRows {
@@ -59,7 +59,7 @@ func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
 		return nil, errors.Wrapf(err, "failed to get Token with value %s", tokenString)
 	}
 
-	return token, nil
+	return &token, nil
 }
 
 func (s *SqlTokenStore) Cleanup() {
