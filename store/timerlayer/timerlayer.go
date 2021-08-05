@@ -3616,6 +3616,22 @@ func (s *TimerLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.Orde
 	return result, err
 }
 
+func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken string) error {
+	start := timemodule.Now()
+
+	err := s.PaymentStore.CancelActivePaymentsOfCheckout(checkoutToken)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.CancelActivePaymentsOfCheckout", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 	start := timemodule.Now()
 
@@ -4746,6 +4762,54 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *shipping.S
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneStore.Get(shippingZoneID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneStore.Upsert(shippingZone)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Upsert", success, elapsed)
 	}
 	return result, err
 }

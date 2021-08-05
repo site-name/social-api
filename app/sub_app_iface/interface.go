@@ -312,6 +312,9 @@ type ShopApp interface {
 type ShippingApp interface {
 	ShippingMethodChannelListingsByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, *model.AppError)                                                  // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
 	ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
+	ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError)           // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
+	DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError)                                                                                                                  // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
+	GetCountriesWithoutShippingZone() ([]string, *model.AppError)                                                                                                                                                 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 }
 
 type WebhookApp interface {

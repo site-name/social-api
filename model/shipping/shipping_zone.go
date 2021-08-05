@@ -16,9 +16,16 @@ type ShippingZone struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Countries   string `json:"countries"` // multiple allowed
-	Default     *bool  `json:"default"`
+	Default     *bool  `json:"default"`   // default false
 	Description string `json:"description"`
+	CreateAt    int64  `json:"create_at"`
 	model.ModelMetadata
+}
+
+// ShippingZoneFilterOption is used to build sql queries to finds shipping zones
+type ShippingZoneFilterOption struct {
+	Id           *model.StringFilter // filter on Id field
+	DefaultValue *bool               // filter on Default field
 }
 
 func (s *ShippingZone) String() string {
@@ -34,6 +41,9 @@ func (s *ShippingZone) IsValid() *model.AppError {
 
 	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
+	}
+	if s.CreateAt == 0 {
+		return outer("create_at", &s.Id)
 	}
 	if utf8.RuneCountInString(s.Name) > SHIPPING_ZONE_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
@@ -51,6 +61,9 @@ func (s *ShippingZone) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
+	if s.CreateAt == 0 {
+		s.CreateAt = model.GetMillis()
+	}
 	s.Name = model.SanitizeUnicode(s.Name)
 	if s.Default == nil {
 		s.Default = model.NewBool(false)
@@ -63,4 +76,7 @@ func (s *ShippingZone) PreUpdate() {
 	s.Name = model.SanitizeUnicode(s.Name)
 	s.Description = model.SanitizeUnicode(s.Description)
 	s.Countries = strings.ToUpper(s.Countries)
+	if s.Default == nil {
+		s.Default = model.NewBool(false)
+	}
 }

@@ -12,8 +12,8 @@ import (
 
 type ProductVariantChannelListing struct {
 	Id              string           `json:"id"`
-	VariantID       string           `json:"variant_id"`
-	ChannelID       string           `json:"channel_id"`
+	VariantID       string           `json:"variant_id"` // not null
+	ChannelID       string           `json:"channel_id"` // not null
 	Currency        string           `json:"currency"`
 	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"`
 	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
@@ -43,15 +43,29 @@ func (p *ProductVariantChannelListing) IsValid() *model.AppError {
 	return nil
 }
 
+func (p *ProductVariantChannelListing) PreSave() {
+	if p.Id == "" {
+		p.Id = model.NewId()
+	}
+}
+
+func (p *ProductVariantChannelListing) PopulateNonDbFields() {
+	if p.Price == nil && p.PriceAmount != nil {
+		p.Price = &goprices.Money{
+			Amount:   p.PriceAmount,
+			Currency: p.Currency,
+		}
+	}
+	if p.CostPrice == nil && p.CostPriceAmount != nil {
+		p.CostPrice = &goprices.Money{
+			Amount:   p.CostPriceAmount,
+			Currency: p.Currency,
+		}
+	}
+}
+
 func (p *ProductVariantChannelListing) ToJson() string {
-	p.Price = &goprices.Money{
-		Amount:   p.PriceAmount,
-		Currency: p.Currency,
-	}
-	p.CostPrice = &goprices.Money{
-		Amount:   p.CostPriceAmount,
-		Currency: p.Currency,
-	}
+	p.PopulateNonDbFields()
 	return model.ModelToJson(p)
 }
 

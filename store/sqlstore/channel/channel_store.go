@@ -25,6 +25,16 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	return cs
 }
 
+func (cs *SqlChannelStore) ModelFields() []string {
+	return []string{
+		"Channels.Id",
+		"Channels.Name",
+		"Channels.IsActive",
+		"Channels.Slug",
+		"Channels.Currency",
+	}
+}
+
 func (cs *SqlChannelStore) CreateIndexesIfNotExists() {
 	cs.CreateIndexIfNotExists("idx_channels_name", store.ChannelTableName, "Name")
 	cs.CreateIndexIfNotExists("idx_channels_slug", store.ChannelTableName, "Slug")

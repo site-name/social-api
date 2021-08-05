@@ -226,12 +226,14 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		products        []*product_and_discount.Product
 	)
 
+	var (
+		line    checkout.CheckoutLine
+		variant product_and_discount.ProductVariant
+		product product_and_discount.Product
+	)
+
 	for rows.Next() {
-		var (
-			line    checkout.CheckoutLine
-			variant product_and_discount.ProductVariant
-			product product_and_discount.Product
-		)
+
 		err = rows.Scan(
 			// scan checkout line
 			&line.Id,

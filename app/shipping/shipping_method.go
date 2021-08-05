@@ -6,6 +6,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
@@ -13,7 +14,7 @@ import (
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
 func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
-	if ckout.ShippingAddressID == nil {
+	if ckout.ShippingAddressID == nil || !model.IsValidId(*ckout.ShippingAddressID) {
 		return nil, nil
 	}
 
@@ -31,10 +32,7 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 	if len(lines) == 0 {
 		_, _, products, err := a.Srv().Store.CheckoutLine().CheckoutLinesByCheckoutWithPrefetch(ckout.Token)
 		if err != nil {
-			if _, ok := err.(*store.ErrNotFound); !ok {
-				// returns if error is caused by system
-				return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.get_applicable_shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
+			return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.get_applicable_shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		// if product(s) was/were found
@@ -73,4 +71,50 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 	}
 
 	return a.FilterShippingMethodsByPostalCodeRules(shippingMethods, *ckout.ShippingAddressID) // already checked ShippingAddressID == nil
+}
+
+// ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
+func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+	if oder.ShippingAddressID == nil || !model.IsValidId(*oder.ShippingAddressID) {
+		return nil, nil
+	}
+
+	if countryCode == "" {
+		address, appErr := a.AccountApp().AddressById(*oder.ShippingAddressID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		countryCode = address.Country
+	}
+
+	var orderProductIDs []string
+	if len(lines) == 0 {
+		_, _, products, err := a.Srv().Store.OrderLine().OrderLinesByOrderWithPrefetch(oder.Id)
+		if err != nil {
+			return nil, model.NewAppError("ApplicableShippingMethodsForOrder", "app.shipping.get_applicable_shipping_methods_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		// if product(s) was/were found
+		for _, product := range products {
+			orderProductIDs = append(orderProductIDs, product.Id)
+		}
+	} else {
+		for _, line := range lines {
+			orderProductIDs = append(orderProductIDs, line.Product.Id)
+		}
+	}
+
+	applicableShippingMethods, err := a.Srv().Store.ShippingMethod().ApplicableShippingMethods(
+		price,
+		channelID,
+		oder.GetTotalWeight(),
+		countryCode,
+		orderProductIDs,
+	)
+
+	if err != nil {
+		return nil, model.NewAppError("ApplicableShippingMethodsForOrder", "app.shipping.shipping_methods_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return a.FilterShippingMethodsByPostalCodeRules(applicableShippingMethods, *oder.ShippingAddressID) // already checked ShippingAddressID == nil
 }

@@ -4232,6 +4232,26 @@ func (s *RetryLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.Orde
 
 }
 
+func (s *RetryLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken string) error {
+
+	tries := 0
+	for {
+		err := s.PaymentStore.CancelActivePaymentsOfCheckout(checkoutToken)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 
 	tries := 0
@@ -5609,6 +5629,66 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *shipping.S
 	tries := 0
 	for {
 		result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneStore.Get(shippingZoneID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneStore.Upsert(shippingZone)
 		if err == nil {
 			return result, nil
 		}

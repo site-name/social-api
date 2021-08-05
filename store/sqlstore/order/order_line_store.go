@@ -137,9 +137,6 @@ func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*
 		Query()
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil, nil, store.NewErrNotFound(store.OrderLineTableName, "orderID="+orderID)
-		}
 		return nil, nil, nil, errors.Wrapf(err, "failed to finds order lines and prefetch related values, with orderId=%s", orderID)
 	}
 
@@ -148,13 +145,13 @@ func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*
 		productVariants []*product_and_discount.ProductVariant
 		products        []*product_and_discount.Product
 	)
+	var (
+		orderLine      order.OrderLine
+		productVariant product_and_discount.ProductVariant
+		product        product_and_discount.Product
+	)
 
 	for rows.Next() {
-		var (
-			orderLine      order.OrderLine
-			productVariant product_and_discount.ProductVariant
-			product        product_and_discount.Product
-		)
 		err = rows.Scan(
 			// scan order line
 			&orderLine.Id,

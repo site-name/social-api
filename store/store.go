@@ -392,6 +392,9 @@ type (
 	ShippingZoneStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error)                 // Upsert depends on given shipping zone's Id to decide update or insert the zone
+		Get(shippingZoneID string) (*shipping.ShippingZone, error)                                  // Get finds 1 shipping zone for given shippingZoneID
+		FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) // FilterByOption finds a list of shipping zones based on given option
 	}
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
@@ -431,6 +434,7 @@ type (
 	}
 	CollectionStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 	}
 	CollectionProductStore interface {
 		CreateIndexesIfNotExists()
@@ -449,6 +453,9 @@ type (
 	}
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                            // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -462,6 +469,7 @@ type (
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error)                 // Save inserts given product channel listing into database then returns it with an error
 		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                                     // Get try finding a product channel listing, then returns it with an error
 		FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
@@ -712,6 +720,7 @@ type (
 // channel
 type ChannelStore interface {
 	CreateIndexesIfNotExists()
+	ModelFields() []string
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                         // Get returns channel by given id
 	GetBySlug(slug string) (*channel.Channel, error)                                 // GetBySlug returns channel by given slug

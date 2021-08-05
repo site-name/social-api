@@ -35,3 +35,18 @@ func (ps *SqlCollectionStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_collections_slug", CollectionTableName, "Slug")
 	ps.CreateIndexIfNotExists("idx_collections_name_lower_textpattern", CollectionTableName, "lower(Name) text_pattern_ops")
 }
+
+func (ps *SqlCollectionStore) ModelFields() []string {
+	return []string{
+		"Collections.Id",
+		"Collections.Name",
+		"Collections.Slug",
+		"Collections.BackgroundImage",
+		"Collections.BackgroundImageAlt",
+		"Collections.Description",
+		"Collections.Metadata",
+		"Collections.PrivateMetadata",
+		"Collections.SeoTitle",
+		"Collections.SeoDescription",
+	}
+}

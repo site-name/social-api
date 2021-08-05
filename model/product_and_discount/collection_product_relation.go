@@ -1,8 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -25,16 +23,6 @@ func (c *CollectionProduct) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (c *CollectionProduct) ToJson() string {
-	return model.ModelToJson(c)
-}
-
-func CollectionProductFromJson(data io.Reader) *CollectionProduct {
-	var c CollectionProduct
-	model.ModelFromJson(&c, data)
-	return &c
 }
 
 func (c *CollectionProduct) PreSave() {

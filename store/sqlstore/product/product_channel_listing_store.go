@@ -35,6 +35,21 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 	return pcls
 }
 
+func (ps *SqlProductChannelListingStore) ModelFields() []string {
+	return []string{
+		"ProductChannelListings.Id",
+		"ProductChannelListings.ProductID",
+		"ProductChannelListings.ChannelID",
+		"ProductChannelListings.VisibleInListings",
+		"ProductChannelListings.AvailableForPurchase",
+		"ProductChannelListings.Currency",
+		"ProductChannelListings.DiscountedPriceAmount",
+		"ProductChannelListings.CreateAt",
+		"ProductChannelListings.PublicationDate",
+		"ProductChannelListings.IsPublished",
+	}
+}
+
 func (ps *SqlProductChannelListingStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_productchannellistings_puplication_date", store.ProductChannelListingTableName, "PublicationDate")
 	ps.CreateForeignKeyIfNotExists(store.ProductChannelListingTableName, "ProductID", store.ProductTableName, "Id", true)

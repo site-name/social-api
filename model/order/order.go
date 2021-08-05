@@ -1,7 +1,6 @@
 package order
 
 import (
-	"io"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -105,8 +104,8 @@ type Order struct {
 	DisplayGrossPrices           *bool                  `json:"display_gross_prices"`
 	CustomerNote                 string                 `json:"customer_note"`
 	WeightAmount                 float32                `json:"weight_amount"`
-	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`
-	Weight                       *measurement.Weight    `json:"weight" db:"-"`
+	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`   // default 'kg'
+	Weight                       *measurement.Weight    `json:"weight" db:"-"` // default 0
 	RedirectUrl                  *string                `json:"redirect_url"`
 	populatedNonDbFields         bool                   `json:"-" db:"-"` // this field check if order's non db fields are populated
 	model.ModelMetadata
@@ -216,18 +215,6 @@ func (o *Order) IsValid() *model.AppError {
 	return nil
 }
 
-func (o *Order) ToJson() string {
-	o.PopulateNonDbFields()
-
-	return model.ModelToJson(o)
-}
-
-func OrderFromJson(data io.Reader) *Order {
-	var o *Order
-	model.ModelFromJson(&o, data)
-	return o
-}
-
 func (o *Order) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
@@ -317,9 +304,6 @@ func (o *Order) TotalBalance() (*goprices.Money, error) {
 }
 
 func (o *Order) GetTotalWeight() *measurement.Weight {
-	if o.Weight != nil {
-		return o.Weight
-	}
 	return &measurement.Weight{
 		Amount: &o.WeightAmount,
 		Unit:   o.WeightUnit,
