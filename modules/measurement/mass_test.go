@@ -3,6 +3,8 @@ package measurement
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestConvertTo(t *testing.T) {
@@ -31,7 +33,8 @@ func TestAdd(t *testing.T) {
 		Amount: newFloat32(2000.3434),
 		Unit:   LB,
 	}
-	addRes := w1.Add(&w2)
+	addRes, err := w1.Add(&w2)
+	require.NoError(t, err)
 	if addRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
@@ -53,7 +56,8 @@ func TestSub(t *testing.T) {
 		Amount: newFloat32(2000.3434),
 		Unit:   LB,
 	}
-	subRes := w1.Sub(&w2)
+	subRes, err := w1.Sub(&w2)
+	require.NoError(t, err)
 	if subRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
@@ -76,9 +80,9 @@ func TestMul(t *testing.T) {
 	if mulRes.Unit != w1.Unit {
 		t.Fatalf("res's unit must be %s\n", w1.Unit)
 	}
-	resAmount := newFloat32(quan * *w1.Amount)
-	if mulRes.Amount != resAmount {
-		t.Fatalf("res's amount must be %f\n", *resAmount)
+	resAmount := quan * *w1.Amount
+	if *mulRes.Amount != resAmount {
+		t.Fatalf("res's amount must be %f\n", resAmount)
 	}
 
 	fmt.Println(resAmount)

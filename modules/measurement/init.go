@@ -16,7 +16,7 @@ func init() {
 	initOnce.Do(func() {
 		MeasurementUnitMap = make(map[string]string)
 		for k := range DISTANCE_UNIT_STRINGS {
-			MeasurementUnitMap[strings.ToUpper(k)] = k
+			MeasurementUnitMap[strings.ToUpper(string(k))] = string(k)
 		}
 		for k := range AREA_UNIT_STRINGS {
 			MeasurementUnitMap[strings.ToUpper(k)] = k

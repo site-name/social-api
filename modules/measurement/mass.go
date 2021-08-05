@@ -7,6 +7,30 @@ import (
 
 type WeightUnit string
 
+var (
+	WEIGHT_UNIT_STRINGS    map[WeightUnit]string  // weight unit aliases to their full name
+	WEIGHT_UNIT_CONVERSION map[WeightUnit]float32 // amount of weight units
+	ErrInvalidWeightUnit   error                  // Error used when users use weight unit does not match type WeightUnit
+)
+
+func init() {
+	WEIGHT_UNIT_STRINGS = map[WeightUnit]string{
+		G:     "Gram",
+		LB:    "Pound",
+		OZ:    "Ounce",
+		KG:    "Kg",
+		TONNE: "Tonne",
+	}
+	WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
+		KG:    1.0,
+		G:     1000.0,
+		OZ:    35.27396195,
+		TONNE: 0.001,
+		LB:    2.20462262,
+	}
+	ErrInvalidWeightUnit = errors.New("invalid weight unit, must be either (g|lb|oz|kg|tonne)")
+}
+
 // weight units supported by app
 const (
 	G     WeightUnit = "g"
@@ -15,24 +39,6 @@ const (
 	KG    WeightUnit = "kg"
 	TONNE WeightUnit = "tonne"
 )
-
-// weight unit aliases to their full name
-var WEIGHT_UNIT_STRINGS = map[WeightUnit]string{
-	G:     "Gram",
-	LB:    "Pound",
-	OZ:    "Ounce",
-	KG:    "Kg",
-	TONNE: "Tonne",
-}
-
-// amount of weight units
-var WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
-	KG:    1.0,
-	G:     1000.0,
-	OZ:    35.27396195,
-	TONNE: 0.001,
-	LB:    2.20462262,
-}
 
 const STANDARD_WEIGHT_UNIT = KG
 
@@ -49,29 +55,30 @@ func newFloat32(f float32) *float32 {
 	return &f
 }
 
-var (
-	// Error used when users use weight unit does not match type WeightUnit
-	ErrInvalidWeightUnit = errors.New("invalid weight unit, must be either (g|lb|oz|kg|tonne)")
-)
-
 // Adds weight to current weight and returns new weight.
-func (w *Weight) Add(other *Weight) *Weight {
+func (w *Weight) Add(other *Weight) (*Weight, error) {
 	// convert other's unit to w's unit
-	converted, _ := other.ConvertTo(w.Unit)
+	converted, err := other.ConvertTo(w.Unit)
+	if err != nil {
+		return nil, err
+	}
 	return &Weight{
 		Amount: newFloat32(*w.Amount + *converted.Amount),
 		Unit:   w.Unit,
-	}
+	}, nil
 }
 
 // Subs weight to current weight and returns new weight.
-func (w *Weight) Sub(other *Weight) *Weight {
+func (w *Weight) Sub(other *Weight) (*Weight, error) {
 	// convert other's unit to w's unit
-	converted, _ := other.ConvertTo(w.Unit)
+	converted, err := other.ConvertTo(w.Unit)
+	if err != nil {
+		return nil, err
+	}
 	return &Weight{
 		Amount: newFloat32(*w.Amount - *converted.Amount),
 		Unit:   w.Unit,
-	}
+	}, nil
 }
 
 // Multiplies weight to current weight and returns new weight.
@@ -107,9 +114,12 @@ var ZeroWeight = &Weight{
 }
 
 // NewWeight returns a customized weight user wants
-func NewWeight(amount float32, unit WeightUnit) *Weight {
+func NewWeight(amount float32, unit WeightUnit) (*Weight, error) {
+	if WEIGHT_UNIT_STRINGS[unit] == "" {
+		return nil, ErrInvalidWeightUnit
+	}
 	return &Weight{
 		Amount: newFloat32(amount),
 		Unit:   unit,
-	}
+	}, nil
 }

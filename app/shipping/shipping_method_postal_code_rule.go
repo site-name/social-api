@@ -11,9 +11,9 @@ import (
 type checkPostalCodeFunc func(code string, start string, end string) bool
 
 var (
-	ukPostalCodePattern    *regexp.Regexp
-	irishPostalCodePattern *regexp.Regexp
-	countryFuncMap         map[string]checkPostalCodeFunc
+	ukPostalCodePattern    *regexp.Regexp                 // ukPostalCodePattern to check againts United Kingdom postal codes
+	irishPostalCodePattern *regexp.Regexp                 // irishPostalCodePattern to check againts ireland postal codes
+	countryFuncMap         map[string]checkPostalCodeFunc // countryFuncMap contains some country codes and special functions for handle postal codes of them
 )
 
 func init() {
@@ -29,7 +29,6 @@ func init() {
 }
 
 func GroupValues(pattern *regexp.Regexp, values ...string) {
-
 	for _, value := range values {
 
 	}
@@ -98,8 +97,8 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 	var (
 		numberOfInclude     int
 		numberOfExclude     int
-		atLeastOneValueTrue = false // all rules inclusion_type == 'include'
-		allValueAreFalse    = true  // all rules inclusion_type == 'exclude'
+		atLeastOneValueTrue = false // all rules's inclusion_type == 'include'
+		allValueAreFalse    = true  // all rules's inclusion_type == 'exclude'
 	)
 
 	for key, value := range result {
@@ -123,7 +122,6 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 
 // FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
 func (a *AppShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*shipping.ShippingMethod, shippingAddressID string) ([]*shipping.ShippingMethod, *model.AppError) {
-
 	shippingAddress, appErr := a.AccountApp().AddressById(shippingAddressID)
 	if appErr != nil {
 		return nil, appErr

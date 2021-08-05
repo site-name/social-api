@@ -292,6 +292,11 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 
 // TotalWeightForCheckoutLines calculate total weight for given checkout lines
 func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
+	// 1 checkout line has 1 product variant
+	// 1 product varnat has 1 product
+	// 1 product has 1 product type
+	// So don't worry about rows duplicate here
+
 	rows, err := cls.
 		GetQueryBuilder().
 		Select(
@@ -315,16 +320,16 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		return nil, errors.Wrap(err, "failed to find values")
 	}
 
-	var totalWeight = measurement.ZeroWeight
+	var (
+		totalWeight       *measurement.Weight = measurement.ZeroWeight
+		lineQuantity      uint
+		variantWeight     measurement.Weight
+		productWeight     measurement.Weight
+		productTypeWeight measurement.Weight
+		weight            measurement.Weight
+	)
 
 	for rows.Next() {
-		var (
-			lineQuantity      uint
-			variantWeight     measurement.Weight
-			productWeight     measurement.Weight
-			productTypeWeight measurement.Weight
-		)
-
 		err = rows.Scan(
 			&lineQuantity,
 			&variantWeight.Amount,
@@ -340,13 +345,18 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		}
 
 		if variantWeight.Amount != nil {
-			totalWeight = totalWeight.Add(variantWeight.Mul(float32(lineQuantity)))
+			weight = variantWeight
 		} else if productWeight.Amount != nil {
-			totalWeight = totalWeight.Add(productWeight.Mul(float32(lineQuantity)))
+			weight = productWeight
 		} else if productTypeWeight.Amount != nil {
-			totalWeight = totalWeight.Add(productTypeWeight.Mul(float32(lineQuantity)))
-		} else {
-			return totalWeight, nil
+			weight = productTypeWeight
+		}
+
+		if weight.Amount != nil {
+			totalWeight, err = totalWeight.Add(weight.Mul(float32(lineQuantity)))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

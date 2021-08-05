@@ -6,6 +6,7 @@ package checkout
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -599,6 +600,23 @@ func (a *AppCheckout) CancelActivePayments(ckout *checkout.Checkout) *model.AppE
 	err := a.app.Srv().Store.Payment().CancelActivePaymentsOfCheckout(ckout.Token)
 	if err != nil {
 		return model.NewAppError("CancelActivePayments", "app.checkout.cancel_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
+func (a *AppCheckout) ValidateVariantsInCheckoutLines(lines []*checkout.CheckoutLineInfo) *model.AppError {
+
+	var notAvailableVariants []string
+	for _, line := range lines {
+		if line.ChannelListing == nil || line.ChannelListing.Price == nil {
+			notAvailableVariants = append(notAvailableVariants, line.Variant.Id)
+		}
+	}
+
+	if len(notAvailableVariants) > 0 {
+		// return error indicate there are some product variants that have no channel listing or channel listing price is null
+		return model.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variantIDs": strings.Join(notAvailableVariants, ", ")}, "", http.StatusNotAcceptable)
 	}
 
 	return nil
