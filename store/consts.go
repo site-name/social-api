@@ -120,7 +120,7 @@ func init() {
 		ShippingZoneChannelTableName:           "ShippingZoneChannels",           //
 		ShippingMethodTranslationTableName:     "ShippingMethodTranslations",     //
 		ShippingMethodPostalCodeRuleTableName:  "ShippingMethodPostalCodeRules",  //
-		ShippingMethodChannelListingTableName:  "ShippingMethodChannelListings",  //
+		ShippingMethodChannelListingTableName:  "CreateAt ASC",                   //
 		ShippingMethodExcludedProductTableName: "ShippingMethodExcludedProducts", //
 
 		JobTableName: "Jobs", //

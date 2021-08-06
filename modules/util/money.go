@@ -12,7 +12,7 @@ func ZeroMoney(currency string) (*goprices.Money, error) {
 
 // ZeroTaxedMoney returns zero-taxed money with currency unit of given currency
 func ZeroTaxedMoney(currency string) (*goprices.TaxedMoney, error) {
-	zero, err := ZeroMoney(currency)
+	zero, err := goprices.NewMoney(&decimal.Zero, currency)
 	if err != nil {
 		return nil, err
 	}

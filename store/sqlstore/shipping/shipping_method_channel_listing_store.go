@@ -96,7 +96,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.S
 	query := s.GetQueryBuilder().
 		Select("*").
 		From(store.ShippingMethodChannelListingTableName).
-		OrderBy("CreateAt ASC")
+		OrderBy(store.TableOrderingMap[store.ShippingMethodChannelListingTableName])
 
 	if option.ShippingMethodID != nil {
 		query = query.Where(option.ShippingMethodID.ToSquirrel("ShippingMethodID"))
