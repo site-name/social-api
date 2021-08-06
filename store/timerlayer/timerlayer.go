@@ -2082,6 +2082,22 @@ func (s *TimerLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	start := timemodule.Now()
 
@@ -4299,6 +4315,38 @@ func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.Produ
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantChannelListingStore.Get(variantChannelListingID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Save", success, elapsed)
 	}
 	return result, err
 }

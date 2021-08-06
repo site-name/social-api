@@ -711,9 +711,10 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
-		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) // CheckoutsByUserID returns a list of check outs that belong to given user and have channels active
-		Get(token string) (*checkout.Checkout, error)                                      // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
-		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                       // Upsert depends on given checkout's Token property to decide to update or insert it
+		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error)                        // CheckoutsByUserID returns a list of check outs that belong to given user and have channels active
+		Get(token string) (*checkout.Checkout, error)                                                             // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
+		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                              // Upsert depends on given checkout's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
 	}
 )
 

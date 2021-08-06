@@ -1,6 +1,8 @@
 package checkout
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
@@ -11,7 +13,12 @@ import (
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
 func (a *AppCheckout) FetchCheckoutLines(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
-	panic("not implt")
+	checkoutLineInfos, err := a.app.Srv().Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+	if err != nil {
+		return nil, model.NewAppError("FetchCheckoutLines", "app.checkout.error_collecting_checkout_line_infos.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return checkoutLineInfos, nil
 }
 
 func (a *AppCheckout) FetCheckoutInfo(ckout *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*checkout.CheckoutInfo, *model.AppError) {

@@ -165,8 +165,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch checkout lines:
 	var (
-		checkoutLines   []*checkout.CheckoutLine
-		checkoutLineIDs []string
+		checkoutLines     []*checkout.CheckoutLine
+		productVariantIDs []string
 	)
 	_, err = tx.Select(
 		&checkoutLines,
@@ -179,22 +179,21 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", ckout.Token)
 	}
-
 	for _, line := range checkoutLines {
-		checkoutLineIDs = append(checkoutLineIDs, line.Id)
+		productVariantIDs = append(productVariantIDs, line.VariantID)
 	}
 
 	// fetch product variants
 	var (
 		productVariants   []*product_and_discount.ProductVariant
 		productIDs        []string
-		productVariantIDs []string
+		productVariantMap = map[string]*product_and_discount.ProductVariant{}
 	)
 	_, err = tx.Select(
 		&productVariants,
 		"SELECT * FROM ProductVariants WHERE Id IN :IDs ORDER BY :OrderBy",
 		map[string]interface{}{
-			"IDs":     checkoutLineIDs,
+			"IDs":     productVariantIDs,
 			"OrderBy": store.TableOrderingMap[store.ProductVariantTableName],
 		},
 	)
@@ -203,19 +202,20 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	}
 	for _, variant := range productVariants {
 		productIDs = append(productIDs, variant.ProductID)
-		productVariantIDs = append(productVariantIDs, variant.Id)
+		productVariantMap[variant.Id] = variant
 	}
 
 	// fetch products
 	var (
 		products       []*product_and_discount.Product
 		productTypeIDs []string
+		productMap     = map[string]*product_and_discount.Product{}
 	)
 	_, err = tx.Select(
 		&products,
 		"SELECT * FROM Products WHERE Id IN :IDs ORDER BY :OrderBy",
 		map[string]interface{}{
-			"IDs":     productVariantIDs,
+			"IDs":     productIDs,
 			"OrderBy": store.TableOrderingMap[store.ProductTableName],
 		},
 	)
@@ -224,6 +224,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	}
 	for _, prd := range products {
 		productTypeIDs = append(productTypeIDs, prd.ProductTypeID)
+		productMap[prd.Id] = prd
 	}
 
 	// fetch product collections
@@ -232,6 +233,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 			PrefetchRelatedValProductID string
 			product_and_discount.Collection
 		}
+		collectionsByProducts = map[string][]*product_and_discount.Collection{}
 	)
 	_, err = tx.Select(
 		&collectionXs,
@@ -242,7 +244,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 		INNER JOIN ProductCollections ON (
 			ProductCollections.CollectionID = Collections.Id
 		)
-		WHERE 
+		WHERE
 			ProductCollections.ProductID IN :IDs
 		ORDER BY :OrderBy`,
 		map[string]interface{}{
@@ -253,11 +255,15 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections")
 	}
+	for _, collectionX := range collectionXs {
+		collectionsByProducts[collectionX.PrefetchRelatedValProductID] = append(collectionsByProducts[collectionX.PrefetchRelatedValProductID], &collectionX.Collection)
+	}
 
 	// fetch product variant channel listing
 	var (
-		productVariantChannelListings []*product_and_discount.ProductVariantChannelListing
-		channelIDs                    []string
+		productVariantChannelListings                 []*product_and_discount.ProductVariantChannelListing
+		channelIDs                                    []string
+		productVariantChannelListingsByProductVariant = map[string][]*product_and_discount.ProductVariantChannelListing{}
 	)
 	_, err = tx.Select(
 		&productVariantChannelListings,
@@ -272,6 +278,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	}
 	for _, listing := range productVariantChannelListings {
 		channelIDs = append(channelIDs, listing.ChannelID)
+		productVariantChannelListingsByProductVariant[listing.VariantID] = append(productVariantChannelListingsByProductVariant[listing.VariantID], listing)
 	}
 
 	// fetch channels
@@ -292,7 +299,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch product types
 	var (
-		productTypes []*product_and_discount.ProductType
+		productTypes   []*product_and_discount.ProductType
+		productTypeMap = map[string]*product_and_discount.ProductType{}
 	)
 	_, err = tx.Select(
 		&productTypes,
@@ -305,4 +313,45 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds product types")
 	}
+	for _, prdType := range productTypes {
+		productTypeMap[prdType.Id] = prdType
+	}
+
+	// commit transaction
+	if err = tx.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
+	}
+
+	var checkoutLineInfos []*checkout.CheckoutLineInfo
+
+	for _, checkoutLine := range checkoutLines {
+		productVariant := productVariantMap[checkoutLine.VariantID]
+		product := productMap[productVariant.ProductID]
+		productType := productTypeMap[product.ProductTypeID]
+		collections := collectionsByProducts[product.Id]
+
+		var variantChannelListing *product_and_discount.ProductVariantChannelListing
+		for _, listing := range productVariantChannelListingsByProductVariant[productVariant.Id] {
+			if listing.ChannelID == ckout.ChannelID {
+				variantChannelListing = listing
+			}
+		}
+
+		// FIXME: Temporary solution to pass type checks. Figure out how to handle case
+		// when variant channel listing is not defined for a checkout line.
+		if variantChannelListing == nil {
+			continue
+		}
+
+		checkoutLineInfos = append(checkoutLineInfos, &checkout.CheckoutLineInfo{
+			Line:           *checkoutLine,
+			Variant:        productVariant,
+			ChannelListing: variantChannelListing,
+			Product:        *product,
+			ProductType:    *productType,
+			Collections:    collections,
+		})
+	}
+
+	return checkoutLineInfos, nil
 }

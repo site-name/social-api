@@ -6,8 +6,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/sqlstore/page"
-	"github.com/sitename/sitename/store/sqlstore/product"
 )
 
 type SqlMenuItemStore struct {
@@ -32,11 +30,11 @@ func NewSqlMenuItemStore(s store.Store) store.MenuItemStore {
 }
 
 func (is *SqlMenuItemStore) CreateIndexesIfNotExists() {
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "MenuID", MenuTableName, "Id", true)
+	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "MenuID", store.MenuTableName, "Id", true)
 	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "ParentID", store.MenuItemTableName, "Id", true)
 	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "CategoryID", store.ProductCategoryTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "CollectionID", product.CollectionTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "PageID", page.PageTableName, "Id", true)
+	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
+	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "PageID", store.PageTableName, "Id", true)
 }
 
 func (is *SqlMenuItemStore) Save(item *menu.MenuItem) (*menu.MenuItem, error) {

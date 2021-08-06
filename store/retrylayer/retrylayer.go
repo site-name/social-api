@@ -2340,6 +2340,26 @@ func (s *RetryLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive
 
 }
 
+func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 
 	tries := 0
@@ -5063,6 +5083,46 @@ func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.Produ
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.Save(variant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantChannelListingStore.Get(variantChannelListingID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
 		if err == nil {
 			return result, nil
 		}

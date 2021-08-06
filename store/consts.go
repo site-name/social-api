@@ -47,6 +47,88 @@ func init() {
 		CheckoutTableName:     "CreatAt ASC, UpdateAt DESC", //
 
 		ChannelTableName: "Slug ASC", //channel
+
+		WishlistItemTableName:           "", // wishlist
+		WishlistProductVariantTableName: "", //
+		WishlistTableName:               "", //
+
+		StockTableName:                 "", // warehouse
+		WarehouseTableName:             "", //
+		WarehouseShippingZoneTableName: "", //
+		AllocationTableName:            "", //
+
+		AddressTableName:                    "", // account
+		UserTableName:                       "", //
+		CustomerEventTableName:              "", //
+		StaffNotificationRecipientTableName: "", //
+		CustomerNoteTableName:               "", //
+		TokenTableName:                      "", //
+		UserAddressTableName:                "", //
+		TermsOfServiceTableName:             "", //
+		StatusTableName:                     "", //
+
+		GiftcardTableName:         "", //
+		OrderGiftCardTableName:    "", //
+		GiftcardCheckoutTableName: "", //
+
+		PaymentTableName:     "Payments",     //
+		TransactionTableName: "Transactions", //
+
+		PluginKeyValueStoreTableName: "PluginKeyValueStore", //
+
+		PreferenceTableName: "Preferences", //
+
+		RoleTableName: "Roles", //
+
+		CsvExportEventTablename: "ExportEvents", //
+		CsvExportFileTablename:  "ExportFiles",  //
+
+		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",         //
+		AttributeTableName:                     "Attributes",                     //
+		AttributeTranslationTableName:          "AttributeTranslations",          //
+		AttributeValueTableName:                "AttributeValues",                //
+		AttributeValueTranslationTableName:     "AttributeValueTranslations",     //
+		AssignedPageAttributeValueTableName:    "AssignedPageAttributeValues",    //
+		AssignedPageAttributeTableName:         "AssignedPageAttributes",         //
+		AttributePageTableName:                 "AttributePages",                 //
+		AssignedVariantAttributeValueTableName: "AssignedVariantAttributeValues", //
+		AssignedVariantAttributeTableName:      "AssignedVariantAttributes",      //
+		AttributeVariantTableName:              "AttributeVariants",              //
+		AssignedProductAttributeValueTableName: "AssignedProductAttributeValues", //
+		AssignedProductAttributeTableName:      "AssignedProductAttributes",      //
+		AttributeProductTableName:              "AttributeProducts",              //
+
+		VoucherTableName:               "Vouchers",               //
+		VoucherCategoryTableName:       "VoucherCategories",      //
+		VoucherCollectionTableName:     "VoucherCollections",     //
+		VoucherProductTableName:        "VoucherProducts",        //
+		VoucherChannelListingTableName: "VoucherChannelListings", //
+		VoucherCustomerTableName:       "VoucherCustomers",       //
+		SaleChannelListingTableName:    "SaleChannelListings",    //
+		SaleTableName:                  "Sales",                  //
+		SaleTranslationTableName:       "SaleTranslations",       //
+
+		ShopTableName:            "Shops",            //
+		ShopTranslationTableName: "ShopTranslations", //
+		ShopStaffTableName:       "ShopStaffs",       //
+
+		MenuTableName:     "Menus",     //
+		MenuItemTableName: "MenuItems", //
+
+		ShippingMethodTableName:                "ShippingMethods",                //
+		ShippingZoneTableName:                  "ShippingZones",                  //
+		ShippingZoneChannelTableName:           "ShippingZoneChannels",           //
+		ShippingMethodTranslationTableName:     "ShippingMethodTranslations",     //
+		ShippingMethodPostalCodeRuleTableName:  "ShippingMethodPostalCodeRules",  //
+		ShippingMethodChannelListingTableName:  "ShippingMethodChannelListings",  //
+		ShippingMethodExcludedProductTableName: "ShippingMethodExcludedProducts", //
+
+		JobTableName: "Jobs", //
+
+		FileInfoTableName:      "FileInfos",      //
+		UploadSessionTableName: "UploadSessions", //
+
+		PageTableName: "Pages", //
 	}
 }
 
@@ -213,4 +295,9 @@ const (
 const (
 	FileInfoTableName      = "FileInfos"      //
 	UploadSessionTableName = "UploadSessions" //
+)
+
+// page-related table names
+const (
+	PageTableName = "Pages"
 )
