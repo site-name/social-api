@@ -16,6 +16,7 @@ const (
 // their `data` field is different.
 type CheckoutLine struct {
 	Id         string `json:"id"`
+	CreatAt    int64  `json:"create_at"`
 	CheckoutID string `json:"checkout_id"`
 	VariantID  string `json:"variant_id"`
 	Quantity   uint   `json:"quantity"`
@@ -48,6 +49,9 @@ func (c *CheckoutLine) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
+	if c.CreatAt == 0 {
+		return outer("create_at", &c.Id)
+	}
 	if !model.IsValidId(c.CheckoutID) {
 		return outer("checkout_id", &c.Id)
 	}
@@ -64,5 +68,8 @@ func (c *CheckoutLine) IsValid() *model.AppError {
 func (c *CheckoutLine) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
+	}
+	if c.CreatAt == 0 {
+		c.CreatAt = model.GetMillis()
 	}
 }

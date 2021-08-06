@@ -1,13 +1,12 @@
 package product_and_discount
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
 type CollectionChannelListing struct {
 	Id           string `json:"id"`
+	CreateAt     int64  `json:"create_at"`
 	CollectionID string `json:"collection_id"`
 	ChannelID    string `json:"channel_id"`
 }
@@ -21,6 +20,9 @@ func (c *CollectionChannelListing) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
+	if c.CreateAt == 0 {
+		return outer("create_at", &c.Id)
+	}
 	if !model.IsValidId(c.CollectionID) {
 		return outer("collection_id", &c.Id)
 	}
@@ -31,18 +33,11 @@ func (c *CollectionChannelListing) IsValid() *model.AppError {
 	return nil
 }
 
-func (c *CollectionChannelListing) ToJson() string {
-	return model.ModelToJson(c)
-}
-
-func CollectionChannelListingFromJson(data io.Reader) *CollectionChannelListing {
-	var c CollectionChannelListing
-	model.ModelFromJson(&c, data)
-	return &c
-}
-
 func (c *CollectionChannelListing) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
+	}
+	if c.CreateAt == 0 {
+		c.CreateAt = model.GetMillis()
 	}
 }

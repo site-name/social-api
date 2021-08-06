@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -29,6 +28,7 @@ const (
 // TODO: not done yet
 type ProductMedia struct {
 	Id          string                `json:"id"`
+	CreateAt    int64                 `json:"create_at"`
 	ProductID   string                `json:"product_id"`
 	Ppoi        string                `json:"ppoi"` // NOTE: need investigation
 	Image       *file.FileInfo        `db:"-"`
@@ -50,6 +50,9 @@ func (p *ProductMedia) IsValid() *model.AppError {
 	if !model.IsValidId(p.Id) {
 		return outer("id", nil)
 	}
+	if p.CreateAt == 0 {
+		return outer("create_at", &p.Id)
+	}
 	if !model.IsValidId(p.ProductID) {
 		return outer("product_id", &p.Id)
 	}
@@ -69,22 +72,15 @@ func (p *ProductMedia) IsValid() *model.AppError {
 	return nil
 }
 
-func (p *ProductMedia) ToJson() string {
-	return model.ModelToJson(p)
-}
-
-func ProductMediaFromJson(data io.Reader) *ProductMedia {
-	var prd ProductMedia
-	model.ModelFromJson(&prd, data)
-	return &prd
-}
-
 func (p *ProductMedia) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
 	if p.Ppoi == "" {
 		p.Ppoi = "0.5x0.5"
+	}
+	if p.CreateAt == 0 {
+		p.CreateAt = model.GetMillis()
 	}
 }
 

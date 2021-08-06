@@ -13,7 +13,7 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	cps := &SqlCollectionProductStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.CollectionProduct{}, "CollectionProducts").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.CollectionProduct{}, store.ProductCollectionProductRelationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)

@@ -8,7 +8,9 @@ import (
 	"github.com/sitename/sitename/model/shipping"
 )
 
-func (a *AppCheckout) FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
+// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
+// It prefetch some related value also
+func (a *AppCheckout) FetchCheckoutLines(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
 	panic("not implt")
 }
 

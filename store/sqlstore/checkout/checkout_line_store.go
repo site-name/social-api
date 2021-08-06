@@ -29,6 +29,7 @@ func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
 func (cls *SqlCheckoutLineStore) ModelFields() []string {
 	return []string{
 		"CheckoutLines.Id",
+		"CheckoutLines.CreateAt",
 		"CheckoutLines.CheckoutID",
 		"CheckoutLines.VariantID",
 		"CheckoutLines.Quantity",
@@ -233,10 +234,10 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 	)
 
 	for rows.Next() {
-
 		err = rows.Scan(
 			// scan checkout line
 			&line.Id,
+			&line.CreatAt,
 			&line.CheckoutID,
 			&line.VariantID,
 			&line.Quantity,

@@ -14,7 +14,7 @@ func NewSqlProductMediaStore(s store.Store) store.ProductMediaStore {
 	pms := &SqlProductMediaStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductMedia{}, "ProductMedias").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.ProductMedia{}, store.ProductMediaTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Image").SetMaxSize(model.URL_LINK_MAX_LENGTH)
