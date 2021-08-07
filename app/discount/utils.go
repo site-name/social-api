@@ -81,7 +81,7 @@ func (a *AppDiscount) GetProductDiscountOnSale(product *product_and_discount.Pro
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *AppDiscount) GetProductDiscounts(resultChan chan<- interface{}, product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) {
+func (a *AppDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) ([]DiscountCalculator, *model.AppError) {
 	// filter duplicate collections
 	uniqueCollectionIDs := []string{}
 	meetMap := map[string]bool{}
@@ -93,14 +93,34 @@ func (a *AppDiscount) GetProductDiscounts(resultChan chan<- interface{}, product
 		}
 	}
 
+	a.wg.Add(len(uniqueCollectionIDs))
+
+	var appErr *model.AppError
+	discountFuncs := []DiscountCalculator{}
+
 	for _, discountInfo := range discountInfos {
-		cal, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, discountInfo, channeL)
-		if appErr != nil {
-			resultChan <- appErr
-		}
-		resultChan <- cal
+		go func(info *product_and_discount.DiscountInfo) {
+			cal, err := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, discountInfo, channeL)
+
+			a.mutex.Lock()
+			if err != nil && appErr == nil {
+				appErr = err
+			} else {
+				discountFuncs = append(discountFuncs, cal)
+			}
+			a.mutex.Unlock()
+			a.wg.Done()
+
+		}(discountInfo)
 	}
-	close(resultChan)
+
+	a.wg.Wait()
+
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return discountFuncs, nil
 }
 
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
@@ -109,27 +129,23 @@ func (a *AppDiscount) GetProductDiscounts(resultChan chan<- interface{}, product
 func (a *AppDiscount) CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError) {
 	if len(discounts) > 0 {
 
-		resultChan := make(chan interface{})
+		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL)
+		if appErr != nil {
+			return nil, appErr
+		}
 
-		go a.GetProductDiscounts(resultChan, product, collections, discounts, channeL)
-
-		for cal := range resultChan {
-			switch t := cal.(type) {
-			case *model.AppError:
-				return nil, t
-			case DiscountCalculator:
-				discountedIface, err := t(price)
-				if err != nil {
-					return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
-				}
-				discountedPrice := discountedIface.(*goprices.Money)
-				less, err := discountedPrice.LessThan(price)
-				if err != nil {
-					return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.error_comparing_money.app_errir", nil, err.Error(), http.StatusBadRequest)
-				}
-				if less {
-					price = discountedPrice
-				}
+		for _, discountFunc := range discountCalFuncs {
+			discountedIface, err := discountFunc(price)
+			if err != nil {
+				return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+			discountedPrice := discountedIface.(*goprices.Money)
+			less, err := discountedPrice.LessThan(price)
+			if err != nil {
+				return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.error_comparing_money.app_errir", nil, err.Error(), http.StatusBadRequest)
+			}
+			if less {
+				price = discountedPrice
 			}
 		}
 	}
@@ -190,7 +206,97 @@ func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, tot
 	}
 	if *voucher.OnlyForStaff {
 		appErr = a.ValidateVoucherOnlyForStaff(voucher, customerID)
+		if appErr != nil {
+			return appErr
+		}
 	}
 
 	return nil
+}
+
+// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
+func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channeL *channel.Channel) (*goprices.Money, *model.AppError) {
+	// validate given prices are valid
+	var invalidArg bool
+	var minPrice *goprices.Money
+
+	if len(prices) == 0 {
+		invalidArg = true
+	}
+	for _, price := range prices {
+		// check if prices's currencies is supported by system, are the same and euqal to given channel's currency
+		if _, err := goprices.GetCurrencyPrecision(price.Currency); err != nil || price.Currency != prices[0].Currency || price.Currency != channeL.Currency {
+			invalidArg = true
+			break
+		}
+		if minPrice == nil || minPrice.Amount.GreaterThan(*price.Amount) {
+			minPrice = price
+		}
+	}
+	if invalidArg {
+		return nil, model.NewAppError("GetProductsVoucherDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "", http.StatusBadRequest)
+	}
+
+	if voucher.ApplyOncePerOrder {
+		return a.GetDiscountAmountFor(voucher, minPrice, channeL.Id)
+	}
+
+	totalAmount, _ := util.ZeroMoney(channeL.Currency) // ignore error since channels's Currencies are validated before saving
+	resultChan := make(chan *goprices.Money)
+	errorChan := make(chan *model.AppError)
+	defer func() {
+		close(resultChan)
+		close(errorChan)
+	}()
+
+	for _, price := range prices {
+		go func(pr *goprices.Money) {
+
+			money, appErr := a.GetDiscountAmountFor(voucher, pr, channeL.Id)
+			if appErr != nil {
+				errorChan <- appErr
+			} else {
+				resultChan <- money
+			}
+
+		}(price)
+	}
+
+loop:
+	for {
+		select {
+		case res, notClosed := <-resultChan:
+			totalAmount, _ = totalAmount.Add(res)
+			if !notClosed {
+				break loop
+			}
+		case res := <-errorChan:
+			return nil, res
+		}
+	}
+
+	return totalAmount, nil
+}
+
+func (a *AppDiscount) FetchCategories(saleIDs []string) (interface{}, *model.AppError) {
+	saleCategories, appErr := a.SaleCategoriesByOption(&product_and_discount.SaleCategoryRelationFilterOption{
+		SaleID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: saleIDs,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	categoryMap := map[string][]string{}
+	for _, relation := range saleCategories {
+		if !util.StringInSlice(relation.CategoryID, categoryMap[relation.SaleID]) {
+			categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
+		}
+	}
+
+	subCategoryMap := map[string][]string{}
+
 }

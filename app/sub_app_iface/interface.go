@@ -265,6 +265,12 @@ type DiscountApp interface {
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
 	PromoCodeIsVoucher(code string) (bool, *model.AppError)                                               // PromoCodeIsVoucher checks if given code is belong to a voucher
 	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) *model.AppError // ValidateVoucherOnlyForStaff validate if voucher is only for staff
+	// GetProductDiscounts(resultChan chan<- interface{}, product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) // GetProductDiscounts Return discount values for all discounts applicable to a product.
+
+	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
+	//
+	// `discounts` is optional
+	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
 }
 
 type OrderApp interface {

@@ -6,6 +6,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/util"
@@ -55,7 +56,14 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 		return nil, appErr
 	}
 
-	shippingMethodChannelListings[0].GetTotal().Quantize()
+	shippingPrice := shippingMethodChannelListings[0].GetTotal()
+	res, _ := (&goprices.TaxedMoney{
+		Net:      shippingPrice,
+		Gross:    shippingPrice,
+		Currency: shippingPrice.Currency,
+	}).Quantize()
+
+	return res, nil
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout
@@ -64,31 +72,24 @@ func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingP
 	currencyMap[subTotal.Currency] = true
 	currencyMap[shippingPrice.Currency] = true
 	currencyMap[discount.Currency] = true
-	currencyMap[strings.ToLower(currency)] = true
+	currencyMap[strings.ToUpper(currency)] = true
 
-	if len(currencyMap) > 1 {
+	if _, err := goprices.GetCurrencyPrecision(strings.ToUpper(currency)); err != nil || len(currencyMap) > 1 {
 		return nil, model.NewAppError("BaseCheckoutTotal", "app.checkout.invalid_currencies.app_error", nil, "Please pass in the same currency values", http.StatusBadRequest)
 	}
-	errorID := "app.checkout.error_calculating_taxed_money.app_error"
 
-	total, err := subTotal.Add(shippingPrice)
-	if err != nil {
-		return nil, model.NewAppError("BaseCheckoutTotal", errorID, nil, err.Error(), http.StatusInternalServerError)
-	}
+	total, _ := subTotal.Add(shippingPrice)
+	total, _ = total.Sub(discount)
 
-	total, err = total.Sub(discount)
-	if err != nil {
-		return nil, model.NewAppError("BaseCheckoutTotal", errorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	zeroTaxedMoney, err := util.ZeroTaxedMoney(currency)
-	if err != nil {
-		return nil, model.NewAppError("BaseCheckoutTotal", "app.checkout.error_creating_taxed_money.app_error", nil, err.Error(), http.StatusBadRequest)
-	}
-
+	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency)
 	if lessThanOrEqual, _ := zeroTaxedMoney.LessThanOrEqual(total); lessThanOrEqual {
 		return total, nil
 	}
 
 	return zeroTaxedMoney, nil
+}
+
+// BaseCheckoutLineTotal Return the total price of this line
+func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel) (*goprices.TaxedMoney, *model.AppError) {
+
 }

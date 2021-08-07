@@ -12,7 +12,8 @@ import (
 
 type AppDiscount struct {
 	app.AppIface
-	wg sync.WaitGroup
+	wg    sync.WaitGroup
+	mutex sync.Mutex
 }
 
 func init() {
