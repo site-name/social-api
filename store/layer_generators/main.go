@@ -124,7 +124,8 @@ func buildStoreImplement() error {
 				return "csv"
 			case "DiscountVoucher", "VoucherChannelListing", "DiscountVoucherCustomer", "VoucherTranslation",
 				"DiscountSale", "DiscountSaleTranslation", "DiscountSaleChannelListing", "OrderDiscount",
-				"VoucherCollection", "VoucherCategory", "VoucherProduct", "VoucherCustomer":
+				"VoucherCollection", "VoucherCategory", "VoucherProduct", "VoucherCustomer", "SaleCategoryRelation",
+				"SaleProductRelation", "SaleCollectionRelation":
 				return "discount"
 			case "GiftCard", "GiftCardOrder", "GiftCardCheckout":
 				return "giftcard"

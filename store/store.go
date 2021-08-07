@@ -92,6 +92,9 @@ type Store interface {
 	VoucherCollection() VoucherCollectionStore                         //
 	VoucherProduct() VoucherProductStore                               //
 	VoucherCustomer() VoucherCustomerStore                             //
+	SaleCategoryRelation() SaleCategoryRelationStore                   //
+	SaleProductRelation() SaleProductRelationStore                     //
+	SaleCollectionRelation() SaleCollectionRelationStore               //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftCardOrder() GiftCardOrderStore                                 //
 	GiftCardCheckout() GiftCardCheckoutStore                           //
@@ -675,6 +678,22 @@ type (
 		Get(id string) (*product_and_discount.VoucherCustomer, error)                                                  // Get finds a voucher customer with given id and returns it with an error
 		FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) // FilterByOption finds voucher-customer relation instances with given voucherID and email
 		DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error                                          // DeleteInBulk deletes given voucher-customers with given id
+	}
+	SaleCategoryRelationStore interface {
+		CreateIndexesIfNotExists()
+		Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error)                               // Save inserts given sale-category relation into database
+		Get(relationID string) (*product_and_discount.SaleCategoryRelation, error)                                                                  // Get returns 1 sale-category relation with given id
+		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option
+	}
+	SaleProductRelationStore interface {
+		CreateIndexesIfNotExists()
+		Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) // Save inserts given sale-product relation into database then returns it
+		Get(relationID string) (*product_and_discount.SaleProductRelation, error)                                   // Get finds and returns a sale-product relation with given id
+	}
+	SaleCollectionRelationStore interface {
+		CreateIndexesIfNotExists()
+		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) // Save insert given sale-collection relation into database
+		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                      // Get finds and returns a sale-collection relation with given id
 	}
 )
 

@@ -35,3 +35,12 @@ func (a *AppDiscount) FilterSalesByOption(option *product_and_discount.SaleFilte
 
 	return sales, nil
 }
+
+func (a *AppDiscount) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, *model.AppError) {
+	saleCategories, err := a.Srv().Store.SaleCategoryRelation().SaleCategoriesByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("SaleCategoriesByOption", "app.discount.error_finding_sale_categories_by_option.app_error", err)
+	}
+
+	return saleCategories, nil
+}

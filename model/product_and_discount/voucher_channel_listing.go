@@ -38,6 +38,7 @@ func (v *VoucherChannelListing) PreSave() {
 			v.MinSpenAmount = v.MinSpent.Amount
 		}
 	}
+	v.Currency = strings.ToUpper(v.Currency)
 }
 
 func (v *VoucherChannelListing) PopulateNonDbFields() {

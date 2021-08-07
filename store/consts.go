@@ -98,16 +98,19 @@ func init() {
 		AssignedProductAttributeTableName:      "AssignedProductAttributes",      //
 		AttributeProductTableName:              "AttributeProducts",              //
 
-		VoucherTableName:               "Code ASC",                         //
-		VoucherCategoryTableName:       "VoucherCategories",                //
-		VoucherCollectionTableName:     "VoucherCollections",               //
-		VoucherProductTableName:        "VoucherProducts",                  //
-		VoucherChannelListingTableName: "CreateAt ASC",                     //
-		VoucherCustomerTableName:       "VoucherID ASC, CustomerEmail ASC", //
-		SaleChannelListingTableName:    "CreateAt ASC",                     //
-		SaleTableName:                  "Name ASC, CreateAt ASC",           //
-		SaleTranslationTableName:       "LanguageCode ASC, Name ASC",       //
-		VoucherTranslationTableName:    "LanguageCode ASC, CreateAt ASC",
+		VoucherTableName:                "Code ASC",                         // discount
+		VoucherCategoryTableName:        "VoucherCategories",                //
+		VoucherCollectionTableName:      "VoucherCollections",               //
+		VoucherProductTableName:         "VoucherProducts",                  //
+		VoucherChannelListingTableName:  "CreateAt ASC",                     //
+		VoucherCustomerTableName:        "VoucherID ASC, CustomerEmail ASC", //
+		SaleChannelListingTableName:     "CreateAt ASC",                     //
+		SaleTableName:                   "Name ASC, CreateAt ASC",           //
+		SaleTranslationTableName:        "LanguageCode ASC, Name ASC",       //
+		VoucherTranslationTableName:     "LanguageCode ASC, CreateAt ASC",   //
+		SaleCategoryRelationTableName:   "CreateAt ASC",                     //
+		SaleProductRelationTableName:    "CreateAt ASC",                     //
+		SaleCollectionRelationTableName: "CreateAt",                         //
 
 		ShopTableName:            "Shops",            //
 		ShopTranslationTableName: "ShopTranslations", //
@@ -135,7 +138,7 @@ func init() {
 
 // all system product related table names
 const (
-	ProductCategoryTableName                  = "ProductCategories"                //
+	ProductCategoryTableName                  = "Categories"                       //
 	ProductCategoryTranslationTableName       = "ProductCategoryTranslations"      //
 	ProductChannelListingTableName            = "ProductChannelListings"           //
 	ProductCollectionChannelListingTableName  = "ProductCollectionChannelListings" //
@@ -252,16 +255,19 @@ const (
 
 // discount-related table names
 const (
-	VoucherTableName               = "Vouchers"               //
-	VoucherCategoryTableName       = "VoucherCategories"      //
-	VoucherCollectionTableName     = "VoucherCollections"     //
-	VoucherProductTableName        = "VoucherProducts"        //
-	VoucherChannelListingTableName = "VoucherChannelListings" //
-	VoucherCustomerTableName       = "VoucherCustomers"       //
-	SaleChannelListingTableName    = "SaleChannelListings"    //
-	SaleTableName                  = "Sales"                  //
-	SaleTranslationTableName       = "SaleTranslations"       //
-	VoucherTranslationTableName    = "VoucherTranslations"    //
+	VoucherTableName                = "Vouchers"               //
+	VoucherCategoryTableName        = "VoucherCategories"      //
+	VoucherCollectionTableName      = "VoucherCollections"     //
+	VoucherProductTableName         = "VoucherProducts"        //
+	VoucherChannelListingTableName  = "VoucherChannelListings" //
+	VoucherCustomerTableName        = "VoucherCustomers"       //
+	SaleChannelListingTableName     = "SaleChannelListings"    //
+	SaleTableName                   = "Sales"                  //
+	SaleTranslationTableName        = "SaleTranslations"       //
+	VoucherTranslationTableName     = "VoucherTranslations"    //
+	SaleCategoryRelationTableName   = "SaleCategories"         //
+	SaleProductRelationTableName    = "SaleProducts"           //
+	SaleCollectionRelationTableName = "SaleCollections"        //
 )
 
 // shop-related table names

@@ -108,6 +108,9 @@ type RetryLayer struct {
 	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
 	ProductVariantTranslationStore     store.ProductVariantTranslationStore
 	RoleStore                          store.RoleStore
+	SaleCategoryRelationStore          store.SaleCategoryRelationStore
+	SaleCollectionRelationStore        store.SaleCollectionRelationStore
+	SaleProductRelationStore           store.SaleProductRelationStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -426,6 +429,18 @@ func (s *RetryLayer) ProductVariantTranslation() store.ProductVariantTranslation
 
 func (s *RetryLayer) Role() store.RoleStore {
 	return s.RoleStore
+}
+
+func (s *RetryLayer) SaleCategoryRelation() store.SaleCategoryRelationStore {
+	return s.SaleCategoryRelationStore
+}
+
+func (s *RetryLayer) SaleCollectionRelation() store.SaleCollectionRelationStore {
+	return s.SaleCollectionRelationStore
+}
+
+func (s *RetryLayer) SaleProductRelation() store.SaleProductRelationStore {
+	return s.SaleProductRelationStore
 }
 
 func (s *RetryLayer) Session() store.SessionStore {
@@ -916,6 +931,21 @@ type RetryLayerProductVariantTranslationStore struct {
 
 type RetryLayerRoleStore struct {
 	store.RoleStore
+	Root *RetryLayer
+}
+
+type RetryLayerSaleCategoryRelationStore struct {
+	store.SaleCategoryRelationStore
+	Root *RetryLayer
+}
+
+type RetryLayerSaleCollectionRelationStore struct {
+	store.SaleCollectionRelationStore
+	Root *RetryLayer
+}
+
+type RetryLayerSaleProductRelationStore struct {
+	store.SaleProductRelationStore
 	Root *RetryLayer
 }
 
@@ -5278,6 +5308,146 @@ func (s *RetryLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 
 }
 
+func (s *RetryLayerSaleCategoryRelationStore) Get(relationID string) (*product_and_discount.SaleCategoryRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCategoryRelationStore.Get(relationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCategoryRelationStore.SaleCategoriesByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleCategoryRelationStore) Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCategoryRelationStore.Save(relation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCollectionRelationStore.Get(relationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCollectionRelationStore.Save(relation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*product_and_discount.SaleProductRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductRelationStore.Get(relationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductRelationStore) Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductRelationStore.Save(relation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 
 	tries := 0
@@ -7974,6 +8144,26 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 
 }
 
+func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+
+	tries := 0
+	for {
+		err := s.VoucherCustomerStore.DeleteInBulk(relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 
 	tries := 0
@@ -8414,6 +8604,9 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ProductVariantChannelListingStore = &RetryLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
 	newStore.ProductVariantTranslationStore = &RetryLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &RetryLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
+	newStore.SaleCategoryRelationStore = &RetryLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
+	newStore.SaleCollectionRelationStore = &RetryLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
+	newStore.SaleProductRelationStore = &RetryLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}

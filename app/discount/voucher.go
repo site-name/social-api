@@ -43,16 +43,12 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 	}
 
 	firstListing := voucherChannelListings[0]
-	if firstListing == nil {
-		return nil, model.NewAppError("GetVoucherDiscount", "app.discount.voucher_not_assigned_to_channel.app_error", nil, "", http.StatusNotAcceptable)
-	}
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
-		discountAmount, err := goprices.NewMoney(firstListing.DiscountValue, firstListing.Currency)
-		if err != nil {
-			return nil, model.NewAppError("GetVoucherDiscount", app.NewMoneyCreationAppErrorID, nil, err.Error(), http.StatusInternalServerError)
-		}
-		return decorator(discountAmount), nil
+		return decorator(&goprices.Money{
+			Amount:   firstListing.DiscountValue,
+			Currency: firstListing.Currency,
+		}), nil
 	}
 
 	// otherwise DiscountValueType is 'percentage'

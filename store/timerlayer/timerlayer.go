@@ -109,6 +109,9 @@ type TimerLayer struct {
 	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
 	ProductVariantTranslationStore     store.ProductVariantTranslationStore
 	RoleStore                          store.RoleStore
+	SaleCategoryRelationStore          store.SaleCategoryRelationStore
+	SaleCollectionRelationStore        store.SaleCollectionRelationStore
+	SaleProductRelationStore           store.SaleProductRelationStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -427,6 +430,18 @@ func (s *TimerLayer) ProductVariantTranslation() store.ProductVariantTranslation
 
 func (s *TimerLayer) Role() store.RoleStore {
 	return s.RoleStore
+}
+
+func (s *TimerLayer) SaleCategoryRelation() store.SaleCategoryRelationStore {
+	return s.SaleCategoryRelationStore
+}
+
+func (s *TimerLayer) SaleCollectionRelation() store.SaleCollectionRelationStore {
+	return s.SaleCollectionRelationStore
+}
+
+func (s *TimerLayer) SaleProductRelation() store.SaleProductRelationStore {
+	return s.SaleProductRelationStore
 }
 
 func (s *TimerLayer) Session() store.SessionStore {
@@ -917,6 +932,21 @@ type TimerLayerProductVariantTranslationStore struct {
 
 type TimerLayerRoleStore struct {
 	store.RoleStore
+	Root *TimerLayer
+}
+
+type TimerLayerSaleCategoryRelationStore struct {
+	store.SaleCategoryRelationStore
+	Root *TimerLayer
+}
+
+type TimerLayerSaleCollectionRelationStore struct {
+	store.SaleCollectionRelationStore
+	Root *TimerLayer
+}
+
+type TimerLayerSaleProductRelationStore struct {
+	store.SaleProductRelationStore
 	Root *TimerLayer
 }
 
@@ -4463,6 +4493,118 @@ func (s *TimerLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return result, err
 }
 
+func (s *TimerLayerSaleCategoryRelationStore) Get(relationID string) (*product_and_discount.SaleCategoryRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCategoryRelationStore.Get(relationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCategoryRelationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCategoryRelationStore.SaleCategoriesByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCategoryRelationStore.SaleCategoriesByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleCategoryRelationStore) Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCategoryRelationStore.Save(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCategoryRelationStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCollectionRelationStore.Get(relationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCollectionRelationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCollectionRelationStore.Save(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCollectionRelationStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductRelationStore) Get(relationID string) (*product_and_discount.SaleProductRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductRelationStore.Get(relationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductRelationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductRelationStore) Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductRelationStore.Save(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductRelationStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 	start := timemodule.Now()
 
@@ -6683,6 +6825,22 @@ func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 	return result, err
 }
 
+func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+	start := timemodule.Now()
+
+	err := s.VoucherCustomerStore.DeleteInBulk(relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.DeleteInBulk", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 	start := timemodule.Now()
 
@@ -7056,6 +7214,9 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.ProductVariantChannelListingStore = &TimerLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
 	newStore.ProductVariantTranslationStore = &TimerLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &TimerLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
+	newStore.SaleCategoryRelationStore = &TimerLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
+	newStore.SaleCollectionRelationStore = &TimerLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
+	newStore.SaleProductRelationStore = &TimerLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}

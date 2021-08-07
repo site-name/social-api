@@ -6,6 +6,14 @@ type VoucherCategory struct {
 	Id         string `json:"id"`
 	VoucherID  string `json:"voucher_id"`
 	CategoryID string `json:"category_id"`
+	CreateAt   int64  `json:"create_at"` // this field is used to ordering
+}
+
+// VoucherCategoryFilterOption is used when building sql queries
+type VoucherCategoryFilterOption struct {
+	Id         *model.StringFilter
+	VoucherID  *model.StringFilter
+	CategoryID *model.StringFilter
 }
 
 func (v *VoucherCategory) PreSave() {

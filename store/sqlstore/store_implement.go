@@ -108,6 +108,9 @@ type SqlStoreStores struct {
 	productVariantChannelListing  store.ProductVariantChannelListingStore
 	productVariantTranslation     store.ProductVariantTranslationStore
 	role                          store.RoleStore
+	saleCategoryRelation          store.SaleCategoryRelationStore
+	saleCollectionRelation        store.SaleCollectionRelationStore
+	saleProductRelation           store.SaleProductRelationStore
 	session                       store.SessionStore
 	shippingMethod                store.ShippingMethodStore
 	shippingMethodChannelListing  store.ShippingMethodChannelListingStore
@@ -218,6 +221,9 @@ func (store *SqlStore) setupTables() {
 		productVariantChannelListing:  product.NewSqlProductVariantChannelListingStore(store),
 		productVariantTranslation:     product.NewSqlProductVariantTranslationStore(store),
 		role:                          role.NewSqlRoleStore(store),
+		saleCategoryRelation:          discount.NewSqlSaleCategoryRelationStore(store),
+		saleCollectionRelation:        discount.NewSqlSaleCollectionRelationStore(store),
+		saleProductRelation:           discount.NewSqlSaleProductRelationStore(store),
 		session:                       session.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
@@ -329,6 +335,9 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.productVariantChannelListing.CreateIndexesIfNotExists()
 	store.stores.productVariantTranslation.CreateIndexesIfNotExists()
 	store.stores.role.CreateIndexesIfNotExists()
+	store.stores.saleCategoryRelation.CreateIndexesIfNotExists()
+	store.stores.saleCollectionRelation.CreateIndexesIfNotExists()
+	store.stores.saleProductRelation.CreateIndexesIfNotExists()
 	store.stores.session.CreateIndexesIfNotExists()
 	store.stores.shippingMethod.CreateIndexesIfNotExists()
 	store.stores.shippingMethodChannelListing.CreateIndexesIfNotExists()
@@ -648,6 +657,18 @@ func (ss *SqlStore) ProductVariantTranslation() store.ProductVariantTranslationS
 
 func (ss *SqlStore) Role() store.RoleStore {
 	return ss.stores.role
+}
+
+func (ss *SqlStore) SaleCategoryRelation() store.SaleCategoryRelationStore {
+	return ss.stores.saleCategoryRelation
+}
+
+func (ss *SqlStore) SaleCollectionRelation() store.SaleCollectionRelationStore {
+	return ss.stores.saleCollectionRelation
+}
+
+func (ss *SqlStore) SaleProductRelation() store.SaleProductRelationStore {
+	return ss.stores.saleProductRelation
 }
 
 func (ss *SqlStore) Session() store.SessionStore {

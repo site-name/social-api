@@ -66,9 +66,11 @@ func (c *Channel) PreSave() {
 	}
 	c.Name = model.SanitizeUnicode(c.Name)
 	c.Slug = slug.Make(c.Name)
+	c.Currency = strings.ToUpper(c.Currency)
 }
 
 func (c *Channel) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
-	c.Slug = slug.Make(c.Name)
+	c.Currency = strings.ToUpper(c.Currency)
+	// c.Slug = slug.Make(c.Name)
 }
