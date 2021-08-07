@@ -41,8 +41,8 @@ type OrderLine struct {
 	TranslatedVariantName             string               `json:"translated_variant_name"`
 	ProductSku                        string               `json:"product_sku"`
 	IsShippingRequired                bool                 `json:"is_shipping_required"`
-	Quantity                          int                  `json:"quantity"`
-	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
+	Quantity                          uint                 `json:"quantity"`
+	QuantityFulfilled                 uint                 `json:"quantity_fulfilled"`
 	Currency                          string               `json:"currency"`
 	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"`
 	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
@@ -103,9 +103,6 @@ func (o *OrderLine) IsValid() *model.AppError {
 	}
 	if o.Quantity < 1 {
 		return outer("quantity", &o.Id)
-	}
-	if o.QuantityFulfilled < 0 {
-		return outer("quantity_fulfilled", &o.Id)
 	}
 	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
 		return outer("currency", &o.Id)
@@ -221,6 +218,6 @@ func (o *OrderLine) String() string {
 	return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
 }
 
-func (o *OrderLine) QuantityUnFulfilled() int {
+func (o *OrderLine) QuantityUnFulfilled() uint {
 	return o.Quantity - o.QuantityFulfilled
 }

@@ -7345,16 +7345,16 @@ func (s *OpenTracingLayerVoucherCollectionStore) Upsert(voucherCollection *produ
 	return result, err
 }
 
-func (s *OpenTracingLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+func (s *OpenTracingLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.FilterByVoucherAndEmail")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.FilterByEmailAndCustomerEmail")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.VoucherCustomerStore.FilterByVoucherAndEmail(voucherID, email)
+	result, err := s.VoucherCustomerStore.FilterByEmailAndCustomerEmail(voucherID, email)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

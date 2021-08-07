@@ -7974,11 +7974,11 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherCustomerStore.FilterByVoucherAndEmail(voucherID, email)
+		result, err := s.VoucherCustomerStore.FilterByEmailAndCustomerEmail(voucherID, email)
 		if err == nil {
 			return result, nil
 		}

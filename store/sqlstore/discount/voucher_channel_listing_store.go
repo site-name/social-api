@@ -103,10 +103,11 @@ func (vcls *SqlVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID s
 		WHERE (
 			VoucherID = :VoucherID AND ChannelID = :ChannelID
 		)
-		ORDER BY CreateAt`, // since ids are UUIDs, not number so order by creation time is used instead
+		ORDER BY :OrderBy`, // since ids are UUIDs, not number so order by creation time is used instead
 		map[string]interface{}{
 			"VoucherID": voucherID,
 			"ChannelID": channelID,
+			"OrderBy":   store.TableOrderingMap[store.VoucherChannelListingTableName],
 		},
 	)
 	if err != nil {

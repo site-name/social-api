@@ -13,7 +13,7 @@ func NewSqlVoucherTranslationStore(sqlStore store.Store) store.VoucherTranslatio
 	vts := &SqlVoucherTranslationStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherTranslation{}, "VoucherTranslations").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.VoucherTranslation{}, store.VoucherTranslationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.VOUCHER_NAME_MAX_LENGTH)

@@ -14,11 +14,15 @@ type SaleChannelListing struct {
 	ChannelID     string           `json:"channel_id"`
 	DiscountValue *decimal.Decimal `json:"discount_value"` // default decimal(0)
 	Currency      string           `json:"currency"`
+	CreateAt      int64            `json:"create_at"`
 }
 
 func (s *SaleChannelListing) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
+	}
+	if s.CreateAt == 0 {
+		s.CreateAt = model.GetMillis()
 	}
 	if s.DiscountValue == nil || s.DiscountValue.LessThan(decimal.Zero) {
 		s.DiscountValue = &decimal.Zero
@@ -33,6 +37,9 @@ func (s *SaleChannelListing) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
+	}
+	if s.CreateAt == 0 {
+		return outer("create_at", &s.Id)
 	}
 	if !model.IsValidId(s.SaleID) {
 		return outer("sale_id", &s.Id)

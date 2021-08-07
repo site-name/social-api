@@ -13,7 +13,7 @@ func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountS
 	scls := &SqlSaleChannelListingStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.SaleChannelListing{}, "SaleChannelListings").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.SaleChannelListing{}, store.SaleChannelListingTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
 		table.ColMap("SaleID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(false)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
@@ -25,8 +25,8 @@ func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountS
 }
 
 func (scls *SqlSaleChannelListingStore) CreateIndexesIfNotExists() {
-	scls.CreateIndexIfNotExists("idx_sale_channel_listings_sale_id", "SaleChannelListings", "SaleID")
-	scls.CreateIndexIfNotExists("idx_sale_channel_listings_channel_id", "SaleChannelListings", "ChannelID")
+	scls.CreateIndexIfNotExists("idx_sale_channel_listings_sale_id", store.SaleChannelListingTableName, "SaleID")
+	scls.CreateIndexIfNotExists("idx_sale_channel_listings_channel_id", store.SaleChannelListingTableName, "ChannelID")
 
 	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "SaleID", store.SaleTableName, "Id", true)
 	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)

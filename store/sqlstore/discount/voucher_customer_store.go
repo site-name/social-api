@@ -2,7 +2,6 @@ package discount
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -53,7 +52,13 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.V
 // Get finds a voucher customer with given id and returns it with an error
 func (vcs *SqlVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
 	var res product_and_discount.VoucherCustomer
-	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := vcs.GetReplica().SelectOne(
+		&res,
+		"SELECT * FROM "+store.VoucherCustomerTableName+" WHERE Id = :ID",
+		map[string]interface{}{
+			"ID": id,
+		},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, id)
@@ -64,26 +69,50 @@ func (vcs *SqlVoucherCustomerStore) Get(id string) (*product_and_discount.Vouche
 	return &res, nil
 }
 
-// FilterByVoucherAndEmail finds a voucher customer with given voucherID and customer email then returns it with an error
-func (vcs *SqlVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
-	var result *product_and_discount.VoucherCustomer
-	err := vcs.GetReplica().SelectOne(
+// FilterByEmailAndCustomerEmail finds voucher-customer relation instances with given voucherID and email
+func (vcs *SqlVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
+	var result []*product_and_discount.VoucherCustomer
+	_, err := vcs.GetReplica().Select(
 		&result,
 		`SELECT * FROM `+store.VoucherCustomerTableName+`
 		WHERE (
 			VoucherID = :VoucherID AND CustomerEmail = :CustomerEmail
-		)`,
+		)
+		ORDER BY :OrderBy`,
 		map[string]interface{}{
 			"VoucherID":     voucherID,
 			"CustomerEmail": email,
+			"OrderBy":       store.TableOrderingMap[store.VoucherCustomerTableName],
 		},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, fmt.Sprintf("VoucherID=%s, CustomerEmail=%s", voucherID, email))
-		}
 		return nil, errors.Wrapf(err, "failed to finds a voucher customer relation with VoucherID=%s, CustomerEmail=%s", voucherID, email)
 	}
 
 	return result, nil
+}
+
+// DeleteInBulk deletes given voucher-customers with given id
+func (vcs *SqlVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+	tx, err := vcs.GetMaster().Begin()
+	if err != nil {
+		return errors.Wrap(err, "trnsaction_begin")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, rel := range relations {
+		numDeleted, err := tx.Delete(rel)
+		if err != nil {
+			return errors.Wrapf(err, "failed to delete a voucher-customer relation with id=%d", rel.Id)
+		}
+		if numDeleted > 1 {
+			return errors.Errorf("multiple voucher-customer relations have been deleted: %d instead of 1", numDeleted)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "transaction_commit")
+	}
+
+	return nil
 }

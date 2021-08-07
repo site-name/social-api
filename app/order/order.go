@@ -1,6 +1,7 @@
 package order
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -51,13 +52,13 @@ func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppErro
 }
 
 // OrderTotalQuantity return total quantity of given order
-func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
+func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
 	lines, err := a.GetAllOrderLinesByOrderId(orderID)
 	if err != nil {
 		return 0, err
 	}
 
-	var total int = 0
+	var total uint = 0
 	for _, line := range lines {
 		total += line.Quantity
 	}
@@ -138,11 +139,9 @@ func (a *AppOrder) OrderSubTotal(orderID string, orderCurrency string) (*goprice
 		return nil, model.NewAppError("OrderSubTotal", "app.order.currency_integrity.app_error", nil, "orders and order lines must have same currencies", http.StatusInternalServerError)
 	}
 
-	subTotal, err := util.ZeroTaxedMoney(orderLines[0].Currency)
-	if err != nil {
-		return nil, model.NewAppError("OrderSubTotal", "app.order.get_sub_total.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	subTotal, _ := util.ZeroTaxedMoney(orderLines[0].Currency)
 
+	var err error
 	for _, line := range orderLines {
 		if line.TotalPrice != nil {
 			subTotal, err = subTotal.Add(line.TotalPrice)
@@ -290,4 +289,22 @@ func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppErro
 	}
 
 	return address.Country, nil
+}
+
+// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
+func (a *AppOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
+	if ord.UserID != nil {
+		user, appErr := a.AccountApp().UserById(context.Background(), *ord.UserID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return "", appErr
+			}
+			if ord.UserEmail != "" {
+				return ord.UserEmail, nil
+			}
+		}
+		return user.Email, nil
+	}
+
+	return ord.UserEmail, nil
 }

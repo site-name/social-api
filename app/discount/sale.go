@@ -1,15 +1,18 @@
 package discount
 
 import (
+	"net/http"
+
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) DiscountCalculator {
+func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (DiscountCalculator, *model.AppError) {
 	if saleChannelListing == nil {
-		return nil
+		return nil, model.NewAppError("GetSaleDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sale channel listing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == product_and_discount.FIXED {
@@ -17,9 +20,9 @@ func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChann
 			Amount:   saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency,
 		}
-		return decorator(discountAmount)
+		return decorator(discountAmount), nil
 	}
-	return decorator(saleChannelListing.DiscountValue)
+	return decorator(saleChannelListing.DiscountValue), nil
 }
 
 // FilterSalesByOption should be used to filter active or expired sales

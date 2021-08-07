@@ -6683,10 +6683,10 @@ func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherCustomerStore.FilterByVoucherAndEmail(voucherID, email)
+	result, err := s.VoucherCustomerStore.FilterByEmailAndCustomerEmail(voucherID, email)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6694,7 +6694,7 @@ func (s *TimerLayerVoucherCustomerStore) FilterByVoucherAndEmail(voucherID strin
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.FilterByVoucherAndEmail", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.FilterByEmailAndCustomerEmail", success, elapsed)
 	}
 	return result, err
 }

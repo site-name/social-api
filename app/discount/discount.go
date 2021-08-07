@@ -2,6 +2,7 @@ package discount
 
 import (
 	"net/http"
+	"sync"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -11,11 +12,14 @@ import (
 
 type AppDiscount struct {
 	app.AppIface
+	wg sync.WaitGroup
 }
 
 func init() {
 	app.RegisterDiscountApp(func(a app.AppIface) sub_app_iface.DiscountApp {
-		return &AppDiscount{a}
+		return &AppDiscount{
+			AppIface: a,
+		}
 	})
 }
 
@@ -37,8 +41,7 @@ func decorator(preValue interface{}) DiscountCalculator {
 		}
 
 		if len(args) == 1 { // fixed discount
-			discount := preValue.(*goprices.Money)
-			return goprices.FixedDiscount(args[0], discount)
+			return goprices.FixedDiscount(args[0], preValue.(*goprices.Money))
 		}
 		return goprices.PercentageDiscount(args[0], preValue, args[1].(bool))
 	}

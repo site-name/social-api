@@ -98,15 +98,16 @@ func init() {
 		AssignedProductAttributeTableName:      "AssignedProductAttributes",      //
 		AttributeProductTableName:              "AttributeProducts",              //
 
-		VoucherTableName:               "Vouchers",               //
-		VoucherCategoryTableName:       "VoucherCategories",      //
-		VoucherCollectionTableName:     "VoucherCollections",     //
-		VoucherProductTableName:        "VoucherProducts",        //
-		VoucherChannelListingTableName: "VoucherChannelListings", //
-		VoucherCustomerTableName:       "VoucherCustomers",       //
-		SaleChannelListingTableName:    "SaleChannelListings",    //
-		SaleTableName:                  "Sales",                  //
-		SaleTranslationTableName:       "SaleTranslations",       //
+		VoucherTableName:               "Code ASC",                         //
+		VoucherCategoryTableName:       "VoucherCategories",                //
+		VoucherCollectionTableName:     "VoucherCollections",               //
+		VoucherProductTableName:        "VoucherProducts",                  //
+		VoucherChannelListingTableName: "CreateAt ASC",                     //
+		VoucherCustomerTableName:       "VoucherID ASC, CustomerEmail ASC", //
+		SaleChannelListingTableName:    "CreateAt ASC",                     //
+		SaleTableName:                  "Name ASC, CreateAt ASC",           //
+		SaleTranslationTableName:       "LanguageCode ASC, Name ASC",       //
+		VoucherTranslationTableName:    "LanguageCode ASC, CreateAt ASC",
 
 		ShopTableName:            "Shops",            //
 		ShopTranslationTableName: "ShopTranslations", //
@@ -260,6 +261,7 @@ const (
 	SaleChannelListingTableName    = "SaleChannelListings"    //
 	SaleTableName                  = "Sales"                  //
 	SaleTranslationTableName       = "SaleTranslations"       //
+	VoucherTranslationTableName    = "VoucherTranslations"    //
 )
 
 // shop-related table names

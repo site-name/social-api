@@ -7,10 +7,34 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
+
+// UpsertVoucher update or insert given voucher
+func (a *AppDiscount) UpsertVoucher(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, *model.AppError) {
+	voucher, err := a.Srv().Store.DiscountVoucher().Upsert(voucher)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UpsertVoucher", "app.discount.upsert_voucher_error.app_error", nil, err.Error(), statusCode)
+	}
+
+	return voucher, nil
+}
+
+func (a *AppDiscount) VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError) {
+	voucher, err := a.Srv().Store.DiscountVoucher().Get(voucherID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("VoucherById", "app.discount.voucher_missing.app_error", err)
+	}
+	return voucher, nil
+}
 
 func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (DiscountCalculator, *model.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByVoucherAndChannel(voucher.Id, channelID)
@@ -20,16 +44,18 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 
 	firstListing := voucherChannelListings[0]
 	if firstListing == nil {
-		return nil, model.NewAppError("VoucherChannelListingsByVoucherAndChannel", "app.discount.voucher_not_assigned_to_channel.app_error", nil, "", http.StatusNotAcceptable)
+		return nil, model.NewAppError("GetVoucherDiscount", "app.discount.voucher_not_assigned_to_channel.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
 		discountAmount, err := goprices.NewMoney(firstListing.DiscountValue, firstListing.Currency)
 		if err != nil {
-			return nil, model.NewAppError("VoucherChannelListingsByVoucherAndChannel", app.NewMoneyCreationAppErrorID, nil, err.Error(), http.StatusInternalServerError)
+			return nil, model.NewAppError("GetVoucherDiscount", app.NewMoneyCreationAppErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		return decorator(discountAmount), nil
 	}
+
+	// otherwise DiscountValueType is 'percentage'
 	return decorator(firstListing.DiscountValue), nil
 }
 
@@ -84,38 +110,38 @@ func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, va
 
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 func (a *AppDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
-	_, appErr := a.VoucherCustomerByCustomerEmailAndVoucherID(voucher.Id, customerEmail)
+	voucherCustomers, appErr := a.VoucherCustomerByCustomerEmailAndVoucherID(voucher.Id, customerEmail)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // must returns here since it's system error
 			return appErr
 		}
+	}
+	if len(voucherCustomers) >= 1 {
+		return model.NewAppError("ValidateOncePerCustomer", "app.discount.offer_only_apply_once_per_customer.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
 	return nil
 }
 
 // ValidateVoucherOnlyForStaff validate if voucher is only for staff
-func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customer *account.User) *model.AppError {
-	if voucher.OnlyForStaff != nil && !*voucher.OnlyForStaff {
+func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) *model.AppError {
+	if !*voucher.OnlyForStaff {
 		return nil
 	}
 
-	var violatVoucherOnlyForStaff bool
-	if customer == nil {
-		violatVoucherOnlyForStaff = true
+	if !model.IsValidId(customerID) {
+		return model.NewAppError("ValidateVoucherOnlyForStaff", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customerID"}, "", http.StatusBadRequest)
 	}
 
-	_, appErr := a.ShopApp().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customer.Id)
+	// try checking if there is a relationship between the shop(owner of this voucher) and the customer
+	// if no reation found, it means this customer cannot have this voucher
+	relation, appErr := a.ShopApp().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customerID)
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			violatVoucherOnlyForStaff = true
-		} else {
-			return appErr
+		if appErr.StatusCode == http.StatusNotFound || relation == nil {
+			return model.NewAppError("ValidateVoucherOnlyForStaff", "app.shop.voucher_for_staff_only.app_error", nil, "", http.StatusNotAcceptable)
 		}
-	}
-
-	if violatVoucherOnlyForStaff {
-		return model.NewAppError("ValidateVoucherOnlyForStaff", "app.shop.voucher_for_staff_only.app_error", nil, "", http.StatusNotAcceptable)
+		// error caused by server, returns immediately
+		return appErr
 	}
 
 	return nil

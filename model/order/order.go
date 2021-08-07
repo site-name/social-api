@@ -68,8 +68,8 @@ type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"`           // NOT editable
 	Status                       string                 `json:"status"`              // default: UNFULFILLED
-	UserID                       *string                `json:"user_id"`             // default: "en"
-	LanguageCode                 string                 `json:"language_code"`       //
+	UserID                       *string                `json:"user_id"`             //
+	LanguageCode                 string                 `json:"language_code"`       // default: "en"
 	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
 	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
 	ShippingAddressID            *string                `json:"shipping_address_id"` // NOT editable

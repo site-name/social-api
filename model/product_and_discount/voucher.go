@@ -1,11 +1,9 @@
 package product_and_discount
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
-	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -36,26 +34,6 @@ const (
 var (
 	VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH = len(model.Countries)*3 - 1 // hihi
 )
-
-// NotApplicable represent error to some discount (vouchers || sales)
-type NotApplicable struct {
-	MinSpent                 *goprices.Money
-	MinCheckoutItemsQuantity *uint
-	Msg                      string
-}
-
-func NewNotApplicable(msg string, minSpent *goprices.Money, minCheckoutItemsQuantity *uint) *NotApplicable {
-	return &NotApplicable{
-		MinSpent:                 minSpent,
-		Msg:                      msg,
-		MinCheckoutItemsQuantity: minCheckoutItemsQuantity,
-	}
-}
-
-// Error implements error interface
-func (n *NotApplicable) Error() string {
-	return n.Msg
-}
 
 type Voucher struct {
 	Id                       string `json:"id"`
@@ -89,23 +67,11 @@ type VoucherFilterOption struct {
 	WithLook             bool
 }
 
-// VoucherValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
-func (voucher *Voucher) VoucherValidateMinCheckoutItemsQuantity(quantity uint) *model.AppError {
+// ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
+func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity uint) *model.AppError {
 	if voucher.MinCheckoutItemsQuantity > quantity {
-		return model.NewAppError("VoucherValidateMinCheckoutItemsQuantity", "app.discount.voucher_not_applicable_for_quantity_below", map[string]interface{}{"MinQuantity": voucher.MinCheckoutItemsQuantity}, "", http.StatusNotAcceptable)
+		return model.NewAppError("ValidateMinCheckoutItemsQuantity", "app.discount.voucher_not_applicable_for_quantity_below", map[string]interface{}{"MinQuantity": voucher.MinCheckoutItemsQuantity}, "", http.StatusNotAcceptable)
 	}
-	return nil
-}
-
-// ValidateMinCheckoutItemsQuantity checks if given `quantity` satisfies min items quantity required
-func (v *Voucher) ValidateMinCheckoutItemsQuantity(quantity uint) *NotApplicable {
-	if v.MinCheckoutItemsQuantity > 0 && v.MinCheckoutItemsQuantity > quantity {
-		return &NotApplicable{
-			Msg:                      fmt.Sprintf("This offer is only valid for orders with minimum of %d items", v.MinCheckoutItemsQuantity),
-			MinCheckoutItemsQuantity: &v.MinCheckoutItemsQuantity,
-		}
-	}
-
 	return nil
 }
 
@@ -197,6 +163,7 @@ type VoucherTranslation struct {
 	LanguageCode string `json:"language_code"`
 	Name         string `json:"name"`
 	VoucherID    string `json:"voucher_id"`
+	CreateAt     int64  `json:"create_at"`
 }
 
 func (v *VoucherTranslation) IsValid() *model.AppError {
@@ -207,6 +174,9 @@ func (v *VoucherTranslation) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(v.Id) {
 		return outer("id", nil)
+	}
+	if v.CreateAt == 0 {
+		return outer("create_at", &v.Id)
 	}
 	if !model.IsValidId(v.VoucherID) {
 		return outer("voucher_id", &v.Id)
@@ -224,5 +194,8 @@ func (v *VoucherTranslation) IsValid() *model.AppError {
 func (v *VoucherTranslation) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()
+	}
+	if v.CreateAt == 0 {
+		v.CreateAt = model.GetMillis()
 	}
 }
