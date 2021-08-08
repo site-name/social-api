@@ -111,6 +111,22 @@ func (_m *ChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *ChannelStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: ch
 func (_m *ChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	ret := _m.Called(ch)

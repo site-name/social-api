@@ -1371,6 +1371,54 @@ func (_m *Store) Role() store.RoleStore {
 	return r0
 }
 
+// SaleCategoryRelation provides a mock function with given fields:
+func (_m *Store) SaleCategoryRelation() store.SaleCategoryRelationStore {
+	ret := _m.Called()
+
+	var r0 store.SaleCategoryRelationStore
+	if rf, ok := ret.Get(0).(func() store.SaleCategoryRelationStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.SaleCategoryRelationStore)
+		}
+	}
+
+	return r0
+}
+
+// SaleCollectionRelation provides a mock function with given fields:
+func (_m *Store) SaleCollectionRelation() store.SaleCollectionRelationStore {
+	ret := _m.Called()
+
+	var r0 store.SaleCollectionRelationStore
+	if rf, ok := ret.Get(0).(func() store.SaleCollectionRelationStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.SaleCollectionRelationStore)
+		}
+	}
+
+	return r0
+}
+
+// SaleProductRelation provides a mock function with given fields:
+func (_m *Store) SaleProductRelation() store.SaleProductRelationStore {
+	ret := _m.Called()
+
+	var r0 store.SaleProductRelationStore
+	if rf, ok := ret.Get(0).(func() store.SaleProductRelationStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.SaleProductRelationStore)
+		}
+	}
+
+	return r0
+}
+
 // Session provides a mock function with given fields:
 func (_m *Store) Session() store.SessionStore {
 	ret := _m.Called()

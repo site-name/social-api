@@ -19,16 +19,30 @@ func (_m *VoucherCustomerStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterByVoucherAndEmail provides a mock function with given fields: voucherID, email
-func (_m *VoucherCustomerStore) FilterByVoucherAndEmail(voucherID string, email string) (*product_and_discount.VoucherCustomer, error) {
+// DeleteInBulk provides a mock function with given fields: relations
+func (_m *VoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+	ret := _m.Called(relations)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]*product_and_discount.VoucherCustomer) error); ok {
+		r0 = rf(relations)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// FilterByEmailAndCustomerEmail provides a mock function with given fields: voucherID, email
+func (_m *VoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
 	ret := _m.Called(voucherID, email)
 
-	var r0 *product_and_discount.VoucherCustomer
-	if rf, ok := ret.Get(0).(func(string, string) *product_and_discount.VoucherCustomer); ok {
+	var r0 []*product_and_discount.VoucherCustomer
+	if rf, ok := ret.Get(0).(func(string, string) []*product_and_discount.VoucherCustomer); ok {
 		r0 = rf(voucherID, email)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*product_and_discount.VoucherCustomer)
+			r0 = ret.Get(0).([]*product_and_discount.VoucherCustomer)
 		}
 	}
 

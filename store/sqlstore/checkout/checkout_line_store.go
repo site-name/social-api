@@ -3,7 +3,6 @@ package checkout
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
@@ -102,12 +101,6 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 }
 
 func (cls *SqlCheckoutLineStore) DeleteLines(ids []string) error {
-	// validate id list
-	for _, id := range ids {
-		if !model.IsValidId(id) {
-			return store.NewErrInvalidInput(store.CheckoutLineTableName, "ids", ids)
-		}
-	}
 
 	tx, err := cls.GetMaster().Begin()
 	if err != nil {

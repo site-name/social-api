@@ -4,10 +4,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/util"
@@ -120,4 +123,27 @@ func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutL
 		Gross:    amount,
 		Currency: amount.Currency,
 	}, nil
+}
+
+func (a *AppCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.TaxedMoney, *model.AppError) {
+	orderLine.PopulateNonDbFields()
+	if orderLine.UnitPrice != nil {
+		unitPrice, _ := orderLine.UnitPrice.Mul(int(orderLine.Quantity))
+		unitPrice, _ = unitPrice.Quantize()
+
+		return unitPrice, nil
+	}
+
+	return nil, model.NewAppError("BaseOrderLineTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "", http.StatusBadRequest)
+}
+
+func (a *AppCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+	taxRate := model.NewDecimal(decimal.NewFromFloat(0.0))
+	if price != nil && price.Gross != nil && !price.Gross.Amount.Equal(decimal.Zero) {
+		tax, _ := price.Tax()
+		div, _ := tax.TrueDiv(price.Net)
+		taxRate = div.Amount
+	}
+
+	return taxRate, nil
 }

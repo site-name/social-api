@@ -764,17 +764,6 @@ func HashPassword(password string) string {
 	return string(hash)
 }
 
-// ComparePassword checks if the hash and given password are matches
-func ComparePassword(hash string, password string) bool {
-
-	if password == "" || hash == "" {
-		return false
-	}
-
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
 // MakeNonNil sets empty value for user's Props and NotifyProps fields
 func (u *User) MakeNonNil() {
 	if u.Props == nil {

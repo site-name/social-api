@@ -19,20 +19,16 @@ func (a *AppCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*che
 }
 
 func (a *AppCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError {
+	// validate id list
+	for _, id := range checkoutLineIDs {
+		if !model.IsValidId(id) {
+			return model.NewAppError("DeleteCheckoutLines", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutLineIDs"}, "", http.StatusBadRequest)
+		}
+	}
+
 	err := a.app.Srv().Store.CheckoutLine().DeleteLines(checkoutLineIDs)
 	if err != nil {
-		var errID string
-		var errArgs map[string]interface{}
-		statusCode := http.StatusInternalServerError
-
-		if invlErr, ok := err.(*store.ErrInvalidInput); ok {
-			errID = app.InvalidArgumentAppErrorID
-			statusCode = http.StatusBadRequest
-			errArgs = map[string]interface{}{"Fields": invlErr.Field}
-		} else {
-			errID = "app.checkout.error_deleting_checkoutlines.app_error"
-		}
-		return model.NewAppError("DeleteCheckoutLines", errID, errArgs, err.Error(), statusCode)
+		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

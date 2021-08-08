@@ -65,6 +65,22 @@ func (_m *ProductChannelListingStore) Get(channelListingID string) (*product_and
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *ProductChannelListingStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: channelListing
 func (_m *ProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
 	ret := _m.Called(channelListing)

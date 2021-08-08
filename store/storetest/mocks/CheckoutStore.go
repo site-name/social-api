@@ -42,6 +42,29 @@ func (_m *CheckoutStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FetchCheckoutLinesAndPrefetchRelatedValue provides a mock function with given fields: ckout
+func (_m *CheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+	ret := _m.Called(ckout)
+
+	var r0 []*checkout.CheckoutLineInfo
+	if rf, ok := ret.Get(0).(func(*checkout.Checkout) []*checkout.CheckoutLineInfo); ok {
+		r0 = rf(ckout)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*checkout.CheckoutLineInfo)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*checkout.Checkout) error); ok {
+		r1 = rf(ckout)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: token
 func (_m *CheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	ret := _m.Called(token)

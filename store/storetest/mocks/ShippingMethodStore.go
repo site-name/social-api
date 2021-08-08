@@ -18,7 +18,7 @@ type ShippingMethodStore struct {
 }
 
 // ApplicableShippingMethods provides a mock function with given fields: price, channelID, weight, countryCode, productIDs
-func (_m *ShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, []*shipping.ShippingZone, []*shipping.ShippingMethodPostalCodeRule, error) {
+func (_m *ShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
 	ret := _m.Called(price, channelID, weight, countryCode, productIDs)
 
 	var r0 []*shipping.ShippingMethod
@@ -30,32 +30,14 @@ func (_m *ShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, 
 		}
 	}
 
-	var r1 []*shipping.ShippingZone
-	if rf, ok := ret.Get(1).(func(*goprices.Money, string, *measurement.Weight, string, []string) []*shipping.ShippingZone); ok {
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*goprices.Money, string, *measurement.Weight, string, []string) error); ok {
 		r1 = rf(price, channelID, weight, countryCode, productIDs)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*shipping.ShippingZone)
-		}
+		r1 = ret.Error(1)
 	}
 
-	var r2 []*shipping.ShippingMethodPostalCodeRule
-	if rf, ok := ret.Get(2).(func(*goprices.Money, string, *measurement.Weight, string, []string) []*shipping.ShippingMethodPostalCodeRule); ok {
-		r2 = rf(price, channelID, weight, countryCode, productIDs)
-	} else {
-		if ret.Get(2) != nil {
-			r2 = ret.Get(2).([]*shipping.ShippingMethodPostalCodeRule)
-		}
-	}
-
-	var r3 error
-	if rf, ok := ret.Get(3).(func(*goprices.Money, string, *measurement.Weight, string, []string) error); ok {
-		r3 = rf(price, channelID, weight, countryCode, productIDs)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1
 }
 
 // CreateIndexesIfNotExists provides a mock function with given fields:

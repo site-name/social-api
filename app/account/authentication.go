@@ -86,7 +86,7 @@ func (a *AppAccount) DoubleCheckPassword(user *account.User, password string) *m
 
 // checkUserPassword compares user's password to given password. If they dont match, return an error
 func (a *AppAccount) checkUserPassword(user *account.User, password string) *model.AppError {
-	if !account.ComparePassword(user.Password, password) {
+	if err := ComparePassword(user.Password, password); err != nil {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
 

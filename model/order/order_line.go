@@ -111,63 +111,40 @@ func (o *OrderLine) IsValid() *model.AppError {
 }
 
 func (o *OrderLine) PopulateNonDbFields() {
-	if o.UnitDiscount == nil {
-		o.UnitDiscount = &goprices.Money{
-			Amount:   o.UnitDiscountAmount,
-			Currency: o.Currency,
-		}
+	if o.UnitDiscount == nil && o.UnitDiscountAmount != nil {
+		o.UnitDiscount, _ = goprices.NewMoney(o.UnitDiscountAmount, o.Currency)
 	}
-	if o.UnitPriceNet == nil {
-		o.UnitDiscount = &goprices.Money{
-			Amount:   o.UnitPriceNetAmount,
-			Currency: o.Currency,
-		}
+	if o.UnitPriceNet == nil && o.UnitPriceNetAmount != nil {
+		o.UnitDiscount, _ = goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
 	}
-	if o.UnitPriceGross == nil {
-		o.UnitDiscount = &goprices.Money{
-			Amount:   o.UnitPriceGrossAmount,
-			Currency: o.Currency,
-		}
+	if o.UnitPriceGross == nil && o.UnitPriceGrossAmount != nil {
+		o.UnitDiscount, _ = goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
 	}
-	if o.TotalPriceNet == nil {
-		o.UnitDiscount = &goprices.Money{
-			Amount:   o.TotalPriceNetAmount,
-			Currency: o.Currency,
-		}
+	if o.TotalPriceNet == nil && o.TotalPriceNetAmount != nil {
+		o.UnitDiscount, _ = goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
 	}
-	if o.TotalPriceGross == nil {
-		o.UnitDiscount = &goprices.Money{
-			Amount:   o.TotalPriceGrossAmount,
-			Currency: o.Currency,
-		}
+	if o.TotalPriceGross == nil && o.TotalPriceGrossAmount != nil {
+		o.UnitDiscount, _ = goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
 	}
-	if o.UnitPrice == nil {
-		o.UnitPrice = &goprices.TaxedMoney{
-			Net:      o.UnitPriceNet,
-			Gross:    o.UnitPriceGross,
-			Currency: o.Currency,
-		}
+	if o.UnitPrice == nil && o.UnitPriceNetAmount != nil && o.UnitPriceGrossAmount != nil {
+		net, _ := goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
+		gross, _ := goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
+		o.UnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
-	if o.TotalPrice == nil {
-		o.UnitPrice = &goprices.TaxedMoney{
-			Net:      o.TotalPriceNet,
-			Gross:    o.TotalPriceGross,
-			Currency: o.Currency,
-		}
+	if o.TotalPrice == nil && o.TotalPriceNetAmount != nil && o.TotalPriceGrossAmount != nil {
+		net, _ := goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
+		gross, _ := goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
+		o.UnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
-	if o.UnDiscountedUnitPrice == nil {
-		o.UnDiscountedUnitPrice = &goprices.TaxedMoney{
-			Net:      &goprices.Money{Amount: o.UnDiscountedUnitPriceNetAmount, Currency: o.Currency},
-			Gross:    &goprices.Money{Amount: o.UnDiscountedUnitPriceGrossAmount, Currency: o.Currency},
-			Currency: o.Currency,
-		}
+	if o.UnDiscountedUnitPrice == nil && o.UnDiscountedUnitPriceNetAmount != nil && o.UnDiscountedUnitPriceGrossAmount != nil {
+		net, _ := goprices.NewMoney(o.UnDiscountedUnitPriceNetAmount, o.Currency)
+		gross, _ := goprices.NewMoney(o.UnDiscountedUnitPriceGrossAmount, o.Currency)
+		o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
-	if o.UnDiscountedTotalPrice == nil {
-		o.UnDiscountedTotalPrice = &goprices.TaxedMoney{
-			Net:      &goprices.Money{Amount: o.UnDiscountedTotalPriceNetAmount, Currency: o.Currency},
-			Gross:    &goprices.Money{Amount: o.UnDsicountedTotalPriceGrossAmount, Currency: o.Currency},
-			Currency: o.Currency,
-		}
+	if o.UnDiscountedTotalPrice == nil && o.UnDiscountedTotalPriceNetAmount != nil && o.UnDsicountedTotalPriceGrossAmount != nil {
+		net, _ := goprices.NewMoney(o.UnDiscountedTotalPriceNetAmount, o.Currency)
+		gross, _ := goprices.NewMoney(o.UnDsicountedTotalPriceGrossAmount, o.Currency)
+		o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
 }
 
@@ -201,6 +178,18 @@ func (o *OrderLine) commonPrePostActions() {
 	}
 	if o.UnitDiscountAmount == nil {
 		o.UnitDiscountAmount = &decimal.Zero
+	}
+	if o.UnDiscountedUnitPriceGrossAmount == nil {
+		o.UnDiscountedUnitPriceGrossAmount = &decimal.Zero
+	}
+	if o.UnDiscountedUnitPriceNetAmount == nil {
+		o.UnDiscountedUnitPriceNetAmount = &decimal.Zero
+	}
+	if o.UnDiscountedTotalPriceNetAmount == nil {
+		o.UnDiscountedTotalPriceNetAmount = &decimal.Zero
+	}
+	if o.UnDsicountedTotalPriceGrossAmount == nil {
+		o.UnDsicountedTotalPriceGrossAmount = &decimal.Zero
 	}
 	if o.TaxRate == nil {
 		o.TaxRate = &decimal.Zero
