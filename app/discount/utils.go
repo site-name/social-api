@@ -2,6 +2,7 @@ package discount
 
 import (
 	"net/http"
+	"time"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -10,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // IncreaseVoucherUsage increase voucher's uses by 1
@@ -100,7 +102,7 @@ func (a *AppDiscount) GetProductDiscounts(product *product_and_discount.Product,
 
 	for _, discountInfo := range discountInfos {
 		go func(info *product_and_discount.DiscountInfo) {
-			cal, err := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, discountInfo, channeL)
+			cal, err := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL)
 
 			a.mutex.Lock()
 			if err != nil && appErr == nil {
@@ -242,61 +244,209 @@ func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.V
 	}
 
 	totalAmount, _ := util.ZeroMoney(channeL.Currency) // ignore error since channels's Currencies are validated before saving
-	resultChan := make(chan *goprices.Money)
-	errorChan := make(chan *model.AppError)
-	defer func() {
-		close(resultChan)
-		close(errorChan)
-	}()
+	var appErr *model.AppError
+	a.wg.Add(len(prices))
 
 	for _, price := range prices {
 		go func(pr *goprices.Money) {
 
-			money, appErr := a.GetDiscountAmountFor(voucher, pr, channeL.Id)
-			if appErr != nil {
-				errorChan <- appErr
+			money, err := a.GetDiscountAmountFor(voucher, pr, channeL.Id)
+			a.mutex.Lock()
+			if err != nil {
+				appErr = err
 			} else {
-				resultChan <- money
+				totalAmount, _ = totalAmount.Add(money)
 			}
+			a.mutex.Unlock()
 
 		}(price)
 	}
 
-loop:
-	for {
-		select {
-		case res, notClosed := <-resultChan:
-			totalAmount, _ = totalAmount.Add(res)
-			if !notClosed {
-				break loop
-			}
-		case res := <-errorChan:
-			return nil, res
-		}
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	return totalAmount, nil
 }
 
-func (a *AppDiscount) FetchCategories(saleIDs []string) (interface{}, *model.AppError) {
-	saleCategories, appErr := a.SaleCategoriesByOption(&product_and_discount.SaleCategoryRelationFilterOption{
+func (a *AppDiscount) FetchCategories(saleIDs []string) (map[string][]string, *model.AppError) {
+	// saleCategories, appErr := a.SaleCategoriesByOption(&product_and_discount.SaleCategoryRelationFilterOption{
+	// 	SaleID: &model.StringFilter{
+	// 		StringOption: &model.StringOption{
+	// 			In: saleIDs,
+	// 		},
+	// 	},
+	// })
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	// categoryMap := map[string][]string{}
+	// for _, relation := range saleCategories {
+	// 	if !util.StringInSlice(relation.CategoryID, categoryMap[relation.SaleID]) {
+	// 		categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
+	// 	}
+	// }
+
+	// subCategoryMap := map[string][]string{}
+
+	// TODO: implement me
+	panic("not implemented")
+}
+
+func (a *AppDiscount) FetchCollections(saleIDs []string) (map[string][]string, *model.AppError) {
+	saleCollections, err := a.Srv().Store.SaleCollectionRelation().FilterByOption(&product_and_discount.SaleCollectionRelationFilterOption{
 		SaleID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: saleIDs,
 			},
 		},
 	})
+
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("FetchCollections", "app.discount.error_finding_sale_collections_by_option.app_error", err)
+	}
+
+	collectionMap := map[string][]string{}
+	meetMap := map[string]bool{}
+
+	for _, saleCollection := range saleCollections {
+		if _, met := meetMap[saleCollection.CollectionID]; !met {
+			collectionMap[saleCollection.SaleID] = append(collectionMap[saleCollection.SaleID], saleCollection.CollectionID)
+			meetMap[saleCollection.CollectionID] = true
+		}
+	}
+
+	return collectionMap, nil
+}
+
+func (a *AppDiscount) FetchProducts(saleIDs []string) (map[string][]string, *model.AppError) {
+	saleProducts, err := a.Srv().Store.SaleProductRelation().SaleProductsByOption(&product_and_discount.SaleProductRelationFilterOption{
+		SaleID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: saleIDs,
+			},
+		},
+	})
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("FetchProducts", "app.discount,error_finding_sale_products_by_option.app_error", err)
+	}
+
+	productMap := map[string][]string{}
+	meetMap := map[string]bool{}
+
+	for _, saleProduct := range saleProducts {
+		if _, met := meetMap[saleProduct.ProductID]; !met {
+			productMap[saleProduct.SaleID] = append(productMap[saleProduct.SaleID], saleProduct.ProductID)
+			meetMap[saleProduct.ProductID] = true
+		}
+	}
+
+	return productMap, nil
+}
+
+func (a *AppDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError) {
+	channelListings, err := a.Srv().Store.
+		DiscountSaleChannelListing().
+		SaleChannelListingsWithOption(&product_and_discount.SaleChannelListingFilterOption{
+			SaleID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: saleIDs,
+				},
+			},
+		})
+
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_option.app_error", err)
+	}
+
+	channelListingMap := map[string]map[string]*product_and_discount.SaleChannelListing{}
+
+	for _, listing := range channelListings {
+		channelListingMap[listing.SaleID][listing.ChannelSlug] = &listing.SaleChannelListing
+	}
+
+	return channelListingMap, nil
+}
+
+func (a *AppDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError) {
+	// finds active sales
+	activeSales, apErr := a.ActiveSales(date)
+	if apErr != nil {
+		return nil, apErr
+	}
+
+	activeSaleIDs := []string{}
+	for _, sale := range activeSales {
+		activeSaleIDs = append(activeSaleIDs, sale.Id)
+	}
+
+	var (
+		collections         map[string][]string
+		products            map[string][]string
+		categories          map[string][]string
+		appErr              *model.AppError
+		saleChannelListings map[string]map[string]*product_and_discount.SaleChannelListing
+	)
+
+	a.wg.Add(4)
+
+	go func() {
+		// find collections
+		collections, apErr = a.FetchCollections(activeSaleIDs)
+		if apErr != nil && appErr == nil {
+			appErr = apErr
+		}
+	}()
+
+	go func() {
+		saleChannelListings, apErr = a.FetchSaleChannelListings(activeSaleIDs)
+		if apErr != nil && appErr == nil {
+			appErr = apErr
+		}
+
+		a.wg.Done()
+	}()
+
+	go func() {
+		products, apErr = a.FetchProducts(activeSaleIDs)
+		if apErr != nil && appErr == nil {
+			appErr = apErr
+		}
+
+		a.wg.Done()
+	}()
+
+	go func() {
+		categories, apErr = a.FetchCategories(activeSaleIDs)
+		if apErr != nil && appErr == nil {
+			appErr = apErr
+		}
+
+		a.wg.Done()
+	}()
+
+	a.wg.Wait()
+
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	categoryMap := map[string][]string{}
-	for _, relation := range saleCategories {
-		if !util.StringInSlice(relation.CategoryID, categoryMap[relation.SaleID]) {
-			categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
-		}
+	var discountInfos []*product_and_discount.DiscountInfo
+
+	for _, sale := range activeSales {
+		discountInfos = append(discountInfos, &product_and_discount.DiscountInfo{
+			Sale:            sale,
+			CategoryIDs:     categories[sale.Id],
+			ChannelListings: saleChannelListings[sale.Id],
+			CollectionIDs:   collections[sale.Id],
+			ProductIDs:      products[sale.Id],
+		})
 	}
 
-	subCategoryMap := map[string][]string{}
+	return discountInfos, nil
+}
 
+func (a *AppDiscount) FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError) {
+	return a.FetchDiscounts(util.NewTime(time.Now().UTC()))
 }

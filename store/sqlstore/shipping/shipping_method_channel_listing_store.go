@@ -107,13 +107,13 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.S
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "query_tosql")
+		return nil, errors.Wrap(err, "FilterByOption_tosql")
 	}
 
 	var res []*shipping.ShippingMethodChannelListing
 	_, err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to filter shipping method channel listings by option")
+		return nil, errors.Wrap(err, "failed to find shipping method channel listings by option")
 	}
 
 	return res, nil

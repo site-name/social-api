@@ -75,7 +75,14 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*produc
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
 	var res product_and_discount.Sale
-	err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.SaleTableName+" WHERE id = :ID", map[string]interface{}{"ID": saleID})
+	err := ss.GetReplica().SelectOne(
+		&res,
+		"SELECT * FROM "+store.SaleTableName+" WHERE id = :ID ORDER BY :OrderBy",
+		map[string]interface{}{
+			"ID":      saleID,
+			"OrderBy": store.TableOrderingMap[store.SaleTableName],
+		},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.SaleTableName, saleID)
@@ -92,7 +99,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 		GetQueryBuilder().
 		Select("*").
 		From(store.SaleTableName).
-		OrderBy("CreateAt ASC")
+		OrderBy(store.TableOrderingMap[store.SaleTableName])
 
 	// check shop id
 	query = query.Where(option.ShopID.ToSquirrel("ShopID"))
@@ -109,7 +116,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "query_to_sql")
+		return nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
 	}
 
 	var sales []*product_and_discount.Sale

@@ -2,7 +2,6 @@ package order
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -111,7 +110,7 @@ func (o *OrderLine) IsValid() *model.AppError {
 	return nil
 }
 
-func (o *OrderLine) ToJson() string {
+func (o *OrderLine) PopulateNonDbFields() {
 	if o.UnitDiscount == nil {
 		o.UnitDiscount = &goprices.Money{
 			Amount:   o.UnitDiscountAmount,
@@ -170,14 +169,12 @@ func (o *OrderLine) ToJson() string {
 			Currency: o.Currency,
 		}
 	}
-
-	return model.ModelToJson(o)
 }
 
-func OrderLineFromJson(data io.Reader) *OrderLine {
-	var o OrderLine
-	model.ModelFromJson(&o, data)
-	return &o
+func (o *OrderLine) ToJson() string {
+	o.PopulateNonDbFields()
+
+	return model.ModelToJson(o)
 }
 
 func (o *OrderLine) PreSave() {

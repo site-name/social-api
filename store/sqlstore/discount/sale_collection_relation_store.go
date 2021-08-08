@@ -61,3 +61,36 @@ func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*product_and_d
 
 	return &res, nil
 }
+
+// FilterByOption returns a list of collections filtered based on given option
+func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+	query := ss.GetQueryBuilder().
+		Select("*").
+		From(store.SaleCollectionRelationTableName).
+		OrderBy(store.TableOrderingMap[store.SaleCollectionRelationTableName])
+
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+
+	if option.SaleID != nil {
+		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+	}
+
+	if option.CollectionID != nil {
+		query = query.Where(option.CollectionID.ToSquirrel("CollectionID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.SaleCollectionRelation
+	_, err = ss.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find sale-collection relations with given option")
+	}
+
+	return res, nil
+}

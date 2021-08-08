@@ -9,6 +9,13 @@ type SaleCollectionRelation struct {
 	CreateAt     int64  `json:"create_at"`
 }
 
+// SaleCollectionRelationFilterOption is used to build sql queries
+type SaleCollectionRelationFilterOption struct {
+	Id           *model.StringFilter
+	SaleID       *model.StringFilter
+	CollectionID *model.StringFilter
+}
+
 func (s *SaleCollectionRelation) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()

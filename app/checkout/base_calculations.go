@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -40,18 +41,19 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 		return taxedMoney, nil
 	}
 
-	shippingMethodChannelListings, appErr := a.app.ShippingApp().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.ShippingMethod.Id,
+	shippingMethodChannelListings, appErr := a.app.ShippingApp().
+		ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
+			ShippingMethodID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkoutInfo.ShippingMethod.Id,
+				},
 			},
-		},
-		ChannelID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.Checkout.ChannelID,
+			ChannelID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkoutInfo.Checkout.ChannelID,
+				},
 			},
-		},
-	})
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -68,13 +70,15 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 
 // BaseCheckoutTotal returns the total cost of the checkout
 func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError) {
+	// this method reqires all values's currencies are uppoer-cased and supported by system
+	currency = strings.ToUpper(currency)
 	currencyMap := map[string]bool{}
 	currencyMap[subTotal.Currency] = true
 	currencyMap[shippingPrice.Currency] = true
 	currencyMap[discount.Currency] = true
-	currencyMap[strings.ToUpper(currency)] = true
+	currencyMap[currency] = true
 
-	if _, err := goprices.GetCurrencyPrecision(strings.ToUpper(currency)); err != nil || len(currencyMap) > 1 {
+	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
 		return nil, model.NewAppError("BaseCheckoutTotal", "app.checkout.invalid_currencies.app_error", nil, "Please pass in the same currency values", http.StatusBadRequest)
 	}
 
@@ -90,6 +94,30 @@ func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingP
 }
 
 // BaseCheckoutLineTotal Return the total price of this line
-func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel) (*goprices.TaxedMoney, *model.AppError) {
+//
+// `discounts` can be nil
+func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+	if discounts == nil {
+		discounts = []*product_and_discount.DiscountInfo{}
+	}
 
+	variantPrice, appErr := a.app.ProductApp().ProductVariantGetPrice(
+		&checkoutLineInfo.Product,
+		checkoutLineInfo.Collections,
+		channel,
+		checkoutLineInfo.ChannelListing,
+		discounts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	amount, _ := variantPrice.Mul(int(checkoutLineInfo.Line.Quantity))
+	amount, _ = amount.Quantize()
+
+	return &goprices.TaxedMoney{
+		Net:      amount,
+		Gross:    amount,
+		Currency: amount.Currency,
+	}, nil
 }

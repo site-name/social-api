@@ -61,3 +61,36 @@ func (ss *SqlSaleProductRelationStore) Get(relationID string) (*product_and_disc
 
 	return &res, nil
 }
+
+// SaleProductsByOption returns a slice of sale-product relations, filtered by given option
+func (ss *SqlSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+	query := ss.GetQueryBuilder().
+		Select("*").
+		From(store.SaleProductRelationTableName).
+		OrderBy(store.TableOrderingMap[store.SaleProductRelationTableName])
+
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+
+	if option.SaleID != nil {
+		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+	}
+
+	if option.ProductID != nil {
+		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "SaleProductsByOption_ToSql")
+	}
+
+	var res []*product_and_discount.SaleProductRelation
+	_, err = ss.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find sale-product relations with given option")
+	}
+
+	return res, nil
+}

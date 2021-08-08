@@ -110,7 +110,7 @@ func init() {
 		VoucherTranslationTableName:     "LanguageCode ASC, CreateAt ASC",   //
 		SaleCategoryRelationTableName:   "CreateAt ASC",                     //
 		SaleProductRelationTableName:    "CreateAt ASC",                     //
-		SaleCollectionRelationTableName: "CreateAt",                         //
+		SaleCollectionRelationTableName: "CreateAt ASC",                     //
 
 		ShopTableName:            "Shops",            //
 		ShopTranslationTableName: "ShopTranslations", //

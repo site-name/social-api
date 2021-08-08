@@ -632,6 +632,17 @@ type (
 	}
 	DiscountSaleChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) // Save insert given instance into database then returns it
+		Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error)                                  // Get finds and returns sale channel listing with given id
+		// SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
+		SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) (
+			[]*struct {
+				product_and_discount.SaleChannelListing
+				ChannelSlug string
+			},
+			error,
+		)
 	}
 	VoucherTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -687,13 +698,15 @@ type (
 	}
 	SaleProductRelationStore interface {
 		CreateIndexesIfNotExists()
-		Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) // Save inserts given sale-product relation into database then returns it
-		Get(relationID string) (*product_and_discount.SaleProductRelation, error)                                   // Get finds and returns a sale-product relation with given id
+		Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error)                             // Save inserts given sale-product relation into database then returns it
+		Get(relationID string) (*product_and_discount.SaleProductRelation, error)                                                               // Get finds and returns a sale-product relation with given id
+		SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) // SaleProductsByOption returns a slice of sale-product relations, filtered by given option
 	}
 	SaleCollectionRelationStore interface {
 		CreateIndexesIfNotExists()
-		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) // Save insert given sale-collection relation into database
-		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                      // Get finds and returns a sale-collection relation with given id
+		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error)                       // Save insert given sale-collection relation into database
+		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                                            // Get finds and returns a sale-collection relation with given id
+		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
 	}
 )
 

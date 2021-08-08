@@ -17,6 +17,12 @@ type SaleChannelListing struct {
 	CreateAt      int64            `json:"create_at"`
 }
 
+type SaleChannelListingFilterOption struct {
+	Id        *model.StringFilter
+	SaleID    *model.StringFilter
+	ChannelID *model.StringFilter
+}
+
 func (s *SaleChannelListing) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
@@ -27,6 +33,7 @@ func (s *SaleChannelListing) PreSave() {
 	if s.DiscountValue == nil || s.DiscountValue.LessThan(decimal.Zero) {
 		s.DiscountValue = &decimal.Zero
 	}
+	s.Currency = strings.ToUpper(s.Currency)
 }
 
 func (s *SaleChannelListing) IsValid() *model.AppError {

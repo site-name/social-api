@@ -2,11 +2,13 @@ package discount
 
 import (
 	"net/http"
+	"time"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,11 +38,60 @@ func (a *AppDiscount) FilterSalesByOption(option *product_and_discount.SaleFilte
 	return sales, nil
 }
 
-func (a *AppDiscount) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, *model.AppError) {
-	saleCategories, err := a.Srv().Store.SaleCategoryRelation().SaleCategoriesByOption(option)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("SaleCategoriesByOption", "app.discount.error_finding_sale_categories_by_option.app_error", err)
+// ActiveSales finds active sales by given date. If date is nil then set date to UTC now
+//
+//  (end_date == NULL || end_date >= date) && start_date <= date
+func (a *AppDiscount) ActiveSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
+	if date == nil {
+		date = util.NewTime(time.Now().UTC())
 	}
 
-	return saleCategories, nil
+	activeSalesByDate, err := a.Srv().Store.DiscountSale().
+		FilterSalesByOption(&product_and_discount.SaleFilterOption{
+			EndDate: &model.TimeFilter{
+				Or: &model.TimeOption{
+					NULL: model.NewBool(true),
+					GtE:  date,
+				},
+			},
+			StartDate: &model.TimeFilter{
+				TimeOption: &model.TimeOption{
+					LtE: date,
+				},
+			},
+		})
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ActiveSales", "app.discount.active_sales_by_date.app_error", err)
+	}
+
+	return activeSalesByDate, nil
+}
+
+// ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
+//
+//  end_date <= date && start_date <= date
+func (a *AppDiscount) ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
+	if date == nil {
+		date = util.NewTime(time.Now().UTC())
+	}
+
+	expiredSalesByDate, err := a.Srv().Store.DiscountSale().
+		FilterSalesByOption(&product_and_discount.SaleFilterOption{
+			EndDate: &model.TimeFilter{
+				TimeOption: &model.TimeOption{
+					Lt: date,
+				},
+			},
+			StartDate: &model.TimeFilter{
+				TimeOption: &model.TimeOption{
+					Lt: date,
+				},
+			},
+		})
+
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ExpiredSales", "app.discount.expired_sales_by_date.app_error", err)
+	}
+
+	return expiredSalesByDate, nil
 }

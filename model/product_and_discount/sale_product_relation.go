@@ -9,6 +9,12 @@ type SaleProductRelation struct {
 	CreateAt  int64  `json:"create_at"`
 }
 
+type SaleProductRelationFilterOption struct {
+	Id        *model.StringFilter
+	SaleID    *model.StringFilter
+	ProductID *model.StringFilter
+}
+
 func (s *SaleProductRelation) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
