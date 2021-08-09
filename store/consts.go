@@ -116,8 +116,9 @@ func init() {
 		ShopTranslationTableName: "ShopTranslations", //
 		ShopStaffTableName:       "ShopStaffs",       //
 
-		MenuTableName:     "Menus",     //
-		MenuItemTableName: "MenuItems", //
+		MenuTableName:                "CreateAt ASC",     // menu
+		MenuItemTableName:            "SortOrder ASC",    //
+		MenuItemTranslationTableName: "LanguageCode ASC", //
 
 		ShippingMethodTableName:                "ShippingMethods",                //
 		ShippingZoneTableName:                  "ShippingZones",                  //
@@ -133,6 +134,9 @@ func init() {
 		UploadSessionTableName: "UploadSessions", //
 
 		PageTableName: "Pages", //
+
+		InvoiceEventTableName: "CreateAt ASC", // invoice
+		InvoiceTableName:      "CreateAt ASC", //
 	}
 }
 
@@ -279,8 +283,9 @@ const (
 
 // menu-related table names
 const (
-	MenuTableName     = "Menus"
-	MenuItemTableName = "MenuItems"
+	MenuTableName                = "Menus"
+	MenuItemTableName            = "MenuItems"
+	MenuItemTranslationTableName = "MenuItemTranslations"
 )
 
 // shipping-related table names
@@ -308,4 +313,10 @@ const (
 // page-related table names
 const (
 	PageTableName = "Pages"
+)
+
+// invoice-related table names
+const (
+	InvoiceEventTableName = "InvoiceEvents" // invoice
+	InvoiceTableName      = "Invoices"      //
 )

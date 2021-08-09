@@ -22,6 +22,7 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -82,6 +83,7 @@ type RetryLayer struct {
 	GiftCardStore                      store.GiftCardStore
 	GiftCardCheckoutStore              store.GiftCardCheckoutStore
 	GiftCardOrderStore                 store.GiftCardOrderStore
+	InvoiceStore                       store.InvoiceStore
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
 	MenuStore                          store.MenuStore
@@ -325,6 +327,10 @@ func (s *RetryLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
 
 func (s *RetryLayer) GiftCardOrder() store.GiftCardOrderStore {
 	return s.GiftCardOrderStore
+}
+
+func (s *RetryLayer) Invoice() store.InvoiceStore {
+	return s.InvoiceStore
 }
 
 func (s *RetryLayer) InvoiceEvent() store.InvoiceEventStore {
@@ -801,6 +807,11 @@ type RetryLayerGiftCardCheckoutStore struct {
 
 type RetryLayerGiftCardOrderStore struct {
 	store.GiftCardOrderStore
+	Root *RetryLayer
+}
+
+type RetryLayerInvoiceStore struct {
+	store.InvoiceStore
 	Root *RetryLayer
 }
 
@@ -3750,6 +3761,86 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 	tries := 0
 	for {
 		result, err := s.GiftCardOrderStore.Save(giftcardOrder)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error) {
+
+	tries := 0
+	for {
+		result, err := s.InvoiceStore.Get(invoiceID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceStore) Upsert(invoice *invoice.Invoice) (*invoice.Invoice, error) {
+
+	tries := 0
+	for {
+		result, err := s.InvoiceStore.Upsert(invoice)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceEventStore) Get(invoiceEventID string) (*invoice.InvoiceEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.InvoiceEventStore.Get(invoiceEventID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.InvoiceEventStore.Upsert(invoiceEvent)
 		if err == nil {
 			return result, nil
 		}
@@ -8681,6 +8772,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.GiftCardStore = &RetryLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
 	newStore.GiftCardCheckoutStore = &RetryLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
 	newStore.GiftCardOrderStore = &RetryLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
+	newStore.InvoiceStore = &RetryLayerInvoiceStore{InvoiceStore: childStore.Invoice(), Root: &newStore}
 	newStore.InvoiceEventStore = &RetryLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &RetryLayerJobStore{JobStore: childStore.Job(), Root: &newStore}
 	newStore.MenuStore = &RetryLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}

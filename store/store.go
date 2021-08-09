@@ -21,6 +21,7 @@ import (
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
@@ -99,6 +100,7 @@ type Store interface {
 	GiftCardOrder() GiftCardOrderStore                                 //
 	GiftCardCheckout() GiftCardCheckoutStore                           //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
+	Invoice() InvoiceStore                                             //
 	Menu() MenuStore                                                   // menu
 	MenuItem() MenuItemStore                                           //
 	MenuItemTranslation() MenuItemTranslationStore                     //
@@ -595,9 +597,19 @@ type (
 	}
 )
 
-type InvoiceEventStore interface {
-	CreateIndexesIfNotExists()
-}
+// invoice
+type (
+	InvoiceEventStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) // Upsert depends on given invoice event's Id to update/insert it
+		Get(invoiceEventID string) (*invoice.InvoiceEvent, error)                 // Get finds and returns 1 invoice event
+	}
+	InvoiceStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(invoice *invoice.Invoice) (*invoice.Invoice, error) // Upsert depends on given invoice Id to update/insert it
+		Get(invoiceID string) (*invoice.Invoice, error)            // Get finds and returns 1 invoice
+	}
+)
 
 // giftcard related stores
 type (

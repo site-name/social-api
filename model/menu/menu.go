@@ -1,7 +1,6 @@
 package menu
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -15,9 +14,10 @@ const (
 )
 
 type Menu struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Id       string `json:"id"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+	CreateAt int64  `json:"create_at"` // this field can be used for ordering
 	model.ModelMetadata
 }
 
@@ -29,6 +29,9 @@ func (m *Menu) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(m.Id) {
 		return outer("id", nil)
+	}
+	if m.CreateAt <= 0 {
+		return outer("create_at", &m.Id)
 	}
 	if utf8.RuneCountInString(m.Name) > MENU_NAME_MAX_LENGTH {
 		return outer("Name", &m.Id)
@@ -46,19 +49,15 @@ func (m *Menu) PreSave() {
 	}
 	m.Name = model.SanitizeUnicode(m.Name)
 	m.Slug = slug.Make(m.Name)
+	if m.CreateAt == 0 {
+		m.CreateAt = model.GetMillis()
+	}
 }
 
 func (m *Menu) PreUpdate() {
 	m.Name = model.SanitizeUnicode(m.Name)
-	m.Slug = slug.Make(m.Name)
 }
 
 func (m *Menu) ToJson() string {
 	return model.ModelToJson(m)
-}
-
-func MenuFromJson(data io.Reader) *Menu {
-	var m Menu
-	model.ModelFromJson(&m, data)
-	return &m
 }

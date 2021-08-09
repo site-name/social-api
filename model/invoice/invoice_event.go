@@ -1,8 +1,6 @@
 package invoice
 
 import (
-	"strings"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -20,7 +18,7 @@ const (
 	SENT               = "sent"
 )
 
-var InvoiceEventStrings = map[string]string{
+var InVoiceEventTypeString = map[string]string{
 	REQUESTED:          "The invoice was requested",
 	REQUESTED_DELETION: "The invoice was requested for deletion",
 	CREATED:            "The invoice was created",
@@ -39,6 +37,15 @@ type InvoiceEvent struct {
 	Parameters model.StringMap `json:"parameters"`
 }
 
+// InvoiceEventOption is used for creating new invoice events
+type InvoiceEventOption struct {
+	Type       string
+	InvoiceID  *string
+	OrderID    *string
+	UserID     *string
+	Parameters model.StringMap
+}
+
 func (i *InvoiceEvent) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.invoice_event.is_valid.%s.app_error",
@@ -51,7 +58,7 @@ func (i *InvoiceEvent) IsValid() *model.AppError {
 	if i.CreateAt == 0 {
 		return outer("create_at", &i.Id)
 	}
-	if InvoiceEventStrings[strings.ToLower(i.Type)] == "" {
+	if _, exist := InVoiceEventTypeString[i.Type]; !exist {
 		return outer("type", &i.Id)
 	}
 	if i.UserID != nil && !model.IsValidId(*i.UserID) {

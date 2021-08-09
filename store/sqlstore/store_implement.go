@@ -82,6 +82,7 @@ type SqlStoreStores struct {
 	giftCard                      store.GiftCardStore
 	giftCardCheckout              store.GiftCardCheckoutStore
 	giftCardOrder                 store.GiftCardOrderStore
+	invoice                       store.InvoiceStore
 	invoiceEvent                  store.InvoiceEventStore
 	job                           store.JobStore
 	menu                          store.MenuStore
@@ -195,6 +196,7 @@ func (store *SqlStore) setupTables() {
 		giftCard:                      giftcard.NewSqlGiftCardStore(store),
 		giftCardCheckout:              giftcard.NewSqlGiftCardCheckoutStore(store),
 		giftCardOrder:                 giftcard.NewSqlGiftCardOrderStore(store),
+		invoice:                       invoice.NewSqlInvoiceStore(store),
 		invoiceEvent:                  invoice.NewSqlInvoiceEventStore(store),
 		job:                           job.NewSqlJobStore(store),
 		menu:                          menu.NewSqlMenuStore(store),
@@ -308,6 +310,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.giftCard.CreateIndexesIfNotExists()
 	store.stores.giftCardCheckout.CreateIndexesIfNotExists()
 	store.stores.giftCardOrder.CreateIndexesIfNotExists()
+	store.stores.invoice.CreateIndexesIfNotExists()
 	store.stores.invoiceEvent.CreateIndexesIfNotExists()
 	store.stores.job.CreateIndexesIfNotExists()
 	store.stores.menu.CreateIndexesIfNotExists()
@@ -553,6 +556,10 @@ func (ss *SqlStore) GiftCardCheckout() store.GiftCardCheckoutStore {
 
 func (ss *SqlStore) GiftCardOrder() store.GiftCardOrderStore {
 	return ss.stores.giftCardOrder
+}
+
+func (ss *SqlStore) Invoice() store.InvoiceStore {
+	return ss.stores.invoice
 }
 
 func (ss *SqlStore) InvoiceEvent() store.InvoiceEventStore {
