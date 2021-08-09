@@ -4,15 +4,13 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // AttributeID unique together with ProductTypeID
 type AttributeProduct struct {
-	Id               string                          `json:"id"`
-	AttributeID      string                          `json:"attribute_id"`             // to attribute.Attribute
-	ProductTypeID    string                          `json:"product_type_id"`          // to product.ProductType
-	AssignedProducts []*product_and_discount.Product `json:"assigned_products" db:"-"` // through attribute.AssignedProductAttribute
+	Id            string `json:"id"`
+	AttributeID   string `json:"attribute_id"`    // to attribute.Attribute
+	ProductTypeID string `json:"product_type_id"` // to product.ProductType
 	model.Sortable
 }
 

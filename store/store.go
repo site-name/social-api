@@ -239,11 +239,11 @@ type FileInfoStore interface {
 type (
 	AttributeStore interface {
 		CreateIndexesIfNotExists()
-		Save(attr *attribute.Attribute) (*attribute.Attribute, error)    // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
-		Get(id string) (*attribute.Attribute, error)                     // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
-		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) // GetAttributesByIds try finding all attributes with given `ids` then returns them. Returned error can be wither *store.ErrNotFound or system error
-		GetProductAndVariantHeaders(ids []string) ([]string, error)      // GetProductAndVariantHeaders
-		GetBySlug(slug string) (*attribute.Attribute, error)             // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
+		Save(attr *attribute.Attribute) (*attribute.Attribute, error)                           // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
+		Get(id string) (*attribute.Attribute, error)                                            // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
+		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)                        // GetAttributesByIds try finding all attributes with given `ids` then returns them. Returned error can be wither *store.ErrNotFound or system error
+		GetBySlug(slug string) (*attribute.Attribute, error)                                    // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
+		FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) // FilterbyOption returns a list of attributes by given option
 	}
 	AttributeTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -364,9 +364,9 @@ type (
 	WarehouseStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) // Save inserts given warehouse into database then returns it.
-		Get(id string) (*warehouse.WareHouse, error)                       // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
-		GetWarehousesHeaders(ids []string) ([]string, error)               // GetWarehousesHeaders
+		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
+		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
+		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
@@ -756,10 +756,10 @@ type ChannelStore interface {
 	CreateIndexesIfNotExists()
 	ModelFields() []string
 	Save(ch *channel.Channel) (*channel.Channel, error)
-	Get(id string) (*channel.Channel, error)                                         // Get returns channel by given id
-	GetBySlug(slug string) (*channel.Channel, error)                                 // GetBySlug returns channel by given slug
-	GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) //
-	GetRandomActiveChannel() (*channel.Channel, error)                               // GetRandomActiveChannel get an abitrary channel that is active
+	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
+	GetBySlug(slug string) (*channel.Channel, error)                                // GetBySlug returns channel by given slug
+	GetRandomActiveChannel() (*channel.Channel, error)                              // GetRandomActiveChannel get an abitrary channel that is active
+	FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) // FilterByOption returns a list of channels with given option
 }
 
 // app

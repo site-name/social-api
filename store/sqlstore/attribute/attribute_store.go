@@ -30,6 +30,27 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return as
 }
 
+func (as *SqlAttributeStore) ModelFields() []string {
+	return []string{
+		"Attributes.Id",
+		"Attributes.Slug",
+		"Attributes.Name",
+		"Attributes.Type",
+		"Attributes.InputType",
+		"Attributes.EntityType",
+		"Attributes.Unit",
+		"Attributes.ValueRequired",
+		"Attributes.IsVariantOnly",
+		"Attributes.VisibleInStoreFront",
+		"Attributes.FilterableInStorefront",
+		"Attributes.FilterableInDashboard",
+		"Attributes.StorefrontSearchPosition",
+		"Attributes.AvailableInGrid",
+		"Attributes.Metadata",
+		"Attributes.PrivateMetadata",
+	}
+}
+
 func (as *SqlAttributeStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributes_name", store.AttributeTableName, "Name")
 	as.CreateIndexIfNotExists("idx_attributes_name_lower_textpattern", store.AttributeTableName, "lower(Name) text_pattern_ops")
@@ -91,65 +112,40 @@ func (as *SqlAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error
 	return attr, nil
 }
 
-// GetProductAndVariantHeaders is used for get headers for csv export preparation.
-func (as *SqlAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
-	tx, err := as.GetReplica().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "begin_transaction")
+// FilterbyOption returns a list of attributes by given option
+func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+	query := as.GetQueryBuilder().
+		Select(as.ModelFields()...).
+		From(store.AttributeTableName).
+		OrderBy(store.TableOrderingMap[store.AttributeTableName])
+
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Attributes.Id"))
 	}
-	defer store.FinalizeTransaction(tx)
-
-	var productHeaders []string
-	_, err = tx.Select(
-		&productHeaders,
-		`SELECT DISTINCT
-		CONCAT(a.Slug, ' (product attribute)')
-		AS
-			header
-		FROM
-			Attributes AS a
-		INNER JOIN
-			AttributeProducts AS ap
-		ON
-			(ap.AttributeID = a.Id)
-		WHERE
-			a.Id IN :IDS
-		AND 
-			ap.ProductTypeID IS NOT NULL
-		ORDER BY
-			a.Slug`,
-		map[string]interface{}{"IDS": ids},
-	)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product attributes")
+	if option.Distinct {
+		query = query.Distinct()
+	}
+	if option.ProductTypes != nil {
+		query = query.
+			InnerJoin(store.AttributeProductTableName + " ON (AttributeProducts.AttributeID = Attributes.Id)").
+			Where(option.ProductTypes.ToSquirrel("AttributeProducts.ProductTypeID"))
+	}
+	if option.ProductVariantTypes != nil {
+		query = query.
+			InnerJoin(store.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
+			Where(option.ProductVariantTypes.ToSquirrel("AttributeVariants.ProductTypeID"))
 	}
 
-	var variantHeaders []string
-	_, err = tx.Select(
-		&variantHeaders,
-		`SELECT DISTINCT
-		CONCAT(a.Slug, ' (variant attribute)') 
-		AS 
-			header 
-		FROM 
-			Attributes AS a 
-		INNER JOIN 
-			AttributeVariants AS av
-		ON 
-			(av.AttributeID = a.Id)
-		WHERE
-			a.Id IN :IDS
-		AND 
-			av.ProductTypeID IS NOT NULL
-		ORDER BY
-			a.Slug`,
-		map[string]interface{}{"IDS": ids},
-	)
-
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find variant attributes")
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	return append(productHeaders, variantHeaders...), nil
+	var res []*attribute.Attribute
+	_, err = as.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find attributes with given option")
+	}
+
+	return res, nil
 }

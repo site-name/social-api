@@ -24,6 +24,14 @@ type Channel struct {
 	Currency string `json:"currency"`
 }
 
+type ChannelFilterOption struct {
+	Id       *model.StringFilter
+	Name     *model.StringFilter
+	IsActive *bool
+	Slug     *model.StringFilter
+	Currency *model.StringFilter
+}
+
 func (c *Channel) String() string {
 	return c.Name
 }

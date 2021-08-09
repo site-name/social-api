@@ -1,9 +1,8 @@
 package csv
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 )
 
 const (
@@ -15,6 +14,7 @@ type ExportFile struct {
 	UserID      *string               `json:"user_id"`
 	ContentFile *string               `json:"content_file"`
 	Data        model.StringInterface `json:"data"`
+	User        *account.User         `json:"-" db:"-"`
 }
 
 func (e *ExportFile) ToJson() string {
@@ -42,11 +42,4 @@ func (e *ExportFile) PreSave() {
 	if e.Id == "" {
 		e.Id = model.NewId()
 	}
-}
-
-func ExportFileFromJson(data io.Reader) *ExportFile {
-	var e ExportFile
-	model.ModelFromJson(&e, data)
-
-	return &e
 }

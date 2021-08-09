@@ -52,10 +52,10 @@ func init() {
 		WishlistProductVariantTableName: "", //
 		WishlistTableName:               "", //
 
-		StockTableName:                 "", // warehouse
-		WarehouseTableName:             "", //
-		WarehouseShippingZoneTableName: "", //
-		AllocationTableName:            "", //
+		StockTableName:                 "",          // warehouse
+		WarehouseTableName:             "Slug DESC", //
+		WarehouseShippingZoneTableName: "",          //
+		AllocationTableName:            "",          //
 
 		AddressTableName:                    "", // account
 		UserTableName:                       "", //
@@ -83,20 +83,20 @@ func init() {
 		CsvExportEventTablename: "ExportEvents", //
 		CsvExportFileTablename:  "ExportFiles",  //
 
-		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",         //
-		AttributeTableName:                     "Attributes",                     //
-		AttributeTranslationTableName:          "AttributeTranslations",          //
-		AttributeValueTableName:                "AttributeValues",                //
-		AttributeValueTranslationTableName:     "AttributeValueTranslations",     //
-		AssignedPageAttributeValueTableName:    "AssignedPageAttributeValues",    //
-		AssignedPageAttributeTableName:         "AssignedPageAttributes",         //
-		AttributePageTableName:                 "AttributePages",                 //
-		AssignedVariantAttributeValueTableName: "AssignedVariantAttributeValues", //
-		AssignedVariantAttributeTableName:      "AssignedVariantAttributes",      //
-		AttributeVariantTableName:              "AttributeVariants",              //
-		AssignedProductAttributeValueTableName: "AssignedProductAttributeValues", //
-		AssignedProductAttributeTableName:      "AssignedProductAttributes",      //
-		AttributeProductTableName:              "AttributeProducts",              //
+		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",                 //
+		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
+		AttributeTranslationTableName:          "AttributeTranslations",                  //
+		AttributeValueTableName:                "AttributeValues",                        //
+		AttributeValueTranslationTableName:     "AttributeValueTranslations",             //
+		AssignedPageAttributeValueTableName:    "AssignedPageAttributeValues",            //
+		AssignedPageAttributeTableName:         "AssignedPageAttributes",                 //
+		AttributePageTableName:                 "AttributePages",                         //
+		AssignedVariantAttributeValueTableName: "AssignedVariantAttributeValues",         //
+		AssignedVariantAttributeTableName:      "AssignedVariantAttributes",              //
+		AttributeVariantTableName:              "AttributeVariants",                      //
+		AssignedProductAttributeValueTableName: "AssignedProductAttributeValues",         //
+		AssignedProductAttributeTableName:      "AssignedProductAttributes",              //
+		AttributeProductTableName:              "AttributeProducts",                      //
 
 		VoucherTableName:                "Code ASC",                         // discount
 		VoucherCategoryTableName:        "VoucherCategories",                //

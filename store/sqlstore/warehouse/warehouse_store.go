@@ -67,7 +67,14 @@ func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse
 
 func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	var res warehouse.WareHouse
-	err := ws.GetMaster().SelectOne(&res, "SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := ws.GetMaster().SelectOne(
+		&res,
+		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID ORDER BY :OrderBy",
+		map[string]interface{}{
+			"ID":      id,
+			"OrderBy": store.TableOrderingMap[store.WarehouseTableName],
+		},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Warehouse", id)
@@ -78,23 +85,39 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	return &res, nil
 }
 
-func (wh *SqlWareHouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
-	var headers []string
-	_, err := wh.GetReplica().Select(
-		&headers,
-		`SELECT
-			CONCAT(wh.Slug, ' (warehouse quantity)') AS header
-		FROM 
-			WareHouses AS wh
-		WHERE 
-			wh.Id IN :IDS
-		ORDER BY wh.Slug`,
-		map[string]interface{}{"IDS": ids},
-	)
+// FilterByOprion returns a slice of warehouses with given option
+func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+	query := wh.GetQueryBuilder().
+		Select("*").
+		From(store.WarehouseTableName).
+		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
 
-	if err != nil {
-		return nil, err
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Name"))
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug.ToSquirrel("Slug"))
+	}
+	if option.AddressID != nil {
+		query = query.Where(option.AddressID.ToSquirrel("AddressID"))
+	}
+	if option.Email != nil {
+		query = query.Where(option.Email.ToSquirrel("Email"))
 	}
 
-	return headers, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*warehouse.WareHouse
+	_, err = wh.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find warehouses with given option")
+	}
+
+	return res, nil
 }

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io"
 	"time"
 )
 
@@ -108,12 +107,6 @@ func (j *Job) ToJson() string {
 	return ModelToJson(j)
 }
 
-func JobFromJson(data io.Reader) *Job {
-	var job *Job
-	ModelFromJson(&job, data)
-	return job
-}
-
 func (j *Job) PreSave() {
 	if j.Id == "" {
 		j.Id = NewId()
@@ -125,12 +118,6 @@ func (j *Job) PreSave() {
 
 func JobsToJson(jobs []*Job) string {
 	return ModelToJson(&jobs)
-}
-
-func JobsFromJson(data io.Reader) []*Job {
-	var jobs *[]*Job
-	ModelFromJson(&jobs, data)
-	return *jobs
 }
 
 type Worker interface {

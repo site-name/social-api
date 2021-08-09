@@ -1696,6 +1696,22 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
+func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.FilterbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.FilterbyOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
 	start := timemodule.Now()
 
@@ -1740,22 +1756,6 @@ func (s *TimerLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute,
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetBySlug", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeStore.GetProductAndVariantHeaders(ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetProductAndVariantHeaders", success, elapsed)
 	}
 	return result, err
 }
@@ -2016,6 +2016,22 @@ func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
 	return err
 }
 
+func (s *TimerLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
 	start := timemodule.Now()
 
@@ -2044,22 +2060,6 @@ func (s *TimerLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetBySlug", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetChannelsByIdsAndOrder", success, elapsed)
 	}
 	return result, err
 }
@@ -2668,6 +2668,57 @@ func (s *TimerLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleChannelListingStore.Get(saleChannelListingID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) ([]*struct {
+	product_and_discount.SaleChannelListing
+	ChannelSlug string
+}, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleChannelListingStore.SaleChannelListingsWithOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.SaleChannelListingsWithOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountSaleChannelListingStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -4541,6 +4592,22 @@ func (s *TimerLayerSaleCategoryRelationStore) Save(relation *product_and_discoun
 	return result, err
 }
 
+func (s *TimerLayerSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleCollectionRelationStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleCollectionRelationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
 	start := timemodule.Now()
 
@@ -4585,6 +4652,22 @@ func (s *TimerLayerSaleProductRelationStore) Get(relationID string) (*product_an
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductRelationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductRelationStore.SaleProductsByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductRelationStore.SaleProductsByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -6937,6 +7020,22 @@ func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 	return result, err
 }
 
+func (s *TimerLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.FilterByOprion(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.FilterByOprion", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
@@ -6949,22 +7048,6 @@ func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseStore.GetWarehousesHeaders(ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.GetWarehousesHeaders", success, elapsed)
 	}
 	return result, err
 }

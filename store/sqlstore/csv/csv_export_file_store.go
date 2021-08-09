@@ -24,7 +24,9 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 	return cs
 }
 
-func (cs *SqlCsvExportFileStore) CreateIndexesIfNotExists() {}
+func (cs *SqlCsvExportFileStore) CreateIndexesIfNotExists() {
+	cs.CreateForeignKeyIfNotExists(store.CsvExportFileTablename, "UserID", store.UserTableName, "Id", true)
+}
 
 func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
 	file.PreSave()

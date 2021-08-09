@@ -1850,6 +1850,26 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
+func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.FilterbyOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
 
 	tries := 0
@@ -1895,26 +1915,6 @@ func (s *RetryLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute,
 	tries := 0
 	for {
 		result, err := s.AttributeStore.GetBySlug(slug)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeStore.GetProductAndVariantHeaders(ids)
 		if err == nil {
 			return result, nil
 		}
@@ -2250,6 +2250,26 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 
 }
 
+func (s *RetryLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
 
 	tries := 0
@@ -2275,26 +2295,6 @@ func (s *RetryLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error
 	tries := 0
 	for {
 		result, err := s.ChannelStore.GetBySlug(slug)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelStore.GetChannelsByIdsAndOrder(ids, order)
 		if err == nil {
 			return result, nil
 		}
@@ -3055,6 +3055,69 @@ func (s *RetryLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*
 	tries := 0
 	for {
 		result, err := s.DiscountSaleStore.Upsert(sale)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountSaleChannelListingStore.Get(saleChannelListingID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) ([]*struct {
+	product_and_discount.SaleChannelListing
+	ChannelSlug string
+}, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountSaleChannelListingStore.SaleChannelListingsWithOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
 		if err == nil {
 			return result, nil
 		}
@@ -5368,6 +5431,26 @@ func (s *RetryLayerSaleCategoryRelationStore) Save(relation *product_and_discoun
 
 }
 
+func (s *RetryLayerSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleCollectionRelationStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
 
 	tries := 0
@@ -5413,6 +5496,26 @@ func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*product_an
 	tries := 0
 	for {
 		result, err := s.SaleProductRelationStore.Get(relationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductRelationStore.SaleProductsByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -8284,11 +8387,11 @@ func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 
 }
 
-func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.Get(id)
+		result, err := s.WarehouseStore.FilterByOprion(option)
 		if err == nil {
 			return result, nil
 		}
@@ -8304,11 +8407,11 @@ func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 
 }
 
-func (s *RetryLayerWarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
+func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.GetWarehousesHeaders(ids)
+		result, err := s.WarehouseStore.Get(id)
 		if err == nil {
 			return result, nil
 		}

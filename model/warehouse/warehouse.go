@@ -23,6 +23,14 @@ type WareHouse struct {
 	model.ModelMetadata
 }
 
+type WarehouseFilterOption struct {
+	Id        *model.StringFilter
+	Name      *model.StringFilter
+	Slug      *model.StringFilter
+	AddressID *model.StringFilter
+	Email     *model.StringFilter
+}
+
 func (w *WareHouse) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.warehouse.is_valid.%s.app_error",

@@ -3,6 +3,7 @@ package channel
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
@@ -60,20 +61,6 @@ func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	return ch, nil
 }
 
-func (cs *SqlChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
-	var channels []*channel.Channel
-	_, err := cs.GetReplica().Select(
-		&channels,
-		`SELECT * FROM `+store.ChannelTableName+` WHERE Id IN :IDS ORDER BY :Order`,
-		map[string]interface{}{"IDS": ids, "Order": order},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find channels by ids")
-	}
-
-	return channels, nil
-}
-
 func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 	var channel channel.Channel
 	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
@@ -108,4 +95,41 @@ func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	}
 
 	return channels[0], nil
+}
+
+// FilterByOption returns a list of channels with given option
+func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+	query := cs.GetQueryBuilder().
+		Select("*").
+		From(store.ChannelTableName).
+		OrderBy(store.TableOrderingMap[store.ChannelTableName])
+
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Name"))
+	}
+	if option.IsActive != nil {
+		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug.ToSquirrel("Slug"))
+	}
+	if option.Currency != nil {
+		query = query.Where(option.Currency.ToSquirrel("Currency"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*channel.Channel
+	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find channels with given option")
+	}
+
+	return res, nil
 }

@@ -67,14 +67,12 @@ func (srv *JobServer) StartWorkers() error {
 	srv.mut.Lock()
 	defer srv.mut.Unlock()
 
-	// check if either workers are not initialized or they are already running. If true -> return
 	if srv.workers == nil {
 		return ErrWorkersUninitialized
 	} else if srv.workers.running {
 		return ErrWorkersRunning
 	}
 
-	// starts workers
 	srv.workers.Start()
 	return nil
 }

@@ -3,16 +3,20 @@ package csv_export
 import (
 	"fmt"
 	"strings"
+	"sync"
 
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 // Get export fields, all headers and headers mapping.
 // Based on export_info returns exported fields, fields to headers mapping and
 // all headers.
 // Headers contains product, variant, attribute and warehouse headers.
-func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo *gqlmodel.ExportInfoInput) ([]string, []string, []string) {
+func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo map[string][]string) ([]string, []string, []string) {
 	exportFields, fileHeaders := GetProductExportFieldsAndHeaders(exportInfo)
 	attributeHeaders := worker.GetAttributeHeaders(exportInfo)
 	warehouseHeaders := worker.GetWarehousesHeaders(exportInfo)
@@ -35,12 +39,75 @@ func (worker *Worker) GetExportFieldsAndHeadersInfo(exportInfo *gqlmodel.ExportI
 // Headers are build from slug and contains information if it's a product or variant
 // attribute. Respectively for product: "slug-value (product attribute)"
 // and for variant: "slug-value (variant attribute)".
-func (worker *Worker) GetAttributeHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
-	if len(exportInfo.Attributes) == 0 {
-		return nil
+func (worker *Worker) GetAttributeHeaders(exportInfo map[string][]string) []string {
+	attributeIDs := exportInfo["attributes"]
+	if len(attributeIDs) == 0 {
+		return []string{}
 	}
 
-	headers, err := worker.app.Srv().Store.Attribute().GetProductAndVariantHeaders(exportInfo.Attributes)
+	var (
+		wg            sync.WaitGroup
+		mutex         sync.Mutex
+		err           error
+		attributes_01 []*attribute.Attribute
+		attributes_02 []*attribute.Attribute
+	)
+
+	filterOptions := [...]*attribute.AttributeFilterOption{
+		{
+			Distinct: true,
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: attributeIDs,
+				},
+			},
+			ProductTypes: &model.StringFilter{
+				StringOption: &model.StringOption{
+					NULL: model.NewBool(false),
+				},
+			},
+		},
+		{
+			Distinct: true,
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: attributeIDs,
+				},
+			},
+			ProductVariantTypes: &model.StringFilter{
+				StringOption: &model.StringOption{
+					NULL: model.NewBool(false),
+				},
+			},
+		},
+	}
+
+	wg.Add(len(filterOptions))
+
+	for index, filterOption := range filterOptions {
+
+		go func(idx int, option *attribute.AttributeFilterOption) {
+			attributes, er := worker.app.Srv().Store.Attribute().FilterbyOption(filterOption)
+			mutex.Lock()
+			if er != nil {
+				if err == nil {
+					err = er
+				}
+			} else {
+				if idx == 0 {
+					attributes_01 = attributes
+				} else {
+					attributes_02 = attributes
+				}
+			}
+			mutex.Unlock()
+
+			wg.Done()
+		}(index, filterOption)
+	}
+
+	wg.Wait()
+
 	if err != nil {
 		slog.Error(
 			"worker failed to get attribute headers",
@@ -50,17 +117,34 @@ func (worker *Worker) GetAttributeHeaders(exportInfo *gqlmodel.ExportInfoInput) 
 		return nil
 	}
 
-	return headers
+	productHeaders := []string{}
+	variantHeaders := []string{}
+
+	for _, attr := range attributes_01 {
+		productHeaders = append(productHeaders, attr.Slug+" (product attribute)")
+	}
+	for _, attr := range attributes_02 {
+		variantHeaders = append(variantHeaders, attr.Slug+" (variant attribute)")
+	}
+
+	return append(productHeaders, variantHeaders...)
 }
 
 // Get headers for exported warehouses.
 // Headers are build from slug. Example: "slug-value (warehouse quantity)"
-func (worker *Worker) GetWarehousesHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
-	if len(exportInfo.Warehouses) == 0 {
-		return nil
+func (worker *Worker) GetWarehousesHeaders(exportInfo map[string][]string) []string {
+	warehouseIDs := exportInfo["warehouses"]
+	if len(warehouseIDs) == 0 {
+		return []string{}
 	}
 
-	headers, err := worker.app.Srv().Store.Warehouse().GetWarehousesHeaders(exportInfo.Warehouses)
+	warehouses, err := worker.app.Srv().Store.Warehouse().FilterByOprion(&warehouse.WarehouseFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: warehouseIDs,
+			},
+		},
+	})
 	if err != nil {
 		slog.Error(
 			"worker failed to get warehouse headers",
@@ -70,7 +154,12 @@ func (worker *Worker) GetWarehousesHeaders(exportInfo *gqlmodel.ExportInfoInput)
 		return nil
 	}
 
-	return headers
+	warehousesHeaders := []string{}
+	for _, warehouse := range warehouses {
+		warehousesHeaders = append(warehousesHeaders, warehouse.Slug+" (warehouse quantity)")
+	}
+
+	return warehousesHeaders
 }
 
 // Get headers for exported channels.
@@ -81,15 +170,23 @@ func (worker *Worker) GetWarehousesHeaders(exportInfo *gqlmodel.ExportInfoInput)
 // - currency code data header: "slug-value (channel currency code)"
 // - published data header: "slug-value (channel visible)"
 // - publication date data header: "slug-value (channel publication date)"
-func (worker *Worker) GetChannelsHeaders(exportInfo *gqlmodel.ExportInfoInput) []string {
-	if len(exportInfo.Channels) == 0 {
-		return nil
+func (worker *Worker) GetChannelsHeaders(exportInfo map[string][]string) []string {
+	channelIDs := exportInfo["channels"]
+	if len(channelIDs) == 0 {
+		return []string{}
 	}
 
-	channels, err := worker.app.Srv().Store.Channel().GetChannelsByIdsAndOrder(exportInfo.Channels, "Slug")
+	channels, err := worker.app.Srv().Store.Channel().FilterByOption(&channel.ChannelFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: channelIDs,
+			},
+		},
+	})
+
 	if err != nil {
 		slog.Error(
-			"worker failed to get channels header",
+			"worker failed to find channels",
 			slog.String("worker", worker.name),
 			slog.String("error", err.Error()),
 		)
@@ -105,14 +202,12 @@ func (worker *Worker) GetChannelsHeaders(exportInfo *gqlmodel.ExportInfoInput) [
 	}
 
 	channelsHeaders := []string{}
-	for _, ch := range channels {
-		list := []string{}
+	for _, channel := range channels {
 		for _, field := range fields {
 			if field != "slug" && field != "channel_pk" {
-				list = append(list, fmt.Sprintf("%s (channel %s)", ch.Slug, strings.ReplaceAll(field, "_", " ")))
+				channelsHeaders = append(channelsHeaders, fmt.Sprintf("%s (channel %s)", channel.Slug, strings.ReplaceAll(field, "_", " ")))
 			}
 		}
-		channelsHeaders = append(channelsHeaders, list...)
 	}
 
 	return channelsHeaders
@@ -121,26 +216,28 @@ func (worker *Worker) GetChannelsHeaders(exportInfo *gqlmodel.ExportInfoInput) [
 // Get export fields from export info and prepare headers mapping.
 // Based on given fields headers from export info, export fields set and
 // headers mapping is prepared.
-func GetProductExportFieldsAndHeaders(exportInfo *gqlmodel.ExportInfoInput) (exportFields []string, fileHeaders []string) {
-	exportFields = []string{"id"}
-	fileHeaders = []string{"id"}
+func GetProductExportFieldsAndHeaders(exportInfo map[string][]string) ([]string, []string) {
+	var (
+		exportFields = []string{"id"}
+		fileHeaders  = []string{"id"}
+	)
 
-	if len(exportInfo.Fields) == 0 {
-		return
+	fields := exportInfo["fields"]
+	if len(fields) == 0 {
+		return exportFields, fileHeaders
 	}
 
-	fieldsMapping := make(map[gqlmodel.ProductFieldEnum]string)
-	for _, value := range ProductExportFields.HEADERS_TO_FIELDS_MAPPING {
-		for k, v := range value {
-			fieldsMapping[k] = v
+	fieldsMapping := map[string]string{}
+	for _, aMap := range ProductExportFields.HEADERS_TO_FIELDS_MAPPING {
+		for key, value := range aMap {
+			fieldsMapping[key] = value
 		}
 	}
 
-	for _, field := range exportInfo.Fields {
-		lookupField := fieldsMapping[field]
-		exportFields = append(exportFields, lookupField)
-		fileHeaders = append(fileHeaders, strings.ReplaceAll(strings.ToLower(string(field)), "_", " ")) // since fields are upper-cased words concatenated by underscores
+	for _, field := range fields {
+		exportFields = append(exportFields, fieldsMapping[field])
+		fileHeaders = append(fileHeaders, field)
 	}
 
-	return
+	return exportFields, fileHeaders
 }

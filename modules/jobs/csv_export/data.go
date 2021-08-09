@@ -1,11 +1,7 @@
 package csv_export
 
-import (
-	"github.com/sitename/sitename/web/graphql/gqlmodel"
-)
-
 type Fields struct {
-	HEADERS_TO_FIELDS_MAPPING      map[string]map[gqlmodel.ProductFieldEnum]string
+	HEADERS_TO_FIELDS_MAPPING      map[string]map[string]string
 	PRODUCT_ATTRIBUTE_FIELDS       map[string]string
 	PRODUCT_CHANNEL_LISTING_FIELDS map[string]string
 	WAREHOUSE_FIELDS               map[string]string
@@ -19,24 +15,24 @@ var (
 
 func init() {
 	ProductExportFields = &Fields{
-		HEADERS_TO_FIELDS_MAPPING: map[string]map[gqlmodel.ProductFieldEnum]string{
+		HEADERS_TO_FIELDS_MAPPING: map[string]map[string]string{
 			"fields": {
-				gqlmodel.ProductFieldEnumName:          "name",
-				gqlmodel.ProductFieldEnumDescription:   "description_as_str",
-				gqlmodel.ProductFieldEnumCategory:      "category__slug",
-				gqlmodel.ProductFieldEnumProductType:   "product_type__name",
-				gqlmodel.ProductFieldEnumChargeTaxes:   "charge_taxes",
-				gqlmodel.ProductFieldEnumProductWeight: "product_weight",
-				gqlmodel.ProductFieldEnumVariantSku:    "variants__sku",
-				gqlmodel.ProductFieldEnumVariantWeight: "variant_weight",
-				// "id": "id",
+				"id":             "id",
+				"name":           "name",
+				"description":    "description_as_str",
+				"category":       "category__slug",
+				"product_type":   "product_type__name",
+				"charge_taxes":   "charge_taxes",
+				"product_weight": "product_weight",
+				"variant_sku":    "variants__sku",
+				"variant_weight": "variant_weight",
 			},
 			"product_many_to_many": {
-				gqlmodel.ProductFieldEnumCollections:  "collections__slug",
-				gqlmodel.ProductFieldEnumProductMedia: "media__image",
+				"collections":   "collections__slug",
+				"product_media": "media__image",
 			},
 			"variant_many_to_many": {
-				gqlmodel.ProductFieldEnumVariantMedia: "variants__media__image",
+				"variant_media": "variants__media__image",
 			},
 		},
 		PRODUCT_ATTRIBUTE_FIELDS: map[string]string{

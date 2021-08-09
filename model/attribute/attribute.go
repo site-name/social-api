@@ -7,8 +7,6 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/page"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
@@ -68,24 +66,28 @@ var AttributeEntityTypeStrings = map[string]string{
 
 // Attribute
 type Attribute struct {
-	Id                       string                              `json:"id"`
-	Slug                     string                              `json:"slug"` // unique
-	Name                     string                              `json:"name"`
-	Type                     string                              `json:"type"`
-	InputType                string                              `json:"input_type"`
-	EntityType               *string                             `json:"entity_type"`
-	ProductTypes             []*product_and_discount.ProductType `json:"product_types" db:"-"`
-	ProductVariantTypes      []*product_and_discount.ProductType `json:"product_variant_types" db:"-"`
-	PageTypes                []*page.PageType                    `json:"page_types" db:"-"`
-	Unit                     *string                             `json:"unit"` // lower cased
-	ValueRequired            bool                                `json:"value_required"`
-	IsVariantOnly            bool                                `json:"is_variant_only"`
-	VisibleInStoreFront      bool                                `json:"visible_in_storefront"`
-	FilterableInStorefront   bool                                `json:"filterable_in_storefront"`
-	FilterableInDashboard    bool                                `json:"filterable_in_dashboard"`
-	StorefrontSearchPosition int                                 `json:"storefront_search_position"`
-	AvailableInGrid          bool                                `json:"available_in_grid"`
+	Id                       string  `json:"id"`
+	Slug                     string  `json:"slug"` // unique
+	Name                     string  `json:"name"`
+	Type                     string  `json:"type"`
+	InputType                string  `json:"input_type"`
+	EntityType               *string `json:"entity_type"`
+	Unit                     *string `json:"unit"` // lower cased
+	ValueRequired            bool    `json:"value_required"`
+	IsVariantOnly            bool    `json:"is_variant_only"`
+	VisibleInStoreFront      bool    `json:"visible_in_storefront"`
+	FilterableInStorefront   bool    `json:"filterable_in_storefront"`
+	FilterableInDashboard    bool    `json:"filterable_in_dashboard"`
+	StorefrontSearchPosition int     `json:"storefront_search_position"`
+	AvailableInGrid          bool    `json:"available_in_grid"`
 	model.ModelMetadata
+}
+
+type AttributeFilterOption struct {
+	Id                  *model.StringFilter
+	ProductTypes        *model.StringFilter
+	ProductVariantTypes *model.StringFilter
+	Distinct            bool
 }
 
 func (a *Attribute) IsValid() *model.AppError {
@@ -134,7 +136,6 @@ func (a *Attribute) PreSave() {
 
 func (a *Attribute) PreUpdate() {
 	a.Name = model.SanitizeUnicode(a.Name)
-	// a.Slug = slug.Make(a.Name)
 }
 
 func (a *Attribute) String() string {
