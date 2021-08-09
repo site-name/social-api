@@ -42,6 +42,7 @@ func (fs *SqlFulfillmentStore) ModelFields() []string {
 }
 
 func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
+	fs.CreateForeignKeyIfNotExists(store.FulfillmentTableName, "OrderID", store.OrderTableName, "id", true)
 	fs.CreateIndexIfNotExists("idx_fulfillments_status", store.FulfillmentTableName, "Status")
 	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", store.FulfillmentTableName, "TrackingNumber")
 }
@@ -74,26 +75,6 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 
 	return &ffm, nil
 }
-
-// func (fs *SqlFulfillmentStore) FilterByExcludeStatuses(orderId string, excludeStatuses []string) (bool, error) {
-// 	var ffms []*order.Fulfillment
-
-// 	if _, err := fs.GetReplica().Select(
-// 		&ffms,
-// 		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Status NOT IN :statuses AND OrderID = :orderID",
-// 		map[string]interface{}{
-// 			"statuses": excludeStatuses,
-// 			"orderID":  orderId},
-// 	); err != nil {
-// 		return false, errors.Wrap(err, "failed to find fulfillments satisfy given requirements")
-// 	}
-
-// 	if len(ffms) == 0 {
-// 		return false, nil
-// 	}
-
-// 	return true, nil
-// }
 
 // FilterByoption finds and returns a slice of fulfillments by given option
 func (fs *SqlFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {

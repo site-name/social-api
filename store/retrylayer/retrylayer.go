@@ -3021,6 +3021,26 @@ func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 
 }
 
+func (s *RetryLayerDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentStore.GetByProductVariantID(variantID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
 
 	tries := 0
@@ -3476,11 +3496,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
+func (s *RetryLayerFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.FilterByExcludeStatuses(orderID, excludeStatuses)
+		result, err := s.FulfillmentStore.FilterByoption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -5187,6 +5207,26 @@ func (s *RetryLayerProductTypeStore) Get(productTypeID string) (*product_and_dis
 	tries := 0
 	for {
 		result, err := s.ProductTypeStore.Get(productTypeID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
 		if err == nil {
 			return result, nil
 		}

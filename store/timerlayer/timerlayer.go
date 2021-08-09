@@ -2635,6 +2635,22 @@ func (s *TimerLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 	return result, err
 }
 
+func (s *TimerLayerDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentStore.GetByProductVariantID(variantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.GetByProductVariantID", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
 	start := timemodule.Now()
 
@@ -3020,10 +3036,10 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
+func (s *TimerLayerFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.FilterByExcludeStatuses(orderID, excludeStatuses)
+	result, err := s.FulfillmentStore.FilterByoption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3031,7 +3047,7 @@ func (s *TimerLayerFulfillmentStore) FilterByExcludeStatuses(orderID string, exc
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.FilterByExcludeStatuses", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.FilterByoption", success, elapsed)
 	}
 	return result, err
 }
@@ -4407,6 +4423,22 @@ func (s *TimerLayerProductTypeStore) Get(productTypeID string) (*product_and_dis
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.ProductTypeByProductVariantID", success, elapsed)
 	}
 	return result, err
 }
