@@ -4276,6 +4276,26 @@ func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 
 }
 
+func (s *RetryLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 
 	tries := 0

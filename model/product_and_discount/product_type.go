@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -9,6 +8,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+// max lengths for some product type's fields
 const (
 	PRODUCT_TYPE_NAME_MAX_LENGTH = 250
 	PRODUCT_TYPE_SLUG_MAX_LENGTH = 255
@@ -19,8 +19,8 @@ type ProductType struct {
 	Name               string                 `json:"name"`
 	Slug               string                 `json:"slug"`
 	HasVariants        *bool                  `json:"has_variants"`
-	IsShippingRequired *bool                  `json:"is_shipping_required"` // *default true
-	IsDigital          *bool                  `json:"is_digital"`
+	IsShippingRequired *bool                  `json:"is_shipping_required"` // default true
+	IsDigital          *bool                  `json:"is_digital"`           // default false
 	Weight             *float32               `json:"weight"`
 	WeightUnit         measurement.WeightUnit `json:"weight_unit"`
 	model.ModelMetadata
@@ -93,10 +93,4 @@ func (p *ProductType) PreUpdate() {
 
 func (p *ProductType) ToJson() string {
 	return model.ModelToJson(p)
-}
-
-func ProductTypeFromJson(data io.Reader) *ProductType {
-	var pt ProductType
-	model.ModelFromJson(&pt, data)
-	return &pt
 }

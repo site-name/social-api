@@ -111,6 +111,24 @@ type Order struct {
 	model.ModelMetadata
 }
 
+// OrderFilterOption is used to buils sql queries for filtering orders
+type OrderFilterOption struct {
+	Status        *model.StringFilter // for filtering order's Status
+	CheckoutToken *model.StringFilter // for filtering order's CheckoutToken
+	ChannelSlug   *model.StringFilter // for comparing the channel of this order's slug
+	UserEmail     *model.StringFilter // for filtering order's UserEmail
+	UserID        *model.StringFilter // for filtering order's UserID
+}
+
+type OrderFilterWithPaymentRelatedOption struct {
+	OrderFilterOption
+	TotalGrossAmount *model.NumberFilter // for comparing order's TotalGrossAmount with total captured amount paid by order's payments
+	Payments         *struct {           // for filtering order's payments
+		IsActive     *bool
+		ChargeStatus *model.StringFilter
+	}
+}
+
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
 func (o *Order) PopulateNonDbFields() {
 	lock.Lock()

@@ -148,3 +148,30 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 
 	return productTypes, nil
 }
+
+// ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
+func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+	query := pts.GetQueryBuilder().
+		Select(pts.ModelFields()...).
+		From(store.ProductTypeTableName).
+		OrderBy(store.TableOrderingMap[store.ProductTypeTableName]).
+		InnerJoin(store.ProductTableName + " ON (Products.ProductTypeID = ProductTypes.Id)").
+		InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		Where(squirrel.Eq{"ProductVariants.Id": variantID})
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "ProductTypeByProductVariantID_ToSql")
+	}
+
+	var res product_and_discount.ProductType
+	err = pts.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductTypeTableName, "variantID="+variantID)
+		}
+		return nil, errors.Wrapf(err, "failed to find product type with product variant id=%s", variantID)
+	}
+
+	return &res, nil
+}

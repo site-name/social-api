@@ -45,7 +45,53 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 func (os *SqlOrderStore) CreateIndexesIfNotExists() {
 	os.CommonMetaDataIndex(store.OrderTableName)
 	os.CreateIndexIfNotExists("idx_orders_user_email", store.OrderTableName, "UserEmail")
-	os.CreateIndexIfNotExists("idx_orders_status", store.OrderTableName, "Status")
+	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", store.OrderTableName, "lower(Email) text_pattern_ops")
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "UserID", store.UserTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "BillingAddressID", store.AddressTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "OriginalID", store.OrderTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ChannelID", store.ChannelTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "VoucherID", store.VoucherTableName, "Id", false)
+}
+
+func (os *SqlOrderStore) ModelFields() []string {
+	return []string{
+		"Orders.Id",
+		"Orders.CreateAt",
+		"Orders.Status",
+		"Orders.UserID",
+		"Orders.LanguageCode",
+		"Orders.TrackingClientID",
+		"Orders.BillingAddressID",
+		"Orders.ShippingAddressID",
+		"Orders.UserEmail",
+		"Orders.OriginalID",
+		"Orders.Origin",
+		"Orders.Currency",
+		"Orders.ShippingMethodID",
+		"Orders.ShippingMethodName",
+		"Orders.ChannelID",
+		"Orders.ShippingPriceNetAmount",
+		"Orders.ShippingPriceGrossAmount",
+		"Orders.ShippingTaxRate",
+		"Orders.Token",
+		"Orders.CheckoutToken",
+		"Orders.TotalNetAmount",
+		"Orders.UnDiscountedTotalNetAmount",
+		"Orders.TotalGrossAmount",
+		"Orders.UnDiscountedTotalGrossAmount",
+		"Orders.TotalPaidAmount",
+		"Orders.VoucherID",
+		"Orders.DisplayGrossPrices",
+		"Orders.CustomerNote",
+		"Orders.WeightAmount",
+		"Orders.WeightUnit",
+		"Orders.Weight",
+		"Orders.RedirectUrl",
+		"Orders.Metadata",
+		"Orders.PrivateMetadata",
+	}
 }
 
 func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
@@ -124,16 +170,60 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 }
 
 func (os *SqlOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-	result, err := os.GetMaster().Exec("UPDATE "+store.OrderTableName+" SET TotalPaidAmount = :newTotalPaidAmount WHERE Id = :id",
-		map[string]interface{}{"newTotalPaidAmount": *newTotalPaid, "id": orderId})
+	result, err := os.GetMaster().Exec(
+		"UPDATE "+store.OrderTableName+" SET TotalPaidAmount = :newTotalPaidAmount WHERE Id = :id",
+		map[string]interface{}{
+			"newTotalPaidAmount": *newTotalPaid,
+			"id":                 orderId,
+		},
+	)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update total paid amount for order with id=%s", orderId)
 	}
 	if rows, err := result.RowsAffected(); err != nil {
 		return errors.Wrap(err, "failed to fetch number of order updated")
 	} else if rows > 1 {
-		return fmt.Errorf("multiple orders updated, orderId=%s", orderId)
+		return fmt.Errorf("multiple orders were updated, %d instead of 1", rows)
 	}
 
 	return nil
+}
+
+// FilterByOption returns a list of orders, filtered by given option
+func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+	query := os.GetQueryBuilder().
+		Select(os.ModelFields()...).
+		From(store.OrderTableName).
+		OrderBy(store.TableOrderingMap[store.OrderTableName])
+
+	// parse options:
+	if option.Status != nil {
+		query = query.Where(option.Status.ToSquirrel("Orders.Status"))
+	}
+	if option.CheckoutToken != nil {
+		query = query.Where(option.CheckoutToken.ToSquirrel("Orders.CheckoutToken"))
+	}
+	if option.ChannelSlug != nil {
+		query = query.
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
+			Where(option.ChannelSlug.ToSquirrel("Channels.Slug"))
+	}
+	if option.UserID != nil {
+		query = query.
+			InnerJoin(store.UserTableName + " ON (Users.Id = Orders.UserID)").
+			Where(option.UserID.ToSquirrel("Users.Id"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*order.Order
+	_, err = os.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find orders with given option")
+	}
+
+	return res, nil
 }

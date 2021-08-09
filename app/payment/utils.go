@@ -312,9 +312,9 @@ func (a *AppPayment) ValidateGatewayResponse(response *payment.GatewayResponse) 
 	return nil
 }
 
-func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction, pm *payment.Payment) *model.AppError {
-	if transaction == nil || pm == nil {
-		return model.NewAppError("GatewayPostProcess", "app.payment.invalid_arguments.app_error", nil, "", http.StatusBadRequest)
+func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
+	if transaction == nil || payMent == nil {
+		return model.NewAppError("GatewayPostProcess", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction/payMent"}, "", http.StatusBadRequest)
 	}
 
 	changedFields := []string{}
@@ -322,7 +322,7 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 
 	if !transaction.IsSuccess || transaction.AlreadyProcessed {
 		if len(changedFields) > 0 {
-			if _, appErr = a.CreateOrUpdatePayment(pm); appErr != nil {
+			if _, appErr = a.CreateOrUpdatePayment(payMent); appErr != nil {
 				return appErr
 			}
 		}
@@ -330,63 +330,63 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 	}
 
 	if transaction.ActionRequired {
-		pm.ToConfirm = true
+		payMent.ToConfirm = true
 		changedFields = append(changedFields, "to_confirm")
-		if _, appErr = a.CreateOrUpdatePayment(pm); appErr != nil {
+		if _, appErr = a.CreateOrUpdatePayment(payMent); appErr != nil {
 			return appErr
 		}
 	}
 
 	// to_confirm is defined by the transaction.action_required. Payment doesn't
 	// require confirmation when we got action_required == False
-	if pm.ToConfirm {
-		pm.ToConfirm = true
+	if payMent.ToConfirm {
+		payMent.ToConfirm = true
 		changedFields = append(changedFields, "to_confirm")
 	}
 
 	switch transaction.Kind {
 	case payment.CAPTURE, payment.REFUND_REVERSED:
-		pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Add(*transaction.Amount))
-		pm.IsActive = model.NewBool(true)
+		payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Add(*transaction.Amount))
+		payMent.IsActive = model.NewBool(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
-		pm.ChargeStatus = payment.PARTIALLY_CHARGED
-		if pm.GetChargeAmount().LessThanOrEqual(decimal.Zero) {
-			pm.ChargeStatus = payment.FULLY_CHARGED
+		payMent.ChargeStatus = payment.PARTIALLY_CHARGED
+		if payMent.GetChargeAmount().LessThanOrEqual(decimal.Zero) {
+			payMent.ChargeStatus = payment.FULLY_CHARGED
 		}
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 	case payment.VOID:
-		pm.IsActive = model.NewBool(false)
+		payMent.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "is_active", "update_at")
 	case payment.REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
-		pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Sub(*transaction.Amount))
-		pm.ChargeStatus = payment.PARTIALLY_REFUNDED
-		if pm.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-			pm.CapturedAmount = &decimal.Zero
-			pm.ChargeStatus = payment.FULLY_REFUNDED
-			pm.IsActive = model.NewBool(false)
+		payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*transaction.Amount))
+		payMent.ChargeStatus = payment.PARTIALLY_REFUNDED
+		if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
+			payMent.CapturedAmount = &decimal.Zero
+			payMent.ChargeStatus = payment.FULLY_REFUNDED
+			payMent.IsActive = model.NewBool(false)
 		}
 	case payment.PENDING:
-		pm.ChargeStatus = payment.PENDING
+		payMent.ChargeStatus = payment.PENDING
 		changedFields = append(changedFields, "charge_status")
 	case payment.CANCEL:
-		pm.ChargeStatus = payment.CANCELLED
-		pm.IsActive = model.NewBool(false)
+		payMent.ChargeStatus = payment.CANCELLED
+		payMent.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 	case payment.CAPTURE_FAILED:
-		if pm.ChargeStatus == payment.PARTIALLY_CHARGED || pm.ChargeStatus == payment.FULLY_CHARGED {
-			pm.CapturedAmount = model.NewDecimal(pm.CapturedAmount.Sub(*transaction.Amount))
-			pm.ChargeStatus = payment.PARTIALLY_CHARGED
-			if pm.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-				pm.CapturedAmount = &decimal.Zero
+		if payMent.ChargeStatus == payment.PARTIALLY_CHARGED || payMent.ChargeStatus == payment.FULLY_CHARGED {
+			payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*transaction.Amount))
+			payMent.ChargeStatus = payment.PARTIALLY_CHARGED
+			if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
+				payMent.CapturedAmount = &decimal.Zero
 			}
 			changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 		}
 	}
 
 	if len(changedFields) > 0 {
-		if _, appErr := a.CreateOrUpdatePayment(pm); appErr != nil {
+		if _, appErr := a.CreateOrUpdatePayment(payMent); appErr != nil {
 			return appErr
 		}
 	}
@@ -396,8 +396,8 @@ func (a *AppPayment) GatewayPostProcess(transaction *payment.PaymentTransaction,
 		return appErr
 	}
 
-	if util.StringInSlice("captured_amount", changedFields) && pm.OrderID != nil {
-		if appErr = a.app.OrderApp().UpdateOrderTotalPaid(*pm.OrderID); appErr != nil {
+	if util.StringInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
+		if appErr = a.app.OrderApp().UpdateOrderTotalPaid(*payMent.OrderID); appErr != nil {
 			return appErr
 		}
 	}

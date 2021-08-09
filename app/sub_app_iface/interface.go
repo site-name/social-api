@@ -210,7 +210,10 @@ type ProductApp interface {
 	CategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, *model.AppError)                                                                     // CategoriesByVoucherID finds all categories that have relationship with given voucher
 	ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError)                                                                        // ProductsByVoucherID finds all products that have relationships with given voucher
 	ProductsRequireShipping(productIDs []string) (bool, *model.AppError)                                                                                            // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
+	// ProductVariantGetPrice
 	ProductVariantGetPrice(product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
+	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
+	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError) // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
 }
 
 type WishlistApp interface {

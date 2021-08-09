@@ -27,3 +27,13 @@ func (a *AppProduct) ProductVariantGetPrice(
 ) (*goprices.Money, *model.AppError) {
 	return a.DiscountApp().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel)
 }
+
+// ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
+func (a *AppProduct) ProductVariantIsDigital(productVariantID string) (bool, *model.AppError) {
+	productType, err := a.Srv().Store.ProductType().ProductTypeByProductVariantID(productVariantID)
+	if err != nil {
+		return false, store.AppErrorFromDatabaseLookupError("ProductVariantIsDigital", "app.product.product_type_by_product_variant_id.app_error", err)
+	}
+
+	return *productType.IsDigital && !*productType.IsShippingRequired, nil
+}

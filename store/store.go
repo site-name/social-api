@@ -455,6 +455,8 @@ type (
 	}
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
+		// GetByProductVariantID finds and returns 1 digital content that is related to given product variant
+		GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error)
 	}
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -489,6 +491,7 @@ type (
 		Get(productTypeID string) (*product_and_discount.ProductType, error)                              // Get try finding product type with given id and returns it
 		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
 		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)        // ProductTypesByProductIDs returns all product types belong to given products
+		ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error)        // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 	}
 	CategoryTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -556,10 +559,11 @@ type (
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()
-		Save(order *order.Order) (*order.Order, error)                       // Save insert an order into database and returns that order if success
-		Get(id string) (*order.Order, error)                                 // Get find order in database with given id
-		Update(order *order.Order) (*order.Order, error)                     // Update update order
-		UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error // updateTotalPaid update total paid amount of given order
+		Save(order *order.Order) (*order.Order, error)                          // Save insert an order into database and returns that order if success
+		Get(id string) (*order.Order, error)                                    // Get find order in database with given id
+		Update(order *order.Order) (*order.Order, error)                        // Update update order
+		UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error    // updateTotalPaid update total paid amount of given order
+		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) // FilterByOption returns a list of orders, filtered by given option
 	}
 	OrderEventStore interface {
 		CreateIndexesIfNotExists()
@@ -573,7 +577,7 @@ type (
 		CreateIndexesIfNotExists()
 		Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error)
 		Get(id string) (*order.Fulfillment, error)
-		FilterByExcludeStatuses(orderID string, excludeStatuses []string) (exist bool, err error) // FilterByExcludeStatuses check if there is at least 1 fulfillment belong to given order and have status differnt than given statuses.
+		FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByoption finds and returns a slice of fulfillments by given option
 	}
 )
 

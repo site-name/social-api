@@ -1,7 +1,6 @@
 package order
 
 import (
-	"io"
 	"regexp"
 	"strings"
 
@@ -41,13 +40,20 @@ var FulfillmentStrings = map[string]string{
 type Fulfillment struct {
 	Id                   string           `json:"id"`
 	FulfillmentOrder     uint             `json:"fulfillment_order"`
-	OrderID              string           `json:"order_id"`
+	OrderID              string           `json:"order_id"` // not null nor editable
 	Status               string           `json:"status"`
 	TrackingNumber       string           `json:"tracking_numdber"`
 	CreateAt             int64            `json:"create_at"`
 	ShippingRefundAmount *decimal.Decimal `json:"shipping_refund_amount"`
 	TotalRefundAmount    *decimal.Decimal `json:"total_refund_amount"`
 	model.ModelMetadata
+}
+
+// FulfillmentFilterOption is used to build squirrel sql queries
+type FulfillmentFilterOption struct {
+	Id      *model.StringFilter
+	OrderID *model.StringFilter
+	Status  *model.StringFilter
 }
 
 func (f *Fulfillment) IsValid() *model.AppError {
@@ -76,12 +82,6 @@ func (f *Fulfillment) ToJson() string {
 	return model.ModelToJson(f)
 }
 
-func FulfillmentFromJson(data io.Reader) *Fulfillment {
-	var f Fulfillment
-	model.ModelFromJson(&f, data)
-	return &f
-}
-
 func (f *Fulfillment) PreSave() {
 	if f.Id == "" {
 		f.Id = model.NewId()
@@ -92,6 +92,7 @@ func (f *Fulfillment) PreSave() {
 	}
 }
 
+// CanEdit checks if current Fulfillment's Status is "canceled"
 func (f *Fulfillment) CanEdit() bool {
 	return f.Status != CANCELED
 }

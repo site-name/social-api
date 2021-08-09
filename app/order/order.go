@@ -156,19 +156,32 @@ func (a *AppOrder) OrderSubTotal(orderID string, orderCurrency string) (*goprice
 
 // OrderCanCalcel checks if given order can be canceled
 func (a *AppOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
-	exist, err := a.Srv().Store.Fulfillment().FilterByExcludeStatuses(ord.Id, []string{
-		order.FULFILLMENT_CANCELED,
-		order.FULFILLMENT_REFUNDED,
-		order.FULFILLMENT_RETURNED,
-		order.FULFILLMENT_REFUNDED_AND_RETURNED,
-		order.FULFILLMENT_REPLACED,
-	})
+	fulfillments, err := a.Srv().Store.Fulfillment().
+		FilterByoption(&order.FulfillmentFilterOption{
+			OrderID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: ord.Id,
+				},
+			},
+			Status: &model.StringFilter{
+				StringOption: &model.StringOption{
+					NotIn: []string{
+						order.FULFILLMENT_CANCELED,
+						order.FULFILLMENT_REFUNDED,
+						order.FULFILLMENT_RETURNED,
+						order.FULFILLMENT_REFUNDED_AND_RETURNED,
+						order.FULFILLMENT_REPLACED,
+					},
+				},
+			},
+		})
+
 	if err != nil {
 		// this means system error
-		return false, model.NewAppError("OrderCanCancel", "app.order.fulfillment_exist.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return false, model.NewAppError("OrderCanCancel", "app.order.fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return !exist && ord.Status != order.CANCELED && ord.Status != order.DRAFT, nil
+	return len(fulfillments) == 0 && ord.Status != order.CANCELED && ord.Status != order.DRAFT, nil
 }
 
 // OrderCanCapture
@@ -256,10 +269,7 @@ func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *mod
 		return a.PaymentApp().PaymentGetAuthorizedAmount(lastPayment)
 	}
 
-	zeroMoney, err := util.ZeroMoney(ord.Currency)
-	if err != nil {
-		return nil, model.NewAppError("OrderTotalAuthorized", "app.order.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	zeroMoney, _ := util.ZeroMoney(ord.Currency)
 	return zeroMoney, nil
 }
 

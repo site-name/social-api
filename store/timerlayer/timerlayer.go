@@ -3660,6 +3660,22 @@ func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 	return result, err
 }
 
+func (s *TimerLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
 	start := timemodule.Now()
 

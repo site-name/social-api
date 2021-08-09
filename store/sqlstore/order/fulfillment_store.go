@@ -26,6 +26,21 @@ func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 	return fs
 }
 
+func (fs *SqlFulfillmentStore) ModelFields() []string {
+	return []string{
+		"Fulfillments.Id",
+		"Fulfillments.FulfillmentOrder",
+		"Fulfillments.OrderID",
+		"Fulfillments.Status",
+		"Fulfillments.TrackingNumber",
+		"Fulfillments.CreateAt",
+		"Fulfillments.ShippingRefundAmount",
+		"Fulfillments.TotalRefundAmount",
+		"Fulfillments.Metadata",
+		"Fulfillments.PrivateMetadata",
+	}
+}
+
 func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
 	fs.CreateIndexIfNotExists("idx_fulfillments_status", store.FulfillmentTableName, "Status")
 	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", store.FulfillmentTableName, "TrackingNumber")
@@ -60,22 +75,56 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	return &ffm, nil
 }
 
-func (fs *SqlFulfillmentStore) FilterByExcludeStatuses(orderId string, excludeStatuses []string) (bool, error) {
-	var ffms []*order.Fulfillment
+// func (fs *SqlFulfillmentStore) FilterByExcludeStatuses(orderId string, excludeStatuses []string) (bool, error) {
+// 	var ffms []*order.Fulfillment
 
-	if _, err := fs.GetReplica().Select(
-		&ffms,
-		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Status NOT IN :statuses AND OrderID = :orderID",
-		map[string]interface{}{
-			"statuses": excludeStatuses,
-			"orderID":  orderId},
-	); err != nil {
-		return false, errors.Wrap(err, "failed to find fulfillments satisfy given requirements")
+// 	if _, err := fs.GetReplica().Select(
+// 		&ffms,
+// 		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Status NOT IN :statuses AND OrderID = :orderID",
+// 		map[string]interface{}{
+// 			"statuses": excludeStatuses,
+// 			"orderID":  orderId},
+// 	); err != nil {
+// 		return false, errors.Wrap(err, "failed to find fulfillments satisfy given requirements")
+// 	}
+
+// 	if len(ffms) == 0 {
+// 		return false, nil
+// 	}
+
+// 	return true, nil
+// }
+
+// FilterByoption finds and returns a slice of fulfillments by given option
+func (fs *SqlFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+	query := fs.GetQueryBuilder().
+		Select(fs.ModelFields()...).
+		From(store.FulfillmentTableName).
+		OrderBy(store.TableOrderingMap[store.FulfillmentTableName])
+
+	// parsing option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Fulfillments.Id"))
+	}
+	if option.Status != nil {
+		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
+	}
+	if option.OrderID != nil {
+		query = query.
+			InnerJoin(store.OrderTableName + " ON (Fulfillments.OrderID = Orders.Id)").
+			Where(option.OrderID.ToSquirrel("Orders.Id"))
 	}
 
-	if len(ffms) == 0 {
-		return false, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	return true, nil
+	var res []*order.Fulfillment
+	_, err = fs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
+	}
+
+	return res, nil
 }

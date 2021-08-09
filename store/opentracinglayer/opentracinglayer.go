@@ -3968,6 +3968,24 @@ func (s *OpenTracingLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.Men
 	return result, err
 }
 
+func (s *OpenTracingLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OrderStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerOrderStore) Get(id string) (*order.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.Get")
