@@ -164,7 +164,7 @@ func (a *AppDiscount) ValidateVoucherInOrder(ord *order.Order) *model.AppError {
 		return nil // returns immediately if order has no voucher
 	}
 
-	orderSubTotal, appErr := a.OrderApp().OrderSubTotal(ord.Id, ord.Currency)
+	orderSubTotal, appErr := a.OrderApp().OrderSubTotal(ord)
 	if appErr != nil {
 		return appErr
 	}

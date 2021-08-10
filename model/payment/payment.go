@@ -63,7 +63,7 @@ var ChargeStatuString = map[string]string{
 type Payment struct {
 	Id                 string           `json:"id"`
 	GateWay            string           `json:"gate_way"`
-	IsActive           *bool            `json:"is_active"`
+	IsActive           *bool            `json:"is_active"` // default true
 	ToConfirm          bool             `json:"to_confirm"`
 	CreateAt           int64            `json:"create_at"`
 	UpdateAt           int64            `json:"update_at"`
@@ -276,11 +276,15 @@ func (p *Payment) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+	p.CreateAt = model.GetMillis()
+	p.UpdateAt = p.CreateAt
+	p.commonPre()
+}
 
+func (p *Payment) commonPre() {
 	p.BillingEmail = model.NormalizeEmail(p.BillingEmail)
 	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
 	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
-
 	if p.Total == nil || p.Total.LessThanOrEqual(decimal.Zero) {
 		p.Total = &decimal.Zero
 	}
@@ -290,30 +294,14 @@ func (p *Payment) PreSave() {
 	if _, ok := ChargeStatuString[strings.ToLower(p.ChargeStatus)]; !ok {
 		p.ChargeStatus = NOT_CHARGED
 	}
-	p.CreateAt = model.GetMillis()
-	p.UpdateAt = p.CreateAt
 	if p.IsActive == nil {
 		p.IsActive = model.NewBool(true)
 	}
 }
 
 func (p *Payment) PreUpdate() {
-	p.BillingEmail = model.NormalizeEmail(p.BillingEmail)
-	p.BillingFirstName = model.SanitizeUnicode(account.CleanNamePart(p.BillingFirstName, model.FirstName))
-	p.BillingLastName = model.SanitizeUnicode(account.CleanNamePart(p.BillingLastName, model.LastName))
-	if p.Total == nil || p.Total.LessThanOrEqual(decimal.Zero) {
-		p.Total = &decimal.Zero
-	}
-	if p.CapturedAmount == nil || p.CapturedAmount.LessThanOrEqual(decimal.Zero) {
-		p.CapturedAmount = &decimal.Zero
-	}
-	if _, ok := ChargeStatuString[strings.ToLower(p.ChargeStatus)]; !ok {
-		p.ChargeStatus = NOT_CHARGED
-	}
 	p.UpdateAt = model.GetMillis()
-	if p.IsActive == nil {
-		p.IsActive = model.NewBool(true)
-	}
+	p.commonPre()
 }
 
 func (p *Payment) ToJson() string {

@@ -151,6 +151,51 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 	return changedOrderDiscounts, nil
 }
 
+func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+	value := kwargs["update_voucher_discount"]
+	if value != nil {
+
+	}
+}
+
+//Calculate discount value depending on voucher and discount types.
+//
+// Raise NotApplicable if voucher of given type cannot be applied.
+func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError) {
+	ord.PopulateNonDbFields()
+
+	if ord.VoucherID == nil || !model.IsValidId(*ord.VoucherID) {
+		return &goprices.Money{
+			Amount:   &decimal.Zero,
+			Currency: ord.Currency,
+		}, nil
+	}
+
+	appErr := a.DiscountApp().ValidateVoucherInOrder(ord)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderSubTotal, appErr := a.OrderSubTotal(ord)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	voucherOfDiscount, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if voucherOfDiscount.Type == product_and_discount.ENTIRE_ORDER {
+		return a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
+	}
+	if voucherOfDiscount.Type == product_and_discount.SHIPPING {
+		return a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
+	}
+	// otherwise: Type is product_and_discount.SPECIFIC_PRODUCT
+
+}
+
 // FilterOrdersByOptions is common method for filtering orders by given option
 func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
 	orders, err := a.Srv().Store.Order().FilterByOption(option)

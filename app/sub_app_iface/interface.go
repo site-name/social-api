@@ -69,6 +69,7 @@ type PaymentApp interface {
 	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError                                                                                                                                                           // UpdatePayment updates given payment based on given `gatewayResponse`
 	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError                                                                                                                                                                      // StoreCustomerId process
 	FetchCustomerId(user interface{}, gateway string) (string, *model.AppError)                                                                                                                                                                            // FetchCustomerId Retrieve users customer_id stored for desired gateway
+	GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)                                                                                                                                            // GetSubTotal adds up all Total prices of given order lines
 }
 
 // CheckoutApp
@@ -276,6 +277,8 @@ type DiscountApp interface {
 	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
 	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError) // OrderDiscountsByOption filters and returns order discounts with given option
 	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)           // UpsertOrderDiscount updates or inserts given order discount
+	ValidateVoucherInOrder(ord *order.Order) *model.AppError                                                                                // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
+	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                          // VoucherById finds and returns a voucher with given id
 }
 
 type OrderApp interface {
@@ -286,21 +289,21 @@ type OrderApp interface {
 	//
 	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
-	OrderTotalQuantity(orderID string) (uint, *model.AppError)                                  // OrderTotalQuantity return total quantity of given order
-	UpdateOrderTotalPaid(orderID string) *model.AppError                                        // UpdateOrderTotalPaid update given order's total paid amount
-	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                // OrderIsPreAuthorized checks if order is pre-authorized
-	OrderIsCaptured(orderID string) (bool, *model.AppError)                                     // OrderIsCaptured checks if given order is captured
-	OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError) // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                    // OrderCanCalcel checks if given order can be canceled
-	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)         // OrderCanCapture checks if given order can capture.
-	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)            // OrderCanVoid checks if given order can void
-	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)       // OrderCanRefund checks if order can refund
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)   // CanMarkOrderAsPaid checks if given order can be marked as paid.
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                   // OrderTotalAuthorized returns order's total authorized amount
-	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                             // GetOrderCountryCode is helper function, returns contry code of given order
-	OrderLineById(id string) (*order.OrderLine, *model.AppError)                                // OrderLineById returns order line with id of given id
-	OrderById(id string) (*order.Order, *model.AppError)                                        // OrderById returns order with id of given id
-	CustomerEmail(ord *order.Order) (string, *model.AppError)                                   // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
+	OrderTotalQuantity(orderID string) (uint, *model.AppError)                                // OrderTotalQuantity return total quantity of given order
+	UpdateOrderTotalPaid(orderID string) *model.AppError                                      // UpdateOrderTotalPaid update given order's total paid amount
+	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                              // OrderIsPreAuthorized checks if order is pre-authorized
+	OrderIsCaptured(orderID string) (bool, *model.AppError)                                   // OrderIsCaptured checks if given order is captured
+	OrderSubTotal(order *order.Order) (*goprices.TaxedMoney, *model.AppError)                 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
+	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                  // OrderCanCalcel checks if given order can be canceled
+	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)       // OrderCanCapture checks if given order can capture.
+	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)          // OrderCanVoid checks if given order can void
+	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)     // OrderCanRefund checks if order can refund
+	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) // CanMarkOrderAsPaid checks if given order can be marked as paid.
+	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                 // OrderTotalAuthorized returns order's total authorized amount
+	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                           // GetOrderCountryCode is helper function, returns contry code of given order
+	OrderLineById(id string) (*order.OrderLine, *model.AppError)                              // OrderLineById returns order line with id of given id
+	OrderById(id string) (*order.Order, *model.AppError)                                      // OrderById returns order with id of given id
+	CustomerEmail(ord *order.Order) (string, *model.AppError)                                 // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
 }
 
 type MenuApp interface {

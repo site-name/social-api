@@ -28,6 +28,7 @@ func (a *AppDiscount) UpsertVoucher(voucher *product_and_discount.Voucher) (*pro
 	return voucher, nil
 }
 
+// VoucherById finds and returns a voucher with given id
 func (a *AppDiscount) VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError) {
 	voucher, err := a.Srv().Store.DiscountVoucher().Get(voucherID)
 	if err != nil {

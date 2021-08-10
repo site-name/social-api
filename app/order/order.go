@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"sync"
 
 	"github.com/site-name/decimal"
@@ -151,30 +150,13 @@ func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 }
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-func (a *AppOrder) OrderSubTotal(orderID string, orderCurrency string) (*goprices.TaxedMoney, *model.AppError) {
-	orderLines, appErr := a.GetAllOrderLinesByOrderId(orderID)
+func (a *AppOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
+	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	// check if order and its child order lines have  same currencies
-	if !strings.EqualFold(orderCurrency, orderLines[0].Currency) {
-		return nil, model.NewAppError("OrderSubTotal", "app.order.currency_integrity.app_error", nil, "orders and order lines must have same currencies", http.StatusInternalServerError)
-	}
-
-	subTotal, _ := util.ZeroTaxedMoney(orderLines[0].Currency)
-
-	var err error
-	for _, line := range orderLines {
-		if line.TotalPrice != nil {
-			subTotal, err = subTotal.Add(line.TotalPrice)
-			if err != nil {
-				return nil, model.NewAppError("OrderSubTotal", "app.order.get_sub_total.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
-		}
-	}
-
-	return subTotal, nil
+	return a.PaymentApp().GetSubTotal(orderLines, ord.Currency)
 }
 
 // OrderCanCalcel checks if given order can be canceled
