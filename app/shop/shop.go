@@ -22,7 +22,7 @@ func init() {
 func (a *AppShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
 	shop, err := a.app.Srv().Store.Shop().Get(shopID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.shop_by_id.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.error_finding_shop_by_id.app_error", err)
 	}
 
 	return shop, nil

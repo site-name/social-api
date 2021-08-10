@@ -34,7 +34,7 @@ func init() {
 //  }
 type DiscountCalculator func(args ...interface{}) (interface{}, error)
 
-func decorator(preValue interface{}) DiscountCalculator {
+func Decorator(preValue interface{}) DiscountCalculator {
 	return func(args ...interface{}) (interface{}, error) {
 		// validating number of args
 		if l := len(args); l < 1 || l > 2 {

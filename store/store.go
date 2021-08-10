@@ -645,6 +645,9 @@ type (
 type (
 	OrderDiscountStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error)                // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                              // Get finds and returns an order discount with given id
+		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) // FilterbyOption filters order discounts that satisfy given option, then returns them
 	}
 	DiscountSaleTranslationStore interface {
 		CreateIndexesIfNotExists()

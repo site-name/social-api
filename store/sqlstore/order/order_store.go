@@ -22,6 +22,7 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 		table := db.AddTableWithName(order.Order{}, store.OrderTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OriginalID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -53,6 +54,7 @@ func (os *SqlOrderStore) CreateIndexesIfNotExists() {
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ChannelID", store.ChannelTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "VoucherID", store.VoucherTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShopID", store.ShopTableName, "Id", false)
 }
 
 func (os *SqlOrderStore) ModelFields() []string {
@@ -152,7 +154,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	newOrder.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 	newOrder.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
-	count, err := os.GetMaster().Update(newOrder)
+	numberOfUpdatedOrder, err := os.GetMaster().Update(newOrder)
 	if err != nil {
 		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 			// this is user's intension to update token, he/she must be notified
@@ -161,8 +163,8 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 		return nil, errors.Wrapf(err, "failed to update order with id=%s", newOrder.Id)
 	}
 
-	if count > 1 {
-		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, count)
+	if numberOfUpdatedOrder > 1 {
+		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, numberOfUpdatedOrder)
 	}
 
 	newOrder.PopulateNonDbFields()

@@ -29,6 +29,7 @@ func (cs *SqlCsvExportEventStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CsvExportEventTablename, "ExportFileID", store.CsvExportFileTablename, "Id", false)
 }
 
+// Save inserts given export event into database then returns it
 func (s *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 	event.PreSave()
 	if err := event.IsValid(); err != nil {

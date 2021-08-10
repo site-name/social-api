@@ -45,14 +45,14 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 	firstListing := voucherChannelListings[0]
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
-		return decorator(&goprices.Money{
+		return Decorator(&goprices.Money{
 			Amount:   firstListing.DiscountValue,
 			Currency: firstListing.Currency,
 		}), nil
 	}
 
 	// otherwise DiscountValueType is 'percentage'
-	return decorator(firstListing.DiscountValue), nil
+	return Decorator(firstListing.DiscountValue), nil
 }
 
 func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price *goprices.Money, channelID string) (*goprices.Money, *model.AppError) {

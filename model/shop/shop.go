@@ -41,6 +41,12 @@ type Shop struct {
 	AutomaticallyConfirmAllNewOrders    *bool   `json:"automatically_confirm_all_new_orders"` // default true
 }
 
+type ShopDefaultDigitalContentSettings struct {
+	AutomaticFulfillmentDigitalProducts *bool
+	DefaultDigitalMaxDownloads          *uint
+	DefaultDigitalUrlValidDays          *uint
+}
+
 func (s *Shop) DefaultFromEmail() (string, error) {
 	if s.DefaultMailSenderAddress == "" {
 		return s.DefaultMailSenderAddress, nil

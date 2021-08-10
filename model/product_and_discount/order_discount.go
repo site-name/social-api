@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -13,7 +12,9 @@ import (
 
 // max lengths for order discount
 const (
-	ORDER_DISCOUNT_NAME_MAX_LENGTH = 255
+	ORDER_DISCOUNT_NAME_MAX_LENGTH       = 255
+	ORDER_DISCOUNT_TYPE_MAX_LENGTH       = 10
+	ORDER_DISCOUNT_VALUE_TYPE_MAX_LENGTH = 10
 )
 
 // order discount type's values
@@ -44,6 +45,18 @@ type OrderDiscount struct {
 	Name           *string          `json:"name"`
 	TranslatedName *string          `json:"translated_name"`
 	Reason         *string          `json:"reason"`
+}
+
+type OrderDiscountFilterOption struct {
+	Id      *model.StringFilter
+	OrderID *model.StringFilter
+	Type    *model.StringFilter
+}
+
+func (o *OrderDiscount) DeepCopy() *OrderDiscount {
+	newOrderDiscount := *o
+
+	return &newOrderDiscount
 }
 
 func (o *OrderDiscount) IsValid() *model.AppError {
@@ -82,12 +95,35 @@ func (o *OrderDiscount) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
 	}
+	o.commonPre()
+}
+
+func (o *OrderDiscount) commonPre() {
 	if o.Type == "" {
 		o.Type = MANUAL
 	}
 	if o.ValueType == "" {
 		o.ValueType = FIXED
 	}
+	if o.Value == nil {
+		o.Value = &decimal.Zero
+	}
+	if o.AmountValue == nil {
+		o.AmountValue = &decimal.Zero
+	}
+	if o.Name != nil {
+		*o.Name = model.SanitizeUnicode(*o.Name)
+	}
+	if o.TranslatedName != nil {
+		*o.TranslatedName = model.SanitizeUnicode(*o.TranslatedName)
+	}
+	if o.Reason != nil {
+		*o.Reason = model.SanitizeUnicode(*o.Reason)
+	}
+}
+
+func (o *OrderDiscount) PreUpdate() {
+	o.commonPre()
 }
 
 func (o *OrderDiscount) ToJson() string {
@@ -96,10 +132,4 @@ func (o *OrderDiscount) ToJson() string {
 		Currency: o.Currency,
 	}
 	return model.ModelToJson(o)
-}
-
-func OrderDiscountFromJson(data io.Reader) *OrderDiscount {
-	var o OrderDiscount
-	model.ModelFromJson(&o, data)
-	return &o
 }

@@ -24,6 +24,14 @@ type AppOrder struct {
 	mutex sync.Mutex
 }
 
+func init() {
+	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
+		return &AppOrder{
+			AppIface: a,
+		}
+	})
+}
+
 // UpsertOrder depends on given order's Id property to decide update/save it
 func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError) {
 	var (
@@ -40,14 +48,6 @@ func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError)
 	}
 
 	return ord, nil
-}
-
-func init() {
-	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
-		return &AppOrder{
-			AppIface: a,
-		}
-	})
 }
 
 func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {

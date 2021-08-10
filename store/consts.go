@@ -111,6 +111,7 @@ func init() {
 		SaleCategoryRelationTableName:   "CreateAt ASC",                     //
 		SaleProductRelationTableName:    "CreateAt ASC",                     //
 		SaleCollectionRelationTableName: "CreateAt ASC",                     //
+		OrderDiscountTableName:          "",                                 //
 
 		ShopTableName:            "Shops",            //
 		ShopTranslationTableName: "ShopTranslations", //
@@ -272,6 +273,7 @@ const (
 	SaleCategoryRelationTableName   = "SaleCategories"         //
 	SaleProductRelationTableName    = "SaleProducts"           //
 	SaleCollectionRelationTableName = "SaleCollections"        //
+	OrderDiscountTableName          = "OrderDiscounts"         //
 )
 
 // shop-related table names

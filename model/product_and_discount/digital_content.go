@@ -23,8 +23,8 @@ var ContentTypeString = map[string]string{
 
 type DigitalContent struct {
 	Id                   string  `json:"id"`
-	UseDefaultSettings   *bool   `json:"use_defaults_settings"`
-	AutomaticFulfillment *bool   `json:"automatic_fulfillment"`
+	UseDefaultSettings   *bool   `json:"use_defaults_settings"` // default true
+	AutomaticFulfillment *bool   `json:"automatic_fulfillment"` // default false
 	ContentType          string  `json:"content_type"`
 	ProductVariantID     string  `json:"product_variant_id"`
 	ContentFile          string  `json:"content_file"`

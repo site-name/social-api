@@ -66,9 +66,10 @@ var (
 
 type Order struct {
 	Id                           string                 `json:"id"`
-	CreateAt                     int64                  `json:"create_at"`           // NOT editable
-	Status                       string                 `json:"status"`              // default: UNFULFILLED
-	UserID                       *string                `json:"user_id"`             //
+	CreateAt                     int64                  `json:"create_at"` // NOT editable
+	Status                       string                 `json:"status"`    // default: UNFULFILLED
+	UserID                       *string                `json:"user_id"`   //
+	ShopID                       string                 `json:"shop_id"`
 	LanguageCode                 string                 `json:"language_code"`       // default: "en"
 	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
 	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
@@ -177,6 +178,9 @@ func (o *Order) IsValid() *model.AppError {
 	}
 	if o.UserID != nil && !model.IsValidId(*o.UserID) {
 		return outer("user_id", &o.Id)
+	}
+	if !model.IsValidId(o.ShopID) {
+		return outer("shop_id", &o.Id)
 	}
 	if o.BillingAddressID != nil && !model.IsValidId(*o.BillingAddressID) {
 		return outer("billing_address_id", &o.Id)

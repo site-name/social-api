@@ -22,9 +22,9 @@ func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChann
 			Amount:   saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency,
 		}
-		return decorator(discountAmount), nil
+		return Decorator(discountAmount), nil
 	}
-	return decorator(saleChannelListing.DiscountValue), nil
+	return Decorator(saleChannelListing.DiscountValue), nil
 }
 
 // FilterSalesByOption should be used to filter active or expired sales

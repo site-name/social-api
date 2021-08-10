@@ -214,6 +214,7 @@ type ProductApp interface {
 	ProductVariantGetPrice(product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
 	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
 	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError) // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
+	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
 }
 
 type WishlistApp interface {
@@ -269,12 +270,12 @@ type DiscountApp interface {
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
 	PromoCodeIsVoucher(code string) (bool, *model.AppError)                                               // PromoCodeIsVoucher checks if given code is belong to a voucher
 	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) *model.AppError // ValidateVoucherOnlyForStaff validate if voucher is only for staff
-	// GetProductDiscounts(resultChan chan<- interface{}, product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) // GetProductDiscounts Return discount values for all discounts applicable to a product.
-
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
 	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
+	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError) // OrderDiscountsByOption filters and returns order discounts with given option
+	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)           // UpsertOrderDiscount updates or inserts given order discount
 }
 
 type OrderApp interface {
