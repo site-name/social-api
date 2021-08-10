@@ -3084,6 +3084,22 @@ func (s *TimerLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*orde
 	return result, err
 }
 
+func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentLineStore.FilterbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.FilterbyOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
 	start := timemodule.Now()
 
@@ -3754,6 +3770,38 @@ func (s *TimerLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *dec
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.UpdateTotalPaid", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderEventStore.Get(orderEventID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderEventStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderEventStore.Save(orderEvent)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderEventStore.Save", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {

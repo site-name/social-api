@@ -55,3 +55,33 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, erro
 		return &res, nil
 	}
 }
+
+// FilterbyOption finds and returns a list of fulfillment lines by given option
+func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+	query := fls.GetQueryBuilder().
+		Select("*").
+		From(store.FulfillmentLineTableName)
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.FulfillmentID != nil {
+		query = query.Where(option.Id.ToSquirrel("FulfillmentID"))
+	}
+	if option.OrderLineID != nil {
+		query = query.Where(option.Id.ToSquirrel("OrderLineID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+	var res []*order.FulfillmentLine
+	_, err = fls.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find fulfillment lines by given option")
+	}
+
+	return res, nil
+}

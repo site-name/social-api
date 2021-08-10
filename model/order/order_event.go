@@ -105,12 +105,20 @@ const (
 
 // Model used to store events that happened during the order lifecycle.
 type OrderEvent struct {
-	Id         string           `json:"id"`
-	CreateAt   int64            `json:"create_at"`
-	Type       string           `json:"type"`
-	OrderID    string           `json:"order_id"`
-	Parameters *model.StringMap `json:"parameters"`
-	UserID     *string          `json:"user_id"`
+	Id         string                 `json:"id"`
+	CreateAt   int64                  `json:"create_at"`
+	Type       string                 `json:"type"`
+	OrderID    string                 `json:"order_id"`
+	Parameters *model.StringInterface `json:"parameters"`
+	UserID     *string                `json:"user_id"`
+}
+
+// OrderEventOption contains parameters to create new order event instance
+type OrderEventOption struct {
+	OrderID    string
+	Parameters *model.StringInterface
+	Type       string
+	UserID     *string
 }
 
 func (o *OrderEvent) IsValid() *model.AppError {

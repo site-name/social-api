@@ -1,6 +1,8 @@
 package order
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -90,6 +92,13 @@ func (f *Fulfillment) PreSave() {
 	if f.Status == "" {
 		f.Status = FULFILLED
 	}
+}
+
+func (f *Fulfillment) ComposedId() (string, error) {
+	if !model.IsValidId(f.Id) {
+		return "", errors.New("please save me first")
+	}
+	return fmt.Sprintf("%s-%d", f.OrderID, f.FulfillmentOrder), nil
 }
 
 // CanEdit checks if current Fulfillment's Status is "canceled"

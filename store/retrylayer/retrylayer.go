@@ -3556,6 +3556,26 @@ func (s *RetryLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*orde
 
 }
 
+func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentLineStore.FilterbyOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
 
 	tries := 0
@@ -4391,6 +4411,46 @@ func (s *RetryLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *dec
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderEventStore.Get(orderEventID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderEventStore.Save(orderEvent)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 

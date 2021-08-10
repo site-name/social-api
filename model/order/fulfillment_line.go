@@ -14,6 +14,13 @@ type FulfillmentLine struct {
 	StockID       *string `json:"stock_id"`
 }
 
+// FulfillmentLineFilterOption is used to build sql queries
+type FulfillmentLineFilterOption struct {
+	Id            *model.StringFilter
+	OrderLineID   *model.StringFilter
+	FulfillmentID *model.StringFilter
+}
+
 func (f *FulfillmentLine) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.fulfillment_line.is_valid.%s.app_error",

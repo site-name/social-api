@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -19,11 +20,33 @@ import (
 
 type AppOrder struct {
 	app.AppIface
+	wg    sync.WaitGroup
+	mutex sync.Mutex
+}
+
+// UpsertOrder depends on given order's Id property to decide update/save it
+func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError) {
+	var (
+		err error
+	)
+	if ord.Id == "" {
+		ord, err = a.Srv().Store.Order().Save(ord)
+	} else {
+		ord, err = a.Srv().Store.Order().Update(ord)
+	}
+
+	if err != nil {
+		return nil, model.NewAppError("UpsertOrder", "app.order.error_upserting_order.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return ord, nil
 }
 
 func init() {
 	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
-		return &AppOrder{a}
+		return &AppOrder{
+			AppIface: a,
+		}
 	})
 }
 

@@ -567,11 +567,14 @@ type (
 	}
 	OrderEventStore interface {
 		CreateIndexesIfNotExists()
+		Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) // Save inserts given order event into database then returns it
+		Get(orderEventID string) (*order.OrderEvent, error)           // Get finds order event with given id then returns it
 	}
 	FulfillmentLineStore interface {
 		CreateIndexesIfNotExists()
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
+		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) // FilterbyOption finds and returns a list of fulfillment lines by given option
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()

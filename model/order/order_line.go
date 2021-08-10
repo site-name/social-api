@@ -201,7 +201,10 @@ func (o *OrderLine) PreUpdate() {
 }
 
 func (o *OrderLine) String() string {
-	return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
+	if o.VariantName != "" {
+		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
+	}
+	return o.ProductName
 }
 
 func (o *OrderLine) QuantityUnFulfilled() uint {
