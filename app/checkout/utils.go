@@ -351,28 +351,70 @@ func (a *AppCheckout) ChangeBillingAddressInCheckout(ckout *checkout.Checkout, a
 	return nil
 }
 
-// func (a *AppCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo) *model.AppError {
-
-// }
+// Save shipping address in checkout if changed.
+//
+// Remove previously saved address if not connected to any user.
+func (a *AppCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo) *model.AppError {
+	panic("not implemented")
+}
 
 func (a *AppCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError) {
-	discountedProducts, appErr := a.app.ProductApp().ProductsByVoucherID(voucher.Id)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
-			return nil, appErr
+	var (
+		discountedProducts    []*product_and_discount.Product
+		discountedCategories  []*product_and_discount.Category
+		discountedCollections []*product_and_discount.Collection
+		appError              *model.AppError
+	)
+
+	setErr := func(err *model.AppError) {
+		a.mutex.Lock()
+		if err != nil {
+			appError = err
 		}
+		a.mutex.Unlock()
 	}
-	discountedCategories, appErr := a.app.ProductApp().CategoriesByVoucherID(voucher.Id)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
-			return nil, appErr
+
+	// starting 3 go routines
+	a.wg.Add(3)
+
+	go func() {
+		products, appErr := a.app.ProductApp().ProductsByVoucherID(voucher.Id)
+		if appErr != nil {
+			setErr(appErr)
+		} else {
+			discountedProducts = products
 		}
-	}
-	discountedCollections, appErr := a.app.ProductApp().CollectionsByVoucherID(voucher.Id)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError { // system's error, returns immediately
-			return nil, appErr
+
+		a.wg.Done()
+	}()
+
+	go func() {
+		categories, appErr := a.app.ProductApp().CategoriesByVoucherID(voucher.Id)
+		if appErr != nil {
+			setErr(appErr)
+		} else {
+			discountedCategories = categories
 		}
+
+		a.wg.Done()
+	}()
+
+	go func() {
+		collections, appErr := a.app.ProductApp().CollectionsByVoucherID(voucher.Id)
+		if appErr != nil {
+			setErr(appErr)
+		} else {
+			discountedCollections = collections
+		}
+
+		a.wg.Done()
+	}()
+
+	a.wg.Done()
+
+	if appError != nil {
+		appError.Where = "GetDiscountedLines"
+		return nil, appError
 	}
 
 	var (

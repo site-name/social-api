@@ -38,11 +38,23 @@ func (a *AppDiscount) VoucherById(voucherID string) (*product_and_discount.Vouch
 }
 
 func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (DiscountCalculator, *model.AppError) {
-	voucherChannelListings, appErr := a.VoucherChannelListingsByVoucherAndChannel(voucher.Id, channelID)
+	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&product_and_discount.VoucherChannelListingFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: voucher.Id,
+			},
+		},
+		ChannelID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: channelID,
+			},
+		},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
+	// chose the first listing since these result is already sorted during database look up
 	firstListing := voucherChannelListings[0]
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
@@ -56,13 +68,16 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 	return Decorator(firstListing.DiscountValue), nil
 }
 
-func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price *goprices.Money, channelID string) (*goprices.Money, *model.AppError) {
-	discountCalcuFunc, appErr := a.GetVoucherDiscount(voucher, channelID)
+// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
+//
+//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
+func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (*goprices.Money, *model.AppError) {
+	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	afterDiscount, err := discountCalcuFunc(price)
+	afterDiscount, err := discountCalculator(price)
 	if err != nil {
 		// this error maybe caused by user. But we tomporarily set status code to 500
 		return nil, model.NewAppError("GetDiscountAmountFor", "app.discount.error_calculating_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -70,10 +85,8 @@ func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher
 	if afterDiscount.(*goprices.Money).Amount.LessThan(decimal.Zero) {
 		return price, nil
 	}
-	sub, err := price.Sub(afterDiscount.(*goprices.Money))
-	if err != nil {
-		return nil, model.NewAppError("GetDiscountAmountFor", "app.discount.error_subtract_money.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
+	sub, _ := price.Sub(afterDiscount.(*goprices.Money))
+	//   ^ ignore error here since we already catched it in discount calculating process
 
 	return sub, nil
 }
@@ -90,7 +103,18 @@ func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, va
 		money = value.Gross
 	}
 
-	voucherChannelListings, appErr := a.VoucherChannelListingsByVoucherAndChannel(voucher.Id, channelID)
+	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&product_and_discount.VoucherChannelListingFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: voucher.Id,
+			},
+		},
+		ChannelID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: channelID,
+			},
+		},
+	})
 	if appErr != nil {
 		return appErr
 	}

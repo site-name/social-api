@@ -3772,6 +3772,54 @@ func (s *TimerLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *dec
 	return err
 }
 
+func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderDiscountStore.FilterbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderDiscountStore.FilterbyOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderDiscountStore.Get(orderDiscountID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderDiscountStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOrderDiscountStore) Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderDiscountStore.Upsert(orderDiscount)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderDiscountStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
 	start := timemodule.Now()
 
@@ -6983,10 +7031,10 @@ func (s *TimerLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_dis
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherChannelListingStore.FilterByVoucherAndChannel(voucherID, channelID)
+	result, err := s.VoucherChannelListingStore.FilterbyOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6994,7 +7042,7 @@ func (s *TimerLayerVoucherChannelListingStore) FilterByVoucherAndChannel(voucher
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.FilterByVoucherAndChannel", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.FilterbyOption", success, elapsed)
 	}
 	return result, err
 }

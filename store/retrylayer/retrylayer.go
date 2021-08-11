@@ -4416,6 +4416,66 @@ func (s *RetryLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *dec
 
 }
 
+func (s *RetryLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderDiscountStore.FilterbyOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderDiscountStore.Get(orderDiscountID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderDiscountStore) Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderDiscountStore.Upsert(orderDiscount)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
 
 	tries := 0
@@ -8338,11 +8398,11 @@ func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_dis
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherChannelListingStore.FilterByVoucherAndChannel(voucherID, channelID)
+		result, err := s.VoucherChannelListingStore.FilterbyOption(option)
 		if err == nil {
 			return result, nil
 		}

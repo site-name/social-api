@@ -21,6 +21,13 @@ type VoucherChannelListing struct {
 	MinSpenAmount *decimal.Decimal `json:"min_spent_amount"`
 }
 
+// VoucherChannelListingFilterOption is mainly used to build sql queries to filter voucher channel listing relationship instances
+type VoucherChannelListingFilterOption struct {
+	Id        *model.StringFilter
+	VoucherID *model.StringFilter
+	ChannelID *model.StringFilter
+}
+
 func (v *VoucherChannelListing) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()

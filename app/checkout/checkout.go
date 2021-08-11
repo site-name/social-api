@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -18,7 +19,9 @@ import (
 )
 
 type AppCheckout struct {
-	app app.AppIface
+	app   app.AppIface
+	wg    sync.WaitGroup
+	mutex sync.Mutex
 }
 
 const (
@@ -27,7 +30,9 @@ const (
 
 func init() {
 	app.RegisterCheckoutApp(func(a app.AppIface) sub_app_iface.CheckoutApp {
-		return &AppCheckout{a}
+		return &AppCheckout{
+			app: a,
+		}
 	})
 }
 

@@ -1,19 +1,18 @@
 package discount
 
 import (
-	"net/http"
+	"errors"
 	"sync"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
-	"github.com/sitename/sitename/model"
 )
 
 type AppDiscount struct {
 	app.AppIface
-	wg    sync.WaitGroup
-	mutex sync.Mutex
+	wg    sync.WaitGroup // this is for some methods that need concurrent executions
+	mutex sync.Mutex     // this is for prevent data racing in methods that have concurrent executions
 }
 
 func init() {
@@ -26,19 +25,23 @@ func init() {
 
 // DiscountCalculator number of `args` must be 1 or 2
 //
+//  // pass 1 argument if you want to calculate fixed discount
 //  if len(args) == 1 {
 //		args[0].(type) == (*Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange)
 //  }
+//
+//  // pass 2 arguments if you want to calculate percentage discount
 //  if len(args) == 2 {
 //		args[0].(type) == (*Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange) && args[1].(type) == bool
 //  }
 type DiscountCalculator func(args ...interface{}) (interface{}, error)
 
+// Decorator returns a function to calculate discount
 func Decorator(preValue interface{}) DiscountCalculator {
 	return func(args ...interface{}) (interface{}, error) {
 		// validating number of args
 		if l := len(args); l < 1 || l > 2 {
-			return nil, model.NewAppError("app.Discount.decorator", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, "you must provide either 1 or 2 arguments", http.StatusBadRequest)
+			return nil, errors.New("at most 2 arguments only")
 		}
 
 		if len(args) == 1 { // fixed discount

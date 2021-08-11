@@ -94,26 +94,34 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 	return &res, nil
 }
 
-// FilterByVoucherAndChannel finds a list of listings that belong to given voucher and own given channel
-func (vcls *SqlVoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
-	var listings []*product_and_discount.VoucherChannelListing
-	_, err := vcls.GetReplica().Select(
-		&listings,
-		`SELECT * FROM `+store.VoucherChannelListingTableName+`
-		WHERE (
-			VoucherID = :VoucherID AND ChannelID = :ChannelID
-		)
-		ORDER BY :OrderBy`, // since ids are UUIDs, not number so order by creation time is used instead
-		map[string]interface{}{
-			"VoucherID": voucherID,
-			"ChannelID": channelID,
-			"OrderBy":   store.TableOrderingMap[store.VoucherChannelListingTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find voucher channel listing with VoucherID = %s, ChannelID = %s", voucherID, channelID)
+// FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
+func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
+	query := vcls.GetQueryBuilder().
+		Select("*").
+		From(store.VoucherChannelListingTableName).
+		OrderBy(store.TableOrderingMap[store.VoucherChannelListingTableName])
+
+	// parse options
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.ChannelID != nil {
+		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
+	}
+	if option.VoucherID != nil {
+		query = query.Where(option.VoucherID.ToSquirrel("VoucherID"))
 	}
 
-	product_and_discount.VoucherChannelListingList(listings).PopulateNonDbFields()
-	return listings, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+
+	var res []*product_and_discount.VoucherChannelListing
+	_, err = vcls.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")
+	}
+
+	return res, nil
 }

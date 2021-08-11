@@ -6,10 +6,12 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppDiscount) VoucherChannelListingsByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, *model.AppError) {
-	listings, err := a.Srv().Store.VoucherChannelListing().FilterByVoucherAndChannel(voucherID, channelID)
+// VoucherChannelListingsByOption finds voucher channel listings based on given options
+func (a *AppDiscount) VoucherChannelListingsByOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, *model.AppError) {
+	listings, err := a.Srv().Store.VoucherChannelListing().FilterbyOption(option)
+
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VoucherChannelListingsByVoucherAndChannel", "app.discount.error_finding_voucher_channel_listings_by_channel_and_voucher.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("VoucherChannelListingsByOption", "app.discount.error_finding_voucher_channel_listings_by_option.app_error", err)
 	}
 
 	return listings, nil
