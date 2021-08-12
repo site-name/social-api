@@ -1,6 +1,7 @@
 package discount
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -217,18 +218,24 @@ func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, tot
 }
 
 // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
-func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channeL *channel.Channel) (*goprices.Money, *model.AppError) {
-	// validate given prices are valid
-	var invalidArg bool
-	var minPrice *goprices.Money
+func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) {
+	// validate given prices are valid:
+	var (
+		invalidArg   bool
+		minPrice     *goprices.Money
+		appErrDetail string
+	)
 
 	if len(prices) == 0 {
 		invalidArg = true
+		appErrDetail = "len(prices) == 0"
 	}
-	for _, price := range prices {
-		// check if prices's currencies is supported by system, are the same and euqal to given channel's currency
-		if _, err := goprices.GetCurrencyPrecision(price.Currency); err != nil || price.Currency != prices[0].Currency || price.Currency != channeL.Currency {
+
+	for index, price := range prices {
+		// check if prices's currencies is supported by system and are the same
+		if _, err := goprices.GetCurrencyPrecision(price.Currency); err != nil || price.Currency != prices[0].Currency {
 			invalidArg = true
+			appErrDetail = fmt.Sprintf("a price has invalid currency unit: index: %d, currency unit: %s", index+1, price.Currency)
 			break
 		}
 		if minPrice == nil || minPrice.Amount.GreaterThan(*price.Amount) {
@@ -236,31 +243,38 @@ func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.V
 		}
 	}
 	if invalidArg {
-		return nil, model.NewAppError("GetProductsVoucherDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("GetProductsVoucherDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "prices"}, appErrDetail, http.StatusBadRequest)
 	}
 
 	if voucher.ApplyOncePerOrder {
-		return a.GetDiscountAmountFor(voucher, minPrice, channeL.Id)
+		price, appErr := a.GetDiscountAmountFor(voucher, minPrice, channelID)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return price.(*goprices.Money), nil
 	}
 
-	totalAmount, _ := util.ZeroMoney(channeL.Currency) // ignore error since channels's Currencies are validated before saving
+	totalAmount, _ := util.ZeroMoney(prices[0].Currency) // ignore error since channels's Currencies are validated before saving
 	var appErr *model.AppError
+
 	a.wg.Add(len(prices))
 
 	for _, price := range prices {
 		go func(pr *goprices.Money) {
 
-			money, err := a.GetDiscountAmountFor(voucher, pr, channeL.Id)
+			money, err := a.GetDiscountAmountFor(voucher, pr, channelID)
 			a.mutex.Lock()
 			if err != nil {
 				appErr = err
 			} else {
-				totalAmount, _ = totalAmount.Add(money)
+				totalAmount, _ = totalAmount.Add(money.(*goprices.Money))
 			}
 			a.mutex.Unlock()
 
 		}(price)
 	}
+
+	a.wg.Wait()
 
 	if appErr != nil {
 		return nil, appErr

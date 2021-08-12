@@ -2261,6 +2261,66 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 
 }
 
+func (s *RetryLayerCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.CategoryStore.Get(categoryID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCategoryStore) GetCategoryByProductID(productID string) (*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.CategoryStore.GetCategoryByProductID(productID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.CategoryStore.Upsert(category)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
 
 	tries := 0
@@ -2716,6 +2776,66 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionStore.CollectionsByProductID(productID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionStore.Get(collectionID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionStore.Upsert(collection)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 
@@ -5207,6 +5327,26 @@ func (s *RetryLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_
 	tries := 0
 	for {
 		result, err := s.ProductStore.GetProductsByIds(ids)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.ProductByProductVariantID(productVariantID)
 		if err == nil {
 			return result, nil
 		}

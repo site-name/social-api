@@ -1,6 +1,9 @@
 package product
 
 import (
+	"database/sql"
+
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -45,4 +48,85 @@ func (ps *SqlCollectionStore) ModelFields() []string {
 		"Collections.SeoTitle",
 		"Collections.SeoDescription",
 	}
+}
+
+// Upsert depends on given collection's Id property to decide update or insert the collection
+func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+	var isSaving bool
+	if collection.Id == "" {
+		isSaving = true
+		collection.PreSave()
+	} else {
+		collection.PreUpdate()
+	}
+
+	if err := collection.IsValid(); err != nil {
+		return nil, err
+	}
+
+	var (
+		err        error
+		numUpdated int64
+	)
+	if isSaving {
+		err = cs.GetMaster().Insert(collection)
+	} else {
+		_, err = cs.Get(collection.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		numUpdated, err = cs.GetMaster().Update(collection)
+	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to upsert collection with id=%s", collection.Id)
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple collections were updated: %d instead of 1", numUpdated)
+	}
+
+	return collection, nil
+}
+
+// Get finds and returns collection with given collectionID
+func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
+	var res product_and_discount.Collection
+	err := cs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": collectionID})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductCollectionTableName, collectionID)
+		}
+		return nil, errors.Wrapf(err, "failed to find collection with id=%s", collectionID)
+	}
+
+	return &res, nil
+}
+
+// CollectionsByProductID finds and returns a list of collections that related to given product
+func (cs *SqlCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+	var res []*product_and_discount.Collection
+	_, err := cs.GetReplica().Select(
+		&res,
+		`SELECT * FROM Collections
+		WHERE (
+			Collections.Id IN (
+				SELECT
+					CollectionID 
+				FROM 
+					ProductCollections 
+				WHERE (
+					ProductID = :ProductID
+				)
+			)
+		)`,
+		map[string]interface{}{
+			"ProductID": productID,
+		},
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find collections related to product id id=%s", productID)
+	}
+
+	return res, nil
 }

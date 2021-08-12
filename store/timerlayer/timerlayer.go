@@ -2027,6 +2027,54 @@ func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
 	return err
 }
 
+func (s *TimerLayerCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
+	start := timemodule.Now()
+
+	result, err := s.CategoryStore.Get(categoryID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCategoryStore) GetCategoryByProductID(productID string) (*product_and_discount.Category, error) {
+	start := timemodule.Now()
+
+	result, err := s.CategoryStore.GetCategoryByProductID(productID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.GetCategoryByProductID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
+	start := timemodule.Now()
+
+	result, err := s.CategoryStore.Upsert(category)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
 	start := timemodule.Now()
 
@@ -2393,6 +2441,54 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 		s.Root.Metrics.ObserveStoreMethodDuration("ClusterDiscoveryStore.SetLastPingAt", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionStore.CollectionsByProductID(productID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.CollectionsByProductID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionStore.Get(collectionID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionStore.Upsert(collection)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.Upsert", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
@@ -4423,6 +4519,22 @@ func (s *TimerLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.GetProductsByIds", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.ProductByProductVariantID(productVariantID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.ProductByProductVariantID", success, elapsed)
 	}
 	return result, err
 }

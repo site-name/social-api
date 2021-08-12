@@ -216,6 +216,9 @@ type ProductApp interface {
 	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
 	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError) // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
 	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
+	ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError)        // ProductByProductVariantID finds and returns product with given product varnait id
+	CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError)                    // CategoryByProductID finds and returns a category by given productID
+	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)             // CollectionsByProductID finds and returns all collections related to given product
 }
 
 type WishlistApp interface {
@@ -268,7 +271,9 @@ type DiscountApp interface {
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
 	//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
-	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (*goprices.Money, *model.AppError)
+	//
+	// NOTE: the returning interface's type should be identical to given price's type
+	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
@@ -278,11 +283,11 @@ type DiscountApp interface {
 	//
 	// `discounts` is optional
 	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
-	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)                  // OrderDiscountsByOption filters and returns order discounts with given option
-	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)                            // UpsertOrderDiscount updates or inserts given order discount
-	ValidateVoucherInOrder(ord *order.Order) *model.AppError                                                                                                 // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
-	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                           // VoucherById finds and returns a voucher with given id
-	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channeL *channel.Channel) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
+	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)          // OrderDiscountsByOption filters and returns order discounts with given option
+	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)                    // UpsertOrderDiscount updates or inserts given order discount
+	ValidateVoucherInOrder(ord *order.Order) *model.AppError                                                                                         // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
+	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                   // VoucherById finds and returns a voucher with given id
+	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 }
 
 type OrderApp interface {

@@ -36,7 +36,8 @@ func (c *Category) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.category.is_valid.%s.app_error",
 		"category_id=",
-		"Category.IsValid")
+		"Category.IsValid",
+	)
 
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
@@ -67,7 +68,6 @@ func (c *Category) PreSave() {
 
 func (c *Category) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
-	// c.Slug = slug.Make(c.Slug)
 }
 
 func (c *Category) ToJson() string {

@@ -27,6 +27,15 @@ func (a *AppProduct) ProductById(productID string) (*product_and_discount.Produc
 	return product, nil
 }
 
+// ProductByProductVariantID finds and returns product with given product varnait id
+func (a *AppProduct) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError) {
+	product, err := a.Srv().Store.Product().ProductByProductVariantID(productVariantID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductByProductVariantID", "app.product.error_finding_product_by_product_variant_id.app_error", err)
+	}
+	return product, nil
+}
+
 // ProductsByVoucherID finds all products that have relationships with given voucher
 func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
 	products, err := a.Srv().Store.VoucherProduct().ProductsByVoucherID(voucherID)

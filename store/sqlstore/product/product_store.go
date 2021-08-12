@@ -104,33 +104,51 @@ func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discou
 	}
 
 	products := []*product_and_discount.Product{}
-	if _, err := ps.GetMaster().Select(&products, sqlQuery, args...); err != nil {
-		return nil, errors.Wrap(err, "failed to find Products")
+	_, err = ps.GetMaster().Select(&products, sqlQuery, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find Products by given ids")
 	}
 
 	return products, nil
 }
 
-// func (ps *SqlProductStore) FilterProducts(filter *model.ProductFilterInput) ([]*product_and_discount.Product, error) {
-// 	// table names
-// 	const (
-// 		TABLE_products               = "Products"
-// 		TABLE_collectionProducts     = "CollectionProducts"
-// 		TABLE_productChannelListings = "ProductChannelListings"
-// 		TABLE_channels               = "Channels"
-// 		TABLE_productVariants        = "ProductVariants"
-// 	)
+// ProductByProductVariantID finds and returns a product that has given variant
+func (ps *SqlProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
+	rowScanner := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductTableName).
+		InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		Where(squirrel.Eq{"ProductVariants.Id": productVariantID}).
+		RunWith(ps.GetReplica()).
+		QueryRow()
 
-// 	const (
-// 		INNER_JOIN = " INNER JOIN "
-// 	)
+	var product product_and_discount.Product
+	err := rowScanner.Scan(
+		&product.Id,
+		&product.ProductTypeID,
+		&product.Name,
+		&product.Slug,
+		&product.Description,
+		&product.DescriptionPlainText,
+		&product.CategoryID,
+		&product.CreateAt,
+		&product.UpdateAt,
+		&product.ChargeTaxes,
+		&product.Weight,
+		&product.WeightUnit,
+		&product.DefaultVariantID,
+		&product.Rating,
+		&product.Metadata,
+		&product.PrivateMetadata,
+		&product.SeoTitle,
+		&product.SeoDescription,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductTableName, "VariantID="+productVariantID)
+		}
+		return nil, errors.Wrapf(err, "failed to find product with that has a variant with variantID=%s", productVariantID)
+	}
 
-// 	query := "SELECT * FROM Products"
-
-// 	if len(filter.Collections) > 0 {
-// 		query += " INNER JOIN CollectionProducts ON (Products.Id = CollectionProducts.ProductID)"
-// 	}
-
-// 	// TODO: fixme
-// 	panic("not implemented")
-// }
+	return &product, nil
+}

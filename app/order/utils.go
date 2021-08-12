@@ -2,6 +2,7 @@ package order
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -151,19 +152,206 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 	return changedOrderDiscounts, nil
 }
 
-func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
-	value := kwargs["update_voucher_discount"]
-	if value != nil {
+// func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+// 	value := kwargs["update_voucher_discount"]
+// 	if value != nil {
 
+// 	}
+// }
+
+func thereIsAnItem(slice interface{}, checker func(item interface{}) bool) bool {
+	valueOf := reflect.ValueOf(slice)
+	typeOf := reflect.TypeOf(slice)
+
+	if typeOf.Kind() == reflect.Slice {
+		for i := 0; i < valueOf.Len(); i++ {
+			valueAtIndex := valueOf.Index(i)
+			if checker(valueAtIndex.Interface()) {
+				return true
+			}
+		}
 	}
+
+	return false
 }
 
-//Calculate discount value depending on voucher and discount types.
+func collectionsIntersection(
+	collectionSlice1 []*product_and_discount.Collection,
+	collectionSlice2 []*product_and_discount.Collection,
+) []*product_and_discount.Collection {
+
+	var res []*product_and_discount.Collection
+
+	for i := 0; i < len(collectionSlice1); i++ {
+		for j := 0; j < len(collectionSlice2); j++ {
+			if collectionSlice1[i].Id == collectionSlice2[j].Id {
+				res = append(res, collectionSlice1[i])
+			}
+		}
+	}
+
+	return res
+}
+
+func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*order.OrderLine, *model.AppError) {
+	var (
+		discountedProducts    []*product_and_discount.Product
+		discountedCategories  []*product_and_discount.Category
+		discountedCollections []*product_and_discount.Collection
+		firstAppError         *model.AppError
+		meetMap               = map[string]bool{}
+	)
+
+	setFirstAppErr := func(err *model.AppError) {
+		a.mutex.Lock()
+		if err != nil {
+			firstAppError = err
+		}
+		a.mutex.Unlock()
+	}
+
+	a.wg.Add(3)
+
+	go func() {
+		products, appErr := a.ProductApp().ProductsByVoucherID(voucher.Id)
+		if appErr != nil {
+			setFirstAppErr(appErr)
+		} else {
+			discountedProducts = products
+		}
+		a.wg.Done()
+	}()
+
+	go func() {
+		categories, appErr := a.ProductApp().CategoriesByVoucherID(voucher.Id)
+		if appErr != nil {
+			setFirstAppErr(appErr)
+		} else {
+			// remove duplicate categories
+			for _, category := range categories {
+				if _, met := meetMap[category.Id]; !met {
+					discountedCategories = append(discountedCategories, category)
+					meetMap[category.Id] = true
+				}
+			}
+		}
+		a.wg.Done()
+	}()
+
+	go func() {
+		collections, appErr := a.ProductApp().CollectionsByVoucherID(voucher.Id)
+		if appErr != nil {
+			setFirstAppErr(appErr)
+		} else {
+			// remove duplicate collections
+			for _, collection := range collections {
+				if _, met := meetMap[collection.Id]; !met {
+					discountedCollections = append(discountedCollections, collection)
+					meetMap[collection.Id] = true
+				}
+			}
+		}
+		a.wg.Done()
+	}()
+
+	a.wg.Wait()
+
+	if firstAppError != nil {
+		return nil, firstAppError
+	}
+
+	var (
+		discountedOrderLines []*order.OrderLine
+		appError             *model.AppError
+	)
+	setAppError := func(appErr *model.AppError) {
+		a.mutex.Lock()
+		if appErr != nil && appError == nil {
+			appError = appErr
+		}
+		a.mutex.Unlock()
+	}
+
+	if len(discountedProducts) > 0 || len(discountedCategories) > 0 || len(discountedCollections) > 0 {
+
+		var hasGoRutines bool
+
+		for _, orderLine := range orderLines {
+			// we can
+			if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+				hasGoRutines = true
+				a.wg.Add(1)
+
+				go func() {
+					orderLineProduct, appErr := a.ProductApp().ProductByProductVariantID(*orderLine.VariantID)
+					if appErr != nil {
+						setAppError(appErr)
+					} else {
+						orderLineCategory, appErr := a.ProductApp().CategoryByProductID(orderLineProduct.Id)
+						if appErr != nil {
+							setAppError(appErr)
+						} else {
+							orderLineCollections, appErr := a.ProductApp().CollectionsByProductID(orderLineProduct.Id)
+							if appErr != nil {
+								setAppError(appErr)
+							} else {
+								orderLineProductInDiscountedProducts := thereIsAnItem(discountedProducts, func(i interface{}) bool { return i.(*product_and_discount.Product).Id == orderLineProduct.Id })
+								orderLineCategoryInDiscountedCategories := thereIsAnItem(discountedCategories, func(i interface{}) bool { return i.(*product_and_discount.Category).Id == orderLineCategory.Id })
+
+							}
+						}
+					}
+
+					a.wg.Done()
+				}()
+			}
+
+		}
+
+		if hasGoRutines {
+			a.wg.Wait()
+		}
+
+	} else {
+		// If there's no discounted products, collections or categories,
+		// it means that all products are discounted
+		return orderLines, nil
+	}
+
+	return discountedOrderLines, nil
+}
+
+// Get prices of variants belonging to the discounted specific products.
+//
+// Specific products are products, collections and categories.
+// Product must be assigned directly to the discounted category, assigning
+// product to child category won't work
+func (a *AppOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*goprices.Money, *model.AppError) {
+	discountedOrderLines, appErr := a.GetDiscountedLines(orderLines, voucher)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var orderLinePrices []*goprices.Money
+	for _, orderLine := range discountedOrderLines {
+		if orderLine.Quantity == 0 {
+			continue
+		}
+		for i := 0; i < int(orderLine.Quantity); i++ {
+			orderLinePrices = append(orderLinePrices, orderLine.UnitPriceGross)
+		}
+	}
+
+	return orderLinePrices, nil
+}
+
+// Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError) {
+func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *model.AppError) {
 	ord.PopulateNonDbFields()
 
+	// validate if order has voucher attached to
 	if ord.VoucherID == nil || !model.IsValidId(*ord.VoucherID) {
 		return &goprices.Money{
 			Amount:   &decimal.Zero,
@@ -176,7 +364,12 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (*goprices.Money
 		return nil, appErr
 	}
 
-	orderSubTotal, appErr := a.OrderSubTotal(ord)
+	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderSubTotal, appErr := a.PaymentApp().GetSubTotal(orderLines, ord.Currency)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -193,7 +386,15 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (*goprices.Money
 		return a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
 	}
 	// otherwise: Type is product_and_discount.SPECIFIC_PRODUCT
+	prices, appErr := a.GetPricesOfDiscountedSpecificProduct(orderLines, voucherOfDiscount)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(prices) == 0 {
+		return nil, model.NewAppError("GetVoucherDiscountForOrder", "app.order.offer_only_valid_for_selected_items.app_error", nil, "", http.StatusNotAcceptable)
+	}
 
+	return a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
 }
 
 // FilterOrdersByOptions is common method for filtering orders by given option
@@ -275,7 +476,9 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, ui
 		}) {
 
 			a.wg.Add(1)
-			hasGoRutines = true
+			if !hasGoRutines {
+				hasGoRutines = true
+			}
 
 			go func(fulm *order.Fulfillment) {
 				fulfillmentLinesOfFulfillment, apErr := a.FulfillmentLinesByFulfillmentID(fulm.Id)

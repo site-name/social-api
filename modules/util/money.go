@@ -18,3 +18,19 @@ func ZeroTaxedMoney(currency string) (*goprices.TaxedMoney, error) {
 	}
 	return goprices.NewTaxedMoney(zero, zero)
 }
+
+func ZeroMoneyRange(currency string) (*goprices.MoneyRange, error) {
+	zero, err := goprices.NewMoney(&decimal.Zero, currency)
+	if err != nil {
+		return nil, err
+	}
+	return goprices.NewMoneyRange(zero, zero)
+}
+
+func ZeroTaxedMoneyRange(currency string) (*goprices.TaxedMoneyRange, error) {
+	zero, err := ZeroTaxedMoney(currency)
+	if err != nil {
+		return nil, err
+	}
+	return goprices.NewTaxedMoneyRange(zero, zero)
+}

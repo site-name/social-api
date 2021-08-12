@@ -440,6 +440,9 @@ type (
 	CollectionStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) // Upsert depends on given collection's Id property to decide update or insert the collection
+		Get(collectionID string) (*product_and_discount.Collection, error)                            // Get finds and returns collection with given collectionID
+		CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error)          // CollectionsByProductID finds and returns a list of collections that related to given product
 	}
 	CollectionProductStore interface {
 		CreateIndexesIfNotExists()
@@ -498,6 +501,9 @@ type (
 	}
 	CategoryStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) // Upsert depends on given category's Id field to decide update or insert it
+		Get(categoryID string) (*product_and_discount.Category, error)                          // Get finds and returns a category with given id
+		GetCategoryByProductID(productID string) (*product_and_discount.Category, error)        // GetCategoryByProductID finds and returns a category with given product id
 	}
 	ProductStore interface {
 		CreateIndexesIfNotExists()
@@ -505,6 +511,7 @@ type (
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
 		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
+		ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) // ProductByProductVariantID finds and returns a product that has given variant
 	}
 )
 

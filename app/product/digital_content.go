@@ -10,7 +10,7 @@ import (
 func (a *AppProduct) DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError) {
 	digitalContent, err := a.Srv().Store.DigitalContent().GetByProductVariantID(variantID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("", "app.product.error_finding_digital_content_with_varant_id.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("DigitalContentByProductVariantID", "app.product.error_finding_digital_content_with_varant_id.app_error", err)
 	}
 
 	return digitalContent, nil

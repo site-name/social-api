@@ -1,6 +1,7 @@
 package discount
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/site-name/decimal"
@@ -8,6 +9,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -71,24 +73,69 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 // GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 //
 //  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
-func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (*goprices.Money, *model.AppError) {
+//
+// NOTE: the returning interface's type should be identical to given price's type
+func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError) {
+	// validate given price has valid type
+	switch priceType := price.(type) {
+	case *goprices.Money,
+		*goprices.MoneyRange,
+		*goprices.TaxedMoney,
+		*goprices.TaxedMoneyRange:
+
+	default:
+		return nil, model.NewAppError("GetDiscountAmountFor", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, fmt.Sprintf("price's type is unexpected: %T", priceType), http.StatusBadRequest)
+	}
+
 	discountCalculator, appErr := a.GetVoucherDiscount(voucher, channelID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	afterDiscount, err := discountCalculator(price)
+	afterDiscount, err := discountCalculator(price) // pass in 1 argument here mean calling fixed discount calculator
 	if err != nil {
 		// this error maybe caused by user. But we tomporarily set status code to 500
 		return nil, model.NewAppError("GetDiscountAmountFor", "app.discount.error_calculating_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if afterDiscount.(*goprices.Money).Amount.LessThan(decimal.Zero) {
-		return price, nil
-	}
-	sub, _ := price.Sub(afterDiscount.(*goprices.Money))
-	//   ^ ignore error here since we already catched it in discount calculating process
 
-	return sub, nil
+	switch priceType := price.(type) {
+	case *goprices.Money:
+		if afterDiscount.(*goprices.Money).Amount.LessThan(decimal.Zero) {
+			return priceType, nil
+		}
+		sub, _ := priceType.Sub(afterDiscount.(*goprices.Money))
+		return sub, nil
+
+	case *goprices.MoneyRange:
+		zeroMoneyRange, _ := util.ZeroMoneyRange(priceType.Currency)
+		if less, err := afterDiscount.(*goprices.MoneyRange).LessThan(zeroMoneyRange); less && err == nil {
+			return priceType, nil
+		}
+
+		sub, _ := priceType.Sub(afterDiscount)
+		return sub, nil
+
+	case *goprices.TaxedMoney:
+		zeroTaxedMoney, _ := util.ZeroTaxedMoney(priceType.Currency)
+		if less, err := afterDiscount.(*goprices.TaxedMoney).LessThan(zeroTaxedMoney); less && err == nil {
+			return priceType, nil
+		}
+
+		sub, _ := priceType.Sub(afterDiscount)
+		return sub, nil
+
+	case *goprices.TaxedMoneyRange:
+		zeroTaxedMoneyRange, _ := util.ZeroTaxedMoneyRange(priceType.Currency)
+		if less, err := afterDiscount.(*goprices.TaxedMoneyRange).LessThan(zeroTaxedMoneyRange); less && err == nil {
+			return priceType, nil
+		}
+
+		sub, _ := priceType.Sub(afterDiscount)
+		return sub, nil
+
+	default:
+		return nil, nil // this code is not reached since we've already validated price's type
+	}
 }
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
