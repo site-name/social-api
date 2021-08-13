@@ -57,22 +57,22 @@ func init() {
 		WarehouseShippingZoneTableName: "",          //
 		AllocationTableName:            "",          //
 
-		AddressTableName:                    "", // account
-		UserTableName:                       "", //
-		CustomerEventTableName:              "", //
-		StaffNotificationRecipientTableName: "", //
-		CustomerNoteTableName:               "", //
-		TokenTableName:                      "", //
-		UserAddressTableName:                "", //
-		TermsOfServiceTableName:             "", //
-		StatusTableName:                     "", //
+		AddressTableName:                    "",             // account
+		UserTableName:                       "CreateAt ASC", //
+		CustomerEventTableName:              "",             //
+		StaffNotificationRecipientTableName: "",             //
+		CustomerNoteTableName:               "",             //
+		TokenTableName:                      "",             //
+		UserAddressTableName:                "",             //
+		TermsOfServiceTableName:             "",             //
+		StatusTableName:                     "",             //
 
-		GiftcardTableName:         "", //
-		OrderGiftCardTableName:    "", //
-		GiftcardCheckoutTableName: "", //
+		GiftcardTableName:         "Code ASC", // giftcard
+		OrderGiftCardTableName:    "",         //
+		GiftcardCheckoutTableName: "",         //
 
-		PaymentTableName:     "Payments",     //
-		TransactionTableName: "Transactions", //
+		PaymentTableName:     "CreateAt ASC", // payment
+		TransactionTableName: "CreateAt ASC", //
 
 		PluginKeyValueStoreTableName: "PluginKeyValueStore", //
 

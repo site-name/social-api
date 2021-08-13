@@ -38,8 +38,8 @@ type OrderDiscount struct {
 	OrderID        *string          `json:"order_id"`
 	Type           string           `json:"type"`
 	ValueType      string           `json:"value_type"`
-	Value          *decimal.Decimal `json:"value"`
-	AmountValue    *decimal.Decimal `json:"amount_value"`
+	Value          *decimal.Decimal `json:"value"`        // default 0
+	AmountValue    *decimal.Decimal `json:"amount_value"` // default 0
 	Amount         *goprices.Money  `json:"amount,omitempty" db:"-"`
 	Currency       string           `json:"currency"`
 	Name           *string          `json:"name"`
@@ -91,6 +91,13 @@ func (o *OrderDiscount) IsValid() *model.AppError {
 	return nil
 }
 
+func (o *OrderDiscount) PopulateNonDbFields() {
+	o.Amount = &goprices.Money{
+		Amount:   o.AmountValue,
+		Currency: o.Currency,
+	}
+}
+
 func (o *OrderDiscount) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
@@ -108,9 +115,13 @@ func (o *OrderDiscount) commonPre() {
 	if o.Value == nil {
 		o.Value = &decimal.Zero
 	}
-	if o.AmountValue == nil {
+
+	if o.Amount != nil {
+		o.AmountValue = o.Amount.Amount
+	} else {
 		o.AmountValue = &decimal.Zero
 	}
+
 	if o.Name != nil {
 		*o.Name = model.SanitizeUnicode(*o.Name)
 	}
@@ -127,9 +138,6 @@ func (o *OrderDiscount) PreUpdate() {
 }
 
 func (o *OrderDiscount) ToJson() string {
-	o.Amount = &goprices.Money{
-		Amount:   o.AmountValue,
-		Currency: o.Currency,
-	}
+	o.PopulateNonDbFields()
 	return model.ModelToJson(o)
 }

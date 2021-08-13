@@ -1,6 +1,7 @@
 package order
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
 
@@ -107,6 +108,13 @@ func (o *OrderLine) IsValid() *model.AppError {
 	}
 
 	return nil
+}
+
+func (o *OrderLine) String() string {
+	if o.VariantName != "" {
+		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
+	}
+	return o.ProductName
 }
 
 func (o *OrderLine) PopulateNonDbFields() {

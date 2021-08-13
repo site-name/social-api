@@ -19,6 +19,29 @@ func (_m *AttributeStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterbyOption provides a mock function with given fields: option
+func (_m *AttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+	ret := _m.Called(option)
+
+	var r0 []*attribute.Attribute
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeFilterOption) []*attribute.Attribute); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*attribute.Attribute)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*attribute.AttributeFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *AttributeStore) Get(id string) (*attribute.Attribute, error) {
 	ret := _m.Called(id)
@@ -81,29 +104,6 @@ func (_m *AttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(slug)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetProductAndVariantHeaders provides a mock function with given fields: ids
-func (_m *AttributeStore) GetProductAndVariantHeaders(ids []string) ([]string, error) {
-	ret := _m.Called(ids)
-
-	var r0 []string
-	if rf, ok := ret.Get(0).(func([]string) []string); ok {
-		r0 = rf(ids)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(ids)
 	} else {
 		r1 = ret.Error(1)
 	}

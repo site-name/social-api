@@ -19,20 +19,22 @@ func (_m *FulfillmentStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterByExcludeStatuses provides a mock function with given fields: orderID, excludeStatuses
-func (_m *FulfillmentStore) FilterByExcludeStatuses(orderID string, excludeStatuses []string) (bool, error) {
-	ret := _m.Called(orderID, excludeStatuses)
+// FilterByoption provides a mock function with given fields: option
+func (_m *FulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+	ret := _m.Called(option)
 
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(string, []string) bool); ok {
-		r0 = rf(orderID, excludeStatuses)
+	var r0 []*order.Fulfillment
+	if rf, ok := ret.Get(0).(func(*order.FulfillmentFilterOption) []*order.Fulfillment); ok {
+		r0 = rf(option)
 	} else {
-		r0 = ret.Get(0).(bool)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*order.Fulfillment)
+		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, []string) error); ok {
-		r1 = rf(orderID, excludeStatuses)
+	if rf, ok := ret.Get(1).(func(*order.FulfillmentFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

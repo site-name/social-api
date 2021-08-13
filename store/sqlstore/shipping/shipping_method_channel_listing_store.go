@@ -98,6 +98,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.S
 		From(store.ShippingMethodChannelListingTableName).
 		OrderBy(store.TableOrderingMap[store.ShippingMethodChannelListingTableName])
 
+	// par filter option
 	if option.ShippingMethodID != nil {
 		query = query.Where(option.ShippingMethodID.ToSquirrel("ShippingMethodID"))
 	}

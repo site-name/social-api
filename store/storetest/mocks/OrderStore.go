@@ -21,6 +21,29 @@ func (_m *OrderStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *OrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+	ret := _m.Called(option)
+
+	var r0 []*order.Order
+	if rf, ok := ret.Get(0).(func(*order.OrderFilterOption) []*order.Order); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*order.Order)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*order.OrderFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *OrderStore) Get(id string) (*order.Order, error) {
 	ret := _m.Called(id)

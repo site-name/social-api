@@ -4028,6 +4028,22 @@ func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 	return err
 }
 
+func (s *TimerLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 	start := timemodule.Now()
 
@@ -4040,54 +4056,6 @@ func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.GetPaymentsByCheckoutID(checkoutID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.GetPaymentsByCheckoutID", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.GetPaymentsByOrderID(orderID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.GetPaymentsByOrderID", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (bool, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentStore.PaymentExistWithOptions(opts)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.PaymentExistWithOptions", success, elapsed)
 	}
 	return result, err
 }

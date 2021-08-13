@@ -81,6 +81,29 @@ func (_m *ProductTypeStore) ModelFields() []string {
 	return r0
 }
 
+// ProductTypeByProductVariantID provides a mock function with given fields: variantID
+func (_m *ProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+	ret := _m.Called(variantID)
+
+	var r0 *product_and_discount.ProductType
+	if rf, ok := ret.Get(0).(func(string) *product_and_discount.ProductType); ok {
+		r0 = rf(variantID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*product_and_discount.ProductType)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(variantID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ProductTypesByProductIDs provides a mock function with given fields: productIDs
 func (_m *ProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
 	ret := _m.Called(productIDs)

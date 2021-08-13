@@ -90,7 +90,9 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
 
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
-	payments, appErr := a.PaymentApp().GetAllPaymentsByOrderId(orderID)
+	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+		OrderID: orderID,
+	})
 	if appErr != nil {
 		return appErr
 	}
@@ -111,42 +113,42 @@ func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
 
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *AppOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
-	filterOptions := &payment.PaymentFilterOpts{
+	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID:  orderID,
-		IsActive: true,
-		PaymentTransactionFilterOpts: payment.PaymentTransactionFilterOpts{
-			Kind:           payment.AUTH,
-			ActionRequired: false,
-			IsSuccess:      true,
+		IsActive: model.NewBool(true),
+		TransactionsKind: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: payment.AUTH,
+			},
 		},
-	}
-	exist, err := a.Srv().Store.Payment().PaymentExistWithOptions(filterOptions)
-	if err != nil {
-		// this err means system error, not sql not found
-		return false, model.NewAppError("OrderIsPreAuthorized", "app.order.order_is_pre_authorized.app_error", nil, err.Error(), http.StatusInternalServerError)
+		TransactionsActionRequired: model.NewBool(false),
+		TransactionsIsSuccess:      model.NewBool(true),
+	})
+	if appErr != nil {
+		return false, appErr
 	}
 
-	return exist, nil
+	return len(payments) > 0, nil
 }
 
 // OrderIsCaptured checks if given order is captured
 func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
-	filterOptions := &payment.PaymentFilterOpts{
+	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID:  orderID,
-		IsActive: true,
-		PaymentTransactionFilterOpts: payment.PaymentTransactionFilterOpts{
-			Kind:           payment.CAPTURE,
-			ActionRequired: false,
-			IsSuccess:      true,
+		IsActive: model.NewBool(true),
+		TransactionsKind: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: payment.CAPTURE,
+			},
 		},
-	}
-	exist, err := a.Srv().Store.Payment().PaymentExistWithOptions(filterOptions)
-	if err != nil {
-		// this err means system error, not sql not found error
-		return false, model.NewAppError("OrderIsCaptured", "app.order.order_is_captured.app_error", nil, err.Error(), http.StatusInternalServerError)
+		TransactionsActionRequired: model.NewBool(false),
+		TransactionsIsSuccess:      model.NewBool(true),
+	})
+	if appErr != nil {
+		return false, appErr
 	}
 
-	return exist, nil
+	return len(payments) > 0, nil
 }
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
@@ -211,12 +213,13 @@ func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (
 
 // OrderCanVoid
 func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
-	var err *model.AppError
+	var appErr *model.AppError
 	if payment == nil {
-		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
-		if err != nil {
-			return false, err
-		}
+		payment, appErr = a.PaymentApp().GetLastOrderPayment(ord.Id)
+	}
+
+	if appErr != nil {
+		return false, appErr
 	}
 
 	if payment == nil {
@@ -227,38 +230,38 @@ func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (boo
 }
 
 // OrderCanRefund checks if order can refund
-func (a *AppOrder) OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
+func (a *AppOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
-	if len(payments) == 0 {
-		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
+	if payment == nil {
+		payment, appErr = a.PaymentApp().GetLastOrderPayment(ord.Id)
 	}
 
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			// this means order has no payments yet
-			return true, nil
-		} else {
-			// other errors mean system error
-			return false, appErr
+			return false, nil
 		}
+		return false, appErr
 	}
 
-	return len(payments) == 0, nil
+	if payment == nil {
+		return false, nil
+	}
+
+	return payment.CanRefund(), nil
 }
 
 // CanMarkOrderAsPaid checks if given order can be marked as paid.
 func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.PaymentApp().GetAllPaymentsByOrderId(ord.Id)
+		payments, appErr = a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+			OrderID: ord.Id,
+		})
 	}
 
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			return true, nil
-		} else {
-			return false, appErr
-		}
+		return false, appErr
 	}
 
 	return len(payments) == 0, nil

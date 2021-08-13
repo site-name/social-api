@@ -1,7 +1,6 @@
 package payment
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -14,8 +13,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Max lengths for some payment's fields
 const (
-	// Max lengths for some fields
 	MAX_LENGTH_PAYMENT_GATEWAY       = 255
 	MAX_LENGTH_PAYMENT_CHARGE_STATUS = 20
 	MAX_LENGTH_PAYMENT_TOKEN         = 512
@@ -26,14 +25,10 @@ const (
 	MIN_CC_EXP_MONTH                 = 1
 	MAX_CC_EXP_MONTH                 = 12
 	MIN_CC_EXP_YEAR                  = 1000
+	MAX_LENGTH_PAYMENT_COMMON_256    = 256
 
 	// Payment Gateways
 	GATE_WAY_MANUAL = "manual"
-)
-
-const (
-	// some fields may have max length of 256 in common
-	MAX_LENGTH_PAYMENT_COMMON_256 = 256
 )
 
 // Choices for charge status
@@ -71,7 +66,7 @@ type Payment struct {
 	Token              string           `json:"token"`
 	Total              *decimal.Decimal `json:"total"`           // DEFAULT decimal(0)
 	CapturedAmount     *decimal.Decimal `json:"captured_amount"` // DEFAULT decimal(0)
-	Currency           string           `json:"currency"`
+	Currency           string           `json:"currency"`        // default 'USD'
 	CheckoutID         *string          `json:"checkout_id"`
 	OrderID            *string          `json:"order_id"`
 	BillingEmail       string           `json:"billing_email"`
@@ -97,10 +92,23 @@ type Payment struct {
 	PspReference       *string          `json:"psp_reference"` // db index
 }
 
+// PaymentFilterOption is used to build sql queries
+type PaymentFilterOption struct {
+	Id                         *model.StringFilter
+	OrderID                    string // payments belong to order
+	CheckoutToken              string
+	IsActive                   *bool
+	TransactionsKind           *model.StringFilter // for filtering payment's transactions's `Kind`
+	TransactionsActionRequired *bool               // for filtering payment's transactions's `ActionRequired`
+	TransactionsIsSuccess      *bool               // for filtering payment's transactions's `IsSuccess`
+}
+
 // Retrieve the maximum capture possible.
 func (p *Payment) GetChargeAmount() decimal.Decimal {
-	res := p.Total.Sub(*p.CapturedAmount)
-	return res
+	if p.Total == nil || p.CapturedAmount == nil {
+		return decimal.Zero
+	}
+	return p.Total.Sub(*p.CapturedAmount)
 }
 
 // IsNotCharged checks if current payment's charge status is "not_charged"
@@ -297,6 +305,9 @@ func (p *Payment) commonPre() {
 	if p.IsActive == nil {
 		p.IsActive = model.NewBool(true)
 	}
+	if p.Currency == "" {
+		p.Currency = model.DEFAULT_CURRENCY
+	}
 }
 
 func (p *Payment) PreUpdate() {
@@ -306,10 +317,4 @@ func (p *Payment) PreUpdate() {
 
 func (p *Payment) ToJson() string {
 	return model.ModelToJson(p)
-}
-
-func PaymentFromJson(data io.Reader) *Payment {
-	var payment Payment
-	model.ModelFromJson(&payment, data)
-	return &payment
 }

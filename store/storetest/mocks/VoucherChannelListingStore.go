@@ -19,13 +19,13 @@ func (_m *VoucherChannelListingStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterByVoucherAndChannel provides a mock function with given fields: voucherID, channelID
-func (_m *VoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string, channelID string) ([]*product_and_discount.VoucherChannelListing, error) {
-	ret := _m.Called(voucherID, channelID)
+// FilterbyOption provides a mock function with given fields: option
+func (_m *VoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
+	ret := _m.Called(option)
 
 	var r0 []*product_and_discount.VoucherChannelListing
-	if rf, ok := ret.Get(0).(func(string, string) []*product_and_discount.VoucherChannelListing); ok {
-		r0 = rf(voucherID, channelID)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.VoucherChannelListingFilterOption) []*product_and_discount.VoucherChannelListing); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*product_and_discount.VoucherChannelListing)
@@ -33,8 +33,8 @@ func (_m *VoucherChannelListingStore) FilterByVoucherAndChannel(voucherID string
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(voucherID, channelID)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.VoucherChannelListingFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

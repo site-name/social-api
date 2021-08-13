@@ -98,20 +98,23 @@ func (a *AppDiscount) GetProductDiscounts(product *product_and_discount.Product,
 
 	a.wg.Add(len(uniqueCollectionIDs))
 
-	var appErr *model.AppError
-	discountFuncs := []DiscountCalculator{}
+	var (
+		appError                    *model.AppError
+		discountCalculatorFunctions []DiscountCalculator
+	)
 
 	for _, discountInfo := range discountInfos {
 		go func(info *product_and_discount.DiscountInfo) {
-			cal, err := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL)
+			discountCalFunc, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL)
 
 			a.mutex.Lock()
-			if err != nil && appErr == nil {
-				appErr = err
+			if appErr != nil && appError == nil {
+				appError = appErr
 			} else {
-				discountFuncs = append(discountFuncs, cal)
+				discountCalculatorFunctions = append(discountCalculatorFunctions, discountCalFunc)
 			}
 			a.mutex.Unlock()
+
 			a.wg.Done()
 
 		}(discountInfo)
@@ -119,11 +122,11 @@ func (a *AppDiscount) GetProductDiscounts(product *product_and_discount.Product,
 
 	a.wg.Wait()
 
-	if appErr != nil {
-		return nil, appErr
+	if appError != nil {
+		return nil, appError
 	}
 
-	return discountFuncs, nil
+	return discountCalculatorFunctions, nil
 }
 
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
@@ -260,11 +263,11 @@ func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.V
 	a.wg.Add(len(prices))
 
 	for _, price := range prices {
-		go func(pr *goprices.Money) {
+		go func(aPrice *goprices.Money) {
 
-			money, err := a.GetDiscountAmountFor(voucher, pr, channelID)
+			money, err := a.GetDiscountAmountFor(voucher, aPrice, channelID)
 			a.mutex.Lock()
-			if err != nil {
+			if err != nil && appErr == nil {
 				appErr = err
 			} else {
 				totalAmount, _ = totalAmount.Add(money.(*goprices.Money))
@@ -360,15 +363,13 @@ func (a *AppDiscount) FetchProducts(saleIDs []string) (map[string][]string, *mod
 }
 
 func (a *AppDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError) {
-	channelListings, err := a.Srv().Store.
-		DiscountSaleChannelListing().
-		SaleChannelListingsWithOption(&product_and_discount.SaleChannelListingFilterOption{
-			SaleID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: saleIDs,
-				},
+	channelListings, err := a.Srv().Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(&product_and_discount.SaleChannelListingFilterOption{
+		SaleID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: saleIDs,
 			},
-		})
+		},
+	})
 
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_option.app_error", err)
@@ -399,51 +400,55 @@ func (a *AppDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discount.D
 		collections         map[string][]string
 		products            map[string][]string
 		categories          map[string][]string
-		appErr              *model.AppError
+		appError            *model.AppError
 		saleChannelListings map[string]map[string]*product_and_discount.SaleChannelListing
 	)
+
+	safelySetAppError := func(err *model.AppError) {
+		if err != nil {
+			a.mutex.Lock()
+			if appError == nil {
+				appError = err
+			}
+			a.mutex.Unlock()
+		}
+	}
 
 	a.wg.Add(4)
 
 	go func() {
 		// find collections
 		collections, apErr = a.FetchCollections(activeSaleIDs)
-		if apErr != nil && appErr == nil {
-			appErr = apErr
-		}
+		safelySetAppError(apErr)
+
+		a.wg.Done()
 	}()
 
 	go func() {
 		saleChannelListings, apErr = a.FetchSaleChannelListings(activeSaleIDs)
-		if apErr != nil && appErr == nil {
-			appErr = apErr
-		}
+		safelySetAppError(apErr)
 
 		a.wg.Done()
 	}()
 
 	go func() {
 		products, apErr = a.FetchProducts(activeSaleIDs)
-		if apErr != nil && appErr == nil {
-			appErr = apErr
-		}
+		safelySetAppError(apErr)
 
 		a.wg.Done()
 	}()
 
 	go func() {
 		categories, apErr = a.FetchCategories(activeSaleIDs)
-		if apErr != nil && appErr == nil {
-			appErr = apErr
-		}
+		safelySetAppError(apErr)
 
 		a.wg.Done()
 	}()
 
 	a.wg.Wait()
 
-	if appErr != nil {
-		return nil, appErr
+	if appError != nil {
+		return nil, appError
 	}
 
 	var discountInfos []*product_and_discount.DiscountInfo

@@ -931,6 +931,22 @@ func (_m *Store) GiftCardOrder() store.GiftCardOrderStore {
 	return r0
 }
 
+// Invoice provides a mock function with given fields:
+func (_m *Store) Invoice() store.InvoiceStore {
+	ret := _m.Called()
+
+	var r0 store.InvoiceStore
+	if rf, ok := ret.Get(0).(func() store.InvoiceStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.InvoiceStore)
+		}
+	}
+
+	return r0
+}
+
 // InvoiceEvent provides a mock function with given fields:
 func (_m *Store) InvoiceEvent() store.InvoiceEventStore {
 	ret := _m.Called()

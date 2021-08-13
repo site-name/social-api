@@ -59,6 +59,46 @@ func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
 	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "CheckoutID", store.CheckoutTableName, "Token", false)
 }
 
+func (ps *SqlPaymentStore) ModelFields() []string {
+	return []string{
+		"Payments.Id",
+		"Payments.GateWay",
+		"Payments.IsActive",
+		"Payments.ToConfirm",
+		"Payments.CreateAt",
+		"Payments.UpdateAt",
+		"Payments.ChargeStatus",
+		"Payments.Token",
+		"Payments.Total",
+		"Payments.CapturedAmount",
+		"Payments.Currency",
+		"Payments.CheckoutID",
+		"Payments.OrderID",
+		"Payments.BillingEmail",
+		"Payments.BillingFirstName",
+		"Payments.BillingLastName",
+		"Payments.BillingCompanyName",
+		"Payments.BillingAddress1",
+		"Payments.BillingAddress2",
+		"Payments.BillingCity",
+		"Payments.BillingCityArea",
+		"Payments.BillingPostalCode",
+		"Payments.BillingCountryCode",
+		"Payments.BillingCountryArea",
+		"Payments.CcFirstDigits",
+		"Payments.CcLastDigits",
+		"Payments.CcBrand",
+		"Payments.CcExpMonth",
+		"Payments.CcExpYear",
+		"Payments.PaymentMethodType",
+		"Payments.CustomerIpAddress",
+		"Payments.ExtraData",
+		"Payments.ReturnUrl",
+		"Payments.PspReference",
+	}
+}
+
+// Save inserts given payment into database then returns it
 func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
 	payment.PreSave()
 	if err := payment.IsValid(); err != nil {
@@ -71,6 +111,7 @@ func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, err
 	return payment, nil
 }
 
+// Update updates given payment and returns the updated value
 func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
 	payment.PreUpdate()
 	if err := payment.IsValid(); err != nil {
@@ -97,6 +138,7 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 	return payment, nil
 }
 
+// Get finds and returns the payment with given id
 func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 	var res payment.Payment
 	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID", map[string]interface{}{"ID": id})
@@ -108,64 +150,6 @@ func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
 	}
 
 	return &res, nil
-}
-
-func (ps *SqlPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
-	var payments []*payment.Payment
-	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find payments belong to order with Id=%s", orderID)
-	}
-
-	return payments, nil
-}
-
-func (ps *SqlPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) {
-	query := `SELECT *
-	FROM
-		Payments AS P
-	INNER JOIN
-		Transactions AS T
-	ON (
-		P.Id = T.PaymentID
-	)
-	WHERE (
-		P.OrderId = :orderId
-		AND P.IsActive = :isActive
-		AND T.Kind = :kind
-		AND T.ActionRequired = :actionRequired
-		AND T.IsSuccess = :isSuccess
-	)`
-	var payments []*payment.Payment
-	_, err = ps.GetReplica().Select(
-		&payments,
-		query,
-		map[string]interface{}{
-			"orderId":        opts.OrderID,
-			"isActive":       opts.IsActive,
-			"kind":           opts.Kind,
-			"actionRequired": opts.ActionRequired,
-			"isSuccess":      opts.IsSuccess,
-		},
-	)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to find transactions with given options")
-	}
-
-	if len(payments) == 0 {
-		return false, nil
-	}
-	return true, nil
-}
-
-func (ps *SqlPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
-	var payments []*payment.Payment
-	_, err := ps.GetReplica().Select(&payments, "SELECT * FROM "+store.PaymentTableName+" WHERE CheckoutID = :CheckoutID", map[string]interface{}{"CheckoutID": checkoutID})
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find payments for checkout with id=%s", checkoutID)
-	}
-
-	return payments, nil
 }
 
 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
@@ -185,4 +169,76 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 	}
 
 	return nil
+}
+
+// FilterByOption finds and returns a list of payments that satisfy given option
+func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.PaymentTableName).
+		OrderBy(store.TableOrderingMap[store.PaymentTableName])
+
+	var joinedTransactionTable bool
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Payments.Id"))
+	}
+	if model.IsValidId(option.OrderID) {
+		query = query.Where(squirrel.Eq{"Payments.OrderID": option.OrderID})
+	}
+	if model.IsValidId(option.CheckoutToken) {
+		query = query.Where(squirrel.Eq{"Payments.CheckoutID": option.CheckoutToken})
+	}
+	if option.IsActive != nil {
+		query = query.Where(squirrel.Eq{"Payments.IsActive": *option.IsActive})
+	}
+	if option.TransactionsKind != nil {
+		query = query.
+			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
+			Where(option.TransactionsKind.ToSquirrel("Transactions.Kind"))
+
+		// let later checks know that this query has already joined transaction table
+		joinedTransactionTable = true
+	}
+	if option.TransactionsActionRequired != nil {
+		// check if already joined table transactions
+		if !joinedTransactionTable {
+			query = query.
+				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+		}
+		query = query.Where(squirrel.Eq{"Transactions.ActionRequired": *option.TransactionsActionRequired})
+	}
+	if option.TransactionsIsSuccess != nil {
+		// check if already joined table transactions
+		if !joinedTransactionTable {
+			query = query.
+				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+		}
+		query = query.Where(squirrel.Eq{"Transactions.IsSuccess": *option.TransactionsIsSuccess})
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+
+	var payments []*payment.Payment
+	_, err = ps.GetReplica().Select(&payments, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to finds payments with given option")
+	}
+
+	// filter duplicate:
+	meetMap := map[string]bool{}
+	var res []*payment.Payment
+
+	for _, payment := range payments {
+		if _, met := meetMap[payment.Id]; !met {
+			res = append(res, payment)
+			meetMap[payment.Id] = true
+		}
+	}
+
+	return res, nil
 }

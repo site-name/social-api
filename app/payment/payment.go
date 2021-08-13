@@ -1,7 +1,6 @@
 package payment
 
 import (
-	"errors"
 	"net/http"
 
 	goprices "github.com/site-name/go-prices"
@@ -24,37 +23,28 @@ func init() {
 	})
 }
 
-func (a *AppPayment) GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.app.Srv().Store.Payment().GetPaymentsByOrderID(orderID)
+// PaymentsByOption returns all payments that satisfy given option
+func (a *AppPayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError) {
+	payments, err := a.app.Srv().Store.Payment().FilterByOption(option)
 	if err != nil {
-		var statusCode int = http.StatusInternalServerError
-		var nfErr *store.ErrNotFound
-		if errors.As(err, &nfErr) {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("GetAllPaymentsByOrderId", "app.order.get_child_payments.app_error", nil, err.Error(), statusCode)
+		return nil, store.AppErrorFromDatabaseLookupError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", err)
 	}
 
 	return payments, nil
 }
 
 func (a *AppPayment) GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError) {
-	payments, err := a.GetAllPaymentsByOrderId(orderID)
-	if err != nil {
-		return nil, err
+	payments, appError := a.PaymentsByOption(&payment.PaymentFilterOption{
+		OrderID: orderID,
+	})
+	if appError != nil {
+		appError.Where = "GetLastOrderPayment"
+		return nil, appError
 	}
 
-	if len(payments) == 0 {
-		return nil, nil
-	}
-
-	if len(payments) == 1 {
-		return payments[0], nil
-	}
-
-	latestPayment := payments[0]
-	for _, payment := range payments[1:] {
-		if payment != nil && payment.CreateAt >= latestPayment.CreateAt {
+	var latestPayment *payment.Payment
+	for _, payment := range payments {
+		if latestPayment == nil && payment.CreateAt >= latestPayment.CreateAt {
 			latestPayment = payment
 		}
 	}
@@ -112,13 +102,13 @@ func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.
 	return authorizedMoney, nil
 }
 
-func (a *AppPayment) PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError) {
-	authorized, err := a.PaymentIsAuthorized(pm.Id)
+func (a *AppPayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError) {
+	authorized, err := a.PaymentIsAuthorized(payMent.Id)
 	if err != nil {
 		return false, err
 	}
 
-	return *pm.IsActive && pm.IsNotCharged() && authorized, nil
+	return *payMent.IsActive && payMent.IsNotCharged() && authorized, nil
 }
 
 func (a *AppPayment) CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {
@@ -173,10 +163,13 @@ func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError)
 	return tran.Token, nil
 }
 
-func (a *AppPayment) GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.app.Srv().Store.Payment().GetPaymentsByCheckoutID(checkoutID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetAllPaymentsByCheckout", "app.payment.payments_by_checkout_missing.app_error", err)
+func (a *AppPayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError) {
+	payments, appErr := a.PaymentsByOption(&payment.PaymentFilterOption{
+		CheckoutToken: checkoutToken,
+	})
+	if appErr != nil {
+		appErr.Where = "GetAllPaymentsByCheckout"
+		return nil, appErr
 	}
 	return payments, nil
 }

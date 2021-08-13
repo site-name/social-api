@@ -229,36 +229,46 @@ func (o *Order) PreSave() {
 	if o.CreateAt == 0 {
 		o.CreateAt = model.GetMillis()
 	}
-	if o.Status == "" {
-		o.Status = UNFULFILLED
-	}
-	if o.LanguageCode == "" {
-		o.LanguageCode = model.DEFAULT_LOCALE
-	}
-	if o.Token == "" {
-		o.Token = model.NewId()
-	}
-	if o.ShippingPriceNetAmount == nil {
+
+	o.commonPre()
+}
+
+// PreUpdate
+func (o *Order) PreUpdate() {
+	o.commonPre()
+}
+
+func (o *Order) commonPre() {
+	if o.ShippingPriceNet != nil {
+		o.ShippingPriceNetAmount = o.ShippingPriceNet.Amount
+	} else {
 		o.ShippingPriceNetAmount = &decimal.Zero
 	}
-	if o.ShippingPriceGrossAmount == nil {
-		o.ShippingPriceGrossAmount = &decimal.Zero
+
+	if o.ShippingPriceGross != nil {
+		o.ShippingPriceGrossAmount = o.ShippingPriceGross.Amount
+	} else {
+		o.ShippingPriceGrossAmount = o.ShippingPriceGross.Amount
 	}
-	if o.ShippingTaxRate == nil {
-		o.ShippingTaxRate = &decimal.Zero
-	}
-	if o.TotalNetAmount == nil {
+
+	if o.TotalNet != nil {
+		o.TotalNetAmount = o.TotalNet.Amount
+	} else {
 		o.TotalNetAmount = &decimal.Zero
 	}
-	if o.UnDiscountedTotalNetAmount == nil {
-		o.UnDiscountedTotalNetAmount = &decimal.Zero
-	}
-	if o.TotalGrossAmount == nil {
+
+	if o.TotalGross != nil {
+		o.TotalGrossAmount = o.TotalGross.Amount
+	} else {
 		o.TotalGrossAmount = &decimal.Zero
 	}
-	if o.TotalPaidAmount == nil {
+
+	if o.TotalPaid != nil {
+		o.TotalPaidAmount = o.TotalPaid.Amount
+	} else {
 		o.TotalPaidAmount = &decimal.Zero
 	}
+
 	if o.DisplayGrossPrices == nil {
 		o.DisplayGrossPrices = model.NewBool(true)
 	}
@@ -269,10 +279,16 @@ func (o *Order) PreSave() {
 		o.ShippingMethodName = model.NewString(model.SanitizeUnicode(*o.ShippingMethodName))
 	}
 	o.CustomerNote = model.SanitizeUnicode(o.CustomerNote)
-}
 
-func (o *Order) commonPre() {
-
+	if o.Status == "" {
+		o.Status = UNFULFILLED
+	}
+	if o.LanguageCode == "" {
+		o.LanguageCode = model.DEFAULT_LOCALE
+	}
+	if o.Token == "" {
+		o.Token = model.NewId()
+	}
 }
 
 // IsFullyPaid checks current order's total paid is greater than its total gross

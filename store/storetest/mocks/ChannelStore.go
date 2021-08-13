@@ -19,6 +19,29 @@ func (_m *ChannelStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *ChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+	ret := _m.Called(option)
+
+	var r0 []*channel.Channel
+	if rf, ok := ret.Get(0).(func(*channel.ChannelFilterOption) []*channel.Channel); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*channel.Channel)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*channel.ChannelFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *ChannelStore) Get(id string) (*channel.Channel, error) {
 	ret := _m.Called(id)
@@ -58,29 +81,6 @@ func (_m *ChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(slug)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetChannelsByIdsAndOrder provides a mock function with given fields: ids, order
-func (_m *ChannelStore) GetChannelsByIdsAndOrder(ids []string, order string) ([]*channel.Channel, error) {
-	ret := _m.Called(ids, order)
-
-	var r0 []*channel.Channel
-	if rf, ok := ret.Get(0).(func([]string, string) []*channel.Channel); ok {
-		r0 = rf(ids, order)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*channel.Channel)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string, string) error); ok {
-		r1 = rf(ids, order)
 	} else {
 		r1 = ret.Error(1)
 	}

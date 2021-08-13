@@ -82,7 +82,7 @@ func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingP
 	currencyMap[currency] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
-		return nil, model.NewAppError("BaseCheckoutTotal", "app.checkout.invalid_currencies.app_error", nil, "Please pass in the same currency values", http.StatusBadRequest)
+		return nil, model.NewAppError("BaseCheckoutTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "money fields"}, "Please pass in the same currency values", http.StatusBadRequest)
 	}
 
 	total, _ := subTotal.Add(shippingPrice)

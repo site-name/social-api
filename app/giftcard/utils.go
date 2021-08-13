@@ -12,7 +12,7 @@ import (
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
 func (a *AppGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError {
-	now := model.NewTime(time.Now()) // NOT: not sure use UTC or system time
+	now := model.NewTime(time.Now().UTC())
 
 	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
@@ -77,7 +77,7 @@ func (a *AppGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.A
 		giftCard.IsActive = model.NewBool(true)
 	}
 
-	_, appErr := a.UpdateGiftCard(giftCard)
+	_, appErr := a.UpsertGiftcard(giftCard)
 	if appErr != nil {
 		appErr.Where = "ToggleGiftcardStatus" // this lets us know where does the error come from
 		return appErr

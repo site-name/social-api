@@ -29,17 +29,22 @@ func (a *AppGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.AppErro
 	return gc, nil
 }
 
-func (a *AppGiftcard) GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError) {
-	gcs, err := a.Srv().Store.GiftCard().GetAllByCheckout(checkoutID)
+func (a *AppGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError) {
+	// validate given checkout token is valid uuid
+	if !model.IsValidId(checkoutToken) {
+		return nil, model.NewAppError("GiftcardsByCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutToken"}, "", http.StatusBadRequest)
+	}
+
+	giftcardsOfCheckout, err := a.Srv().Store.GiftCard().GetAllByCheckout(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GiftcardsByCheckout", "app.giftcard.giftcards_by_checkout_missing.app_error", err)
 	}
-	return gcs, nil
+	return giftcardsOfCheckout, nil
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
-	giftcards, err := a.Srv().Store.GiftCard().FilterByOption(&giftcard.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: code,
@@ -47,11 +52,8 @@ func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 		},
 	})
 
-	if err != nil {
-		if _, ok := err.(*store.ErrNotFound); ok {
-			return false, nil
-		}
-		return false, model.NewAppError("PromoCodeIsGiftCard", "app.giftcard.error_finding_giftcards_with_option", nil, err.Error(), http.StatusInternalServerError)
+	if appErr != nil {
+		return false, appErr
 	}
 
 	return len(giftcards) != 0, nil
@@ -67,11 +69,11 @@ func (a *AppGiftcard) GiftcardsByOption(option *giftcard.GiftCardFilterOption) (
 	return giftcards, nil
 }
 
-// UpdateGiftCard updates given giftcard. You must changed the giftcard's properties before giving it to me
-func (a *AppGiftcard) UpdateGiftCard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
+// UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
+func (a *AppGiftcard) UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
 	giftcard, err := a.Srv().Store.GiftCard().Upsert(giftcard)
 	if err != nil {
-		return nil, model.NewAppError("UpdateGiftCard", "app.giftcard.error_updating_giftcard.app_error", nil, err.Error(), http.StatusExpectationFailed)
+		return nil, model.NewAppError("UpsertGiftcard", "app.giftcard.error_updating_giftcard.app_error", nil, err.Error(), http.StatusExpectationFailed)
 	}
 
 	return giftcard, nil

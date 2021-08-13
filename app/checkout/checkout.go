@@ -167,15 +167,15 @@ func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.
 }
 
 func (a *AppCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError) {
-	gcs, appErr := a.app.GiftcardApp().GiftcardsByCheckout(checkout.Token)
+	giftcards, appErr := a.app.GiftcardApp().GiftcardsByCheckout(checkout.Token)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	balanceAmount := decimal.Zero
-	for _, gc := range gcs {
-		if gc.CurrentBalanceAmount != nil {
-			balanceAmount = balanceAmount.Add(*gc.CurrentBalanceAmount)
+	for _, giftcard := range giftcards {
+		if giftcard.CurrentBalanceAmount != nil {
+			balanceAmount = balanceAmount.Add(*giftcard.CurrentBalanceAmount)
 		}
 	}
 
@@ -205,7 +205,9 @@ func (a *AppCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, produ
 }
 
 func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
-	payments, appErr := a.app.PaymentApp().GetAllPaymentsByCheckout(checkout.Token)
+	payments, appErr := a.app.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+		CheckoutToken: checkout.Token,
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			return nil, nil
@@ -215,9 +217,9 @@ func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*p
 
 	// find latest payment by comparing their creation time
 	var latestPayment *payment.Payment
-	for _, pm := range payments {
-		if *pm.IsActive && (latestPayment == nil || latestPayment.CreateAt < pm.CreateAt) {
-			latestPayment = pm
+	for _, payment := range payments {
+		if *payment.IsActive && (latestPayment == nil || latestPayment.CreateAt < payment.CreateAt) {
+			latestPayment = payment
 		}
 	}
 

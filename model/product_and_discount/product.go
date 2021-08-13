@@ -25,7 +25,7 @@ type Product struct {
 	CategoryID           *string                `json:"category_id"`
 	CreateAt             int64                  `json:"create_at"`
 	UpdateAt             int64                  `json:"update_at"`
-	ChargeTaxes          *bool                  `json:"charge_taxes"`
+	ChargeTaxes          *bool                  `json:"charge_taxes"` // default true
 	Weight               *float32               `json:"weight"`
 	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
 	DefaultVariantID     *string                `json:"default_variant_id"`
@@ -48,6 +48,7 @@ func (p *Product) IsValid() *model.AppError {
 		"product_id=",
 		"Product.IsValid",
 	)
+
 	if !model.IsValidId(p.Id) {
 		return outer("id", nil)
 	}
@@ -79,25 +80,23 @@ func (p *Product) IsValid() *model.AppError {
 }
 
 func (p *Product) PreSave() {
+	p.commonPre()
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
 	p.CreateAt = model.GetMillis()
 	p.UpdateAt = p.CreateAt
-	p.Name = model.SanitizeUnicode(p.Name)
 	p.Slug = slug.Make(p.Name)
-	if p.Weight != nil && p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
-	}
-	if p.ChargeTaxes == nil {
-		p.ChargeTaxes = model.NewBool(true)
-	}
 }
 
 func (p *Product) PreUpdate() {
+	p.commonPre()
 	p.UpdateAt = model.GetMillis()
+}
+
+func (p *Product) commonPre() {
 	p.Name = model.SanitizeUnicode(p.Name)
-	if p.Weight != nil && p.WeightUnit == "" {
+	if p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 	if p.ChargeTaxes == nil {
@@ -108,16 +107,3 @@ func (p *Product) PreUpdate() {
 func (p *Product) String() string {
 	return p.Name
 }
-
-// returns 1 ProductMedia if one of them is image type
-//
-// else return nil
-// func (p *Product) GetFirstImage() *ProductMedia {
-// 	for _, media := range p.Medias {
-// 		if media.Type == IMAGE {
-// 			return media
-// 		}
-// 	}
-
-// 	return nil
-// }

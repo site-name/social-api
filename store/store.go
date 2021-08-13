@@ -519,13 +519,11 @@ type (
 type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
-		Save(payment *payment.Payment) (*payment.Payment, error)                                // Save save payment instance into database
-		Get(id string) (*payment.Payment, error)                                                // Get returns a payment with given id
-		GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error)                        // GetPaymentsByOrderID returns all payments that belong to given order
-		PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (paymentExist bool, err error) // FilterWithOptions filter order's payments based on given options
-		GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error)                  // GetPaymentsByCheckoutID returns all payments belong to given checkout
-		Update(payment *payment.Payment) (*payment.Payment, error)                              // Update updates given payment and returns new updated payment
-		CancelActivePaymentsOfCheckout(checkoutToken string) error                              // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
+		Save(payment *payment.Payment) (*payment.Payment, error)                        // Save save payment instance into database
+		Get(id string) (*payment.Payment, error)                                        // Get returns a payment with given id
+		Update(payment *payment.Payment) (*payment.Payment, error)                      // Update updates given payment and returns new updated payment
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                      // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
+		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) // FilterByOption finds and returns a list of payments that satisfy given option
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()

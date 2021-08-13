@@ -36,17 +36,18 @@ import (
 // GiftCardApp defines methods for giftcard app
 type GiftcardApp interface {
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                  // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError)                                // GiftcardsByCheckout returns all giftcards belong to given checkout
+	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                             // GiftcardsByCheckout returns all giftcards belong to given checkout
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
 	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                             // ToggleGiftcardStatus set status of given giftcard to inactive/active
 	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
 	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
+	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                             // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
 }
 
 // PaymentApp defines methods for payment sub app
 type PaymentApp interface {
-	GetAllPaymentsByOrderId(orderID string) ([]*payment.Payment, *model.AppError)                                                                                                                                                                          // GetAllPaymentsByOrderId returns all payments that belong to order with given orderID
+	PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError)                                                                                                                                                            // PaymentsByOption returns all payments that satisfy given option
 	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)                                                                                                                                                                                // GetLastOrderPayment get most recent payment made for given order
 	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)                                                                                                                                                           // GetAllPaymentTransactions returns all transactions belong to given payment
 	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                                             // GetLastPaymentTransaction return most recent transaction made for given payment
@@ -61,7 +62,6 @@ type PaymentApp interface {
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)   // GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
 	CleanCapture(payment *payment.Payment, amount decimal.Decimal) *model.AppError                                                                                                                                                                         // CleanCapture Checks if payment can be captured.
 	GetPaymentToken(paymentID string) (string, *model.AppError)                                                                                                                                                                                            // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
-	GetAllPaymentsByCheckout(checkoutID string) ([]*payment.Payment, *model.AppError)                                                                                                                                                                      // GetAllPaymentsByCheckout returns all payments have been made for given checkout
 	CleanAuthorize(payment *payment.Payment) *model.AppError                                                                                                                                                                                               // CleanAuthorize checks if payment can be authorized
 	ValidateGatewayResponse(response *payment.GatewayResponse) *model.AppError                                                                                                                                                                             // ValidateGatewayResponse validates given response to be correct format for system to process
 	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError                                                                                                                                                  // GatewayPostProcess
@@ -307,7 +307,7 @@ type OrderApp interface {
 	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                  // OrderCanCalcel checks if given order can be canceled
 	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)       // OrderCanCapture checks if given order can capture.
 	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)          // OrderCanVoid checks if given order can void
-	OrderCanRefund(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)     // OrderCanRefund checks if order can refund
+	OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)        // OrderCanRefund checks if order can refund
 	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) // CanMarkOrderAsPaid checks if given order can be marked as paid.
 	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                 // OrderTotalAuthorized returns order's total authorized amount
 	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                           // GetOrderCountryCode is helper function, returns contry code of given order

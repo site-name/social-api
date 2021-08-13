@@ -4736,71 +4736,31 @@ func (s *RetryLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 
 }
 
+func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentStore) Get(id string) (*payment.Payment, error) {
 
 	tries := 0
 	for {
 		result, err := s.PaymentStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.GetPaymentsByCheckoutID(checkoutID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.GetPaymentsByOrderID(orderID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerPaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (bool, error) {
-
-	tries := 0
-	for {
-		result, err := s.PaymentStore.PaymentExistWithOptions(opts)
 		if err == nil {
 			return result, nil
 		}

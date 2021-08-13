@@ -171,32 +171,37 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 		return appErr
 	}
 
-	weight := measurement.ZeroWeight
-	var appError *model.AppError
+	var (
+		appError      *model.AppError
+		hasGoRoutines bool
+		weight        = measurement.ZeroWeight
+	)
 
-	a.wg.Add(len(orderLines))
+	setAppError := func(err *model.AppError) {
+		a.mutex.Lock()
+		if err != nil && appError == nil {
+			appError = err
+		}
+		a.mutex.Unlock()
+	}
 
 	for _, orderLine := range orderLines {
 		if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+
+			hasGoRoutines = true
+			a.wg.Add(1)
 
 			go func(variantID string) {
 				productVariantWeight, err := a.Srv().Store.ProductVariant().GetWeight(*orderLine.VariantID)
 				if err != nil {
 					if _, ok := err.(*store.ErrNotFound); !ok {
-						// return immediately since this is system error
-						a.mutex.Lock()
-						if appError == nil {
-							appError = model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
-						}
-						a.mutex.Unlock()
+						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
 					}
 				} else {
 					a.mutex.Lock()
 					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(orderLine.Quantity)))
 					if err != nil {
-						if appError == nil {
-							appError = model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
-						}
+						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
 						weight = addedWeight
 					}
@@ -209,7 +214,9 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 		}
 	}
 
-	a.wg.Wait()
+	if hasGoRoutines {
+		a.wg.Wait()
+	}
 
 	if appError != nil {
 		return appError
@@ -342,6 +349,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	var (
 		discountedOrderLines []*order.OrderLine
 		appError             *model.AppError
+		hasGoRoutines        bool
 	)
 	setAppError := func(appErr *model.AppError) {
 		a.mutex.Lock()
@@ -352,8 +360,6 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	}
 
 	if len(discountedProducts) > 0 || len(discountedCategories) > 0 || len(discountedCollections) > 0 {
-
-		var hasGoRoutines bool
 
 		for _, orderLine := range orderLines {
 			// we can
@@ -390,17 +396,15 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 					a.wg.Done()
 				}(orderLine)
 			}
-
 		}
-
-		if hasGoRoutines {
-			a.wg.Wait()
-		}
-
 	} else {
 		// If there's no discounted products, collections or categories,
 		// it means that all products are discounted
 		return orderLines, nil
+	}
+
+	if hasGoRoutines {
+		a.wg.Wait()
 	}
 
 	return discountedOrderLines, nil
@@ -610,7 +614,7 @@ func (a *AppOrder) AddVariantToOrder() {
 //
 // Return a total price left after applying the gift cards.
 func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
-	// validate given totalPriceLeft:
+	// validate given arguments's currencies are valid
 	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)
 	if err != nil || !strings.EqualFold(giftCard.Currency, totalPriceLeft.Currency) {
 		return nil, model.NewAppError("AddGiftCardToOrder", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "totalPriceLeft"}, err.Error(), http.StatusBadRequest)
@@ -636,7 +640,10 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 		}
 
 		giftCard.LastUsedOn = model.GetMillis()
-
+		_, appErr = a.GiftcardApp().UpsertGiftcard(giftCard)
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	return totalPriceLeft, nil

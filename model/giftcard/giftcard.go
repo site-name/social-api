@@ -25,9 +25,9 @@ type GiftCard struct {
 	LastUsedOn           int64            `json:"last_used_on"`
 	IsActive             *bool            `json:"is_active"` // default true
 	Currency             string           `json:"currency"`
-	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"`
+	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"` // default 0
 	InitialBalance       *goprices.Money  `json:"initial_balance,omitempty" db:"-"`
-	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"`
+	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"` // default 0
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 }
 

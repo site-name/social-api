@@ -25,7 +25,7 @@ func (a *AppOrder) CommonCreateOrderEvent(option *order.OrderEventOption) (*orde
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
 		}
-		return nil, model.NewAppError("CommonCreateOrderEvent", "app.order_error_creating_order_event.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CommonCreateOrderEvent", "app.order.error_creating_order_event.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orderEvent, nil

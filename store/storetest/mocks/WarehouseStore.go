@@ -20,6 +20,29 @@ func (_m *WarehouseStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOprion provides a mock function with given fields: option
+func (_m *WarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+	ret := _m.Called(option)
+
+	var r0 []*warehouse.WareHouse
+	if rf, ok := ret.Get(0).(func(*warehouse.WarehouseFilterOption) []*warehouse.WareHouse); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.WareHouse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.WarehouseFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *WarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	ret := _m.Called(id)
@@ -36,29 +59,6 @@ func (_m *WarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetWarehousesHeaders provides a mock function with given fields: ids
-func (_m *WarehouseStore) GetWarehousesHeaders(ids []string) ([]string, error) {
-	ret := _m.Called(ids)
-
-	var r0 []string
-	if rf, ok := ret.Get(0).(func([]string) []string); ok {
-		r0 = rf(ids)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]string)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(ids)
 	} else {
 		r1 = ret.Error(1)
 	}

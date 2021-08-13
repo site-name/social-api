@@ -14,7 +14,7 @@ import (
 
 func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (DiscountCalculator, *model.AppError) {
 	if saleChannelListing == nil {
-		return nil, model.NewAppError("GetSaleDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "sale channel listing"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("GetSaleDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
 
 	if sale.Type == product_and_discount.FIXED {

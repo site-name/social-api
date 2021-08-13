@@ -33,6 +33,29 @@ func (_m *PaymentStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *PaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+	ret := _m.Called(option)
+
+	var r0 []*payment.Payment
+	if rf, ok := ret.Get(0).(func(*payment.PaymentFilterOption) []*payment.Payment); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*payment.Payment)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*payment.PaymentFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *PaymentStore) Get(id string) (*payment.Payment, error) {
 	ret := _m.Called(id)
@@ -49,73 +72,6 @@ func (_m *PaymentStore) Get(id string) (*payment.Payment, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetPaymentsByCheckoutID provides a mock function with given fields: checkoutID
-func (_m *PaymentStore) GetPaymentsByCheckoutID(checkoutID string) ([]*payment.Payment, error) {
-	ret := _m.Called(checkoutID)
-
-	var r0 []*payment.Payment
-	if rf, ok := ret.Get(0).(func(string) []*payment.Payment); ok {
-		r0 = rf(checkoutID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*payment.Payment)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(checkoutID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetPaymentsByOrderID provides a mock function with given fields: orderID
-func (_m *PaymentStore) GetPaymentsByOrderID(orderID string) ([]*payment.Payment, error) {
-	ret := _m.Called(orderID)
-
-	var r0 []*payment.Payment
-	if rf, ok := ret.Get(0).(func(string) []*payment.Payment); ok {
-		r0 = rf(orderID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*payment.Payment)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(orderID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// PaymentExistWithOptions provides a mock function with given fields: opts
-func (_m *PaymentStore) PaymentExistWithOptions(opts *payment.PaymentFilterOpts) (bool, error) {
-	ret := _m.Called(opts)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(*payment.PaymentFilterOpts) bool); ok {
-		r0 = rf(opts)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*payment.PaymentFilterOpts) error); ok {
-		r1 = rf(opts)
 	} else {
 		r1 = ret.Error(1)
 	}

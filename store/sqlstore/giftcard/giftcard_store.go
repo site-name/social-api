@@ -108,14 +108,24 @@ func (gcs *SqlGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard
 }
 
 func (gs *SqlGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
-	query := `SELECT * FROM ` + store.GiftcardTableName + ` AS Gc
-		WHERE Gc.Id IN (
-			SELECT GcCk.GiftcardID FROM ` + store.GiftcardCheckoutTableName + ` AS GcCk
-		)
-		WHERE GcCk.CheckoutID = :CheckoutID`
 
 	var giftcards []*giftcard.GiftCard
-	_, err := gs.GetReplica().Select(&giftcards, query, map[string]interface{}{"CheckoutID": checkoutID})
+	_, err := gs.GetReplica().Select(
+		&giftcards,
+		`SELECT * FROM `+store.GiftcardTableName+`
+		WHERE GiftCards.Id IN (
+			SELECT 
+				GiftcardCheckouts.GiftcardID 
+			FROM `+store.GiftcardCheckoutTableName+`
+		)
+		WHERE
+			GiftcardCheckouts.CheckoutID = :CheckoutID
+		ORDER BY :OrderBy`,
+		map[string]interface{}{
+			"CheckoutID": checkoutID,
+			"OrderBy":    store.TableOrderingMap[store.GiftcardTableName],
+		},
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find giftcards belong to checkout with id=%s", checkoutID)
 	}
