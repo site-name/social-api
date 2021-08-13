@@ -2,14 +2,12 @@ package order
 
 import (
 	"strings"
-	"sync"
 	"unicode/utf8"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/modules/slog"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -60,10 +58,6 @@ var OrderOriginStrings = map[string]string{
 	REISSUE:  "Reissue",
 }
 
-var (
-	lock sync.Mutex
-)
-
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"` // NOT editable
@@ -108,7 +102,6 @@ type Order struct {
 	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`   // default 'kg'
 	Weight                       *measurement.Weight    `json:"weight" db:"-"` // default 0
 	RedirectUrl                  *string                `json:"redirect_url"`
-	populatedNonDbFields         bool                   `json:"-" db:"-"` // this field check if order's non db fields are populated
 	model.ModelMetadata
 }
 
@@ -132,12 +125,6 @@ type OrderFilterWithPaymentRelatedOption struct {
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
 func (o *Order) PopulateNonDbFields() {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if o.populatedNonDbFields {
-		return
-	}
 	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet, _ = goprices.NewMoney(o.ShippingPriceNetAmount, o.Currency)
 	o.ShippingPriceGross, _ = goprices.NewMoney(o.ShippingPriceGrossAmount, o.Currency)
@@ -154,8 +141,6 @@ func (o *Order) PopulateNonDbFields() {
 		Amount: &o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
-
-	o.populatedNonDbFields = true
 }
 
 // Orders is slice contains order(s)
@@ -286,37 +271,39 @@ func (o *Order) PreSave() {
 	o.CustomerNote = model.SanitizeUnicode(o.CustomerNote)
 }
 
+func (o *Order) commonPre() {
+
+}
+
 // IsFullyPaid checks current order's total paid is greater than its total gross
 func (o *Order) IsFullyPaid() bool {
-	ok, err := o.Total.Gross.LessThanOrEqual(o.TotalPaid)
-	if err != nil {
-		slog.Error("error checking order is fully paid", slog.Err(err), slog.String("order_id", o.Id))
-		return false
-	}
+	ok, _ := o.Total.Gross.LessThanOrEqual(o.TotalPaid)
 	return ok
 }
 
+// IsPartlyPaid checks if order has `TotalPaidAmount` > 0
 func (o *Order) IsPartlyPaid() bool {
 	return o.TotalPaidAmount != nil && decimal.Zero.LessThan(*o.TotalPaidAmount)
 }
 
-func (o *Order) GetCustomerEmail() string {
-	panic("not implemented") // TODO: fixme
-}
-
+// IsDraft checks if current order's Status if "draft"
 func (o *Order) IsDraft() bool {
 	return o.Status == DRAFT
 }
 
+// IsUnconfirmed checks if current order's Status is "unconfirmed"
 func (o *Order) IsUnconfirmed() bool {
 	return o.Status == UNCONFIRMED
 }
 
+// IsOpen checks if current order's Status if "draft" OR "partially_fulfilled"
 func (o *Order) IsOpen() bool {
 	return o.Status == DRAFT || o.Status == PARTIALLY_FULFILLED
 }
 
+// TotalCaptured returns current order's TotalPaid money
 func (o *Order) TotalCaptured() *goprices.Money {
+	o.PopulateNonDbFields()
 	return o.TotalPaid
 }
 
@@ -325,9 +312,8 @@ func (o *Order) TotalBalance() (*goprices.Money, error) {
 	return o.TotalCaptured().Sub(o.Total.Gross)
 }
 
+// GetTotalWeight returns current order's Weight
 func (o *Order) GetTotalWeight() *measurement.Weight {
-	return &measurement.Weight{
-		Amount: &o.WeightAmount,
-		Unit:   o.WeightUnit,
-	}
+	o.PopulateNonDbFields()
+	return o.Weight
 }

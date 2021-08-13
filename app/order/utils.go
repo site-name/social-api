@@ -3,14 +3,18 @@ package order
 import (
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shop"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -68,12 +72,12 @@ func (a *AppOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *mode
 	}
 	shopDefaultDigitalContentSettings := a.ProductApp().GetDefaultDigitalContentSettings(ownerShopOfOrder)
 
-	orderLinesOfOrder, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	digitalOrderLinesOfOrder, appErr := a.AllDigitalOrderLinesOfOrder(ord.Id)
 	if appErr != nil {
 		return false, appErr
 	}
 
-	for _, orderLine := range orderLinesOfOrder {
+	for _, orderLine := range digitalOrderLinesOfOrder {
 		orderLineNeedsAutomaticFulfillment, appErr := a.OrderLineNeedsAutomaticFulfillment(orderLine, shopDefaultDigitalContentSettings)
 		if appErr != nil {
 			return false, appErr
@@ -140,8 +144,7 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 		discountValue := orderDiscount.Value
 		amount := orderDiscount.Amount
 
-		if (orderDiscount.ValueType == product_and_discount.PERCENTAGE || currentTotal.LessThan(*discountValue)) &&
-			!amount.Amount.Equal(*previousOrderDiscount.Amount.Amount) {
+		if (orderDiscount.ValueType == product_and_discount.PERCENTAGE || currentTotal.LessThan(*discountValue)) && !amount.Amount.Equal(*previousOrderDiscount.Amount.Amount) {
 			changedOrderDiscounts = append(changedOrderDiscounts, [2]*product_and_discount.OrderDiscount{
 				previousOrderDiscount,
 				orderDiscount,
@@ -152,13 +155,87 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 	return changedOrderDiscounts, nil
 }
 
-// func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
-// 	value := kwargs["update_voucher_discount"]
-// 	if value != nil {
+func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+	// TODO: fix me
+	panic("not implemented")
+}
 
-// 	}
-// }
+func (a *AppOrder) RecalculateOrder(ord *order.Order) {
+	panic("not implemented")
+}
 
+// ReCalculateOrderWeight
+func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
+	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	if appErr != nil {
+		return appErr
+	}
+
+	weight := measurement.ZeroWeight
+	var appError *model.AppError
+
+	a.wg.Add(len(orderLines))
+
+	for _, orderLine := range orderLines {
+		if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+
+			go func(variantID string) {
+				productVariantWeight, err := a.Srv().Store.ProductVariant().GetWeight(*orderLine.VariantID)
+				if err != nil {
+					if _, ok := err.(*store.ErrNotFound); !ok {
+						// return immediately since this is system error
+						a.mutex.Lock()
+						if appError == nil {
+							appError = model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
+						}
+						a.mutex.Unlock()
+					}
+				} else {
+					a.mutex.Lock()
+					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(orderLine.Quantity)))
+					if err != nil {
+						if appError == nil {
+							appError = model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
+						}
+					} else {
+						weight = addedWeight
+					}
+					a.mutex.Unlock()
+				}
+
+				a.wg.Done()
+			}(*orderLine.VariantID)
+
+		}
+	}
+
+	a.wg.Wait()
+
+	if appError != nil {
+		return appError
+	}
+
+	weight, _ = weight.ConvertTo(ord.WeightUnit)
+	ord.WeightAmount = *weight.Amount
+
+	_, appError = a.UpsertOrder(ord)
+	return appError
+}
+
+func (a *AppOrder) UpdateTaxesForOrderLine() {
+	panic("not implemented")
+}
+
+func (a *AppOrder) UpdateTaxesForOrderLines() {
+	panic("not implemented")
+}
+
+func (a *AppOrder) UpdateOrderPrices() {
+	panic("not implemented")
+}
+
+// thereIsAnItem takes a slice and a checker function.
+// it iterates through the slice to find out if there is an item that satisfy given checker function
 func thereIsAnItem(slice interface{}, checker func(item interface{}) bool) bool {
 	valueOf := reflect.ValueOf(slice)
 	typeOf := reflect.TypeOf(slice)
@@ -175,6 +252,7 @@ func thereIsAnItem(slice interface{}, checker func(item interface{}) bool) bool 
 	return false
 }
 
+// collectionsIntersection select only common items between two given slices
 func collectionsIntersection(
 	collectionSlice1 []*product_and_discount.Collection,
 	collectionSlice2 []*product_and_discount.Collection,
@@ -256,6 +334,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 
 	a.wg.Wait()
 
+	// returns immediately if there is an system error occured
 	if firstAppError != nil {
 		return nil, firstAppError
 	}
@@ -274,16 +353,16 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 
 	if len(discountedProducts) > 0 || len(discountedCategories) > 0 || len(discountedCollections) > 0 {
 
-		var hasGoRutines bool
+		var hasGoRoutines bool
 
 		for _, orderLine := range orderLines {
 			// we can
 			if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
-				hasGoRutines = true
+				hasGoRoutines = true
 				a.wg.Add(1)
 
-				go func() {
-					orderLineProduct, appErr := a.ProductApp().ProductByProductVariantID(*orderLine.VariantID)
+				go func(anOrderLine *order.OrderLine) {
+					orderLineProduct, appErr := a.ProductApp().ProductByProductVariantID(*anOrderLine.VariantID)
 					if appErr != nil {
 						setAppError(appErr)
 					} else {
@@ -297,18 +376,24 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 							} else {
 								orderLineProductInDiscountedProducts := thereIsAnItem(discountedProducts, func(i interface{}) bool { return i.(*product_and_discount.Product).Id == orderLineProduct.Id })
 								orderLineCategoryInDiscountedCategories := thereIsAnItem(discountedCategories, func(i interface{}) bool { return i.(*product_and_discount.Category).Id == orderLineCategory.Id })
+								orderLineCollectionsIntersectDiscountedCollections := collectionsIntersection(orderLineCollections, discountedCollections)
 
+								if orderLineProductInDiscountedProducts || orderLineCategoryInDiscountedCategories || len(orderLineCollectionsIntersectDiscountedCollections) > 0 {
+									a.mutex.Lock()
+									discountedOrderLines = append(discountedOrderLines, anOrderLine)
+									a.mutex.Unlock()
+								}
 							}
 						}
 					}
 
 					a.wg.Done()
-				}()
+				}(orderLine)
 			}
 
 		}
 
-		if hasGoRutines {
+		if hasGoRoutines {
 			a.wg.Wait()
 		}
 
@@ -484,7 +569,7 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, ui
 				fulfillmentLinesOfFulfillment, apErr := a.FulfillmentLinesByFulfillmentID(fulm.Id)
 
 				a.mutex.Lock()
-				if appError != nil && appError == nil {
+				if apErr != nil && appError == nil {
 					appError = apErr
 				} else {
 					for _, line := range fulfillmentLinesOfFulfillment {
@@ -515,6 +600,46 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, ui
 	quantityFulfilled -= quantityReplaced
 
 	return totalOrderLinesQuantity, quantityFulfilled, quantityReturned, nil
+}
+
+func (a *AppOrder) AddVariantToOrder() {
+	panic("not implemented")
+}
+
+// Add gift card to order.
+//
+// Return a total price left after applying the gift cards.
+func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
+	// validate given totalPriceLeft:
+	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)
+	if err != nil || !strings.EqualFold(giftCard.Currency, totalPriceLeft.Currency) {
+		return nil, model.NewAppError("AddGiftCardToOrder", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "totalPriceLeft"}, err.Error(), http.StatusBadRequest)
+	}
+
+	giftCard.PopulateNonDbFields()
+	// add new order-giftcard relationship
+	if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
+		_, appErr := a.GiftcardApp().CreateOrderGiftcardRelation(&giftcard.OrderGiftCard{
+			GiftCardID: giftCard.Id,
+			OrderID:    ord.Id,
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		if less, err := totalPriceLeft.LessThan(giftCard.CurrentBalance); less && err == nil {
+			giftCard.CurrentBalance, _ = giftCard.CurrentBalance.Sub(totalPriceLeft)
+			totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
+		} else {
+			totalPriceLeft, _ = totalPriceLeft.Sub(giftCard.CurrentBalance)
+			giftCard.CurrentBalanceAmount = &decimal.Zero
+		}
+
+		giftCard.LastUsedOn = model.GetMillis()
+
+	}
+
+	return totalPriceLeft, nil
 }
 
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices

@@ -82,6 +82,7 @@ func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductV
 	return &variant, nil
 }
 
+// GetWeight returns either given variant's weight or the accompany product's weight or product type of accompany product's weight
 func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
 	rowScanner := ps.GetQueryBuilder().
 		Select(
@@ -113,6 +114,9 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		&productTypeWeight.Unit,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductVariantTableName, productVariantID)
+		}
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
 	}
 

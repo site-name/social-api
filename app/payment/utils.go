@@ -260,7 +260,7 @@ func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymen
 
 func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *model.AppError {
 	if amount.LessThanOrEqual(decimal.Zero) {
-		return model.NewAppError("CleanCapture", "app.payment.amount_non_negative.app_error", nil, "", http.StatusNotAcceptable)
+		return model.NewAppError("CleanCapture", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "amount"}, "", http.StatusBadRequest)
 	}
 	if !pm.CanCapture() {
 		return model.NewAppError("CleanCapture", "app.payment.cannot_capture.app_error", nil, "", http.StatusNotAcceptable)

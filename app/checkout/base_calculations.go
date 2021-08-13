@@ -138,7 +138,7 @@ func (a *AppCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.
 }
 
 func (a *AppCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
-	taxRate := model.NewDecimal(decimal.NewFromFloat(0.0))
+	taxRate := &decimal.Zero
 	if price != nil && price.Gross != nil && !price.Gross.Amount.Equal(decimal.Zero) {
 		tax, _ := price.Tax()
 		div, _ := tax.TrueDiv(price.Net)

@@ -1,7 +1,6 @@
 package order
 
 import (
-	"fmt"
 	"strings"
 	"unicode/utf8"
 
@@ -48,7 +47,7 @@ type OrderLine struct {
 	UnitDiscountType                  string               `json:"unit_discount_type"`
 	UnitDiscountReason                *string              `json:"unit_discount_reason"`
 	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"`
-	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"`
+	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"` // store the value of the applied discount. Like 20%, default 0
 	UnitPriceNet                      *goprices.Money      `json:"unit_price_net" db:"-"`
 	UnitPriceGrossAmount              *decimal.Decimal     `json:"unit_price_gross_amount"`
 	UnitPriceGross                    *goprices.Money      `json:"unit_price_gross" db:"-"`
@@ -111,41 +110,22 @@ func (o *OrderLine) IsValid() *model.AppError {
 }
 
 func (o *OrderLine) PopulateNonDbFields() {
-	if o.UnitDiscount == nil && o.UnitDiscountAmount != nil {
-		o.UnitDiscount, _ = goprices.NewMoney(o.UnitDiscountAmount, o.Currency)
-	}
-	if o.UnitPriceNet == nil && o.UnitPriceNetAmount != nil {
-		o.UnitDiscount, _ = goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
-	}
-	if o.UnitPriceGross == nil && o.UnitPriceGrossAmount != nil {
-		o.UnitDiscount, _ = goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
-	}
-	if o.TotalPriceNet == nil && o.TotalPriceNetAmount != nil {
-		o.UnitDiscount, _ = goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
-	}
-	if o.TotalPriceGross == nil && o.TotalPriceGrossAmount != nil {
-		o.UnitDiscount, _ = goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
-	}
-	if o.UnitPrice == nil && o.UnitPriceNetAmount != nil && o.UnitPriceGrossAmount != nil {
-		net, _ := goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
-		gross, _ := goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
-		o.UnitPrice, _ = goprices.NewTaxedMoney(net, gross)
-	}
-	if o.TotalPrice == nil && o.TotalPriceNetAmount != nil && o.TotalPriceGrossAmount != nil {
-		net, _ := goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
-		gross, _ := goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
-		o.UnitPrice, _ = goprices.NewTaxedMoney(net, gross)
-	}
-	if o.UnDiscountedUnitPrice == nil && o.UnDiscountedUnitPriceNetAmount != nil && o.UnDiscountedUnitPriceGrossAmount != nil {
-		net, _ := goprices.NewMoney(o.UnDiscountedUnitPriceNetAmount, o.Currency)
-		gross, _ := goprices.NewMoney(o.UnDiscountedUnitPriceGrossAmount, o.Currency)
-		o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
-	}
-	if o.UnDiscountedTotalPrice == nil && o.UnDiscountedTotalPriceNetAmount != nil && o.UnDsicountedTotalPriceGrossAmount != nil {
-		net, _ := goprices.NewMoney(o.UnDiscountedTotalPriceNetAmount, o.Currency)
-		gross, _ := goprices.NewMoney(o.UnDsicountedTotalPriceGrossAmount, o.Currency)
-		o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
-	}
+	o.UnitDiscount, _ = goprices.NewMoney(o.UnitDiscountAmount, o.Currency)
+	o.UnitPriceNet, _ = goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
+	o.UnitPriceGross, _ = goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
+	o.TotalPriceNet, _ = goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
+	o.TotalPriceGross, _ = goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
+
+	o.UnitPrice, _ = goprices.NewTaxedMoney(o.UnitPriceNet, o.UnitPriceGross)
+	o.TotalPrice, _ = goprices.NewTaxedMoney(o.TotalPriceNet, o.TotalPriceGross)
+
+	net, _ := goprices.NewMoney(o.UnDiscountedUnitPriceNetAmount, o.Currency)
+	gross, _ := goprices.NewMoney(o.UnDiscountedUnitPriceGrossAmount, o.Currency)
+	o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
+
+	net, _ = goprices.NewMoney(o.UnDiscountedTotalPriceNetAmount, o.Currency)
+	gross, _ = goprices.NewMoney(o.UnDsicountedTotalPriceGrossAmount, o.Currency)
+	o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 }
 
 func (o *OrderLine) ToJson() string {
@@ -158,10 +138,10 @@ func (o *OrderLine) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
 	}
-	o.commonPrePostActions()
+	o.commonPre()
 }
 
-func (o *OrderLine) commonPrePostActions() {
+func (o *OrderLine) commonPre() {
 	o.ProductName = model.SanitizeUnicode(o.ProductName)
 	o.VariantName = model.SanitizeUnicode(o.VariantName)
 	o.TranslatedProductName = model.SanitizeUnicode(o.TranslatedProductName)
@@ -176,35 +156,36 @@ func (o *OrderLine) commonPrePostActions() {
 	if o.UnitDiscountValue == nil {
 		o.UnitDiscountValue = &decimal.Zero
 	}
-	if o.UnitDiscountAmount == nil {
+
+	if o.UnitDiscount != nil {
+		o.UnitDiscountAmount = o.UnitDiscount.Amount
+	} else {
 		o.UnitDiscountAmount = &decimal.Zero
 	}
-	if o.UnDiscountedUnitPriceGrossAmount == nil {
+
+	if o.UnDiscountedUnitPrice != nil {
+		o.UnDiscountedUnitPriceNetAmount = o.UnDiscountedUnitPrice.Net.Amount
+		o.UnDiscountedUnitPriceGrossAmount = o.UnDiscountedUnitPrice.Gross.Amount
+	} else {
+		o.UnDiscountedUnitPriceNetAmount = &decimal.Zero
 		o.UnDiscountedUnitPriceGrossAmount = &decimal.Zero
 	}
-	if o.UnDiscountedUnitPriceNetAmount == nil {
-		o.UnDiscountedUnitPriceNetAmount = &decimal.Zero
-	}
-	if o.UnDiscountedTotalPriceNetAmount == nil {
+
+	if o.UnDiscountedTotalPrice != nil {
+		o.UnDiscountedTotalPriceNetAmount = o.UnDiscountedTotalPrice.Net.Amount
+		o.UnDsicountedTotalPriceGrossAmount = o.UnDiscountedTotalPrice.Gross.Amount
+	} else {
 		o.UnDiscountedTotalPriceNetAmount = &decimal.Zero
-	}
-	if o.UnDsicountedTotalPriceGrossAmount == nil {
 		o.UnDsicountedTotalPriceGrossAmount = &decimal.Zero
 	}
+
 	if o.TaxRate == nil {
 		o.TaxRate = &decimal.Zero
 	}
 }
 
 func (o *OrderLine) PreUpdate() {
-	o.commonPrePostActions()
-}
-
-func (o *OrderLine) String() string {
-	if o.VariantName != "" {
-		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
-	}
-	return o.ProductName
+	o.commonPre()
 }
 
 func (o *OrderLine) QuantityUnFulfilled() uint {

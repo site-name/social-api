@@ -8,6 +8,54 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
+func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
+	orderLines, appErr := a.GetAllOrderLinesByOrderId(orderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		digitalOrderLines []*order.OrderLine
+		appError          *model.AppError
+	)
+	setAppError := func(err *model.AppError) {
+		a.mutex.Lock()
+		if err != nil && appError == nil {
+			appError = err
+		}
+		a.mutex.Unlock()
+	}
+
+	a.wg.Add(len(orderLines))
+
+	for _, orderLine := range orderLines {
+		go func(line *order.OrderLine) {
+			orderLineIsDigital, appErr := a.OrderLineIsDiagital(line)
+			if appErr != nil {
+				setAppError(appErr)
+			} else {
+				a.mutex.Lock()
+				if orderLineIsDigital {
+					digitalOrderLines = append(digitalOrderLines, orderLine)
+				}
+				a.mutex.Unlock()
+			}
+
+			a.wg.Done()
+		}(orderLine)
+	}
+
+	a.wg.Wait()
+
+	if appError != nil {
+		return nil, appError
+	}
+
+	return digitalOrderLines, nil
+}
+
+// GetAllOrderLinesByOrderId finds all order lines belong to given order
 func (a *AppOrder) GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) {
 	lines, err := a.Srv().Store.OrderLine().GetAllByOrderID(orderID)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 )
 
@@ -30,6 +31,7 @@ type GiftCard struct {
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 }
 
+// GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
 	EndDate   *model.TimeFilter
 	StartDate *model.TimeFilter
@@ -43,23 +45,8 @@ func (gc *GiftCard) DisplayCode() string {
 
 // PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
-	money := gc.InitialBalanceAmount
-	if money == nil {
-		money = &decimal.Zero
-	}
-	gc.InitialBalance = &goprices.Money{
-		Amount:   money,
-		Currency: gc.Currency,
-	}
-
-	money = gc.CurrentBalanceAmount
-	if money == nil {
-		money = &decimal.Zero
-	}
-	gc.CurrentBalance = &goprices.Money{
-		Amount:   money,
-		Currency: gc.Currency,
-	}
+	gc.InitialBalance, _ = goprices.NewMoney(gc.InitialBalanceAmount, gc.Currency)
+	gc.CurrentBalance, _ = goprices.NewMoney(gc.CurrentBalanceAmount, gc.Currency)
 }
 
 func (gc *GiftCard) IsValid() *model.AppError {
@@ -96,22 +83,38 @@ func (gc *GiftCard) PreSave() {
 		gc.Id = model.NewId()
 	}
 	gc.CreateAt = model.GetMillis()
+
+	gc.commonPre()
+}
+
+func (gc *GiftCard) commonPre() {
+	if gc.CurrentBalance != nil {
+		gc.CurrentBalanceAmount = gc.CurrentBalance.Amount
+	} else {
+		gc.CurrentBalanceAmount = &decimal.Zero
+	}
+
+	if gc.InitialBalance != nil {
+		gc.InitialBalanceAmount = gc.InitialBalance.Amount
+	} else {
+		gc.InitialBalanceAmount = &decimal.Zero
+	}
+
 	if gc.IsActive == nil {
 		gc.IsActive = model.NewBool(true)
 	}
-	if gc.StartDate == nil {
-		today := time.Now()
-		gc.StartDate = &today
-	}
+
 	if gc.Currency == "" {
 		gc.Currency = model.DEFAULT_CURRENCY
 	} else {
-		gc.Currency = strings.ToUpper(strings.TrimSpace(gc.Currency))
+		gc.Currency = strings.ToUpper(gc.Currency)
+	}
+	if gc.StartDate == nil {
+		today := util.StartOfDay(time.Now())
+		gc.StartDate = &today
 	}
 }
 
 func (gc *GiftCard) PreUpdate() {
-	if gc.IsActive == nil {
-		gc.IsActive = model.NewBool(true)
-	}
+	gc.commonPre()
 }

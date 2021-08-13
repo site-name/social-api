@@ -102,42 +102,37 @@ func (c *Checkout) PreSave() {
 	if c.Token == "" {
 		c.Token = model.NewId()
 	}
-	if c.LanguageCode == "" {
-		c.LanguageCode = model.DEFAULT_LOCALE
-	}
-	if c.DiscountAmount == nil {
-		c.DiscountAmount = &decimal.Zero
-	}
-	if c.Country == "" {
-		c.Country = model.DEFAULT_COUNTRY
-	} else {
-		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
-	}
-	if c.Currency == "" {
-		c.Currency = model.DEFAULT_CURRENCY
-	} else {
-		c.Currency = strings.ToUpper(strings.TrimSpace(c.Currency))
-	}
-	c.Note = model.SanitizeUnicode(c.Note)
-
-	c.Email = model.NormalizeEmail(c.Email)
 
 	c.CreateAt = model.GetMillis()
 	c.UpdateAt = c.CreateAt
+	c.commonPre()
 }
 
-func (c *Checkout) PreUpdate() {
+func (c *Checkout) commonPre() {
+	if c.Discount != nil {
+		c.DiscountAmount = c.Discount.Amount
+	} else {
+		c.DiscountAmount = &decimal.Zero
+	}
+
 	c.Note = model.SanitizeUnicode(c.Note)
 	c.Email = model.NormalizeEmail(c.Email)
-	c.UpdateAt = model.GetMillis()
-	if c.Country == "" {
-		c.Country = model.DEFAULT_COUNTRY
-	} else {
-		c.Country = strings.ToUpper(strings.TrimSpace(c.Country))
+	if c.LanguageCode == "" {
+		c.LanguageCode = model.DEFAULT_LOCALE
 	}
 	if c.Currency == "" {
 		c.Currency = model.DEFAULT_CURRENCY
 	} else {
-		c.Currency = strings.ToUpper(strings.TrimSpace(c.Currency))
+		c.Currency = strings.ToUpper(c.Currency)
 	}
+	if c.Country == "" {
+		c.Country = model.DEFAULT_COUNTRY
+	} else {
+		c.Country = strings.ToUpper(c.Country)
+	}
+}
+
+func (c *Checkout) PreUpdate() {
+	c.UpdateAt = model.GetMillis()
+	c.commonPre()
 }

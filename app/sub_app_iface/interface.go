@@ -35,12 +35,13 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardApp interface {
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                  // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError)                // GiftcardsByCheckout returns all giftcards belong to given checkout
-	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
-	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                             // ToggleGiftcardStatus set status of given giftcard to inactive/active
-	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                  // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutID string) ([]*giftcard.GiftCard, *model.AppError)                                // GiftcardsByCheckout returns all giftcards belong to given checkout
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                             // ToggleGiftcardStatus set status of given giftcard to inactive/active
+	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
 }
 
 // PaymentApp defines methods for payment sub app
