@@ -16,9 +16,60 @@ type OrderLineStore struct {
 	mock.Mock
 }
 
+// BulkDelete provides a mock function with given fields: orderLineIDs
+func (_m *OrderLineStore) BulkDelete(orderLineIDs []string) error {
+	ret := _m.Called(orderLineIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]string) error); ok {
+		r0 = rf(orderLineIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// BulkUpsert provides a mock function with given fields: orderLines
+func (_m *OrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+	ret := _m.Called(orderLines)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]*order.OrderLine) error); ok {
+		r0 = rf(orderLines)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *OrderLineStore) CreateIndexesIfNotExists() {
 	_m.Called()
+}
+
+// FilterbyOption provides a mock function with given fields: option
+func (_m *OrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+	ret := _m.Called(option)
+
+	var r0 []*order.OrderLine
+	if rf, ok := ret.Get(0).(func(*order.OrderLineFilterOption) []*order.OrderLine); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*order.OrderLine)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*order.OrderLineFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Get provides a mock function with given fields: id
@@ -37,29 +88,6 @@ func (_m *OrderLineStore) Get(id string) (*order.OrderLine, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAllByOrderID provides a mock function with given fields: orderID
-func (_m *OrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
-	ret := _m.Called(orderID)
-
-	var r0 []*order.OrderLine
-	if rf, ok := ret.Get(0).(func(string) []*order.OrderLine); ok {
-		r0 = rf(orderID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*order.OrderLine)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(orderID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -124,8 +152,8 @@ func (_m *OrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*orde
 	return r0, r1, r2, r3
 }
 
-// Save provides a mock function with given fields: orderLine
-func (_m *OrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
+// Upsert provides a mock function with given fields: orderLine
+func (_m *OrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	ret := _m.Called(orderLine)
 
 	var r0 *order.OrderLine

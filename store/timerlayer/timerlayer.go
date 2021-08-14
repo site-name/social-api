@@ -3948,6 +3948,38 @@ func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	return err
 }
 
+func (s *TimerLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+	start := timemodule.Now()
+
+	err := s.OrderLineStore.BulkUpsert(orderLines)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.BulkUpsert", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderLineStore.FilterbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.FilterbyOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	start := timemodule.Now()
 
@@ -3960,22 +3992,6 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
-	start := timemodule.Now()
-
-	result, err := s.OrderLineStore.GetAllByOrderID(orderID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.GetAllByOrderID", success, elapsed)
 	}
 	return result, err
 }
@@ -4651,6 +4667,22 @@ func (s *TimerLayerProductTypeStore) Save(productType *product_and_discount.Prod
 	return result, err
 }
 
+func (s *TimerLayerProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
@@ -4663,6 +4695,22 @@ func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.Pr
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.GetByOrderLineID(orderLineID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.GetByOrderLineID", success, elapsed)
 	}
 	return result, err
 }
@@ -7363,6 +7411,22 @@ func (s *TimerLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*wareho
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.WarehouseByStockID(stockID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.WarehouseByStockID", success, elapsed)
 	}
 	return result, err
 }

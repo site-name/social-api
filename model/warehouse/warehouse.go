@@ -24,11 +24,12 @@ type WareHouse struct {
 }
 
 type WarehouseFilterOption struct {
-	Id        *model.StringFilter
-	Name      *model.StringFilter
-	Slug      *model.StringFilter
-	AddressID *model.StringFilter
-	Email     *model.StringFilter
+	Id                     *model.StringFilter
+	Name                   *model.StringFilter
+	Slug                   *model.StringFilter
+	AddressID              *model.StringFilter
+	Email                  *model.StringFilter
+	ShippingZonesCountries *model.StringFilter // join shipping zone table
 }
 
 func (w *WareHouse) IsValid() *model.AppError {

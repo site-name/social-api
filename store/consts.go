@@ -39,8 +39,8 @@ func init() {
 		ProductTranslationTableName:              "",                            //
 		ProductTypeTableName:                     "Slug ASC",                    //
 		ProductVariantChannelListingTableName:    "",                            //
-		ProductVariantMediaTableName:             "SortOrder ASC, Sku ASC",      //
-		ProductVariantTableName:                  "",                            //
+		ProductVariantMediaTableName:             "",                            //
+		ProductVariantTableName:                  "SortOrder ASC, Sku ASC",      //
 		ProductVariantTranslactionTableName:      "",                            //
 
 		CheckoutLineTableName: "CreatAt ASC",                // checkout

@@ -15,55 +15,32 @@ type AllocationStore struct {
 	mock.Mock
 }
 
-// AllocationsByParentIDs provides a mock function with given fields: parentIDs, toWhich
-func (_m *AllocationStore) AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
-	ret := _m.Called(parentIDs, toWhich)
-
-	var r0 []*warehouse.Allocation
-	if rf, ok := ret.Get(0).(func([]string, warehouse.AllocationsBy) []*warehouse.Allocation); ok {
-		r0 = rf(parentIDs, toWhich)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*warehouse.Allocation)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string, warehouse.AllocationsBy) error); ok {
-		r1 = rf(parentIDs, toWhich)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// AllocationsByWhich provides a mock function with given fields: parentID, toWhich
-func (_m *AllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
-	ret := _m.Called(parentID, toWhich)
-
-	var r0 []*warehouse.Allocation
-	if rf, ok := ret.Get(0).(func(string, warehouse.AllocationsBy) []*warehouse.Allocation); ok {
-		r0 = rf(parentID, toWhich)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*warehouse.Allocation)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, warehouse.AllocationsBy) error); ok {
-		r1 = rf(parentID, toWhich)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *AllocationStore) CreateIndexesIfNotExists() {
 	_m.Called()
+}
+
+// FilterByOption provides a mock function with given fields: option
+func (_m *AllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+	ret := _m.Called(option)
+
+	var r0 []*warehouse.Allocation
+	if rf, ok := ret.Get(0).(func(*warehouse.AllocationFilterOption) []*warehouse.Allocation); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Allocation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.AllocationFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Get provides a mock function with given fields: allocationID

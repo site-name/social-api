@@ -4636,11 +4636,31 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.Get(id)
+		err := s.OrderLineStore.BulkUpsert(orderLines)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderLineStore.FilterbyOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -4656,11 +4676,11 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.GetAllByOrderID(orderID)
+		result, err := s.OrderLineStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
@@ -5502,11 +5522,51 @@ func (s *RetryLayerProductTypeStore) Save(productType *product_and_discount.Prod
 
 }
 
+func (s *RetryLayerProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantStore.GetByOrderLineID(orderLineID)
 		if err == nil {
 			return result, nil
 		}
@@ -8803,6 +8863,26 @@ func (s *RetryLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*wareho
 	tries := 0
 	for {
 		result, err := s.WarehouseStore.Save(warehouse)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.WarehouseByStockID(stockID)
 		if err == nil {
 			return result, nil
 		}

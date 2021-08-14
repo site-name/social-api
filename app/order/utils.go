@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shop"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -168,7 +169,13 @@ func (a *AppOrder) RecalculateOrder(ord *order.Order) {
 
 // ReCalculateOrderWeight
 func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
-	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
 	if appErr != nil {
 		return appErr
 	}
@@ -456,7 +463,13 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *m
 		return nil, appErr
 	}
 
-	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -500,7 +513,13 @@ func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*or
 }
 
 func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, uint, uint, *model.AppError) {
-	orderLinesOfOrder, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
 	}
@@ -783,12 +802,210 @@ func (a *AppOrder) DeleteOrderLine(lineInfo *order.OrderLineData) *model.AppErro
 		}
 	}
 
-	err := a.Srv().Store.OrderLine().BulkDelete([]string{lineInfo.Line.Id})
-	if err != nil {
-		return model.NewAppError("DeleteOrderLine", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
+	return a.DeleteOrderLines([]string{lineInfo.Line.Id})
+}
+
+// RestockOrderLines Return ordered products to corresponding stocks
+func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
+	countryCode, appError := a.GetOrderCountry(ord)
+	if appError != nil {
+		return appError
 	}
 
-	return nil
+	warehouses, appError := a.WarehouseApp().WarehouseByOption(&warehouse.WarehouseFilterOption{
+		ShippingZonesCountries: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Like: countryCode,
+			},
+		},
+	})
+	if appError != nil {
+		appError.Where = "RestockOrderLines"
+		return appError
+	}
+	defaultWarehouse := warehouses[0]
+
+	orderLinesOfOrder, appError := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
+	if appError != nil {
+		appError.Where = "RestockOrderLines"
+		return appError
+	}
+
+	var (
+		dellocatingStockLines []*order.OrderLineData
+		hasGoRoutines         bool
+	)
+
+	setAppError := func(err *model.AppError) {
+		if err != nil {
+			a.mutex.Lock()
+			if appError == nil {
+				appError = err
+				appError.Where = "RestockOrderLines"
+			}
+			a.mutex.Unlock()
+		}
+	}
+
+	for _, orderLine := range orderLinesOfOrder {
+		if orderLine.VariantID != nil {
+
+			hasGoRoutines = true
+			a.wg.Add(1)
+
+			go func(anOrderLine *order.OrderLine) {
+				productVariant, appErr := a.ProductApp().ProductVariantById(*anOrderLine.VariantID)
+				if appErr != nil {
+					setAppError(appErr) //
+				} else {
+					if *productVariant.TrackInventory {
+						if anOrderLine.QuantityUnFulfilled() > 0 {
+
+							a.mutex.Lock()
+							dellocatingStockLines = append(dellocatingStockLines, &order.OrderLineData{
+								Line:     *anOrderLine,
+								Quantity: anOrderLine.QuantityUnFulfilled(),
+							})
+							a.mutex.Unlock()
+
+						}
+
+						if anOrderLine.QuantityFulfilled > 0 {
+							allocations, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+								OrderLineID: &model.StringFilter{
+									StringOption: &model.StringOption{
+										Eq: anOrderLine.Id,
+									},
+								},
+							})
+							if appErr != nil {
+								setAppError(appErr) //
+							} else {
+								warehouse := defaultWarehouse
+								if len(allocations) > 0 {
+									warehouseOfOrderLine, appErr := a.WarehouseApp().WarehouseByStockID(allocations[0].StockID)
+									if appErr != nil {
+										setAppError(appErr) //
+									} else {
+										warehouse = warehouseOfOrderLine
+									}
+								}
+
+								appErr = a.WarehouseApp().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
+								setAppError(appErr) //
+							}
+						}
+					}
+
+					if anOrderLine.QuantityFulfilled > 0 {
+						anOrderLine.QuantityFulfilled = 0
+
+						_, appErr = a.UpsertOrderLine(anOrderLine)
+						setAppError(appErr) //
+					}
+				}
+
+				a.wg.Done()
+			}(orderLine)
+		}
+	}
+
+	if hasGoRoutines {
+		a.wg.Wait()
+	}
+
+	if len(dellocatingStockLines) > 0 {
+		appError = a.WarehouseApp().DeallocateStock(dellocatingStockLines)
+	}
+
+	return appError
+}
+
+// RestockFulfillmentLines Return fulfilled products to corresponding stocks.
+//
+// Return products to stocks and update order lines quantity fulfilled values.
+func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) *model.AppError {
+	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
+		FulfillmentID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: fulfillment.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "RestockFulfillmentLines"
+		return appErr
+	}
+
+	orderLinesOfFulfillmentLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: order.FulfillmentLines(fulfillmentLines).OrderLineIDs(),
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "RestockFulfillmentLines"
+		return appErr
+	}
+
+	// map. key: fulfillmentLine.Id, value: *orderLine
+	mapFulfillmentLine_OrderLine := map[string]*order.OrderLine{}
+	for _, fulfillmentLine := range fulfillmentLines {
+		for _, orderLine := range orderLinesOfFulfillmentLines {
+			if fulfillmentLine.OrderLineID == orderLine.Id {
+				mapFulfillmentLine_OrderLine[fulfillmentLine.Id] = orderLine
+			}
+		}
+	}
+
+	productVariantsOfOrderLines, appErr := a.ProductApp().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: order.OrderLines(orderLinesOfFulfillmentLines).ProductVariantIDs(),
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "RestockFulfillmentLines"
+		return appErr
+	}
+
+	// map. key: orderLine.Id, value: *productvariant
+	mapOrderLine_productVariant := map[string]*product_and_discount.ProductVariant{}
+	for _, orderLine := range orderLinesOfFulfillmentLines {
+		if orderLine.VariantID == nil { // since some order line have not product variant attached
+			continue
+		}
+		for _, variant := range productVariantsOfOrderLines {
+			if variant.Id == *orderLine.VariantID {
+				mapOrderLine_productVariant[orderLine.Id] = variant
+			}
+		}
+	}
+
+	for _, fulfillmentLine := range fulfillmentLines {
+		orderLineOfFulfillment := mapFulfillmentLine_OrderLine[fulfillmentLine.Id]   // number of order lines = number of fulfillment lines
+		variantOfOrderLine := mapOrderLine_productVariant[orderLineOfFulfillment.Id] // variantOfOrderLine can be nil
+
+		if variantOfOrderLine != nil && *variantOfOrderLine.TrackInventory {
+			appErr := a.WarehouseApp().IncreaseStock(orderLineOfFulfillment, warehouse, fulfillmentLine.Quantity, true)
+			if appErr != nil {
+				appErr.Where = "RestockFulfillmentLines"
+				return appErr
+			}
+		}
+
+		orderLineOfFulfillment.QuantityFulfilled -= fulfillmentLine.Quantity
+	}
+
+	return a.BulkUpsertOrderLines(orderLinesOfFulfillmentLines)
 }
 
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices

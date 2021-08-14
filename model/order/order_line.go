@@ -68,6 +68,26 @@ type OrderLine struct {
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
 }
 
+// OrderLineFilterOption is used for build sql queries
+type OrderLineFilterOption struct {
+	Id      *model.StringFilter
+	OrderID *model.StringFilter
+}
+
+type OrderLines []*OrderLine
+
+// ProductVariantIDs returns only non-nil product variant ids
+func (o OrderLines) ProductVariantIDs() []string {
+	res := []string{}
+	for _, orderLine := range o {
+		if orderLine.VariantID != nil {
+			res = append(res, *orderLine.VariantID)
+		}
+	}
+
+	return res
+}
+
 func (o *OrderLine) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.order_line.is_valid.%s.app_error",
@@ -203,6 +223,7 @@ func (o *OrderLine) PreUpdate() {
 	o.commonPre()
 }
 
+// QuantityUnFulfilled return current order's Quantity subtract QuantityFulfilled
 func (o *OrderLine) QuantityUnFulfilled() uint {
 	return o.Quantity - o.QuantityFulfilled
 }

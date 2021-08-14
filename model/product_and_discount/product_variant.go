@@ -30,6 +30,12 @@ type ProductVariant struct {
 	model.ModelMetadata
 }
 
+// ProductVariantFilterOption is used to build sql queries
+type ProductVariantFilterOption struct {
+	Id   *model.StringFilter
+	Name *model.StringFilter
+}
+
 func (p *ProductVariant) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.product_variant.is_valid.%s.app_error",

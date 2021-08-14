@@ -37,3 +37,23 @@ func (a *AppProduct) ProductVariantIsDigital(productVariantID string) (bool, *mo
 
 	return *productType.IsDigital && !*productType.IsShippingRequired, nil
 }
+
+// ProductVariantByOrderLineID returns a product variant by given order line id
+func (a *AppProduct) ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError) {
+	productVariant, err := a.Srv().Store.ProductVariant().GetByOrderLineID(orderLineID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", err)
+	}
+
+	return productVariant, nil
+}
+
+// ProductVariantsByOption returns a list of product variants satisfy given option
+func (a *AppProduct) ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) {
+	productVariants, err := a.Srv().Store.ProductVariant().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_option.app_error", err)
+	}
+
+	return productVariants, nil
+}

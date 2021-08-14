@@ -2,6 +2,7 @@ package product
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -131,4 +132,58 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 	}
 
 	return nil, errors.Errorf("weight for product variant with id=%s is not set", productVariantID)
+}
+
+// GetByOrderLineID finds and returns a product variant by given orderLineID
+func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+	var res product_and_discount.ProductVariant
+	err := vs.GetReplica().SelectOne(
+		&res,
+		`SELECT `+strings.Join(vs.ModelFields(), ", ")+`
+		FROM `+store.ProductVariantTableName+`
+		INNER JOIN `+store.OrderLineTableName+` ON (
+			ProductVariants.Id = Orderlines.VariantID
+		)
+		WHERE Orderlines.Id = :OrderLineID`,
+		map[string]interface{}{
+			"OrderLineID": orderLineID,
+		},
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductVariantTableName, "orderLineID="+orderLineID)
+		}
+		return nil, errors.Wrapf(err, "failed to find product variant with order line id=%s", orderLineID)
+	}
+
+	return &res, nil
+}
+
+// FilterByOption finds and returns product variants based on given option
+func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+	query := vs.GetQueryBuilder().
+		Select(vs.ModelFields()...).
+		From(store.ProductVariantTableName).
+		OrderBy(store.TableOrderingMap[store.ProductVariantTableName])
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("ProductVariants.Id"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("ProductVariants.Name"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.ProductVariant
+	_, err = vs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product variants by given option")
+	}
+
+	return res, nil
 }

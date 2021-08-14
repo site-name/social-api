@@ -214,12 +214,14 @@ type ProductApp interface {
 	ProductsRequireShipping(productIDs []string) (bool, *model.AppError)                                                                                            // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
 	// ProductVariantGetPrice
 	ProductVariantGetPrice(product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
-	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
-	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError) // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
-	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
-	ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError)        // ProductByProductVariantID finds and returns product with given product varnait id
-	CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError)                    // CategoryByProductID finds and returns a category by given productID
-	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)             // CollectionsByProductID finds and returns all collections related to given product
+	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
+	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError)                                 // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
+	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                                                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
+	ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError)                                        // ProductByProductVariantID finds and returns product with given product varnait id
+	CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError)                                                    // CategoryByProductID finds and returns a category by given productID
+	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
+	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
+	ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) // ProductVariantsByOption returns a list of product variants satisfy given option
 }
 
 type WishlistApp interface {
@@ -262,10 +264,33 @@ type ChannelApp interface {
 type WarehouseApp interface {
 	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) (*warehouse.InsufficientStock, *model.AppError)
 	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []uint, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
-	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) // IsProductInStock
-	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData      // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError          // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-	DecreaseAllocations(lineInfos []*order.OrderLineData) *model.AppError                              // DecreaseAllocations Decreate allocations for provided order lines.
+	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)       // IsProductInStock
+	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData            // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
+	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError                // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+	DecreaseAllocations(lineInfos []*order.OrderLineData) *model.AppError                                    // DecreaseAllocations Decreate allocations for provided order lines.
+	WarehouseByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)     // WarehouseByOption returns a list of warehouses based on given option
+	AllocationsByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) // AllocationsByOption returns all warehouse allocations filtered based on given option
+	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                               // WarehouseByStockID returns a warehouse that owns the given stock
+	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
+	//
+	// Function lock for update stock and allocations related to given `order_line`
+	// in a given warehouse. If the stock exists, increase the stock quantity
+	// by given value. If not exist create a stock with the given quantity. This function
+	// can create the allocation for increased quantity in stock by passing True
+	// to `allocate` argument. If the order line has the allocation in this stock
+	// function increase `quantity_allocated`. If allocation does not exist function
+	// create a new allocation for this order line in this stock.
+	//
+	// NOTE: allocate is default to false
+	IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity uint, allocate bool) *model.AppError
+	// DeallocateStock Deallocate stocks for given `order_lines`.
+	//
+	// Function lock for update stocks and allocations related to given `order_lines`.
+	// Iterate over allocations sorted by `stock.pk` and deallocate as many items
+	// as needed of available in stock for order line, until deallocated all required
+	// quantity for the order line. If there is less quantity in stocks then
+	// raise an exception.
+	DeallocateStock(orderLineDatas []*order.OrderLineData) *model.AppError
 }
 
 type DiscountApp interface {
@@ -295,7 +320,6 @@ type DiscountApp interface {
 }
 
 type OrderApp interface {
-	GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) // GetAllOrderLinesByOrderId returns a slice of order lines that belong to given order
 	// OrderShippingIsRequired checks if an order requires ship or not by:
 	//
 	// 1) Find all child order lines that belong to given order

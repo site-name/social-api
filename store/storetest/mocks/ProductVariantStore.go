@@ -21,6 +21,29 @@ func (_m *ProductVariantStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *ProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+	ret := _m.Called(option)
+
+	var r0 []*product_and_discount.ProductVariant
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductVariantFilterOption) []*product_and_discount.ProductVariant); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.ProductVariant)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductVariantFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *ProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	ret := _m.Called(id)
@@ -37,6 +60,29 @@ func (_m *ProductVariantStore) Get(id string) (*product_and_discount.ProductVari
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByOrderLineID provides a mock function with given fields: orderLineID
+func (_m *ProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+	ret := _m.Called(orderLineID)
+
+	var r0 *product_and_discount.ProductVariant
+	if rf, ok := ret.Get(0).(func(string) *product_and_discount.ProductVariant); ok {
+		r0 = rf(orderLineID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*product_and_discount.ProductVariant)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(orderLineID)
 	} else {
 		r1 = ret.Error(1)
 	}

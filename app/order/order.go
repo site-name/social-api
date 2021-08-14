@@ -59,9 +59,16 @@ func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
 }
 
 func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
-	lines, err := a.GetAllOrderLinesByOrderId(orderID)
-	if err != nil {
-		return false, err
+	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orderID,
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "OrderShippingIsRequired"
+		return false, appErr
 	}
 
 	for _, line := range lines {
@@ -75,9 +82,16 @@ func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppErro
 
 // OrderTotalQuantity return total quantity of given order
 func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
-	lines, err := a.GetAllOrderLinesByOrderId(orderID)
-	if err != nil {
-		return 0, err
+	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orderID,
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "OrderTotalQuantity"
+		return 0, appErr
 	}
 
 	var total uint = 0
@@ -153,12 +167,19 @@ func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 func (a *AppOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
-	orderLines, appErr := a.GetAllOrderLinesByOrderId(ord.Id)
+	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
 	if appErr != nil {
+		appErr.Where = "OrderSubTotal"
 		return nil, appErr
 	}
 
-	return a.PaymentApp().GetSubTotal(orderLines, ord.Currency)
+	return a.PaymentApp().GetSubTotal(lines, ord.Currency)
 }
 
 // OrderCanCalcel checks if given order can be canceled

@@ -175,6 +175,7 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
+		Distinct().
 		From(store.PaymentTableName).
 		OrderBy(store.TableOrderingMap[store.PaymentTableName])
 
@@ -229,16 +230,5 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		return nil, errors.Wrap(err, "failed to finds payments with given option")
 	}
 
-	// filter duplicate:
-	meetMap := map[string]bool{}
-	var res []*payment.Payment
-
-	for _, payment := range payments {
-		if _, met := meetMap[payment.Id]; !met {
-			res = append(res, payment)
-			meetMap[payment.Id] = true
-		}
-	}
-
-	return res, nil
+	return payments, nil
 }

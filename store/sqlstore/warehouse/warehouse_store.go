@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -40,9 +41,6 @@ func (ws *SqlWareHouseStore) ModelFields() []string {
 }
 
 func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_warehouses_name", store.WarehouseTableName, "Name")
-	ws.CreateIndexIfNotExists("idx_warehouses_name_lower_textpattern", store.WarehouseTableName, "lower(Name) text_pattern_ops")
-	ws.CreateIndexIfNotExists("idx_warehouses_slug", store.WarehouseTableName, "Slug")
 	ws.CreateIndexIfNotExists("idx_warehouses_email", store.WarehouseTableName, "Email")
 	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", store.WarehouseTableName, "lower(Email) text_pattern_ops")
 
@@ -69,10 +67,9 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	var res warehouse.WareHouse
 	err := ws.GetMaster().SelectOne(
 		&res,
-		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID ORDER BY :OrderBy",
+		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID",
 		map[string]interface{}{
-			"ID":      id,
-			"OrderBy": store.TableOrderingMap[store.WarehouseTableName],
+			"ID": id,
 		},
 	)
 	if err != nil {
@@ -88,7 +85,8 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 // FilterByOprion returns a slice of warehouses with given option
 func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
 	query := wh.GetQueryBuilder().
-		Select("*").
+		Select(wh.ModelFields()...).
+		Distinct().
 		From(store.WarehouseTableName).
 		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
 
@@ -108,6 +106,12 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 	if option.Email != nil {
 		query = query.Where(option.Email.ToSquirrel("Email"))
 	}
+	if option.ShippingZonesCountries != nil {
+		query = query.
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON (Warehouses.Id = WarehouseShippingZones.WarehouseID)").
+			InnerJoin(store.ShippingZoneTableName + " ON (WarehouseShippingZones.ShippingZoneID = ShippingZones.Id)").
+			Where(option.ShippingZonesCountries.ToSquirrel("ShippingZones.Countries"))
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -121,4 +125,29 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 	}
 
 	return res, nil
+}
+
+// WarehouseByStockID returns 1 warehouse by given stock id
+func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+	var res warehouse.WareHouse
+	err := ws.GetReplica().SelectOne(
+		&res,
+		`SELECT `+strings.Join(ws.ModelFields(), ", ")+`
+		FROM `+store.StockTableName+`
+		INNER JOIN `+store.WarehouseTableName+` ON (
+			Stocks.WarehouseID = Warehouses.Id
+		)
+		WHERE Stocks.Id = :StockID`,
+		map[string]interface{}{
+			"StockID": stockID,
+		},
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.WarehouseTableName, "StockID="+stockID)
+		}
+		return nil, errors.Wrapf(err, "failed to find warehouse with StockID=%s", stockID)
+	}
+
+	return &res, nil
 }

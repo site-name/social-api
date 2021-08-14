@@ -122,6 +122,67 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 	return orderLine, nil
 }
 
+// BulkUpsert performs upsert multiple order lines in once
+func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+	tx, err := ols.GetMaster().Begin()
+	if err != nil {
+		return errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	var (
+		isSaving     bool
+		oldOrderLine order.OrderLine
+		numUpdated   int64
+	)
+
+	for _, orderLine := range orderLines {
+		isSaving = false
+
+		if orderLine.Id == "" {
+			isSaving = true
+			orderLine.PreSave()
+		} else {
+			orderLine.PreUpdate()
+		}
+
+		if err := orderLine.IsValid(); err != nil {
+			return err
+		}
+
+		if isSaving {
+			err = tx.Insert(orderLine)
+		} else {
+			err = tx.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
+			if err != nil { // return immediately
+				if err == sql.ErrNoRows {
+					return store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
+				}
+				return errors.Wrapf(err, "failed to find order line with id=%s", orderLine.Id)
+			}
+
+			// keep uneditable fields intact
+			orderLine.OrderID = oldOrderLine.OrderID
+			orderLine.CreateAt = oldOrderLine.CreateAt
+
+			numUpdated, err = tx.Update(orderLine)
+		}
+
+		if err != nil {
+			return errors.Wrapf(err, "failed to upsert order line with id=%s", orderLine.Id)
+		}
+		if numUpdated > 1 {
+			return errors.Errorf("multiple order lines were updated: %d instead of 1", orderLine.Id)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap(err, "transaction_commit")
+	}
+
+	return nil
+}
+
 func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	var odl order.OrderLine
 	err := ols.GetReplica().SelectOne(&odl, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
@@ -133,16 +194,6 @@ func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	}
 
 	return &odl, nil
-}
-
-func (ols *SqlOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
-	var orderLines []*order.OrderLine
-	_, err := ols.GetReplica().Select(&orderLines, "SELECT * FROM "+store.OrderLineTableName+" WHERE OrderID = :orderID", map[string]interface{}{"orderID": orderID})
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find order lines with parent order id=%s", orderID)
-	}
-
-	return orderLines, nil
 }
 
 // OrderLinesByOrderWithPrefetch finds order lines belong to given order
@@ -288,4 +339,33 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	}
 
 	return nil
+}
+
+// FilterbyOption finds and returns order lines by given option
+func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+	query := ols.GetQueryBuilder().
+		Select(ols.ModelFields()...).
+		From(store.OrderLineTableName).
+		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Orderlines.Id"))
+	}
+	if option.OrderID != nil {
+		query = query.Where(option.OrderID.ToSquirrel("Orderlines.OrderID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+
+	var res []*order.OrderLine
+	_, err = ols.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find order lines with given option")
+	}
+
+	return res, nil
 }

@@ -3,6 +3,7 @@ package warehouse
 import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/warehouse"
 )
 
 // Allocate stocks for given `order_lines` in given country.
@@ -52,6 +53,21 @@ func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, upda
 	panic("not implemented")
 }
 
+// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
+//
+// Function lock for update stock and allocations related to given `order_line`
+// in a given warehouse. If the stock exists, increase the stock quantity
+// by given value. If not exist create a stock with the given quantity. This function
+// can create the allocation for increased quantity in stock by passing True
+// to `allocate` argument. If the order line has the allocation in this stock
+// function increase `quantity_allocated`. If allocation does not exist function
+// create a new allocation for this order line in this stock.
+//
+// NOTE: allocate is default to false
+func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity uint, allocate bool) *model.AppError {
+	panic("not implemented")
+}
+
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData {
 
@@ -62,4 +78,15 @@ func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.O
 	}
 
 	return orderLineInfos
+}
+
+// DeallocateStock Deallocate stocks for given `order_lines`.
+//
+// Function lock for update stocks and allocations related to given `order_lines`.
+// Iterate over allocations sorted by `stock.pk` and deallocate as many items
+// as needed of available in stock for order line, until deallocated all required
+// quantity for the order line. If there is less quantity in stocks then
+// raise an exception.
+func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) *model.AppError {
+	panic("not implemented")
 }

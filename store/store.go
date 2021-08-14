@@ -369,6 +369,7 @@ type (
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
+		WarehouseByStockID(stockID string) (*warehouse.WareHouse, error)                        // WarehouseByStockID returns 1 warehouse by given stock id
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
@@ -472,9 +473,11 @@ type (
 	ProductVariantStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Save inserts product variant instance to database
-		Get(id string) (*product_and_discount.ProductVariant, error)                                     // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                  // GetWeight returns weight of given product variant
+		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)                        // Save inserts product variant instance to database
+		Get(id string) (*product_and_discount.ProductVariant, error)                                                            // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                                         // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                      // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) // FilterByOption finds and returns product variants based on given option
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -553,14 +556,15 @@ type (
 		ModelFields() []string
 		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*order.OrderLine, error)                     // Get returns a order line with id of given id
-		GetAllByOrderID(orderID string) ([]*order.OrderLine, error)  // GetAllByOrderID returns a slice of order lines that belong to given order
 		// OrderLinesByOrderWithPrefetch finds order lines belong to given order
 		//
 		// and preload `variants`, `products` related to these order lines
 		//
 		// this borrow the idea from Django's prefetch_related() method
 		OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
-		BulkDelete(orderLineIDs []string) error // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		BulkDelete(orderLineIDs []string) error                                         // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) // FilterbyOption finds and returns order lines by given option
+		BulkUpsert(orderLines []*order.OrderLine) error                                 // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()

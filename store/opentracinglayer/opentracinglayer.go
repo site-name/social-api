@@ -4292,6 +4292,42 @@ func (s *OpenTracingLayerOrderLineStore) BulkDelete(orderLineIDs []string) error
 	return err
 }
 
+func (s *OpenTracingLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.OrderLineStore.BulkUpsert(orderLines)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.FilterbyOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OrderLineStore.FilterbyOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Get")
@@ -4302,24 +4338,6 @@ func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error
 
 	defer span.Finish()
 	result, err := s.OrderLineStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerOrderLineStore) GetAllByOrderID(orderID string) ([]*order.OrderLine, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.GetAllByOrderID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.OrderLineStore.GetAllByOrderID(orderID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5079,6 +5097,24 @@ func (s *OpenTracingLayerProductTypeStore) Save(productType *product_and_discoun
 	return result, err
 }
 
+func (s *OpenTracingLayerProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Get")
@@ -5089,6 +5125,24 @@ func (s *OpenTracingLayerProductVariantStore) Get(id string) (*product_and_disco
 
 	defer span.Finish()
 	result, err := s.ProductVariantStore.Get(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.GetByOrderLineID")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantStore.GetByOrderLineID(orderLineID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8101,6 +8155,24 @@ func (s *OpenTracingLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*
 
 	defer span.Finish()
 	result, err := s.WarehouseStore.Save(warehouse)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.WarehouseByStockID")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.WarehouseByStockID(stockID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

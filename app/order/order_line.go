@@ -40,10 +40,27 @@ func (a *AppOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
 	return nil
 }
 
+// OrderLinesByOption returns a list of order lines by given option
+func (a *AppOrder) OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError) {
+	orderLines, err := a.Srv().Store.OrderLine().FilterbyOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("OrderLinesByOption", "app.order.error_finding_order_lines_by_option.app_error", err)
+	}
+
+	return orderLines, nil
+}
+
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
-	orderLines, appErr := a.GetAllOrderLinesByOrderId(orderID)
+	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orderID,
+			},
+		},
+	})
 	if appErr != nil {
+		appErr.Where = "AllDigitalOrderLinesOfOrder"
 		return nil, appErr
 	}
 
@@ -89,16 +106,6 @@ func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLi
 	return digitalOrderLines, nil
 }
 
-// GetAllOrderLinesByOrderId finds all order lines belong to given order
-func (a *AppOrder) GetAllOrderLinesByOrderId(orderID string) ([]*order.OrderLine, *model.AppError) {
-	lines, err := a.Srv().Store.OrderLine().GetAllByOrderID(orderID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetAllOrderLinesByOrderId", "app.order.error_finding_child_order_lines.app_error", err)
-	}
-
-	return lines, nil
-}
-
 func (a *AppOrder) OrderLineById(orderLineID string) (*order.OrderLine, *model.AppError) {
 	odrLine, err := a.Srv().Store.OrderLine().Get(orderLineID)
 	if err != nil {
@@ -137,4 +144,23 @@ func (a *AppOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *model
 	}
 
 	return productVariantIsDigital && orderLineProductVariantHasDigitalContent, nil
+}
+
+// BulkUpdateOrderLines perform bulk upsert given order lines
+func (a *AppOrder) BulkUpsertOrderLines(orderLines []*order.OrderLine) *model.AppError {
+	err := a.Srv().Store.OrderLine().BulkUpsert(orderLines)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return appErr
+		}
+
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return model.NewAppError("BulkUpsertOrderLines", "app.order.error_bulk_update_order_lines.app_error", nil, err.Error(), statusCode)
+	}
+
+	return nil
 }

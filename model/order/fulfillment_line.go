@@ -21,6 +21,26 @@ type FulfillmentLineFilterOption struct {
 	FulfillmentID *model.StringFilter
 }
 
+type FulfillmentLines []*FulfillmentLine
+
+func (f FulfillmentLines) IDs() []string {
+	res := make([]string, len(f))
+	for i := range f {
+		res[i] = f[i].Id
+	}
+
+	return res
+}
+
+func (f FulfillmentLines) OrderLineIDs() []string {
+	res := make([]string, len(f))
+	for i := range f {
+		res[i] = f[i].OrderLineID
+	}
+
+	return res
+}
+
 func (f *FulfillmentLine) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.fulfillment_line.is_valid.%s.app_error",

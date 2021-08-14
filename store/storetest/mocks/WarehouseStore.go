@@ -104,3 +104,26 @@ func (_m *WarehouseStore) Save(_a0 *warehouse.WareHouse) (*warehouse.WareHouse, 
 
 	return r0, r1
 }
+
+// WarehouseByStockID provides a mock function with given fields: stockID
+func (_m *WarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+	ret := _m.Called(stockID)
+
+	var r0 *warehouse.WareHouse
+	if rf, ok := ret.Get(0).(func(string) *warehouse.WareHouse); ok {
+		r0 = rf(stockID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*warehouse.WareHouse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(stockID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
