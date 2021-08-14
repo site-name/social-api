@@ -92,6 +92,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 		From(store.WarehouseTableName).
 		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
 
+	// parse option
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Id"))
 	}

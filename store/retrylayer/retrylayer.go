@@ -1261,31 +1261,11 @@ func (s *RetryLayerAddressStore) Update(address *account.Address) (*account.Addr
 
 }
 
-func (s *RetryLayerAllocationStore) AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 
 	tries := 0
 	for {
-		result, err := s.AllocationStore.AllocationsByParentIDs(parentIDs, toWhich)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
-
-	tries := 0
-	for {
-		result, err := s.AllocationStore.AllocationsByWhich(parentID, toWhich)
+		result, err := s.AllocationStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -4636,6 +4616,26 @@ func (s *RetryLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.O
 
 }
 
+func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.OrderLineStore.BulkDelete(orderLineIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 	tries := 0
@@ -4696,11 +4696,11 @@ func (s *RetryLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string)
 
 }
 
-func (s *RetryLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.Save(orderLine)
+		result, err := s.OrderLineStore.Upsert(orderLine)
 		if err == nil {
 			return result, nil
 		}

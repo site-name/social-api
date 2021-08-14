@@ -382,10 +382,9 @@ type (
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
-		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                                        // Save inserts new allocation into database and returns it
-		Get(allocationID string) (*warehouse.Allocation, error)                                                      // Get find and returns allocation with given id
-		AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error)        // AllocationsByWhich finds all allocations that belong to given order line or stock
-		AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) // AllocationsByParentIDs is similar to AllocationsByWhich but it finds for all given parent ids, not just one
+		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                     // Save inserts new allocation into database and returns it
+		Get(allocationID string) (*warehouse.Allocation, error)                                   // Get find and returns allocation with given id
+		FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
@@ -561,6 +560,7 @@ type (
 		//
 		// this borrow the idea from Django's prefetch_related() method
 		OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
+		BulkDelete(orderLineIDs []string) error // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()

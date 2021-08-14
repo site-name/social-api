@@ -1,7 +1,6 @@
 package warehouse
 
 import (
-	"io"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -11,6 +10,7 @@ import (
 
 type Stock struct {
 	Id               string `json:"id"`
+	CreateAt         int64  `json:"create_at"`
 	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
 	Quantity         uint   `json:"quantity"`           // DEFAULT 0
@@ -24,6 +24,9 @@ func (s *Stock) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(s.Id) {
 		return outer("id", nil)
+	}
+	if s.CreateAt == 0 {
+		return outer("create_at", &s.Id)
 	}
 	if !model.IsValidId(s.WarehouseID) {
 		return outer("warehouse_id", &s.Id)
@@ -39,15 +42,12 @@ func (s *Stock) ToJson() string {
 	return model.ModelToJson(s)
 }
 
-func StockFromJson(data io.Reader) *Stock {
-	var s Stock
-	model.ModelFromJson(&s, data)
-	return &s
-}
-
 func (s *Stock) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
+	}
+	if s.CreateAt == 0 {
+		s.CreateAt = model.GetMillis()
 	}
 }
 

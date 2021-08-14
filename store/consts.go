@@ -52,10 +52,10 @@ func init() {
 		WishlistProductVariantTableName: "", //
 		WishlistTableName:               "", //
 
-		StockTableName:                 "",          // warehouse
-		WarehouseTableName:             "Slug DESC", //
-		WarehouseShippingZoneTableName: "",          //
-		AllocationTableName:            "",          //
+		StockTableName:                 "CreateAt ASC", // warehouse
+		WarehouseTableName:             "Slug DESC",    //
+		WarehouseShippingZoneTableName: "",             //
+		AllocationTableName:            "CreateAt ASC", //
 
 		AddressTableName:                    "",             // account
 		UserTableName:                       "CreateAt ASC", //

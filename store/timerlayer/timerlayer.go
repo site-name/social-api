@@ -1227,10 +1227,10 @@ func (s *TimerLayerAddressStore) Update(address *account.Address) (*account.Addr
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) AllocationsByParentIDs(parentIDs []string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
+func (s *TimerLayerAllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	start := timemodule.Now()
 
-	result, err := s.AllocationStore.AllocationsByParentIDs(parentIDs, toWhich)
+	result, err := s.AllocationStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1238,23 +1238,7 @@ func (s *TimerLayerAllocationStore) AllocationsByParentIDs(parentIDs []string, t
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.AllocationsByParentIDs", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAllocationStore) AllocationsByWhich(parentID string, toWhich warehouse.AllocationsBy) ([]*warehouse.Allocation, error) {
-	start := timemodule.Now()
-
-	result, err := s.AllocationStore.AllocationsByWhich(parentID, toWhich)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.AllocationsByWhich", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -3948,6 +3932,22 @@ func (s *TimerLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.O
 	return result, err
 }
 
+func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.OrderLineStore.BulkDelete(orderLineIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.BulkDelete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	start := timemodule.Now()
 
@@ -3996,10 +3996,10 @@ func (s *TimerLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string)
 	return result, resultVar1, resultVar2, err
 }
 
-func (s *TimerLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderLineStore.Save(orderLine)
+	result, err := s.OrderLineStore.Upsert(orderLine)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4007,7 +4007,7 @@ func (s *TimerLayerOrderLineStore) Save(orderLine *order.OrderLine) (*order.Orde
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Upsert", success, elapsed)
 	}
 	return result, err
 }

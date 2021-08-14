@@ -48,7 +48,7 @@ func (worker *Worker) GetAttributeHeaders(exportInfo map[string][]string) []stri
 	var (
 		wg            sync.WaitGroup
 		mutex         sync.Mutex
-		err           error
+		outerError    error
 		attributes_01 []*attribute.Attribute
 		attributes_02 []*attribute.Attribute
 	)
@@ -87,11 +87,11 @@ func (worker *Worker) GetAttributeHeaders(exportInfo map[string][]string) []stri
 	for index, filterOption := range filterOptions {
 
 		go func(idx int, option *attribute.AttributeFilterOption) {
-			attributes, er := worker.app.Srv().Store.Attribute().FilterbyOption(filterOption)
+			attributes, err := worker.app.Srv().Store.Attribute().FilterbyOption(option)
 			mutex.Lock()
-			if er != nil {
-				if err == nil {
-					err = er
+			if err != nil {
+				if outerError == nil {
+					outerError = err
 				}
 			} else {
 				if idx == 0 {
@@ -108,11 +108,11 @@ func (worker *Worker) GetAttributeHeaders(exportInfo map[string][]string) []stri
 
 	wg.Wait()
 
-	if err != nil {
+	if outerError != nil {
 		slog.Error(
 			"worker failed to get attribute headers",
 			slog.String("worker", worker.name),
-			slog.String("error", err.Error()),
+			slog.String("error", outerError.Error()),
 		)
 		return nil
 	}

@@ -50,6 +50,7 @@ func (ols *SqlOrderLineStore) CreateIndexesIfNotExists() {
 func (ols *SqlOrderLineStore) ModelFields() []string {
 	return []string{
 		"Orderlines.Id",
+		"Orderlines.CreateAt",
 		"Orderlines.OrderID",
 		"Orderlines.VariantID",
 		"Orderlines.ProductName",
@@ -187,6 +188,7 @@ func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*
 		err = rows.Scan(
 			// scan order line
 			&orderLine.Id,
+			&orderLine.CreateAt,
 			&orderLine.OrderID,
 			&orderLine.VariantID,
 			&orderLine.ProductName,
@@ -263,4 +265,27 @@ func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*
 	}
 
 	return orderLines, productVariants, products, nil
+}
+
+// BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
+	result, err := ols.GetQueryBuilder().
+		Delete(store.OrderLineTableName).
+		Where(squirrel.Eq{"Id": orderLineIDs}).
+		RunWith(ols.GetMaster()).
+		Exec()
+
+	if err != nil {
+		return errors.Wrap(err, "failed to delete order lines by given ids")
+	}
+	numDeleted, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to count number of order lines deleted")
+	}
+
+	if numDeleted != int64(len(orderLineIDs)) {
+		return errors.Errorf("%d of order lines deleted instead of %d", numDeleted, len(orderLineIDs))
+	}
+
+	return nil
 }

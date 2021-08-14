@@ -1,8 +1,6 @@
 package warehouse
 
 import (
-	"net/http"
-
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
@@ -72,13 +70,14 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 		}
 	}
 
-	allocations, err := a.Srv().Store.Allocation().AllocationsByParentIDs(stockIDs, warehouse.ByStock)
-	if err != nil {
-		// error can be of 2 type: *store.ErrNotFound or system error
-		appErr := store.AppErrorFromDatabaseLookupError("getAvailableQuantity", "app.warehouse.allocations_by_stocks_missing.app_error", err)
-		if appErr.StatusCode == http.StatusNotFound {
-			return totalQuantity, nil
-		}
+	allocations, appErr := a.AllocationsByOption(&warehouse.AllocationFilterOption{
+		StockID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: stockIDs,
+			},
+		},
+	})
+	if appErr != nil {
 		return 0, appErr
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -33,6 +34,7 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 func (ss *SqlStockStore) ModelFields() []string {
 	return []string{
 		"Stocks.Id",
+		"Stocks.CreateAt",
 		"Stocks.WarehouseID",
 		"Stocks.ProductVariantID",
 		"Stocks.Quantity",
@@ -80,26 +82,27 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 		return "", nil, store.NewErrInvalidInput(store.StockTableName, "countryCode", options.CountryCode)
 	}
 
-	subQueryCondition := `Sz.Countries :: text ILIKE :CountryCode`
-	query := `SELECT Wh.Id FROM ` + store.WarehouseTableName + ` AS Wh
-		INNER JOIN ` + store.WarehouseShippingZoneTableName + ` AS WhSz ON (
-			WhSz.WarehouseID = Wh.Id
+	subQueryCondition := `ShippingZones.Countries :: text ILIKE :CountryCode`
+	query := `SELECT Warehouses.Id FROM ` + store.WarehouseTableName + `
+		INNER JOIN ` + store.WarehouseShippingZoneTableName + ` ON (
+			WarehouseShippingZones.WarehouseID = Warehouses.Id
 		)
-		INNER JOIN ` + store.ShippingZoneTableName + ` AS Sz ON (
-			Sz.Id = WhSz.ShippingZoneID
+		INNER JOIN ` + store.ShippingZoneTableName + ` ON (
+			ShippingZones.Id = WarehouseShippingZones.ShippingZoneID
 		)`
 	params := map[string]interface{}{
 		"CountryCode": "%" + options.CountryCode + "%",
+		"OrderBy":     store.TableOrderingMap[store.StockTableName], // Orderby added here
 	}
 
 	// if channel slug is provided and valid
 	if options.ChannelSlug != "" {
-		subQueryCondition += ` AND Cn.Slug = :ChannelSlug`
-		query += ` INNER JOIN ` + store.ShippingZoneChannelTableName + ` AS SzCn ON (
-			SzCn.ShippingZoneID = Sz.Id
+		subQueryCondition += ` AND Channels.Slug = :ChannelSlug`
+		query += ` INNER JOIN ` + store.ShippingZoneChannelTableName + ` ON (
+			ShippingZoneChannels.ShippingZoneID = ShippingZones.Id
 		)
-		INNER JOIN ` + store.ChannelTableName + ` AS Cn ON (
-			Cn.Id = SzCn.ChannelID
+		INNER JOIN ` + store.ChannelTableName + ` ON (
+			ChannelTableName.Id = ShippingZoneChannels.ChannelID
 		)`
 		params["ChannelSlug"] = options.ChannelSlug
 	}
@@ -110,7 +113,33 @@ func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) 
 
 // commonLookup is not exported
 func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{}) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	rows, err := ss.GetReplica().Query(query, params)
+	var selectedRows []*struct {
+		Id               string
+		CreateAt         int64
+		WarehouseID      string
+		ProductVariantID string
+		Quantity         uint
+
+		WareHouseID     string
+		Name            string
+		Slug            string
+		AddressID       *string
+		Email           string
+		Metadata        model.StringMap
+		PrivateMetadata model.StringMap
+
+		VariantId              string
+		VariantName            string
+		ProductID              string
+		Sku                    string
+		Weight                 *float32
+		WeightUnit             measurement.WeightUnit
+		TrackInventory         *bool
+		SortOrder              int
+		VariantMetadata        model.StringMap
+		VariantPrivateMetadata model.StringMap
+	}
+	_, err := ss.GetReplica().Select(&selectedRows, query, params)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "failed to perform database lookup operation")
 	}
@@ -121,93 +150,100 @@ func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{
 		warehouses      []*warehouse.WareHouse
 		productVariants []*product_and_discount.ProductVariant
 	)
-	// scan rows
-	for rows.Next() {
-		var (
-			st warehouse.Stock
-			wh warehouse.WareHouse
-			pv product_and_discount.ProductVariant
-		)
-		err := rows.Scan(
-			// scan for stock:
-			&st.Id, &st.WarehouseID, &st.ProductVariantID, &st.Quantity,
-			// scan for warehouse:
-			&wh.Id, &wh.Name, &wh.Slug, &wh.AddressID, &wh.Email, &wh.Metadata, &wh.PrivateMetadata,
-			// scan for product variant:
-			&pv.Id, &pv.Name, &pv.ProductID, &pv.Sku, &pv.Weight, &pv.WeightUnit,
-			&pv.TrackInventory, &pv.SortOrder, &pv.Metadata, &pv.PrivateMetadata,
-		)
-		if err != nil {
-			return nil, nil, nil, errors.Wrap(err, "failed to parse a row")
-		}
-		stocks = append(stocks, &st)
-		warehouses = append(warehouses, &wh)
-		productVariants = append(productVariants, &pv)
-	}
 
-	rows.Close()
-	if rows.Err() != nil {
-		return nil, nil, nil, errors.Wrap(rows.Err(), "failed to parse rows")
+	for _, row := range selectedRows {
+		stocks = append(stocks, &warehouse.Stock{
+			Id:               row.Id,
+			CreateAt:         row.CreateAt,
+			WarehouseID:      row.WarehouseID,
+			ProductVariantID: row.ProductVariantID,
+			Quantity:         row.Quantity,
+		})
+		warehouses = append(warehouses, &warehouse.WareHouse{
+			Id:        row.WareHouseID,
+			Name:      row.Name,
+			Slug:      row.Slug,
+			AddressID: row.AddressID,
+			Email:     row.Email,
+			ModelMetadata: model.ModelMetadata{
+				Metadata:        row.Metadata,
+				PrivateMetadata: row.PrivateMetadata,
+			},
+		})
+		productVariants = append(productVariants, &product_and_discount.ProductVariant{
+			Id:             row.VariantId,
+			Name:           row.VariantName,
+			ProductID:      row.ProductID,
+			Sku:            row.Sku,
+			Weight:         row.Weight,
+			WeightUnit:     row.WeightUnit,
+			TrackInventory: row.TrackInventory,
+			Sortable: model.Sortable{
+				SortOrder: row.SortOrder,
+			},
+			ModelMetadata: model.ModelMetadata{
+				Metadata:        row.VariantMetadata,
+				PrivateMetadata: row.VariantPrivateMetadata,
+			},
+		})
 	}
 
 	return stocks, warehouses, productVariants, nil
 }
 
 func (ss *SqlStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
-	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
+	options.CountryCode = strings.ToUpper(options.CountryCode)
 
 	subQuery, params, err := queryBuildHelperWithOptions(options)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	selects := ss.ModelFields()
-	selects = append(selects, ss.Warehouse().ModelFields()...)
-	selects = append(selects, ss.ProductVariant().ModelFields()...)
-	selectStr := strings.Join(selects, ", ")
+	selectingFields := ss.ModelFields()
+	selectingFields = append(selectingFields, ss.Warehouse().ModelFields()...)
+	selectingFields = append(selectingFields, ss.ProductVariant().ModelFields()...)
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
-		INNER JOIN ` + store.WarehouseTableName + ` ON (
-			Stocks.WarehouseID = Warehouses.Id
-		)
-		INNER JOIN ` + store.ProductVariantTableName + ` ON (
-			ProductVariants.Id = Stocks.ProductVariantID
-		)
-		WHERE (
-			Stocks.WarehouseID IN (` + subQuery + `)
-		)
-		ORDER BY Stocks.Id ASC`
+	mainQuery := `SELECT ` + strings.Join(selectingFields, ", ") + `
+	FROM ` + store.StockTableName + `
+	INNER JOIN ` + store.WarehouseTableName + ` ON (
+		Stocks.WarehouseID = Warehouses.Id
+	)
+	INNER JOIN ` + store.ProductVariantTableName + ` ON (
+		ProductVariants.Id = Stocks.ProductVariantID
+	)
+	WHERE (
+		Stocks.WarehouseID IN (` + subQuery + `)
+	)
+	ORDER BY :OrderBy`
 
 	return ss.commonLookup(mainQuery, params)
 }
 
 func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
-	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
+	options.CountryCode = strings.ToUpper(options.CountryCode)
 
 	subQuery, params, err := queryBuildHelperWithOptions(options)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	selects := ss.ModelFields()
-	selects = append(selects, ss.Warehouse().ModelFields()...)
-	selects = append(selects, ss.ProductVariant().ModelFields()...)
-	selectStr := strings.Join(selects, ", ")
+	selectingFields := ss.ModelFields()
+	selectingFields = append(selectingFields, ss.Warehouse().ModelFields()...)
+	selectingFields = append(selectingFields, ss.ProductVariant().ModelFields()...)
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
-		INNER JOIN ` + store.WarehouseTableName + ` ON (
-			Stocks.WarehouseID = Warehouses.Id
-		)
-		INNER JOIN ` + store.ProductVariantTableName + ` ON (
-			ProductVariants.Id = Stocks.ProductVariantID
-		)
-		WHERE (
-			Stocks.WarehouseID IN (` + subQuery + `)
-			AND Stocks.ProductVariantID = :ProductVariantID
-		)
-		ORDER BY Stocks.Id ASC`
+	mainQuery := `SELECT ` + strings.Join(selectingFields, ", ") + `
+	FROM ` + store.StockTableName + ` 
+	INNER JOIN ` + store.WarehouseTableName + ` ON (
+		Stocks.WarehouseID = Warehouses.Id
+	)
+	INNER JOIN ` + store.ProductVariantTableName + ` ON (
+		ProductVariants.Id = Stocks.ProductVariantID
+	)
+	WHERE (
+		Stocks.WarehouseID IN (` + subQuery + `)
+		AND Stocks.ProductVariantID = :ProductVariantID
+	)
+	ORDER BY :OrderBy`
 
 	params["ProductVariantID"] = productVariantID
 
@@ -215,20 +251,18 @@ func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.ForCou
 }
 
 func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	options.CountryCode = strings.TrimSpace(strings.ToUpper(options.CountryCode))
-	options.ChannelSlug = strings.TrimSpace(options.ChannelSlug)
+	options.CountryCode = strings.ToUpper(options.CountryCode)
 
 	subQuery, params, err := queryBuildHelperWithOptions(options)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	selects := ss.ModelFields()
-	selects = append(selects, ss.Warehouse().ModelFields()...)
-	selects = append(selects, ss.ProductVariant().ModelFields()...)
-	selectStr := strings.Join(selects, ", ")
+	selectingFields := ss.ModelFields()
+	selectingFields = append(selectingFields, ss.Warehouse().ModelFields()...)
+	selectingFields = append(selectingFields, ss.ProductVariant().ModelFields()...)
 
-	mainQuery := `SELECT ` + selectStr + ` FROM ` + store.StockTableName + ` 
+	mainQuery := `SELECT ` + strings.Join(selectingFields, ", ") + ` FROM ` + store.StockTableName + ` 
 		INNER JOIN ` + store.WarehouseTableName + ` ON (
 			Stocks.WarehouseID = Warehouses.Id
 		)
@@ -239,7 +273,7 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 			Stocks.WarehouseID IN (` + subQuery + `)
 			AND ProductVariants.ProductID = :ProductID
 		)
-		ORDER BY Stocks.Id ASC`
+		ORDER BY :OrderBy`
 
 	params["ProductID"] = productID
 

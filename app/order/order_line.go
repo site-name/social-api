@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -13,13 +14,30 @@ func (a *AppOrder) UpsertOrderLine(orderLine *order.OrderLine) (*order.OrderLine
 	orderLine, err := a.Srv().Store.OrderLine().Upsert(orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
+		if _, ok := err.(*store.ErrNotFound); ok { // this not found error is caused by Get method
 			status = http.StatusNotFound
 		}
 		return nil, model.NewAppError("UpsertOrderLine", "app.order.error_upserting_order_line.app_error", nil, err.Error(), status)
 	}
 
 	return orderLine, nil
+}
+
+// DeleteOrderLines perform bulk delete given order lines
+func (a *AppOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
+	// validate given ids
+	for _, id := range orderLineIDs {
+		if !model.IsValidId(id) {
+			return model.NewAppError("DeleteOrderLines", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineIDs"}, "", http.StatusBadRequest)
+		}
+	}
+
+	err := a.Srv().Store.OrderLine().BulkDelete(orderLineIDs)
+	if err != nil {
+		return model.NewAppError("DeleteOrderLines", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
