@@ -262,7 +262,10 @@ type ChannelApp interface {
 type WarehouseApp interface {
 	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) (*warehouse.InsufficientStock, *model.AppError)
 	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []uint, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
-	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)
+	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) // IsProductInStock
+	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData      // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
+	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError          // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+	DecreaseAllocations(lineInfos []*order.OrderLineData) *model.AppError                              // DecreaseAllocations Decreate allocations for provided order lines.
 }
 
 type DiscountApp interface {

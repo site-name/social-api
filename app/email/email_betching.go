@@ -88,4 +88,29 @@ func (job *EmailBatchingJob) Start() {
 	}
 }
 
-// func(job *EmailBatchingJob) Add(user *)
+func (job *EmailBatchingJob) Add(user *account.User) bool {
+	notification := &batchedNotification{
+		userID: user.Id,
+	}
+
+	select {
+	case job.newNotifications <- notification:
+		return true
+
+	default:
+		// return false if we couldn't queue the email notification so that we can send an immediate email
+		return false
+	}
+}
+
+func (job *EmailBatchingJob) CheckPendingEmails() {
+	// job.handleNewNotitifcations()
+
+	// // it's a bit weird to pass the send email function through here, but it makes it so that we can test
+	// // without actually sending emails
+	// job.checkPendingNotifications(time.Now(), job.service.sendBatched)
+}
+
+// func (es *Service) sendBatchedEmailNotification(userID string, notifications []*batchedNotification) {
+// 	user, err := es.
+// }

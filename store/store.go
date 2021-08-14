@@ -552,9 +552,9 @@ type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(orderLine *order.OrderLine) (*order.OrderLine, error)  // Save save given order line instance into database and returns it
-		Get(id string) (*order.OrderLine, error)                    // Get returns a order line with id of given id
-		GetAllByOrderID(orderID string) ([]*order.OrderLine, error) // GetAllByOrderID returns a slice of order lines that belong to given order
+		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*order.OrderLine, error)                     // Get returns a order line with id of given id
+		GetAllByOrderID(orderID string) ([]*order.OrderLine, error)  // GetAllByOrderID returns a slice of order lines that belong to given order
 		// OrderLinesByOrderWithPrefetch finds order lines belong to given order
 		//
 		// and preload `variants`, `products` related to these order lines

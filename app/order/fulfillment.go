@@ -53,19 +53,3 @@ func (a *AppOrder) FulfillmentsByOrderID(orderID string) ([]*order.Fulfillment, 
 
 	return fulfillmentsByOrder, nil
 }
-
-func (a *AppOrder) FulfillmentLinesByFulfillmentID(fulfillmentID string) ([]*order.FulfillmentLine, *model.AppError) {
-	fulfillmentLines, err := a.Srv().Store.FulfillmentLine().FilterbyOption(&order.FulfillmentLineFilterOption{
-		FulfillmentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillmentID,
-			},
-		},
-	})
-
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentLinesByFulfillmentID", "app.order.error_finding_fulfillment_lines_by_fulfillment.app_error", err)
-	}
-
-	return fulfillmentLines, nil
-}

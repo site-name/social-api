@@ -31,7 +31,7 @@ func (a *AppOrder) CommonCreateOrderEvent(option *order.OrderEventOption) (*orde
 	return orderEvent, nil
 }
 
-func linePerQuantityToLineObject(quantity uint, line *order.OrderLine) map[string]interface{} {
+func linePerQuantityToLineObject(quantity int, line *order.OrderLine) map[string]interface{} {
 	return map[string]interface{}{
 		"quantity": quantity,
 		"line_pk":  line.Id,
@@ -40,7 +40,7 @@ func linePerQuantityToLineObject(quantity uint, line *order.OrderLine) map[strin
 }
 
 type QuantityOrderLine struct {
-	Quantity  uint
+	Quantity  int
 	OrderLine *order.OrderLine
 }
 
@@ -139,7 +139,7 @@ func (a *AppOrder) OrderLineDiscountEvent(eventType string, ord *order.Order, us
 		discountParameters["old_amount_value"] = lineBeforeUpdate.UnitDiscountAmount
 	}
 
-	lineData := linePerQuantityToLineObject(line.Quantity, line)
+	lineData := linePerQuantityToLineObject(int(line.Quantity), line)
 	lineData["discount"] = discountParameters
 
 	return a.CommonCreateOrderEvent(&order.OrderEventOption{

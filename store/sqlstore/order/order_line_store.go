@@ -71,22 +71,54 @@ func (ols *SqlOrderLineStore) ModelFields() []string {
 		"Orderlines.TotalPriceGrossAmount",
 		"Orderlines.UnDiscountedUnitPriceGrossAmount",
 		"Orderlines.UnDiscountedUnitPriceNetAmount",
-		"Orderlines.UnDsicountedTotalPriceGrossAmount",
+		"Orderlines.UnDiscountedTotalPriceGrossAmount",
 		"Orderlines.UnDiscountedTotalPriceNetAmount",
 		"Orderlines.TaxRate",
 	}
 }
 
-func (ols *SqlOrderLineStore) Save(odl *order.OrderLine) (*order.OrderLine, error) {
-	odl.PreSave()
-	if err := odl.IsValid(); err != nil {
-		return nil, err
-	}
-	if err := ols.GetMaster().Insert(odl); err != nil {
-		return nil, errors.Wrapf(err, "failed to create new order line with id=%s", odl.Id)
+// Upsert depends on given orderLine's Id to decide to update or save it
+func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
+	var isSaving bool
+	if orderLine.Id == "" {
+		orderLine.PreSave()
+		isSaving = true
+	} else {
+		orderLine.PreUpdate()
 	}
 
-	return odl, nil
+	if err := orderLine.IsValid(); err != nil {
+		return nil, err
+	}
+
+	var (
+		err          error
+		numUpdated   int64
+		oldOrderLine *order.OrderLine
+	)
+	if isSaving {
+		err = ols.GetMaster().Insert(orderLine)
+	} else {
+		oldOrderLine, err = ols.Get(orderLine.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		// keep uneditable fields intact
+		orderLine.OrderID = oldOrderLine.OrderID
+		orderLine.CreateAt = oldOrderLine.CreateAt
+
+		numUpdated, err = ols.GetMaster().Update(orderLine)
+	}
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to upsert order line with id=%s", orderLine.Id)
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple order lines were updated: %d instead of 1", numUpdated)
+	}
+
+	return orderLine, nil
 }
 
 func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
@@ -176,7 +208,7 @@ func (ols *SqlOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*
 			&orderLine.TotalPriceGrossAmount,
 			&orderLine.UnDiscountedUnitPriceGrossAmount,
 			&orderLine.UnDiscountedUnitPriceNetAmount,
-			&orderLine.UnDsicountedTotalPriceGrossAmount,
+			&orderLine.UnDiscountedTotalPriceGrossAmount,
 			&orderLine.UnDiscountedTotalPriceNetAmount,
 			&orderLine.TaxRate,
 

@@ -32,6 +32,7 @@ var UnitDiscountTypeStrings = map[string]string{
 
 type OrderLine struct {
 	Id                                string               `json:"id"`
+	CreateAt                          int64                `json:"create_at"` // for database ordering
 	OrderID                           string               `json:"order_id"`
 	VariantID                         *string              `json:"variant_id"`
 	ProductName                       string               `json:"product_name"`
@@ -61,7 +62,7 @@ type OrderLine struct {
 	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal     `json:"undiscounted_unit_price_gross_amount"`
 	UnDiscountedUnitPriceNetAmount    *decimal.Decimal     `json:"undiscounted_unit_price_net_amount"`
 	UnDiscountedUnitPrice             *goprices.TaxedMoney `json:"undiscounted_unit_price" db:"-"`
-	UnDsicountedTotalPriceGrossAmount *decimal.Decimal     `json:"undiscounted_total_price_gross_amount"`
+	UnDiscountedTotalPriceGrossAmount *decimal.Decimal     `json:"undiscounted_total_price_gross_amount"`
 	UnDiscountedTotalPriceNetAmount   *decimal.Decimal     `json:"undiscounted_total_price_net_amount"`
 	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
@@ -75,6 +76,9 @@ func (o *OrderLine) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(o.Id) {
 		return outer("id", nil)
+	}
+	if o.CreateAt == 0 {
+		return outer("create_at", &o.Id)
 	}
 	if !model.IsValidId(o.OrderID) {
 		return outer("order_id", &o.Id)
@@ -132,7 +136,7 @@ func (o *OrderLine) PopulateNonDbFields() {
 	o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 
 	net, _ = goprices.NewMoney(o.UnDiscountedTotalPriceNetAmount, o.Currency)
-	gross, _ = goprices.NewMoney(o.UnDsicountedTotalPriceGrossAmount, o.Currency)
+	gross, _ = goprices.NewMoney(o.UnDiscountedTotalPriceGrossAmount, o.Currency)
 	o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 }
 
@@ -145,6 +149,9 @@ func (o *OrderLine) ToJson() string {
 func (o *OrderLine) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
+	}
+	if o.CreateAt == 0 {
+		o.CreateAt = model.GetMillis()
 	}
 	o.commonPre()
 }
@@ -181,10 +188,10 @@ func (o *OrderLine) commonPre() {
 
 	if o.UnDiscountedTotalPrice != nil {
 		o.UnDiscountedTotalPriceNetAmount = o.UnDiscountedTotalPrice.Net.Amount
-		o.UnDsicountedTotalPriceGrossAmount = o.UnDiscountedTotalPrice.Gross.Amount
+		o.UnDiscountedTotalPriceGrossAmount = o.UnDiscountedTotalPrice.Gross.Amount
 	} else {
 		o.UnDiscountedTotalPriceNetAmount = &decimal.Zero
-		o.UnDsicountedTotalPriceGrossAmount = &decimal.Zero
+		o.UnDiscountedTotalPriceGrossAmount = &decimal.Zero
 	}
 
 	if o.TaxRate == nil {

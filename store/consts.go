@@ -19,7 +19,7 @@ var TableOrderingMap map[string]string
 
 func init() {
 	TableOrderingMap = map[string]string{
-		OrderLineTableName:       "",              // order
+		OrderLineTableName:       "CreateAt ASC",  // order
 		OrderTableName:           "CreateAt DESC", //
 		FulfillmentLineTableName: "",              //
 		FulfillmentTableName:     "CreateAt ASC",  //

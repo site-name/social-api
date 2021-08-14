@@ -131,6 +131,11 @@ func (o *OrderDiscount) commonPre() {
 	if o.Reason != nil {
 		*o.Reason = model.SanitizeUnicode(*o.Reason)
 	}
+	if o.Currency != "" {
+		o.Currency = strings.ToUpper(o.Currency)
+	} else {
+		o.Currency = model.DEFAULT_CURRENCY
+	}
 }
 
 func (o *OrderDiscount) PreUpdate() {

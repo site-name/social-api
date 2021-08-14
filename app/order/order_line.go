@@ -8,6 +8,20 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// UpsertOrderLine depends on given orderLine's Id property to decide update order save it
+func (a *AppOrder) UpsertOrderLine(orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
+	orderLine, err := a.Srv().Store.OrderLine().Upsert(orderLine)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			status = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UpsertOrderLine", "app.order.error_upserting_order_line.app_error", nil, err.Error(), status)
+	}
+
+	return orderLine, nil
+}
+
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
 	orderLines, appErr := a.GetAllOrderLinesByOrderId(orderID)
@@ -30,16 +44,18 @@ func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLi
 	a.wg.Add(len(orderLines))
 
 	for _, orderLine := range orderLines {
-		go func(line *order.OrderLine) {
-			orderLineIsDigital, appErr := a.OrderLineIsDiagital(line)
+		go func(anOrderLine *order.OrderLine) {
+			orderLineIsDigital, appErr := a.OrderLineIsDiagital(anOrderLine)
 			if appErr != nil {
 				setAppError(appErr)
 			} else {
-				a.mutex.Lock()
 				if orderLineIsDigital {
-					digitalOrderLines = append(digitalOrderLines, orderLine)
+
+					a.mutex.Lock()
+					digitalOrderLines = append(digitalOrderLines, anOrderLine)
+					a.mutex.Unlock()
+
 				}
-				a.mutex.Unlock()
 			}
 
 			a.wg.Done()
