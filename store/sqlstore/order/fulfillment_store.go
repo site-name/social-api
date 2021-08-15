@@ -47,19 +47,51 @@ func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
 	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", store.FulfillmentTableName, "TrackingNumber")
 }
 
-func (fs *SqlFulfillmentStore) Save(ffm *order.Fulfillment) (*order.Fulfillment, error) {
-	ffm.PreSave()
-	if err := ffm.IsValid(); err != nil {
+// Upsert depends on given fulfillment's Id to decide update or insert it
+func (fs *SqlFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+	var isSaving bool
+	if fulfillment.Id == "" {
+		isSaving = true
+		fulfillment.PreSave()
+	} else {
+		fulfillment.PreUpdate()
+	}
+
+	if err := fulfillment.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := fs.GetMaster().Insert(ffm); err != nil {
-		return nil, errors.Wrapf(err, "failed to save fulfillment with id=%s", ffm.Id)
+	var (
+		err        error
+		numUpdated int64
+	)
+	if isSaving {
+		err = fs.GetMaster().Insert(fulfillment)
+	} else {
+		oldFulfillment, err := fs.Get(fulfillment.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		// set default fields:
+		fulfillment.OrderID = oldFulfillment.OrderID
+		fulfillment.CreateAt = oldFulfillment.CreateAt
+
+		numUpdated, err = fs.GetMaster().Update(fulfillment)
 	}
 
-	return ffm, nil
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to upsert fulfillment with id=%s", fulfillment.Id)
+	}
+
+	if numUpdated > 1 {
+		return nil, errors.Errorf("multiple fulfillents were updated: %d instead of 1", numUpdated)
+	}
+
+	return fulfillment, nil
 }
 
+// Get fidns and returns a fulfillment with given id
 func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	var ffm order.Fulfillment
 	if err := fs.GetReplica().SelectOne(

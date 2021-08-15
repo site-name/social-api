@@ -539,7 +539,13 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, ui
 		quantityFulfilled += line.QuantityFulfilled
 	}
 
-	fulfillmentsOfOrder, appErr := a.FulfillmentsByOrderID(ord.Id)
+	fulfillmentsOfOrder, appErr := a.FulfillmentsByOption(&order.FulfillmentFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
 	}

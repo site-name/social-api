@@ -586,8 +586,8 @@ type (
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()
-		Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error)
-		Get(id string) (*order.Fulfillment, error)
+		Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*order.Fulfillment, error)                                          // Get finds and return a fulfillment by given id
 		FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByoption finds and returns a slice of fulfillments by given option
 	}
 )
