@@ -10,9 +10,11 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
@@ -288,6 +290,7 @@ func collectionsIntersection(
 	return res
 }
 
+// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
 func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*order.OrderLine, *model.AppError) {
 	var (
 		discountedProducts    []*product_and_discount.Product
@@ -955,7 +958,7 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		return appErr
 	}
 
-	// map. key: fulfillmentLine.Id, value: *orderLine
+	// create map with key: fulfillmentLine.Id, value: *OrderLine
 	mapFulfillmentLine_OrderLine := map[string]*order.OrderLine{}
 	for _, fulfillmentLine := range fulfillmentLines {
 		for _, orderLine := range orderLinesOfFulfillmentLines {
@@ -977,10 +980,10 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		return appErr
 	}
 
-	// map. key: orderLine.Id, value: *productvariant
+	// create map with key: orderLine.Id, value: *ProductVariant
 	mapOrderLine_productVariant := map[string]*product_and_discount.ProductVariant{}
 	for _, orderLine := range orderLinesOfFulfillmentLines {
-		if orderLine.VariantID == nil { // since some order line have not product variant attached
+		if orderLine.VariantID == nil { // since some order line have no product variant attached
 			continue
 		}
 		for _, variant := range productVariantsOfOrderLines {
@@ -991,7 +994,7 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 	}
 
 	for _, fulfillmentLine := range fulfillmentLines {
-		orderLineOfFulfillment := mapFulfillmentLine_OrderLine[fulfillmentLine.Id]   // number of order lines = number of fulfillment lines
+		orderLineOfFulfillment := mapFulfillmentLine_OrderLine[fulfillmentLine.Id]   // number of order lines == number of fulfillment lines
 		variantOfOrderLine := mapOrderLine_productVariant[orderLineOfFulfillment.Id] // variantOfOrderLine can be nil
 
 		if variantOfOrderLine != nil && *variantOfOrderLine.TrackInventory {
@@ -1008,10 +1011,66 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 	return a.BulkUpsertOrderLines(orderLinesOfFulfillmentLines)
 }
 
+func (a *AppOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError) {
+	taxedSum, _ := util.ZeroTaxedMoney(currencyCode)
+	if len(orders) == 0 {
+		return taxedSum, nil
+	}
+	// validate given `currencyCode` is valid
+	currencyCode = strings.ToUpper(currencyCode)
+	if _, err := goprices.GetCurrencyPrecision(currencyCode); err != nil || currencyCode != orders[0].Currency {
+		return nil, model.NewAppError("SumOrderTotals", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currencyCode"}, err.Error(), http.StatusBadRequest)
+	}
+
+	for _, order := range orders {
+		order.PopulateNonDbFields() //
+		added, err := taxedSum.Add(order.Total)
+		if err != nil {
+			return nil, model.NewAppError("SumOrderTotals", "app.order.error_adding_taxed_money.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+		taxedSum = added
+	}
+
+	return taxedSum, nil
+}
+
+// GetValidShippingMethodsForOrder returns a list of valid shipping methods for given order
+func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shipping.ShippingMethod, *model.AppError) {
+	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
+	if appErr != nil {
+		appErr.Where = "GetValidShippingMethodsForOrder"
+		return nil, appErr
+	}
+
+	if orderRequireShipping {
+		return nil, nil
+	}
+
+	if ord.ShippingAddressID == nil {
+		return nil, nil
+	}
+
+	orderSubTotal, appErr := a.OrderSubTotal(ord)
+	if appErr != nil {
+		appErr.Where = "GetValidShippingMethodsForOrder"
+		return nil, appErr
+	}
+
+	shippingAddress, appErr := a.AccountApp().AddressById(*ord.ShippingAddressID)
+	if appErr != nil {
+		appErr.Where = "GetValidShippingMethodsForOrder"
+		return nil, appErr
+	}
+
+	return a.ShippingApp().ApplicableShippingMethodsForOrder(ord, ord.ChannelID, orderSubTotal.Gross, shippingAddress.Country, nil)
+}
+
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
 func (a *AppOrder) UpdateOrderDiscountForOrder(ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
+	ord.PopulateNonDbFields() // NOTE: call this first
+
 	if value == nil {
 		value = orderDiscountToUpdate.Value
 	}
@@ -1023,13 +1082,13 @@ func (a *AppOrder) UpdateOrderDiscountForOrder(ord *order.Order, orderDiscountTo
 		orderDiscountToUpdate.Reason = &reason
 	}
 
-	netTotal, err := ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Net)
+	netTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Net)
 	if err != nil {
-		return model.NewAppError("UpdateOrderDiscountForOrder", "app.order.error_calculating_net_total_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	grossTotal, err := ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Gross)
+	grossTotal, err := a.ApplyDiscountToValue(value, valueType, orderDiscountToUpdate.Currency, ord.Total.Gross)
 	if err != nil {
-		return model.NewAppError("UpdateOrderDiscountForOrder", "app.order.error_calculating_gross_total_discount.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	newAmount, _ := ord.Total.Sub(grossTotal)
@@ -1038,15 +1097,22 @@ func (a *AppOrder) UpdateOrderDiscountForOrder(ord *order.Order, orderDiscountTo
 	orderDiscountToUpdate.Value = value
 	orderDiscountToUpdate.ValueType = valueType
 
-	ord.Total, _ = goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
+	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
+	if err != nil {
+		return model.NewAppError("UpdateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	ord.Total = newOrderTotal
 
 	_, appErr := a.DiscountApp().UpsertOrderDiscount(orderDiscountToUpdate)
-
-	return appErr
+	if appErr != nil {
+		appErr.Where = "UpdateOrderDiscountForOrder"
+		return appErr
+	}
+	return nil
 }
 
 // ApplyDiscountToValue Calculate the price based on the provided values
-func ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
+func (a *AppOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
 	// validate currency
 	money, _ := goprices.NewMoney(value, currency)
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
@@ -1059,4 +1125,278 @@ func ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency str
 	}
 
 	return discountCalculator(priceToDiscount)
+}
+
+// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
+func (a *AppOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError) {
+	var (
+		prices  []*goprices.Money
+		voucher *product_and_discount.Voucher
+	)
+
+	if ord.VoucherID != nil {
+		voucher, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				appErr.Where = "GetProductsVoucherDiscountForOrder"
+				return nil, appErr
+			}
+			// ignore not found error
+		} else {
+			if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
+				orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+					OrderID: &model.StringFilter{
+						StringOption: &model.StringOption{
+							Eq: ord.Id,
+						},
+					},
+				})
+				if appErr != nil {
+					appErr.Where = "GetProductsVoucherDiscountForOrder"
+					return nil, appErr
+				}
+
+				discountedPrices, appErr := a.GetPricesOfDiscountedSpecificProduct(orderLinesOfOrder, voucher)
+				if appErr != nil {
+					appErr.Where = "GetProductsVoucherDiscountForOrder"
+					return nil, appErr
+				}
+
+				prices = discountedPrices
+			}
+		}
+	}
+
+	if len(prices) == 0 {
+		return nil, model.NewAppError("GetProductsVoucherDiscountForOrder", "app.order.offer_only_valid_for_selected_items.app_error", nil, "", http.StatusNotAcceptable)
+	}
+
+	return a.DiscountApp().GetProductsVoucherDiscount(voucher, prices, ord.ChannelID)
+}
+
+func (a *AppOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
+	ordersByOption, appErr := a.FilterOrdersByOptions(&order.OrderFilterOption{
+		Status: &model.StringFilter{
+			StringOption: &model.StringOption{
+				NotIn: []string{
+					order.DRAFT,
+					order.UNCONFIRMED,
+				},
+			},
+		},
+		UserEmail: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: user.Email,
+			},
+		},
+		UserID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				NULL: model.NewBool(true),
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "MatchOrdersWithNewUser"
+		return appErr
+	}
+
+	_, appErr = a.BulkUpsertOrders(ordersByOption)
+	if appErr != nil {
+		appErr.Where = "MatchOrdersWithNewUser"
+		return appErr
+	}
+	return nil
+}
+
+// GetTotalOrderDiscount Return total order discount assigned to the order
+func (a *AppOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *model.AppError) {
+	orderDiscountsOfOrder, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "GetTotalOrderDiscount"
+		return nil, appErr
+	}
+
+	totalOrderDiscount, _ := util.ZeroMoney(ord.Currency)
+	for _, orderDiscount := range orderDiscountsOfOrder {
+		orderDiscount.PopulateNonDbFields()
+		addedMoney, err := totalOrderDiscount.Add(orderDiscount.Amount)
+		if err != nil { // order's Currency != orderDiscount.Currency
+			return nil, model.NewAppError("GetTotalOrderDiscount", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		} else {
+			totalOrderDiscount = addedMoney
+		}
+	}
+
+	if less, err := totalOrderDiscount.LessThan(ord.UnDiscountedTotalGross); less && err == nil {
+		return totalOrderDiscount, nil
+	}
+
+	return ord.UnDiscountedTotalGross, nil
+}
+
+// GetOrderDiscounts Return all discounts applied to the order by staff user
+func (a *AppOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscounts, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+		Type: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: product_and_discount.MANUAL,
+			},
+		},
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		appErr.Where = "GetOrderDiscounts"
+		return nil, appErr
+	}
+
+	return orderDiscounts, nil
+}
+
+// CreateOrderDiscountForOrder Add new order discount and update the prices
+func (a *AppOrder) CreateOrderDiscountForOrder(ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
+	ord.PopulateNonDbFields()
+
+	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
+	if err != nil {
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	grossTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Gross)
+	if err != nil {
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	sub, _ := ord.Total.Sub(grossTotal.(*goprices.Money))
+	newAmount := sub.Gross
+
+	newOrderDiscount, appErr := a.DiscountApp().UpsertOrderDiscount(&product_and_discount.OrderDiscount{
+		ValueType: valueType,
+		Value:     value,
+		Reason:    &reason,
+		Amount:    newAmount,
+	})
+	if appErr != nil {
+		appErr.Where = "CreateOrderDiscountForOrder"
+		return nil, appErr
+	}
+
+	newOrderTotal, err := goprices.NewTaxedMoney(netTotal.(*goprices.Money), grossTotal.(*goprices.Money))
+	if err != nil {
+		return nil, model.NewAppError("CreateOrderDiscountForOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	ord.Total = newOrderTotal
+	_, appErr = a.UpsertOrder(ord)
+	if appErr != nil {
+		appErr.Where = "CreateOrderDiscountForOrder"
+		return nil, appErr
+	}
+
+	return newOrderDiscount, nil
+}
+
+// RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
+func (a *AppOrder) RemoveOrderDiscountFromOrder(ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
+	appErr := a.DiscountApp().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
+	if appErr != nil {
+		appErr.Where = "RemoveOrderDiscountFromOrder"
+		return appErr
+	}
+
+	ord.PopulateNonDbFields()
+	orderDiscount.PopulateNonDbFields()
+
+	newOrderTotal, err := ord.Total.Add(orderDiscount.Amount)
+	if err != nil {
+		return model.NewAppError("RemoveOrderDiscountFromOrder", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	ord.Total = newOrderTotal
+	_, appErr = a.UpsertOrder(ord)
+	if appErr != nil {
+		appErr.Where = "RemoveOrderDiscountFromOrder"
+		return appErr
+	}
+
+	return nil
+}
+
+// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
+//
+// `reason`, `valueType` can be empty. `value` can be nil
+func (a *AppOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *order.Order, reason string, valueType string, value *decimal.Decimal, manager interface{}, taxIncluded bool) *model.AppError {
+
+	ord.PopulateNonDbFields()
+	orderLine.PopulateNonDbFields()
+
+	if reason != "" {
+		orderLine.UnitDiscountReason = &reason
+	}
+	if value == nil {
+		value = orderLine.UnitDiscountValue
+	}
+	if valueType == "" {
+		valueType = orderLine.UnitDiscountType
+	}
+
+	if orderLine.UnitDiscountValue != value || orderLine.UnitDiscountType != valueType {
+		unitPriceWithDiscount, err := a.ApplyDiscountToValue(value, valueType, orderLine.UnDiscountedUnitPrice.Currency, orderLine.UnDiscountedUnitPrice)
+		if err != nil {
+			return model.NewAppError("UpdateDiscountForOrderLine", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		newOrderLineUnitDiscount, err := orderLine.UnDiscountedUnitPrice.Sub(unitPriceWithDiscount)
+		if err != nil {
+			return model.NewAppError("UpdateDiscountForOrderLine", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		orderLine.UnitDiscount = newOrderLineUnitDiscount.Gross
+		orderLine.UnitPrice = unitPriceWithDiscount.(*goprices.TaxedMoney)
+		orderLine.UnitDiscountType = valueType
+		orderLine.UnitDiscountValue = value
+		orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
+		orderLine.UnDiscountedUnitPrice, _ = orderLine.UnitPrice.Sub(orderLine.UnitDiscount)
+		orderLine.UnDiscountedTotalPrice, _ = orderLine.UnDiscountedUnitPrice.Mul(orderLine.Quantity)
+
+	}
+
+	// Save lines before calculating the taxes as some plugin can fetch all order data
+	// from db
+	_, appErr := a.UpsertOrderLine(orderLine)
+	if appErr != nil {
+		appErr.Where = "UpdateDiscountForOrderLine"
+		return appErr
+	}
+
+	//-------------------------------------- TOTO: fixme
+	panic("not implemented")
+}
+
+// RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
+func (a *AppOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+	orderLine.PopulateNonDbFields()
+
+	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice
+	orderLine.UnitDiscountAmount = &decimal.Zero
+	orderLine.UnitDiscountValue = &decimal.Zero
+	orderLine.UnitDiscountReason = model.NewString("")
+	orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
+
+	_, appErr := a.UpsertOrderLine(orderLine)
+	if appErr != nil {
+		appErr.Where = "RemoveDiscountFromOrderLine"
+		return appErr
+	}
+
+	//-----------------------TODO: fixme
+	panic("not implemented")
 }

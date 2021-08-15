@@ -8,7 +8,6 @@ import (
 
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -4164,24 +4163,6 @@ func (s *OpenTracingLayerOrderStore) Update(order *order.Order) (*order.Order, e
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.UpdateTotalPaid")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.OrderStore.UpdateTotalPaid(orderId, newTotalPaid)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
 }
 
 func (s *OpenTracingLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {

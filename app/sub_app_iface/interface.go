@@ -317,6 +317,7 @@ type DiscountApp interface {
 	ValidateVoucherInOrder(ord *order.Order) *model.AppError                                                                                         // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
 	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                   // VoucherById finds and returns a voucher with given id
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
+	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                              // BulkDeleteOrderDiscounts performs bulk delete given order discounts
 }
 
 type OrderApp interface {

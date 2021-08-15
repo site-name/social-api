@@ -30,3 +30,13 @@ func (a *AppDiscount) UpsertOrderDiscount(orderDiscount *product_and_discount.Or
 
 	return orderDiscount, nil
 }
+
+// BulkDeleteOrderDiscounts performs bulk delete given order discounts
+func (a *AppDiscount) BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError {
+	err := a.Srv().Store.OrderDiscount().BulkDelete(orderDiscountIDs)
+	if err != nil {
+		return model.NewAppError("BulkDeleteOrderDiscounts", "app.discount.error_bulk_deleting_order_discounts.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}

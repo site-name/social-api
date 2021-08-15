@@ -3,6 +3,7 @@ package discount
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -117,4 +118,28 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.Or
 	}
 
 	return res, nil
+}
+
+// BulkDelete perform bulk delete all given order discount ids
+func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+	result, err := ods.GetQueryBuilder().
+		Delete("*").
+		From(store.OrderDiscountTableName).
+		Where(squirrel.Eq{"Id": orderDiscountIDs}).
+		RunWith(ods.GetMaster()).
+		Exec()
+
+	if err != nil {
+		return errors.Wrap(err, "failed to delete order discounts by given ids")
+	}
+
+	numDeleted, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "error counting number of order discounts deleted")
+	}
+	if numDeleted != int64(len(orderDiscountIDs)) {
+		return errors.Errorf("%d order discounts were deleted instad of %d", numDeleted, len(orderDiscountIDs))
+	}
+
+	return nil
 }

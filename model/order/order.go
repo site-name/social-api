@@ -289,6 +289,11 @@ func (o *Order) commonPre() {
 	if o.Token == "" {
 		o.Token = model.NewId()
 	}
+	if o.Currency != "" {
+		o.Currency = strings.ToUpper(o.Currency)
+	} else {
+		o.Currency = model.DEFAULT_CURRENCY
+	}
 }
 
 // IsFullyPaid checks current order's total paid is greater than its total gross

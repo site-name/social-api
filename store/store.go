@@ -7,7 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -571,8 +570,8 @@ type (
 		Save(order *order.Order) (*order.Order, error)                          // Save insert an order into database and returns that order if success
 		Get(id string) (*order.Order, error)                                    // Get find order in database with given id
 		Update(order *order.Order) (*order.Order, error)                        // Update update order
-		UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error    // updateTotalPaid update total paid amount of given order
 		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(orders []*order.Order) ([]*order.Order, error)               // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {
 		CreateIndexesIfNotExists()
@@ -657,6 +656,7 @@ type (
 		Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error)                // Upsert depends on given order discount's Id property to decide to update/insert it
 		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                              // Get finds and returns an order discount with given id
 		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(orderDiscountIDs []string) error                                                                           // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 		CreateIndexesIfNotExists()

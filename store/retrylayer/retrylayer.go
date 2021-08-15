@@ -8,7 +8,6 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -4491,26 +4490,6 @@ func (s *RetryLayerOrderStore) Update(order *order.Order) (*order.Order, error) 
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-
-	tries := 0
-	for {
-		err := s.OrderStore.UpdateTotalPaid(orderId, newTotalPaid)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
 		}
 	}
 

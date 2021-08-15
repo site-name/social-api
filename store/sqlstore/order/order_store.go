@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -96,6 +95,75 @@ func (os *SqlOrderStore) ModelFields() []string {
 	}
 }
 
+// BulkUpsert performs bulk upsert given orders
+func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+	var (
+		isSaving   bool
+		err        error
+		oldOrder   *order.Order
+		numUpdated int64
+	)
+
+	tx, err := os.GetMaster().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, ord := range orders {
+		isSaving = false // reset
+
+		if ord.Id == "" {
+			isSaving = true
+			ord.PreSave()
+		} else {
+			ord.PreUpdate()
+		}
+
+		if err := ord.IsValid(); err != nil {
+			return nil, err
+		}
+
+		if isSaving {
+			err = tx.Insert(ord)
+		} else {
+			// try finding if order exist
+			err = tx.SelectOne(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :ID", map[string]interface{}{"ID": ord.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, err
+				}
+				return nil, errors.Wrapf(err, "failed to find order with id=%s", ord.Id)
+			}
+
+			// set all NOT editable fields for newOrder:
+			// NOTE: order's Token can be updated too
+			ord.CreateAt = oldOrder.CreateAt
+			ord.TrackingClientID = oldOrder.TrackingClientID
+			ord.BillingAddressID = oldOrder.BillingAddressID
+			ord.ShippingAddressID = oldOrder.ShippingAddressID
+			ord.ShippingMethodName = oldOrder.ShippingMethodName
+			ord.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
+			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
+
+			numUpdated, err = tx.Update(ord)
+		}
+
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to upsert order with id=%s", ord.Id)
+		}
+		if numUpdated > 1 {
+			return nil, errors.Errorf("multiple orders were updated: %d instead of 1", numUpdated)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
+	}
+
+	return orders, nil
+}
+
 func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 	order.PreSave()
 	if err := order.IsValid(); err != nil {
@@ -116,6 +184,7 @@ func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 	return order, nil
 }
 
+// Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	var order order.Order
 	err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
@@ -137,10 +206,6 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	oldOrderResult, err := os.GetMaster().Get(order.Order{}, newOrder.Id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get order with Id=%s", newOrder.Id)
-	}
-
-	if oldOrderResult == nil {
-		return nil, store.NewErrInvalidInput(store.OrderTableName, "id", newOrder.Id)
 	}
 
 	// set all NOT editable fields for newOrder:
@@ -171,26 +236,6 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	return newOrder, nil
 }
 
-func (os *SqlOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-	result, err := os.GetMaster().Exec(
-		"UPDATE "+store.OrderTableName+" SET TotalPaidAmount = :newTotalPaidAmount WHERE Id = :id",
-		map[string]interface{}{
-			"newTotalPaidAmount": *newTotalPaid,
-			"id":                 orderId,
-		},
-	)
-	if err != nil {
-		return errors.Wrapf(err, "failed to update total paid amount for order with id=%s", orderId)
-	}
-	if rows, err := result.RowsAffected(); err != nil {
-		return errors.Wrap(err, "failed to fetch number of order updated")
-	} else if rows > 1 {
-		return fmt.Errorf("multiple orders were updated, %d instead of 1", rows)
-	}
-
-	return nil
-}
-
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 	query := os.GetQueryBuilder().
@@ -210,10 +255,11 @@ func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*ord
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
 			Where(option.ChannelSlug.ToSquirrel("Channels.Slug"))
 	}
+	if option.UserEmail != nil {
+		query = query.Where(option.UserEmail.ToSquirrel("Orders.UserEmail"))
+	}
 	if option.UserID != nil {
-		query = query.
-			InnerJoin(store.UserTableName + " ON (Users.Id = Orders.UserID)").
-			Where(option.UserID.ToSquirrel("Users.Id"))
+		query = query.Where(option.UserID.ToSquirrel("Orders.UserID"))
 	}
 
 	queryString, args, err := query.ToSql()

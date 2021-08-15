@@ -7,7 +7,6 @@ import (
 	"context"
 	timemodule "time"
 
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -3834,22 +3833,6 @@ func (s *TimerLayerOrderStore) Update(order *order.Order) (*order.Order, error) 
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Update", success, elapsed)
 	}
 	return result, err
-}
-
-func (s *TimerLayerOrderStore) UpdateTotalPaid(orderId string, newTotalPaid *decimal.Decimal) error {
-	start := timemodule.Now()
-
-	err := s.OrderStore.UpdateTotalPaid(orderId, newTotalPaid)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.UpdateTotalPaid", success, elapsed)
-	}
-	return err
 }
 
 func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {

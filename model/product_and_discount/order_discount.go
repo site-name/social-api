@@ -47,10 +47,22 @@ type OrderDiscount struct {
 	Reason         *string          `json:"reason"`
 }
 
+// OrderDiscountFilterOption is used to build sql queries
 type OrderDiscountFilterOption struct {
 	Id      *model.StringFilter
 	OrderID *model.StringFilter
 	Type    *model.StringFilter
+}
+
+type OrderDiscounts []*OrderDiscount
+
+func (o OrderDiscounts) IDs() []string {
+	res := make([]string, len(o))
+	for i := range o {
+		res[i] = o[i].Id
+	}
+
+	return res
 }
 
 func (o *OrderDiscount) DeepCopy() *OrderDiscount {

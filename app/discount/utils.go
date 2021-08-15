@@ -260,19 +260,36 @@ func (a *AppDiscount) GetProductsVoucherDiscount(voucher *product_and_discount.V
 	totalAmount, _ := util.ZeroMoney(prices[0].Currency) // ignore error since channels's Currencies are validated before saving
 	var appErr *model.AppError
 
+	setAppErr := func(err *model.AppError) {
+		if err != nil {
+			a.mutex.Lock()
+			if appErr == nil {
+				appErr = err
+			}
+			a.mutex.Unlock()
+		}
+	}
+
 	a.wg.Add(len(prices))
 
 	for _, price := range prices {
 		go func(aPrice *goprices.Money) {
 
 			money, err := a.GetDiscountAmountFor(voucher, aPrice, channelID)
-			a.mutex.Lock()
-			if err != nil && appErr == nil {
-				appErr = err
+			if err != nil {
+				setAppErr(err)
 			} else {
-				totalAmount, _ = totalAmount.Add(money.(*goprices.Money))
+				addedAmount, err := totalAmount.Add(money.(*goprices.Money))
+				if err != nil {
+					setAppErr(
+						model.NewAppError("GetProductsVoucherDiscount", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError),
+					)
+				} else {
+					a.mutex.Lock()
+					totalAmount = addedAmount
+					a.mutex.Unlock()
+				}
 			}
-			a.mutex.Unlock()
 
 		}(price)
 	}

@@ -106,6 +106,7 @@ func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLi
 	return digitalOrderLines, nil
 }
 
+// OrderLineById returns an order line byt given orderLineID
 func (a *AppOrder) OrderLineById(orderLineID string) (*order.OrderLine, *model.AppError) {
 	odrLine, err := a.Srv().Store.OrderLine().Get(orderLineID)
 	if err != nil {

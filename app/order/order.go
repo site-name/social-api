@@ -49,6 +49,25 @@ func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError)
 	return ord, nil
 }
 
+// BulkUpsertOrders performs bulk upsert given orders
+func (a *AppOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError) {
+	orders, err := a.Srv().Store.Order().BulkUpsert(orders)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("BulkUpsertOrders", "app.order.error_bulk_upsert_orders.app_error", nil, err.Error(), statusCode)
+	}
+
+	return orders, nil
+}
+
+// OrderById retuns an order with given id
 func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
 	order, err := a.Srv().Store.Order().Get(id)
 	if err != nil {
@@ -58,6 +77,7 @@ func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
 	return order, nil
 }
 
+// OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
@@ -104,6 +124,11 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
 
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
+	order, appErr := a.OrderById(orderID)
+	if appErr != nil {
+		appErr.Where = "UpdateOrderTotalPaid"
+		return appErr
+	}
 	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID: orderID,
 	})
@@ -118,8 +143,12 @@ func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
 		}
 	}
 
-	if err := a.Srv().Store.Order().UpdateTotalPaid(orderID, &total); err != nil {
-		return model.NewAppError("UpdateOrderTotalPaid", "app.order.update_total_paid.app_error", nil, err.Error(), http.StatusInternalServerError)
+	order.TotalPaidAmount = &total
+
+	_, appErr = a.UpsertOrder(order)
+	if appErr != nil {
+		appErr.Where = "UpdateOrderTotalPaid"
+		return appErr
 	}
 
 	return nil
