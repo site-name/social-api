@@ -30,7 +30,7 @@ func (a *AppOrder) UpsertFulfillment(fulfillment *order.Fulfillment) (*order.Ful
 			},
 		})
 		if appErr != nil {
-			if appErr.StatusCode == http.StatusInternalServerError {
+			if appErr.StatusCode == http.StatusInternalServerError { // returns immediately if error was caused by system
 				appErr.Where = "UpsertFulfillment"
 				return nil, appErr
 			}

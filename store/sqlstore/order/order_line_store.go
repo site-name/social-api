@@ -343,8 +343,20 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 // FilterbyOption finds and returns order lines by given option
 func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+	selectFields := ols.ModelFields()
+
+	if option.VariantDigitalContentID != nil { // this is for prefetching related data
+		selectFields = append(
+			selectFields,
+			append(
+				ols.ProductVariant().ModelFields(),
+				ols.DigitalContent().ModelFields()...,
+			)...,
+		)
+	}
+
 	query := ols.GetQueryBuilder().
-		Select(ols.ModelFields()...).
+		Select(selectFields...).
 		From(store.OrderLineTableName).
 		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
 
@@ -355,17 +367,107 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	if option.OrderID != nil {
 		query = query.Where(option.OrderID.ToSquirrel("Orderlines.OrderID"))
 	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	if option.IsShippingRequired != nil {
+		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
+	}
+	if option.VariantDigitalContentID != nil {
+		query = query.
+			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
+			InnerJoin(store.ProductDigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
+			Where(option.VariantDigitalContentID.ToSquirrel("DigitalContents.Id")) // digitalContent.Id IS (NOT) NULL
 	}
 
-	var res []*order.OrderLine
-	_, err = ols.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(ols.GetReplica()).Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
 	}
 
-	return res, nil
+	var (
+		orderLines []*order.OrderLine
+
+		orderLine      order.OrderLine
+		productVariant product_and_discount.ProductVariant
+		digitalContent product_and_discount.DigitalContent
+	)
+
+	scanFields := []interface{}{
+		&orderLine.Id,
+		&orderLine.CreateAt,
+		&orderLine.OrderID,
+		&orderLine.VariantID,
+		&orderLine.ProductName,
+		&orderLine.VariantName,
+		&orderLine.TranslatedProductName,
+		&orderLine.TranslatedVariantName,
+		&orderLine.ProductSku,
+		&orderLine.IsShippingRequired,
+		&orderLine.Quantity,
+		&orderLine.QuantityFulfilled,
+		&orderLine.Currency,
+		&orderLine.UnitDiscountAmount,
+		&orderLine.UnitDiscountType,
+		&orderLine.UnitDiscountReason,
+		&orderLine.UnitPriceNetAmount,
+		&orderLine.UnitDiscountValue,
+		&orderLine.UnitPriceGrossAmount,
+		&orderLine.TotalPriceNetAmount,
+		&orderLine.TotalPriceGrossAmount,
+		&orderLine.UnDiscountedUnitPriceGrossAmount,
+		&orderLine.UnDiscountedUnitPriceNetAmount,
+		&orderLine.UnDiscountedTotalPriceGrossAmount,
+		&orderLine.UnDiscountedTotalPriceNetAmount,
+		&orderLine.TaxRate,
+	}
+
+	if option.VariantDigitalContentID != nil { //
+		scanFields = append(
+			scanFields,
+
+			// product variant fields
+			&productVariant.Id,
+			&productVariant.Name,
+			&productVariant.ProductID,
+			&productVariant.Sku,
+			&productVariant.Weight,
+			&productVariant.WeightUnit,
+			&productVariant.TrackInventory,
+			&productVariant.SortOrder,
+			&productVariant.Metadata,
+			&productVariant.PrivateMetadata,
+
+			// digitalContent fields
+			&digitalContent.Id,
+			&digitalContent.UseDefaultSettings,
+			&digitalContent.AutomaticFulfillment,
+			&digitalContent.ContentType,
+			&digitalContent.ProductVariantID,
+			&digitalContent.ContentFile,
+			&digitalContent.MaxDownloads,
+			&digitalContent.UrlValidDays,
+			&digitalContent.Metadata,
+			&digitalContent.PrivateMetadata,
+		)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row")
+		}
+
+		if orderLine.VariantID != nil { // check this since some order lines have no product variant
+			productVariant.DigitalContent = &digitalContent
+			orderLine.ProductVariant = &productVariant
+		}
+		orderLines = append(orderLines, &orderLine)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows")
+	}
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "error occured during rows iterating operation")
+	}
+
+	return orderLines, nil
 }

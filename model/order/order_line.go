@@ -8,6 +8,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"golang.org/x/text/currency"
 )
 
@@ -34,7 +35,7 @@ type OrderLine struct {
 	Id                                string               `json:"id"`
 	CreateAt                          int64                `json:"create_at"` // for database ordering
 	OrderID                           string               `json:"order_id"`
-	VariantID                         *string              `json:"variant_id"`
+	VariantID                         *string              `json:"variant_id"` // FOREIGN KEY ProductVariant
 	ProductName                       string               `json:"product_name"`
 	VariantName                       string               `json:"variant_name"`
 	TranslatedProductName             string               `json:"translated_product_name"`
@@ -66,12 +67,16 @@ type OrderLine struct {
 	UnDiscountedTotalPriceNetAmount   *decimal.Decimal     `json:"undiscounted_total_price_net_amount"`
 	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
+
+	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
 }
 
 // OrderLineFilterOption is used for build sql queries
 type OrderLineFilterOption struct {
-	Id      *model.StringFilter
-	OrderID *model.StringFilter
+	Id                      *model.StringFilter
+	OrderID                 *model.StringFilter
+	IsShippingRequired      *bool
+	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN digitalContent
 }
 
 type OrderLines []*OrderLine

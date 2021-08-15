@@ -53,15 +53,25 @@ func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError)
 func (a *AppOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError) {
 	orders, err := a.Srv().Store.Order().BulkUpsert(orders)
 	if err != nil {
-		if appErr, ok := err.(*model.AppError); ok {
+		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
 			return nil, appErr
 		}
 		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
+		if _, ok := err.(*store.ErrNotFound); ok { // error caused by SelectOne()
 			statusCode = http.StatusNotFound
 		}
 
 		return nil, model.NewAppError("BulkUpsertOrders", "app.order.error_bulk_upsert_orders.app_error", nil, err.Error(), statusCode)
+	}
+
+	return orders, nil
+}
+
+// FilterOrdersByOptions is common method for filtering orders by given option
+func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
+	orders, err := a.Srv().Store.Order().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", err)
 	}
 
 	return orders, nil

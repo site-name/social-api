@@ -28,6 +28,8 @@ type ProductVariant struct {
 	TrackInventory *bool                  `json:"track_inventory"` // default *true
 	model.Sortable
 	model.ModelMetadata
+
+	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
 }
 
 // ProductVariantFilterOption is used to build sql queries

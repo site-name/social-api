@@ -3147,10 +3147,10 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.Save(fulfillment)
+	result, err := s.FulfillmentStore.Upsert(fulfillment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3158,7 +3158,7 @@ func (s *TimerLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*orde
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -3771,6 +3771,22 @@ func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 	return result, err
 }
 
+func (s *TimerLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderStore.BulkUpsert(orders)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 	start := timemodule.Now()
 
@@ -3833,6 +3849,22 @@ func (s *TimerLayerOrderStore) Update(order *order.Order) (*order.Order, error) 
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Update", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.OrderDiscountStore.BulkDelete(orderDiscountIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderDiscountStore.BulkDelete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {

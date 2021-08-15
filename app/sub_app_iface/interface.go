@@ -291,6 +291,18 @@ type WarehouseApp interface {
 	// quantity for the order line. If there is less quantity in stocks then
 	// raise an exception.
 	DeallocateStock(orderLineDatas []*order.OrderLineData) *model.AppError
+	// Decrease stocks quantities for given `order_lines` in given warehouses.
+	//
+	// Function deallocate as many quantities as requested if order_line has less quantity
+	// from requested function deallocate whole quantity. Next function try to find the
+	// stock in a given warehouse, if stock not exists or have not enough stock,
+	// the function raise InsufficientStock exception. When the stock has enough quantity
+	// function decrease it by given value.
+	// If update_stocks is False, allocations will decrease but stocks quantities
+	// will stay unmodified (case of unconfirmed order editing).
+	//
+	// updateStocks default to true
+	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) *model.AppError
 }
 
 type DiscountApp interface {

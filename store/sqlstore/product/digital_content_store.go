@@ -30,6 +30,21 @@ func (ds *SqlDigitalContentStore) CreateIndexesIfNotExists() {
 	ds.CreateForeignKeyIfNotExists(store.ProductDigitalContentTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
 }
 
+func (ds *SqlDigitalContentStore) ModelFields() []string {
+	return []string{
+		"DigitalContents.Id",
+		"DigitalContents.UseDefaultSettings",
+		"DigitalContents.AutomaticFulfillment",
+		"DigitalContents.ContentType",
+		"DigitalContents.ProductVariantID",
+		"DigitalContents.ContentFile",
+		"DigitalContents.MaxDownloads",
+		"DigitalContents.UrlValidDays",
+		"DigitalContents.Metadata",
+		"DigitalContents.PrivateMetadata",
+	}
+}
+
 // GetByProductVariantID finds and returns 1 digital content that is related to given product variant
 func (ds *SqlDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
 	var res product_and_discount.DigitalContent

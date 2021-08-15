@@ -134,7 +134,9 @@ func init() {
 		FileInfoTableName:      "FileInfos",      //
 		UploadSessionTableName: "UploadSessions", //
 
-		PageTableName: "Pages", //
+		PageTableName:            "Slug ASC",         // page
+		PageTranslationtableName: "LanguageCode ASC", //
+		PageTypeTableName:        "Slug ASC",         //
 
 		InvoiceEventTableName: "CreateAt ASC", // invoice
 		InvoiceTableName:      "CreateAt ASC", //
@@ -314,7 +316,9 @@ const (
 
 // page-related table names
 const (
-	PageTableName = "Pages"
+	PageTableName            = "Pages"            //
+	PageTranslationtableName = "PageTranslations" //
+	PageTypeTableName        = "PageTypes"        //
 )
 
 // invoice-related table names

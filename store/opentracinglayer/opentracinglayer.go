@@ -3391,16 +3391,16 @@ func (s *OpenTracingLayerFulfillmentStore) Get(id string) (*order.Fulfillment, e
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.FulfillmentStore.Save(fulfillment)
+	result, err := s.FulfillmentStore.Upsert(fulfillment)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4093,6 +4093,24 @@ func (s *OpenTracingLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.Men
 	return result, err
 }
 
+func (s *OpenTracingLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OrderStore.BulkUpsert(orders)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.FilterByOption")
@@ -4163,6 +4181,24 @@ func (s *OpenTracingLayerOrderStore) Update(order *order.Order) (*order.Order, e
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderDiscountStore.BulkDelete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.OrderDiscountStore.BulkDelete(orderDiscountIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {

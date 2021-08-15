@@ -457,8 +457,8 @@ type (
 	}
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
-		// GetByProductVariantID finds and returns 1 digital content that is related to given product variant
-		GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error)
+		ModelFields() []string
+		GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) // GetByProductVariantID finds and returns 1 digital content that is related to given product variant
 	}
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()

@@ -3635,11 +3635,11 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.Save(fulfillment)
+		result, err := s.FulfillmentStore.Upsert(fulfillment)
 		if err == nil {
 			return result, nil
 		}
@@ -4415,6 +4415,26 @@ func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 
 }
 
+func (s *RetryLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderStore.BulkUpsert(orders)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 
 	tries := 0
@@ -4490,6 +4510,26 @@ func (s *RetryLayerOrderStore) Update(order *order.Order) (*order.Order, error) 
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.OrderDiscountStore.BulkDelete(orderDiscountIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

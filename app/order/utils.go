@@ -46,20 +46,31 @@ func (a *AppOrder) GetOrderCountry(ord *order.Order) (string, *model.AppError) {
 }
 
 // OrderLineNeedsAutomaticFulfillment Check if given line is digital and should be automatically fulfilled.
+//
+// NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
 func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine, shopDigitalSettings *shop.ShopDefaultDigitalContentSettings) (bool, *model.AppError) {
-	if orderLine.VariantID == nil {
+	if orderLine.VariantID == nil || orderLine.ProductVariant == nil {
 		return false, nil
 	}
 
-	digitalContentOfOrderLineProductVariant, appErr := a.ProductApp().DigitalContentByProductVariantID(*orderLine.VariantID)
-	if appErr != nil {
-		return false, appErr
+	digitalContent := orderLine.ProductVariant.DigitalContent
+	var appErr *model.AppError
+
+	if digitalContent == nil {
+		digitalContent, appErr = a.ProductApp().DigitalContentByProductVariantID(*orderLine.VariantID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				appErr.Where = "OrderLineNeedsAutomaticFulfillment"
+				return false, appErr
+			}
+			return false, nil
+		}
 	}
 
-	if *digitalContentOfOrderLineProductVariant.UseDefaultSettings && *shopDigitalSettings.AutomaticFulfillmentDigitalProducts {
+	if *digitalContent.UseDefaultSettings && *shopDigitalSettings.AutomaticFulfillmentDigitalProducts {
 		return true, nil
 	}
-	if *digitalContentOfOrderLineProductVariant.AutomaticFulfillment {
+	if *digitalContent.AutomaticFulfillment {
 		return true, nil
 	}
 
@@ -454,7 +465,7 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *m
 	ord.PopulateNonDbFields()
 
 	// validate if order has voucher attached to
-	if ord.VoucherID == nil || !model.IsValidId(*ord.VoucherID) {
+	if ord.VoucherID == nil {
 		return &goprices.Money{
 			Amount:   &decimal.Zero,
 			Currency: ord.Currency,
@@ -503,16 +514,6 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *m
 	}
 
 	return a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
-}
-
-// FilterOrdersByOptions is common method for filtering orders by given option
-func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
-	orders, err := a.Srv().Store.Order().FilterByOption(option)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", err)
-	}
-
-	return orders, nil
 }
 
 func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, uint, uint, *model.AppError) {
