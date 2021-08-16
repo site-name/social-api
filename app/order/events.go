@@ -70,14 +70,20 @@ func prepareDiscountObject(orderDiscount *product_and_discount.OrderDiscount, ol
 	return &discountParameters
 }
 
-func (a *AppOrder) OrderDiscountsAutomaticallyUpdatedEvent(ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) {
+func (a *AppOrder) OrderDiscountsAutomaticallyUpdatedEvent(ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError {
 	for _, tuple := range changedOrderDiscounts {
-		a.OrderDiscountAutomaticallyUpdatedEvent(
+		_, appErr := a.OrderDiscountAutomaticallyUpdatedEvent(
 			ord,
 			tuple[1],
 			tuple[0],
 		)
+		if appErr != nil {
+			appErr.Where = "OrderDiscountsAutomaticallyUpdatedEvent"
+			return appErr
+		}
 	}
+
+	return nil
 }
 
 func (a *AppOrder) OrderDiscountAutomaticallyUpdatedEvent(ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {

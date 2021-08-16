@@ -104,47 +104,47 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	query := vs.
 		GetQueryBuilder().
 		Select("*").
-		From(store.VoucherTableName + " AS V")
+		From(store.VoucherTableName).
+		OrderBy(store.TableOrderingMap[store.VoucherTableName])
 
 	// check usage limit
 	if option.UsageLimit != nil {
-		query = query.Where(option.UsageLimit.ToSquirrel("V.UsageLimit"))
+		query = query.Where(option.UsageLimit.ToSquirrel("Vouchers.UsageLimit"))
 	}
 
 	// check end date
 	if option.EndDate != nil {
-		query = query.Where(option.EndDate.ToSquirrel("V.EndDate"))
+		query = query.Where(option.EndDate.ToSquirrel("Vouchers.EndDate"))
 	}
 
 	// check start date
 	if option.StartDate != nil {
-		query = query.Where(option.StartDate.ToSquirrel("V.StartDate"))
+		query = query.Where(option.StartDate.ToSquirrel("Vouchers.StartDate"))
 	}
 
 	// check code
 	if option.Code != nil {
-		query = query.Where(option.Code.ToSquirrel("V.Code"))
+		query = query.Where(option.Code.ToSquirrel("Vouchers.Code"))
 	}
 
 	// check channel listing channel slug
 	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
 		query = query.
-			InnerJoin(store.VoucherChannelListingTableName + " AS VCL ON (VCL.VoucherID = V.Id)").
-			InnerJoin(store.ChannelTableName + "Cn ON (Cn.Id = VCL.ChannelID)")
+			InnerJoin(store.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
 
 		if option.ChannelListingSlug != nil {
-			query = query.Where(option.ChannelListingSlug.ToSquirrel("Cn.Slug"))
+			query = query.Where(option.ChannelListingSlug.ToSquirrel("Channels.Slug"))
 		}
 
 		if option.ChannelListingActive != nil {
-			query = query.Where(squirrel.Eq{"Cn.IsActive": *option.ChannelListingActive})
+			query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingActive})
 		}
 	}
 
 	if option.WithLook {
-		query = query.Suffix("FOR UPDATE ORDER BY V.CreateAt ASC")
+		query = query.Suffix("FOR UPDATE")
 	}
-	query = query.OrderBy("V.CreateAt ASC")
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

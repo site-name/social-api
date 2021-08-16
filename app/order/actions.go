@@ -403,7 +403,7 @@ func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.O
 
 	for _, lineData := range orderLinesToMove {
 		// calculate the quantity fulfilled/unfulfilled to move
-		unFulfilledToMove := util.UintMin(lineData.Line.QuantityUnFulfilled(), lineData.Quantity)
+		unFulfilledToMove := util.Min(lineData.Line.QuantityUnFulfilled(), lineData.Quantity)
 		lineData.Line.QuantityFulfilled += unFulfilledToMove
 
 		// update current lines with new value of quantity
@@ -447,7 +447,7 @@ func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.O
 		}
 	}
 
-	fulfillmentLineToCreate, appErr = a.BulkCreateFulfillmentLines(fulfillmentLineToCreate)
+	fulfillmentLineToCreate, appErr = a.BulkUpsertFulfillmentLines(fulfillmentLineToCreate)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -480,6 +480,66 @@ func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMov
 		quantityToMove := fulfillmentLineData.Quantity
 
 		res := a.getFulfillmentLine(targetFulfillment, linesInTargetFulfillment, fulfillmentLine.OrderLineID, fulfillmentLine.StockID)
-		res.bool
+
+		// calculate the quantity fulfilled/unfulfilled/to move
+		fulfilledToMove := util.Min(fulfillmentLine.Quantity, quantityToMove)
+		quantityToMove -= fulfilledToMove
+		res.MovedFulfillmentLine.Quantity += fulfilledToMove
+		fulfillmentLine.Quantity -= fulfilledToMove
+
+		if fulfillmentLine.Quantity == 0 {
+			// the fulfillment line without any items will be deleted
+			emptyFulfillmentLinesToDelete = append(emptyFulfillmentLinesToDelete, &fulfillmentLine)
+		} else {
+			// update with new quantity value
+			fulfillmentLinesToUpdate = append(fulfillmentLinesToUpdate, &fulfillmentLine)
+		}
+
+		if res.MovedFulfillmentLine.Quantity > 0 && !res.FulfillmentLineExist {
+			// If this is new type of (order_line, stock) then we create new fulfillment line
+			fulfillmentLinesToCreate = append(fulfillmentLinesToCreate, res.MovedFulfillmentLine)
+		} else if res.FulfillmentLineExist {
+			// if target fulfillment already have the same line, we  just update the quantity
+			fulfillmentLinesToUpdate = append(fulfillmentLinesToUpdate, res.MovedFulfillmentLine)
+		}
 	}
+
+	// update the fulfillment lines with new values
+
+	setAppErr := func(err *model.AppError) {
+		a.mutex.Lock()
+		if err != nil {
+			appErr = err
+		}
+		a.mutex.Unlock()
+	}
+
+	a.wg.Add(3)
+	go func() {
+		defer a.wg.Done()
+		_, err := a.BulkUpsertFulfillmentLines(fulfillmentLinesToUpdate)
+		setAppErr(err)
+	}()
+
+	go func() {
+		defer a.wg.Done()
+		_, err := a.BulkUpsertFulfillmentLines(fulfillmentLinesToCreate)
+		setAppErr(err)
+	}()
+
+	go func() {
+		defer a.wg.Done()
+		err := a.DeleteFulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: order.FulfillmentLines(emptyFulfillmentLinesToDelete).IDs(),
+				},
+			},
+		})
+		setAppErr(err)
+	}()
+
+	a.wg.Done()
+
+	return
 }

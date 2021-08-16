@@ -5,6 +5,7 @@
 package checkout
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 func (a *AppCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *model.AppError) {
@@ -484,7 +486,7 @@ func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo,
 					Or: &model.NumberOption{
 						NULL: model.NewBool(true),
 						ExtraExpr: []squirrel.Sqlizer{
-							squirrel.Expr("V.UsageLimit > V.Used"), // NOTE "V" is alias for "Vouchers"  table name
+							squirrel.Expr(fmt.Sprintf("%s.UsageLimit > %s.Used", store.VoucherTableName, store.VoucherTableName)),
 						},
 					},
 				},
@@ -505,7 +507,7 @@ func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo,
 					},
 				},
 				ChannelListingActive: model.NewBool(true),
-				WithLook:             withLock, // <--
+				WithLook:             withLock, // this add `FOR UPDATE` to SQL query
 			})
 
 		if appErr != nil || len(activeInChannelVouchers) == 0 {

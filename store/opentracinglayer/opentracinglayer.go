@@ -3463,16 +3463,16 @@ func (s *OpenTracingLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *OpenTracingLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.BulkCreate")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.FulfillmentLineStore.BulkCreate(fulfillmentLines)
+	result, err := s.FulfillmentLineStore.BulkUpsert(fulfillmentLines)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

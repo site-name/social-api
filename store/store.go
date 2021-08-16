@@ -578,7 +578,8 @@ type (
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
 		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) // FilterbyOption finds and returns a list of fulfillment lines by given option
-		BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error)     // BulkCreate upsert given fulfillment lines
+		BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error)     // BulkUpsert upsert given fulfillment lines
+		DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error             // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()

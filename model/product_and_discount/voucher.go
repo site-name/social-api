@@ -64,7 +64,7 @@ type VoucherFilterOption struct {
 	ChannelListingSlug   *model.StringFilter
 	Code                 *model.StringFilter
 	ChannelListingActive *bool
-	WithLook             bool
+	WithLook             bool // this add FOR UPDATE to sql queries
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement

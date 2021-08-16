@@ -4,32 +4,16 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"sync"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
-
-type AppOrder struct {
-	app.AppIface
-	wg    sync.WaitGroup
-	mutex sync.Mutex
-}
-
-func init() {
-	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
-		return &AppOrder{
-			AppIface: a,
-		}
-	})
-}
 
 // UpsertOrder depends on given order's Id property to decide update/save it
 func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError) {
@@ -43,6 +27,13 @@ func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError)
 	}
 
 	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			return nil, model.NewAppError("UpsertOrder", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, err.Error(), http.StatusBadRequest)
+		}
+
 		return nil, model.NewAppError("UpsertOrder", "app.order.error_upserting_order.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 

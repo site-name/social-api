@@ -171,13 +171,46 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 	return changedOrderDiscounts, nil
 }
 
-func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
-	// TODO: fix me
-	panic("not implemented")
-}
+// func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+// 	// TODO: fix me
+// 	panic("not implemented")
+// }
 
-func (a *AppOrder) RecalculateOrder(ord *order.Order) {
-	panic("not implemented")
+// Recalculate and assign total price of order.
+//
+// Total price is a sum of items in order and order shipping price minus
+// discount amount.
+//
+// Voucher discount amount is recalculated by default. To avoid this, pass
+// update_voucher_discount argument set to False.
+func (a *AppOrder) RecalculateOrder(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "RecalculateOrder"
+		}
+	}()
+
+	appErr = a.RecalculateOrderPrices(ord, kwargs)
+	if appErr != nil {
+		return
+	}
+
+	changedOrderDiscounts, appErr := a.RecalculateOrderDiscounts(ord)
+	if appErr != nil {
+		return
+	}
+
+	appErr = a.OrderDiscountsAutomaticallyUpdatedEvent(ord, changedOrderDiscounts)
+	if appErr != nil {
+		return
+	}
+
+	ord, appErr = a.UpsertOrder(ord)
+	if appErr != nil {
+		return
+	}
+
+	return a.ReCalculateOrderWeight(ord)
 }
 
 // ReCalculateOrderWeight
@@ -213,16 +246,16 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 			hasGoRoutines = true
 			a.wg.Add(1)
 
-			go func(variantID string) {
-				productVariantWeight, err := a.Srv().Store.ProductVariant().GetWeight(*orderLine.VariantID)
+			go func(anOrderLine *order.OrderLine) {
+				productVariantWeight, err := a.Srv().Store.ProductVariant().GetWeight(*anOrderLine.VariantID)
 				if err != nil {
-					if _, ok := err.(*store.ErrNotFound); !ok {
-						// set appError if the error is caused by system. If not variant found, does not matter
+					if _, ok := err.(*store.ErrNotFound); !ok { // set appError if the error is caused by system.
 						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
+						// Ignore If not variant found
 					}
 				} else {
 					a.mutex.Lock()
-					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(orderLine.Quantity)))
+					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))
 					if err != nil {
 						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
@@ -232,7 +265,7 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 				}
 
 				a.wg.Done()
-			}(*orderLine.VariantID)
+			}(orderLine)
 
 		}
 	}

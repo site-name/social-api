@@ -10,6 +10,17 @@ type OrderLineData struct {
 	WarehouseID string                               // can be empty
 }
 
+type OrderLineDatas []*OrderLineData
+
+func (a OrderLineDatas) DeepCopy() []*OrderLineData {
+	res := make([]*OrderLineData, len(a))
+	for i := range a {
+		res[i] = &(*a[i])
+	}
+
+	return res
+}
+
 type FulfillmentLineData struct {
 	Line     FulfillmentLine
 	Quantity int

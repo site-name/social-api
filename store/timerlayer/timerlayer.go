@@ -3211,10 +3211,10 @@ func (s *TimerLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentLineStore.BulkCreate(fulfillmentLines)
+	result, err := s.FulfillmentLineStore.BulkUpsert(fulfillmentLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3222,7 +3222,7 @@ func (s *TimerLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.Fu
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.BulkCreate", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.BulkUpsert", success, elapsed)
 	}
 	return result, err
 }

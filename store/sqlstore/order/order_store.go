@@ -125,7 +125,17 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 		}
 
 		if isSaving {
-			err = tx.Insert(ord)
+			for {
+				err = tx.Insert(ord)
+				if err != nil {
+					if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
+						ord.NewToken()
+						continue
+					}
+					break
+				}
+				break
+			}
 		} else {
 			// try finding if order exist
 			err = tx.SelectOne(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :ID", map[string]interface{}{"ID": ord.Id})
@@ -173,7 +183,7 @@ func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
 	for {
 		if err := os.GetMaster().Insert(order); err != nil {
 			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
-				order.Token = model.NewId()
+				order.NewToken()
 				continue
 			}
 			return nil, errors.Wrapf(err, "failed to save order with Id=%s", order.Id)
@@ -199,6 +209,7 @@ func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 }
 
 func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
+	newOrder.PreUpdate()
 	if err := newOrder.IsValid(); err != nil {
 		return nil, err
 	}

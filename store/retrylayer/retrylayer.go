@@ -3715,11 +3715,11 @@ func (s *RetryLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.BulkCreate(fulfillmentLines)
+		result, err := s.FulfillmentLineStore.BulkUpsert(fulfillmentLines)
 		if err == nil {
 			return result, nil
 		}
