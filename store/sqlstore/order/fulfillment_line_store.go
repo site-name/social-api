@@ -56,6 +56,33 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, erro
 	}
 }
 
+// BulkCreate upsert given fulfillment lines
+func (fls *SqlFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+
+	tx, err := fls.GetMaster().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(tx)
+
+	for _, line := range fulfillmentLines {
+		line.PreSave()
+		if err := line.IsValid(); err != nil {
+			return nil, err
+		}
+
+		if err := tx.Insert(line); err != nil {
+			return nil, errors.Wrapf(err, "failed to save fulfillment line with id=%s", line.Id)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
+	}
+
+	return fulfillmentLines, nil
+}
+
 // FilterbyOption finds and returns a list of fulfillment lines by given option
 func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
 	query := fls.GetQueryBuilder().

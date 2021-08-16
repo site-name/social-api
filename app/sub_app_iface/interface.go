@@ -75,26 +75,26 @@ type PaymentApp interface {
 
 // CheckoutApp
 type CheckoutApp interface {
-	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError)                                                                                                                                                               // CheckoutbyToken returns 1 checkout by its token (checkout's pripary key)
-	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)                                                                                                                                           // CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
-	CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError)                               // CheckVariantInStock checks if given variant is already in stock
-	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                                                                                                                                    // CheckoutShippingRequired checks if given checkout requires shipping
-	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                                                                                                                                                // CheckoutsByUser returns a list of checkouts belong to given user.
-	GetUserCheckout(userID string) (*checkout.Checkout, *model.AppError)                                                                                                                                                                      // GetUserCheckout returns a checkout that is active and belongs to given user
-	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                                                    // CheckoutCountry returns country code for given checkout
-	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                                                                                                                                    // CheckoutSetCountry set new country code for checkout
-	UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                                                                                                                                            // UpsertCheckout updates or inserts given checkout and returns it
-	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                                                   // GetCustomerEmail returns either checkout owner's email or checkout's Email property
-	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                                                                                                                                             // CheckoutTotalGiftCardsBalance returns giftcards balance money
-	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)                                                                                                                   // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
-	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity uint, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError)                                            // AddVariantToCheckout adds a product variant to given checkout. If `replace`, any previous quantity is discarded instead of added to
-	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)                                                                                                                                            // CheckoutLinesByCheckoutToken finds checkout lines that belong to given checkout
-	DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError                                                                                                                                                                             // DeleteCheckoutLines deletes all checkout lines by given uuid list
-	UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError)                                                                                                                                         // Upsert creates or updates given checkout line and returns it with an error
-	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (uint, *model.AppError)                                                                                                                                                 // CalculateCheckoutQuantity returns total sum of quantity of check out lines in given checkout infos
-	AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []uint, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) // AddVariantsToCheckout add variants to checkout
-	ChangeBillingAddressInCheckout(ckout *checkout.Checkout, address *account.Address) *model.AppError                                                                                                                                        // ChangeBillingAddressInCheckout update billing address of given checkout
-	CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError)                                                                                                                                // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
+	CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError)                                                                                                                                                              // CheckoutbyToken returns 1 checkout by its token (checkout's pripary key)
+	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)                                                                                                                                          // CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
+	CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *model.AppError)                                // CheckVariantInStock checks if given variant is already in stock
+	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)                                                                                                                                                                   // CheckoutShippingRequired checks if given checkout requires shipping
+	CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError)                                                                                                                                               // CheckoutsByUser returns a list of checkouts belong to given user.
+	GetUserCheckout(userID string) (*checkout.Checkout, *model.AppError)                                                                                                                                                                     // GetUserCheckout returns a checkout that is active and belongs to given user
+	CheckoutCountry(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                                                   // CheckoutCountry returns country code for given checkout
+	CheckoutSetCountry(checkout *checkout.Checkout, newCountryCode string) *model.AppError                                                                                                                                                   // CheckoutSetCountry set new country code for checkout
+	UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError)                                                                                                                                                           // UpsertCheckout updates or inserts given checkout and returns it
+	GetCustomerEmail(checkout *checkout.Checkout) (string, *model.AppError)                                                                                                                                                                  // GetCustomerEmail returns either checkout owner's email or checkout's Email property
+	CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError)                                                                                                                                            // CheckoutTotalGiftCardsBalance returns giftcards balance money
+	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)                                                                                                                  // CheckoutLineWithVariant return a checkout line of given checkout, that checkout line has VariantID of given product variant id
+	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError)                                            // AddVariantToCheckout adds a product variant to given checkout. If `replace`, any previous quantity is discarded instead of added to
+	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)                                                                                                                                           // CheckoutLinesByCheckoutToken finds checkout lines that belong to given checkout
+	DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError                                                                                                                                                                            // DeleteCheckoutLines deletes all checkout lines by given uuid list
+	UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError)                                                                                                                                        // Upsert creates or updates given checkout line and returns it with an error
+	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError)                                                                                                                                                 // CalculateCheckoutQuantity returns total sum of quantity of check out lines in given checkout infos
+	AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) // AddVariantsToCheckout add variants to checkout
+	ChangeBillingAddressInCheckout(ckout *checkout.Checkout, address *account.Address) *model.AppError                                                                                                                                       // ChangeBillingAddressInCheckout update billing address of given checkout
+	CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError)                                                                                                                               // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
 }
 
 // AccountApp
@@ -263,8 +263,8 @@ type ChannelApp interface {
 }
 
 type WarehouseApp interface {
-	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) (*warehouse.InsufficientStock, *model.AppError)
-	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []uint, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
+	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)
+	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
 	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)       // IsProductInStock
 	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData            // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError                // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
@@ -283,7 +283,7 @@ type WarehouseApp interface {
 	// create a new allocation for this order line in this stock.
 	//
 	// NOTE: allocate is default to false
-	IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity uint, allocate bool) *model.AppError
+	IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError
 	// DeallocateStock Deallocate stocks for given `order_lines`.
 	//
 	// Function lock for update stocks and allocations related to given `order_lines`.
@@ -291,7 +291,7 @@ type WarehouseApp interface {
 	// as needed of available in stock for order line, until deallocated all required
 	// quantity for the order line. If there is less quantity in stocks then
 	// raise an exception.
-	DeallocateStock(orderLineDatas []*order.OrderLineData) *model.AppError
+	DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError)
 	// Decrease stocks quantities for given `order_lines` in given warehouses.
 	//
 	// Function deallocate as many quantities as requested if order_line has less quantity
@@ -341,7 +341,7 @@ type OrderApp interface {
 	//
 	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
-	OrderTotalQuantity(orderID string) (uint, *model.AppError)                                    // OrderTotalQuantity return total quantity of given order
+	OrderTotalQuantity(orderID string) (int, *model.AppError)                                     // OrderTotalQuantity return total quantity of given order
 	UpdateOrderTotalPaid(orderID string) *model.AppError                                          // UpdateOrderTotalPaid update given order's total paid amount
 	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                  // OrderIsPreAuthorized checks if order is pre-authorized
 	OrderIsCaptured(orderID string) (bool, *model.AppError)                                       // OrderIsCaptured checks if given order is captured

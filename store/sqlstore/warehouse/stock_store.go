@@ -156,7 +156,7 @@ func (ss *SqlStockStore) commonLookup(query string, params map[string]interface{
 		CreateAt         int64
 		WarehouseID      string
 		ProductVariantID string
-		Quantity         uint
+		Quantity         int
 
 		WareHouseID     string
 		Name            string

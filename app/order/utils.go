@@ -516,7 +516,7 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *m
 	return a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
 }
 
-func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, uint, uint, *model.AppError) {
+func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -529,10 +529,10 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (uint, ui
 	}
 
 	var (
-		totalOrderLinesQuantity uint
-		quantityFulfilled       uint
-		quantityReturned        uint
-		quantityReplaced        uint
+		totalOrderLinesQuantity int
+		quantityFulfilled       int
+		quantityReturned        int
+		quantityReplaced        int
 	)
 
 	for _, line := range orderLinesOfOrder {
@@ -675,7 +675,7 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 	return totalPriceLeft, nil
 }
 
-func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity uint, newQuantity uint, channelSlug string) *model.AppError {
+func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) *model.AppError {
 	if oldQuantity == newQuantity {
 		return nil
 	}
@@ -697,7 +697,7 @@ func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQu
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *AppOrder) ChangeOrderLineQuantity(userID string, lineInfo *order.OrderLineData, oldQuantity uint, newQuantity uint, channelSlug string, sendEvent bool) *model.AppError {
+func (a *AppOrder) ChangeOrderLineQuantity(userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) *model.AppError {
 
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
@@ -931,7 +931,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 	}
 
 	if len(dellocatingStockLines) > 0 {
-		appError = a.WarehouseApp().DeallocateStock(dellocatingStockLines)
+		_, appError = a.WarehouseApp().DeallocateStock(dellocatingStockLines)
 	}
 
 	return appError
@@ -940,7 +940,13 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) *model.AppError {
+func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "RestockFulfillmentLines"
+		}
+	}()
+
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
 		FulfillmentID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -949,7 +955,6 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "RestockFulfillmentLines"
 		return appErr
 	}
 
@@ -961,7 +966,6 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "RestockFulfillmentLines"
 		return appErr
 	}
 
@@ -983,7 +987,6 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "RestockFulfillmentLines"
 		return appErr
 	}
 
@@ -1007,7 +1010,6 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		if variantOfOrderLine != nil && *variantOfOrderLine.TrackInventory {
 			appErr := a.WarehouseApp().IncreaseStock(orderLineOfFulfillment, warehouse, fulfillmentLine.Quantity, true)
 			if appErr != nil {
-				appErr.Where = "RestockFulfillmentLines"
 				return appErr
 			}
 		}
@@ -1015,7 +1017,8 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		orderLineOfFulfillment.QuantityFulfilled -= fulfillmentLine.Quantity
 	}
 
-	return a.BulkUpsertOrderLines(orderLinesOfFulfillmentLines)
+	_, appErr = a.BulkUpsertOrderLines(orderLinesOfFulfillmentLines)
+	return appErr
 }
 
 func (a *AppOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError) {

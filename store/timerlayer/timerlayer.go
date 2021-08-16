@@ -3211,6 +3211,22 @@ func (s *TimerLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 	return result, err
 }
 
+func (s *TimerLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentLineStore.BulkCreate(fulfillmentLines)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.BulkCreate", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
 	start := timemodule.Now()
 
@@ -4011,10 +4027,10 @@ func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	return err
 }
 
-func (s *TimerLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+func (s *TimerLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 	start := timemodule.Now()
 
-	err := s.OrderLineStore.BulkUpsert(orderLines)
+	result, err := s.OrderLineStore.BulkUpsert(orderLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4024,7 +4040,7 @@ func (s *TimerLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) err
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.BulkUpsert", success, elapsed)
 	}
-	return err
+	return result, err
 }
 
 func (s *TimerLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {

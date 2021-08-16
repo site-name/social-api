@@ -42,8 +42,8 @@ type OrderLine struct {
 	TranslatedVariantName             string               `json:"translated_variant_name"`
 	ProductSku                        string               `json:"product_sku"`
 	IsShippingRequired                bool                 `json:"is_shipping_required"`
-	Quantity                          uint                 `json:"quantity"`
-	QuantityFulfilled                 uint                 `json:"quantity_fulfilled"`
+	Quantity                          int                  `json:"quantity"`
+	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
 	Currency                          string               `json:"currency"`
 	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"`
 	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
@@ -238,6 +238,6 @@ func (o *OrderLine) PreUpdate() {
 }
 
 // QuantityUnFulfilled return current order's Quantity subtract QuantityFulfilled
-func (o *OrderLine) QuantityUnFulfilled() uint {
+func (o *OrderLine) QuantityUnFulfilled() int {
 	return o.Quantity - o.QuantityFulfilled
 }

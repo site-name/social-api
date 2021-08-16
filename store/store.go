@@ -558,7 +558,7 @@ type (
 		Get(id string) (*order.OrderLine, error)                                        // Get returns a order line with id of given id
 		BulkDelete(orderLineIDs []string) error                                         // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) // FilterbyOption finds and returns order lines by given option
-		BulkUpsert(orderLines []*order.OrderLine) error                                 // BulkUpsert performs upsert multiple order lines in once
+		BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error)           // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()
@@ -578,6 +578,7 @@ type (
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
 		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) // FilterbyOption finds and returns a list of fulfillment lines by given option
+		BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error)     // BulkCreate upsert given fulfillment lines
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()

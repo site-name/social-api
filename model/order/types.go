@@ -4,7 +4,7 @@ import "github.com/sitename/sitename/model/product_and_discount"
 
 type OrderLineData struct {
 	Line        OrderLine
-	Quantity    uint
+	Quantity    int
 	Variant     *product_and_discount.ProductVariant // can be nil
 	Replace     bool                                 // default false
 	WarehouseID string                               // can be empty
@@ -12,6 +12,6 @@ type OrderLineData struct {
 
 type FulfillmentLineData struct {
 	Line     FulfillmentLine
-	Quantity uint
+	Quantity int
 	Replace  bool // default false
 }

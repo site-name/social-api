@@ -123,10 +123,10 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 	tx, err := ols.GetMaster().Begin()
 	if err != nil {
-		return errors.Wrap(err, "transaction_begin")
+		return nil, errors.Wrap(err, "transaction_begin")
 	}
 	defer store.FinalizeTransaction(tx)
 
@@ -147,7 +147,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
 		}
 
 		if err := orderLine.IsValid(); err != nil {
-			return err
+			return nil, err
 		}
 
 		if isSaving {
@@ -156,9 +156,9 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
 			err = tx.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
 			if err != nil { // return immediately
 				if err == sql.ErrNoRows {
-					return store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
+					return nil, store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
 				}
-				return errors.Wrapf(err, "failed to find order line with id=%s", orderLine.Id)
+				return nil, errors.Wrapf(err, "failed to find order line with id=%s", orderLine.Id)
 			}
 
 			// keep uneditable fields intact
@@ -169,18 +169,18 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
 		}
 
 		if err != nil {
-			return errors.Wrapf(err, "failed to upsert order line with id=%s", orderLine.Id)
+			return nil, errors.Wrapf(err, "failed to upsert order line with id=%s", orderLine.Id)
 		}
 		if numUpdated > 1 {
-			return errors.Errorf("multiple order lines were updated: %d instead of 1", orderLine.Id)
+			return nil, errors.Errorf("multiple order lines were updated: %d instead of 1", orderLine.Id)
 		}
 	}
 
 	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "transaction_commit")
+		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
-	return nil
+	return orderLines, nil
 }
 
 func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {

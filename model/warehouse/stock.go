@@ -13,7 +13,7 @@ type Stock struct {
 	CreateAt         int64  `json:"create_at"`
 	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
-	Quantity         uint   `json:"quantity"`           // DEFAULT 0
+	Quantity         int    `json:"quantity"`           // DEFAULT 0
 }
 
 // StockFilteroption is used for build sql queries
@@ -56,13 +56,16 @@ func (s *Stock) PreSave() {
 	if s.CreateAt == 0 {
 		s.CreateAt = model.GetMillis()
 	}
+	if s.Quantity < 0 {
+		s.Quantity = 0
+	}
 }
 
 type InsufficientStockData struct {
 	Variant           product_and_discount.ProductVariant // Product variant ID
 	OrderLine         *order.OrderLine                    // OrderLine id
 	WarehouseID       *string
-	AvailableQuantity *uint
+	AvailableQuantity *int
 }
 
 // InsufficientStock is an error indicating stock is insufficient

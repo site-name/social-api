@@ -10,7 +10,7 @@ type FulfillmentLine struct {
 	Id            string  `json:"id"`
 	OrderLineID   string  `json:"order_line_id"`
 	FulfillmentID string  `json:"fulfillment_id"`
-	Quantity      uint    `json:"quantity"`
+	Quantity      int     `json:"quantity"`
 	StockID       *string `json:"stock_id"`
 }
 

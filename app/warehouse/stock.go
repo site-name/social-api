@@ -8,7 +8,7 @@ import (
 
 // GetVariantStocksForCountry validates if stock for given country are valid.
 // Not exported.
-func (a *AppWarehouse) GetVariantStocksForCountry(countryCode string, channelSlug string, variantID string, quantity uint) ([]*warehouse.Stock, *model.AppError) {
+func (a *AppWarehouse) GetVariantStocksForCountry(countryCode string, channelSlug string, variantID string, quantity int) ([]*warehouse.Stock, *model.AppError) {
 	stocks, _, _, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(
 		&warehouse.ForCountryAndChannelFilter{
 			CountryCode: countryCode,

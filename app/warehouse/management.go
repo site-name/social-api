@@ -64,7 +64,7 @@ func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, upda
 // create a new allocation for this order line in this stock.
 //
 // NOTE: allocate is default to false
-func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity uint, allocate bool) *model.AppError {
+func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
 	panic("not implemented")
 }
 
@@ -87,6 +87,6 @@ func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.O
 // as needed of available in stock for order line, until deallocated all required
 // quantity for the order line. If there is less quantity in stocks then
 // raise an exception.
-func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) *model.AppError {
+func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError) {
 	panic("not implemented")
 }

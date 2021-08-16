@@ -62,6 +62,13 @@ func Min(a, b int) int {
 	return a
 }
 
+func UintMin(a, b uint) uint {
+	if a > b {
+		return b
+	}
+	return a
+}
+
 // IsEmptyString checks if the provided string is empty
 func IsEmptyString(s string) bool {
 	return len(strings.TrimSpace(s)) == 0

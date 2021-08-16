@@ -147,21 +147,21 @@ func (a *AppOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *model
 	return productVariantIsDigital && orderLineProductVariantHasDigitalContent, nil
 }
 
-// BulkUpdateOrderLines perform bulk upsert given order lines
-func (a *AppOrder) BulkUpsertOrderLines(orderLines []*order.OrderLine) *model.AppError {
-	err := a.Srv().Store.OrderLine().BulkUpsert(orderLines)
+// BulkUpsertOrderLines perform bulk upsert given order lines
+func (a *AppOrder) BulkUpsertOrderLines(orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
+	orderLines, err := a.Srv().Store.OrderLine().BulkUpsert(orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
-			return appErr
+			return nil, appErr
 		}
 
 		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
+		if _, ok := err.(*store.ErrNotFound); ok { // this error is caused by Get() method
 			statusCode = http.StatusNotFound
 		}
 
-		return model.NewAppError("BulkUpsertOrderLines", "app.order.error_bulk_update_order_lines.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("BulkUpsertOrderLines", "app.order.error_bulk_update_order_lines.app_error", nil, err.Error(), statusCode)
 	}
 
-	return nil
+	return orderLines, nil
 }

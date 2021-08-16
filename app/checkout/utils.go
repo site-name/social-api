@@ -22,7 +22,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-func (a *AppCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity uint, replace, checkQuantity bool) (uint, *checkout.CheckoutLine, *model.AppError) {
+func (a *AppCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *model.AppError) {
 	// quantity param is default to 1
 
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(ckout.Token)
@@ -32,8 +32,8 @@ func (a *AppCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *pro
 
 	var (
 		lineWithVariant *checkout.CheckoutLine = nil      // checkoutLine that has variantID of given `variantID`
-		lineQuantity    uint                   = 0        // quantity of lineWithVariant checkout line
-		newQuantity     uint                   = quantity //
+		lineQuantity    int                    = 0        // quantity of lineWithVariant checkout line
+		newQuantity     int                    = quantity //
 	)
 	if !replace {
 		newQuantity = quantity + lineQuantity
@@ -76,7 +76,7 @@ func (a *AppCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *pro
 // AddVariantToCheckout adds a product variant to checkout
 //
 // `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity uint, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError) {
+func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError) {
 	// validate arguments
 	var invalidArgs string
 	if checkoutInfo == nil {
@@ -147,8 +147,8 @@ func (a *AppCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, 
 	return &checkoutInfo.Checkout, nil
 }
 
-func (a *AppCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (uint, *model.AppError) {
-	var sum uint
+func (a *AppCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError) {
+	var sum int
 	for _, info := range lineInfos {
 		sum += info.Line.Quantity
 	}
@@ -162,7 +162,7 @@ func (a *AppCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLi
 // If quantity is set to 0, checkout line will be deleted.
 // Otherwise, quantity will be added or replaced (if replace argument is True).
 //  skipStockCheck and replace are default to false
-func (a *AppCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []uint, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) {
+func (a *AppCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) {
 	// validate input arguments:
 	var invlArgs string
 	if ckout == nil {

@@ -1,7 +1,10 @@
 package warehouse
 
 import (
+	"strings"
+
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/order"
 )
 
 type Allocation struct {
@@ -9,7 +12,7 @@ type Allocation struct {
 	CreateAt          int64  `json:"create_at"`
 	OrderLineID       string `json:"order_ldine_id"`     // NOT NULL
 	StockID           string `json:"stock_id"`           // NOT NULL
-	QuantityAllocated uint   `json:"quantity_allocated"` // default 0
+	QuantityAllocated int    `json:"quantity_allocated"` // default 0
 }
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
@@ -17,6 +20,39 @@ type AllocationFilterOption struct {
 	Id          *model.StringFilter
 	OrderLineID *model.StringFilter
 	StockID     *model.StringFilter
+}
+
+type AllocationError struct {
+	OrderLineDatas []*order.OrderLine
+	builder        strings.Builder
+}
+
+func (a *AllocationError) OrderLineIDs() string {
+	a.builder.Reset()
+
+	var suffix string = ", "
+	for i, line := range a.OrderLineDatas {
+		if i == len(a.OrderLineDatas)-1 {
+			suffix = ""
+		}
+		a.builder.WriteString(line.Id + suffix)
+	}
+
+	return a.builder.String()
+}
+
+func (a *AllocationError) Error() string {
+	a.builder.Reset()
+
+	var suffix string = ", "
+	for i, line := range a.OrderLineDatas {
+		if i == len(a.OrderLineDatas)-1 {
+			suffix = ""
+		}
+		a.builder.WriteString(line.String() + suffix)
+	}
+
+	return a.builder.String()
 }
 
 func (a *Allocation) IsValid() *model.AppError {
@@ -51,5 +87,8 @@ func (a *Allocation) PreSave() {
 	}
 	if a.CreateAt == 0 {
 		a.CreateAt = model.GetMillis()
+	}
+	if a.QuantityAllocated < 0 {
+		a.QuantityAllocated = 0
 	}
 }

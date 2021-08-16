@@ -19,7 +19,7 @@ type CheckoutLine struct {
 	CreatAt    int64  `json:"create_at"`
 	CheckoutID string `json:"checkout_id"`
 	VariantID  string `json:"variant_id"`
-	Quantity   uint   `json:"quantity"`
+	Quantity   int    `json:"quantity"`
 }
 
 func (c *CheckoutLine) ToJson() string {

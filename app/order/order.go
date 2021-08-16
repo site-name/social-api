@@ -111,7 +111,7 @@ func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppErro
 }
 
 // OrderTotalQuantity return total quantity of given order
-func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
+func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -124,7 +124,7 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (uint, *model.AppError) {
 		return 0, appErr
 	}
 
-	var total uint = 0
+	var total int = 0
 	for _, line := range lines {
 		total += line.Quantity
 	}

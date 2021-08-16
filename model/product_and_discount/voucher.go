@@ -41,8 +41,8 @@ type Voucher struct {
 	Type                     string `json:"type"`
 	Name                     string `json:"name"`
 	Code                     string `json:"code"`
-	UsageLimit               uint   `json:"usage_limit"`
-	Used                     uint   `json:"used"` // not editable
+	UsageLimit               int    `json:"usage_limit"`
+	Used                     int    `json:"used"` // not editable
 	StartDate                int64  `json:"start_date"`
 	EndDate                  *int64 `json:"end_date"`
 	ApplyOncePerOrder        bool   `json:"apply_once_per_order"`
@@ -50,7 +50,7 @@ type Voucher struct {
 	OnlyForStaff             *bool  `json:"only_for_staff"` // default false
 	DiscountValueType        string `json:"discount_value_type"`
 	Countries                string `json:"countries"` // multiple. E.g: "Vietnam America China"
-	MinCheckoutItemsQuantity uint   `json:"min_checkout_items_quantity"`
+	MinCheckoutItemsQuantity int    `json:"min_checkout_items_quantity"`
 	CreateAt                 int64  `json:"create_at"` // this field is for ordering
 	UpdateAt                 int64  `json:"update_at"`
 	model.ModelMetadata
@@ -68,7 +68,7 @@ type VoucherFilterOption struct {
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
-func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity uint) *model.AppError {
+func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *model.AppError {
 	if voucher.MinCheckoutItemsQuantity > quantity {
 		return model.NewAppError("ValidateMinCheckoutItemsQuantity", "app.discount.voucher_not_applicable_for_quantity_below", map[string]interface{}{"MinQuantity": voucher.MinCheckoutItemsQuantity}, "", http.StatusNotAcceptable)
 	}

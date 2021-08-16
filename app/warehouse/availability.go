@@ -9,15 +9,15 @@ import (
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
-func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *model.AppError) {
+func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (int, *model.AppError) {
 	if len(stocks) == 0 {
 		return 0, nil
 	}
 
 	// reference: https://github.com/mirumee/saleor/blob/master/saleor/warehouse/availability.py, function (_get_available_quantity)
 	// not sure yet why using SUM(DISTINCT 'quantity') on stocks
-	var totalQuantity uint
-	meetMap := make(map[uint]bool)
+	var totalQuantity int
+	meetMap := make(map[int]bool)
 	stockIDs := make([]string, len(stocks)) // get all stock ids from `stocks`
 
 	for i, stock := range stocks {
@@ -39,7 +39,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 		return 0, appErr
 	}
 
-	var allocatedQuantity uint
+	var allocatedQuantity int
 	for _, allocation := range allocations {
 		allocatedQuantity += allocation.QuantityAllocated
 	}
@@ -55,7 +55,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (uint, *m
 //
 // If so - returns None. If there is less stock then required raise InsufficientStock
 // exception.
-func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity uint) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError) {
 	if *variant.TrackInventory {
 		stocks, appErr := a.GetVariantStocksForCountry(countryCode, channelSlug, variant.Id, quantity)
 		if appErr != nil {
@@ -82,7 +82,7 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 // Validate if there is stock available for given variants in given country.
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
-func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []uint, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	stocks, _, _, err := a.Srv().Store.Stock().FilterForCountryAndChannel(&warehouse.ForCountryAndChannelFilter{
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,

@@ -195,7 +195,7 @@ func (a *AppDiscount) ValidateVoucherInOrder(ord *order.Order) *model.AppError {
 	return a.ValidateVoucher(voucher, orderSubTotal, orderTotalQuantity, orderCustomerEmail, ord.ChannelID, orderOwnerId)
 }
 
-func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity uint, customerEmail string, channelID string, customerID string) *model.AppError {
+func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) *model.AppError {
 	appErr := a.ValidateMinSpent(voucher, totalPrice, channelID)
 	if appErr != nil {
 		return appErr

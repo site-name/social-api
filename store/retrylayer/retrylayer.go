@@ -3715,6 +3715,26 @@ func (s *RetryLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 
 }
 
+func (s *RetryLayerFulfillmentLineStore) BulkCreate(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentLineStore.BulkCreate(fulfillmentLines)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
 
 	tries := 0
@@ -4715,21 +4735,21 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) error {
+func (s *RetryLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 
 	tries := 0
 	for {
-		err := s.OrderLineStore.BulkUpsert(orderLines)
+		result, err := s.OrderLineStore.BulkUpsert(orderLines)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 

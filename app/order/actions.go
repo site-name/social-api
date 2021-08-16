@@ -10,6 +10,8 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // OrderCreated
@@ -136,12 +138,17 @@ func (a *AppOrder) CleanMarkOrderAsPaid(ord *order.Order) *model.AppError {
 }
 
 // FulfillOrderLines Fulfill order line with given quantity
-func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) *model.AppError {
+func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "FulfillOrderLines"
+		}
+	}()
+
 	orderLineInfosToDecreaseStock := a.WarehouseApp().GetOrderLinesWithTrackInventory(orderLineInfos)
 	if len(orderLineInfosToDecreaseStock) > 0 {
 		appErr := a.WarehouseApp().DecreaseStock(orderLineInfosToDecreaseStock, true)
 		if appErr != nil {
-			appErr.Where = "FulfillOrderLines"
 			return appErr
 		}
 	}
@@ -152,13 +159,8 @@ func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) *mod
 		orderLines = append(orderLines, &lineInfo.Line)
 	}
 
-	appErr := a.BulkUpsertOrderLines(orderLines)
-	if appErr != nil {
-		appErr.Where = "FulfillOrderLines"
-		return appErr
-	}
-
-	return nil
+	_, appErr = a.BulkUpsertOrderLines(orderLines)
+	return appErr
 }
 
 // AutomaticallyFulfillDigitalLines
@@ -343,9 +345,10 @@ func (a *AppOrder) CreateFulfillments(requester *account.User, ord *order.Order,
 // getFulfillmentLineIfExists
 //
 // NOTE: stockID can be empty
-func (a *AppOrder) getFulfillmentLineIfExists(fulfillmentLines []*order.FulfillmentLine, orderLineID string, stockID string) *order.FulfillmentLine {
+func (a *AppOrder) getFulfillmentLineIfExists(fulfillmentLines []*order.FulfillmentLine, orderLineID string, stockID *string) *order.FulfillmentLine {
 	for _, line := range fulfillmentLines {
-		if line.OrderLineID == orderLineID && (line.StockID != nil && *line.StockID == stockID) {
+		if line.OrderLineID == orderLineID &&
+			(line.StockID != nil && stockID != nil && *line.StockID == *stockID) {
 			return line
 		}
 	}
@@ -353,22 +356,19 @@ func (a *AppOrder) getFulfillmentLineIfExists(fulfillmentLines []*order.Fulfillm
 	return nil
 }
 
+type AResult struct {
+	MovedFulfillmentLine *order.FulfillmentLine
+	FulfillmentLineExist bool
+}
+
 // getFulfillmentLine Get fulfillment line if extists or create new fulfillment line object.
 //
 // NOTE: stockID can be empty
-func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, linesInTargetFulfillment []*order.FulfillmentLine, orderLineID string, stockID string) *struct {
-	order.FulfillmentLine
-	bool
-} {
+func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, linesInTargetFulfillment []*order.FulfillmentLine, orderLineID string, stockID *string) *AResult {
 	// Check if line for order_line_id and stock_id does not exist in DB.
 	movedFulfillmentLine := a.getFulfillmentLineIfExists(linesInTargetFulfillment, orderLineID, stockID)
 
 	fulfillmentLineExisted := true
-
-	var stockIdPointer *string
-	if model.IsValidId(stockID) {
-		stockIdPointer = &stockID
-	}
 
 	if movedFulfillmentLine == nil {
 		// Create new not saved FulfillmentLine object and assign it to target fulfillment
@@ -376,21 +376,110 @@ func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, line
 		movedFulfillmentLine = &order.FulfillmentLine{
 			FulfillmentID: targetFulfillment.Id,
 			OrderLineID:   orderLineID,
-			StockID:       stockIdPointer,
+			StockID:       stockID,
 			Quantity:      0,
 		}
 	}
 
-	return &struct {
-		order.FulfillmentLine
-		bool
-	}{
-		*movedFulfillmentLine,
-		fulfillmentLineExisted,
+	return &AResult{
+		MovedFulfillmentLine: movedFulfillmentLine,
+		FulfillmentLineExist: fulfillmentLineExisted,
 	}
 }
 
 // moveOrderLinesTotargetFulfillment Move order lines with given quantity to the target fulfillment
-func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) ([]*order.FulfillmentLine, *model.AppError) {
-	panic("not implt")
+func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
+
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "moveOrderLinesTotargetFulfillment"
+		}
+	}()
+
+	var (
+		orderLinesToUpdate        []*order.OrderLine
+		orderLineDatasToDeAlocate []*order.OrderLineData
+	)
+
+	for _, lineData := range orderLinesToMove {
+		// calculate the quantity fulfilled/unfulfilled to move
+		unFulfilledToMove := util.UintMin(lineData.Line.QuantityUnFulfilled(), lineData.Quantity)
+		lineData.Line.QuantityFulfilled += unFulfilledToMove
+
+		// update current lines with new value of quantity
+		orderLinesToUpdate = append(orderLinesToUpdate, &lineData.Line)
+		fulfillmentLineToCreate = append(fulfillmentLineToCreate, &order.FulfillmentLine{
+			FulfillmentID: targetFulfillment.Id,
+			OrderLineID:   lineData.Line.Id,
+			StockID:       nil,
+			Quantity:      unFulfilledToMove,
+		})
+
+		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+			OrderLineID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: lineData.Line.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+		}
+
+		if len(allocationsOfOrderLine) > 0 {
+			orderLineDatasToDeAlocate = append(orderLineDatasToDeAlocate, &order.OrderLineData{
+				Line:     lineData.Line,
+				Quantity: unFulfilledToMove,
+			})
+		}
+	}
+
+	if len(orderLineDatasToDeAlocate) > 0 {
+		allocationErr, appErr := a.WarehouseApp().DeallocateStock(orderLineDatasToDeAlocate)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		if allocationErr != nil {
+			slog.Warn("Unable to deallocate stock for order lines", slog.String("order_lines", allocationErr.OrderLineIDs()))
+		}
+	}
+
+	fulfillmentLineToCreate, appErr = a.BulkCreateFulfillmentLines(fulfillmentLineToCreate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = a.BulkUpsertOrderLines(orderLinesToUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return fulfillmentLineToCreate, nil
+}
+
+// moveFulfillmentLinesToTargetFulfillment Move fulfillment lines with given quantity to the target fulfillment
+func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMove []*order.FulfillmentLineData, linesInTargetFulfillment []*order.FulfillmentLine, targetFulfillment *order.Fulfillment) (appErr *model.AppError) {
+
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "moveFulfillmentLinesToTargetFulfillment"
+		}
+	}()
+
+	var (
+		fulfillmentLinesToCreate      []*order.FulfillmentLine
+		fulfillmentLinesToUpdate      []*order.FulfillmentLine
+		emptyFulfillmentLinesToDelete []*order.FulfillmentLine
+	)
+
+	for _, fulfillmentLineData := range fulfillmentLinesToMove {
+		fulfillmentLine := fulfillmentLineData.Line
+		quantityToMove := fulfillmentLineData.Quantity
+
+		res := a.getFulfillmentLine(targetFulfillment, linesInTargetFulfillment, fulfillmentLine.OrderLineID, fulfillmentLine.StockID)
+		res.bool
+	}
 }
