@@ -3140,6 +3140,46 @@ func (s *RetryLayerDigitalContentStore) GetByProductVariantID(variantID string) 
 
 }
 
+func (s *RetryLayerDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentUrlStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentUrlStore.Save(contentURL)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
 
 	tries := 0
@@ -3620,6 +3660,26 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 	tries := 0
 	for {
 		result, err := s.FulfillmentStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+
+	tries := 0
+	for {
+		result, err := s.FulfillmentStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -6832,6 +6892,26 @@ func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	tries := 0
 	for {
 		result, err := s.StockStore.Get(stockID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.GetbyOption(option)
 		if err == nil {
 			return result, nil
 		}

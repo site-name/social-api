@@ -222,6 +222,7 @@ type ProductApp interface {
 	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
 	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) // ProductVariantsByOption returns a list of product variants satisfy given option
+	CreateDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)     // CreateDigitalContentURL create a digital content url then returns it
 }
 
 type WishlistApp interface {
@@ -303,6 +304,7 @@ type WarehouseApp interface {
 	//
 	// updateStocks default to true
 	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) *model.AppError
+	GetStockByOption(option *warehouse.StockFilterOption) (*warehouse.Stock, *model.AppError) // GetStockByOption takes options for filtering 1 stock
 }
 
 type DiscountApp interface {

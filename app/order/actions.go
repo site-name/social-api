@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 )
 
@@ -181,17 +182,15 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			},
 		},
 		IsShippingRequired: model.NewBool(false),
-
-		Either: order.Either{
-			VariantDigitalContentID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					NULL: model.NewBool(false),
-				},
+		VariantDigitalContentID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				NULL: model.NewBool(false),
 			},
 		},
-		PrefetchRelated: true,
+		PrefetchRelated: order.OrderLinePrefetchRelated{
+			VariantDigitalContent: true, // this tell store to prefetch related product variants, digital contents too
+		},
 	})
-
 	if appErr != nil {
 		return
 	}
@@ -200,12 +199,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 		return nil
 	}
 
-	var (
-		fulfillment *order.Fulfillment
-	)
-
-	// try finding fulfillments that belong to given order
-	fulfillmentsOfOrder, appErr := a.FulfillmentsByOption(&order.FulfillmentFilterOption{
+	fulfillment, appErr := a.GetOrCreateFulfillment(&order.FulfillmentFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: ord.Id,
@@ -216,22 +210,10 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 		return
 	}
 
-	// if there is no fulfillment that belong to given order yet. We have to create a new one
-	if len(fulfillmentsOfOrder) == 0 {
-		fulfillment, appErr = a.UpsertFulfillment(&order.Fulfillment{
-			OrderID: ord.Id,
-		})
-		if appErr != nil {
-			return
-		}
-	} else {
-		fulfillment = fulfillmentsOfOrder[0]
-	}
-
 	// finding shop that hold this order:
 	ownerShopOfOrder, appErr := a.ShopApp().ShopById(ord.ShopID)
 	if appErr != nil {
-		return appErr
+		return
 	}
 	shopDefaultDigitalContentSettings := a.ProductApp().GetDefaultDigitalContentSettings(ownerShopOfOrder)
 
@@ -249,8 +231,13 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			continue
 		}
 
-		if orderLine.ProductVariant != nil || orderLine.VariantID != nil {
-
+		if orderLine.ProductVariant != nil { // ProductVariant is available to use, prefetch option is enabled above
+			_, appErr = a.ProductApp().CreateDigitalContentURL(&product_and_discount.DigitalContentUrl{
+				LineID: &orderLine.Id,
+			})
+			if appErr != nil {
+				return appErr
+			}
 		}
 
 		fulfillmentLines = append(fulfillmentLines, &order.FulfillmentLine{
@@ -259,11 +246,151 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			Quantity:      orderLine.Quantity,
 		})
 
+		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+			OrderLineID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: orderLine.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			return appErr
+		}
+
+		stock, appErr := a.WarehouseApp().GetStockByOption(&warehouse.StockFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: allocationsOfOrderLine[0].StockID,
+				},
+			},
+		})
+		if appErr != nil {
+			return appErr
+		}
+
 		orderLineDatas = append(orderLineDatas, &order.OrderLineData{
-			Line:     *orderLine,
-			Quantity: orderLine.Quantity,
-			Variant:  orderLine.ProductVariant,
-			// WarehouseID: ,
+			Line:        *orderLine,
+			Quantity:    orderLine.Quantity,
+			Variant:     orderLine.ProductVariant,
+			WarehouseID: stock.WarehouseID,
 		})
 	}
+
+	// TODO: fixme
+	panic("not implemented")
+}
+
+// Modify stocks and allocations. Return list of unsaved FulfillmentLines.
+//
+//     Args:
+//         fulfillment (Fulfillment): Fulfillment to create lines
+//         warehouse_pk (str): Warehouse to fulfill order.
+//         lines_data (List[Dict]): List with information from which system
+//             create FulfillmentLines. Example:
+//                 [
+//                     {
+//                         "order_line": (OrderLine),
+//                         "quantity": (int),
+//                     },
+//                     ...
+//                 ]
+//         channel_slug (str): Channel for which fulfillment lines should be created.
+//
+//     Return:
+//         List[FulfillmentLine]: Unsaved fulfillmet lines created for this fulfillment
+//             based on information form `lines`
+//
+//     Raise:
+//         InsufficientStock: If system hasn't containt enough item in stock for any line.
+func (a *AppOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas []map[string]*order.OrderLine, channelSlug string) ([]*order.FulfillmentLine, *model.AppError) {
+	panic("not impl")
+}
+
+// Fulfill order.
+//
+//     Function create fulfillments with lines.
+//     Next updates Order based on created fulfillments.
+//
+//     Args:
+//         requester (User): Requester who trigger this action.
+//         order (Order): Order to fulfill
+//         fulfillment_lines_for_warehouses (Dict): Dict with information from which
+//             system create fulfillments. Example:
+//                 {
+//                     (Warehouse.pk): [
+//                         {
+//                             "order_line": (OrderLine),
+//                             "quantity": (int),
+//                         },
+//                         ...
+//                     ]
+//                 }
+//         manager (PluginsManager): Base manager for handling plugins logic.
+//         notify_customer (bool): If `True` system send email about
+//             fulfillments to customer.
+//
+//     Return:
+//         List[Fulfillment]: Fulfillmet with lines created for this order
+//             based on information form `fulfillment_lines_for_warehouses`
+//
+//
+//     Raise:
+//         InsufficientStock: If system hasn't containt enough item in stock for any line.
+func (a *AppOrder) CreateFulfillments(requester *account.User, ord *order.Order, fulfillmentLinesForWarehouse interface{}, manager interface{}, notifyCustomer bool) ([]*order.Fulfillment, *model.AppError) {
+	panic("not impl")
+}
+
+// getFulfillmentLineIfExists
+//
+// NOTE: stockID can be empty
+func (a *AppOrder) getFulfillmentLineIfExists(fulfillmentLines []*order.FulfillmentLine, orderLineID string, stockID string) *order.FulfillmentLine {
+	for _, line := range fulfillmentLines {
+		if line.OrderLineID == orderLineID && (line.StockID != nil && *line.StockID == stockID) {
+			return line
+		}
+	}
+
+	return nil
+}
+
+// getFulfillmentLine Get fulfillment line if extists or create new fulfillment line object.
+//
+// NOTE: stockID can be empty
+func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, linesInTargetFulfillment []*order.FulfillmentLine, orderLineID string, stockID string) *struct {
+	order.FulfillmentLine
+	bool
+} {
+	// Check if line for order_line_id and stock_id does not exist in DB.
+	movedFulfillmentLine := a.getFulfillmentLineIfExists(linesInTargetFulfillment, orderLineID, stockID)
+
+	fulfillmentLineExisted := true
+
+	var stockIdPointer *string
+	if model.IsValidId(stockID) {
+		stockIdPointer = &stockID
+	}
+
+	if movedFulfillmentLine == nil {
+		// Create new not saved FulfillmentLine object and assign it to target fulfillment
+		fulfillmentLineExisted = false
+		movedFulfillmentLine = &order.FulfillmentLine{
+			FulfillmentID: targetFulfillment.Id,
+			OrderLineID:   orderLineID,
+			StockID:       stockIdPointer,
+			Quantity:      0,
+		}
+	}
+
+	return &struct {
+		order.FulfillmentLine
+		bool
+	}{
+		*movedFulfillmentLine,
+		fulfillmentLineExisted,
+	}
+}
+
+// moveOrderLinesTotargetFulfillment Move order lines with given quantity to the target fulfillment
+func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) ([]*order.FulfillmentLine, *model.AppError) {
+	panic("not implt")
 }

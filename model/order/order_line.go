@@ -71,9 +71,9 @@ type OrderLine struct {
 	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
 }
 
-type Either struct {
-	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN digitalContent
-	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products
+type OrderLinePrefetchRelated struct {
+	VariantProduct        bool
+	VariantDigitalContent bool
 }
 
 // OrderLineFilterOption is used for build sql queries
@@ -82,9 +82,10 @@ type OrderLineFilterOption struct {
 	OrderID            *model.StringFilter
 	IsShippingRequired *bool
 
-	Either
+	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products
+	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN digitalContent
 
-	PrefetchRelated bool
+	PrefetchRelated OrderLinePrefetchRelated
 }
 
 type OrderLines []*OrderLine

@@ -2730,6 +2730,38 @@ func (s *TimerLayerDigitalContentStore) GetByProductVariantID(variantID string) 
 	return result, err
 }
 
+func (s *TimerLayerDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentUrlStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentUrlStore.Save(contentURL)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
 	start := timemodule.Now()
 
@@ -3143,6 +3175,22 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+	start := timemodule.Now()
+
+	result, err := s.FulfillmentStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -5733,6 +5781,22 @@ func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.GetbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.GetbyOption", success, elapsed)
 	}
 	return result, err
 }

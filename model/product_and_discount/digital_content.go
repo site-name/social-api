@@ -79,7 +79,7 @@ func (d *DigitalContent) PreSave() {
 
 type DigitalContentUrl struct {
 	Id          string  `json:"id"`
-	Token       string  `json:"token"` // uuid field
+	Token       string  `json:"token"` // uuid field, not editable
 	ContentID   string  `json:"content_id"`
 	CreateAt    int64   `json:"create_at"`
 	DownloadNum int64   `json:"download_num"`
@@ -110,12 +110,6 @@ func (d *DigitalContentUrl) IsValid() *model.AppError {
 
 func (d *DigitalContentUrl) ToJson() string {
 	return model.ModelToJson(d)
-}
-
-func DigitalContentUrlFromJson(data io.Reader) *DigitalContentUrl {
-	var d DigitalContentUrl
-	model.ModelFromJson(&d, data)
-	return &d
 }
 
 func (d *DigitalContentUrl) PreSave() {

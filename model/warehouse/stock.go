@@ -16,6 +16,13 @@ type Stock struct {
 	Quantity         uint   `json:"quantity"`           // DEFAULT 0
 }
 
+// StockFilteroption is used for build sql queries
+type StockFilterOption struct {
+	Id               *model.StringFilter
+	WarehouseID      *model.StringFilter
+	ProductVariantID *model.StringFilter
+}
+
 func (s *Stock) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.stock.is_valid.%s.app_error",

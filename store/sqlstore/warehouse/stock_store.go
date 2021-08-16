@@ -74,6 +74,44 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	}
 }
 
+// GetbyOption finds 1 stock by given option then returns it
+func (ss *SqlStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
+	query := ss.GetQueryBuilder().
+		Select(ss.ModelFields()...).
+		From(store.StockTableName)
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Stocks.Id"))
+	}
+	if option.WarehouseID != nil {
+		query = query.
+			InnerJoin(store.WarehouseTableName + " ON (Stocks.WarehouseID = Warehouses.Id)").
+			Where(option.WarehouseID.ToSquirrel("Warehouses.Id"))
+	}
+	if option.ProductVariantID != nil {
+		query = query.
+			InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
+			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	}
+
+	var res *warehouse.Stock
+	err = ss.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.StockTableName, "option")
+		}
+		return nil, errors.Wrap(err, "failed to find a stock with given option")
+	}
+
+	return res, nil
+}
+
 // queryBuildHelperWithOptions common method for building sql query
 func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) (string, map[string]interface{}, error) {
 	// check if valid country code is provided and valid

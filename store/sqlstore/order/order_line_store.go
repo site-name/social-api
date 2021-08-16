@@ -248,16 +248,16 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	// parse either field
-	if option.Either.VariantDigitalContentID != nil {
+	if option.VariantDigitalContentID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
 			InnerJoin(store.ProductDigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
-			Where(option.Either.VariantDigitalContentID.ToSquirrel("DigitalContents.Id")) // digitalContent.Id IS (NOT) NULL
-	} else if option.Either.VariantProductID != nil {
+			Where(option.VariantDigitalContentID.ToSquirrel("DigitalContents.Id")) // digitalContent.Id IS (NOT) NULL
+	} else if option.VariantProductID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
 			InnerJoin(store.ProductTableName + " ON (ProductVariants.ProductID = Products.Id)").
-			Where(option.Either.VariantProductID.ToSquirrel("Products.Id"))
+			Where(option.VariantProductID.ToSquirrel("Products.Id"))
 	}
 
 	// begin a transaction
@@ -283,7 +283,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
 	}
 
-	if option.PrefetchRelated && len(orderLines) > 0 {
+	if (option.PrefetchRelated.VariantDigitalContent || option.PrefetchRelated.VariantProduct) && len(orderLines) > 0 {
 
 		// prefetch product variants
 		_, err = tx.Select(
@@ -303,8 +303,9 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		// prefetch digital contents || products
-		if len(productVariants) > 0 {
-			if option.Either.VariantDigitalContentID != nil {
+		if len(productVariants) > 0 { // only proceed if product variants are found
+			switch {
+			case option.PrefetchRelated.VariantDigitalContent:
 				_, err = tx.Select(
 					&digitalContents,
 					`SELECT * FROM `+store.ProductDigitalContentTableName+`
@@ -318,7 +319,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to find digital contents with given product variant IDs")
 				}
-			} else if option.Either.VariantProductID != nil {
+
+			case option.PrefetchRelated.VariantProduct:
 				_, err = tx.Select(
 					&products,
 					`SELECT * FROM `+store.ProductTableName+`
@@ -340,7 +342,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
-	if option.PrefetchRelated {
+	if option.PrefetchRelated.VariantDigitalContent || option.PrefetchRelated.VariantProduct {
 
 		for _, line := range orderLines {
 			for _, variant := range productVariants {
@@ -350,7 +352,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 			}
 		}
 
-		if option.Either.VariantDigitalContentID != nil {
+		if option.PrefetchRelated.VariantDigitalContent {
 			for _, variant := range productVariants {
 				for _, content := range digitalContents {
 					if content.ProductVariantID == variant.Id {
@@ -358,7 +360,9 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 					}
 				}
 			}
-		} else if option.Either.VariantProductID != nil {
+		}
+
+		if option.PrefetchRelated.VariantProduct {
 			for _, variant := range productVariants {
 				for _, product := range products {
 					if product.Id == variant.ProductID {
@@ -367,7 +371,6 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 				}
 			}
 		}
-
 	}
 
 	return orderLines, nil

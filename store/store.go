@@ -372,13 +372,12 @@ type (
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
-		Save(stock *warehouse.Stock) (*warehouse.Stock, error) // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
-		Get(stockID string) (*warehouse.Stock, error)          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		// FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
-		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
-		// FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
-		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)
-		FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterForCountryAndChannel
+		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                                                                                               // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
+		Get(stockID string) (*warehouse.Stock, error)                                                                                                                                                        // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)    // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
+		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
+		FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)                                // FilterForCountryAndChannel
+		GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error)                                                                                                                           // GetbyOption finds 1 stock by given option then returns it
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
@@ -454,6 +453,8 @@ type (
 	}
 	DigitalContentUrlStore interface {
 		CreateIndexesIfNotExists()
+		Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) // Save insert given digital content url into database then returns it
+		Get(id string) (*product_and_discount.DigitalContentUrl, error)                                           // Get finds and returns a digital content url with given id
 	}
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
@@ -582,6 +583,7 @@ type (
 		CreateIndexesIfNotExists()
 		Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
 		Get(id string) (*order.Fulfillment, error)                                          // Get finds and return a fulfillment by given id
+		GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
 		FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByoption finds and returns a slice of fulfillments by given option
 	}
 )

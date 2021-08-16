@@ -62,13 +62,14 @@ func (fs *SqlFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fu
 	}
 
 	var (
-		err        error
-		numUpdated int64
+		err            error
+		numUpdated     int64
+		oldFulfillment *order.Fulfillment
 	)
 	if isSaving {
 		err = fs.GetMaster().Insert(fulfillment)
 	} else {
-		oldFulfillment, err := fs.Get(fulfillment.Id)
+		oldFulfillment, err = fs.Get(fulfillment.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -106,6 +107,40 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	}
 
 	return &ffm, nil
+}
+
+// GetByOption returns 1 fulfillment, filtered by given option
+func (fs *SqlFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+	query := fs.GetQueryBuilder().
+		Select(fs.ModelFields()...).
+		From(store.FulfillmentTableName)
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Fulfillments.Id"))
+	}
+	if option.OrderID != nil {
+		query = query.Where(option.OrderID.ToSquirrel("Fulfillments.OrderID"))
+	}
+	if option.Status != nil {
+		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	var res order.Fulfillment
+	err = fs.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.FulfillmentTableName, "option")
+		}
+		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")
+	}
+
+	return &res, nil
 }
 
 // FilterByoption finds and returns a slice of fulfillments by given option
