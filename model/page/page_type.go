@@ -17,6 +17,7 @@ type PageType struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"alug"`
+	model.ModelMetadata
 }
 
 func (pt *PageType) IsValid() *model.AppError {

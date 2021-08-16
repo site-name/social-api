@@ -29,7 +29,7 @@ func init() {
 			AppIface: a,
 		}
 
-		orderApp.RecalculateOrderPrices = orderApp.UpdateVoucherDiscount(orderApp.DecoratedFunc)
+		orderApp.RecalculateOrderPrices = orderApp.UpdateVoucherDiscount(orderApp.decoratedFunc)
 
 		return orderApp
 	})
@@ -66,7 +66,7 @@ func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Recalcu
 	}
 }
 
-func (a *AppOrder) DecoratedFunc(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
+func (a *AppOrder) decoratedFunc(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "RecalculateOrderPrices"

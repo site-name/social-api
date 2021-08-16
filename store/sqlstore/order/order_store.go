@@ -45,7 +45,7 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 func (os *SqlOrderStore) CreateIndexesIfNotExists() {
 	os.CommonMetaDataIndex(store.OrderTableName)
 	os.CreateIndexIfNotExists("idx_orders_user_email", store.OrderTableName, "UserEmail")
-	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", store.OrderTableName, "lower(Email) text_pattern_ops")
+	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", store.OrderTableName, "lower(UserEmail) text_pattern_ops")
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "UserID", store.UserTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "BillingAddressID", store.AddressTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingAddressID", store.AddressTableName, "Id", false)

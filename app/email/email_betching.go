@@ -2,7 +2,6 @@ package email
 
 import (
 	"html/template"
-	"net/http"
 	"sync"
 	"time"
 
@@ -37,18 +36,18 @@ func (es *Service) InitEmailBatching() {
 	}
 }
 
-func (es *Service) AddNotificationEmailToBatch(user *account.User, post *model.Post, team *model.Team) *model.AppError {
-	if !*es.config().EmailSettings.EnableEmailBatching {
-		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
-	}
+// func (es *Service) AddNotificationEmailToBatch(user *account.User, post *model.Post, team *model.Team) *model.AppError {
+// 	if !*es.config().EmailSettings.EnableEmailBatching {
+// 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
+// 	}
 
-	if !es.EmailBatching.Add(user, post, team) {
-		slog.Error("Email batching job's receiving channel was full. Please increase the EmailBatchingBufferSize.")
-		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.channel_full.app_error", nil, "", http.StatusInternalServerError)
-	}
+// 	if !es.EmailBatching.Add(user, post, team) {
+// 		slog.Error("Email batching job's receiving channel was full. Please increase the EmailBatchingBufferSize.")
+// 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.channel_full.app_error", nil, "", http.StatusInternalServerError)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 type batchedNotification struct {
 	userID string

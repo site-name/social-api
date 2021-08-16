@@ -120,7 +120,7 @@
         "ConnMaxLifetimeMilliseconds": 3600000,
         "ConnMaxIdleTimeMilliseconds": 300000,
         "MaxOpenConns": 300,
-        "Trace": false,
+        "Trace": true,
         "AtRestEncryptKey": "5sspnqbmr433f8s8pzn9yarbtf37t565",
         "QueryTimeout": 30,
         "DisableDatabaseSearch": false,

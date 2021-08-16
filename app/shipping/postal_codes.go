@@ -29,9 +29,7 @@ func init() {
 }
 
 func GroupValues(pattern *regexp.Regexp, values ...string) {
-	for _, value := range values {
-
-	}
+	panic("not implt")
 }
 
 func CompareValues(code string, start string, end string) bool {
@@ -49,7 +47,7 @@ func CompareValues(code string, start string, end string) bool {
 func CheckUkPostalCode(code string, start string, end string) bool {
 	GroupValues(ukPostalCodePattern, code, start, end)
 
-	return CompareValues()
+	return CompareValues(code, start, end)
 }
 
 // Check postal code for Ireland, split the code by regex.
@@ -57,7 +55,7 @@ func CheckUkPostalCode(code string, start string, end string) bool {
 func CheckIRishPostalCode(code string, start string, end string) bool {
 	GroupValues(irishPostalCodePattern, code, start, end)
 
-	return CompareValues()
+	return CompareValues(code, start, end)
 }
 
 // Fallback for any country not present in country_func_map.
