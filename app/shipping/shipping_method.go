@@ -89,10 +89,18 @@ func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, chann
 
 	var orderProductIDs []string
 	if len(lines) == 0 {
-		_, _, products, err := a.Srv().Store.OrderLine().OrderLinesByOrderWithPrefetch(oder.Id)
-		if err != nil {
-			return nil, model.NewAppError("ApplicableShippingMethodsForOrder", "app.shipping.get_applicable_shipping_methods_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		// _, _, products, err := a.Srv().Store.OrderLine().OrderLinesByOrderWithPrefetch(oder.Id)
+		// if err != nil {
+		// 	return nil, model.NewAppError("ApplicableShippingMethodsForOrder", "app.shipping.get_applicable_shipping_methods_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
+		// }
+		orderLines, appErr := a.OrderApp().OrderLinesByOption(&order.OrderLineFilterOption{
+			OrderID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: oder.Id,
+				},
+			},
+			PrefetchRelated: true,
+		})
 
 		// if product(s) was/were found
 		for _, product := range products {

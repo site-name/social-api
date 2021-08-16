@@ -4011,22 +4011,6 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
-	start := timemodule.Now()
-
-	result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.OrderLinesByOrderWithPrefetch", success, elapsed)
-	}
-	return result, resultVar1, resultVar2, err
-}
-
 func (s *TimerLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	start := timemodule.Now()
 

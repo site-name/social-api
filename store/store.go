@@ -553,14 +553,8 @@ type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*order.OrderLine, error)                     // Get returns a order line with id of given id
-		// OrderLinesByOrderWithPrefetch finds order lines belong to given order
-		//
-		// and preload `variants`, `products` related to these order lines
-		//
-		// this borrow the idea from Django's prefetch_related() method
-		OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
+		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error)                    // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*order.OrderLine, error)                                        // Get returns a order line with id of given id
 		BulkDelete(orderLineIDs []string) error                                         // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) // FilterbyOption finds and returns order lines by given option
 		BulkUpsert(orderLines []*order.OrderLine) error                                 // BulkUpsert performs upsert multiple order lines in once

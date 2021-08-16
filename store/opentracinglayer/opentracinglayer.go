@@ -4363,24 +4363,6 @@ func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.OrderLinesByOrderWithPrefetch")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, resultVar1, resultVar2, err
-}
-
 func (s *OpenTracingLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Upsert")

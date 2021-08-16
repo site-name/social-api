@@ -30,12 +30,33 @@ type ProductVariant struct {
 	model.ModelMetadata
 
 	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
+	Product        *Product        `json:"-" db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
 type ProductVariantFilterOption struct {
 	Id   *model.StringFilter
 	Name *model.StringFilter
+}
+
+type ProductVariants []*ProductVariant
+
+func (p ProductVariants) IDs() []string {
+	res := make([]string, len(p))
+	for i := range p {
+		res[i] = p[i].Id
+	}
+
+	return res
+}
+
+func (p ProductVariants) ProductIDs() []string {
+	res := make([]string, len(p))
+	for i := range p {
+		res[i] = p[i].ProductID
+	}
+
+	return res
 }
 
 func (p *ProductVariant) IsValid() *model.AppError {

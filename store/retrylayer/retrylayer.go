@@ -4715,26 +4715,6 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) OrderLinesByOrderWithPrefetch(orderID string) ([]*order.OrderLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, resultVar2, err := s.OrderLineStore.OrderLinesByOrderWithPrefetch(orderID)
-		if err == nil {
-			return result, resultVar1, resultVar2, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
-		}
-	}
-
-}
-
 func (s *RetryLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 
 	tries := 0
