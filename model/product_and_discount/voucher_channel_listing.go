@@ -35,32 +35,35 @@ func (v *VoucherChannelListing) PreSave() {
 	if v.CreateAt == 0 {
 		v.CreateAt = model.GetMillis()
 	}
-	if v.DiscountValue == nil {
-		if v.Discount != nil {
-			v.DiscountValue = v.Discount.Amount
-		}
+
+	v.commonPre()
+}
+
+func (v *VoucherChannelListing) commonPre() {
+	if v.Discount != nil {
+		v.DiscountValue = v.Discount.Amount
+	} else {
+		v.DiscountValue = &decimal.Zero
 	}
-	if v.MinSpenAmount == nil {
-		if v.MinSpent != nil {
-			v.MinSpenAmount = v.MinSpent.Amount
-		}
+	if v.MinSpent == nil {
+		v.MinSpenAmount = v.MinSpent.Amount
+	} else {
+		v.MinSpenAmount = &decimal.Zero
 	}
-	v.Currency = strings.ToUpper(v.Currency)
+	if v.Currency != "" {
+		v.Currency = strings.ToUpper(v.Currency)
+	} else {
+		v.Currency = model.DEFAULT_CURRENCY
+	}
 }
 
 func (v *VoucherChannelListing) PopulateNonDbFields() {
-	if v.MinSpent == nil && v.MinSpenAmount != nil {
-		v.MinSpent = &goprices.Money{
-			Amount:   v.MinSpenAmount,
-			Currency: v.Currency,
-		}
-	}
-	if v.Discount == nil && v.DiscountValue != nil {
-		v.Discount = &goprices.Money{
-			Amount:   v.DiscountValue,
-			Currency: v.Currency,
-		}
-	}
+	v.MinSpent, _ = goprices.NewMoney(v.MinSpenAmount, v.Currency)
+	v.Discount, _ = goprices.NewMoney(v.DiscountValue, v.Currency)
+}
+
+func (v *VoucherChannelListing) PreUpdate() {
+	v.commonPre()
 }
 
 type VoucherChannelListingList []*VoucherChannelListing

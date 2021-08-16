@@ -29,19 +29,29 @@ func (a *AppDiscount) DecreaseVoucherUsage(voucher *product_and_discount.Voucher
 	return appErr
 }
 
-func (a *AppDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
+func (a *AppDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "AddVoucherUsageByCustomer"
+		}
+		if notApplicableErr != nil {
+			notApplicableErr.Where = "AddVoucherUsageByCustomer"
+		}
+	}()
+
 	// validate email argument
 	if !model.IsValidEmail(customerEmail) {
-		return model.NewAppError("AddVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)
+		appErr = model.NewAppError("AddVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)
+		return
 	}
 
-	appErr := a.ValidateOncePerCustomer(voucher, customerEmail)
-	if appErr != nil {
-		return appErr
+	notApplicableErr, appErr = a.ValidateOncePerCustomer(voucher, customerEmail)
+	if appErr != nil || notApplicableErr != nil {
+		return
 	}
 
 	_, appErr = a.CreateNewVoucherCustomer(voucher.Id, customerEmail)
-	return appErr
+	return
 }
 
 func (a *AppDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
@@ -163,27 +173,36 @@ func (a *AppDiscount) ValidateVoucherForCheckout() {
 	panic("not implemented")
 }
 
-func (a *AppDiscount) ValidateVoucherInOrder(ord *order.Order) *model.AppError {
+func (a *AppDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+	defer func() {
+		if notApplicableErr != nil {
+			notApplicableErr.Where = "ValidateVoucherInOrder"
+		}
+		if appErr != nil {
+			appErr.Where = "ValidateVoucherInOrder"
+		}
+	}()
+
 	if ord.VoucherID == nil {
-		return nil // returns immediately if order has no voucher
+		return // returns immediately if order has no voucher
 	}
 
 	orderSubTotal, appErr := a.OrderApp().OrderSubTotal(ord)
 	if appErr != nil {
-		return appErr
+		return
 	}
 	orderTotalQuantity, appErr := a.OrderApp().OrderTotalQuantity(ord.Id)
 	if appErr != nil {
-		return appErr
+		return
 	}
 	orderCustomerEmail, appErr := a.OrderApp().CustomerEmail(ord)
 	if appErr != nil {
-		return appErr
+		return
 	}
 
 	voucher, appErr := a.VoucherById(*ord.VoucherID)
 	if appErr != nil {
-		return appErr
+		return
 	}
 
 	// NOTE: orders should have owner when being created
@@ -195,29 +214,38 @@ func (a *AppDiscount) ValidateVoucherInOrder(ord *order.Order) *model.AppError {
 	return a.ValidateVoucher(voucher, orderSubTotal, orderTotalQuantity, orderCustomerEmail, ord.ChannelID, orderOwnerId)
 }
 
-func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) *model.AppError {
-	appErr := a.ValidateMinSpent(voucher, totalPrice, channelID)
-	if appErr != nil {
-		return appErr
+func (a *AppDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "ValidateVoucher"
+		}
+		if notApplicableErr != nil {
+			notApplicableErr.Where = "ValidateVoucher"
+		}
+	}()
+
+	notApplicableErr, appErr = a.ValidateMinSpent(voucher, totalPrice, channelID)
+	if appErr != nil || notApplicableErr != nil {
+		return
 	}
-	appErr = voucher.ValidateMinCheckoutItemsQuantity(quantity)
-	if appErr != nil {
-		return appErr
+	notApplicableErr = voucher.ValidateMinCheckoutItemsQuantity(quantity)
+	if appErr != nil || notApplicableErr != nil {
+		return
 	}
 	if voucher.ApplyOncePerCustomer {
-		appErr = a.ValidateOncePerCustomer(voucher, customerEmail)
-		if appErr != nil {
-			return appErr
+		notApplicableErr, appErr = a.ValidateOncePerCustomer(voucher, customerEmail)
+		if appErr != nil || notApplicableErr != nil {
+			return
 		}
 	}
 	if *voucher.OnlyForStaff {
-		appErr = a.ValidateVoucherOnlyForStaff(voucher, customerID)
-		if appErr != nil {
-			return appErr
+		notApplicableErr, appErr = a.ValidateVoucherOnlyForStaff(voucher, customerID)
+		if appErr != nil || notApplicableErr != nil {
+			return
 		}
 	}
 
-	return nil
+	return
 }
 
 // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type

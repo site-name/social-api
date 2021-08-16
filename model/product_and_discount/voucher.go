@@ -1,7 +1,7 @@
 package product_and_discount
 
 import (
-	"net/http"
+	"fmt"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -68,9 +68,13 @@ type VoucherFilterOption struct {
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
-func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *model.AppError {
+func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *model.NotApplicable {
 	if voucher.MinCheckoutItemsQuantity > quantity {
-		return model.NewAppError("ValidateMinCheckoutItemsQuantity", "app.discount.voucher_not_applicable_for_quantity_below", map[string]interface{}{"MinQuantity": voucher.MinCheckoutItemsQuantity}, "", http.StatusNotAcceptable)
+		return &model.NotApplicable{
+			Where:                    "ValidateMinCheckoutItemsQuantity",
+			Message:                  fmt.Sprintf("This offer is onlyvalid for orders with a minimum of %d in quantity", voucher.MinCheckoutItemsQuantity),
+			MinCheckoutItemsQuantity: voucher.MinCheckoutItemsQuantity,
+		}
 	}
 	return nil
 }

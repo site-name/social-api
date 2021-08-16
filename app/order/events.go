@@ -44,6 +44,18 @@ type QuantityOrderLine struct {
 	OrderLine *order.OrderLine
 }
 
+func orderLinesToQuantityOrderLine(orderLines []*order.OrderLine) []*QuantityOrderLine {
+	var res []*QuantityOrderLine
+	for _, line := range orderLines {
+		res = append(res, &QuantityOrderLine{
+			Quantity:  line.Quantity,
+			OrderLine: line,
+		})
+	}
+
+	return res
+}
+
 func linesPerQuantityToLineObjectList(quantitiesPerOrderLine []*QuantityOrderLine) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, item := range quantitiesPerOrderLine {

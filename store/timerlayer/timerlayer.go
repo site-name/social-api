@@ -3227,6 +3227,22 @@ func (s *TimerLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fu
 	return result, err
 }
 
+func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentLineStore.DeleteFulfillmentLinesByOption", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
 	start := timemodule.Now()
 

@@ -65,8 +65,31 @@ func (_m *FulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: fulfillment
-func (_m *FulfillmentStore) Save(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+// GetByOption provides a mock function with given fields: option
+func (_m *FulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+	ret := _m.Called(option)
+
+	var r0 *order.Fulfillment
+	if rf, ok := ret.Get(0).(func(*order.FulfillmentFilterOption) *order.Fulfillment); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*order.Fulfillment)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*order.FulfillmentFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Upsert provides a mock function with given fields: fulfillment
+func (_m *FulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	ret := _m.Called(fulfillment)
 
 	var r0 *order.Fulfillment

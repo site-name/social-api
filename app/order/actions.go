@@ -543,3 +543,170 @@ func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMov
 
 	return
 }
+
+func getShippingRefundAmount(refundShippingCosts bool, refundAmount *decimal.Decimal, shippingPrice *decimal.Decimal) *decimal.Decimal {
+	// We set shipping refund amount only when refund amount is calculated
+	var shippingRefundAmount *decimal.Decimal
+	if refundShippingCosts && refundAmount == nil {
+		shippingRefundAmount = shippingPrice
+	}
+	return shippingRefundAmount
+}
+
+// Proceed with all steps required for refunding products.
+//
+// Calculate refunds for products based on the order's lines and fulfillment
+// lines.  The logic takes the list of order lines, fulfillment lines, and their
+// quantities which is used to create the refund fulfillment. The stock for
+// unfulfilled lines will be deallocated.
+//
+// NOTE: `refundShippingCosts` default to false
+func (a *AppOrder) CreateRefundFulfillment(requester *account.User, ord *order.Order, payMent *payment.Payment, orderLinesToRefund []*order.OrderLineData, manager interface{}, amount *decimal.Decimal, refundShippingCosts bool) (interface{}, *model.AppError) {
+	panic("not implt")
+}
+
+//
+// ATTENTION: this method has something unsure yet
+//
+func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "populateReplaceOrderFields"
+		}
+	}()
+	replaceOrder = &order.Order{
+		Status:             order.STATUS_DRAFT,
+		UserID:             originalOrder.UserID,
+		LanguageCode:       originalOrder.LanguageCode,
+		UserEmail:          originalOrder.UserEmail,
+		Currency:           originalOrder.Currency,
+		ChannelID:          originalOrder.ChannelID,
+		DisplayGrossPrices: originalOrder.DisplayGrossPrices,
+		RedirectUrl:        originalOrder.RedirectUrl,
+		OriginalID:         &originalOrder.Id,
+		Origin:             order.REISSUE,
+		ModelMetadata: model.ModelMetadata{
+			Metadata:        originalOrder.Metadata,
+			PrivateMetadata: originalOrder.PrivateMetadata,
+		},
+	}
+
+	if originalOrder.BillingAddressID != nil {
+		replaceOrder.BillingAddressID = originalOrder.BillingAddressID
+		originalOrder.BillingAddressID = nil
+	}
+	if originalOrder.ShippingAddressID != nil {
+		replaceOrder.ShippingAddressID = originalOrder.ShippingAddressID
+		originalOrder.ShippingAddressID = nil
+	}
+
+	return a.UpsertOrder(replaceOrder)
+}
+
+// CreateReplaceOrder Create draft order with lines to replace
+func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (replaceOrder *order.Order, appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "CreateReplaceOrder"
+		}
+	}()
+
+	replaceOrder, appErr = a.populateReplaceOrderFields(originalOrder)
+	if appErr != nil {
+		return
+	}
+
+	orderLinesToCreateMap := map[string]*order.OrderLine{}
+
+	// iterate over lines without fulfillment to get the items for replace.
+	// deepcopy to not lose the reference for lines assigned to original order
+	for _, orderLineData := range order.OrderLineDatas(orderLinesToReplace).DeepCopy() {
+		orderLine := orderLineData.Line
+		orderLineID := orderLine.Id
+
+		orderLine.Id = ""
+		orderLine.OrderID = replaceOrder.Id
+		orderLine.Quantity = orderLineData.Quantity
+		orderLine.QuantityFulfilled = 0
+		// we set order_line_id as a key to use it for iterating over fulfillment items
+		orderLinesToCreateMap[orderLineID] = &orderLine
+	}
+
+	orderLineWithFulfillmentIDs := []string{}
+	for _, lineData := range fulfillmentLinesToReplace {
+		orderLineWithFulfillmentIDs = append(orderLineWithFulfillmentIDs, lineData.Line.OrderLineID)
+	}
+
+	orderLinesWithFulfillment, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: orderLineWithFulfillmentIDs,
+			},
+		},
+	})
+	if appErr != nil {
+		return
+	}
+
+	orderLinesWithFulfillmentMap := map[string]*order.OrderLine{}
+	for _, id := range orderLineWithFulfillmentIDs {
+		for _, orderLine := range orderLinesWithFulfillment {
+			if id == orderLine.Id {
+				orderLinesWithFulfillmentMap[id] = orderLine
+			}
+		}
+	}
+
+	for _, fulfillmentLineData := range fulfillmentLinesToReplace {
+		fulfillmentLine := fulfillmentLineData.Line
+		orderLineID := fulfillmentLine.OrderLineID
+
+		// if order_line_id exists in order_line_to_create, it means that we already have
+		// prepared new order_line for this fulfillment. In that case we need to increase
+		// quantity amount of new order_line by fulfillment_line.quantity
+		if item, exist := orderLinesToCreateMap[orderLineID]; exist && item != nil {
+			orderLinesToCreateMap[orderLineID].Quantity += fulfillmentLineData.Quantity
+			continue
+		}
+
+		orderLine := orderLinesWithFulfillmentMap[orderLineID]
+		orderLineID = orderLine.Id
+		orderLine.Id = ""
+		orderLine.OrderID = replaceOrder.Id
+		orderLine.Quantity = fulfillmentLineData.Quantity
+		orderLine.QuantityFulfilled = 0
+		orderLinesToCreateMap[orderLineID] = orderLine
+	}
+
+	orderLinesToCreate := []*order.OrderLine{}
+	for _, orderLine := range orderLinesToCreateMap {
+		orderLinesToCreate = append(orderLinesToCreate, orderLine)
+	}
+
+	_, appErr = a.BulkUpsertOrderLines(orderLinesToCreate)
+	if appErr != nil {
+		return
+	}
+
+	appErr = a.RecalculateOrder(replaceOrder, nil)
+	if appErr != nil {
+		return
+	}
+
+	var userID *string
+	if requester != nil && model.IsValidId(requester.Id) {
+		userID = &requester.Id
+	}
+
+	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+		OrderID: replaceOrder.Id,
+		Type:    order.ORDER_EVENT_TYPE__DRAFT_CREATED_FROM_REPLACE,
+		UserID:  userID,
+		Parameters: &model.StringInterface{
+			"related_order_pk": originalOrder.Id,
+			"lines":            linesPerQuantityToLineObjectList(orderLinesToQuantityOrderLine(orderLinesToCreate)),
+		},
+	})
+
+	return
+}

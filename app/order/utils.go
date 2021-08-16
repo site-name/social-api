@@ -115,6 +115,7 @@ func (a *AppOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product
 		})
 
 	if appErr != nil {
+		appErr.Where = "GetVoucherDiscountAssignedToOrder"
 		return nil, appErr
 	}
 
@@ -183,6 +184,8 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 //
 // Voucher discount amount is recalculated by default. To avoid this, pass
 // update_voucher_discount argument set to False.
+//
+// NOTE: `kwargs` can be nil
 func (a *AppOrder) RecalculateOrder(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
@@ -494,20 +497,30 @@ func (a *AppOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.Orde
 // Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *model.AppError) {
+func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+	defer func() {
+		if appErr != nil {
+			appErr.Where = "GetVoucherDiscountForOrder"
+		}
+		if notApplicableErr != nil {
+			notApplicableErr.Where = "GetVoucherDiscountForOrder"
+		}
+	}()
+
 	ord.PopulateNonDbFields()
 
 	// validate if order has voucher attached to
 	if ord.VoucherID == nil {
-		return &goprices.Money{
+		result = &goprices.Money{
 			Amount:   &decimal.Zero,
 			Currency: ord.Currency,
-		}, nil
+		}
+		return
 	}
 
-	appErr := a.DiscountApp().ValidateVoucherInOrder(ord)
-	if appErr != nil {
-		return nil, appErr
+	notApplicableErr, appErr = a.DiscountApp().ValidateVoucherInOrder(ord)
+	if appErr != nil || notApplicableErr != nil {
+		return
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
@@ -518,35 +531,39 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (interface{}, *m
 		},
 	})
 	if appErr != nil {
-		return nil, appErr
+		return
 	}
 
 	orderSubTotal, appErr := a.PaymentApp().GetSubTotal(orderLines, ord.Currency)
 	if appErr != nil {
-		return nil, appErr
+		return
 	}
 
 	voucherOfDiscount, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
 	if appErr != nil {
-		return nil, appErr
+		return
 	}
 
 	if voucherOfDiscount.Type == product_and_discount.ENTIRE_ORDER {
-		return a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
+		result, appErr = a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
+		return
 	}
 	if voucherOfDiscount.Type == product_and_discount.SHIPPING {
-		return a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
+		result, appErr = a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
+		return
 	}
 	// otherwise: Type is product_and_discount.SPECIFIC_PRODUCT
 	prices, appErr := a.GetPricesOfDiscountedSpecificProduct(orderLines, voucherOfDiscount)
 	if appErr != nil {
-		return nil, appErr
+		return
 	}
 	if len(prices) == 0 {
-		return nil, model.NewAppError("GetVoucherDiscountForOrder", "app.order.offer_only_valid_for_selected_items.app_error", nil, "", http.StatusNotAcceptable)
+		appErr = model.NewAppError("GetVoucherDiscountForOrder", "app.order.offer_only_valid_for_selected_items.app_error", nil, "", http.StatusNotAcceptable)
+		return
 	}
 
-	return a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
+	result, appErr = a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
+	return
 }
 
 func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {

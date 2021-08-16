@@ -14,9 +14,46 @@ type FulfillmentLineStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: fulfillmentLines
+func (_m *FulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+	ret := _m.Called(fulfillmentLines)
+
+	var r0 []*order.FulfillmentLine
+	if rf, ok := ret.Get(0).(func([]*order.FulfillmentLine) []*order.FulfillmentLine); ok {
+		r0 = rf(fulfillmentLines)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*order.FulfillmentLine)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]*order.FulfillmentLine) error); ok {
+		r1 = rf(fulfillmentLines)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *FulfillmentLineStore) CreateIndexesIfNotExists() {
 	_m.Called()
+}
+
+// DeleteFulfillmentLinesByOption provides a mock function with given fields: option
+func (_m *FulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error {
+	ret := _m.Called(option)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*order.FulfillmentLineFilterOption) error); ok {
+		r0 = rf(option)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // FilterbyOption provides a mock function with given fields: option

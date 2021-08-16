@@ -1,4 +1,4 @@
-package product_and_discount
+package model
 
 import "github.com/site-name/decimal"
 
@@ -9,10 +9,22 @@ import "github.com/site-name/decimal"
 // Minimum price will be available as the `min_spent` attribute.
 // Minimum quantity will be available as the `min_checkout_items_quantity` attribute.
 type NotApplicable struct {
+	Where                    string
+	Message                  string
 	MinSpent                 *decimal.Decimal
 	MinCheckoutItemsQuantity int
 }
 
 func (a *NotApplicable) Error() string {
-	return ""
+	return a.Message
+}
+
+// NewNotApplicable
+func NewNotApplicable(where, message string, minSpent *decimal.Decimal, minCheckoutItemsQuantity int) *NotApplicable {
+	return &NotApplicable{
+		Where:                    where,
+		Message:                  message,
+		MinSpent:                 minSpent,
+		MinCheckoutItemsQuantity: minCheckoutItemsQuantity,
+	}
 }

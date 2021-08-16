@@ -308,9 +308,9 @@ type WarehouseApp interface {
 }
 
 type DiscountApp interface {
-	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) // VouchersByOption finds all vouchers with given option then returns them
-	ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) *model.AppError // ValidateMinSpent validates if the order cost at least a specific amount of money
-	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError                  // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
+	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)                         // VouchersByOption finds all vouchers with given option then returns them
+	ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (*model.NotApplicable, *model.AppError) // ValidateMinSpent validates if the order cost at least a specific amount of money
+	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError)                  // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
 	//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
@@ -320,15 +320,15 @@ type DiscountApp interface {
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
-	PromoCodeIsVoucher(code string) (bool, *model.AppError)                                               // PromoCodeIsVoucher checks if given code is belong to a voucher
-	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) *model.AppError // ValidateVoucherOnlyForStaff validate if voucher is only for staff
+	PromoCodeIsVoucher(code string) (bool, *model.AppError)                                                                       // PromoCodeIsVoucher checks if given code is belong to a voucher
+	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (*model.NotApplicable, *model.AppError) // ValidateVoucherOnlyForStaff validate if voucher is only for staff
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
 	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
 	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)          // OrderDiscountsByOption filters and returns order discounts with given option
 	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)                    // UpsertOrderDiscount updates or inserts given order discount
-	ValidateVoucherInOrder(ord *order.Order) *model.AppError                                                                                         // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
+	ValidateVoucherInOrder(ord *order.Order) (*model.NotApplicable, *model.AppError)                                                                 // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
 	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                   // VoucherById finds and returns a voucher with given id
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                              // BulkDeleteOrderDiscounts performs bulk delete given order discounts

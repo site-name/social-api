@@ -14,6 +14,20 @@ type OrderDiscountStore struct {
 	mock.Mock
 }
 
+// BulkDelete provides a mock function with given fields: orderDiscountIDs
+func (_m *OrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
+	ret := _m.Called(orderDiscountIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]string) error); ok {
+		r0 = rf(orderDiscountIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *OrderDiscountStore) CreateIndexesIfNotExists() {
 	_m.Called()
