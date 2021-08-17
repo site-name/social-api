@@ -15,7 +15,7 @@ func NewSqlPageTypeStore(s store.Store) store.PageTypeStore {
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(page.PageType{}, store.PageTypeTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(page.PAGE_TYPE_NAME_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Name").SetMaxSize(page.PAGE_TYPE_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(page.PAGE_TYPE_SLUG_MAX_LENGTH).SetUnique(true)
 	}
 	return ps

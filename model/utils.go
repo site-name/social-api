@@ -719,18 +719,3 @@ func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) str
 
 	return res
 }
-
-func ValuesOfMap(aMap interface{}) []interface{} {
-
-	if reflect.TypeOf(aMap).Kind() != reflect.Map {
-		panic("type of given 'aMap' must be map")
-	}
-
-	res := []interface{}{}
-	valueOf := reflect.ValueOf(aMap)
-
-	for _, key := range valueOf.MapKeys() {
-		res = append(res, valueOf.MapIndex(key).Interface())
-	}
-	return res
-}

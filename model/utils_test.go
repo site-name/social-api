@@ -143,14 +143,3 @@ func Test_MakeStringMapForModelSlice(t *testing.T) {
 		)
 	})
 }
-
-func TestValueOfMap(t *testing.T) {
-	a := map[string]string{
-		"one":   "First",
-		"two":   "Second",
-		"three": "Last",
-	}
-	res := ValuesOfMap(a)
-
-	fmt.Println(res...)
-}

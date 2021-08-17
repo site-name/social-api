@@ -1,7 +1,6 @@
 package page
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -69,8 +68,6 @@ func (p *Page) ToJson() string {
 	return model.ModelToJson(p)
 }
 
-func PageFromJson(data io.Reader) *Page {
-	var p Page
-	model.ModelFromJson(&p, data)
-	return &p
+func (p *Page) String() string {
+	return p.Title
 }

@@ -2,7 +2,6 @@ package payment
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -146,10 +145,4 @@ func (p *PaymentTransaction) PreUpdate() {
 
 func (p *PaymentTransaction) ToJson() string {
 	return model.ModelToJson(p)
-}
-
-func PaymentTransactionFromJson(data io.Reader) *PaymentTransaction {
-	var pmtr PaymentTransaction
-	model.ModelFromJson(&pmtr, data)
-	return &pmtr
 }

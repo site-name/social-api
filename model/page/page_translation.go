@@ -1,7 +1,6 @@
 package page
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -51,16 +50,17 @@ func (p *PageTranslation) ToJson() string {
 	return model.ModelToJson(p)
 }
 
-func PageTranslationFromJson(data io.Reader) *PageTranslation {
-	var pt PageTranslation
-	model.ModelFromJson(&pt, data)
-	return &pt
-}
-
 func (p *PageTranslation) PreSave() {
 	p.Title = model.SanitizeUnicode(p.Title)
 }
 
 func (p *PageTranslation) PreUpdate() {
 	p.Title = model.SanitizeUnicode(p.Title)
+}
+
+func (p *PageTranslation) String() string {
+	if p.Title != "" {
+		return p.Title
+	}
+	return p.Id
 }

@@ -18,15 +18,19 @@ import (
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
+// CreatePaymentInformation Extract order information along with payment details.
+//
+// Returns information required to process payment and additional
+// billing/shipping addresses for optional fraud-prevention mechanisms.
+func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
 	var (
 		billingAddress  *account.Address
 		shippingAddress *account.Address
-		amount_         *decimal.Decimal = pm.Total
+		amount_         = payMent.Total
 
 		billingAddressID  string
 		shippingAddressID string
-		email             string = pm.BillingEmail
+		email             string = payMent.BillingEmail
 		orderId           string
 		customerIpAddress string
 		appErr            *model.AppError
@@ -36,9 +40,9 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 		amount_ = amount
 	}
 
-	// checks if pm has checkout
-	if pm.CheckoutID != nil && model.IsValidId(*pm.CheckoutID) {
-		checkout, appErr := a.app.CheckoutApp().CheckoutbyToken(*pm.CheckoutID)
+	// checks if payMent has checkout
+	if payMent.CheckoutID != nil {
+		checkout, appErr := a.app.CheckoutApp().CheckoutbyToken(*payMent.CheckoutID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -58,8 +62,8 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 			billingAddressID = *checkout.BillingAddressID
 			shippingAddressID = *checkout.ShippingAddressID
 		}
-	} else if pm.OrderID != nil && model.IsValidId(*pm.OrderID) { // checks if pm has order
-		order, appErr := a.app.OrderApp().OrderById(*pm.OrderID)
+	} else if payMent.OrderID != nil { // checks if payMent has order
+		order, appErr := a.app.OrderApp().OrderById(*payMent.OrderID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -97,18 +101,18 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 		shippingAddressData = payment.AddressDataFromAddress(shippingAddress)
 	}
 
-	if pm.CustomerIpAddress != nil {
-		customerIpAddress = *pm.CustomerIpAddress
+	if payMent.CustomerIpAddress != nil {
+		customerIpAddress = *payMent.CustomerIpAddress
 	}
 
 	return &payment.PaymentData{
-		Gateway:           pm.GateWay,
+		Gateway:           payMent.GateWay,
 		Amount:            *amount_,
-		Currency:          pm.Currency,
+		Currency:          payMent.Currency,
 		Billing:           billingAddressData,
 		Shipping:          shippingAddressData,
-		PaymentID:         pm.Id,
-		GraphqlPaymentID:  pm.Id,
+		PaymentID:         payMent.Id,
+		GraphqlPaymentID:  payMent.Id,
 		OrderID:           orderId,
 		CustomerIpAddress: customerIpAddress,
 		CustomerEmail:     email,
@@ -119,38 +123,17 @@ func (a *AppPayment) CreatePaymentInformation(pm *payment.Payment, paymentToken 
 	}, nil
 }
 
-func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
-	// get all transactions that belong to given payment
-	trans, appErr := a.app.PaymentApp().GetAllPaymentTransactions(paymentID)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	var processedTran *payment.PaymentTransaction
-
-	// find the most recent transaction that satifies:
-	for _, tran := range trans {
-		if tran.IsSuccess == gatewayResponse.IsSucess &&
-			tran.ActionRequired == gatewayResponse.ActionRequired &&
-			tran.Token == gatewayResponse.TransactionID &&
-			tran.Kind == gatewayResponse.Kind &&
-			tran.Amount != nil && tran.Amount.Equal(gatewayResponse.Amount) &&
-			tran.Currency == gatewayResponse.Currency {
-			if processedTran == nil || tran.CreateAt > processedTran.CreateAt {
-				processedTran = tran
-			}
-		}
-	}
-
-	if processedTran == nil {
-		return nil, model.NewAppError("GetAlreadyProcessedTransaction", "app.payment.last_transaction_missing.app_error", nil, "", http.StatusNotFound)
-	}
-	return processedTran, nil
-}
-
-func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, paymentToken, returnUrl, externalReference string, total decimal.Decimal, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order) (*payment.Payment, *model.AppError) {
-	// must at least provider either checkout or order, both is best :))
-	if checkOut == nil && orDer == nil {
+// CreatePayment Create a payment instance.
+//
+// This method is responsible for creating payment instances that works for
+// both Django views and GraphQL mutations.
+//
+// NOTE: `customerIpAddress`, `paymentToken`, `returnUrl` and `externalReference` can be empty
+//
+// `extraData`, `ckout`, `ord` can be nil
+func (a *AppPayment) CreatePayment(gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, ckout *checkout.Checkout, ord *order.Order, returnUrl string, externalReference string) (*payment.Payment, *model.AppError) {
+	// must at least provide either checkout or order, both is best :))
+	if ckout == nil && ord == nil {
 		return nil, model.NewAppError("CreatePayment", "app.payment.checkout_order_required.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -163,10 +146,10 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		billingAddressID string
 	)
 
-	if checkOut != nil && checkOut.BillingAddressID != nil {
-		billingAddressID = *checkOut.BillingAddressID
-	} else if orDer != nil && orDer.BillingAddressID != nil {
-		billingAddressID = *orDer.BillingAddressID
+	if ckout != nil && ckout.BillingAddressID != nil {
+		billingAddressID = *ckout.BillingAddressID
+	} else if ord != nil && ord.BillingAddressID != nil {
+		billingAddressID = *ord.BillingAddressID
 	}
 
 	if billingAddressID == "" || !model.IsValidId(billingAddressID) {
@@ -191,7 +174,7 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		BillingCountryArea: billingAddress.CountryArea,
 		Currency:           currency,
 		GateWay:            gateway,
-		Total:              &total,
+		Total:              total,
 		ReturnUrl:          &returnUrl,
 		PspReference:       &externalReference,
 		IsActive:           model.NewBool(true),
@@ -199,17 +182,46 @@ func (a *AppPayment) CreatePayment(gateway, currency, email, customerIpAddress, 
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
 	}
-	if checkOut != nil {
-		payment.CheckoutID = &checkOut.Token
+	if ckout != nil {
+		payment.CheckoutID = &ckout.Token
 	}
-	if orDer != nil {
-		payment.OrderID = &orDer.Id
+	if ord != nil {
+		payment.OrderID = &ord.Id
 	}
 
 	return a.app.PaymentApp().CreateOrUpdatePayment(payment)
 }
 
-func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
+func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
+	// get all transactions that belong to given payment
+	trans, appErr := a.GetAllPaymentTransactions(paymentID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var processedTran *payment.PaymentTransaction
+
+	// find the most recent transaction that satifies:
+	for _, tran := range trans {
+		if tran.IsSuccess == gatewayResponse.IsSucess &&
+			tran.ActionRequired == gatewayResponse.ActionRequired &&
+			tran.Token == gatewayResponse.TransactionID &&
+			tran.Kind == gatewayResponse.Kind &&
+			tran.Amount != nil && tran.Amount.Equal(gatewayResponse.Amount) &&
+			tran.Currency == gatewayResponse.Currency {
+			if processedTran == nil || tran.CreateAt > processedTran.CreateAt {
+				processedTran = tran
+			}
+		}
+	}
+
+	return processedTran, nil
+}
+
+// CreateTransaction reate a transaction based on transaction kind and gateway response.
+func (a *AppPayment) CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
+	// Default values for token, amount, currency are only used in cases where
+	// response from gateway was invalid or an exception occured
 	if gatewayResponse == nil {
 		var transactionId string
 		if paymentInformation.Token != nil {
@@ -241,7 +253,7 @@ func (a *AppPayment) CreatePaymentTransaction(paymentID string, kind string, pay
 		ActionRequiredData: gatewayResponse.ActionRequiredData,
 	}
 
-	return a.app.PaymentApp().SaveTransaction(tran)
+	return a.SaveTransaction(tran)
 }
 
 func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
@@ -255,7 +267,7 @@ func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymen
 		}
 	}
 
-	return a.CreatePaymentTransaction(paymentID, kind, paymentInformation, actionRequired, gatewayResponse, errorMsg, false)
+	return a.CreateTransaction(paymentID, kind, paymentInformation, actionRequired, gatewayResponse, errorMsg, false)
 }
 
 func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *model.AppError {

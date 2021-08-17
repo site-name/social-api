@@ -38,7 +38,6 @@ func (a *AppPayment) GetLastOrderPayment(orderID string) (*payment.Payment, *mod
 		OrderID: orderID,
 	})
 	if appError != nil {
-		appError.Where = "GetLastOrderPayment"
 		return nil, appError
 	}
 
@@ -168,7 +167,6 @@ func (a *AppPayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.
 		CheckoutToken: checkoutToken,
 	})
 	if appErr != nil {
-		appErr.Where = "GetAllPaymentsByCheckout"
 		return nil, appErr
 	}
 	return payments, nil

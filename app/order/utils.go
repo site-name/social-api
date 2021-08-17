@@ -172,11 +172,6 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 	return changedOrderDiscounts, nil
 }
 
-// func (a *AppOrder) RecalculateOrderPrices(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
-// 	// TODO: fix me
-// 	panic("not implemented")
-// }
-
 // Recalculate and assign total price of order.
 //
 // Total price is a sum of items in order and order shipping price minus
@@ -288,15 +283,24 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 	return appError
 }
 
-func (a *AppOrder) UpdateTaxesForOrderLine() {
-	panic("not implemented")
+func (a *AppOrder) UpdateTaxesForOrderLine(line *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+	panic("not implt")
 }
 
-func (a *AppOrder) UpdateTaxesForOrderLines() {
-	panic("not implemented")
+func (a *AppOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order.Order, manager interface{}, taxIncludeed bool) *model.AppError {
+	for _, line := range lines {
+		appErr := a.UpdateTaxesForOrderLine(line, ord, manager, taxIncludeed)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	_, appErr := a.BulkUpsertOrderLines(lines)
+	return appErr
 }
 
-func (a *AppOrder) UpdateOrderPrices() {
+// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
+func (a *AppOrder) UpdateOrderPrices(ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
 	panic("not implemented")
 }
 
@@ -678,7 +682,10 @@ func (a *AppOrder) UpdateOrderStatus(ord *order.Order) *model.AppError {
 	return nil
 }
 
-func (a *AppOrder) AddVariantToOrder() {
+// AddVariantToOrder Add total_quantity of variant to order.
+//
+// Returns an order line the variant was added to.
+func (a *AppOrder) AddVariantToOrder(ord *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, manager interface{}, discounts interface{}, allocateStock bool) {
 	panic("not implemented")
 }
 
@@ -1429,16 +1436,19 @@ func (a *AppOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *o
 
 	}
 
-	// Save lines before calculating the taxes as some plugin can fetch all order data
-	// from db
+	// Save lines before calculating the taxes as some plugin can fetch all order data from db
 	_, appErr := a.UpsertOrderLine(orderLine)
 	if appErr != nil {
-		appErr.Where = "UpdateDiscountForOrderLine"
 		return appErr
 	}
 
-	//-------------------------------------- TOTO: fixme
-	panic("not implemented")
+	appErr = a.UpdateTaxesForOrderLine(orderLine, ord, manager, taxIncluded)
+	if appErr != nil {
+		return appErr
+	}
+
+	_, appErr = a.UpsertOrderLine(orderLine)
+	return appErr
 }
 
 // RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
@@ -1453,10 +1463,14 @@ func (a *AppOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, ord *
 
 	_, appErr := a.UpsertOrderLine(orderLine)
 	if appErr != nil {
-		appErr.Where = "RemoveDiscountFromOrderLine"
 		return appErr
 	}
 
-	//-----------------------TODO: fixme
-	panic("not implemented")
+	appErr = a.UpdateTaxesForOrderLine(orderLine, ord, manager, taxIncluded)
+	if appErr != nil {
+		return appErr
+	}
+
+	_, appErr = a.UpsertOrderLine(orderLine)
+	return appErr
 }
