@@ -111,9 +111,7 @@ func (j *Job) PreSave() {
 	if j.Id == "" {
 		j.Id = NewId()
 	}
-	if j.CreateAt == 0 {
-		j.CreateAt = GetMillis()
-	}
+	j.CreateAt = GetMillis()
 }
 
 func JobsToJson(jobs []*Job) string {

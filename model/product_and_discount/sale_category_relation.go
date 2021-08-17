@@ -19,9 +19,7 @@ func (s *SaleCategoryRelation) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 }
 
 func (s *SaleCategoryRelation) IsValid() *model.AppError {

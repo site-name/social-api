@@ -20,9 +20,7 @@ func (s *SaleCollectionRelation) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 }
 
 func (s *SaleCollectionRelation) IsValid() *model.AppError {

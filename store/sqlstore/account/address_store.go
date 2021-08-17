@@ -87,14 +87,29 @@ func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 	return &res, nil
 }
 
-func (as *SqlAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
-	var addresses []*account.Address
-	_, err := as.GetReplica().Select(&addresses, "SELECT * FROM "+store.AddressTableName+" WHERE Id in :IDs", map[string]interface{}{"IDs": addressesIDs})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds addresses by ids")
+// FilterByOption finds and returns a list of address(es) filtered by given option
+func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+	query := as.GetQueryBuilder().
+		Select("*").
+		From(store.AddressTableName).
+		OrderBy(store.TableOrderingMap[store.AddressTableName])
+
+	// parse query
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
 	}
 
-	return addresses, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+	var res []*account.Address
+	_, err = as.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find addresses based on given option")
+	}
+
+	return res, nil
 }
 
 func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {

@@ -22,15 +22,25 @@ func (a *AppAccount) AddressById(id string) (*account.Address, *model.AppError) 
 	return address, nil
 }
 
-func (a *AppAccount) UpsertAddress(addr *account.Address) (*account.Address, *model.AppError) {
+// AddressesByOption returns a list of addresses by given option
+func (a *AppAccount) AddressesByOption(option *account.AddressFilterOption) ([]*account.Address, *model.AppError) {
+	addresses, err := a.Srv().Store.Address().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("AddressesbyOption", "app.account.error_finding_addresses_by_option.app_error", err)
+	}
+
+	return addresses, nil
+}
+
+// UpsertAddress depends on given address's Id to decide update or insert it
+func (a *AppAccount) UpsertAddress(address *account.Address) (*account.Address, *model.AppError) {
 	var (
 		err error
 	)
-	// check whether to call Save() or Update():
-	if addr.Id == "" {
-		addr, err = a.Srv().Store.Address().Save(addr)
+	if address.Id == "" {
+		address, err = a.Srv().Store.Address().Save(address)
 	} else {
-		addr, err = a.Srv().Store.Address().Update(addr)
+		address, err = a.Srv().Store.Address().Update(address)
 	}
 
 	if err != nil {
@@ -40,7 +50,7 @@ func (a *AppAccount) UpsertAddress(addr *account.Address) (*account.Address, *mo
 		return nil, model.NewAppError("UpsertAddress", "app.account.upsert_address.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return addr, nil
+	return address, nil
 }
 
 func (a *AppAccount) AddressesByUserId(userID string) ([]*account.Address, *model.AppError) {

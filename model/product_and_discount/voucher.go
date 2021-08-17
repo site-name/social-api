@@ -128,9 +128,8 @@ func (v *Voucher) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()
 	}
-	if v.CreateAt == 0 {
-		v.CreateAt = model.GetMillis()
-	}
+	v.CreateAt = model.GetMillis()
+
 	v.UpdateAt = v.CreateAt
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
@@ -199,7 +198,5 @@ func (v *VoucherTranslation) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()
 	}
-	if v.CreateAt == 0 {
-		v.CreateAt = model.GetMillis()
-	}
+	v.CreateAt = model.GetMillis()
 }

@@ -1146,6 +1146,22 @@ func (s *TimerLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 	return err
 }
 
+func (s *TimerLayerAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+	start := timemodule.Now()
+
+	result, err := s.AddressStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error) {
 	start := timemodule.Now()
 
@@ -1158,22 +1174,6 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.GetAddressesByIDs(addressesIDs)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.GetAddressesByIDs", success, elapsed)
 	}
 	return result, err
 }

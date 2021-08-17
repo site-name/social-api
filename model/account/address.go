@@ -41,6 +41,11 @@ type Address struct {
 	UpdateAt       int64  `json:"update_at,omitempty"`
 }
 
+// AddressFilterOption is used to build sql queries to filter address(es)
+type AddressFilterOption struct {
+	Id *model.StringFilter
+}
+
 func (add *Address) FullName() string {
 	return fmt.Sprintf("%s %s", add.FirstName, add.LastName)
 }

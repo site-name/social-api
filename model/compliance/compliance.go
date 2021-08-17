@@ -1,7 +1,6 @@
 package compliance
 
 import (
-	"io"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -111,18 +110,6 @@ func (c *Compliance) IsValid() *model.AppError {
 	return nil
 }
 
-func ComplianceFromJson(data io.Reader) *Compliance {
-	var c Compliance
-	model.ModelFromJson(&c, data)
-	return &c
-}
-
 func (c *Compliances) ToJson() string {
 	return model.ModelToJson(c)
-}
-
-func CompliancesFromJson(data io.Reader) Compliances {
-	var o Compliances
-	model.ModelFromJson(&o, data)
-	return o
 }

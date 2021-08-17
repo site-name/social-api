@@ -184,9 +184,8 @@ func (o *OrderLine) PreSave() {
 	if o.Id == "" {
 		o.Id = model.NewId()
 	}
-	if o.CreateAt == 0 {
-		o.CreateAt = model.GetMillis()
-	}
+	o.CreateAt = model.GetMillis()
+
 	o.commonPre()
 }
 

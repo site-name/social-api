@@ -308,10 +308,8 @@ func (r *Role) PreSave() {
 	if r.Id == "" {
 		r.Id = NewId()
 	}
-	if r.CreateAt == 0 {
-		r.CreateAt = GetMillis()
-		r.UpdateAt = r.CreateAt
-	}
+	r.CreateAt = GetMillis()
+	r.UpdateAt = r.CreateAt
 	r.PermissionsStr = strings.Join(r.Permissions, " ")
 }
 

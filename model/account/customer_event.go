@@ -1,8 +1,6 @@
 package account
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -62,12 +60,6 @@ func (c *CustomerEvent) ToJson() string {
 	return model.ModelToJson(c)
 }
 
-func CustomerEventFromJson(data io.Reader) *CustomerEvent {
-	var ce CustomerEvent
-	model.ModelFromJson(&ce, data)
-	return &ce
-}
-
 func (ce *CustomerEvent) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.customer_event.is_valid.%s.app_error",
@@ -112,17 +104,10 @@ type StaffNotificationRecipient struct {
 	UserID     *string `json:"user_id"`
 	StaffEmail *string `json:"staff_email"`
 	Active     *bool   `json:"active"`
-	// User       *User   `json:"user" db:"-"`
 }
 
 func (c *StaffNotificationRecipient) ToJson() string {
 	return model.ModelToJson(c)
-}
-
-func StaffNotificationRecipientFromJson(data io.Reader) *StaffNotificationRecipient {
-	var ce StaffNotificationRecipient
-	model.ModelFromJson(&ce, data)
-	return &ce
 }
 
 func (ce *StaffNotificationRecipient) IsValid() *model.AppError {

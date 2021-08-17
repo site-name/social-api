@@ -79,11 +79,5 @@ func (p *ProductMedia) PreSave() {
 	if p.Ppoi == "" {
 		p.Ppoi = "0.5x0.5"
 	}
-	if p.CreateAt == 0 {
-		p.CreateAt = model.GetMillis()
-	}
+	p.CreateAt = model.GetMillis()
 }
-
-// func (p *ProductMedia) GetOrderingQueryset() []*ProductMedia {
-// 	return p.Product.Medias
-// }

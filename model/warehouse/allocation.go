@@ -85,9 +85,7 @@ func (a *Allocation) PreSave() {
 	if a.Id == "" {
 		a.Id = model.NewId()
 	}
-	if a.CreateAt == 0 {
-		a.CreateAt = model.GetMillis()
-	}
+	a.CreateAt = model.GetMillis()
 	if a.QuantityAllocated < 0 {
 		a.QuantityAllocated = 0
 	}

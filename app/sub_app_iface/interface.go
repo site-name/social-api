@@ -100,6 +100,7 @@ type CheckoutApp interface {
 // AccountApp
 type AccountApp interface {
 	AddressById(id string) (*account.Address, *model.AppError)                                                                                           // GetAddressById returns address with given id. If not found returns nil and concret error
+	AddressesByOption(option *account.AddressFilterOption) ([]*account.Address, *model.AppError)                                                         // AddressesByOption returns a list of addresses by given option
 	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                                                                        // GetUserById get user from database with given userId
 	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)                                                                      // CustomerEventsByUser returns all customer event(s) belong to given user
 	AddressesByUserId(userID string) ([]*account.Address, *model.AppError)                                                                               // AddressesByUserId returns list of address(es) (if found) that belong to given user

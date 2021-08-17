@@ -1148,6 +1148,24 @@ func (s *OpenTracingLayerAddressStore) DeleteAddresses(addressIDs []string) erro
 	return err
 }
 
+func (s *OpenTracingLayerAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AddressStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAddressStore) Get(addressID string) (*account.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Get")
@@ -1158,24 +1176,6 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*account.Address, 
 
 	defer span.Finish()
 	result, err := s.AddressStore.Get(addressID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.GetAddressesByIDs")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AddressStore.GetAddressesByIDs(addressesIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

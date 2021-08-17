@@ -32,9 +32,7 @@ func (v *VoucherChannelListing) PreSave() {
 	if v.Id == "" {
 		v.Id = model.NewId()
 	}
-	if v.CreateAt == 0 {
-		v.CreateAt = model.GetMillis()
-	}
+	v.CreateAt = model.GetMillis()
 
 	v.commonPre()
 }

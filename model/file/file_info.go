@@ -58,21 +58,8 @@ func (fi *FileInfo) ToJson() string {
 	return model.ModelToJson(fi)
 }
 
-func FileInfoFromJson(data io.Reader) *FileInfo {
-	var fi *FileInfo
-	model.ModelFromJson(&fi, data)
-
-	return fi
-}
-
 func FileInfosToJson(infos []*FileInfo) string {
 	return model.ModelToJson(infos)
-}
-
-func FileInfosFromJson(data io.Reader) []*FileInfo {
-	var infos []*FileInfo
-	model.ModelFromJson(&infos, data)
-	return infos
 }
 
 func (fi *FileInfo) PreSave() {

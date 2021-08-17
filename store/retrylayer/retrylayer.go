@@ -1160,11 +1160,11 @@ func (s *RetryLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 
 }
 
-func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error) {
+func (s *RetryLayerAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.Get(addressID)
+		result, err := s.AddressStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -1180,11 +1180,11 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
-func (s *RetryLayerAddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
+func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.GetAddressesByIDs(addressesIDs)
+		result, err := s.AddressStore.Get(addressID)
 		if err == nil {
 			return result, nil
 		}

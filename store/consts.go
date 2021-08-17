@@ -57,15 +57,15 @@ func init() {
 		WarehouseShippingZoneTableName: "",             //
 		AllocationTableName:            "CreateAt ASC", //
 
-		AddressTableName:                    "",             // account
-		UserTableName:                       "CreateAt ASC", //
-		CustomerEventTableName:              "",             //
-		StaffNotificationRecipientTableName: "",             //
-		CustomerNoteTableName:               "",             //
-		TokenTableName:                      "",             //
-		UserAddressTableName:                "",             //
-		TermsOfServiceTableName:             "",             //
-		StatusTableName:                     "",             //
+		AddressTableName:                    "",               // account
+		UserTableName:                       "Email ASC",      //
+		CustomerEventTableName:              "Date ASC",       //
+		StaffNotificationRecipientTableName: "StaffEmail ASC", //
+		CustomerNoteTableName:               "Date ASC",       //
+		TokenTableName:                      "",               //
+		UserAddressTableName:                "",               //
+		TermsOfServiceTableName:             "",               //
+		StatusTableName:                     "",               //
 
 		GiftcardTableName:         "Code ASC", // giftcard
 		OrderGiftCardTableName:    "",         //

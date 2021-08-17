@@ -53,9 +53,7 @@ func (s *Stock) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 	if s.Quantity < 0 {
 		s.Quantity = 0
 	}

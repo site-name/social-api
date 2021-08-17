@@ -37,7 +37,6 @@ func (c *CollectionChannelListing) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
-	if c.CreateAt == 0 {
-		c.CreateAt = model.GetMillis()
-	}
+	c.CreateAt = model.GetMillis()
+
 }

@@ -27,10 +27,8 @@ func (o *ClusterDiscovery) PreSave() {
 		o.Id = model.NewId()
 	}
 
-	if o.CreateAt == 0 {
-		o.CreateAt = model.GetMillis()
-		o.LastPingAt = o.CreateAt
-	}
+	o.CreateAt = model.GetMillis()
+	o.LastPingAt = o.CreateAt
 }
 
 func (o *ClusterDiscovery) AutoFillHostname() {

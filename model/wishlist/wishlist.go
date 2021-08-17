@@ -1,8 +1,6 @@
 package wishlist
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -37,12 +35,6 @@ func (w *Wishlist) IsValid() *model.AppError {
 
 func (w *Wishlist) ToJson() string {
 	return model.ModelToJson(w)
-}
-
-func WishlistFromJson(data io.Reader) *Wishlist {
-	var w Wishlist
-	model.ModelFromJson(&w, data)
-	return &w
 }
 
 func (w *Wishlist) PreSave() {

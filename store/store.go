@@ -872,13 +872,13 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		CreateIndexesIfNotExists()                                           // CreateIndexesIfNotExists creates indexes for table if needed
-		Save(address *account.Address) (*account.Address, error)             // Save saves address into database
-		Get(addressID string) (*account.Address, error)                      // Get returns an Address with given addressID is exist
-		GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) // GetAddressesByIDs returns a slice of Addresses with given slice of id strings
-		GetAddressesByUserID(userID string) ([]*account.Address, error)      // GetAddressesByUserID returns slice of addresses belong to given user
-		Update(address *account.Address) (*account.Address, error)           // Update update given address and returns it
-		DeleteAddresses(addressIDs []string) error                           // DeleteAddress deletes given address and returns an error
+		CreateIndexesIfNotExists()                                                      // CreateIndexesIfNotExists creates indexes for table if needed
+		Save(address *account.Address) (*account.Address, error)                        // Save saves address into database
+		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist
+		GetAddressesByUserID(userID string) ([]*account.Address, error)                 // GetAddressesByUserID returns slice of addresses belong to given user
+		Update(address *account.Address) (*account.Address, error)                      // Update update given address and returns it
+		DeleteAddresses(addressIDs []string) error                                      // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserTermOfServiceStore interface {
 		CreateIndexesIfNotExists()                                                                //

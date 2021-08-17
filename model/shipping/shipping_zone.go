@@ -61,9 +61,7 @@ func (s *ShippingZone) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 	s.Name = model.SanitizeUnicode(s.Name)
 	if s.Default == nil {
 		s.Default = model.NewBool(false)

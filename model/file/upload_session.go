@@ -61,9 +61,7 @@ func (us *UploadSession) PreSave() {
 		us.Id = model.NewId()
 	}
 
-	if us.CreateAt == 0 {
-		us.CreateAt = model.GetMillis()
-	}
+	us.CreateAt = model.GetMillis()
 }
 
 // IsValid validates an UploadType. It returns an error in case of

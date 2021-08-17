@@ -73,9 +73,7 @@ func (s *ShippingMethodChannelListing) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 	s.commonPre()
 }
 

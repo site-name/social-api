@@ -27,9 +27,7 @@ func (s *SaleChannelListing) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.CreateAt == 0 {
-		s.CreateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 	if s.DiscountValue == nil || s.DiscountValue.LessThan(decimal.Zero) {
 		s.DiscountValue = &decimal.Zero
 	}

@@ -79,9 +79,7 @@ func (a *App) PreSave() {
 	if a.Id == "" {
 		a.Id = model.NewId()
 	}
-	if a.CreateAt == 0 {
-		a.CreateAt = model.GetMillis()
-	}
+	a.CreateAt = model.GetMillis()
 	a.Name = model.SanitizeUnicode(a.Name)
 	if a.Identifier != nil {
 		a.Identifier = model.NewString(model.SanitizeUnicode(*a.Identifier))

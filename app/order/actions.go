@@ -565,15 +565,10 @@ func (a *AppOrder) CreateRefundFulfillment(requester *account.User, ord *order.O
 	panic("not implt")
 }
 
+// populateReplaceOrderFields create new order based on the state of given originalOrder
 //
-// ATTENTION: this method has something unsure yet
-//
+// If original order has shippingAddress/billingAddress, the new order copy these address(es) and change their IDs
 func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "populateReplaceOrderFields"
-		}
-	}()
 	replaceOrder = &order.Order{
 		Status:             order.STATUS_DRAFT,
 		UserID:             originalOrder.UserID,
@@ -591,13 +586,40 @@ func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (repla
 		},
 	}
 
+	originalOrderAddressIDs := []string{}
 	if originalOrder.BillingAddressID != nil {
-		replaceOrder.BillingAddressID = originalOrder.BillingAddressID
-		originalOrder.BillingAddressID = nil
+		originalOrderAddressIDs = append(originalOrderAddressIDs, *originalOrder.BillingAddressID)
 	}
 	if originalOrder.ShippingAddressID != nil {
-		replaceOrder.ShippingAddressID = originalOrder.ShippingAddressID
-		originalOrder.ShippingAddressID = nil
+		originalOrderAddressIDs = append(originalOrderAddressIDs, *originalOrder.ShippingAddressID)
+	}
+
+	if len(originalOrderAddressIDs) > 0 {
+		addressesOfOriginalOrder, appErr := a.AccountApp().AddressesByOption(&account.AddressFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: originalOrderAddressIDs,
+				},
+			},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		for _, address := range addressesOfOriginalOrder {
+			originalOrderAddressID := address.Id
+			address.Id = ""
+			newAddress, appErr := a.AccountApp().UpsertAddress(address)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			if originalOrder.BillingAddressID != nil && originalOrderAddressID == *originalOrder.BillingAddressID {
+				replaceOrder.BillingAddressID = &newAddress.Id
+			} else if originalOrder.ShippingAddressID != nil && originalOrderAddressID == *originalOrder.ShippingAddressID {
+				replaceOrder.ShippingAddressID = &newAddress.Id
+			}
+		}
 	}
 
 	return a.UpsertOrder(replaceOrder)
