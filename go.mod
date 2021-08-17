@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210708011750-e3d1acc33807 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.22
+	github.com/aws/aws-sdk-go v1.40.23
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.1
@@ -62,7 +62,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
 	github.com/site-name/go-prices v1.0.2
-	github.com/site-name/i18naddress v0.0.0-20210716143658-e5dba1b87ab3
+	github.com/site-name/i18naddress v0.0.0-20210815055342-14130957b11d
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0
 	github.com/stretchr/testify v1.7.0
