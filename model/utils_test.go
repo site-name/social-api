@@ -115,3 +115,42 @@ func checkNowhereNil(t *testing.T, name string, value interface{}) bool {
 		return true
 	}
 }
+
+func Test_MakeStringMapForModelSlice(t *testing.T) {
+	type Person struct {
+		Id   int
+		Name string
+	}
+	people := []*Person{
+		{1, "Le Son"},
+		{2, "Huy Hoang"},
+		{3, "Anh Dung"},
+	}
+
+	// res := MakeStringMapForModelSlice(
+	// 	people, func(i interface{}) string {
+	// 		return fmt.Sprintf("%d", i.(*Person).Id)
+	// 	},
+	// 	nil,
+	// )
+
+	t.Run("hello", func(tt *testing.T) {
+		MakeStringMapForModelSlice(
+			people, func(i interface{}) string {
+				return fmt.Sprintf("%d", i.(*Person).Id)
+			},
+			nil,
+		)
+	})
+}
+
+func TestValueOfMap(t *testing.T) {
+	a := map[string]string{
+		"one":   "First",
+		"two":   "Second",
+		"three": "Last",
+	}
+	res := ValuesOfMap(a)
+
+	fmt.Println(res...)
+}

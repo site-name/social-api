@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -666,4 +667,70 @@ func CleanUsername(uname string) string {
 	}
 
 	return s
+}
+
+// MakeStringMapForModelSlice works like this:
+//
+//	type Person {
+//		Id string
+//		Name string
+//	}
+//
+//	var people = []Person {
+//		{"one", "Minh Son"},
+//		{"two", "Dung"},
+//	}
+//
+//	MakeStringMapForModelSlice(
+//		people,
+//		func(i interface{}) string {
+//			return i.(Person).Id
+//		},
+//		nil
+//	)
+//	// returns:
+//	map[string]interface{
+//		"one": Person{Id: "one", Name: "Minh Son"},
+//		"two": Person{Id: "two", Name: "Dung"},
+//	}
+//
+// NOTE: `slice` and `keyFunc` are required. `valueFunc` can be nil
+func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) string, valueFunc func(interface{}) interface{}) map[string]interface{} {
+	valueOf := reflect.ValueOf(slice)
+
+	// validate if given `slice` is a slice
+	if reflect.TypeOf(slice).Kind() != reflect.Slice {
+		panic("given 'slice' variable is not a slice")
+	}
+	if keyFunc == nil {
+		panic("'keyFunc' cannot be nil")
+	}
+	if valueFunc == nil {
+		valueFunc = func(i interface{}) interface{} {
+			return i
+		}
+	}
+
+	res := make(map[string]interface{})
+	for i := 0; i < valueOf.Len(); i++ {
+		itemIface := valueOf.Index(i).Interface()
+		res[keyFunc(itemIface)] = valueFunc(itemIface)
+	}
+
+	return res
+}
+
+func ValuesOfMap(aMap interface{}) []interface{} {
+
+	if reflect.TypeOf(aMap).Kind() != reflect.Map {
+		panic("type of given 'aMap' must be map")
+	}
+
+	res := []interface{}{}
+	valueOf := reflect.ValueOf(aMap)
+
+	for _, key := range valueOf.MapKeys() {
+		res = append(res, valueOf.MapIndex(key).Interface())
+	}
+	return res
 }

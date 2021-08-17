@@ -19,6 +19,9 @@ type FulfillmentLineFilterOption struct {
 	Id            *model.StringFilter
 	OrderLineID   *model.StringFilter
 	FulfillmentID *model.StringFilter
+
+	FulfillmentOrderID *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
+	FulfillmentStatus  *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
 }
 
 type FulfillmentLines []*FulfillmentLine

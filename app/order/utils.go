@@ -507,7 +507,7 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interfac
 		}
 	}()
 
-	ord.PopulateNonDbFields()
+	ord.PopulateNonDbFields() // NOTE: must call this method before performing money, weight calculations
 
 	// validate if order has voucher attached to
 	if ord.VoucherID == nil {

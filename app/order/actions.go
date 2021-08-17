@@ -387,12 +387,12 @@ func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, line
 	}
 }
 
-// moveOrderLinesTotargetFulfillment Move order lines with given quantity to the target fulfillment
-func (a *AppOrder) moveOrderLinesTotargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
+// moveOrderLinesToTargetFulfillment Move order lines with given quantity to the target fulfillment
+func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
 
 	defer func() {
 		if appErr != nil {
-			appErr.Where = "moveOrderLinesTotargetFulfillment"
+			appErr.Where = "moveOrderLinesToTargetFulfillment"
 		}
 	}()
 
@@ -731,4 +731,539 @@ func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *or
 	})
 
 	return
+}
+
+func (a *AppOrder) moveLinesToReturnFulfillment(
+	orderLineDatas []*order.OrderLineData,
+	fulfillmentLineDatas []*order.FulfillmentLineData,
+	fulfillmentStatus string,
+	ord *order.Order,
+	totalRefundAmount *decimal.Decimal,
+	shippingRefundAmount *decimal.Decimal,
+
+) (*order.Fulfillment, *model.AppError) {
+
+	targetFulfillment, appErr := a.UpsertFulfillment(&order.Fulfillment{
+		Status:               fulfillmentStatus,
+		OrderID:              ord.Id,
+		TotalRefundAmount:    totalRefundAmount,
+		ShippingRefundAmount: shippingRefundAmount,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	LinesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLineDatas, targetFulfillment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	fulfillmentLinesAlreadyRefunded, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
+		FulfillmentOrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+		FulfillmentStatus: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: order.FULFILLMENT_REFUNDED,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	fulfillmentLinesAlreadyRefundedMap := model.MakeStringMapForModelSlice(
+		fulfillmentLinesAlreadyRefunded,
+		func(i interface{}) string {
+			return i.(*order.FulfillmentLine).Id
+		},
+		nil,
+	)
+
+	var (
+		refundedFulfillmentLinesToReturn []*order.FulfillmentLineData
+		fulfillmentLinesToReturn         []*order.FulfillmentLineData
+	)
+
+	for _, lineData := range fulfillmentLineDatas {
+		if item, exist := fulfillmentLinesAlreadyRefundedMap[lineData.Line.Id]; exist && item != nil {
+			refundedFulfillmentLinesToReturn = append(refundedFulfillmentLinesToReturn, lineData)
+			continue
+		}
+
+		fulfillmentLinesToReturn = append(fulfillmentLinesToReturn, lineData)
+	}
+
+	appErr = a.moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToReturn, LinesInTargetFulfillment, targetFulfillment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if len(refundedFulfillmentLinesToReturn) > 0 {
+		var refundAndReturnFulfillment *order.Fulfillment
+		if fulfillmentStatus == order.FULFILLMENT_REFUNDED_AND_RETURNED {
+			refundAndReturnFulfillment = targetFulfillment
+		} else {
+			refundAndReturnFulfillment, appErr = a.UpsertFulfillment(&order.Fulfillment{
+				Status:  order.FULFILLMENT_REFUNDED_AND_RETURNED,
+				OrderID: ord.Id,
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+		}
+
+		appErr = a.moveFulfillmentLinesToTargetFulfillment(refundedFulfillmentLinesToReturn, []*order.FulfillmentLine{}, refundAndReturnFulfillment)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return targetFulfillment, nil
+}
+
+func (a *AppOrder) moveLinesToReplaceFulfillment(
+	orderLinesToReplace []*order.OrderLineData,
+	fulfillmentLinesToReplace []*order.FulfillmentLineData,
+	ord *order.Order,
+
+) (*order.Fulfillment, *model.AppError) {
+
+	targetFulfillment, appErr := a.UpsertFulfillment(&order.Fulfillment{
+		Status:  order.FULFILLMENT_REPLACED,
+		OrderID: ord.Id,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	linesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLinesToReplace, targetFulfillment)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = a.moveFulfillmentLinesToTargetFulfillment(
+		fulfillmentLinesToReplace,
+		linesInTargetFulfillment,
+		targetFulfillment,
+	)
+
+	return targetFulfillment, appErr
+}
+
+func (a *AppOrder) CreateReturnFulfillment(
+	requester *account.User, // can be nil
+	ord *order.Order,
+	orderLineDatas []*order.OrderLineData,
+	fulfillmentLineDatas []*order.FulfillmentLineData,
+	totalRefundAmount *decimal.Decimal, // can be nil
+	shippingRefundAmount *decimal.Decimal, // can be nil
+
+) (*order.Fulfillment, *model.AppError) {
+
+	status := order.FULFILLMENT_RETURNED
+	if totalRefundAmount != nil {
+		status = order.FULFILLMENT_REFUNDED_AND_RETURNED
+	}
+
+	returnFulfillment, appErr := a.moveLinesToReturnFulfillment(
+		orderLineDatas,
+		fulfillmentLineDatas,
+		status,
+		ord,
+		totalRefundAmount,
+		shippingRefundAmount,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	returnedLines := map[string]*QuantityOrderLine{}
+
+	orderLineIDs := []string{}
+	for _, lineData := range fulfillmentLineDatas {
+		orderLineIDs = append(orderLineIDs, lineData.Line.OrderLineID)
+	}
+	orderLinesByIDs, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: orderLineIDs,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderLinesByIDsMap := model.MakeStringMapForModelSlice(
+		orderLinesByIDs,
+		func(i interface{}) string {
+			return i.(*order.OrderLine).Id
+		},
+		nil,
+	)
+
+	for _, orderLineData := range orderLineDatas {
+		returnedLines[orderLineData.Line.Id] = &QuantityOrderLine{
+			Quantity:  orderLineData.Quantity,
+			OrderLine: &orderLineData.Line,
+		}
+	}
+
+	for _, fulfillmentLineData := range fulfillmentLineDatas {
+		if ifaceType := orderLinesByIDsMap[fulfillmentLineData.Line.OrderLineID]; ifaceType != nil {
+			orderLine := ifaceType.(*order.OrderLine)
+			returnedLine := returnedLines[orderLine.Id]
+
+			if returnedLine != nil {
+				returnedLines[orderLine.Id] = &QuantityOrderLine{
+					Quantity:  returnedLine.Quantity + fulfillmentLineData.Quantity,
+					OrderLine: returnedLine.OrderLine,
+				}
+			} else {
+				returnedLines[orderLine.Id] = &QuantityOrderLine{
+					Quantity:  fulfillmentLineData.Quantity,
+					OrderLine: orderLine,
+				}
+			}
+		}
+	}
+
+	sliceOfQuantityOrderLine := []*QuantityOrderLine{}
+	for _, value := range returnedLines {
+		sliceOfQuantityOrderLine = append(sliceOfQuantityOrderLine, value)
+	}
+	appErr = a.OrderReturned(ord, requester, sliceOfQuantityOrderLine)
+
+	return returnFulfillment, appErr
+}
+
+// ProcessReplace Create replace fulfillment and new draft order.
+//
+// Move all requested lines to fulfillment with status replaced. Based on original
+// order create the draft order with all user details, and requested lines.
+func (a *AppOrder) ProcessReplace(
+	requester *account.User,
+	ord *order.Order,
+	orderLineDatas []*order.OrderLineData,
+	fulfillmentLineDatas []*order.FulfillmentLineData,
+
+) (*order.Fulfillment, *order.Order, *model.AppError) {
+
+	replaceFulfillment, appErr := a.moveLinesToReplaceFulfillment(orderLineDatas, fulfillmentLineDatas, ord)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	newOrder, appErr := a.CreateReplaceOrder(requester, ord, orderLineDatas, fulfillmentLineDatas)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: newOrder.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	replacedLines := []*QuantityOrderLine{}
+	for _, orderLine := range orderLinesOfOrder {
+		replacedLines = append(replacedLines, &QuantityOrderLine{
+			Quantity:  orderLine.Quantity,
+			OrderLine: orderLine,
+		})
+	}
+
+	var userID *string
+	if requester != nil {
+		userID = &requester.Id
+	}
+
+	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+		OrderID: ord.Id,
+		Type:    order.ORDER_EVENT_TYPE__FULFILLMENT_REPLACED,
+		UserID:  userID,
+		Parameters: &model.StringInterface{
+			"lines": linesPerQuantityToLineObjectList(replacedLines),
+		},
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+		OrderID: ord.Id,
+		Type:    order.ORDER_EVENT_TYPE__ORDER_REPLACEMENT_CREATED,
+		UserID:  userID,
+		Parameters: &model.StringInterface{
+			"related_order_pk": newOrder.Id,
+		},
+	})
+
+	return replaceFulfillment, newOrder, appErr
+}
+
+// Process the request for replacing or returning the products.
+//
+// Process the refund when the refund is set to True. The amount of refund will be
+// calculated for all lines with statuses different from refunded.  The lines which
+// are set to replace will not be included in the refund amount.
+//
+// If the amount is provided, the refund will be used for this amount.
+//
+// If refund_shipping_costs is True, the calculated refund amount will include
+// shipping costs.
+//
+// All lines with replace set to True will be used to create a new draft order, with
+// the same order details as the original order.  These lines will be moved to
+// fulfillment with status replaced. The events with relation to new order will be
+// created.
+//
+// All lines with replace set to False will be moved to fulfillment with status
+// returned/refunded_and_returned - depends on refund flag and current line status.
+// If the fulfillment line has refunded status it will be moved to
+// returned_and_refunded
+//
+// NOTE: `payMent`, `amount` , `requester` are optional.
+//
+// `refund` and `refundShippingCosts` default to false.
+//
+func (a *AppOrder) CreateFulfillmentsForReturnedProducts(
+	requester *account.User,
+	ord *order.Order,
+	payMent *payment.Payment,
+	orderLineDatas []*order.OrderLineData,
+	fulfillmentLineDatas []*order.FulfillmentLineData,
+	manager interface{},
+	refund bool,
+	amount *decimal.Decimal,
+	refundShippingCosts bool,
+
+) (*order.Fulfillment, *order.Fulfillment, *order.Order, *model.AppError) {
+
+	var (
+		returnOrderLines        []*order.OrderLineData
+		returnFulfillmentLines  []*order.FulfillmentLineData
+		replaceOrderLines       []*order.OrderLineData
+		replaceFulfillmentLines []*order.FulfillmentLineData
+	)
+	for _, lineData := range orderLineDatas {
+		if !lineData.Replace {
+			returnOrderLines = append(returnOrderLines, lineData)
+			continue
+		}
+		replaceOrderLines = append(replaceOrderLines, lineData)
+	}
+	for _, lineData := range fulfillmentLineDatas {
+		if !lineData.Replace {
+			returnFulfillmentLines = append(returnFulfillmentLines, lineData)
+			continue
+		}
+		replaceFulfillmentLines = append(replaceFulfillmentLines, lineData)
+	}
+
+	shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, ord.ShippingPriceGrossAmount)
+
+	var (
+		totalRefundAmount *decimal.Decimal
+		appErr            *model.AppError
+	)
+	if refund && payMent != nil {
+		totalRefundAmount, appErr = a.processRefund(
+			requester,
+			ord,
+			payMent,
+			returnOrderLines,
+			returnFulfillmentLines,
+			amount,
+			refundShippingCosts,
+			manager,
+		)
+		if appErr != nil {
+			return nil, nil, nil, appErr
+		}
+	}
+
+	var (
+		replaceFulfillment *order.Fulfillment
+		newOrder           *order.Order
+	)
+	if len(replaceFulfillmentLines) > 0 || len(replaceOrderLines) > 0 {
+		replaceFulfillment, newOrder, appErr = a.ProcessReplace(
+			requester,
+			ord,
+			replaceOrderLines,
+			replaceFulfillmentLines,
+		)
+		if appErr != nil {
+			return nil, nil, nil, appErr
+		}
+	}
+
+	returnFulfillment, appErr := a.CreateReturnFulfillment(
+		requester,
+		ord,
+		returnOrderLines,
+		returnFulfillmentLines,
+		totalRefundAmount,
+		shippingRefundAmount,
+	)
+	if appErr != nil {
+		return nil, nil, nil, appErr
+	}
+
+	a.FulfillmentsByOption(&order.FulfillmentFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+		Status: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: order.FULFILLMENT_FULFILLED,
+			},
+		},
+	})
+
+	panic("not implt")
+}
+
+func (a *AppOrder) calculateRefundAmount(
+	returnOrderLineDatas []*order.OrderLineData,
+	returnFulfillmentLineDatas []*order.FulfillmentLineData,
+	linesToRefund map[string]*QuantityOrderLine,
+
+) (*decimal.Decimal, *model.AppError) {
+
+	refundAmount := decimal.Zero
+	for _, lineData := range returnOrderLineDatas {
+		if unitPriceGrossAmount := lineData.Line.UnitPriceGrossAmount; unitPriceGrossAmount != nil {
+			refundAmount = refundAmount.Add(
+				unitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(lineData.Quantity))),
+			)
+		}
+		linesToRefund[lineData.Line.Id] = &QuantityOrderLine{
+			Quantity:  lineData.Quantity,
+			OrderLine: &lineData.Line,
+		}
+	}
+
+	if len(returnFulfillmentLineDatas) == 0 {
+		return &refundAmount, nil
+	}
+
+	orderLineIDs := []string{}
+	fulfillmentIDs := []string{}
+
+	for _, lineData := range returnFulfillmentLineDatas {
+		orderLineIDs = append(orderLineIDs, lineData.Line.OrderLineID)
+		fulfillmentIDs = append(fulfillmentIDs, lineData.Line.FulfillmentID)
+	}
+
+	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: orderLineIDs,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	fulfillments, appErr := a.FulfillmentsByOption(&order.FulfillmentFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: fulfillmentIDs,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderLinesMap := model.MakeStringMapForModelSlice(
+		orderLines,
+		func(i interface{}) string {
+			return i.(*order.OrderLine).Id
+		},
+		nil,
+	)
+	fulfillmentsMap := model.MakeStringMapForModelSlice(
+		fulfillments,
+		func(i interface{}) string {
+			return i.(*order.Fulfillment).Id
+		},
+		nil,
+	)
+
+	for _, lineData := range returnFulfillmentLineDatas {
+		// skip lines which were already refunded
+		ifaceType := fulfillmentsMap[lineData.Line.FulfillmentID]
+		if ifaceType != nil && ifaceType.(*order.Fulfillment).Status == order.FULFILLMENT_REFUNDED {
+			continue
+		}
+
+		if ifaceType = orderLinesMap[lineData.Line.OrderLineID]; ifaceType != nil {
+			orderLine := ifaceType.(*order.OrderLine)
+			if unitPriceGrossAmount := orderLine.UnitPriceGrossAmount; unitPriceGrossAmount != nil {
+				refundAmount = refundAmount.Add(
+					unitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(lineData.Quantity))),
+				)
+			}
+
+			dataFromAllRefundedLines := linesToRefund[orderLine.Id]
+			if dataFromAllRefundedLines != nil {
+				linesToRefund[orderLine.Id] = &QuantityOrderLine{
+					Quantity:  dataFromAllRefundedLines.Quantity + lineData.Quantity,
+					OrderLine: dataFromAllRefundedLines.OrderLine,
+				}
+			} else {
+				linesToRefund[orderLine.Id] = &QuantityOrderLine{
+					Quantity:  lineData.Quantity,
+					OrderLine: orderLine,
+				}
+			}
+		}
+	}
+
+	return &refundAmount, nil
+}
+
+// `requester` and `amount` can be nil
+//
+func (a *AppOrder) processRefund(
+	requester *account.User,
+	ord *order.Order,
+	payMent *payment.Payment,
+	orderLinesToRefund []*order.OrderLineData,
+	fulfillmentLinesToRefund []*order.FulfillmentLineData,
+	amount *decimal.Decimal,
+	refundShippingCosts bool,
+	manager interface{},
+
+) (*decimal.Decimal, *model.AppError) {
+
+	linesToRefund := map[string]*QuantityOrderLine{}
+
+	refundAmount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if amount == nil {
+		amount = refundAmount
+		// we take into consideration the shipping costs only when amount is not provided.
+		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
+			amount = model.NewDecimal(amount.Add(*ord.ShippingPriceGrossAmount))
+		}
+	}
+
+	panic("not implt")
 }

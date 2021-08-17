@@ -43,15 +43,23 @@ func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Recalcu
 		}
 
 		var (
-			discount         interface{}
-			notApplicableErr *model.NotApplicable
-			appErr           *model.AppError
+			discount          interface{}
+			notApplicableErr  *model.NotApplicable
+			appErr            *model.AppError
+			calculateDiscount bool
 		)
 
-		if kwargs["update_voucher_discount"] != nil || true {
+		if item := kwargs["update_voucher_discount"]; item == nil {
+			calculateDiscount = true
+		} else {
+			if boolItem, ok := item.(bool); ok {
+				calculateDiscount = boolItem
+			}
+		}
+
+		if calculateDiscount {
 			discount, notApplicableErr, appErr = a.GetVoucherDiscountForOrder(ord)
 			if appErr != nil {
-				appErr.Where = "UpdateVoucherDiscount"
 				return appErr
 			}
 			if notApplicableErr != nil {
@@ -59,7 +67,7 @@ func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Recalcu
 			}
 		}
 
-		// set discount here
+		// set discount
 		kwargs["discount"] = discount
 
 		return fun(ord, kwargs)
@@ -94,15 +102,16 @@ func (a *AppOrder) decoratedFunc(ord *order.Order, kwargs map[string]interface{}
 
 		addedPrice, err := totalPrice.Add(orderLine.TotalPrice)
 		if err != nil {
-			appErr = model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
-			return
+			return model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}
 		totalPrice = addedPrice
+		// reassign value here since `addedPrice` can be nil if error occurs.
+		// so `totalPrice` becomes wrong
 	}
 
-	unDiscountedTotal, _ := goprices.NewTaxedMoney(totalPrice.Net, totalPrice.Gross)
+	unDiscountedTotal, _ := goprices.NewTaxedMoney(totalPrice.Net, totalPrice.Gross) // ignore error here
 
-	voucherDiscount, _ := util.ZeroMoney(ord.Currency)
+	voucherDiscount, _ := util.ZeroMoney(ord.Currency) // ignore error since order's Currency is validated before being insert into db
 	if discountIface := kwargs["discount"]; discountIface != nil {
 		if discountValue, ok := discountIface.(*goprices.Money); ok {
 			voucherDiscount = discountValue
@@ -115,19 +124,17 @@ func (a *AppOrder) decoratedFunc(ord *order.Order, kwargs map[string]interface{}
 	}
 	subResult, err := totalPrice.Sub(voucherDiscount)
 	if err != nil {
-		appErr = model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
-		return
+		return model.NewAppError("RecalculateOrderPrices", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	totalPrice = subResult
 
 	ord.Total = totalPrice
 	ord.UnDiscountedTotal = unDiscountedTotal
 
-	if !voucherDiscount.Amount.Equal(decimal.Zero) {
+	if !voucherDiscount.Amount.Equal(decimal.Zero) { // != 0.0
 		assignedOrderDiscount, apErr := a.GetVoucherDiscountAssignedToOrder(ord)
 		if apErr != nil {
-			appErr = apErr
-			return
+			return apErr
 		}
 
 		if assignedOrderDiscount != nil {

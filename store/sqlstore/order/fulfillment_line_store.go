@@ -32,6 +32,16 @@ func (fls *SqlFulfillmentLineStore) CreateIndexesIfNotExists() {
 	fls.CreateForeignKeyIfNotExists(store.FulfillmentLineTableName, "StockID", store.StockTableName, "Id", false)
 }
 
+func (fls *SqlFulfillmentLineStore) ModelFields() []string {
+	return []string{
+		"FulfillmentLines.Id",
+		"FulfillmentLines.OrderLineID",
+		"FulfillmentLines.FulfillmentID",
+		"FulfillmentLines.Quantity",
+		"FulfillmentLines.StockID",
+	}
+}
+
 func (fls *SqlFulfillmentLineStore) Save(ffml *order.FulfillmentLine) (*order.FulfillmentLine, error) {
 	ffml.PreSave()
 	if err := ffml.IsValid(); err != nil {
@@ -109,18 +119,33 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fulfill
 // FilterbyOption finds and returns a list of fulfillment lines by given option
 func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
 	query := fls.GetQueryBuilder().
-		Select("*").
+		Select(fls.ModelFields()...).
 		From(store.FulfillmentLineTableName)
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.Id"))
 	}
 	if option.FulfillmentID != nil {
-		query = query.Where(option.Id.ToSquirrel("FulfillmentID"))
+		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.FulfillmentID"))
 	}
 	if option.OrderLineID != nil {
-		query = query.Where(option.Id.ToSquirrel("OrderLineID"))
+		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.OrderLineID"))
+	}
+
+	var joinedFulfillmentTable bool // this variable helps preventing joining to Fulfillments table multiple time
+
+	if option.FulfillmentOrderID != nil {
+		joinedFulfillmentTable = true
+		query = query.
+			InnerJoin(store.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
+			Where(option.FulfillmentOrderID.ToSquirrel("Fulfillments.OrderID"))
+	}
+	if option.FulfillmentStatus != nil {
+		if !joinedFulfillmentTable {
+			query = query.InnerJoin(store.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)")
+		}
+		query = query.Where(option.FulfillmentStatus.ToSquirrel("Fulfillments.Status"))
 	}
 
 	queryString, args, err := query.ToSql()
@@ -141,6 +166,7 @@ func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order
 	query := fls.GetQueryBuilder().
 		Delete(store.FulfillmentLineTableName)
 
+	// parse option
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Id"))
 	}
