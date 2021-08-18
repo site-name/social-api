@@ -1,6 +1,24 @@
 package app
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model"
+)
+
+// func (s *Server) clusterInstallPluginHandler(msg *model.ClusterMessage) {
+// 	s.installPluginFromData(plugins.PluginEventDataFromJson(bytes.NewReader(msg.Data)))
+// }
+
+// func (s *Server) clusterRemovePluginHandler(msg *model.ClusterMessage) {
+// 	s.removePluginFromData(plugins.PluginEventDataFromJson(bytes.NewReader(msg.Data)))
+// }
+
+// registerClusterHandlers registers the cluster message handlers that are handled by the server.
+//
+// The cluster event handlers are spread across this function and NewLocalCacheLayer.
+// Be careful to not have duplicated handlers here and there.
+func (s *Server) registerClusterHandlers() {
+
+}
 
 // invalidateCacheForUserSkipClusterSend
 func (s *Server) invalidateCacheForUserSkipClusterSend(userID string) {

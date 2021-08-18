@@ -103,11 +103,11 @@ func (job *EmailBatchingJob) Add(user *account.User) bool {
 }
 
 func (job *EmailBatchingJob) CheckPendingEmails() {
-	job.handleNewNotitifcations()
+	// job.handleNewNotitifcations()
 
 	// it's a bit weird to pass the send email function through here, but it makes it so that we can test
 	// without actually sending emails
-	job.checkPendingNotifications(time.Now(), job.service)
+	// job.checkPendingNotifications(time.Now(), job.service)
 }
 
 func (job *EmailBatchingJob) handleNewNotifications() {

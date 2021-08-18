@@ -28,6 +28,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
+	"github.com/sitename/sitename/app/email"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -74,6 +75,9 @@ type Server struct {
 
 	// RootRouter is the starting point for all HTTP requests to the server.
 	RootRouter *mux.Router
+	// Router is the starting point for all web, api4 and ws requests to the server. It differs
+	// from RootRouter only if the SiteURL contains a /subpath.
+	Router *mux.Router
 
 	Server      *http.Server
 	ListenAddr  *net.TCPAddr
@@ -93,7 +97,7 @@ type Server struct {
 	PluginConfigListenerId string
 	PluginsLock            sync.RWMutex
 
-	EmailService *EmailService
+	EmailService *email.Service
 
 	// hubs     []*Hub
 	hashSeed maphash.Seed
@@ -377,7 +381,6 @@ func NewServer(options ...Option) (*Server, error) {
 		return nil, errors.Wrap(err, "cannot create store")
 	}
 
-	// TODO: fixme
 	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
 	// 	s.configOrLicenseListener()
 
@@ -399,7 +402,12 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.telemetryService = telemetry.New(s, s.Store, s.SearchEngine, s.Log)
 
-	emailService, err := NewEmailService(s)
+	emailService, err := email.NewService(email.ServiceConfig{
+		ConfigFn:          s.Config,
+		GoFn:              s.Go,
+		TemplateContainer: s.TemplatesContainer(),
+		Store:             s.Store,
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to initialize email service")
 	}
@@ -419,10 +427,10 @@ func NewServer(options ...Option) (*Server, error) {
 	})
 
 	// TODO: fixme
-	// if s.joinCluster && s.Cluster != nil {
-	// 	s.registerClusterHandlers()
-	// 	s.Cluster.StartInterNodeCommunication()
-	// }
+	if s.joinCluster && s.Cluster != nil {
+		s.registerClusterHandlers()
+		s.Cluster.StartInterNodeCommunication()
+	}
 
 	if err = s.ensureAsymmetricSigningKey(); err != nil {
 		return nil, errors.Wrapf(err, "unable to ensure asymmetric signing key")
@@ -446,12 +454,12 @@ func NewServer(options ...Option) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse SiteURL subpath")
 	}
-	// s.Router = s.RootRouter.PathPrefix(subpath).Subrouter()
+	s.Router = s.RootRouter.PathPrefix(subPath).Subrouter()
 
-	// pluginsRoute := s.Router.PathPrefix("/plugins/{plugin_id:[A-Za-z0-9\\_\\-\\.]+}").Subrouter()
-	// pluginsRoute.HandleFunc("", fakeApp.ServePluginRequest)
-	// pluginsRoute.HandleFunc("/public/{public_file:.*}", fakeApp.ServePluginPublicRequest)
-	// pluginsRoute.HandleFunc("/{anything:.*}", fakeApp.ServePluginRequest)
+	pluginsRoute := s.Router.PathPrefix("/plugins/{plugin_id:[A-Za-z0-9\\_\\-\\.]+}").Subrouter()
+	pluginsRoute.HandleFunc("", s.ServePluginRequest)
+	pluginsRoute.HandleFunc("/public/{public_file:.*}", s.ServePluginPublicRequest)
+	pluginsRoute.HandleFunc("/{anything:.*}", s.ServePluginRequest)
 
 	// If configured with a subpath, redirect 404s at the root back into the subpath.
 	if subPath != "/" {
@@ -474,6 +482,21 @@ func NewServer(options ...Option) (*Server, error) {
 	if _, err = url.ParseRequestURI(*s.Config().ServiceSettings.SiteURL); err != nil {
 		slog.Error("SiteURL must be set. Some features will operate incorrectly if the SiteURL is not set.")
 	}
+
+	// backend, appErr := s.FileBackend()
+	// if appErr != nil {
+	// 	slog.Error("Problem with file storage settings", slog.Err(appErr))
+	// } else {
+	// 	nErr := backend.TestConnection()
+	// 	if nErr != nil {
+	// 		if _, ok := nErr.(*filestore.S3FileBackendNoBucketError); ok {
+	// 			nErr = backend.(*filestore.S3FileBackend).MakeBucket()
+	// 		}
+	// 		if nErr != nil {
+	// 			slog.Error("Problem with file storage settings", slog.Err(nErr))
+	// 		}
+	// 	}
+	// }
 
 	s.timezones = timezones.New()
 	// Start email batching because it's not like the other jobs
@@ -511,7 +534,7 @@ func NewServer(options ...Option) (*Server, error) {
 		slog.String("build_hash", model.BuildHash),
 		slog.String("build_hash_enterprise", model.BuildHashEnterprise),
 	)
-	// l.BuildEnterpriseReady == "true" {
+	// if model.BuildEnterpriseReady == "true" {
 	// 	slog.Info("Enterprise Build", slog.Bool("enterprise_build", true))
 	// } else {
 	// 	slog.Info("Team Edition Build", slog.Bool("enterprise_build", false))
@@ -552,16 +575,15 @@ func NewServer(options ...Option) (*Server, error) {
 	searchConfigListenerId := s.StartSearchEngine()
 	s.searchConfigListenerId = searchConfigListenerId
 
-	// if enabled - perform initial product notices fetch
-	// if *s.Config().AnnouncementSettings.AdminNoticesEnabled || *s.Config().AnnouncementSettings.UserNoticesEnabled {
-	// 	go func() {
-	// 		if err := app.UpdateProductNotices(); err != nil {
-	// 			slog.Warn("Failied to perform initial product notices fetch", slog.Err(err))
-	// 		}
-	// 	}()
-	// }
+	// app := New(ServerConnector(s))
+	// c := request.EmptyContext()
 
 	if s.runEssentialJobs {
+		// s.Go(func() {
+		// 	runCheckAdminSupportStatusJob(app, c)
+		// 	runCheckWarnMetricStatusJob(app, c)
+		// runDNDStatusExpireJob(app)
+		// })
 		s.runJobs()
 	}
 
