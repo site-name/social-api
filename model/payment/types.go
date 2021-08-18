@@ -7,6 +7,51 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 )
 
+type PaymentErrorCode string
+
+const (
+	BILLING_ADDRESS_NOT_SET     PaymentErrorCode = "billing_address_not_set"
+	GRAPHQL_ERROR               PaymentErrorCode = "graphql_error"
+	INVALID                     PaymentErrorCode = "invalid"
+	NOT_FOUND                   PaymentErrorCode = "not_found"
+	REQUIRED                    PaymentErrorCode = "required"
+	UNIQUE                      PaymentErrorCode = "unique"
+	PARTIAL_PAYMENT_NOT_ALLOWED PaymentErrorCode = "partial_payment_not_allowed"
+	SHIPPING_ADDRESS_NOT_SET    PaymentErrorCode = "shipping_address_not_set"
+	INVALID_SHIPPING_METHOD     PaymentErrorCode = "invalid_shipping_method"
+	SHIPPING_METHOD_NOT_SET     PaymentErrorCode = "shipping_method_not_set"
+	PAYMENT_ERROR               PaymentErrorCode = "payment_error"
+	NOT_SUPPORTED_GATEWAY       PaymentErrorCode = "not_supported_gateway"
+	CHANNEL_INACTIVE            PaymentErrorCode = "channel_inactive"
+)
+
+type PaymentError struct {
+	Where   string
+	Message string
+	Code    PaymentErrorCode
+}
+
+func NewPaymentError(where, message string, code PaymentErrorCode) *PaymentError {
+	return &PaymentError{
+		Where:   where,
+		Message: message,
+		Code:    code,
+	}
+}
+
+func (p *PaymentError) Error() string {
+	return p.Where + ": " + p.Message
+}
+
+type GatewayError struct {
+	Where   string
+	Message string
+}
+
+func (g *GatewayError) Error() string {
+	return g.Where + ": " + g.Message
+}
+
 // Uniform way to represent payment method information.
 type PaymentMethodInfo struct {
 	Last4    string
@@ -75,17 +120,18 @@ type PaymentData struct {
 	Gateway           string
 	Amount            decimal.Decimal
 	Currency          string
-	Billing           *AddressData
-	Shipping          *AddressData
-	PaymentID         string
-	GraphqlPaymentID  string // note
-	OrderID           string
-	CustomerIpAddress string
+	Billing           *AddressData // can be bil
+	Shipping          *AddressData // can be nil
+	PaymentID         string       // payment's Token property
+	OrderID           *string      // can be nil
+	CustomerIpAddress *string      // can be nil
 	CustomerEmail     string
-	Token             *string
-	CustomerID        *string
+	Token             *string // can be nil
+	CustomerID        *string // can be nil
 	ReuseSource       bool
-	Data              model.StringMap
+	Data              model.StringMap // can be nil
+	GraphqlPaymentID  string          // default to payment's Token
+	GraphqlCustomerID *string         // can be nil
 }
 
 // Dataclass for payment gateway token fetching customization.

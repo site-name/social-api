@@ -3,6 +3,7 @@ package payment
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
@@ -33,6 +34,7 @@ func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
 	ps.CreateForeignKeyIfNotExists(store.TransactionTableName, "PaymentID", store.PaymentTableName, "Id", false)
 }
 
+// Save insert given transaction into database then returns it
 func (ps *SqlPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	transaction.PreSave()
 	if err := transaction.IsValid(); err != nil {
@@ -46,6 +48,7 @@ func (ps *SqlPaymentTransactionStore) Save(transaction *payment.PaymentTransacti
 	return transaction, nil
 }
 
+// Update updates given transaction then return it
 func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	transaction.PreUpdate()
 	if err := transaction.IsValid(); err != nil {
@@ -85,16 +88,40 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransactio
 	return &res, nil
 }
 
-func (ps *SqlPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
-	var transactions []*payment.PaymentTransaction
+// FilterByOption finds and returns a list of transactions with given option
+func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+	query := ps.GetQueryBuilder().
+		Select("*").
+		From(store.TransactionTableName).
+		OrderBy(store.TableOrderingMap[store.TransactionTableName])
 
-	if _, err := ps.GetReplica().Select(
-		&transactions,
-		"SELECT * FROM "+store.TransactionTableName+" WHERE PaymentID = :paymentID",
-		map[string]interface{}{"paymentID": paymentID},
-	); err != nil {
-		return nil, errors.Wrapf(err, "failed to find transactions belong to payment with id=%s", paymentID)
+	// parse options:
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.PaymentID != nil {
+		query = query.Where(option.PaymentID.ToSquirrel("PaymentID"))
+	}
+	if option.Kind != nil {
+		query = query.Where(option.Kind.ToSquirrel("Kind"))
+	}
+	if option.ActionRequired != nil {
+		query = query.Where(squirrel.Eq{"ActionRequired": *option.ActionRequired})
+	}
+	if option.IsSuccess != nil {
+		query = query.Where(squirrel.Eq{"IsSuccess": *option.IsSuccess})
 	}
 
-	return transactions, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*payment.PaymentTransaction
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
+	}
+
+	return res, nil
 }

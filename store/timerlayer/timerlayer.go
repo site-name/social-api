@@ -2138,22 +2138,6 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
-	start := timemodule.Now()
-
-	result, err := s.CheckoutStore.CheckoutsByUserID(userID, channelActive)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.CheckoutsByUserID", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
 	start := timemodule.Now()
 
@@ -2170,6 +2154,22 @@ func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	start := timemodule.Now()
 
@@ -2182,6 +2182,22 @@ func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) 
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -4139,10 +4155,10 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Get(id string) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Get(id)
+	result, err := s.PaymentStore.Get(id, lockForUpdate)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4187,6 +4203,22 @@ func (s *TimerLayerPaymentStore) Update(payment *payment.Payment) (*payment.Paym
 	return result, err
 }
 
+func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentTransactionStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	start := timemodule.Now()
 
@@ -4199,22 +4231,6 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
-	start := timemodule.Now()
-
-	result, err := s.PaymentTransactionStore.GetAllByPaymentID(paymentID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("PaymentTransactionStore.GetAllByPaymentID", success, elapsed)
 	}
 	return result, err
 }

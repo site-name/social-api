@@ -2264,24 +2264,6 @@ func (s *OpenTracingLayerChannelStore) Save(ch *channel.Channel) (*channel.Chann
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.CheckoutsByUserID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.CheckoutStore.CheckoutsByUserID(userID, channelActive)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue")
@@ -2300,6 +2282,24 @@ func (s *OpenTracingLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValu
 	return result, err
 }
 
+func (s *OpenTracingLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.Get")
@@ -2310,6 +2310,24 @@ func (s *OpenTracingLayerCheckoutStore) Get(token string) (*checkout.Checkout, e
 
 	defer span.Finish()
 	result, err := s.CheckoutStore.Get(token)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.GetByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutStore.GetByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4507,7 +4525,7 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *payment.PaymentFil
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Get(id string) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -4516,7 +4534,7 @@ func (s *OpenTracingLayerPaymentStore) Get(id string) (*payment.Payment, error) 
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentStore.Get(id)
+	result, err := s.PaymentStore.Get(id, lockForUpdate)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4561,6 +4579,24 @@ func (s *OpenTracingLayerPaymentStore) Update(payment *payment.Payment) (*paymen
 	return result, err
 }
 
+func (s *OpenTracingLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PaymentTransactionStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Get")
@@ -4571,24 +4607,6 @@ func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*payment.Payme
 
 	defer span.Finish()
 	result, err := s.PaymentTransactionStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.GetAllByPaymentID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.PaymentTransactionStore.GetAllByPaymentID(paymentID)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

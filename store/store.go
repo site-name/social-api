@@ -522,17 +522,17 @@ type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
 		Save(payment *payment.Payment) (*payment.Payment, error)                        // Save save payment instance into database
-		Get(id string) (*payment.Payment, error)                                        // Get returns a payment with given id
+		Get(id string, lockForUpdate bool) (*payment.Payment, error)                    // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
 		Update(payment *payment.Payment) (*payment.Payment, error)                      // Update updates given payment and returns new updated payment
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                      // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) // FilterByOption finds and returns a list of payments that satisfy given option
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
-		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)   // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                                  // Get returns a payment transaction with given id
-		GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error)           // GetAllByPaymentID returns a slice of payment transaction(s) that belong to given payment
-		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Update updates given transaction and returns updated one
+		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                  // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                                 // Get returns a payment transaction with given id
+		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                // Update updates given transaction and returns updated one
+		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 
@@ -773,10 +773,11 @@ type (
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()
-		CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error)                        // CheckoutsByUserID returns a list of check outs that belong to given user and have channels active
 		Get(token string) (*checkout.Checkout, error)                                                             // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
 		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                              // Upsert depends on given checkout's Token property to decide to update or insert it
 		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
+		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                            // GetByOption finds and returns 1 checkout based on given option
+		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                       // FilterByOption finds and returns a list of checkout based on given option
 	}
 )
 

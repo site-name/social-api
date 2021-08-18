@@ -34,15 +34,13 @@ func (a *AppPayment) GetTotalAuthorized(payments []*payment.Payment, fallbackCur
 	}
 
 	lastPayment := a.GetLastpayment(payments)
-	if lastPayment != nil {
-		if *lastPayment.IsActive {
-			paymentAuthorizedAmount, appErr := a.PaymentGetAuthorizedAmount(lastPayment)
-			if appErr != nil {
-				return nil, appErr
-			}
-
-			return paymentAuthorizedAmount, nil
+	if lastPayment != nil && *lastPayment.IsActive {
+		paymentAuthorizedAmount, appErr := a.PaymentGetAuthorizedAmount(lastPayment)
+		if appErr != nil {
+			return nil, appErr
 		}
+
+		return paymentAuthorizedAmount, nil
 	}
 
 	return zeroMoney, nil
@@ -58,7 +56,10 @@ func (a *AppPayment) GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency
 	for _, line := range orderLines {
 		line.PopulateNonDbFields()
 
-		total, _ = total.Add(line.TotalPrice)
+		total, err = total.Add(line.TotalPrice)
+		if err != nil {
+			return nil, model.NewAppError("GetSubTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
+		}
 	}
 
 	return total, nil

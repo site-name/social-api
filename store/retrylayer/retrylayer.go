@@ -2400,26 +2400,6 @@ func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 
 }
 
-func (s *RetryLayerCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
-
-	tries := 0
-	for {
-		result, err := s.CheckoutStore.CheckoutsByUserID(userID, channelActive)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
 
 	tries := 0
@@ -2440,11 +2420,51 @@ func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 
 }
 
+func (s *RetryLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 
 	tries := 0
 	for {
 		result, err := s.CheckoutStore.Get(token)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -4875,11 +4895,11 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 
 }
 
-func (s *RetryLayerPaymentStore) Get(id string) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Get(id)
+		result, err := s.PaymentStore.Get(id, lockForUpdate)
 		if err == nil {
 			return result, nil
 		}
@@ -4935,11 +4955,11 @@ func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Paym
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.Get(id)
+		result, err := s.PaymentTransactionStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -4955,11 +4975,11 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.GetAllByPaymentID(paymentID)
+		result, err := s.PaymentTransactionStore.Get(id)
 		if err == nil {
 			return result, nil
 		}

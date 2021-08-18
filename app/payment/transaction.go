@@ -5,13 +5,38 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/store"
 )
 
-func (a *AppPayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
-	transactions, err := a.app.Srv().Store.PaymentTransaction().GetAllByPaymentID(paymentID)
+// TransactionsByOption returns a list of transactions filtered based on given option
+func (a *AppPayment) TransactionsByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, *model.AppError) {
+	transactions, err := a.app.Srv().Store.PaymentTransaction().FilterByOption(option)
+
+	var statusCode int
+	var appErrMsg string
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetAllPaymentTransactions", "app.payment.payment_transactions_not_found.app_error", err)
+		statusCode = http.StatusInternalServerError
+		appErrMsg = err.Error()
+	}
+	if len(transactions) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode == 0 {
+		return transactions, nil
+	}
+	return nil, model.NewAppError("TransactionsByOption", "app.payment.error_finding_transactions_by_option.app_error", nil, appErrMsg, statusCode)
+}
+
+func (a *AppPayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
+	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
+		PaymentID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: paymentID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	return transactions, nil

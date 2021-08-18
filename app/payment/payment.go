@@ -23,6 +23,15 @@ func init() {
 	})
 }
 
+// PaymentByID returns a payment with given id
+func (a *AppPayment) PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
+	payMent, err := a.app.Srv().Store.Payment().Get(paymentID, lockForUpdate)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", err)
+	}
+	return payMent, nil
+}
+
 // PaymentsByOption returns all payments that satisfy given option
 func (a *AppPayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError) {
 	payments, err := a.app.Srv().Store.Payment().FilterByOption(option)
@@ -110,56 +119,28 @@ func (a *AppPayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppE
 	return *payMent.IsActive && payMent.IsNotCharged() && authorized, nil
 }
 
-func (a *AppPayment) CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError) {
+func (a *AppPayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
 	var (
-		returnedPayment *payment.Payment
-		appErr          *model.AppError
-		err             error
+		err error
 	)
 
-	if pm.Id == "" { // id not set mean creating new payment
-		returnedPayment, err = a.app.Srv().Store.Payment().Save(pm)
-		if err != nil {
-			if apErr, ok := err.(*model.AppError); ok {
-				return nil, apErr
-			}
-			appErr = model.NewAppError("CreateOrUpdatePayment", "app.payment.save_payment_error.app_error", nil, "", http.StatusInternalServerError)
-		}
+	if payMent.Id == "" { // id not set mean creating new payment
+		payMent, err = a.app.Srv().Store.Payment().Save(payMent)
 	} else { // otherwise update
-		returnedPayment, err = a.app.Srv().Store.Payment().Update(pm)
-		if err != nil {
-			if apErr, ok := err.(*model.AppError); ok {
-				return nil, apErr
-			}
-			appErr = model.NewAppError("CreateOrUpdatePayment", "app.payment.update_payment_error.app_error", nil, "", http.StatusInternalServerError)
+		payMent, err = a.app.Srv().Store.Payment().Update(payMent)
+	}
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
 		}
-	}
-
-	return returnedPayment, appErr
-}
-
-func (a *AppPayment) GetPaymentToken(paymentID string) (string, *model.AppError) {
-	trans, appErr := a.GetAllPaymentTransactions(paymentID)
-	if appErr != nil {
-		return "", appErr
-	}
-
-	var tran *payment.PaymentTransaction
-
-	// find most recent transaction that has kind = "auth" and was made successfully
-	for _, tr := range trans {
-		if tr.Kind == payment.AUTH && tr.IsSuccess {
-			if tran == nil || tran.CreateAt <= tr.CreateAt {
-				tran = tr
-			}
+		var statusCode = http.StatusInternalServerError
+		if _, ok := err.(*model.AppError); ok {
+			statusCode = http.StatusNotFound
 		}
+		return nil, model.NewAppError("CreateOrUpdatePayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
 	}
 
-	if tran == nil {
-		return "", model.NewAppError("GetPaymentToken", "app.payment.no_authorized_payment_transaction.app_error", nil, "", http.StatusNotFound)
-	}
-
-	return tran.Token, nil
+	return payMent, nil
 }
 
 func (a *AppPayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError) {

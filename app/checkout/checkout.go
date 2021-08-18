@@ -3,7 +3,6 @@ package checkout
 import (
 	"context"
 	"net/http"
-	"sort"
 	"strings"
 	"sync"
 
@@ -36,41 +35,34 @@ func init() {
 	})
 }
 
-func (a *AppCheckout) CheckoutsByUser(userID string, channelActive bool) ([]*checkout.Checkout, *model.AppError) {
-	checkouts, err := a.app.Srv().Store.Checkout().CheckoutsByUserID(userID, channelActive)
+// CheckoutByOption returns a checkout filtered by given option
+func (a *AppCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
+	chekout, err := a.app.Srv().Store.Checkout().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckoutsByUser", "app.checkout.checkout_by_user_missing.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("CheckoutbyOption", "app.checkout.error_finding_checkout_by_option.app_error", err)
+	}
+
+	return chekout, nil
+}
+
+// CheckoutsByOption returns a list of checkouts, filtered by given option
+func (a *AppCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError) {
+	checkouts, err := a.app.Srv().Store.Checkout().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("CheckoutsByOption", "app.checkout_error_finding_checkouts_by_option.app_error", err)
 	}
 	return checkouts, nil
 }
 
-func (a *AppCheckout) GetUserCheckout(userID string) (*checkout.Checkout, *model.AppError) {
-	checkouts, appErr := a.CheckoutsByUser(userID, true)
-	if appErr != nil {
-		return nil, appErr
-	}
-	// sort checkouts by creation time ascending
-	sort.Slice(checkouts, func(i, j int) bool {
-		return checkouts[i].CreateAt < checkouts[j].CreateAt
-	})
-	// last checkout is the most recent made by user
-	return checkouts[len(checkouts)-1], nil
-}
-
-func (a *AppCheckout) CheckoutbyToken(checkoutToken string) (*checkout.Checkout, *model.AppError) {
-	checkout, err := a.app.Srv().Store.Checkout().Get(checkoutToken)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckoutById", CheckoutMissingAppErrorId, err)
-	}
-
-	return checkout, nil
-}
-
+// GetCustomerEmail returns checkout's user's email
 func (a *AppCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError) {
 	if ckout.UserID != nil {
 		user, appErr := a.app.AccountApp().UserById(context.Background(), *ckout.UserID)
 		if appErr != nil {
-			return "", appErr
+			if appErr.StatusCode == http.StatusNotFound {
+				return ckout.Email, nil
+			}
+			return "", appErr // returns system caused error
 		}
 		return user.Email, nil
 	}
@@ -166,6 +158,7 @@ func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.
 	return countryCode, nil
 }
 
+// CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 func (a *AppCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError) {
 	giftcards, appErr := a.app.GiftcardApp().GiftcardsByCheckout(checkout.Token)
 	if appErr != nil {

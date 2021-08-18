@@ -104,6 +104,7 @@ func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, err
 	if err := payment.IsValid(); err != nil {
 		return nil, err
 	}
+
 	if err := ps.GetMaster().Insert(payment); err != nil {
 		return nil, errors.Wrapf(err, "failed to insert new payment with id=%s", payment.Id)
 	}
@@ -118,7 +119,7 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 		return nil, err
 	}
 
-	oldPayment, err := ps.Get(payment.Id)
+	oldPayment, err := ps.Get(payment.Id, false)
 	if err != nil {
 		return nil, err
 	}
@@ -139,9 +140,18 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 }
 
 // Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(id string) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
 	var res payment.Payment
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID", map[string]interface{}{"ID": id})
+	var forUpdateSql string
+	if lockForUpdate {
+		forUpdateSql = " FOR UPDATE"
+	}
+	err := ps.GetReplica().
+		SelectOne(
+			&res,
+			"SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID"+forUpdateSql,
+			map[string]interface{}{"ID": id},
+		)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.PaymentTableName, id)

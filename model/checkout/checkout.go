@@ -33,9 +33,9 @@ type Checkout struct {
 	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"` // NO EDITABLE
 	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
 	Note                   string           `json:"note"`
-	Currency               string           `json:"currency"`
+	Currency               string           `json:"currency"`        // default "USD"
 	Country                string           `json:"country"`         // one country only
-	DiscountAmount         *decimal.Decimal `json:"discount_amount"` //  default decimal(0)
+	DiscountAmount         *decimal.Decimal `json:"discount_amount"` // default decimal(0)
 	Discount               *goprices.Money  `db:"-" json:"discount,omitempty"`
 	DiscountName           *string          `json:"discount_name"`
 	TranslatedDiscountName *string          `json:"translated_discount_name"`
@@ -44,6 +44,13 @@ type Checkout struct {
 	TrackingCode           *string          `json:"tracking_code"`
 	LanguageCode           string           `json:"language_code"`
 	model.ModelMetadata
+}
+
+// CheckoutFilterOption is used for bulding sql queries
+type CheckoutFilterOption struct {
+	Token     *model.StringFilter
+	UserID    *model.StringFilter
+	ChannelID *model.StringFilter
 }
 
 func (c *Checkout) IsValid() *model.AppError {
@@ -96,6 +103,10 @@ func (c *Checkout) IsValid() *model.AppError {
 	}
 
 	return nil
+}
+
+func (c *Checkout) PopulateNonDbFields() {
+	c.Discount, _ = goprices.NewMoney(c.DiscountAmount, c.Currency)
 }
 
 func (c *Checkout) PreSave() {

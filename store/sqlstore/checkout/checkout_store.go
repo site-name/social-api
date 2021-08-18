@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -121,35 +120,69 @@ func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	return ckout, nil
 }
 
-func (cs *SqlCheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
-	var checkouts []*checkout.Checkout
-
+// GetByOption finds and returns 1 checkout based on given option
+func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
 	query := cs.GetQueryBuilder().
 		Select("*").
-		From(store.CheckoutTableName).
-		InnerJoin(store.ChannelTableName + " ON (Channels.Id = Checkouts.ChannelID)")
+		From(store.CheckoutTableName)
 
-	condition := squirrel.And{
-		squirrel.Eq{"Checkouts.UserID": userID},
+	// parse option
+	if option.Token != nil {
+		query = query.Where(option.Token.ToSquirrel("Token"))
+	}
+	if option.UserID != nil {
+		query = query.Where(option.UserID.ToSquirrel("UserID"))
+	}
+	if option.ChannelID != nil {
+		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
 	}
 
-	if channelActive {
-		condition = append(condition, squirrel.Eq{"Channels.IsActive": true})
-	} else {
-		condition = append(condition, squirrel.NotEq{"Channels.IsActive": true})
-	}
-
-	queryString, args, err := query.Where(condition).ToSql()
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "CheckoutsByUserID_ToSql")
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	_, err = cs.GetReplica().Select(&checkouts, queryString, args...)
+	var res *checkout.Checkout
+	err = cs.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find checkouts for user with Id=%s", userID)
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CheckoutTableName, "option")
+		}
+		return nil, errors.Wrap(err, "failed to find checkout woth given option")
 	}
 
-	return checkouts, nil
+	return res, nil
+}
+
+// FilterByOption finds and returns a list of checkout based on given option
+func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+	query := cs.GetQueryBuilder().
+		Select("*").
+		From(store.CheckoutTableName)
+
+	// parse option
+	if option.Token != nil {
+		query = query.Where(option.Token.ToSquirrel("Token"))
+	}
+	if option.UserID != nil {
+		query = query.Where(option.UserID.ToSquirrel("UserID"))
+	}
+	if option.ChannelID != nil {
+		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*checkout.Checkout
+	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find checkouts by given option")
+	}
+
+	return res, nil
 }
 
 // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
