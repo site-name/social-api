@@ -160,9 +160,9 @@ func (s *AppPlugin) SyncPluginsActiveState() {
 		pluginsEnvironment.Shutdown()
 	}
 
-	// if err := s.notifyPluginStatusesChanged(); err != nil {
-	// 	slog.Warn("failed to notify plugin status changed", slog.Err(err))
-	// }
+	if err := s.notifyPluginStatusesChanged(); err != nil {
+		slog.Warn("failed to notify plugin status changed", slog.Err(err))
+	}
 }
 
 func (s *AppPlugin) InitPlugins(c *request.Context, pluginDir, webappPluginDir string) {

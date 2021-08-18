@@ -103,13 +103,32 @@ func (job *EmailBatchingJob) Add(user *account.User) bool {
 }
 
 func (job *EmailBatchingJob) CheckPendingEmails() {
-	// job.handleNewNotitifcations()
+	job.handleNewNotitifcations()
 
-	// // it's a bit weird to pass the send email function through here, but it makes it so that we can test
-	// // without actually sending emails
-	// job.checkPendingNotifications(time.Now(), job.service.sendBatched)
+	// it's a bit weird to pass the send email function through here, but it makes it so that we can test
+	// without actually sending emails
+	job.checkPendingNotifications(time.Now(), job.service)
 }
 
-// func (es *Service) sendBatchedEmailNotification(userID string, notifications []*batchedNotification) {
-// 	user, err := es.
-// }
+func (job *EmailBatchingJob) handleNewNotifications() {
+	receiving := true
+	// read in new notifications to send
+	for receiving {
+		select {
+		case notification := <-job.newNotifications:
+			userID := notification.userID
+			if _, ok := job.pendingNotifications[userID]; !ok {
+				job.pendingNotifications[userID] = []*batchedNotification{notification}
+			} else {
+				job.pendingNotifications[userID] = append(job.pendingNotifications[userID], notification)
+			}
+
+		default:
+			receiving = false
+		}
+	}
+}
+
+func (job *EmailBatchingJob) checkPendingNotifications(now time.Time, handler func(string, []*batchedNotification)) {
+	panic("not implt")
+}
