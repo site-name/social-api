@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -77,6 +78,10 @@ func (ps *SqlCategoryStore) Upsert(category *product_and_discount.Category) (*pr
 		numUpdated, err = ps.GetMaster().Update(category)
 	}
 	if err != nil {
+		// this error may be caused by category slug duplicate
+		if ps.IsUniqueConstraintError(err, []string{"Slug", "categories_slug_key"}) {
+			return nil, store.NewErrInvalidInput(store.ProductCategoryTableName, "Slug", category.Slug)
+		}
 		return nil, errors.Wrapf(err, "failed to upsert category with id=%s", category.Id)
 	}
 	if numUpdated > 1 {
@@ -100,34 +105,100 @@ func (ps *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Catego
 	return &res, nil
 }
 
-// GetCategoryByProductID finds and returns a category with given product id
-func (ps *SqlCategoryStore) GetCategoryByProductID(productID string) (*product_and_discount.Category, error) {
-	var res product_and_discount.Category
-	rowScanner := ps.GetQueryBuilder().
+// FilterByOption finds and returns a list of categories satisfy given option
+func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductCategoryTableName).
-		InnerJoin(store.ProductTableName + " ON (Products.CategoryID = Categories.Id)").
-		RunWith(ps.GetReplica()).
-		QueryRow()
+		OrderBy(store.TableOrderingMap[store.ProductCategoryTableName])
 
-	err := rowScanner.Scan(
-		&res.Id,
-		&res.Name,
-		&res.Slug,
-		&res.Description,
-		&res.ParentID,
-		&res.BackgroundImage,
-		&res.BackgroundImageAlt,
-		&res.SeoTitle,
-		&res.Metadata,
-		&res.PrivateMetadata,
-	)
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Categories.Id"))
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug.ToSquirrel("Categories.Slug"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Categories.Name"))
+	}
+
+	if option.VoucherID != nil {
+		query = query.Where(option.VoucherID.ToSquirrel("")) // no need to provide key value here
+	}
+	if option.ProductID != nil {
+		query = query.
+			LeftJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
+			Where(option.ProductID.ToSquirrel("Products.Id"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.Category
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find categories with given option")
+	}
+
+	return res, nil
+}
+
+// GetByOption finds and returns 1 category satisfy given option
+func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductCategoryTableName).
+		OrderBy(store.TableOrderingMap[store.ProductCategoryTableName])
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Categories.Id"))
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug.ToSquirrel("Categories.Slug"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Categories.Name"))
+	}
+
+	if option.VoucherID != nil {
+		query = query.Where(option.VoucherID.ToSquirrel("")) // no need to provide key value here
+	}
+	if option.ProductID != nil {
+		query = query.
+			LeftJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
+			Where(option.ProductID.ToSquirrel("Products.Id"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res product_and_discount.Category
+	err = ps.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductCategoryTableName, "ProductID="+productID)
+			return nil, store.NewErrNotFound(store.ProductCategoryTableName, "option")
 		}
-		return nil, errors.Wrapf(err, "failed to find category with product id=%s", productID)
+		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}
 
 	return &res, nil
+}
+
+// ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
+func (cs *SqlCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
+	return cs.FilterByOption(&product_and_discount.CategoryFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID = ?)", store.VoucherCategoryTableName, voucherID),
+				},
+			},
+		},
+	})
 }

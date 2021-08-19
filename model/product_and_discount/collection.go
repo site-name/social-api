@@ -28,6 +28,15 @@ type Collection struct {
 	seo.Seo
 }
 
+type CollectionFilterOption struct {
+	Id   *model.StringFilter
+	Name *model.StringFilter
+	Slug *model.StringFilter
+
+	ProductID *model.StringFilter // relationship m2m, use ExtraExpr
+	VoucherID *model.StringFilter // relationship m2m, use ExtraExpr
+}
+
 func (c *Collection) String() string {
 	return c.Name
 }

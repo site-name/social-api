@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -103,30 +104,68 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Co
 	return &res, nil
 }
 
-// CollectionsByProductID finds and returns a list of collections that related to given product
-func (cs *SqlCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
-	var res []*product_and_discount.Collection
-	_, err := cs.GetReplica().Select(
-		&res,
-		`SELECT * FROM Collections
-		WHERE (
-			Collections.Id IN (
-				SELECT
-					CollectionID 
-				FROM 
-					ProductCollections 
-				WHERE (
-					ProductID = :ProductID
-				)
-			)
-		)`,
-		map[string]interface{}{
-			"ProductID": productID,
-		},
-	)
+// FilterByOption finds and returns a list of collections satisfy the given option
+func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
+	query := cs.GetQueryBuilder().
+		Select(cs.ModelFields()...).
+		From(store.ProductCollectionTableName).
+		OrderBy(store.TableOrderingMap[store.ProductCollectionTableName])
+
+	// parse options
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Collections.Id"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Collections.Name"))
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug.ToSquirrel("Collections.Slug"))
+	}
+	if option.ProductID != nil {
+		query = query.Where(option.ProductID.ToSquirrel("")) // no need key value here
+	}
+	if option.VoucherID != nil {
+		query = query.Where(option.VoucherID.ToSquirrel("")) // no need key value here
+	}
+
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find collections related to product id id=%s", productID)
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.Collection
+	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find collections with given option")
 	}
 
 	return res, nil
+}
+
+// CollectionsByProductID finds and returns a list of collections that related to given product
+func (cs *SqlCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+
+	return cs.FilterByOption(&product_and_discount.CollectionFilterOption{
+		ProductID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("Collections.Id IN (SELECT CollectionID FROM ? WHERE ProductID = ?)", store.VoucherCollectionTableName, productID),
+				},
+			},
+		},
+	})
+}
+
+// CollectionsByVoucherID finds all collections that have relationships with given voucher
+func (cs *SqlCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
+
+	return cs.FilterByOption(&product_and_discount.CollectionFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("Collections.Id IN (SELECT CollectionID FROM ? WHERE VoucherID = ?)", store.VoucherCollectionTableName, voucherID),
+				},
+			},
+		},
+	})
 }

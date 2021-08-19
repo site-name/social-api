@@ -441,6 +441,7 @@ type (
 		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*product_and_discount.Collection, error)                            // Get finds and returns collection with given collectionID
 		CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error)          // CollectionsByProductID finds and returns a list of collections that related to given product
+		CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error)          // CollectionsByVoucherID finds all collections that have relationships with given voucher
 	}
 	CollectionProductStore interface {
 		CreateIndexesIfNotExists()
@@ -503,9 +504,11 @@ type (
 	}
 	CategoryStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) // Upsert depends on given category's Id field to decide update or insert it
-		Get(categoryID string) (*product_and_discount.Category, error)                          // Get finds and returns a category with given id
-		GetCategoryByProductID(productID string) (*product_and_discount.Category, error)        // GetCategoryByProductID finds and returns a category with given product id
+		Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error)                     // Upsert depends on given category's Id field to decide update or insert it
+		Get(categoryID string) (*product_and_discount.Category, error)                                              // Get finds and returns a category with given id
+		ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error)                    // ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
+		GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error)      // GetByOption finds and returns 1 category satisfy given option
+		FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
 		CreateIndexesIfNotExists()
@@ -514,6 +517,7 @@ type (
 		Get(id string) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
+		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
 	}
 )
 
@@ -698,19 +702,16 @@ type (
 		CreateIndexesIfNotExists()
 		Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
 		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
-		ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error)                     // ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
 	}
 	VoucherCollectionStore interface {
 		CreateIndexesIfNotExists()
 		Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
 		Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error)                                   // Get finds a voucher collection with given id, then returns it with an error
-		CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error)                               // CollectionsByVoucherID finds all collections that have relationships with given voucher
 	}
 	VoucherProductStore interface {
 		CreateIndexesIfNotExists()
 		Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error
 		Get(voucherProductID string) (*product_and_discount.VoucherProduct, error)                                // Get finds a voucher product with given id, then returns it with an error
-		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
 	}
 	VoucherCustomerStore interface {
 		CreateIndexesIfNotExists()

@@ -5,7 +5,6 @@
 package checkout
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -480,35 +479,34 @@ func (a *AppCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo,
 
 	if checkoutInfo.Checkout.VoucherCode != nil {
 		// finds vouchers that are active in a channel
-		activeInChannelVouchers, appErr := a.app.DiscountApp().
-			VouchersByOption(&product_and_discount.VoucherFilterOption{
-				UsageLimit: &model.NumberFilter{
-					Or: &model.NumberOption{
-						NULL: model.NewBool(true),
-						ExtraExpr: []squirrel.Sqlizer{
-							squirrel.Expr(fmt.Sprintf("%s.UsageLimit > %s.Used", store.VoucherTableName, store.VoucherTableName)),
-						},
+		activeInChannelVouchers, appErr := a.app.DiscountApp().VouchersByOption(&product_and_discount.VoucherFilterOption{
+			UsageLimit: &model.NumberFilter{
+				Or: &model.NumberOption{
+					NULL: model.NewBool(true),
+					ExtraExpr: []squirrel.Sqlizer{
+						squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
 					},
 				},
-				EndDate: &model.TimeFilter{
-					Or: &model.TimeOption{
-						NULL: model.NewBool(true),
-						GtE:  now,
-					},
+			},
+			EndDate: &model.TimeFilter{
+				Or: &model.TimeOption{
+					NULL: model.NewBool(true),
+					GtE:  now,
 				},
-				StartDate: &model.TimeFilter{
-					TimeOption: &model.TimeOption{
-						LtE: now,
-					},
+			},
+			StartDate: &model.TimeFilter{
+				TimeOption: &model.TimeOption{
+					LtE: now,
 				},
-				ChannelListingSlug: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: checkoutInfo.Channel.Slug,
-					},
+			},
+			ChannelListingSlug: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkoutInfo.Channel.Slug,
 				},
-				ChannelListingActive: model.NewBool(true),
-				WithLook:             withLock, // this add `FOR UPDATE` to SQL query
-			})
+			},
+			ChannelListingActive: model.NewBool(true),
+			WithLook:             withLock, // this add `FOR UPDATE` to SQL query
+		})
 
 		if appErr != nil || len(activeInChannelVouchers) == 0 {
 			appErr.Where = "GetVoucherForCheckout"

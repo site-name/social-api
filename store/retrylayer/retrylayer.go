@@ -5461,6 +5461,26 @@ func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.Produc
 
 }
 
+func (s *RetryLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.ProductsByVoucherID(voucherID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
 
 	tries := 0
@@ -8902,26 +8922,6 @@ func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*product_a
 	tries := 0
 	for {
 		result, err := s.VoucherProductStore.Get(voucherProductID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherProductStore.ProductsByVoucherID(voucherID)
 		if err == nil {
 			return result, nil
 		}

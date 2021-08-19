@@ -107,27 +107,19 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 		From(store.VoucherTableName).
 		OrderBy(store.TableOrderingMap[store.VoucherTableName])
 
-	// check usage limit
+	// parse options:
 	if option.UsageLimit != nil {
 		query = query.Where(option.UsageLimit.ToSquirrel("Vouchers.UsageLimit"))
 	}
-
-	// check end date
 	if option.EndDate != nil {
 		query = query.Where(option.EndDate.ToSquirrel("Vouchers.EndDate"))
 	}
-
-	// check start date
 	if option.StartDate != nil {
 		query = query.Where(option.StartDate.ToSquirrel("Vouchers.StartDate"))
 	}
-
-	// check code
 	if option.Code != nil {
 		query = query.Where(option.Code.ToSquirrel("Vouchers.Code"))
 	}
-
-	// check channel listing channel slug
 	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
 		query = query.
 			InnerJoin(store.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").

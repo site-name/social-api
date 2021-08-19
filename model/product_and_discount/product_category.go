@@ -28,6 +28,15 @@ type Category struct {
 	model.ModelMetadata
 }
 
+type CategoryFilterOption struct {
+	Id   *model.StringFilter
+	Name *model.StringFilter
+	Slug *model.StringFilter
+
+	VoucherID *model.StringFilter // m2m relationship
+	ProductID *model.StringFilter // o2m relationship
+}
+
 func (c *Category) String() string {
 	return c.Name
 }

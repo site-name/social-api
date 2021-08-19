@@ -84,25 +84,3 @@ func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*product_and_di
 
 	return &res, nil
 }
-
-// ProductsByVoucherID finds all products that have relationships with given voucher
-func (vps *SqlVoucherProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
-	var products []*product_and_discount.Product
-	_, err := vps.GetReplica().Select(
-		&products,
-		`SELECT * FROM `+store.ProductTableName+` WHERE Id IN (
-			SELECT ProductID from `+store.VoucherProductTableName+` WHERE (
-				VoucherID = :VoucherID
-			)
-		)`,
-		map[string]interface{}{
-			"VoucherID": voucherID,
-		},
-	)
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find products with relation to voucher with voucherId=%s", voucherID)
-	}
-
-	return products, nil
-}

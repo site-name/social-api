@@ -84,25 +84,3 @@ func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*product_
 
 	return &res, nil
 }
-
-// CollectionsByVoucherID finds all collections that have relationships with given voucher
-func (vcs *SqlVoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-	var collections []*product_and_discount.Collection
-	_, err := vcs.GetReplica().Select(
-		&collections,
-		`SELECT * FROM `+store.ProductCollectionTableName+` WHERE Id IN (
-			SELECT CollectionID from `+store.VoucherCollectionTableName+` WHERE (
-				VoucherID = :VoucherID
-			)
-		)`,
-		map[string]interface{}{
-			"VoucherID": voucherID,
-		},
-	)
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find collections with relation to voucher with voucherId=%s", voucherID)
-	}
-
-	return collections, nil
-}

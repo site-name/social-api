@@ -32,11 +32,13 @@ func (st *StringOption) WithFilter(filter func(s string) bool) *StringOption {
 	return st
 }
 
+func defaultStringFilter(string) bool {
+	return true
+}
+
 func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
 	if st.filter == nil {
-		st.filter = func(s string) bool {
-			return true
-		}
+		st.filter = defaultStringFilter
 	}
 	var res []squirrel.Sqlizer
 

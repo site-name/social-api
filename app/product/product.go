@@ -20,6 +20,7 @@ func init() {
 	})
 }
 
+// ProductById returns 1 product by given id
 func (a *AppProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
 	product, err := a.Srv().Store.Product().Get(productID)
 	if err != nil {
@@ -62,7 +63,7 @@ func (a *AppProduct) ProductByOption(option *product_and_discount.ProductFilterO
 
 // ProductsByVoucherID finds all products that have relationships with given voucher
 func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
-	products, err := a.Srv().Store.VoucherProduct().ProductsByVoucherID(voucherID)
+	products, err := a.Srv().Store.Product().ProductsByVoucherID(voucherID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("App.Product.ProductsByVoucherID", "app.error_finding_products_by_voucherID.app_error", err)
 	}

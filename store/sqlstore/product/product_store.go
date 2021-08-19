@@ -3,7 +3,9 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -110,6 +112,9 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 			LeftJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
 			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
 	}
+	if option.VoucherID != nil {
+		query = query.Where(option.VoucherID.ToSquirrel("")) // ne need to provide key value here
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -157,4 +162,17 @@ func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilte
 	}
 
 	return &res, nil
+}
+
+// ProductsByVoucherID finds all products that have relationships with given voucher
+func (ps *SqlProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
+	return ps.FilterByOption(&product_and_discount.ProductFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID = ?)", store.VoucherProductTableName, voucherID),
+				},
+			},
+		},
+	})
 }

@@ -84,25 +84,3 @@ func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_
 
 	return &res, nil
 }
-
-// ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
-func (vcs *SqlVoucherCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
-	var categories []*product_and_discount.Category
-	_, err := vcs.GetReplica().Select(
-		&categories,
-		`SELECT * FROM `+store.ProductCategoryTableName+` WHERE Id IN (
-			SELECT CategoryID from `+store.VoucherCategoryTableName+` WHERE (
-				VoucherID = :VoucherID
-			)
-		)`,
-		map[string]interface{}{
-			"VoucherID": voucherID,
-		},
-	)
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find categories with relation to voucher with voucherId=%s", voucherID)
-	}
-
-	return categories, nil
-}

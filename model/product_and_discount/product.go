@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+// max lengths for some fields of products
 const (
 	PRODUCT_NAME_MAX_LENGTH = 250
 	PRODUCT_SLUG_MAX_LENGTH = 255
@@ -38,8 +39,10 @@ type Product struct {
 type ProductFilterOption struct {
 	Id               *model.StringFilter
 	ProductVariantID *model.StringFilter // LEFT JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
+	VoucherID        *model.StringFilter // relationship m2m
 }
 
+// PlainTextDescription Convert DraftJS JSON content to plain text
 func (p *Product) PlainTextDescription() string {
 	panic("not implemented")
 }
