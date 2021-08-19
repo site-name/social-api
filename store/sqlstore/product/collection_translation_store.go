@@ -14,11 +14,11 @@ func NewSqlCollectionTranslationStore(s store.Store) store.CollectionTranslation
 	cts := &SqlCollectionTranslationStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.CollectionTranslation{}, "CollectionTranslations").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.CollectionTranslation{}, store.ProductCollectionTranslationTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH).SetUnique(true)
+		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH)
 
 		s.CommonSeoMaxLength(table)
 		table.SetUniqueTogether("LanguageCode", "CollectionID")
@@ -27,6 +27,5 @@ func NewSqlCollectionTranslationStore(s store.Store) store.CollectionTranslation
 }
 
 func (ps *SqlCollectionTranslationStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_collection_translations_name", "CollectionTranslations", "Name")
-	ps.CreateIndexIfNotExists("idx_collections_translations_name_lower_textpattern", "CollectionTranslations", "lower(Name) text_pattern_ops")
+	ps.CreateForeignKeyIfNotExists(store.ProductCollectionTranslationTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
 }

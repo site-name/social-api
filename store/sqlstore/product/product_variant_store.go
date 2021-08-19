@@ -29,9 +29,8 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 }
 
 func (ps *SqlProductVariantStore) CreateIndexesIfNotExists() {
-	// ps.CreateIndexIfNotExists("idx_product_variants_name", store.ProductVariantTableName, "Name")
-	// ps.CreateIndexIfNotExists("idx_product_variants_name_lower_textpattern", store.ProductVariantTableName, "lower(Name) text_pattern_ops")
 	ps.CreateIndexIfNotExists("idx_product_variants_sku", store.ProductVariantTableName, "Sku")
+	ps.CreateForeignKeyIfNotExists(store.ProductVariantTableName, "ProductID", store.ProductTableName, "Id", true)
 }
 
 func (ps *SqlProductVariantStore) ModelFields() []string {

@@ -1,16 +1,12 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
-	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"golang.org/x/text/language"
-
 	"github.com/sitename/sitename/modules/measurement"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -122,23 +118,6 @@ func (p *ProductVariant) PreUpdate() {
 	p.ModelMetadata.PreUpdate()
 }
 
-func ProductVariantFromJson(data io.Reader) *ProductVariant {
-	var prd ProductVariant
-	model.ModelFromJson(&prd, data)
-	return &prd
-}
-
-// TODO: fixme
-func (p *ProductVariant) GetPrice(product *Product, collections []*Collection, channel *channel.Channel, channelListing *ProductChannelListing, discounts []*DiscountInfo) *goprices.Money {
-	panic("not impl")
-}
-
-// TODO: fixme
-func (p *ProductVariant) DisplayProduct() {
-	panic("not implemented")
-}
-
-// --------------------
 type ProductVariantTranslation struct {
 	Id               string `json:"id"`
 	LanguageCode     string `json:"language_code"`
@@ -147,7 +126,11 @@ type ProductVariantTranslation struct {
 }
 
 func (p *ProductVariantTranslation) String() string {
-	return p.Name
+	if p.Name != "" {
+		return p.Name
+	}
+
+	return p.ProductVariantID
 }
 
 func (p *ProductVariantTranslation) IsValid() *model.AppError {
@@ -172,10 +155,4 @@ func (p *ProductVariantTranslation) IsValid() *model.AppError {
 
 func (p *ProductVariantTranslation) ToJson() string {
 	return model.ModelToJson(p)
-}
-
-func ProductVariantTranslationFromJson(data io.Reader) *ProductVariantTranslation {
-	var p ProductVariantTranslation
-	model.ModelFromJson(&p, data)
-	return &p
 }

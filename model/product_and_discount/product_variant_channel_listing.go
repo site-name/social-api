@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 
 	"github.com/site-name/decimal"
@@ -12,13 +11,14 @@ import (
 
 type ProductVariantChannelListing struct {
 	Id              string           `json:"id"`
-	VariantID       string           `json:"variant_id"` // not null
-	ChannelID       string           `json:"channel_id"` // not null
-	Currency        string           `json:"currency"`
-	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"`
+	VariantID       string           `json:"variant_id"`             // not null
+	ChannelID       string           `json:"channel_id"`             // not null
+	Currency        string           `json:"currency"`               // default "USD"
+	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"` // default decimal(0)
 	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
-	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"`
+	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // default decimal(0)
 	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
+	CreateAt        int64            `json:"create_at"`
 }
 
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {
@@ -47,30 +47,35 @@ func (p *ProductVariantChannelListing) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+	p.CreateAt = model.GetMillis()
+	p.commonPre()
+}
+
+func (p *ProductVariantChannelListing) commonPre() {
+	if p.Price != nil {
+		p.PriceAmount = p.Price.Amount
+	} else {
+		p.PriceAmount = &decimal.Zero
+	}
+
+	if p.CostPrice != nil {
+		p.CostPriceAmount = p.CostPrice.Amount
+	} else {
+		p.CostPriceAmount = &decimal.Zero
+	}
+	if p.Currency != "" {
+		p.Currency = strings.ToUpper(p.Currency)
+	} else {
+		p.Currency = model.DEFAULT_CURRENCY
+	}
 }
 
 func (p *ProductVariantChannelListing) PopulateNonDbFields() {
-	if p.Price == nil && p.PriceAmount != nil {
-		p.Price = &goprices.Money{
-			Amount:   p.PriceAmount,
-			Currency: p.Currency,
-		}
-	}
-	if p.CostPrice == nil && p.CostPriceAmount != nil {
-		p.CostPrice = &goprices.Money{
-			Amount:   p.CostPriceAmount,
-			Currency: p.Currency,
-		}
-	}
+	p.Price, _ = goprices.NewMoney(p.PriceAmount, p.Currency)
+	p.CostPrice, _ = goprices.NewMoney(p.CostPriceAmount, p.Currency)
 }
 
 func (p *ProductVariantChannelListing) ToJson() string {
 	p.PopulateNonDbFields()
 	return model.ModelToJson(p)
-}
-
-func ProductVariantChannelListingFromJson(data io.Reader) *ProductVariantChannelListing {
-	var p ProductVariantChannelListing
-	model.ModelFromJson(&p, data)
-	return &p
 }

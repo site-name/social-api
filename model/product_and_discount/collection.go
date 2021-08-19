@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -55,12 +54,6 @@ func (c *Collection) ToJson() string {
 	return model.ModelToJson(c)
 }
 
-func CollectionFromJson(data io.Reader) *Collection {
-	var c Collection
-	model.ModelFromJson(&c, data)
-	return &c
-}
-
 func (c *Collection) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
@@ -74,7 +67,7 @@ func (c *Collection) PreUpdate() {
 	c.Slug = slug.Make(c.Name)
 }
 
-// -----------------------
+// CollectionTranslation
 type CollectionTranslation struct {
 	Id           string  `json:"id"`
 	LanguageCode string  `json:"language_code"`
@@ -108,12 +101,6 @@ func (c *CollectionTranslation) String() string {
 
 func (c *CollectionTranslation) ToJson() string {
 	return model.ModelToJson(c)
-}
-
-func CollectionTranslationFromJson(data io.Reader) *CollectionTranslation {
-	var c CollectionTranslation
-	model.ModelFromJson(&c, data)
-	return &c
 }
 
 func (c *CollectionTranslation) PreSave() {

@@ -85,69 +85,52 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_dis
 	return &res, nil
 }
 
+// FilterByOption finds and returns all ProductChannelListings filtered by given option
 func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
-	if option == nil {
-		return nil, nil
-	}
-
 	query := ps.
 		GetQueryBuilder().
-		Select("*").
-		From(store.ProductChannelListingTableName + " AS PCL").
-		OrderBy("PCL.CreateAt ASC") // since Ids are UUIDs, so order create at is a good option
+		Select(ps.ModelFields()...).
+		From(store.ProductChannelListingTableName).
+		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName])
 
-	// check product id
+	// parse option
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("PCL.ProductID"))
+		query = query.Where(option.ProductID.ToSquirrel("ProductChannelListings.ProductID"))
 	}
-
-	// check channel id
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("PCL.ChannelID"))
+		query = query.Where(option.ChannelID.ToSquirrel("ProductChannelListings.ChannelID"))
 	}
-
-	// check channel slug
 	if option.ChannelSlug != nil {
 		query = query.
-			Where(squirrel.Eq{"Cn.ChannelSlug": *option.ChannelSlug}).
-			InnerJoin(store.ChannelTableName + " AS Cn ON (Cn.Id = PCL.ChannelID)")
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductChannelListings.ChannelID)").
+			Where(squirrel.Eq{"Channels.ChannelSlug": *option.ChannelSlug})
 	}
-
-	// check visible in listing
 	if option.VisibleInListings != nil {
-		query = query.Where(squirrel.Eq{"PCL.VisibleInListings": *option.VisibleInListings})
+		query = query.Where(squirrel.Eq{"ProductChannelListings.VisibleInListings": *option.VisibleInListings})
 	}
-
-	// check available for purchase
 	if pur := option.AvailableForPurchase; pur != nil {
-		query = query.Where(pur.ToSquirrel("PCL.AvailableForPurchase"))
+		query = query.Where(pur.ToSquirrel("ProductChannelListings.AvailableForPurchase"))
 	}
-
-	// check currency
 	if option.Currency != nil {
-		query = query.Where(option.Currency.ToSquirrel("PCL.Currency"))
+		query = query.Where(option.Currency.ToSquirrel("ProductChannelListings.Currency"))
 	}
 
-	// check product variant
 	if option.ProductVariantsId != nil {
 		query = query.
-			InnerJoin(store.ProductTableName + " AS P ON (P.Id = PCL.ProductID)").
-			InnerJoin(store.ProductVariantTableName + " AS PV ON (PV.ProductID = P.Id)").
-			Where(option.ProductVariantsId.ToSquirrel("PV.Id"))
+			InnerJoin(store.ProductTableName + " ON (Products.Id = ProductChannelListings.ProductID)").
+			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.ProductID = Products.Id)").
+			Where(option.ProductVariantsId.ToSquirrel("ProductVariants.Id"))
 	}
-
-	// check publish
 	if option.PublicationDate != nil {
-		query = query.Where(option.PublicationDate.ToSquirrel("PCL.PublicationDate"))
+		query = query.Where(option.PublicationDate.ToSquirrel("ProductChannelListings.PublicationDate"))
 	}
-
 	if option.IsPublished != nil {
-		query = query.Where(squirrel.Eq{"PCL.IsPublished": *option.IsPublished})
+		query = query.Where(squirrel.Eq{"ProductChannelListings.IsPublished": *option.IsPublished})
 	}
 
 	sqlString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "sql to string")
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
 	var listings []*product_and_discount.ProductChannelListing

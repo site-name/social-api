@@ -41,6 +41,7 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields() []string {
 		"ProductVariantChannelListings.Currency",
 		"ProductVariantChannelListings.PriceAmount",
 		"ProductVariantChannelListings.CostPriceAmount",
+		"ProductVariantChannelListings.CreateAt",
 	}
 }
 

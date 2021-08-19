@@ -7,6 +7,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 )
 
@@ -15,9 +16,9 @@ type ProductChannelListing struct {
 	ProductID             string           `json:"product_id"`
 	ChannelID             string           `json:"channel_id"`
 	VisibleInListings     bool             `json:"visible_in_listings"`
-	AvailableForPurchase  *time.Time       `json:"available_for_purchase"`
-	Currency              string           `json:"currency"`
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`
+	AvailableForPurchase  *time.Time       `json:"available_for_purchase"`  // UTC time
+	Currency              string           `json:"currency"`                // default "USD"
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"` // default decimal(0)
 	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"`
 	CreateAt              uint64           `json:"create_at"`
 	model.Publishable
@@ -36,16 +37,17 @@ type ProductChannelListingFilterOption struct {
 	IsPublished          *bool
 }
 
-// Check if product is can be bought now
+// Check if product
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
-	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(time.Now())
+	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(util.StartOfDay(time.Now().UTC()))
 }
 
 func (p *ProductChannelListing) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.product_channel_listing.is_valid.%s.app_error",
 		"product_channel_listing_id=",
-		"ProductChannelListing.IsValid")
+		"ProductChannelListing.IsValid",
+	)
 
 	if !model.IsValidId(p.Id) {
 		return outer("id", nil)
@@ -62,6 +64,24 @@ func (p *ProductChannelListing) IsValid() *model.AppError {
 	return nil
 }
 
+func (p *ProductChannelListing) PopulateNonDbFields() {
+	p.DiscountedPrice, _ = goprices.NewMoney(p.DiscountedPriceAmount, p.Currency)
+}
+
+func (p *ProductChannelListing) commonPre() {
+	if p.DiscountedPrice != nil {
+		p.DiscountedPriceAmount = p.DiscountedPrice.Amount
+	} else {
+		p.DiscountedPriceAmount = &decimal.Zero
+	}
+
+	if p.Currency == "" {
+		p.Currency = model.DEFAULT_CURRENCY
+	} else {
+		p.Currency = strings.ToUpper(p.Currency)
+	}
+}
+
 func (p *ProductChannelListing) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
@@ -69,4 +89,5 @@ func (p *ProductChannelListing) PreSave() {
 	if p.CreateAt == 0 {
 		p.CreateAt = uint64(model.GetMillis())
 	}
+	p.commonPre()
 }

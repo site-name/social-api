@@ -26,19 +26,19 @@ func init() {
 		OrderEventTableName:      "CreateAt ASC",  //
 
 		ProductCategoryTableName:                 "",                            // product
-		ProductCategoryTranslationTableName:      "",                            //
+		ProductCategoryTranslationTableName:      "LanguageCode ASC",            //
 		ProductChannelListingTableName:           "CreateAt ASC",                //
 		ProductCollectionChannelListingTableName: "CreateAt ASC",                //
 		CollectionProductRelationTableName:       "",                            //
 		ProductCollectionTableName:               "Slug ASC",                    //
-		ProductCollectionTranslationTableName:    "",                            //
+		ProductCollectionTranslationTableName:    "LanguageCode ASC",            //
 		ProductDigitalContentTableName:           "",                            //
 		ProductDigitalContentURLTableName:        "",                            //
 		ProductMediaTableName:                    "SortOrder ASC, CreateAt ASC", //
 		ProductTableName:                         "Slug ASC",                    //
-		ProductTranslationTableName:              "",                            //
+		ProductTranslationTableName:              "LanguageCode ASC",            //
 		ProductTypeTableName:                     "Slug ASC",                    //
-		ProductVariantChannelListingTableName:    "",                            //
+		ProductVariantChannelListingTableName:    "CreateAt ASC",                //
 		ProductVariantMediaTableName:             "",                            //
 		ProductVariantTableName:                  "SortOrder ASC, Sku ASC",      //
 		ProductVariantTranslactionTableName:      "",                            //
@@ -145,23 +145,23 @@ func init() {
 
 // all system product related table names
 const (
-	ProductCategoryTableName                 = "Categories"                       //
-	ProductCategoryTranslationTableName      = "ProductCategoryTranslations"      //
-	ProductChannelListingTableName           = "ProductChannelListings"           //
-	ProductCollectionChannelListingTableName = "ProductCollectionChannelListings" //
-	CollectionProductRelationTableName       = "ProductCollections"               //
-	ProductCollectionTableName               = "Collections"                      //
-	ProductCollectionTranslationTableName    = "ProductCollectionTranslations"    //
-	ProductDigitalContentTableName           = "DigitalContents"                  //
-	ProductDigitalContentURLTableName        = "DigitalContentURLs"               //
-	ProductMediaTableName                    = "ProductMedias"                    //
-	ProductTableName                         = "Products"                         //
-	ProductTranslationTableName              = "ProductTranslations"              //
-	ProductTypeTableName                     = "ProductTypes"                     //
-	ProductVariantChannelListingTableName    = "ProductVariantChannelListings"    //
-	ProductVariantMediaTableName             = "VariantMedias"                    //
-	ProductVariantTableName                  = "ProductVariants"                  //
-	ProductVariantTranslactionTableName      = "ProductVariantTranslations"       //
+	ProductCategoryTableName                 = "Categories"                    //
+	ProductCategoryTranslationTableName      = "CategoryTranslations"          //
+	ProductChannelListingTableName           = "ProductChannelListings"        //
+	ProductCollectionChannelListingTableName = "CollectionChannelListings"     //
+	CollectionProductRelationTableName       = "ProductCollections"            //
+	ProductCollectionTableName               = "Collections"                   //
+	ProductCollectionTranslationTableName    = "CollectionTranslations"        //
+	ProductDigitalContentTableName           = "DigitalContents"               //
+	ProductDigitalContentURLTableName        = "DigitalContentURLs"            //
+	ProductMediaTableName                    = "ProductMedias"                 //
+	ProductTableName                         = "Products"                      //
+	ProductTranslationTableName              = "ProductTranslations"           //
+	ProductTypeTableName                     = "ProductTypes"                  //
+	ProductVariantChannelListingTableName    = "ProductVariantChannelListings" //
+	ProductVariantMediaTableName             = "VariantMedias"                 //
+	ProductVariantTableName                  = "ProductVariants"               //
+	ProductVariantTranslactionTableName      = "ProductVariantTranslations"    //
 )
 
 // wishlist-related table names

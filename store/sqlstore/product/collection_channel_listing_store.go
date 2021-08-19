@@ -18,11 +18,12 @@ func NewSqlCollectionChannelListingStore(s store.Store) store.CollectionChannelL
 		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
 
-		table.SetUniqueTogether("ChannelID", "CollectionID")
+		table.SetUniqueTogether("CollectionID", "ChannelID")
 	}
 	return ccls
 }
 
 func (ps *SqlCollectionChannelListingStore) CreateIndexesIfNotExists() {
-
+	ps.CreateForeignKeyIfNotExists(store.ProductCollectionChannelListingTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
+	ps.CreateForeignKeyIfNotExists(store.ProductCollectionChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
 }

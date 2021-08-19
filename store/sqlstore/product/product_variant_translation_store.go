@@ -14,11 +14,11 @@ func NewSqlProductVariantTranslationStore(s store.Store) store.ProductVariantTra
 	pvts := &SqlProductVariantTranslationStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductVariantTranslation{}, "ProductVariantTranslations").SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.ProductVariantTranslation{}, store.ProductVariantTranslactionTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_VARIANT_NAME_MAX_LENGTH).SetUnique(true)
+		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_VARIANT_NAME_MAX_LENGTH)
 
 		table.SetUniqueTogether("LanguageCode", "ProductVariantID")
 	}
@@ -26,7 +26,5 @@ func NewSqlProductVariantTranslationStore(s store.Store) store.ProductVariantTra
 }
 
 func (ps *SqlProductVariantTranslationStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_product_variant_translations_name", "ProductVariantTranslations", "Name")
-	ps.CreateIndexIfNotExists("idx_product_variant_translations_name_lower_textpattern", "ProductVariantTranslations", "lower(Name) text_pattern_ops")
-
+	ps.CreateForeignKeyIfNotExists(store.ProductVariantTranslactionTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
 }
