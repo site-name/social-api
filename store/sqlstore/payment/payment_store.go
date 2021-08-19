@@ -206,7 +206,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 	}
 	if option.TransactionsKind != nil {
 		query = query.
-			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
+			LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
 			Where(option.TransactionsKind.ToSquirrel("Transactions.Kind"))
 
 		// let later checks know that this query has already joined transaction table
@@ -216,7 +216,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		// check if already joined table transactions
 		if !joinedTransactionTable {
 			query = query.
-				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+				LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.ActionRequired": *option.TransactionsActionRequired})
 	}
@@ -224,7 +224,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		// check if already joined table transactions
 		if !joinedTransactionTable {
 			query = query.
-				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+				LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.IsSuccess": *option.TransactionsIsSuccess})
 	}

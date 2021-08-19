@@ -4570,6 +4570,22 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -4586,10 +4602,10 @@ func (s *TimerLayerProductStore) Get(id string) (*product_and_discount.Product, 
 	return result, err
 }
 
-func (s *TimerLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.GetProductsByIds(ids)
+	result, err := s.ProductStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4597,23 +4613,7 @@ func (s *TimerLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.GetProductsByIds", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductStore.ProductByProductVariantID(productVariantID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.ProductByProductVariantID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }

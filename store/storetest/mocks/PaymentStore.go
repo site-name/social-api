@@ -56,13 +56,13 @@ func (_m *PaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: id
-func (_m *PaymentStore) Get(id string) (*payment.Payment, error) {
-	ret := _m.Called(id)
+// Get provides a mock function with given fields: id, lockForUpdate
+func (_m *PaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
+	ret := _m.Called(id, lockForUpdate)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(string) *payment.Payment); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(string, bool) *payment.Payment); ok {
+		r0 = rf(id, lockForUpdate)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*payment.Payment)
@@ -70,8 +70,8 @@ func (_m *PaymentStore) Get(id string) (*payment.Payment, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(id, lockForUpdate)
 	} else {
 		r1 = ret.Error(1)
 	}

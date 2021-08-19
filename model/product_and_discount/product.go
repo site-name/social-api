@@ -34,6 +34,12 @@ type Product struct {
 	seo.Seo
 }
 
+// ProductFilterOption is used to compose squirrel sql queries
+type ProductFilterOption struct {
+	Id               *model.StringFilter
+	ProductVariantID *model.StringFilter // LEFT JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
+}
+
 func (p *Product) PlainTextDescription() string {
 	panic("not implemented")
 }

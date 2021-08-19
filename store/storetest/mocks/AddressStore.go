@@ -33,6 +33,29 @@ func (_m *AddressStore) DeleteAddresses(addressIDs []string) error {
 	return r0
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *AddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+	ret := _m.Called(option)
+
+	var r0 []*account.Address
+	if rf, ok := ret.Get(0).(func(*account.AddressFilterOption) []*account.Address); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*account.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*account.AddressFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: addressID
 func (_m *AddressStore) Get(addressID string) (*account.Address, error) {
 	ret := _m.Called(addressID)
@@ -49,29 +72,6 @@ func (_m *AddressStore) Get(addressID string) (*account.Address, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(addressID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAddressesByIDs provides a mock function with given fields: addressesIDs
-func (_m *AddressStore) GetAddressesByIDs(addressesIDs []string) ([]*account.Address, error) {
-	ret := _m.Called(addressesIDs)
-
-	var r0 []*account.Address
-	if rf, ok := ret.Get(0).(func([]string) []*account.Address); ok {
-		r0 = rf(addressesIDs)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*account.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(addressesIDs)
 	} else {
 		r1 = ret.Error(1)
 	}

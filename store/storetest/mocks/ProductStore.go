@@ -19,6 +19,29 @@ func (_m *ProductStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *ProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+	ret := _m.Called(option)
+
+	var r0 []*product_and_discount.Product
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductFilterOption) []*product_and_discount.Product); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.Product)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *ProductStore) Get(id string) (*product_and_discount.Product, error) {
 	ret := _m.Called(id)
@@ -42,22 +65,22 @@ func (_m *ProductStore) Get(id string) (*product_and_discount.Product, error) {
 	return r0, r1
 }
 
-// GetProductsByIds provides a mock function with given fields: ids
-func (_m *ProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
-	ret := _m.Called(ids)
+// GetByOption provides a mock function with given fields: option
+func (_m *ProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
+	ret := _m.Called(option)
 
-	var r0 []*product_and_discount.Product
-	if rf, ok := ret.Get(0).(func([]string) []*product_and_discount.Product); ok {
-		r0 = rf(ids)
+	var r0 *product_and_discount.Product
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductFilterOption) *product_and_discount.Product); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*product_and_discount.Product)
+			r0 = ret.Get(0).(*product_and_discount.Product)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(ids)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,29 +102,6 @@ func (_m *ProductStore) ModelFields() []string {
 	}
 
 	return r0
-}
-
-// ProductByProductVariantID provides a mock function with given fields: productVariantID
-func (_m *ProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
-	ret := _m.Called(productVariantID)
-
-	var r0 *product_and_discount.Product
-	if rf, ok := ret.Get(0).(func(string) *product_and_discount.Product); ok {
-		r0 = rf(productVariantID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*product_and_discount.Product)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(productVariantID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // Save provides a mock function with given fields: prd

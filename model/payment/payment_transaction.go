@@ -66,6 +66,15 @@ type PaymentTransaction struct {
 	AlreadyProcessed   bool             `json:"already_processed"`
 }
 
+// PaymentTransactionFilterOpts contains options for filter payment's transactions
+type PaymentTransactionFilterOpts struct {
+	Id             *model.StringFilter
+	PaymentID      *model.StringFilter
+	Kind           *model.StringFilter
+	ActionRequired *bool
+	IsSuccess      *bool
+}
+
 func (p *PaymentTransaction) String() string {
 	return fmt.Sprintf(
 		"Transaction(type=%s, is_success=%t, created=%d)",

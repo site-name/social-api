@@ -432,7 +432,13 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 				a.wg.Add(1)
 
 				go func(anOrderLine *order.OrderLine) {
-					orderLineProduct, appErr := a.ProductApp().ProductByProductVariantID(*anOrderLine.VariantID)
+					orderLineProduct, appErr := a.ProductApp().ProductByOption(&product_and_discount.ProductFilterOption{
+						ProductVariantID: &model.StringFilter{
+							StringOption: &model.StringOption{
+								Eq: *anOrderLine.VariantID,
+							},
+						},
+					})
 					if appErr != nil {
 						setAppError(appErr)
 					} else {

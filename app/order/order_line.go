@@ -108,12 +108,12 @@ func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLi
 
 // OrderLineById returns an order line byt given orderLineID
 func (a *AppOrder) OrderLineById(orderLineID string) (*order.OrderLine, *model.AppError) {
-	odrLine, err := a.Srv().Store.OrderLine().Get(orderLineID)
+	orderLine, err := a.Srv().Store.OrderLine().Get(orderLineID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("OrderLineById", "app.order.missing_order_line.app_error", err)
 	}
 
-	return odrLine, nil
+	return orderLine, nil
 }
 
 // OrderLineIsDiagital Check if a variant is digital and contains digital content.

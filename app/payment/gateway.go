@@ -1,6 +1,10 @@
 package payment
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 )
@@ -47,7 +51,7 @@ func (a *AppPayment) ProcessPayment(
 	token string,
 	manager interface{},
 	channelSlug string,
-	customerID string, // can be empty
+	customerID *string, // can be empty
 	storeSource bool, // default to false
 	additionalData map[string]string, // can be nil
 
@@ -63,10 +67,157 @@ func (a *AppPayment) ProcessPayment(
 		return nil, nil, appErr
 	}
 
-	_, appErr = a.CreatePaymentInformation(payMent, &token, nil, &customerID, storeSource, additionalData)
+	_, appErr = a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, additionalData)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
+	panic("not implemented")
+}
+
+func (a *AppPayment) Authorize(
+	payMent *payment.Payment,
+	token string,
+	manager interface{},
+	channelSlug string,
+	customerID *string,
+	storeSource bool,
+
+) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+
+	payMent, paymentErr := a.requireActivePayment("ProcessPayment", payMent)
+	if paymentErr != nil {
+		return nil, paymentErr, nil
+	}
+
+	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	paymentErr = a.CleanAuthorize(payMent)
+	if paymentErr != nil {
+		return nil, paymentErr, nil
+	}
+
+	_, appErr = a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, nil)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	panic("not implt")
+}
+
+func (a *AppPayment) Capture(
+	payMent *payment.Payment,
+	manager interface{},
+	channelSlug string,
+	amount *decimal.Decimal, // can be nil
+	customerID *string, // can be nil
+	storeSource bool, // default false
+
+) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+
+	payMent, paymentErr := a.requireActivePayment("ProcessPayment", payMent)
+	if paymentErr != nil {
+		return nil, paymentErr, nil
+	}
+
+	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	panic("not implemented")
+}
+
+func (a *AppPayment) Refund(
+	payMent *payment.Payment,
+	manager interface{},
+	channelSlug string,
+	amount *decimal.Decimal, // can be nil
+
+) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+	panic("not implt")
+}
+
+func (a *AppPayment) Void(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+	panic("not implt")
+}
+
+func (a *AppPayment) Confirm(
+	payMent *payment.Payment,
+	manager interface{},
+	channelSlug string,
+	additionalData map[string]string, // can be none
+
+) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+	panic("not implt")
+}
+
+func (a *AppPayment) ListPaymentSources(
+	gateway string,
+	customerID string,
+	manager interface{},
+	channelSlug string,
+
+) ([]*payment.CustomerSource, *model.AppError) {
+	panic("not implemented")
+}
+
+func (a *AppPayment) ListGateways(
+	manager interface{},
+	channelSlug string,
+) ([]*payment.PaymentGateway, *model.AppError) {
+	panic("not implemented")
+}
+
+func (a *AppPayment) fetchGatewayResponse(fn func()) {
+	panic("not implemented")
+}
+
+func (a *AppPayment) getPastTransactionToken(payMent *payment.Payment, kind string) (string, *payment.PaymentError, *model.AppError) {
+	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
+		PaymentID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: payMent.Id,
+			},
+		},
+		Kind: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: kind,
+			},
+		},
+		IsSuccess: model.NewBool(true),
+	})
+	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
+		return "", nil, appErr
+	}
+
+	if length := len(transactions); length == 0 {
+		return "", payment.NewPaymentError("getPastTransactionToken", fmt.Sprintf("Cannot find successful %s transaction", kind), payment.NOT_FOUND), nil
+	} else {
+		return transactions[length-1].Token, nil, nil
+	}
+}
+
+func (a *AppPayment) validateRefundAmount(payMent *payment.Payment, amount *decimal.Decimal) *payment.PaymentError {
+	if amount.LessThan(decimal.Zero) {
+		return payment.NewPaymentError("validateRefundAmount", "Amount should be positive number", payment.INVALID)
+	}
+	if payMent.CapturedAmount == nil {
+		payMent.CapturedAmount = &decimal.Zero
+	}
+	if amount.GreaterThan(*payMent.CapturedAmount) {
+		return payment.NewPaymentError("validateRefundAmount", "Cannot refund more than captures.", payment.INVALID)
+	}
+
+	return nil
+}
+
+func (a *AppPayment) PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) *model.AppError {
+	if payMent == nil {
+		return nil
+	}
 	panic("not implemented")
 }

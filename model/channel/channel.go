@@ -1,7 +1,6 @@
 package channel
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -24,6 +23,7 @@ type Channel struct {
 	Currency string `json:"currency"`
 }
 
+// ChannelFilterOption is used for building sql queries
 type ChannelFilterOption struct {
 	Id       *model.StringFilter
 	Name     *model.StringFilter
@@ -60,12 +60,6 @@ func (c *Channel) IsValid() *model.AppError {
 
 func (c *Channel) ToJson() string {
 	return model.ModelToJson(c)
-}
-
-func ChannelFromJson(data io.Reader) *Channel {
-	var channel Channel
-	model.ModelFromJson(&channel, data)
-	return &channel
 }
 
 func (c *Channel) PreSave() {

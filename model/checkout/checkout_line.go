@@ -1,8 +1,6 @@
 package checkout
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -24,12 +22,6 @@ type CheckoutLine struct {
 
 func (c *CheckoutLine) ToJson() string {
 	return model.ModelToJson(c)
-}
-
-func CheckoutLineFromJson(data io.Reader) *CheckoutLine {
-	var checkoutLine CheckoutLine
-	model.ModelFromJson(&checkoutLine, data)
-	return &checkoutLine
 }
 
 func (c *CheckoutLine) Equal(other *CheckoutLine) bool {

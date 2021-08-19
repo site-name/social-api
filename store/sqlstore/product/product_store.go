@@ -3,7 +3,6 @@ package product
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -61,6 +60,7 @@ func (ps *SqlProductStore) CreateIndexesIfNotExists() {
 	ps.CommonMetaDataIndex(store.ProductTableName)
 }
 
+// Save inserts given product into database then returns it
 func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
 	prd.PreSave()
 	if err := prd.IsValid(); err != nil {
@@ -80,6 +80,7 @@ func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and
 	return prd, nil
 }
 
+// Get finds and returns 1 product by given id
 func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error) {
 	var res product_and_discount.Product
 	err := ps.GetMaster().SelectOne(&res, "SELECT * FROM "+store.ProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
@@ -93,62 +94,67 @@ func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error)
 	return &res, nil
 }
 
-func (ps *SqlProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
-	sqlQuery, args, err := ps.GetQueryBuilder().
-		Select("*").
-		From(store.ProductTableName).
-		Where(squirrel.Eq{"Id": ids}).
-		ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "get_products_by_ids")
-	}
-
-	products := []*product_and_discount.Product{}
-	_, err = ps.GetMaster().Select(&products, sqlQuery, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find Products by given ids")
-	}
-
-	return products, nil
-}
-
-// ProductByProductVariantID finds and returns a product that has given variant
-func (ps *SqlProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
-	rowScanner := ps.GetQueryBuilder().
+// FilterByOption finds and returns all products that satisfy given option
+func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTableName).
-		InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
-		Where(squirrel.Eq{"ProductVariants.Id": productVariantID}).
-		RunWith(ps.GetReplica()).
-		QueryRow()
+		OrderBy(store.TableOrderingMap[store.ProductTableName])
 
-	var product product_and_discount.Product
-	err := rowScanner.Scan(
-		&product.Id,
-		&product.ProductTypeID,
-		&product.Name,
-		&product.Slug,
-		&product.Description,
-		&product.DescriptionPlainText,
-		&product.CategoryID,
-		&product.CreateAt,
-		&product.UpdateAt,
-		&product.ChargeTaxes,
-		&product.Weight,
-		&product.WeightUnit,
-		&product.DefaultVariantID,
-		&product.Rating,
-		&product.Metadata,
-		&product.PrivateMetadata,
-		&product.SeoTitle,
-		&product.SeoDescription,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTableName, "VariantID="+productVariantID)
-		}
-		return nil, errors.Wrapf(err, "failed to find product with that has a variant with variantID=%s", productVariantID)
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Products.Id"))
+	}
+	if option.ProductVariantID != nil {
+		query = query.
+			LeftJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
 	}
 
-	return &product, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.Product
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find products by given option")
+	}
+
+	return res, nil
+}
+
+// GetByOption finds and returns 1 product that satisfies given option
+func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductTableName).
+		OrderBy(store.TableOrderingMap[store.ProductTableName])
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Products.Id"))
+	}
+	if option.ProductVariantID != nil {
+		query = query.
+			LeftJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	var res product_and_discount.Product
+	err = ps.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductTableName, "option")
+		}
+		return nil, errors.Wrap(err, "failed to find product by given option")
+	}
+
+	return &res, nil
 }

@@ -512,8 +512,8 @@ type (
 		ModelFields() []string
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		Get(id string) (*product_and_discount.Product, error)
-		GetProductsByIds(ids []string) ([]*product_and_discount.Product, error)
-		ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) // ProductByProductVariantID finds and returns a product that has given variant
+		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
+		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
 	}
 )
 

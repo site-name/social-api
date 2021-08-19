@@ -14,29 +14,6 @@ type CheckoutStore struct {
 	mock.Mock
 }
 
-// CheckoutsByUserID provides a mock function with given fields: userID, channelActive
-func (_m *CheckoutStore) CheckoutsByUserID(userID string, channelActive bool) ([]*checkout.Checkout, error) {
-	ret := _m.Called(userID, channelActive)
-
-	var r0 []*checkout.Checkout
-	if rf, ok := ret.Get(0).(func(string, bool) []*checkout.Checkout); ok {
-		r0 = rf(userID, channelActive)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*checkout.Checkout)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(userID, channelActive)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *CheckoutStore) CreateIndexesIfNotExists() {
 	_m.Called()
@@ -65,6 +42,29 @@ func (_m *CheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checko
 	return r0, r1
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *CheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+	ret := _m.Called(option)
+
+	var r0 []*checkout.Checkout
+	if rf, ok := ret.Get(0).(func(*checkout.CheckoutFilterOption) []*checkout.Checkout); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*checkout.Checkout)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*checkout.CheckoutFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: token
 func (_m *CheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	ret := _m.Called(token)
@@ -81,6 +81,29 @@ func (_m *CheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(token)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByOption provides a mock function with given fields: option
+func (_m *CheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+	ret := _m.Called(option)
+
+	var r0 *checkout.Checkout
+	if rf, ok := ret.Get(0).(func(*checkout.CheckoutFilterOption) *checkout.Checkout); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*checkout.Checkout)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*checkout.CheckoutFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

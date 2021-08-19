@@ -1,6 +1,8 @@
 package product
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -27,12 +29,34 @@ func (a *AppProduct) ProductById(productID string) (*product_and_discount.Produc
 	return product, nil
 }
 
-// ProductByProductVariantID finds and returns product with given product varnait id
-func (a *AppProduct) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError) {
-	product, err := a.Srv().Store.Product().ProductByProductVariantID(productVariantID)
+// ProductsByOption returns a list of products that satisfy given option
+func (a *AppProduct) ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError) {
+	products, err := a.Srv().Store.Product().FilterByOption(option)
+	var (
+		statusCode int
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductByProductVariantID", "app.product.error_finding_product_by_product_variant_id.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
 	}
+	if len(products) == 0 {
+		statusCode = http.StatusNotFound
+	}
+	if statusCode != 0 {
+		return nil, model.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, errMsg, statusCode)
+	}
+
+	return products, nil
+}
+
+// ProductByOption returns 1 product that satisfy given option
+func (a *AppProduct) ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError) {
+	product, err := a.Srv().Store.Product().GetByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductByOption", "app.error_finding_product_by_option.app_error", err)
+	}
+
 	return product, nil
 }
 

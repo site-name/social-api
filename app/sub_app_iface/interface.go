@@ -225,12 +225,13 @@ type ProductApp interface {
 	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
 	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError)                                 // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
 	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                                                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
-	ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, *model.AppError)                                        // ProductByProductVariantID finds and returns product with given product varnait id
 	CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError)                                                    // CategoryByProductID finds and returns a category by given productID
 	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
 	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) // ProductVariantsByOption returns a list of product variants satisfy given option
 	CreateDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)     // CreateDigitalContentURL create a digital content url then returns it
+	ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError)                      // ProductsByOption returns a list of products that satisfy given option
+	ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError)                         // ProductByOption returns 1 product that satisfy given option
 }
 
 type WishlistApp interface {

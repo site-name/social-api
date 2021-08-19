@@ -19,6 +19,29 @@ func (_m *PaymentTransactionStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *PaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+	ret := _m.Called(option)
+
+	var r0 []*payment.PaymentTransaction
+	if rf, ok := ret.Get(0).(func(*payment.PaymentTransactionFilterOpts) []*payment.PaymentTransaction); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*payment.PaymentTransaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*payment.PaymentTransactionFilterOpts) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *PaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	ret := _m.Called(id)
@@ -35,29 +58,6 @@ func (_m *PaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAllByPaymentID provides a mock function with given fields: paymentID
-func (_m *PaymentTransactionStore) GetAllByPaymentID(paymentID string) ([]*payment.PaymentTransaction, error) {
-	ret := _m.Called(paymentID)
-
-	var r0 []*payment.PaymentTransaction
-	if rf, ok := ret.Get(0).(func(string) []*payment.PaymentTransaction); ok {
-		r0 = rf(paymentID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*payment.PaymentTransaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(paymentID)
 	} else {
 		r1 = ret.Error(1)
 	}

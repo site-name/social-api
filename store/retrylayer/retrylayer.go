@@ -5401,6 +5401,26 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
+func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
 
 	tries := 0
@@ -5421,31 +5441,11 @@ func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, 
 
 }
 
-func (s *RetryLayerProductStore) GetProductsByIds(ids []string) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.GetProductsByIds(ids)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductStore) ProductByProductVariantID(productVariantID string) (*product_and_discount.Product, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductStore.ProductByProductVariantID(productVariantID)
+		result, err := s.ProductStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
