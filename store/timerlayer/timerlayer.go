@@ -4650,6 +4650,26 @@ func (s *TimerLayerProductStore) GetByOption(option *product_and_discount.Produc
 	return result, err
 }
 
+func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+	product_and_discount.Product
+	IsPublished     bool
+	PublicationDate *time.Time
+}, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.NotPublishedProducts", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -4666,6 +4686,38 @@ func (s *TimerLayerProductStore) ProductsByVoucherID(voucherID string) ([]*produ
 	return result, err
 }
 
+func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.PublishedProducts(channelSlug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.PublishedProducts", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.PublishedWithVariants(channelSlug)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.PublishedWithVariants", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -4678,6 +4730,22 @@ func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.VisibleToUserProducts", success, elapsed)
 	}
 	return result, err
 }

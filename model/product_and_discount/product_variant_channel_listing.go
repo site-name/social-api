@@ -11,12 +11,12 @@ import (
 
 type ProductVariantChannelListing struct {
 	Id              string           `json:"id"`
-	VariantID       string           `json:"variant_id"`             // not null
-	ChannelID       string           `json:"channel_id"`             // not null
-	Currency        string           `json:"currency"`               // default "USD"
-	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"` // default decimal(0)
+	VariantID       string           `json:"variant_id"` // not null
+	ChannelID       string           `json:"channel_id"` // not null
+	Currency        string           `json:"currency"`
+	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
 	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
-	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // default decimal(0)
+	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // can be NULL
 	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
 	CreateAt        int64            `json:"create_at"`
 }
@@ -54,19 +54,14 @@ func (p *ProductVariantChannelListing) PreSave() {
 func (p *ProductVariantChannelListing) commonPre() {
 	if p.Price != nil {
 		p.PriceAmount = p.Price.Amount
-	} else {
-		p.PriceAmount = &decimal.Zero
 	}
 
 	if p.CostPrice != nil {
 		p.CostPriceAmount = p.CostPrice.Amount
-	} else {
-		p.CostPriceAmount = &decimal.Zero
 	}
+
 	if p.Currency != "" {
 		p.Currency = strings.ToUpper(p.Currency)
-	} else {
-		p.Currency = model.DEFAULT_CURRENCY
 	}
 }
 

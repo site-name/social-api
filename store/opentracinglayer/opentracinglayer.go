@@ -5078,6 +5078,28 @@ func (s *OpenTracingLayerProductStore) GetByOption(option *product_and_discount.
 	return result, err
 }
 
+func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+	product_and_discount.Product
+	IsPublished     bool
+	PublicationDate *time.Time
+}, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.NotPublishedProducts")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.ProductsByVoucherID")
@@ -5096,6 +5118,42 @@ func (s *OpenTracingLayerProductStore) ProductsByVoucherID(voucherID string) ([]
 	return result, err
 }
 
+func (s *OpenTracingLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.PublishedProducts")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.PublishedProducts(channelSlug)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.PublishedWithVariants")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.PublishedWithVariants(channelSlug)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.Save")
@@ -5106,6 +5164,24 @@ func (s *OpenTracingLayerProductStore) Save(prd *product_and_discount.Product) (
 
 	defer span.Finish()
 	result, err := s.ProductStore.Save(prd)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProducts")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

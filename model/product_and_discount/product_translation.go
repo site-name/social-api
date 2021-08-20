@@ -1,7 +1,7 @@
 package product_and_discount
 
 import (
-	"io"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
@@ -48,14 +48,24 @@ func (p *ProductTranslation) ToJson() string {
 	return model.ModelToJson(p)
 }
 
-func ProductTranslationFromJson(data io.Reader) *ProductTranslation {
-	var p ProductTranslation
-	model.ModelFromJson(&p, data)
-	return &p
-}
-
 func (p *ProductTranslation) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+	p.commonPre()
+}
+
+func (p *ProductTranslation) commonPre() {
+	p.LanguageCode = strings.ToLower(p.LanguageCode)
+	p.Name = model.SanitizeUnicode(p.Name)
+	if p.SeoTitle != nil {
+		*p.SeoTitle = model.SanitizeUnicode(*p.SeoTitle)
+	}
+	if p.SeoDescription != nil {
+		*p.SeoDescription = model.SanitizeUnicode(*p.SeoDescription)
+	}
+}
+
+func (p *ProductTranslation) PreUpdate() {
+	p.commonPre()
 }

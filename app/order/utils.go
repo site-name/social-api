@@ -19,7 +19,6 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // GetOrderCountry Return country to which order will be shipped
@@ -245,12 +244,9 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 			a.wg.Add(1)
 
 			go func(anOrderLine *order.OrderLine) {
-				productVariantWeight, err := a.Srv().Store.ProductVariant().GetWeight(*anOrderLine.VariantID)
-				if err != nil {
-					if _, ok := err.(*store.ErrNotFound); !ok { // set appError if the error is caused by system.
-						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
-						// Ignore If not variant found
-					}
+				productVariantWeight, appErr := a.ProductApp().ProductVariantGetWeight(*anOrderLine.VariantID)
+				if appErr != nil {
+					setAppError(appErr)
 				} else {
 					a.mutex.Lock()
 					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))

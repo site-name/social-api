@@ -232,6 +232,7 @@ type ProductApp interface {
 	CreateDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)     // CreateDigitalContentURL create a digital content url then returns it
 	ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError)                      // ProductsByOption returns a list of products that satisfy given option
 	ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError)                         // ProductByOption returns 1 product that satisfy given option
+	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)                                                    // ProductVariantGetWeight returns weight of given product variant
 }
 
 type WishlistApp interface {

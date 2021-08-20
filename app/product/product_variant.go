@@ -5,6 +5,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,6 +19,7 @@ func (a *AppProduct) ProductVariantById(id string) (*product_and_discount.Produc
 	return variant, nil
 }
 
+// ProductVariantGetPrice returns price
 func (a *AppProduct) ProductVariantGetPrice(
 	product *product_and_discount.Product,
 	collections []*product_and_discount.Collection,
@@ -56,4 +58,14 @@ func (a *AppProduct) ProductVariantsByOption(option *product_and_discount.Produc
 	}
 
 	return productVariants, nil
+}
+
+// ProductVariantGetWeight returns weight of given product variant
+func (a *AppProduct) ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError) {
+	weight, err := a.Srv().Store.ProductVariant().GetWeight(productVariantID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantGetWeight", "app.product.error_getting_product_variant_weight.app_error", err)
+	}
+
+	return weight, nil
 }

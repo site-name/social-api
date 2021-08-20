@@ -2,11 +2,13 @@ package product
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -163,14 +165,276 @@ func (ps *SqlProductStore) ProductsByVoucherID(voucherID string) ([]*product_and
 	})
 }
 
-// FilterPublishedProducts finds and returns products that belong to given channel slug and are published
-func (ps *SqlProductStore) FilterPublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
-
-	channelBySlugAndExist := ps.
+// channelQuery is a utility function to compose a filter query on `Channels` table.
+//
+// `channelSlug` is to filter attribute Channels.Slug.
+//
+// `compareToTable` is database table that has property `ChannelID`.
+// This argument can be `ProductChannelListings` or `ProductVariantChannelListings`
+func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, compareToTable string) squirrel.SelectBuilder {
+	var channelActiveExpr string
+	if isActive != nil {
+		if *isActive {
+			channelActiveExpr = "Channels.IsActive "
+		} else {
+			channelActiveExpr = "NOT Channels.IsActive "
+		}
+	}
+	return ps.
 		GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where("Channels.IsActive AND Channels.Slug = ? AND Channels.Id = ProductChannelListings.ChannelID", channelSlug).
+		Where(channelActiveExpr+"AND Channels.Slug = ? AND Channels.Id = ?.ChannelID", channelSlug, compareToTable).
+		Suffix(")").
 		Limit(1)
+}
+
+// FilterPublishedProducts finds and returns products that belong to given channel slug and are published
+//
+// refer to ./product_store_doc.md (line 1)
+func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+
+	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
+
+	today := util.StartOfDay(time.Now().UTC())
+
+	productChannelListingQuery := ps.
+		GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductChannelListingTableName).
+		Where(squirrel.And{
+			squirrel.Or{
+				squirrel.LtOrEq{"ProductChannelListings.PublicationDate": today},
+				squirrel.Eq{"ProductChannelListings.PublicationDate": nil},
+			},
+			squirrel.Eq{"ProductChannelListings.IsPublished": true},
+			squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
+			channelQuery,
+		}).
+		Suffix(")").
+		Limit(1)
+
+	query := ps.
+		GetQueryBuilder().
+		Select("*").
+		From(store.ProductTableName).
+		Where(productChannelListingQuery).
+		OrderBy(store.TableOrderingMap[store.ProductTableName])
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterPublishedProducts_ToSql")
+	}
+
+	var res []*product_and_discount.Product
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
+	}
+
+	return res, nil
+}
+
+// FilterNotPublishedProducts finds all not published products belong to given channel
+//
+// refer to ./product_store_doc.md (line 45)
+func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
+	[]*struct {
+		product_and_discount.Product
+		IsPublished     bool
+		PublicationDate *time.Time
+	},
+	error,
+) {
+	today := util.StartOfDay(time.Now().UTC()) // start of day
+
+	isPublishedColumnSelect := ps.GetQueryBuilder().
+		Select("PCL.IsPublished").
+		From(store.ProductChannelListingTableName + " AS PCL").
+		InnerJoin(store.ChannelTableName + " AS C ON (PCL.ChannelID = C.Id)").
+		Where(squirrel.Expr("C.Slug = ?", channelSlug)).
+		Where(squirrel.Expr("PCL.ProductID = Products.Id")).
+		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName]).
+		Limit(1)
+	isPublishedColumnSelectString, args_1, err := isPublishedColumnSelect.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "isPublishedColumnSelect_ToSql")
+	}
+
+	publicationDateColumnSelect := ps.GetQueryBuilder().
+		Select("PCL.PublicationDate").
+		From(store.ProductChannelListingTableName + " AS PCL").
+		InnerJoin(store.ChannelTableName + " AS C ON (C.Id = PCL.ChannelID)").
+		Where(squirrel.Expr("C.Slug = ?", channelSlug)).
+		Where(squirrel.Expr("PCL.ProductID = Products.Id")).
+		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName]).
+		Limit(1)
+	publicationDateColumnSelectString, args_2, err := publicationDateColumnSelect.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "publicationDateColumnSelect_ToSql")
+	}
+
+	queryString, args, err := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		Column(squirrel.Alias(isPublishedColumnSelect, "IsPublished")).
+		Column(squirrel.Alias(publicationDateColumnSelect, "PublicationDate")).
+		From(store.ProductTableName).
+		Where(squirrel.Or{
+			squirrel.And{
+				squirrel.Expr(publicationDateColumnSelectString+" > ?", append(args_2, today)...),
+				squirrel.Expr(isPublishedColumnSelectString, args_1...),
+			},
+			squirrel.Expr("NOT "+isPublishedColumnSelectString, args_1...),
+			squirrel.Expr(isPublishedColumnSelectString+" IS NULL", args_1...),
+		}).
+		OrderBy(store.TableOrderingMap[store.ProductTableName]).
+		ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "NotPublishedProducts_ToSql")
+	}
+
+	var res []*struct {
+		product_and_discount.Product
+		IsPublished     bool
+		PublicationDate *time.Time
+	}
+
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find not published product with channel slug=%s", channelSlug)
+	}
+
+	return res, nil
+}
+
+// PublishedWithVariants finds and returns products.
+//
+// refer to ./product_store_doc.md (line 157)
+func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+
+	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
+	today := util.StartOfDay(time.Now().UTC())
+
+	productChannelListingQuery := ps.
+		GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductChannelListingTableName).
+		Where(squirrel.And{
+			squirrel.Or{
+				squirrel.LtOrEq{"ProductChannelListings.PublicationDate": today},
+				squirrel.Eq{"ProductChannelListings.PublicationDate": nil},
+			},
+			squirrel.Eq{"ProductChannelListings.IsPublished": true},
+			squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
+			channelQuery,
+		}).
+		Suffix(")").
+		Limit(1)
+
+	channelQuery = ps.channelQuery(channelSlug, model.NewBool(true), store.ProductVariantChannelListingTableName)
+
+	productVariantChannelListingQuery := ps.
+		GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductVariantChannelListingTableName).
+		Where(squirrel.And{
+			channelQuery,
+			squirrel.NotEq{"ProductVariantChannelListings.PriceAmount": nil},
+			squirrel.Expr("ProductVariantChannelListings.VariantID = ProductVariants.Id"),
+		}).
+		Suffix(")").
+		Limit(1)
+
+	productVariantQuery := ps.
+		GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductVariantTableName).
+		Where(squirrel.And{
+			productVariantChannelListingQuery,
+			squirrel.Expr("Products.Id = ProductVariants.ProductID"),
+		}).
+		Suffix(")").
+		Limit(1)
+
+	queryString, args, err := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductTableName).
+		Where(squirrel.And{
+			productChannelListingQuery,
+			productVariantQuery,
+		}).
+		OrderBy(store.TableOrderingMap[store.ProductTableName]).
+		ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "PublishedWithVariants_ToSql")
+	}
+	var res []*product_and_discount.Product
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find published with variants product with channelSlug=%s", channelSlug)
+	}
+
+	return res, nil
+}
+
+// FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+//
+// 1) If requesting user is shop staff:
+//
+// 	+) if `channelSlug` is empty string: returns all products. refer to ./product_store_doc.md (line 241, CASE 2)
+//
+// 	+) if `channelSlug` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
+//
+// 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
+func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+	var (
+		res []*product_and_discount.Product
+		err error
+	)
+	// check if requesting user has right to view products
+	if requesterIsStaff {
+		if channelSlug == "" {
+			_, err = ps.GetReplica().Select(&res, "SELECT * FROM "+store.ProductTableName)
+		} else {
+			channelQuery := ps.channelQuery(channelSlug, nil, store.ProductChannelListingTableName)
+			productChannelListingQuery := ps.
+				GetQueryBuilder().
+				Select(`(1) AS "a"`).
+				Prefix("EXISTS (").
+				From(store.ProductChannelListingTableName).
+				Where(squirrel.And{
+					squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
+					channelQuery,
+				}).
+				Suffix(")").
+				Limit(1)
+
+			productQueryString, args, er := ps.
+				GetQueryBuilder().
+				Select(ps.ModelFields()...).
+				From(store.ProductTableName).
+				Where(productChannelListingQuery).
+				OrderBy(store.TableOrderingMap[store.ProductTableName]).
+				ToSql()
+			if er != nil {
+				return nil, errors.Wrap(er, "VisibleToUserProducts_ToSql") // return immediately since this is system error
+			}
+			_, err = ps.GetReplica().Select(&res, productQueryString, args...)
+		}
+	} else {
+		res, err = ps.PublishedWithVariants(channelSlug)
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find visible to users products")
+	}
+
+	return res, nil
 }

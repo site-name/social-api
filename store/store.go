@@ -4,6 +4,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -520,6 +521,14 @@ type (
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
 		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
+		PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error)                            // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
+		NotPublishedProducts(channelSlug string) ([]*struct {
+			product_and_discount.Product
+			IsPublished     bool
+			PublicationDate *time.Time
+		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
+		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                        // PublishedWithVariants finds and returns products.
+		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 	}
 )
 

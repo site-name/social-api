@@ -5501,6 +5501,30 @@ func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.Produc
 
 }
 
+func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
+	product_and_discount.Product
+	IsPublished     bool
+	PublicationDate *time.Time
+}, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.NotPublishedProducts(channelSlug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
 
 	tries := 0
@@ -5521,11 +5545,71 @@ func (s *RetryLayerProductStore) ProductsByVoucherID(voucherID string) ([]*produ
 
 }
 
+func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.PublishedProducts(channelSlug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.PublishedWithVariants(channelSlug)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
 
 	tries := 0
 	for {
 		result, err := s.ProductStore.Save(prd)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
 		if err == nil {
 			return result, nil
 		}

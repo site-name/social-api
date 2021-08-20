@@ -16,9 +16,9 @@ type ProductChannelListing struct {
 	ProductID             string           `json:"product_id"`
 	ChannelID             string           `json:"channel_id"`
 	VisibleInListings     bool             `json:"visible_in_listings"`
-	AvailableForPurchase  *time.Time       `json:"available_for_purchase"`  // UTC time
-	Currency              string           `json:"currency"`                // default "USD"
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"` // default decimal(0)
+	AvailableForPurchase  *time.Time       `json:"available_for_purchase"` // UTC time
+	Currency              string           `json:"currency"`
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"` // can be NULL
 	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"`
 	CreateAt              uint64           `json:"create_at"`
 	model.Publishable
@@ -37,7 +37,6 @@ type ProductChannelListingFilterOption struct {
 	IsPublished          *bool
 }
 
-// Check if product
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(util.StartOfDay(time.Now().UTC()))
 }
@@ -71,13 +70,9 @@ func (p *ProductChannelListing) PopulateNonDbFields() {
 func (p *ProductChannelListing) commonPre() {
 	if p.DiscountedPrice != nil {
 		p.DiscountedPriceAmount = p.DiscountedPrice.Amount
-	} else {
-		p.DiscountedPriceAmount = &decimal.Zero
 	}
 
-	if p.Currency == "" {
-		p.Currency = model.DEFAULT_CURRENCY
-	} else {
+	if p.Currency != "" {
 		p.Currency = strings.ToUpper(p.Currency)
 	}
 }
