@@ -20,6 +20,7 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.Collection{}, store.ProductCollectionTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(product_and_discount.COLLECTION_SLUG_MAX_LENGTH)
 		table.ColMap("BackgroundImage").SetMaxSize(model.URL_LINK_MAX_LENGTH)
@@ -32,13 +33,14 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 
 func (ps *SqlCollectionStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_collections_name", store.ProductCollectionTableName, "Name")
-	ps.CreateIndexIfNotExists("idx_collections_slug", store.ProductCollectionTableName, "Slug")
 	ps.CreateIndexIfNotExists("idx_collections_name_lower_textpattern", store.ProductCollectionTableName, "lower(Name) text_pattern_ops")
+	ps.CreateForeignKeyIfNotExists(store.ProductCollectionTableName, "ShopID", store.ShopTableName, "Id", true)
 }
 
 func (ps *SqlCollectionStore) ModelFields() []string {
 	return []string{
 		"Collections.Id",
+		"Collections.ShopID",
 		"Collections.Name",
 		"Collections.Slug",
 		"Collections.BackgroundImage",
@@ -104,8 +106,21 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Co
 	return &res, nil
 }
 
-// FilterByOption finds and returns a list of collections satisfy the given option
+// FilterByOption finds and returns a list of collections satisfy the given option.
+//
+// NOTE: make sure to provide `ShopID` before calling me.
 func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
+	var res []*product_and_discount.Collection
+
+	// check if SelectAll is true, returns all collections
+	if option.SelectAll {
+		_, err := cs.GetReplica().Select(&res, "SELECT * FROM "+store.ProductCollectionTableName+" WHERE ShopID = :ShopID", map[string]interface{}{"ShopID": option.ShopID})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find collections with given option")
+		}
+		return res, nil
+	}
+
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields()...).
 		From(store.ProductCollectionTableName).
@@ -185,7 +200,6 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.Collection
 	_, err = cs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections with given option")

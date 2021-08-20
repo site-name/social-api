@@ -19,6 +19,7 @@ const (
 
 type Collection struct {
 	Id                 string  `json:"id"`
+	ShopID             string  `json:"shop_id"` // shop that owns this collection
 	Name               string  `json:"name"`
 	Slug               string  `json:"slug"`
 	BackgroundImage    *string `json:"background_image"`
@@ -28,14 +29,19 @@ type Collection struct {
 	seo.Seo
 }
 
-// CollectionFilterOption is used to build sql queries
+// CollectionFilterOption is used to build sql queries.
+//
+// NOTE: Set it nil if you want to find all
 type CollectionFilterOption struct {
-	Id   *model.StringFilter
-	Name *model.StringFilter
+	ShopID    string // single string since we can only view collections of ONLY 1 shop at a time
+	SelectAll bool   // if this is true, ignore every other options and find all collections by shop
+
+	Id   *model.StringFilter //
+	Name *model.StringFilter //
 	Slug *model.StringFilter
 
-	ProductIDs []string // relationship m2m, use ExtraExpr
-	VoucherIDs []string // relationship m2m, use ExtraExpr
+	ProductIDs []string // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
+	VoucherIDs []string // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
 
 	ChannelListingPublicationDate *model.TimeFilter   // INNER JOIN `CollectionChannelListings`
 	ChannelListingChannelSlug     *model.StringFilter // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
@@ -51,6 +57,9 @@ func (c *Collection) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
+	}
+	if !model.IsValidId(c.ShopID) {
+		return outer("shop_id", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > COLLECTION_NAME_MAX_LENGTH {
 		return outer("name", &c.Id)
@@ -79,7 +88,7 @@ func (c *Collection) PreSave() {
 
 func (c *Collection) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
-	c.Slug = slug.Make(c.Name)
+	c.Slug = slug.Make(c.Name) // ?
 }
 
 // CollectionTranslation
