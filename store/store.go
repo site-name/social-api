@@ -451,6 +451,9 @@ type (
 	}
 	ProductMediaStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error)                        // Upsert depends on given media's Id property to decide insert or update it
+		Get(id string) (*product_and_discount.ProductMedia, error)                                                          // Get finds and returns 1 product media with given id
+		FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) // FilterByOption finds and returns a list of product medias with given id
 	}
 	DigitalContentUrlStore interface {
 		CreateIndexesIfNotExists()
@@ -514,7 +517,6 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
-		Get(id string) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
 		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher

@@ -82,20 +82,6 @@ func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and
 	return prd, nil
 }
 
-// Get finds and returns 1 product by given id
-func (ps *SqlProductStore) Get(id string) (*product_and_discount.Product, error) {
-	var res product_and_discount.Product
-	err := ps.GetMaster().SelectOne(&res, "SELECT * FROM "+store.ProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("Product", id)
-		}
-		return nil, errors.Wrapf(err, "failed to get Product with productId=%s", id)
-	}
-
-	return &res, nil
-}
-
 // FilterByOption finds and returns all products that satisfy given option
 func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 	query := ps.GetQueryBuilder().
@@ -175,4 +161,16 @@ func (ps *SqlProductStore) ProductsByVoucherID(voucherID string) ([]*product_and
 			},
 		},
 	})
+}
+
+// FilterPublishedProducts finds and returns products that belong to given channel slug and are published
+func (ps *SqlProductStore) FilterPublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+
+	channelBySlugAndExist := ps.
+		GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ChannelTableName).
+		Where("Channels.IsActive AND Channels.Slug = ? AND Channels.Id = ProductChannelListings.ChannelID", channelSlug).
+		Limit(1)
 }

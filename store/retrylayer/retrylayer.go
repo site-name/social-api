@@ -2240,6 +2240,26 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 
 }
 
+func (s *RetryLayerCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.CategoryStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
 
 	tries := 0
@@ -2260,11 +2280,31 @@ func (s *RetryLayerCategoryStore) Get(categoryID string) (*product_and_discount.
 
 }
 
-func (s *RetryLayerCategoryStore) GetCategoryByProductID(productID string) (*product_and_discount.Category, error) {
+func (s *RetryLayerCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
 
 	tries := 0
 	for {
-		result, err := s.CategoryStore.GetCategoryByProductID(productID)
+		result, err := s.CategoryStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
+
+	tries := 0
+	for {
+		result, err := s.CategoryStore.ProductCategoriesByVoucherID(voucherID)
 		if err == nil {
 			return result, nil
 		}
@@ -2785,6 +2825,26 @@ func (s *RetryLayerCollectionStore) CollectionsByProductID(productID string) ([]
 	tries := 0
 	for {
 		result, err := s.CollectionStore.CollectionsByProductID(productID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionStore.CollectionsByVoucherID(voucherID)
 		if err == nil {
 			return result, nil
 		}
@@ -5421,26 +5481,6 @@ func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.Pro
 
 }
 
-func (s *RetryLayerProductStore) Get(id string) (*product_and_discount.Product, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
 
 	tries := 0
@@ -5546,6 +5586,66 @@ func (s *RetryLayerProductChannelListingStore) Save(channelListing *product_and_
 	tries := 0
 	for {
 		result, err := s.ProductChannelListingStore.Save(channelListing)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductMediaStore) FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductMediaStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductMediaStore) Get(id string) (*product_and_discount.ProductMedia, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductMediaStore.Get(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductMediaStore) Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductMediaStore.Upsert(media)
 		if err == nil {
 			return result, nil
 		}
@@ -8677,26 +8777,6 @@ func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product
 
 }
 
-func (s *RetryLayerVoucherCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCategoryStore.ProductCategoriesByVoucherID(voucherID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
 
 	tries := 0
@@ -8762,26 +8842,6 @@ func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *pro
 	tries := 0
 	for {
 		result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCollectionStore.CollectionsByVoucherID(voucherID)
 		if err == nil {
 			return result, nil
 		}

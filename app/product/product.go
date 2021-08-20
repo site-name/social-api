@@ -22,12 +22,13 @@ func init() {
 
 // ProductById returns 1 product by given id
 func (a *AppProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
-	product, err := a.Srv().Store.Product().Get(productID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductById", "app.product.product_missing.app_error", err)
-	}
-
-	return product, nil
+	return a.ProductByOption(&product_and_discount.ProductFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: productID,
+			},
+		},
+	})
 }
 
 // ProductsByOption returns a list of products that satisfy given option
@@ -85,4 +86,21 @@ func (a *AppProduct) ProductsRequireShipping(productIDs []string) (bool, *model.
 	}
 
 	return false, nil
+}
+
+// ProductGetFirstImage returns first media of given product
+func (a *AppProduct) ProductGetFirstImage(productID string) (*product_and_discount.ProductMedia, *model.AppError) {
+	mediasOfProduct, appErr := a.ProductMediasByOption(&product_and_discount.ProductMediaFilterOption{
+		ProductID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: productID,
+			},
+		},
+		Type: []string{product_and_discount.IMAGE},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return mediasOfProduct[0], nil
 }

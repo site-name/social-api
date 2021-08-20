@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 )
 
+// valid values for product media's Type
 const (
 	VIDEO = "VIDEO"
 	IMAGE = "IMAGE"
@@ -23,24 +23,29 @@ const (
 	PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH = 256
 	PRODUCT_MEDIA_ALT_MAX_LENGTH          = 128
 	PRODUCT_MEDIA_PPOI_MAX_LENGTH         = 20
+	PRODUCT_MEDIA_IMAGE_LINK_MAX_LENGTH   = 100
 )
 
-// TODO: not done yet
 type ProductMedia struct {
 	Id          string                `json:"id"`
 	CreateAt    int64                 `json:"create_at"`
 	ProductID   string                `json:"product_id"`
-	Ppoi        string                `json:"ppoi"` // NOTE: need investigation
-	Image       *file.FileInfo        `db:"-"`
+	Ppoi        string                `json:"ppoi"` // holds resolution for images
+	Image       string                `json:"image"`
 	Alt         string                `json:"alt"`
 	Type        string                `json:"type"`
 	ExternalUrl *string               `json:"external_url"`
-	Product     *Product              `json:"product" db:"-"`
 	OembedData  model.StringInterface `json:"oembed_data"`
 	*model.Sortable
 }
 
-// TODO: not done yet
+// ProductMediaFilterOption is used for building squirrel sql queries
+type ProductMediaFilterOption struct {
+	Id        *model.StringFilter
+	ProductID *model.StringFilter
+	Type      []string
+}
+
 func (p *ProductMedia) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.product_media.is_valid.%s.app_error",
@@ -59,6 +64,9 @@ func (p *ProductMedia) IsValid() *model.AppError {
 	if len(p.Ppoi) > PRODUCT_MEDIA_PPOI_MAX_LENGTH {
 		return outer("ppoi", &p.Id)
 	}
+	if len(p.Image) > PRODUCT_MEDIA_IMAGE_LINK_MAX_LENGTH {
+		return outer("image", &p.Id)
+	}
 	if len(p.Alt) > PRODUCT_MEDIA_ALT_MAX_LENGTH {
 		return outer("alt", &p.Id)
 	}
@@ -76,8 +84,14 @@ func (p *ProductMedia) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
-	if p.Ppoi == "" {
-		p.Ppoi = "0.5x0.5"
-	}
 	p.CreateAt = model.GetMillis()
+	p.commonPre()
+}
+
+func (p *ProductMedia) commonPre() {
+	p.Alt = model.SanitizeUnicode(p.Alt)
+}
+
+func (p *ProductMedia) PreUpdate() {
+	p.commonPre()
 }
