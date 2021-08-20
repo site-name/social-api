@@ -28,13 +28,19 @@ type Collection struct {
 	seo.Seo
 }
 
+// CollectionFilterOption is used to build sql queries
 type CollectionFilterOption struct {
 	Id   *model.StringFilter
 	Name *model.StringFilter
 	Slug *model.StringFilter
 
-	ProductID *model.StringFilter // relationship m2m, use ExtraExpr
-	VoucherID *model.StringFilter // relationship m2m, use ExtraExpr
+	ProductIDs []string // relationship m2m, use ExtraExpr
+	VoucherIDs []string // relationship m2m, use ExtraExpr
+
+	ChannelListingPublicationDate *model.TimeFilter   // INNER JOIN `CollectionChannelListings`
+	ChannelListingChannelSlug     *model.StringFilter // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
+	ChannelListingChannelIsActive *bool               // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
+	ChannelListingIsPublished     *bool               // INNER JOIN `CollectionChannelListing`
 }
 
 func (c *Collection) String() string {

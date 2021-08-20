@@ -5,6 +5,7 @@ package opentracinglayer
 
 import (
 	"context"
+	timemodule "time"
 
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
@@ -2642,34 +2643,16 @@ func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster
 	return err
 }
 
-func (s *OpenTracingLayerCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+func (s *OpenTracingLayerCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.CollectionsByProductID")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.CollectionStore.CollectionsByProductID(productID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.CollectionsByVoucherID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.CollectionStore.CollectionsByVoucherID(voucherID)
+	result, err := s.CollectionStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5081,7 +5064,7 @@ func (s *OpenTracingLayerProductStore) GetByOption(option *product_and_discount.
 func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
 	product_and_discount.Product
 	IsPublished     bool
-	PublicationDate *time.Time
+	PublicationDate *timemodule.Time
 }, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.NotPublishedProducts")

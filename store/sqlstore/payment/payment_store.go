@@ -185,11 +185,8 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
-		Distinct().
 		From(store.PaymentTableName).
 		OrderBy(store.TableOrderingMap[store.PaymentTableName])
-
-	var joinedTransactionTable bool
 
 	// parse option
 	if option.Id != nil {
@@ -204,19 +201,21 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 	if option.IsActive != nil {
 		query = query.Where(squirrel.Eq{"Payments.IsActive": *option.IsActive})
 	}
+
+	var joinedTransactionTable bool //
+
 	if option.TransactionsKind != nil {
 		query = query.
-			LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
+			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
 			Where(option.TransactionsKind.ToSquirrel("Transactions.Kind"))
 
-		// let later checks know that this query has already joined transaction table
-		joinedTransactionTable = true
+		joinedTransactionTable = true // indicate that joined transaction table
 	}
 	if option.TransactionsActionRequired != nil {
 		// check if already joined table transactions
 		if !joinedTransactionTable {
 			query = query.
-				LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.ActionRequired": *option.TransactionsActionRequired})
 	}
@@ -224,7 +223,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		// check if already joined table transactions
 		if !joinedTransactionTable {
 			query = query.
-				LeftJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.IsSuccess": *option.TransactionsIsSuccess})
 	}

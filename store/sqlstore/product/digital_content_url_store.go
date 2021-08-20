@@ -18,7 +18,7 @@ func NewSqlDigitalContentUrlStore(s store.Store) store.DigitalContentUrlStore {
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.DigitalContentUrl{}, store.ProductDigitalContentURLTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Token").SetMaxSize(product_and_discount.DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH).SetUnique(true)
 		table.ColMap("ContentID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("LineID").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true)
 	}
@@ -42,6 +42,7 @@ func (ps *SqlDigitalContentUrlStore) Save(contentURL *product_and_discount.Digit
 		err := ps.GetMaster().Insert(contentURL)
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"Token", "digitalcontenturls_token_key"}) {
+				contentURL.NewToken(true)
 				continue
 			}
 			if ps.IsUniqueConstraintError(err, []string{"LineID", "digitalcontenturls_lineid_key"}) {

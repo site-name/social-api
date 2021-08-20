@@ -4,7 +4,7 @@ package store
 
 import (
 	"context"
-	"time"
+	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -439,10 +439,9 @@ type (
 	CollectionStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) // Upsert depends on given collection's Id property to decide update or insert the collection
-		Get(collectionID string) (*product_and_discount.Collection, error)                            // Get finds and returns collection with given collectionID
-		CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error)          // CollectionsByProductID finds and returns a list of collections that related to given product
-		CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error)          // CollectionsByVoucherID finds all collections that have relationships with given voucher
+		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
+		Get(collectionID string) (*product_and_discount.Collection, error)                                              // Get finds and returns collection with given collectionID
+		FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
 	}
 	CollectionProductStore interface {
 		CreateIndexesIfNotExists()
@@ -525,7 +524,7 @@ type (
 		NotPublishedProducts(channelSlug string) ([]*struct {
 			product_and_discount.Product
 			IsPublished     bool
-			PublicationDate *time.Time
+			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
 		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                        // PublishedWithVariants finds and returns products.
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.

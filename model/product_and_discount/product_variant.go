@@ -33,6 +33,9 @@ type ProductVariant struct {
 type ProductVariantFilterOption struct {
 	Id   *model.StringFilter
 	Name *model.StringFilter
+
+	ProductVariantChannelListingPriceAmount *model.NumberFilter // LEFT JOIN `ProductVariantChannelListing`
+	ProductVariantChannelListingChannelSlug *model.StringFilter // LEFT JOIN `ProductVariantChannelListing`
 }
 
 type ProductVariants []*ProductVariant

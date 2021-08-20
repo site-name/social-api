@@ -128,7 +128,7 @@ func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 	}
 	if option.ProductID != nil {
 		query = query.
-			LeftJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
+			InnerJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
 			Where(option.ProductID.ToSquirrel("Products.Id"))
 	}
 
@@ -169,7 +169,7 @@ func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 	}
 	if option.ProductID != nil {
 		query = query.
-			LeftJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
+			InnerJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
 			Where(option.ProductID.ToSquirrel("Products.Id"))
 	}
 

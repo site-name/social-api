@@ -234,7 +234,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 		}
 
 		if orderLine.ProductVariant != nil { // ProductVariant is available to use, prefetch option is enabled above
-			_, appErr = a.ProductApp().CreateDigitalContentURL(&product_and_discount.DigitalContentUrl{
+			_, appErr = a.ProductApp().UpsertDigitalContentURL(&product_and_discount.DigitalContentUrl{
 				LineID: &orderLine.Id,
 			})
 			if appErr != nil {

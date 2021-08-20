@@ -5,6 +5,7 @@ package retrylayer
 
 import (
 	"context"
+	timemodule "time"
 
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -2820,31 +2821,11 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 
 }
 
-func (s *RetryLayerCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+func (s *RetryLayerCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
 
 	tries := 0
 	for {
-		result, err := s.CollectionStore.CollectionsByProductID(productID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-
-	tries := 0
-	for {
-		result, err := s.CollectionStore.CollectionsByVoucherID(voucherID)
+		result, err := s.CollectionStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -5504,7 +5485,7 @@ func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.Produc
 func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
 	product_and_discount.Product
 	IsPublished     bool
-	PublicationDate *time.Time
+	PublicationDate *timemodule.Time
 }, error) {
 
 	tries := 0

@@ -20,8 +20,8 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.Collection{}, store.ProductCollectionTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Slug").SetMaxSize(product_and_discount.COLLECTION_SLUG_MAX_LENGTH).SetUnique(true)
+		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH)
+		table.ColMap("Slug").SetMaxSize(product_and_discount.COLLECTION_SLUG_MAX_LENGTH)
 		table.ColMap("BackgroundImage").SetMaxSize(model.URL_LINK_MAX_LENGTH)
 		table.ColMap("BackgroundImageAlt").SetMaxSize(product_and_discount.COLLECTION_BACKGROUND_ALT_MAX_LENGTH)
 
@@ -121,11 +121,63 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 	if option.Slug != nil {
 		query = query.Where(option.Slug.ToSquirrel("Collections.Slug"))
 	}
-	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("")) // no need key value here
+	if len(option.ProductIDs) > 0 {
+		query = query.Where(squirrel.Expr(
+			"Collections.Id IN (SELECT CollectionID FROM ? WHERE ProductID IN ?)",
+			store.CollectionProductRelationTableName,
+			option.ProductIDs,
+		))
 	}
-	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("")) // no need key value here
+	if len(option.VoucherIDs) > 0 {
+		query = query.Where(squirrel.Expr(
+			"Collections.Id IN (SELECT CollectionID FROM ? WHERE VoucherID IN ?)",
+			store.VoucherCollectionTableName,
+			option.VoucherIDs,
+		))
+	}
+
+	var (
+		joined_CollectionChannelListingTable bool
+		joined_ChannelTable                  bool
+	)
+	if option.ChannelListingPublicationDate != nil {
+		query = query.
+			InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
+			Where(option.ChannelListingPublicationDate.ToSquirrel("CollectionChannelListings.PublicationDate"))
+
+		joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
+	}
+	if option.ChannelListingIsPublished != nil {
+		if !joined_CollectionChannelListingTable {
+			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+
+			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
+		}
+		query = query.Where(squirrel.Eq{"CollectionChannelListings.IsPublished": *option.ChannelListingIsPublished})
+	}
+	if option.ChannelListingChannelSlug != nil {
+		if !joined_CollectionChannelListingTable {
+			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+
+			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
+		}
+		query = query.
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)").
+			Where(option.ChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
+
+		joined_ChannelTable = true // indicate joined channel table
+	}
+	if option.ChannelListingChannelIsActive != nil {
+		if !joined_CollectionChannelListingTable {
+			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+
+			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
+		}
+		if !joined_ChannelTable {
+			query = query.
+				InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
+		}
+		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingChannelIsActive})
 	}
 
 	queryString, args, err := query.ToSql()
@@ -140,32 +192,4 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 	}
 
 	return res, nil
-}
-
-// CollectionsByProductID finds and returns a list of collections that related to given product
-func (cs *SqlCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
-
-	return cs.FilterByOption(&product_and_discount.CollectionFilterOption{
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				ExtraExpr: []squirrel.Sqlizer{
-					squirrel.Expr("Collections.Id IN (SELECT CollectionID FROM ? WHERE ProductID = ?)", store.VoucherCollectionTableName, productID),
-				},
-			},
-		},
-	})
-}
-
-// CollectionsByVoucherID finds all collections that have relationships with given voucher
-func (cs *SqlCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-
-	return cs.FilterByOption(&product_and_discount.CollectionFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				ExtraExpr: []squirrel.Sqlizer{
-					squirrel.Expr("Collections.Id IN (SELECT CollectionID FROM ? WHERE VoucherID = ?)", store.VoucherCollectionTableName, voucherID),
-				},
-			},
-		},
-	})
 }

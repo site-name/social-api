@@ -173,6 +173,23 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 		query = query.Where(option.Name.ToSquirrel("ProductVariants.Name"))
 	}
 
+	var joinedProductVariantChannelListingTable bool
+	if option.ProductVariantChannelListingPriceAmount != nil {
+		query = query.
+			InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)").
+			Where(option.ProductVariantChannelListingPriceAmount.ToSquirrel("ProductVariantChannelListings.PriceAmount"))
+		joinedProductVariantChannelListingTable = true // indicate that already joined
+	}
+	if option.ProductVariantChannelListingChannelSlug != nil {
+		if !joinedProductVariantChannelListingTable { // check if joined or not
+			query = query.
+				InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)")
+		}
+		query = query.
+			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariantChannelListings.ChannelID)").
+			Where(option.ProductVariantChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
+	}
+
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")

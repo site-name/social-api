@@ -9,8 +9,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// CreateDigitalContentURL create a digital content url then returns it
-func (a *AppProduct) CreateDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError) {
+// UpsertDigitalContentURL create a digital content url then returns it
+func (a *AppProduct) UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError) {
 	contentURL, err := a.Srv().Store.DigitalContentUrl().Save(contentURL)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -18,7 +18,7 @@ func (a *AppProduct) CreateDigitalContentURL(contentURL *product_and_discount.Di
 		}
 
 		if invalidInputErr, ok := err.(*store.ErrInvalidInput); ok { // this happens when duplicate Line`ID
-			return nil, model.NewAppError("CreateDigitalContentURL", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidInputErr.Field}, invalidInputErr.Error(), http.StatusBadRequest)
+			return nil, model.NewAppError("UpsertDigitalContentURL", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidInputErr.Field}, invalidInputErr.Error(), http.StatusBadRequest)
 		}
 	}
 

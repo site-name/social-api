@@ -167,20 +167,21 @@ func (to *TimeOption) parse(t *time.Time) *time.Time {
 
 func (to *TimeOption) Parse(key string) []squirrel.Sqlizer {
 	res := []squirrel.Sqlizer{}
+	var t *time.Time
 
-	if t := to.parse(to.Eq); t != nil {
+	if t = to.parse(to.Eq); t != nil {
 		res = append(res, squirrel.Eq{key: t})
 	}
-	if t := to.parse(to.Gt); t != nil {
+	if t = to.parse(to.Gt); t != nil {
 		res = append(res, squirrel.Gt{key: t})
 	}
-	if t := to.parse(to.Lt); t != nil {
+	if t = to.parse(to.Lt); t != nil {
 		res = append(res, squirrel.Lt{key: t})
 	}
-	if t := to.parse(to.GtE); t != nil {
+	if t = to.parse(to.GtE); t != nil {
 		res = append(res, squirrel.GtOrEq{key: t})
 	}
-	if t := to.parse(to.LtE); t != nil {
+	if t = to.parse(to.LtE); t != nil {
 		res = append(res, squirrel.LtOrEq{key: t})
 	}
 	if to.NULL != nil {

@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 	"time"
+	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -97,11 +98,11 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 	}
 	if option.ProductVariantID != nil {
 		query = query.
-			LeftJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+			InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
 			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
 	}
 	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("")) // ne need to provide key value here
+		query = query.Where(option.VoucherID.ToSquirrel("")) // no need to provide key value here
 	}
 
 	queryString, args, err := query.ToSql()
@@ -131,7 +132,7 @@ func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilte
 	}
 	if option.ProductVariantID != nil {
 		query = query.
-			LeftJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+			InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
 			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
 	}
 
@@ -244,11 +245,11 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	[]*struct {
 		product_and_discount.Product
 		IsPublished     bool
-		PublicationDate *time.Time
+		PublicationDate *timemodule.Time
 	},
 	error,
 ) {
-	today := util.StartOfDay(time.Now().UTC()) // start of day
+	today := util.StartOfDay(timemodule.Now().UTC()) // start of day
 
 	isPublishedColumnSelect := ps.GetQueryBuilder().
 		Select("PCL.IsPublished").

@@ -229,7 +229,7 @@ type ProductApp interface {
 	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
 	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) // ProductVariantsByOption returns a list of product variants satisfy given option
-	CreateDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)     // CreateDigitalContentURL create a digital content url then returns it
+	UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)     // UpsertDigitalContentURL create a digital content url then returns it
 	ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError)                      // ProductsByOption returns a list of products that satisfy given option
 	ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError)                         // ProductByOption returns 1 product that satisfy given option
 	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)                                                    // ProductVariantGetWeight returns weight of given product variant

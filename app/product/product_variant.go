@@ -69,3 +69,38 @@ func (a *AppProduct) ProductVariantGetWeight(productVariantID string) (*measurem
 
 	return weight, nil
 }
+
+// DisplayProduct return display text for given product variant
+//
+// `translated` default to false
+func (a *AppProduct) DisplayProduct(productVariant *product_and_discount.ProductVariant, translated bool) (stringm *model.AppError) {
+	// if translated {
+
+	// } else {
+
+	// }
+	panic("not implt")
+}
+
+// ProductVariantsAvailableInChannel returns product variants based on given channel slug
+func (a *AppProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*product_and_discount.ProductVariant, *model.AppError) {
+	productVariants, appErr := a.ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+		ProductVariantChannelListingPriceAmount: &model.NumberFilter{
+			NumberOption: &model.NumberOption{
+				NULL: model.NewBool(false),
+			},
+		},
+		ProductVariantChannelListingChannelSlug: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: channelSlug,
+			},
+		},
+	})
+
+	if appErr != nil {
+		appErr.Where = "ProductVariantsAvailableInChannel"
+		return nil, appErr
+	}
+
+	return productVariants, nil
+}

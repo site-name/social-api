@@ -77,13 +77,18 @@ func (d *DigitalContent) PreSave() {
 	}
 }
 
+// max lengths for some fields of DigitalContentUrl
+const (
+	DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH = 36
+)
+
 type DigitalContentUrl struct {
 	Id          string  `json:"id"`
-	Token       string  `json:"token"` // uuid field, not editable
+	Token       string  `json:"token"` // uuid field, not editable, unique
 	ContentID   string  `json:"content_id"`
 	CreateAt    int64   `json:"create_at"`
 	DownloadNum int64   `json:"download_num"`
-	LineID      *string `json:"line_id"` // order line
+	LineID      *string `json:"line_id"` // order line, unique
 }
 
 func (d *DigitalContentUrl) IsValid() *model.AppError {
@@ -101,7 +106,7 @@ func (d *DigitalContentUrl) IsValid() *model.AppError {
 	if d.LineID != nil && !model.IsValidId(*d.LineID) {
 		return outer("line_id", &d.Id)
 	}
-	if !model.IsValidId(d.Token) {
+	if len(d.Token) > DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH {
 		return outer("token", &d.Id)
 	}
 
@@ -120,6 +125,12 @@ func (d *DigitalContentUrl) PreSave() {
 		d.CreateAt = model.GetMillis()
 	}
 	if d.Token == "" {
+		d.NewToken(true)
+	}
+}
+
+func (d *DigitalContentUrl) NewToken(force bool) {
+	if (d.Token != "" && force) || d.Token == "" {
 		d.Token = strings.ReplaceAll(model.NewId(), "-", "")
 	}
 }

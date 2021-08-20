@@ -2474,10 +2474,10 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 	return err
 }
 
-func (s *TimerLayerCollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
+func (s *TimerLayerCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
 	start := timemodule.Now()
 
-	result, err := s.CollectionStore.CollectionsByProductID(productID)
+	result, err := s.CollectionStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2485,23 +2485,7 @@ func (s *TimerLayerCollectionStore) CollectionsByProductID(productID string) ([]
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.CollectionsByProductID", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-	start := timemodule.Now()
-
-	result, err := s.CollectionStore.CollectionsByVoucherID(voucherID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.CollectionsByVoucherID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -4653,7 +4637,7 @@ func (s *TimerLayerProductStore) GetByOption(option *product_and_discount.Produc
 func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
 	product_and_discount.Product
 	IsPublished     bool
-	PublicationDate *time.Time
+	PublicationDate *timemodule.Time
 }, error) {
 	start := timemodule.Now()
 
