@@ -5065,24 +5065,6 @@ func (s *OpenTracingLayerProductStore) NotPublishedProducts(channelSlug string) 
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.ProductsByVoucherID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ProductStore.ProductsByVoucherID(voucherID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.PublishedProducts")

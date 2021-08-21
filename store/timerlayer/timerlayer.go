@@ -4638,22 +4638,6 @@ func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*st
 	return result, err
 }
 
-func (s *TimerLayerProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductStore.ProductsByVoucherID(voucherID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.ProductsByVoucherID", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
