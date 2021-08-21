@@ -2301,26 +2301,6 @@ func (s *RetryLayerCategoryStore) GetByOption(option *product_and_discount.Categ
 
 }
 
-func (s *RetryLayerCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
-
-	tries := 0
-	for {
-		result, err := s.CategoryStore.ProductCategoriesByVoucherID(voucherID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
 
 	tries := 0

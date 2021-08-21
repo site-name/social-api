@@ -38,8 +38,21 @@ type Product struct {
 // ProductFilterOption is used to compose squirrel sql queries
 type ProductFilterOption struct {
 	Id               *model.StringFilter
-	ProductVariantID *model.StringFilter // LEFT JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
-	VoucherID        *model.StringFilter // relationship m2m
+	ProductVariantID *model.StringFilter // LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
+	VoucherIDs       []string            // SELECT * FROM Products WHERE Id IN (SELECT ProductID FROM ... WHERE VoucherID IN ?)
+}
+
+type Products []*Product
+
+func (p Products) IDs() []string {
+	res := []string{}
+	for _, product := range p {
+		if product != nil {
+			res = append(res, product.Id)
+		}
+	}
+
+	return res
 }
 
 // PlainTextDescription Convert DraftJS JSON content to plain text

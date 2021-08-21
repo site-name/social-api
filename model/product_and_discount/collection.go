@@ -31,7 +31,7 @@ type Collection struct {
 
 // CollectionFilterOption is used to build sql queries.
 //
-// NOTE: Set it nil if you want to find all
+// if `SelectAll` is set to true, it finds all collections of given shop, ignores other options too
 type CollectionFilterOption struct {
 	ShopID    string // single string since we can only view collections of ONLY 1 shop at a time
 	SelectAll bool   // if this is true, ignore every other options and find all collections by shop

@@ -390,7 +390,9 @@ func (a *AppCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutL
 	}()
 
 	go func() {
-		categories, appErr := a.app.ProductApp().CategoriesByVoucherID(voucher.Id)
+		categories, appErr := a.app.ProductApp().CategoriesByOption(&product_and_discount.CategoryFilterOption{
+			VoucherIDs: []string{voucher.Id},
+		})
 		if appErr != nil {
 			setErr(appErr)
 		} else {

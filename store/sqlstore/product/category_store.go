@@ -107,6 +107,12 @@ func (ps *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Catego
 
 // FilterByOption finds and returns a list of categories satisfy given option
 func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+	transaction, err := ps.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(transaction)
+
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductCategoryTableName).
@@ -123,13 +129,16 @@ func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 		query = query.Where(option.Name.ToSquirrel("Categories.Name"))
 	}
 
-	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("")) // no need to provide key value here
+	if len(option.VoucherIDs) > 0 {
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (?))", option.VoucherIDs))
 	}
-	if option.ProductID != nil {
+	if len(option.ProductIDs) > 0 {
 		query = query.
 			InnerJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
-			Where(option.ProductID.ToSquirrel("Products.Id"))
+			Where(squirrel.Eq{"Products.Id": option.ProductIDs})
+	}
+	if option.LockForUpdate {
+		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
 	}
 
 	queryString, args, err := query.ToSql()
@@ -138,9 +147,13 @@ func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 	}
 
 	var res []*product_and_discount.Category
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	_, err = transaction.Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
 	return res, nil
@@ -148,6 +161,12 @@ func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 
 // GetByOption finds and returns 1 category satisfy given option
 func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+	transaction, err := ps.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(transaction)
+
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductCategoryTableName).
@@ -164,13 +183,16 @@ func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 		query = query.Where(option.Name.ToSquirrel("Categories.Name"))
 	}
 
-	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("")) // no need to provide key value here
+	if len(option.VoucherIDs) > 0 {
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (?))", option.VoucherIDs))
 	}
-	if option.ProductID != nil {
+	if len(option.ProductIDs) > 0 {
 		query = query.
 			InnerJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
-			Where(option.ProductID.ToSquirrel("Products.Id"))
+			Where(squirrel.Eq{"Products.Id": option.ProductIDs})
+	}
+	if option.LockForUpdate {
+		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
 	}
 
 	queryString, args, err := query.ToSql()
@@ -179,7 +201,7 @@ func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 	}
 
 	var res product_and_discount.Category
-	err = ps.GetReplica().SelectOne(&res, queryString, args...)
+	err = transaction.SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductCategoryTableName, "option")
@@ -187,18 +209,9 @@ func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}
 
-	return &res, nil
-}
+	if err = transaction.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
+	}
 
-// ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
-func (cs *SqlCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
-	return cs.FilterByOption(&product_and_discount.CategoryFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				ExtraExpr: []squirrel.Sqlizer{
-					squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID = ?)", store.VoucherCategoryTableName, voucherID),
-				},
-			},
-		},
-	})
+	return &res, nil
 }

@@ -35,6 +35,30 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 	return vs
 }
 
+func (vs *SqlVoucherStore) ModelFields() []string {
+	return []string{
+		"Vouchers.Id",
+		"Vouchers.ShopID",
+		"Vouchers.Type",
+		"Vouchers.Name",
+		"Vouchers.Code",
+		"Vouchers.UsageLimit",
+		"Vouchers.Used",
+		"Vouchers.StartDate",
+		"Vouchers.EndDate",
+		"Vouchers.ApplyOncePerOrder",
+		"Vouchers.ApplyOncePerCustomer",
+		"Vouchers.OnlyForStaff",
+		"Vouchers.DiscountValueType",
+		"Vouchers.Countries",
+		"Vouchers.MinCheckoutItemsQuantity",
+		"Vouchers.CreateAt",
+		"Vouchers.UpdateAt",
+		"Vouchers.Metadata",
+		"Vouchers.PrivateMetadata",
+	}
+}
+
 func (vs *SqlVoucherStore) CreateIndexesIfNotExists() {
 	vs.CreateIndexIfNotExists("idx_vouchers_code", store.VoucherTableName, "Code")
 	vs.CreateForeignKeyIfNotExists(store.VoucherTableName, "ShopID", store.ShopTableName, "Id", true)
@@ -101,9 +125,15 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 
 // FilterVouchersByOption finds vouchers bases on given option.
 func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+	transaction, err := vs.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(transaction)
+
 	query := vs.
 		GetQueryBuilder().
-		Select("*").
+		Select(vs.ModelFields()...).
 		From(store.VoucherTableName).
 		OrderBy(store.TableOrderingMap[store.VoucherTableName])
 
@@ -135,7 +165,7 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	}
 
 	if option.WithLook {
-		query = query.Suffix("FOR UPDATE")
+		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
 	}
 
 	queryString, args, err := query.ToSql()
@@ -144,9 +174,13 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	}
 
 	var vouchers []*product_and_discount.Voucher
-	_, err = vs.GetReplica().Select(&vouchers, queryString, args...)
+	_, err = transaction.Select(&vouchers, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
 	return vouchers, nil

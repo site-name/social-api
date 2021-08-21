@@ -141,22 +141,34 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 
 // Get finds and returns the payment with given id
 func (ps *SqlPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
-	var res payment.Payment
-	var forUpdateSql string
+	transaction, err := ps.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	var (
+		res          payment.Payment
+		forUpdateSql string
+	)
 	if lockForUpdate {
 		forUpdateSql = " FOR UPDATE"
 	}
-	err := ps.GetReplica().
-		SelectOne(
-			&res,
-			"SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID"+forUpdateSql,
-			map[string]interface{}{"ID": id},
-		)
+
+	err = transaction.SelectOne(
+		&res,
+		"SELECT * FROM "+store.PaymentTableName+" WHERE Id :ID"+forUpdateSql,
+		map[string]interface{}{"ID": id},
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.PaymentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
 	return &res, nil

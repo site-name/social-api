@@ -509,7 +509,6 @@ type (
 		CreateIndexesIfNotExists()
 		Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error)                     // Upsert depends on given category's Id field to decide update or insert it
 		Get(categoryID string) (*product_and_discount.Category, error)                                              // Get finds and returns a category with given id
-		ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error)                    // ProductCategoriesByVoucherID finds a list of product categories that have relationships with given voucher
 		GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error)      // GetByOption finds and returns 1 category satisfy given option
 		FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) // FilterByOption finds and returns a list of categories satisfy given option
 	}
@@ -519,7 +518,6 @@ type (
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
-		ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error)                            // ProductsByVoucherID finds all products that have relationships with given voucher
 		PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error)                            // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
 		NotPublishedProducts(channelSlug string) ([]*struct {
 			product_and_discount.Product

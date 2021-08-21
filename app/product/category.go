@@ -1,32 +1,40 @@
 package product
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
-// CategoriesByVoucherID finds all categories that have relationship with given voucher
-func (a *AppProduct) CategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, *model.AppError) {
-	categories, err := a.Srv().Store.Category().ProductCategoriesByVoucherID(voucherID)
+// CategoriesByOption returns all categories that satisfy given option
+func (a *AppProduct) CategoriesByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, *model.AppError) {
+	categories, err := a.Srv().Store.Category().FilterByOption(option)
+	var (
+		statusCode int
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("App.Product.CategoriesByVoucherID", "app.product.error_finding_categories_by_voucherID.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	}
+	if len(categories) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, errMsg, statusCode)
 	}
 
 	return categories, nil
 }
 
-// CategoryByProductID finds and returns a category by given productID
-func (a *AppProduct) CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError) {
-	category, err := a.Srv().Store.Category().GetByOption(&product_and_discount.CategoryFilterOption{
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productID,
-			},
-		},
-	})
+// CategoryByOption returns 1 category that satisfies given option
+func (a *AppProduct) CategoryByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, *model.AppError) {
+	category, err := a.Srv().Store.Category().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CategoryByProductID", "app.product.error_finding_category_by_product.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", err)
 	}
 
 	return category, nil

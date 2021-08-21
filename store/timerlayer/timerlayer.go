@@ -2058,22 +2058,6 @@ func (s *TimerLayerCategoryStore) GetByOption(option *product_and_discount.Categ
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) ProductCategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, error) {
-	start := timemodule.Now()
-
-	result, err := s.CategoryStore.ProductCategoriesByVoucherID(voucherID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.ProductCategoriesByVoucherID", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
 	start := timemodule.Now()
 

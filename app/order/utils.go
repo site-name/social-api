@@ -368,7 +368,9 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	}()
 
 	go func() {
-		categories, appErr := a.ProductApp().CategoriesByVoucherID(voucher.Id)
+		categories, appErr := a.ProductApp().CategoriesByOption(&product_and_discount.CategoryFilterOption{
+			VoucherIDs: []string{voucher.Id},
+		})
 		if appErr != nil {
 			setFirstAppErr(appErr)
 		} else {
@@ -438,7 +440,9 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 					if appErr != nil {
 						setAppError(appErr)
 					} else {
-						orderLineCategory, appErr := a.ProductApp().CategoryByProductID(orderLineProduct.Id)
+						orderLineCategory, appErr := a.ProductApp().CategoryByOption(&product_and_discount.CategoryFilterOption{
+							ProductIDs: []string{orderLineProduct.Id},
+						})
 						if appErr != nil {
 							setAppError(appErr)
 						} else {

@@ -28,13 +28,16 @@ type Category struct {
 	model.ModelMetadata
 }
 
+// CategoryFilterOption is used for building sql queries
 type CategoryFilterOption struct {
 	Id   *model.StringFilter
 	Name *model.StringFilter
 	Slug *model.StringFilter
 
-	VoucherID *model.StringFilter // m2m relationship
-	ProductID *model.StringFilter // o2m relationship
+	VoucherIDs []string // SELECT * FROM Categories WHERE Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (...))
+	ProductIDs []string // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
+
+	LockForUpdate bool // set this to true if you want to add "FOR UPDATE" suffix to the end of queries
 }
 
 func (c *Category) String() string {

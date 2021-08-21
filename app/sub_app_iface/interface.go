@@ -217,7 +217,6 @@ type ProductApp interface {
 	ProductById(productID string) (*product_and_discount.Product, *model.AppError)                                                                                  // ProductById returns a product with id of given id
 	ProductChannelListingsByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, *model.AppError) // ProductChannelListingsByOption finds product channel listings by given options
 	CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, *model.AppError)                                                                  // CollectionsByVoucherID finds all collections that have relationships with given voucher
-	CategoriesByVoucherID(voucherID string) ([]*product_and_discount.Category, *model.AppError)                                                                     // CategoriesByVoucherID finds all categories that have relationship with given voucher
 	ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError)                                                                        // ProductsByVoucherID finds all products that have relationships with given voucher
 	ProductsRequireShipping(productIDs []string) (bool, *model.AppError)                                                                                            // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
 	// ProductVariantGetPrice
@@ -225,7 +224,6 @@ type ProductApp interface {
 	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
 	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError)                                 // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
 	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                                                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
-	CategoryByProductID(productID string) (*product_and_discount.Category, *model.AppError)                                                    // CategoryByProductID finds and returns a category by given productID
 	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
 	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) // ProductVariantsByOption returns a list of product variants satisfy given option
@@ -233,6 +231,8 @@ type ProductApp interface {
 	ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError)                      // ProductsByOption returns a list of products that satisfy given option
 	ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError)                         // ProductByOption returns 1 product that satisfy given option
 	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)                                                    // ProductVariantGetWeight returns weight of given product variant
+	CategoriesByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, *model.AppError)                  // CategoriesByOption returns all categories that satisfy given option
+	CategoryByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, *model.AppError)                      // CategoryByOption returns 1 category that satisfies given option
 }
 
 type WishlistApp interface {
