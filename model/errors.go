@@ -16,7 +16,7 @@ type NotApplicable struct {
 }
 
 func (a *NotApplicable) Error() string {
-	return a.Message
+	return a.Where + " " + a.Message
 }
 
 // NewNotApplicable

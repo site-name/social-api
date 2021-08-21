@@ -37,6 +37,7 @@ import (
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -139,7 +140,6 @@ type Server struct {
 	limitedClientConfig  atomic.Value
 
 	// telemetryService *telemetry.TelemetryService
-
 	// serviceMux sync.RWMutex
 	// remoteClusterService remotecluster.RemoteClusterServiceIFace
 	// sharedChannelService SharedChannelServiceIFace
@@ -147,8 +147,7 @@ type Server struct {
 	phase2PermissionsMigrationComplete bool
 
 	HTTPService httpservice.HTTPService
-
-	ImageProxy *imageproxy.ImageProxy
+	ImageProxy  *imageproxy.ImageProxy
 
 	Audit            *audit.Audit
 	Log              *slog.Logger
@@ -167,10 +166,10 @@ type Server struct {
 	DataRetention    einterfaces.DataRetentionInterface
 	Ldap             einterfaces.LdapInterface
 	Metrics          einterfaces.MetricsInterface
+	Saml             einterfaces.SamlInterface
 	// MessageExport    einterfaces.MessageExportInterface
 	// Cloud            einterfaces.CloudInterface
 	// Notification     einterfaces.NotificationInterface
-	Saml einterfaces.SamlInterface
 
 	CacheProvider cache.Provider
 
@@ -183,6 +182,8 @@ type Server struct {
 
 	ImgDecoder *imaging.Decoder
 	ImgEncoder *imaging.Encoder
+
+	ExchangeRateMap sync.Map // this is cache for storing currency exchange rates. Keys are strings, values are float64
 }
 
 // NewServer create new system server
@@ -728,15 +729,15 @@ func (s *Server) runJobs() {
 	// 	}
 	// 	s.telemetryService.RunTelemetryJob(firstRun)
 	// })
+	// s.Go(func() {
+	// 	runCommandWebhookCleanupJob(s)
+	// })
 	s.Go(func() {
 		runSessionCleanupJob(s)
 	})
 	s.Go(func() {
 		runTokenCleanupJob(s)
 	})
-	// s.Go(func() {
-	// 	runCommandWebhookCleanupJob(s)
-	// })
 
 	if s.Compliance != nil {
 		s.Compliance.StartComplianceDailyJob()
@@ -756,6 +757,66 @@ func (s *Server) runJobs() {
 	if *s.Config().ServiceSettings.EnableAWSMetering {
 		runReportToAWSMeterJob(s)
 	}
+
+	// check if we can run periodic task on fetching currency rate
+	if setting := s.Config().ServiceSettings; setting.OpenExchangeRateApiKey != nil &&
+		setting.OpenExchangeRecuringDurationHours != nil &&
+		setting.OpenExhcnageApiEndPoint != nil {
+		runFetchingCurrencyExchangeRateJob(s, *setting.OpenExchangeRateApiKey, *setting.OpenExchangeRecuringDurationHours, *setting.OpenExhcnageApiEndPoint)
+	}
+}
+
+func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours int, apiEndPoint string) {
+	client := s.HTTPService.MakeClient(true)
+	client.Timeout = 2 * time.Minute
+	params := url.Values{
+		"app_id": []string{apiKey},
+		"base":   []string{model.DEFAULT_CURRENCY}, // units other than USD require service subsciption
+	}
+	var responseValue struct {
+		Disclaimer string             `json:"disclaimer,omitempty"`
+		License    string             `json:"license,omitempty"`
+		TimeStamp  int64              `json:"timestamp,omitempty"`
+		Base       string             `json:"base"`
+		Rates      map[string]float64 `json:"rates"`
+	}
+	apiEndPoint = apiEndPoint + "?" + params.Encode()
+
+	fetchFun := func() {
+		req, err := http.NewRequest(http.MethodGet, apiEndPoint, nil)
+		if err != nil {
+			s.Log.Error("Error creating http request", slog.Err(err))
+			return
+		}
+		response, err := client.Do(req)
+		if err != nil {
+			s.Log.Error("Error fetching exchange rates", slog.Err(err))
+			return
+		}
+		defer response.Body.Close()
+
+		if status := response.StatusCode; status != http.StatusOK {
+			s.Log.Error("Status was not 200", slog.Int("status", status))
+			return
+		}
+		// process data
+		err = json.JSON.
+			NewDecoder(response.Body).
+			Decode(&responseValue)
+		if err != nil {
+			s.Log.Error("Error parsing response", slog.Err(err))
+			return
+		}
+		for currency, rate := range responseValue.Rates {
+			s.ExchangeRateMap.Store(currency, rate)
+		}
+		slog.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
+	}
+
+	// first time run
+	fetchFun()
+
+	model.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
 }
 
 // Global app options that should be applied to apps created by this server

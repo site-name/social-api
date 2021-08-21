@@ -104,11 +104,12 @@ const (
 	SERVICE_SETTINGS_DEFAULT_GFYCAT_API_KEY     = "2_KtH_W5"
 	SERVICE_SETTINGS_DEFAULT_GFYCAT_API_SECRET  = "3wLVZPiswc3DnaiaFoLkDvB4X0IV6CpMkj4tf2inJRsBY6-FnkT08zGmppWFgeof"
 
-	TEAM_SETTINGS_DEFAULT_SITE_NAME                = "Sitename"
-	TEAM_SETTINGS_DEFAULT_MAX_USERS_PER_TEAM       = 50
-	TEAM_SETTINGS_DEFAULT_CUSTOM_BRAND_TEXT        = ""
-	TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT  = ""
-	TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT = 300
+	OPEN_EXCHANGE_RATE_API_KEY = "cb3c20ad2a624639806f043e4b5aafa4"
+	// TEAM_SETTINGS_DEFAULT_SITE_NAME                = "Sitename"
+	// TEAM_SETTINGS_DEFAULT_MAX_USERS_PER_TEAM       = 50
+	// TEAM_SETTINGS_DEFAULT_CUSTOM_BRAND_TEXT        = ""
+	// TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT  = ""
+	// TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT = 300
 
 	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://minh:anhyeuem98@localhost/sitename_test?sslmode=disable&connect_timeout=10"
 
@@ -175,7 +176,7 @@ const (
 	ANNOUNCEMENT_SETTINGS_DEFAULT_NOTICES_JSON_URL                = "https://notices.mattermost.com/"
 	ANNOUNCEMENT_SETTINGS_DEFAULT_NOTICES_FETCH_FREQUENCY_SECONDS = 3600
 
-	TEAM_SETTINGS_DEFAULT_TEAM_TEXT = "default"
+	THEME_SETTING_DEFAULT = "default"
 
 	ELASTICSEARCH_SETTINGS_DEFAULT_CONNECTION_URL                    = "http://localhost:9200"
 	ELASTICSEARCH_SETTINGS_DEFAULT_USERNAME                          = "elastic"
@@ -293,7 +294,6 @@ type ServiceSettings struct {
 	EnablePostUsernameOverride                        *bool    `access:"integrations_integration_management"`
 	EnablePostIconOverride                            *bool    `access:"integrations_integration_management"`
 	GoogleDeveloperKey                                *string  `access:"site_posts,write_restrictable,cloud_restrictable"`
-	DEPRECATED_DO_NOT_USE_EnableOnlyAdminIntegrations *bool    `json:"EnableOnlyAdminIntegrations" mapstructure:"EnableOnlyAdminIntegrations"` // Deprecated: do not use
 	EnableLinkPreviews                                *bool    `access:"site_posts"`
 	RestrictLinkPreviews                              *string  `access:"site_posts"`
 	EnableTesting                                     *bool    `access:"environment_developer,write_restrictable,cloud_restrictable"`
@@ -324,8 +324,6 @@ type ServiceSettings struct {
 	GfycatApiSecret                                   *string  `access:"integrations_gif"`
 	EnableCustomEmoji                                 *bool    `access:"site_emoji"`
 	EnableEmojiPicker                                 *bool    `access:"site_emoji"`
-	DEPRECATED_DO_NOT_USE_RestrictPostDelete          *string  `json:"RestrictPostDelete" mapstructure:"RestrictPostDelete"` // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_AllowEditPost               *string  `json:"AllowEditPost" mapstructure:"AllowEditPost"`           // Deprecated: do not use
 	PostEditTimeLimit                                 *int     `access:"user_management_permissions"`
 	TimeBetweenUserTypingUpdatesMilliseconds          *int64   `access:"experimental_features,write_restrictable,cloud_restrictable"`
 	EnablePostSearch                                  *bool    `access:"write_restrictable,cloud_restrictable"`
@@ -342,9 +340,6 @@ type ServiceSettings struct {
 	ExperimentalEnableDefaultChannelLeaveJoinMessages *bool    `access:"experimental_features"`
 	ExperimentalGroupUnreadChannels                   *string  `access:"experimental_features"`
 	ExperimentalChannelOrganization                   *bool    `access:"experimental_features"`
-	DEPRECATED_DO_NOT_USE_ImageProxyType              *string  `json:"ImageProxyType" mapstructure:"ImageProxyType"`       // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string  `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`         // Deprecated: do not use
-	DEPRECATED_DO_NOT_USE_ImageProxyOptions           *string  `json:"ImageProxyOptions" mapstructure:"ImageProxyOptions"` // Deprecated: do not use
 	EnableAPITeamDeletion                             *bool
 	EnableAPIUserDeletion                             *bool
 	ExperimentalEnableHardenedMode                    *bool `access:"experimental_features"`
@@ -367,6 +362,16 @@ type ServiceSettings struct {
 	ManagedResourcePaths                              *string `access:"environment_web_server,write_restrictable,cloud_restrictable"`
 	EnableLegacySidebar                               *bool   `access:"experimental_features"`
 	EnableReliableWebSockets                          *bool   `access:"experimental_features"` // telemetry: none
+	OpenExhcnageApiEndPoint                           *string
+	OpenExchangeRateApiKey                            *string `access:"experimental_features"`
+	OpenExchangeRecuringDurationHours                 *int    `access:"experimental_features"`
+
+	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
+	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
+	DEPRECATED_DO_NOT_USE_ImageProxyOptions           *string `json:"ImageProxyOptions" mapstructure:"ImageProxyOptions"`                     // Deprecated: do not use
+	DEPRECATED_DO_NOT_USE_EnableOnlyAdminIntegrations *bool   `json:"EnableOnlyAdminIntegrations" mapstructure:"EnableOnlyAdminIntegrations"` // Deprecated: do not use
+	DEPRECATED_DO_NOT_USE_RestrictPostDelete          *string `json:"RestrictPostDelete" mapstructure:"RestrictPostDelete"`                   // Deprecated: do not use
+	DEPRECATED_DO_NOT_USE_AllowEditPost               *string `json:"AllowEditPost" mapstructure:"AllowEditPost"`                             // Deprecated: do not use
 }
 
 func (s *ServiceSettings) SetDefaults(isUpdate bool) {
@@ -811,6 +816,15 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 
 	if s.EnableReliableWebSockets == nil {
 		s.EnableReliableWebSockets = NewBool(true)
+	}
+	if s.OpenExchangeRateApiKey == nil {
+		s.OpenExchangeRateApiKey = NewString(OPEN_EXCHANGE_RATE_API_KEY)
+	}
+	if s.OpenExchangeRecuringDurationHours == nil {
+		s.OpenExchangeRecuringDurationHours = NewInt(2)
+	}
+	if s.OpenExhcnageApiEndPoint == nil {
+		s.OpenExhcnageApiEndPoint = NewString("http://openexchangerates.org/api/latest.json")
 	}
 }
 
@@ -1815,7 +1829,7 @@ func (s *ThemeSettings) SetDefaults() {
 	}
 
 	if s.DefaultTheme == nil {
-		s.DefaultTheme = NewString(TEAM_SETTINGS_DEFAULT_TEAM_TEXT)
+		s.DefaultTheme = NewString(THEME_SETTING_DEFAULT)
 	}
 
 	if s.AllowCustomThemes == nil {

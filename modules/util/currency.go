@@ -21,7 +21,3 @@ func GetCurrencyForCountry(country_code string) string {
 	}
 	return ""
 }
-
-func ToLocalCurrency() {
-
-}

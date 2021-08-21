@@ -7,6 +7,7 @@ import (
 
 type TaskFunc func()
 
+// ScheduledTask runs after every interval period
 type ScheduledTask struct {
 	Name      string        `json:"name"`
 	Interval  time.Duration `json:"interval"`
