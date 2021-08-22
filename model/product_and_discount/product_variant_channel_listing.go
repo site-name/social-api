@@ -66,8 +66,12 @@ func (p *ProductVariantChannelListing) commonPre() {
 }
 
 func (p *ProductVariantChannelListing) PopulateNonDbFields() {
-	p.Price, _ = goprices.NewMoney(p.PriceAmount, p.Currency)
-	p.CostPrice, _ = goprices.NewMoney(p.CostPriceAmount, p.Currency)
+	if p.PriceAmount != nil && p.Currency != "" {
+		p.Price, _ = goprices.NewMoney(p.PriceAmount, p.Currency)
+	}
+	if p.CostPriceAmount != nil && p.Currency != "" {
+		p.CostPrice, _ = goprices.NewMoney(p.CostPriceAmount, p.Currency)
+	}
 }
 
 func (p *ProductVariantChannelListing) ToJson() string {

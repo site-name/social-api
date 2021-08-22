@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -52,10 +53,20 @@ type AppIface interface {
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
+	// ExchangeCurrency Exchanges Money, TaxedMoney and their ranges to the specified currency.
+	// get_rate parameter is a callable taking single argument (target currency)
+	// that returns proper conversion rate
+	//
+	// `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange. `conversionrate` can be nil
+	//
+	// NOTE: `base` and `toCurrency` must be validated before given to me.
+	ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError)
 	// FileApp returns file sub app
 	FileApp() sub_app_iface.FileApp
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
+	// GetConversionRate get conversion rate to use in exchange
+	GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError)
 	// GetCookieDomain
 	GetCookieDomain() string
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -117,6 +128,10 @@ type AppIface interface {
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
+	// ToLocalCurrency performs convert given price to local currency
+	//
+	// NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
+	ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError)
 	// UpdateConfig updates config
 	UpdateConfig(f func(*model.Config))
 	// Warehouse returns warehouse sub app

@@ -11,8 +11,7 @@ import (
 type OpenExchangeRate struct {
 	Id         string           `json:"id"`
 	ToCurrency string           `json:"to_currency"` // db_index
-	Rate       *decimal.Decimal `json:"rate"`
-	UpdateAt   int64            `json:"update_at"`
+	Rate       *decimal.Decimal `json:"rate"`        // default 0
 }
 
 func (o *OpenExchangeRate) IsValid() *model.AppError {
@@ -53,6 +52,5 @@ func (o *OpenExchangeRate) commonPre() {
 }
 
 func (o *OpenExchangeRate) PreUpdate() {
-	o.UpdateAt = model.GetMillis()
 	o.commonPre()
 }

@@ -1,6 +1,8 @@
 package external_services
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/external_services"
@@ -35,11 +37,29 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 	}
 	defer store.FinalizeTransaction(transaction)
 
-	var isSaving bool
+	var (
+		oldRate    external_services.OpenExchangeRate
+		isSaving   bool
+		numUpdated int64
+	)
+
 	for _, rate := range rates {
-		if rate.Id == "" {
+		isSaving = false
+		// try lookup:
+		err := transaction.SelectOne(
+			&oldRate,
+			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = :Curreny",
+			map[string]interface{}{"Currency": rate.ToCurrency},
+		)
+		if err != nil {
+			if err == sql.ErrNoRows { // does not exist
+				isSaving = true
+			}
+			return nil, errors.Wrapf(err, "failed to find exchange rate with ToCurrency=%s", rate.ToCurrency)
+		}
+
+		if isSaving {
 			rate.PreSave()
-			isSaving = true
 		} else {
 			rate.PreUpdate()
 		}
@@ -48,17 +68,20 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 			return nil, err
 		}
 
-		var err error
 		if isSaving {
 			err = transaction.Insert(rate)
 		} else {
-			_, err = transaction.Update(rate)
+			// check if rates are different then update
+			if !rate.Rate.Equal(*oldRate.Rate) {
+				rate.Id = oldRate.Id
+				numUpdated, err = transaction.Update(rate)
+			}
 		}
 		if err != nil {
-			if os.IsUniqueConstraintError(err, []string{"ToCurrency", "openexchangerates_tocurrency_key"}) {
-				return nil, store.NewErrInvalidInput(store.OpenExchangeRateTableName, "ToCurrency", rate.ToCurrency)
-			}
-			return nil, errors.Wrapf(err, "failed to upsert exchange rate with id=%s", rate.Id)
+			return nil, errors.Wrapf(err, "failed to upsert exchange rate with ToCurrency=%s", rate.ToCurrency)
+		}
+		if numUpdated > 1 {
+			return nil, errors.Errorf("multiple exchange rates were updated: %d instead of 1", numUpdated)
 		}
 	}
 

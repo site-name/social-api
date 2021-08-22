@@ -61,7 +61,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.1.0
+	github.com/site-name/go-prices v1.1.1
 	github.com/site-name/i18naddress v0.0.0-20210815055342-14130957b11d
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0

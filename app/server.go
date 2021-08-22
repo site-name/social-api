@@ -768,6 +768,9 @@ func (s *Server) runJobs() {
 	}
 }
 
+// runFetchingCurrencyExchangeRateJob every 2 hours it performs:
+//
+// Fetching exchange rates from external service, then upsate in a cache map and upsert in the database
 func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours int, apiEndPoint string) {
 	client := s.HTTPService.MakeClient(true)
 	client.Timeout = 2 * time.Minute
@@ -787,7 +790,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 	fetchFun := func() {
 		req, err := http.NewRequest(http.MethodGet, apiEndPoint, nil)
 		if err != nil {
-			s.Log.Error("Error creating http request", slog.Err(err))
+			s.Log.Error("Error creating http request to fetch currency exchange rate", slog.Err(err))
 			return
 		}
 		response, err := client.Do(req)
@@ -798,15 +801,13 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 		defer response.Body.Close()
 
 		if status := response.StatusCode; status != http.StatusOK {
-			s.Log.Error("Status was not 200", slog.Int("status", status))
+			s.Log.Error("Returned exchange response status code was not 200", slog.Int("status", status))
 			return
 		}
 		// process data
-		err = json.JSON.
-			NewDecoder(response.Body).
-			Decode(&responseValue)
+		err = json.JSON.NewDecoder(response.Body).Decode(&responseValue)
 		if err != nil {
-			s.Log.Error("Error parsing response", slog.Err(err))
+			s.Log.Error("Error parsing currency exchange response body", slog.Err(err))
 			return
 		}
 
@@ -819,19 +820,27 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			s.ExchangeRateMap.Store(currency, exchangeRate)
 			exchangeRateInstances = append(exchangeRateInstances, exchangeRate)
 		}
-		_, err = s.Store.OpenExchangeRate().BulkUpsert(exchangeRateInstances)
-		if err != nil {
-			slog.Error("Failed to upsert exchange rates", slog.Err(err))
-			return
+		// update rates in database
+		if s.upsertCurrencyExchangeRates(exchangeRateInstances); err != nil {
+			s.Log.Error("Failed to upsert exchange rates", slog.Err(err))
 		}
 
-		slog.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
+		s.Log.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
 	}
 
-	// first time run
+	// first run
 	fetchFun()
 
 	model.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
+}
+
+func (s *Server) upsertCurrencyExchangeRates(newRates []*external_services.OpenExchangeRate) error {
+	_, err := s.Store.OpenExchangeRate().BulkUpsert(newRates)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Global app options that should be applied to apps created by this server
