@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/invoice"
@@ -89,6 +90,7 @@ type RetryLayer struct {
 	MenuStore                          store.MenuStore
 	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OpenExchangeRateStore              store.OpenExchangeRateStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
 	OrderEventStore                    store.OrderEventStore
@@ -351,6 +353,10 @@ func (s *RetryLayer) MenuItem() store.MenuItemStore {
 
 func (s *RetryLayer) MenuItemTranslation() store.MenuItemTranslationStore {
 	return s.MenuItemTranslationStore
+}
+
+func (s *RetryLayer) OpenExchangeRate() store.OpenExchangeRateStore {
+	return s.OpenExchangeRateStore
 }
 
 func (s *RetryLayer) Order() store.OrderStore {
@@ -837,6 +843,11 @@ type RetryLayerMenuItemStore struct {
 
 type RetryLayerMenuItemTranslationStore struct {
 	store.MenuItemTranslationStore
+	Root *RetryLayer
+}
+
+type RetryLayerOpenExchangeRateStore struct {
+	store.OpenExchangeRateStore
 	Root *RetryLayer
 }
 
@@ -4541,6 +4552,46 @@ func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 	tries := 0
 	for {
 		result, err := s.MenuItemStore.Save(menuItem)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+
+	tries := 0
+	for {
+		result, err := s.OpenExchangeRateStore.BulkUpsert(rates)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
+
+	tries := 0
+	for {
+		result, err := s.OpenExchangeRateStore.GetAll()
 		if err == nil {
 			return result, nil
 		}
@@ -9362,6 +9413,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.MenuStore = &RetryLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
 	newStore.MenuItemStore = &RetryLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &RetryLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OpenExchangeRateStore = &RetryLayerOpenExchangeRateStore{OpenExchangeRateStore: childStore.OpenExchangeRate(), Root: &newStore}
 	newStore.OrderStore = &RetryLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &RetryLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
 	newStore.OrderEventStore = &RetryLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}

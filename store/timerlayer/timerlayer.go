@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/invoice"
@@ -89,6 +90,7 @@ type TimerLayer struct {
 	MenuStore                          store.MenuStore
 	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OpenExchangeRateStore              store.OpenExchangeRateStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
 	OrderEventStore                    store.OrderEventStore
@@ -351,6 +353,10 @@ func (s *TimerLayer) MenuItem() store.MenuItemStore {
 
 func (s *TimerLayer) MenuItemTranslation() store.MenuItemTranslationStore {
 	return s.MenuItemTranslationStore
+}
+
+func (s *TimerLayer) OpenExchangeRate() store.OpenExchangeRateStore {
+	return s.OpenExchangeRateStore
 }
 
 func (s *TimerLayer) Order() store.OrderStore {
@@ -837,6 +843,11 @@ type TimerLayerMenuItemStore struct {
 
 type TimerLayerMenuItemTranslationStore struct {
 	store.MenuItemTranslationStore
+	Root *TimerLayer
+}
+
+type TimerLayerOpenExchangeRateStore struct {
+	store.OpenExchangeRateStore
 	Root *TimerLayer
 }
 
@@ -3879,6 +3890,38 @@ func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+	start := timemodule.Now()
+
+	result, err := s.OpenExchangeRateStore.BulkUpsert(rates)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OpenExchangeRateStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
+	start := timemodule.Now()
+
+	result, err := s.OpenExchangeRateStore.GetAll()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OpenExchangeRateStore.GetAll", success, elapsed)
 	}
 	return result, err
 }
@@ -7819,6 +7862,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.MenuStore = &TimerLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
 	newStore.MenuItemStore = &TimerLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &TimerLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OpenExchangeRateStore = &TimerLayerOpenExchangeRateStore{OpenExchangeRateStore: childStore.OpenExchangeRate(), Root: &newStore}
 	newStore.OrderStore = &TimerLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &TimerLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
 	newStore.OrderEventStore = &TimerLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}

@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/invoice"
@@ -90,6 +91,7 @@ type OpenTracingLayer struct {
 	MenuStore                          store.MenuStore
 	MenuItemStore                      store.MenuItemStore
 	MenuItemTranslationStore           store.MenuItemTranslationStore
+	OpenExchangeRateStore              store.OpenExchangeRateStore
 	OrderStore                         store.OrderStore
 	OrderDiscountStore                 store.OrderDiscountStore
 	OrderEventStore                    store.OrderEventStore
@@ -352,6 +354,10 @@ func (s *OpenTracingLayer) MenuItem() store.MenuItemStore {
 
 func (s *OpenTracingLayer) MenuItemTranslation() store.MenuItemTranslationStore {
 	return s.MenuItemTranslationStore
+}
+
+func (s *OpenTracingLayer) OpenExchangeRate() store.OpenExchangeRateStore {
+	return s.OpenExchangeRateStore
 }
 
 func (s *OpenTracingLayer) Order() store.OrderStore {
@@ -838,6 +844,11 @@ type OpenTracingLayerMenuItemStore struct {
 
 type OpenTracingLayerMenuItemTranslationStore struct {
 	store.MenuItemTranslationStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerOpenExchangeRateStore struct {
+	store.OpenExchangeRateStore
 	Root *OpenTracingLayer
 }
 
@@ -4212,6 +4223,42 @@ func (s *OpenTracingLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.Men
 
 	defer span.Finish()
 	result, err := s.MenuItemStore.Save(menuItem)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OpenExchangeRateStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OpenExchangeRateStore.BulkUpsert(rates)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OpenExchangeRateStore.GetAll")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OpenExchangeRateStore.GetAll()
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8607,6 +8654,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.MenuStore = &OpenTracingLayerMenuStore{MenuStore: childStore.Menu(), Root: &newStore}
 	newStore.MenuItemStore = &OpenTracingLayerMenuItemStore{MenuItemStore: childStore.MenuItem(), Root: &newStore}
 	newStore.MenuItemTranslationStore = &OpenTracingLayerMenuItemTranslationStore{MenuItemTranslationStore: childStore.MenuItemTranslation(), Root: &newStore}
+	newStore.OpenExchangeRateStore = &OpenTracingLayerOpenExchangeRateStore{OpenExchangeRateStore: childStore.OpenExchangeRate(), Root: &newStore}
 	newStore.OrderStore = &OpenTracingLayerOrderStore{OrderStore: childStore.Order(), Root: &newStore}
 	newStore.OrderDiscountStore = &OpenTracingLayerOrderDiscountStore{OrderDiscountStore: childStore.OrderDiscount(), Root: &newStore}
 	newStore.OrderEventStore = &OpenTracingLayerOrderEventStore{OrderEventStore: childStore.OrderEvent(), Root: &newStore}

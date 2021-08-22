@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/invoice"
@@ -166,6 +167,7 @@ type Store interface {
 	Shop() ShopStore                                                   // shop
 	ShopTranslation() ShopTranslationStore                             //
 	ShopStaff() ShopStaffStore                                         //
+	OpenExchangeRate() OpenExchangeRateStore                           // external services tables
 }
 
 // shop
@@ -1042,6 +1044,12 @@ type RoleStore interface {
 	// ChannelRolesUnderTeamRole(roleName string) ([]*model.Role, error)
 	// HigherScopedPermissions retrieves the higher-scoped permissions of a list of role names. The higher-scope
 	// (either team scheme or system scheme) is determined based on whether the team has a scheme or not.
+}
+
+type OpenExchangeRateStore interface {
+	CreateIndexesIfNotExists()
+	BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) // BulkUpsert performs bulk update/insert to given exchange rates
+	GetAll() ([]*external_services.OpenExchangeRate, error)                                                // GetAll returns all exchange currency rates
 }
 
 type UserGetByIdsOpts struct {

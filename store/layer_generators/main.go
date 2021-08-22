@@ -164,6 +164,8 @@ func buildStoreImplement() error {
 				return "file"
 			case "Shop", "ShopTranslation", "ShopStaff":
 				return "shop"
+			case "OpenExchangeRate":
+				return "external_services"
 			}
 			panic("not found package name: " + s)
 		},

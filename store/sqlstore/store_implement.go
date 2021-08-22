@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/compliance"
 	"github.com/sitename/sitename/store/sqlstore/csv"
 	"github.com/sitename/sitename/store/sqlstore/discount"
+	"github.com/sitename/sitename/store/sqlstore/external_services"
 	"github.com/sitename/sitename/store/sqlstore/file"
 	"github.com/sitename/sitename/store/sqlstore/giftcard"
 	"github.com/sitename/sitename/store/sqlstore/invoice"
@@ -88,6 +89,7 @@ type SqlStoreStores struct {
 	menu                          store.MenuStore
 	menuItem                      store.MenuItemStore
 	menuItemTranslation           store.MenuItemTranslationStore
+	openExchangeRate              store.OpenExchangeRateStore
 	order                         store.OrderStore
 	orderDiscount                 store.OrderDiscountStore
 	orderEvent                    store.OrderEventStore
@@ -202,6 +204,7 @@ func (store *SqlStore) setupTables() {
 		menu:                          menu.NewSqlMenuStore(store),
 		menuItem:                      menu.NewSqlMenuItemStore(store),
 		menuItemTranslation:           menu.NewSqlMenuItemTranslationStore(store),
+		openExchangeRate:              external_services.NewSqlOpenExchangeRateStore(store),
 		order:                         order.NewSqlOrderStore(store),
 		orderDiscount:                 discount.NewSqlOrderDiscountStore(store),
 		orderEvent:                    order.NewSqlOrderEventStore(store),
@@ -316,6 +319,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.menu.CreateIndexesIfNotExists()
 	store.stores.menuItem.CreateIndexesIfNotExists()
 	store.stores.menuItemTranslation.CreateIndexesIfNotExists()
+	store.stores.openExchangeRate.CreateIndexesIfNotExists()
 	store.stores.order.CreateIndexesIfNotExists()
 	store.stores.orderDiscount.CreateIndexesIfNotExists()
 	store.stores.orderEvent.CreateIndexesIfNotExists()
@@ -580,6 +584,10 @@ func (ss *SqlStore) MenuItem() store.MenuItemStore {
 
 func (ss *SqlStore) MenuItemTranslation() store.MenuItemTranslationStore {
 	return ss.stores.menuItemTranslation
+}
+
+func (ss *SqlStore) OpenExchangeRate() store.OpenExchangeRateStore {
+	return ss.stores.openExchangeRate
 }
 
 func (ss *SqlStore) Order() store.OrderStore {

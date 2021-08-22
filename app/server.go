@@ -28,11 +28,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/email"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
@@ -807,9 +809,22 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			s.Log.Error("Error parsing response", slog.Err(err))
 			return
 		}
+
+		exchangeRateInstances := []*external_services.OpenExchangeRate{}
 		for currency, rate := range responseValue.Rates {
-			s.ExchangeRateMap.Store(currency, rate)
+			exchangeRate := &external_services.OpenExchangeRate{
+				ToCurrency: currency,
+				Rate:       model.NewDecimal(decimal.NewFromFloat(rate)),
+			}
+			s.ExchangeRateMap.Store(currency, exchangeRate)
+			exchangeRateInstances = append(exchangeRateInstances, exchangeRate)
 		}
+		_, err = s.Store.OpenExchangeRate().BulkUpsert(exchangeRateInstances)
+		if err != nil {
+			slog.Error("Failed to upsert exchange rates", slog.Err(err))
+			return
+		}
+
 		slog.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
 	}
 

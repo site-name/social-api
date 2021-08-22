@@ -140,6 +140,8 @@ func init() {
 
 		InvoiceEventTableName: "CreateAt ASC", // invoice
 		InvoiceTableName:      "CreateAt ASC", //
+
+		OpenExchangeRateTableName: "ToCurrency ASC", // external services
 	}
 }
 
@@ -325,4 +327,8 @@ const (
 const (
 	InvoiceEventTableName = "InvoiceEvents" // invoice
 	InvoiceTableName      = "Invoices"      //
+)
+
+const (
+	OpenExchangeRateTableName = "OpenExchangeRates" // external services
 )
