@@ -1628,6 +1628,24 @@ func (s *OpenTracingLayerAssignedProductAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
+func (s *OpenTracingLayerAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeStore.Get")
@@ -1934,7 +1952,7 @@ func (s *OpenTracingLayerAttributeProductStore) Get(attributeProductID string) (
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+func (s *OpenTracingLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeProductStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)

@@ -27,6 +27,14 @@ func NewSqlAssignedVariantAttributeStore(s store.Store) store.AssignedVariantAtt
 	return as
 }
 
+func (as *SqlAssignedVariantAttributeStore) ModelFields() []string {
+	return []string{
+		"AssignedVariantAttributes.Id",
+		"AssignedVariantAttributes.VariantID",
+		"AssignedVariantAttributes.AssignmentID",
+	}
+}
+
 func (as *SqlAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
 	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeTableName, "VariantID", store.ProductVariantTableName, "Id", true)
 	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeTableName, "AssignmentID", store.AttributeVariantTableName, "Id", true)
@@ -61,8 +69,11 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.As
 	return &res, nil
 }
 
-func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
-	query := as.GetQueryBuilder().Select("*").From(store.AssignedVariantAttributeTableName)
+// builFilterQuery is common method for building filter queries
+func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
+	query := as.GetQueryBuilder().
+		Select(as.ModelFields()...).
+		From(store.AssignedVariantAttributeTableName)
 
 	// parse option
 	if option.AssignmentID != nil {
@@ -71,26 +82,63 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.Assi
 	if option.VariantID != nil {
 		query = query.Where(option.VariantID.ToSquirrel("VariantID"))
 	}
+	var joined_AssignedVariantAttributes_and_Attributes_tables bool
+	if option.AssignmentAttributeInputType != nil {
+		query = query.
+			InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
+			InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
+			Where(option.AssignmentAttributeInputType.ToSquirrel("Attributes.InputType"))
 
-	queryString, args, err := query.ToSql()
+		joined_AssignedVariantAttributes_and_Attributes_tables = true // indicate that already joined 2 tables
+	}
+	if option.AssignmentAttributeType != nil {
+		if !joined_AssignedVariantAttributes_and_Attributes_tables {
+			query = query.
+				InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
+				InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
+		}
+		query = query.Where(option.AssignmentAttributeType.ToSquirrel("Attributes.Type"))
+	}
+
+	return query.ToSql()
+}
+
+// GetWithOption finds and returns 1 assigned variant attribute with given option
+func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+	queryString, args, err := as.builFilterQuery(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
 
 	var res attribute.AssignedVariantAttribute
-
-	// try finding first:
 	err = as.GetReplica().SelectOne(
 		&res,
 		queryString,
 		args...,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows { // this mean we need to create one
+		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with VariantID = %s, AssignmentID = %s", option.VariantID, option.AssignmentID)
 	}
 
 	return &res, nil
+}
+
+// FilterByOption finds and returns a list of assigned variant attributes filtered by given options
+func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+
+	queryString, args, err := as.builFilterQuery(option)
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*attribute.AssignedVariantAttribute
+	_, err = as.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")
+	}
+
+	return res, nil
 }

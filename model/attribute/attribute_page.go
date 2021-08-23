@@ -14,8 +14,8 @@ type AttributePage struct {
 
 // AttributePageFilterOption is used for lookup AttributePage
 type AttributePageFilterOption struct {
-	PageTypeID  string `json:"page_type_id"`
-	AttributeID string `json:"attribute_id"`
+	PageTypeID  *model.StringFilter
+	AttributeID *model.StringFilter
 }
 
 func (a *AttributePage) IsValid() *model.AppError {

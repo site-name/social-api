@@ -1692,6 +1692,26 @@ func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
+func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
 
 	tries := 0
@@ -2032,7 +2052,7 @@ func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*attri
 
 }
 
-func (s *RetryLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
 
 	tries := 0
 	for {

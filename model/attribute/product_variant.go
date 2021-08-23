@@ -52,6 +52,9 @@ type AssignedVariantAttribute struct {
 type AssignedVariantAttributeFilterOption struct {
 	VariantID    *model.StringFilter
 	AssignmentID *model.StringFilter
+
+	AssignmentAttributeInputType *model.StringFilter
+	AssignmentAttributeType      *model.StringFilter
 }
 
 func (a *AssignedVariantAttribute) IsValid() *model.AppError {

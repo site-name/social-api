@@ -13,27 +13,25 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// AssociateAttributeValuesToInstance assigns given attribute values to a product or variant.
+// AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
+// Note: be award this function invokes the ``set`` method on the instance's
+// attribute association. Meaning any values already assigned or concurrently
+// assigned will be overridden by this call.
 //
-// `instance` must be either `*product.Product` or `*product.ProductVariant` or `*page.Page`
-//
+// `instance` must be either *Product or *ProductVariant or *Page.
 // `attributeID` must be ID of processing `Attribute`
 //
 // Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
 func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError) {
 
-	// validate if valid `instance` provided`
+	// validate if valid `instance` was provided
 	switch instance.(type) {
 	case *product_and_discount.Product, *product_and_discount.ProductVariant, *page.Page:
-		// do nothing since these cases are valid.
 	default:
-		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "Please check doc for this method", http.StatusBadRequest)
+		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 
-	valueIDs := make([]string, len(values))
-	for i, value := range values {
-		valueIDs[i] = value.Id
-	}
+	valueIDs := attribute.AttributeValues(values).IDs()
 
 	// Ensure the values are actually form the given attribute:
 	if appErr := a.validateAttributeOwnsValues(attributeID, valueIDs); appErr != nil {
@@ -51,17 +49,40 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 	case *attribute.AssignedProductAttribute:
 		_, err := a.app.Srv().Store.AssignedProductAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
-			return nil, commonErrHandler(err, "AssociateAttributeToInstance", "AssignmentID", "ValueIDs")
+			if appErr, ok := err.(*model.AppError); ok {
+				return nil, appErr
+			}
+			statusCode := http.StatusInternalServerError
+			if _, ok := err.(*store.ErrInvalidInput); ok {
+				statusCode = http.StatusNotFound
+			}
+			return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.error_creating_assigned_product_attribute_values.app_error", nil, err.Error(), statusCode)
 		}
+
 	case *attribute.AssignedVariantAttribute:
 		_, err := a.app.Srv().Store.AssignedVariantAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
-			return nil, commonErrHandler(err, "AssociateAttributeToInstance", "AssignmentID", "ValueIDs")
+			if appErr, ok := err.(*model.AppError); ok {
+				return nil, appErr
+			}
+			statusCode := http.StatusInternalServerError
+			if _, ok := err.(*store.ErrInvalidInput); ok {
+				statusCode = http.StatusNotFound
+			}
+			return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.error_creating_assigned_variants_attribute_values.app_error", nil, err.Error(), statusCode)
 		}
+
 	case *attribute.AssignedPageAttribute:
 		_, err := a.app.Srv().Store.AssignedPageAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
-			return nil, commonErrHandler(err, "AssociateAttributeToInstance", "AssignmentID", "ValueIDs")
+			if appErr, ok := err.(*model.AppError); ok {
+				return nil, appErr
+			}
+			statusCode := http.StatusInternalServerError
+			if _, ok := err.(*store.ErrInvalidInput); ok {
+				statusCode = http.StatusNotFound
+			}
+			return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.error_creating_assigned_page_attribute_values.app_error", nil, err.Error(), statusCode)
 		}
 
 	default:
@@ -83,25 +104,13 @@ func (a *AppAttribute) validateAttributeOwnsValues(attributeID string, valueIDs 
 	if appErr != nil {
 		return appErr
 	}
+	attributeActualValueIDs := attribute.AttributeValues(attributeValues).IDs()
+	foundAssociatedIDs := util.StringArrayIntersection(attributeActualValueIDs, valueIDs)
 
-	sameLength := len(attributeValues) == len(valueIDs)
-	sameIds := true
-	for _, av := range attributeValues {
-		if !util.StringInSlice(av.Id, valueIDs) {
-			sameIds = false
-			break
+	for _, associatedID := range foundAssociatedIDs {
+		if !util.StringInSlice(associatedID, valueIDs) {
+			return model.NewAppError("validateAttributeOwnsValues", "app.attribute.attribute_missing_some_values", nil, "", http.StatusNotFound)
 		}
-	}
-
-	if !sameLength || !sameIds {
-		return model.NewAppError(
-			"validateAttributeOwnsValues", app.InvalidArgumentAppErrorID,
-			map[string]interface{}{
-				"Fields": "valueIDs",
-			},
-			"",
-			http.StatusBadRequest,
-		)
 	}
 
 	return nil
@@ -114,9 +123,9 @@ func (a *AppAttribute) validateAttributeOwnsValues(attributeID string, valueIDs 
 // `instance` must be either `*product.Product` or `*product.ProductVariant` or `*page.Page`
 //
 // returned interface{} is either:
-//  +) *attribute.AssignedProductAttribute
-//  +) *attribute.AssignedVariantAttribute
-//  +) *attribute.AssignedPageAttribute
+//  +) *AssignedProductAttribute
+//  +) *AssignedVariantAttribute
+//  +) *AssignedPageAttribute
 func (a *AppAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
 
 	switch v := instance.(type) {
@@ -165,27 +174,27 @@ func (a *AppAttribute) associateAttributeToInstance(instance interface{}, attrib
 		})
 
 	case *page.Page:
-		attributePage, err := a.app.Srv().Store.AttributePage().GetByOption(&attribute.AttributePageFilterOption{
-			AttributeID: attributeID,
-			PageTypeID:  v.PageTypeID,
+		attributePage, appErr := a.AttributePageByOption(&attribute.AttributePageFilterOption{
+			AttributeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: attributeID,
+				},
+			},
+			PageTypeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: v.PageTypeID,
+				},
+			},
 		})
-		if err != nil {
-			// error input is handled manually:
-			if invlErr, ok := err.(*store.ErrInvalidInput); ok {
-				return nil, model.NewAppError("associateAttributeToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "option"}, invlErr.Error(), http.StatusBadRequest)
-			}
-			// system error, not found error:
-			return nil, store.AppErrorFromDatabaseLookupError("associateAttributeToInstance", "app.attribute.error_finding_attribute_page.app_error", err)
+		if appErr != nil {
+			return nil, appErr
 		}
-		assignedPageAttribute, err := a.app.Srv().Store.AssignedPageAttribute().GetByOption(&attribute.AssignedPageAttributeFilterOption{
+
+		return a.GetOrCreateAssignedPageAttribute(&attribute.AssignedPageAttribute{
 			PageID:       v.Id,
 			AssignmentID: attributePage.Id,
 		})
-		if err != nil { // this error can be either: `*AppError` or `*store.ErrInvalidInput` or `system error`
-			return nil, commonErrHandler(err, "associateAttributeToInstance", "option")
-		}
 
-		return assignedPageAttribute, nil
 	default:
 		return nil, model.NewAppError("associateAttributeToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}

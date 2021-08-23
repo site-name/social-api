@@ -8,11 +8,11 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// GetByOption returns an assigned product attribute filtered using given option
-func (a *AppAttribute) GetByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError) {
+// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
+func (a *AppAttribute) AssignedProductAttributeByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError) {
 	assignedProductAttr, err := a.app.Srv().Store.AssignedProductAttribute().GetWithOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetByOption", "app.attribute.error_finding_assigned_product_attribute_by_option", err)
+		return nil, store.AppErrorFromDatabaseLookupError("AssignedProductAttributeByOption", "app.attribute.error_finding_assigned_product_attribute_by_option", err)
 	}
 
 	return assignedProductAttr, nil
@@ -37,7 +37,7 @@ func (a *AppAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttrib
 		}
 	}
 
-	assignedProductAttr, appErr := a.GetByOption(option)
+	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(option)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // return immediately if error was caused by system
 			return nil, appErr

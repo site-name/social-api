@@ -9,8 +9,19 @@ import (
 
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
 func (a *AppProduct) GenerateAndSetVariantName(variant *product_and_discount.ProductVariant, sku string) *model.AppError {
-
-	// a.AttributeApp().
+	_, _ = a.AttributeApp().AssignedVariantAttributesByOption(&attribute.AssignedVariantAttributeFilterOption{
+		AssignmentAttributeInputType: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: attribute.ALLOWED_IN_VARIANT_SELECTION,
+			},
+		},
+		AssignmentAttributeType: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: attribute.PRODUCT_TYPE,
+			},
+		},
+	})
+	panic("not implt")
 }
 
 // GetVariantSelectionAttributes Return attributes that can be used in variant selection.

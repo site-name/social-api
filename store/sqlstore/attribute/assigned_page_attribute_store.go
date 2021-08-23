@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -65,45 +64,33 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPage
 }
 
 func (as *SqlAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
-	if option == nil || !model.IsValidId(option.PageID) || !model.IsValidId(option.AssignmentID) {
-		return nil, store.NewErrInvalidInput(store.AssignedPageAttributeTableName, "option", "{}")
+	query := as.GetQueryBuilder().Select("*").From(store.AssignedPageAttributeTableName)
+
+	// parse option
+	if option.AssignmentID != nil {
+		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+	}
+	if option.PageID != nil {
+		query = query.Where(option.PageID.ToSquirrel("PageID"))
 	}
 
-	tx, err := as.GetMaster().Begin()
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrapf(err, "begin_transaction")
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
-	defer store.FinalizeTransaction(tx)
 
-	var res *attribute.AssignedPageAttribute
-	err = tx.SelectOne(
+	var res attribute.AssignedPageAttribute
+	err = as.GetReplica().SelectOne(
 		&res,
-		"SELECT * FROM "+store.AssignedPageAttributeTableName+" WHERE (PageID = :PageID AND AssignmentID = :AssignmentID)",
-		map[string]interface{}{
-			"PageID":       option.PageID,
-			"AssignmentID": option.AssignmentID,
-		},
+		queryString,
+		args...,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// try creating new instance:
-			res = new(attribute.AssignedPageAttribute)
-			res.PageID = option.PageID
-			res.AssignmentID = option.AssignmentID
-			err = tx.Insert(res)
-			if err != nil {
-				if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", strings.ToLower(store.AssignedPageAttributeTableName) + "_pageid_assignmentid_key"}) {
-					return nil, store.NewErrInvalidInput(store.AssignedPageAttributeTableName, "PageID/AssignmentID", option.PageID+"/"+option.AssignmentID)
-				}
-				return nil, errors.Wrapf(err, "failed to save assigned page attribute with id=%s", res.Id)
-			}
+			return nil, store.NewErrNotFound(store.AssignedPageAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute with given option")
 	}
 
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrapf(err, "commit_transaction")
-	}
-
-	return res, nil
+	return &res, nil
 }

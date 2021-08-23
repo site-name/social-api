@@ -54,8 +54,8 @@ type AssignedPageAttribute struct {
 
 // AssignedPageAttributeFilterOption is used to find or creat new AssignedPageAttribute
 type AssignedPageAttributeFilterOption struct {
-	PageID       string `json:"page_id"`
-	AssignmentID string `json:"assignment_id"`
+	PageID       *model.StringFilter
+	AssignmentID *model.StringFilter
 }
 
 func (a *AssignedPageAttribute) IsValid() *model.AppError {

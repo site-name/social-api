@@ -1573,6 +1573,22 @@ func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
+func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
@@ -1845,7 +1861,7 @@ func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.GetByOption(option)

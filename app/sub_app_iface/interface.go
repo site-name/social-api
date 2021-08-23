@@ -252,8 +252,9 @@ type AttributeApp interface {
 	//
 	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
 	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError)
-	AttributeByID(id string) (*attribute.Attribute, *model.AppError)     // AttributeByID finds attribute with given id
-	AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) // AttributeBySlug finds an attribute with given slug
+	AttributeByID(id string) (*attribute.Attribute, *model.AppError)                                                                         // AttributeByID finds attribute with given id
+	AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError)                                                                     // AttributeBySlug finds an attribute with given slug
+	AssignedVariantAttributesByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) // AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
 }
 
 type InvoiceApp interface {

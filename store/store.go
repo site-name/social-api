@@ -293,9 +293,10 @@ type (
 	}
 	AssignedVariantAttributeStore interface {
 		CreateIndexesIfNotExists()
-		Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error)    // Save insert new instance into database then returns it with an error
-		Get(id string) (*attribute.AssignedVariantAttribute, error)                                                        // Get find assigned variant attribute from database then returns it with an error
-		GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) // GetWithOption try finding an assigned variant attribute with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
+		Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error)       // Save insert new instance into database then returns it with an error
+		Get(id string) (*attribute.AssignedVariantAttribute, error)                                                           // Get find assigned variant attribute from database then returns it with an error
+		GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error)    // GetWithOption try finding an assigned variant attribute with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
+		FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 	}
 	AttributeVariantStore interface {
 		CreateIndexesIfNotExists()

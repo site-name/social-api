@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -63,25 +62,33 @@ func (as *SqlAttributePageStore) Get(pageID string) (*attribute.AttributePage, e
 }
 
 func (as *SqlAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {
-	if option == nil || !model.IsValidId(option.AttributeID) || !model.IsValidId(option.PageTypeID) {
-		return nil, store.NewErrInvalidInput(store.AttributePageTableName, "option", option)
+	query := as.GetQueryBuilder().Select("*").From(store.AttributePageTableName)
+
+	// parse option
+	if option.PageTypeID != nil {
+		query = query.Where(option.PageTypeID.ToSquirrel("PageTypeID"))
+	}
+	if option.AttributeID != nil {
+		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
 	}
 
-	var res *attribute.AttributePage
-	err := as.GetReplica().SelectOne(
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByoption_ToSql")
+	}
+
+	var res attribute.AttributePage
+	err = as.GetReplica().SelectOne(
 		&res,
-		"SELECT * FROM "+store.AttributePageTableName+" WHERE (AttributeID = :AttributeID AND PageTypeID = :PageTypeID)",
-		map[string]interface{}{
-			"AttributeID": option.AttributeID,
-			"PageTypeID":  option.PageTypeID,
-		},
+		queryString,
+		args...,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributePageTableName, "")
+			return nil, store.NewErrNotFound(store.AttributePageTableName, "option")
 		}
-		return nil, errors.Wrapf(err, "failed to find attribute product with AttributeID = %s, PageTypeID = %s", option.AttributeID, option.PageTypeID)
+		return nil, errors.Wrapf(err, "failed to find attribute product with given option")
 	}
 
-	return res, nil
+	return &res, nil
 }

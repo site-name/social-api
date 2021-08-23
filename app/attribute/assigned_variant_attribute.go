@@ -61,3 +61,25 @@ func (a *AppAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *
 
 	return assignedVariantAttribute, nil
 }
+
+// AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
+func (a *AppAttribute) AssignedVariantAttributesByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+	assignedVariantAttrs, err := a.app.Srv().Store.AssignedVariantAttribute().FilterByOption(option)
+
+	var (
+		statusCode int
+		errMsg     string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(assignedVariantAttrs) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("AssignedVariantAttributesByOption", "app.attribute.error_finding_assigned_variant_attributes_by_option.app_error", nil, errMsg, statusCode)
+	}
+
+	return assignedVariantAttrs, nil
+}

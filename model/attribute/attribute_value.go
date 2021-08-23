@@ -31,6 +31,21 @@ type AttributeValue struct {
 	model.Sortable
 }
 
+type AttributeValues []*AttributeValue
+
+func (a AttributeValues) IDs() []string {
+	var res []string
+	meetMap := map[string]bool{}
+	for _, item := range a {
+		if _, met := meetMap[item.Id]; !met {
+			res = append(res, item.Id)
+			meetMap[item.Id] = true
+		}
+	}
+
+	return res
+}
+
 func (a *AttributeValue) String() string {
 	return a.Name
 }
