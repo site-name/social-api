@@ -44,6 +44,8 @@ const (
 	BOOLEAN     = "boolean"
 )
 
+var ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN}
+
 var AttributeInputTypeStrings = map[string]string{
 	DROPDOWN:    "Dropdown",
 	MULTISELECT: "Multi Select",

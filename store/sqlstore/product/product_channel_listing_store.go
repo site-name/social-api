@@ -57,20 +57,63 @@ func (ps *SqlProductChannelListingStore) CreateIndexesIfNotExists() {
 	ps.CreateForeignKeyIfNotExists(store.ProductChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
 }
 
-func (ps *SqlProductChannelListingStore) Save(listing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
-	listing.PreSave()
-	if err := listing.IsValid(); err != nil {
-		return nil, err
+// BulkUpsert performs bulk upsert on given product channel listings
+func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+	transaction, err := ps.GetMaster().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
 	}
+	defer store.FinalizeTransaction(transaction)
 
-	if err := ps.GetMaster().Insert(listing); err != nil {
-		if ps.IsUniqueConstraintError(err, ProductChannelListingDuplicateKeys) {
-			return nil, store.NewErrInvalidInput(store.ProductChannelListingTableName, "ProductID/ChannelID", listing.ProductID+"/"+listing.ChannelID)
+	var (
+		oldListing product_and_discount.ProductChannelListing
+		numUpdated int64
+		isSaving   bool
+	)
+	for _, listing := range listings {
+		isSaving = false
+		if listing.Id == "" {
+			listing.PreSave()
+			isSaving = true
+		} else {
+			listing.PreUpdate()
 		}
-		return nil, errors.Wrapf(err, "failed to save product channel listing with id=%s", listing.Id)
+
+		if err := listing.IsValid(); err != nil {
+			return nil, err
+		}
+
+		if isSaving {
+			err = transaction.Insert(listing)
+		} else {
+			err = transaction.SelectOne(&oldListing, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listing.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, store.NewErrNotFound(store.ProductChannelListingTableName, listing.Id)
+				}
+				return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listing.Id)
+			}
+
+			listing.CreateAt = oldListing.CreateAt
+			numUpdated, err = transaction.Update(listing)
+		}
+
+		if err != nil {
+			if ps.IsUniqueConstraintError(err, []string{"ProductID", "ChannelID", "productchannellistings_productid_channelid_key"}) {
+				return nil, store.NewErrInvalidInput(store.ProductChannelListingTableName, "ProductID/ChannelID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert product channel listing with id=%s", listing.Id)
+		}
+		if numUpdated > 1 {
+			return nil, errors.New("multiple listings were updated: %d instead of 1")
+		}
 	}
 
-	return listing, nil
+	if err := transaction.Commit(); err != nil {
+		return nil, errors.Wrap(err, "transaction_commit")
+	}
+
+	return listings, nil
 }
 
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_discount.ProductChannelListing, error) {

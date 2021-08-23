@@ -110,7 +110,10 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
 	}
 	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID IN ?)", store.VoucherProductTableName, option.VoucherIDs)) // no need to provide key value here
+		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID IN ?)", store.VoucherProductTableName, option.VoucherIDs))
+	}
+	if len(option.SaleIDs) > 0 {
+		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE SaleID IN ?)", store.SaleProductRelationTableName, option.SaleIDs))
 	}
 
 	queryString, args, err := query.ToSql()
@@ -152,6 +155,9 @@ func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilte
 	}
 	if len(option.VoucherIDs) > 0 {
 		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID IN ?)", store.VoucherProductTableName, option.VoucherIDs))
+	}
+	if len(option.SaleIDs) > 0 {
+		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE SaleID IN ?)", store.SaleProductRelationTableName, option.SaleIDs))
 	}
 
 	queryString, args, err := query.ToSql()
@@ -443,4 +449,38 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 	}
 
 	return res, nil
+}
+
+// SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
+func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		Distinct().
+		From(store.ProductTableName).
+		OrderBy(store.TableOrderingMap[store.ProductTableName])
+
+	if len(productIDs) > 0 {
+		query = query.Where("Products.Id IN ?", productIDs)
+	}
+	if len(categoryIDs) > 0 {
+		query = query.Where("OR Products.CategoryID IN ?", categoryIDs)
+	}
+	if len(collectionIDs) > 0 {
+		query = query.
+			LeftJoin(store.CollectionProductRelationTableName+" ON (Products.Id = ProductCollections.ProductID)").
+			Where("OR ProductCollections.CollectionID IN ?", collectionIDs)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
+	}
+
+	var products []*product_and_discount.Product
+	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find products by given params")
+	}
+
+	return products, nil
 }

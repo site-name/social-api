@@ -150,6 +150,13 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 			option.VoucherIDs,
 		))
 	}
+	if len(option.SaleIDs) > 0 {
+		query = query.Where(squirrel.Expr(
+			"Collections.Id IN (SELECT CollectionID FROM ? WHERE SaleID IN ?)",
+			store.SaleCollectionRelationTableName,
+			option.SaleIDs,
+		))
+	}
 
 	var (
 		joined_CollectionChannelListingTable bool

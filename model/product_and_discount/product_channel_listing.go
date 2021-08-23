@@ -120,3 +120,7 @@ func (p *ProductChannelListing) PreSave() {
 	}
 	p.commonPre()
 }
+
+func (p *ProductChannelListing) PreUpdate() {
+	p.commonPre()
+}

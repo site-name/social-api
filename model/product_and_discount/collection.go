@@ -40,13 +40,26 @@ type CollectionFilterOption struct {
 	Name *model.StringFilter //
 	Slug *model.StringFilter
 
-	ProductIDs []string // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
-	VoucherIDs []string // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
-
+	ProductIDs                    []string            // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
+	VoucherIDs                    []string            // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
+	SaleIDs                       []string            //
 	ChannelListingPublicationDate *model.TimeFilter   // INNER JOIN `CollectionChannelListings`
 	ChannelListingChannelSlug     *model.StringFilter // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
 	ChannelListingChannelIsActive *bool               // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
 	ChannelListingIsPublished     *bool               // INNER JOIN `CollectionChannelListing`
+}
+
+type Collections []*Collection
+
+func (c Collections) IDs() []string {
+	var res []string
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
 }
 
 func (c *Collection) String() string {

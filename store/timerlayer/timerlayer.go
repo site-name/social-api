@@ -4745,6 +4745,22 @@ func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 	return result, err
 }
 
+func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.SelectForUpdateDiscountedPricesOfCatalogues", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -4757,6 +4773,22 @@ func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, reque
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.VisibleToUserProducts", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductChannelListingStore.BulkUpsert(listings)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.BulkUpsert", success, elapsed)
 	}
 	return result, err
 }
@@ -4789,22 +4821,6 @@ func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*pr
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
-	start := timemodule.Now()
-
-	result, err := s.ProductChannelListingStore.Save(channelListing)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductChannelListingStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -5013,6 +5029,22 @@ func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.Produ
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.FilterbyOption", success, elapsed)
 	}
 	return result, err
 }

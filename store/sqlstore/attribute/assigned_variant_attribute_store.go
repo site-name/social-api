@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -63,51 +62,35 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.As
 }
 
 func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
-	if option == nil || !model.IsValidId(option.VariantID) || !model.IsValidId(option.AssignmentID) {
-		return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeTableName, "option", option)
+	query := as.GetQueryBuilder().Select("*").From(store.AssignedVariantAttributeTableName)
+
+	// parse option
+	if option.AssignmentID != nil {
+		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+	}
+	if option.VariantID != nil {
+		query = query.Where(option.VariantID.ToSquirrel("VariantID"))
 	}
 
-	var res *attribute.AssignedVariantAttribute
-
-	tx, err := as.GetMaster().Begin()
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "begin_transaction")
+		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
-	defer store.FinalizeTransaction(tx)
+
+	var res attribute.AssignedVariantAttribute
 
 	// try finding first:
-	err = tx.SelectOne(
+	err = as.GetReplica().SelectOne(
 		&res,
-		"SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE (VariantID = :VariantId AND AssignmentID = :AssignmentID)",
-		map[string]interface{}{
-			"VariantId":    option.VariantID,
-			"AssignmentID": option.AssignmentID,
-		},
+		queryString,
+		args...,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows { // this mean we need to create one
-			res = new(attribute.AssignedVariantAttribute)
-			res.AssignmentID = option.AssignmentID
-			res.VariantID = option.VariantID
-			res.PreSave()
-			if appErr := res.IsValid(); appErr != nil {
-				return nil, appErr
-			}
-
-			if err = tx.Insert(res); err != nil {
-				if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(store.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
-					return nil, store.NewErrInvalidInput(store.AssignedProductAttributeTableName, "VariantID/AssignmentID", option.VariantID+"/"+option.AssignmentID)
-				}
-				return nil, errors.Wrapf(err, "failed to insert new assigned variant attribute with id=%s", res.Id)
-			}
+			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, "option")
 		}
-		// system error
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with VariantID = %s, AssignmentID = %s", option.VariantID, option.AssignmentID)
 	}
 
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "commit_transaction")
-	}
-
-	return res, nil
+	return &res, nil
 }

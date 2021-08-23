@@ -320,9 +320,9 @@ type (
 	}
 	AttributeProductStore interface {
 		CreateIndexesIfNotExists()
-		Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error)       // Save inserts given attribute product relationship into database then returns it and an error
-		Get(attributeProductID string) (*attribute.AttributeProduct, error)                           // Get finds an attributeProduct relationship and returns it with an error
-		GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition
+		Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error)          // Save inserts given attribute product relationship into database then returns it and an error
+		Get(attributeProductID string) (*attribute.AttributeProduct, error)                              // Get finds an attributeProduct relationship and returns it with an error
+		GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition
 	}
 )
 
@@ -490,7 +490,7 @@ type (
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error)                 // Save inserts given product channel listing into database then returns it with an error
+		BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error)             // BulkUpsert performs bulk upsert on given product channel listings
 		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                                     // Get try finding a product channel listing, then returns it with an error
 		FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
@@ -528,8 +528,9 @@ type (
 			IsPublished     bool
 			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                        // PublishedWithVariants finds and returns products.
-		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                                                                      // PublishedWithVariants finds and returns products.
+		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 	}
 )
 

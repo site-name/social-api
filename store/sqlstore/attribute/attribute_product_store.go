@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -62,21 +61,29 @@ func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct,
 	return &res, nil
 }
 
-func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
+	query := as.GetQueryBuilder().
+		Select("*").
+		From(store.AttributeProductTableName)
 
-	if option == nil || !model.IsValidId(option.AttributeID) || !model.IsValidId(option.ProductTypeID) {
-		return nil, store.NewErrInvalidInput(store.AttributeProductTableName, "option", option.AttributeID+"/"+option.ProductTypeID)
+	// parse option
+	if option.AttributeID != nil {
+		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
+	}
+	if option.ProductTypeID != nil {
+		query = query.Where(option.ProductTypeID.ToSquirrel("ProductTypeID"))
 	}
 
-	var attributeProduct *attribute.AttributeProduct
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
 
-	err := as.GetReplica().SelectOne(
+	var attributeProduct attribute.AttributeProduct
+	err = as.GetReplica().SelectOne(
 		&attributeProduct,
-		"SELECT * FROM "+store.AttributeProductTableName+" WHERE (AttributeID = :AttributeID AND ProductTypeID = :ProductTypeID)",
-		map[string]interface{}{
-			"AttributeID":   option.AttributeID,
-			"ProductTypeID": option.ProductTypeID,
-		},
+		queryString,
+		args...,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -85,5 +92,5 @@ func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProdu
 		return nil, errors.Wrapf(err, "failed to find attribute product with AttributeID = %s, ProductTypeID = %s", option.AttributeID, option.ProductTypeID)
 	}
 
-	return attributeProduct, nil
+	return &attributeProduct, nil
 }

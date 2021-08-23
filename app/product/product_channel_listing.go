@@ -1,15 +1,39 @@
 package product
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
+// ProductChannelListingsByOption returns a list of product channel listings filtered using given option
 func (a *AppProduct) ProductChannelListingsByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
 	listings, err := a.Srv().Store.ProductChannelListing().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductChannelListingsByOption", "app.product.product_channel_listings_by_option_missing.app_error", err)
+	}
+
+	return listings, nil
+}
+
+// BulkUpsertProductChannelListings bulk update/inserts given product channel listings and returns them
+func (a *AppProduct) BulkUpsertProductChannelListings(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
+	listings, err := a.Srv().Store.ProductChannelListing().BulkUpsert(listings)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("BulkUpsertProductChannelListings", "app.product.error_bulk_upserting_product_channel_listings.app_error", nil, err.Error(), statusCode)
 	}
 
 	return listings, nil

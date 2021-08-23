@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -63,51 +62,34 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedP
 }
 
 func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
-	if option == nil || !model.IsValidId(option.ProductID) || !model.IsValidId(option.AssignmentID) {
-		return nil, store.NewErrInvalidInput(store.AssignedProductAttributeTableName, "option", option)
+	query := as.GetQueryBuilder().Select("*").From(store.AssignedProductAttributeTableName)
+
+	// parse option
+	if option.AssignmentID != nil {
+		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+	}
+	if option.ProductID != nil {
+		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
 	}
 
-	var res *attribute.AssignedProductAttribute
-
-	tx, err := as.GetMaster().Begin()
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "begin_transaction")
+		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
-	defer store.FinalizeTransaction(tx)
 
-	// try finding first:
-	err = tx.SelectOne(
+	var res attribute.AssignedProductAttribute
+
+	err = as.GetReplica().SelectOne(
 		&res,
-		"SELECT * FROM "+store.AssignedProductAttributeTableName+" WHERE (ProductID = :ProductID AND AssignmentID = :AssignmentID)",
-		map[string]interface{}{
-			"ProductID":    option.ProductID,
-			"AssignmentID": option.AssignmentID,
-		},
+		queryString,
+		args...,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows { // this mean we need to create one
-			res = new(attribute.AssignedProductAttribute)
-			res.AssignmentID = option.AssignmentID
-			res.ProductID = option.ProductID
-			res.PreSave()
-			if appErr := res.IsValid(); appErr != nil {
-				return nil, appErr
-			}
-
-			if err = tx.Insert(res); err != nil {
-				if as.IsUniqueConstraintError(err, []string{"ProductID", "AssignmentID", strings.ToLower(store.AssignedProductAttributeTableName) + "_productid_assignmentid_key"}) {
-					return nil, store.NewErrInvalidInput(store.AssignedProductAttributeTableName, "ProductID/AssignmentID", option.ProductID+"/"+option.AssignmentID)
-				}
-				return nil, errors.Wrapf(err, "failed to insert new assigned product attribute with id=%s", res.Id)
-			}
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.AssignedProductAttributeTableName, "option")
 		}
-		// system error
-		return nil, errors.Wrapf(err, "failed to find assigned product attribute with ProductID = %s, AssignmentID = %s", option.ProductID, option.AssignmentID)
+		return nil, errors.Wrapf(err, "failed to find assigned product attribute with given options")
 	}
 
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "commit_transaction")
-	}
-
-	return res, nil
+	return &res, nil
 }

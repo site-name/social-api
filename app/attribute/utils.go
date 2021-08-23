@@ -3,7 +3,6 @@ package attribute
 import (
 	"net/http"
 	"sort"
-	"strings"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -78,28 +77,6 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 	return assignment, nil
 }
 
-// commonErrHandler only support 3 types of errors
-//
-// 1) *AppError
-//
-// 2) system database saving error
-//
-// 3) *store.ErrInvalidErr
-func commonErrHandler(err error, where string, fields ...string) *model.AppError {
-	if err == nil {
-		return nil
-	}
-
-	switch t := err.(type) {
-	case *model.AppError:
-		return t
-	case *store.ErrInvalidInput:
-		return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(fields, ", ")}, t.Error(), http.StatusBadRequest)
-	default:
-		return model.NewAppError(where, app.InternalServerErrorID, nil, t.Error(), http.StatusInternalServerError)
-	}
-}
-
 // validateAttributeOwnsValues Checks given value IDs are belonging to the given attribute.
 func (a *AppAttribute) validateAttributeOwnsValues(attributeID string, valueIDs []string) *model.AppError {
 	attributeValues, appErr := a.AttributeValuesOfAttribute(attributeID)
@@ -144,49 +121,49 @@ func (a *AppAttribute) associateAttributeToInstance(instance interface{}, attrib
 
 	switch v := instance.(type) {
 	case *product_and_discount.Product:
-		attributeProduct, err := a.
-			app.Srv().Store.AttributeProduct().GetByOption(&attribute.AttributeProductGetOption{
-			AttributeID:   attributeID,
-			ProductTypeID: v.ProductTypeID,
+		attributeProduct, appErr := a.AttributeProductByOption(&attribute.AttributeProductFilterOption{
+			ProductTypeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: v.ProductTypeID,
+				},
+			},
+			AttributeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: attributeID,
+				},
+			},
 		})
-		if err != nil {
-			if invlIp, ok := err.(*store.ErrInvalidInput); ok {
-				return nil, model.NewAppError("associateAttributeToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "option"}, invlIp.Error(), http.StatusBadRequest)
-			}
-			return nil, store.AppErrorFromDatabaseLookupError("associateAttributeToInstance", "app.attribute.attribute_product_by_option", err)
+		if appErr != nil {
+			return nil, appErr
 		}
 
-		assignedProductAttribute, err := a.app.Srv().Store.AssignedProductAttribute().GetWithOption(&attribute.AssignedProductAttributeFilterOption{
+		return a.GetOrCreateAssignedProductAttribute(&attribute.AssignedProductAttribute{
 			ProductID:    v.Id,
 			AssignmentID: attributeProduct.Id,
 		})
-		if err != nil { // this error can be either: `*AppError` or `*store.ErrInvalidInput` or `system error`
-			return nil, commonErrHandler(err, "associateAttributeToInstance", "option")
-		}
 
-		return assignedProductAttribute, nil
 	case *product_and_discount.ProductVariant:
-		attributeVariant, err := a.app.Srv().Store.AttributeVariant().GetByOption(&attribute.AttributeVariantFilterOption{
-			ProductID:   v.ProductID,
-			AttributeID: attributeID,
+		attrVariant, appErr := a.AttributeVariantByOption(&attribute.AttributeVariantFilterOption{
+			ProductTypeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: v.ProductID,
+				},
+			},
+			AttributeID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: attributeID,
+				},
+			},
 		})
-		if err != nil {
-			// error input is handled manually:
-			if invlErr, ok := err.(*store.ErrInvalidInput); ok {
-				return nil, model.NewAppError("associateAttributeToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "option"}, invlErr.Error(), http.StatusBadRequest)
-			}
-			// system error, not found error:
-			return nil, store.AppErrorFromDatabaseLookupError("associateAttributeToInstance", "app.attribute.error_finding_attribute_variant.app_error", err)
-		}
-		assignedVariantAttribute, err := a.app.Srv().Store.AssignedVariantAttribute().GetWithOption(&attribute.AssignedVariantAttributeFilterOption{
-			VariantID:    v.Id,
-			AssignmentID: attributeVariant.Id,
-		})
-		if err != nil { // this error can be either: `*AppError` or `*store.ErrInvalidInput` or `system error`
-			return nil, commonErrHandler(err, "associateAttributeToInstance", "option")
+		if appErr != nil {
+			return nil, appErr
 		}
 
-		return assignedVariantAttribute, nil
+		return a.GetOrCreateAssignedVariantAttribute(&attribute.AssignedVariantAttribute{
+			VariantID:    v.Id,
+			AssignmentID: attrVariant.Id,
+		})
+
 	case *page.Page:
 		attributePage, err := a.app.Srv().Store.AttributePage().GetByOption(&attribute.AttributePageFilterOption{
 			AttributeID: attributeID,

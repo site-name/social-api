@@ -14,10 +14,10 @@ type AttributeProduct struct {
 	model.Sortable
 }
 
-// AttributeProductGetOption is used when finding an attributeProduct.
-type AttributeProductGetOption struct {
-	AttributeID   string `json:"attribute_id"`
-	ProductTypeID string `json:"product_type_id"`
+// AttributeProductFilterOption is used when finding an attributeProduct.
+type AttributeProductFilterOption struct {
+	AttributeID   *model.StringFilter
+	ProductTypeID *model.StringFilter
 }
 
 func (a *AttributeProduct) IsValid() *model.AppError {
@@ -66,8 +66,8 @@ type AssignedProductAttribute struct {
 
 // AssignedProductAttributeFilterOption is used to filter or creat new AssignedProductAttribute
 type AssignedProductAttributeFilterOption struct {
-	ProductID    string `json:"product_id"`
-	AssignmentID string `json:"assignment_id"`
+	ProductID    *model.StringFilter
+	AssignmentID *model.StringFilter
 }
 
 func (a *AssignedProductAttribute) IsValid() *model.AppError {

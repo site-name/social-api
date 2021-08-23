@@ -35,9 +35,22 @@ type CategoryFilterOption struct {
 	Slug *model.StringFilter
 
 	VoucherIDs []string // SELECT * FROM Categories WHERE Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (...))
+	SaleIDs    []string
 	ProductIDs []string // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
 
 	LockForUpdate bool // set this to true if you want to add "FOR UPDATE" suffix to the end of queries
+}
+
+type Categories []*Category
+
+func (c Categories) IDs() []string {
+	res := []string{}
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+	return res
 }
 
 func (c *Category) String() string {

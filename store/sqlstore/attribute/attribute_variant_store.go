@@ -62,34 +62,35 @@ func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.A
 }
 
 func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
-	if option == nil || option.AttributeID == "" || option.ProductID == "" {
-		return nil, store.NewErrInvalidInput(store.AttributeVariantTableName, "option", "")
+	query := as.GetQueryBuilder().Select("*").From(store.AttributeVariantTableName)
+
+	// parse option
+	if option.AttributeID != nil {
+		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
+	}
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.ProductTypeID != nil {
+		query = query.Where(option.ProductTypeID.ToSquirrel("ProductTypeID"))
+	}
+	if len(option.ProductIDs) > 0 {
+		query = query.Where("AttributeID IN (SELECT AttributeID FROM ? WHERE Id IN ?)", store.ProductTableName, option.ProductIDs)
 	}
 
-	var res *attribute.AttributeVariant
-	err := as.GetReplica().SelectOne(
-		&res,
-		`SELECT * FROM `+store.AttributeVariantTableName+` AS av
-		INNER JOIN `+store.ProductTypeTableName+` AS pdt ON (
-			pdt.Id = av.ProductTypeID
-		) 
-		INNER JOIN `+store.ProductTableName+` AS pd ON (
-			pd.ProductTypeID = pdt.Id
-		)
-		WHERE (
-			av.AttributeID = :AttributeID AND pd.Id = :ProductID
-		)`,
-		map[string]interface{}{
-			"AttributeID": option.AttributeID,
-			"ProductID":   option.ProductID,
-		},
-	)
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+	var res attribute.AttributeVariant
+
+	err = as.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeVariantTableName, "")
 		}
-		return nil, errors.Wrapf(err, "failed to find attribute variant with ProductID = %s, AttributeID = %s", option.ProductID, option.AttributeID)
+		return nil, errors.Wrap(err, "failed to find attribute variant with given options")
 	}
 
-	return res, nil
+	return &res, nil
 }

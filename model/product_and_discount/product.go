@@ -40,6 +40,7 @@ type ProductFilterOption struct {
 	Id               *model.StringFilter
 	ProductVariantID *model.StringFilter // LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
 	VoucherIDs       []string            // SELECT * FROM Products WHERE Id IN (SELECT ProductID FROM ... WHERE VoucherID IN ?)
+	SaleIDs          []string
 }
 
 type Products []*Product

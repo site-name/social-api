@@ -130,7 +130,10 @@ func (ps *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 	}
 
 	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (?))", option.VoucherIDs))
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID IN ?)", store.VoucherCategoryTableName, option.VoucherIDs))
+	}
+	if len(option.SaleIDs) > 0 {
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID IN ?)", store.SaleCategoryRelationTableName, option.VoucherIDs))
 	}
 	if len(option.ProductIDs) > 0 {
 		query = query.
@@ -184,7 +187,10 @@ func (ps *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 	}
 
 	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (?))", option.VoucherIDs))
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID IN ?)", store.VoucherCategoryTableName, option.VoucherIDs))
+	}
+	if len(option.SaleIDs) > 0 {
+		query = query.Where(squirrel.Expr("Categories.Id IN (SELECT CategoryID FROM ? WHERE VoucherID IN ?)", store.SaleCategoryRelationTableName, option.VoucherIDs))
 	}
 	if len(option.ProductIDs) > 0 {
 		query = query.

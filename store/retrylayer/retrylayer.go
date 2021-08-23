@@ -5617,11 +5617,51 @@ func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 
 }
 
+func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
 
 	tries := 0
 	for {
 		result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductChannelListingStore.BulkUpsert(listings)
 		if err == nil {
 			return result, nil
 		}
@@ -5662,26 +5702,6 @@ func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*pr
 	tries := 0
 	for {
 		result, err := s.ProductChannelListingStore.Get(channelListingID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
-
-	tries := 0
-	for {
-		result, err := s.ProductChannelListingStore.Save(channelListing)
 		if err == nil {
 			return result, nil
 		}
@@ -5942,6 +5962,26 @@ func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.Produ
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.Save(variant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
 		if err == nil {
 			return result, nil
 		}

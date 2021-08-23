@@ -18,8 +18,10 @@ type AttributeVariant struct {
 //
 // properties can be provided partially or fully
 type AttributeVariantFilterOption struct {
-	AttributeID string `json:"attribute_id"`
-	ProductID   string `json:"product_id"` // required
+	Id            *model.StringFilter
+	AttributeID   *model.StringFilter
+	ProductTypeID *model.StringFilter
+	ProductIDs    []string
 }
 
 func (a *AttributeVariant) IsValid() *model.AppError {

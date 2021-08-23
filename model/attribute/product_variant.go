@@ -50,8 +50,8 @@ type AssignedVariantAttribute struct {
 
 // AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance
 type AssignedVariantAttributeFilterOption struct {
-	VariantID    string `json:"variant_id"`
-	AssignmentID string `json:"assignment_id"`
+	VariantID    *model.StringFilter
+	AssignmentID *model.StringFilter
 }
 
 func (a *AssignedVariantAttribute) IsValid() *model.AppError {
