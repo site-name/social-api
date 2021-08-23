@@ -6,6 +6,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -131,7 +132,14 @@ func (a *AppOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *model
 	var orderLineProductVariantHasDigitalContent bool
 
 	// check if there is a digital content accompanies order line's product variant:
-	digitalContent, appErr := a.ProductApp().DigitalContentByProductVariantID(*orderLine.VariantID)
+	digitalContent, appErr := a.ProductApp().
+		DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+			ProductVariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: *orderLine.VariantID,
+				},
+			},
+		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			orderLineProductVariantHasDigitalContent = false

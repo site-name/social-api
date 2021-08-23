@@ -222,7 +222,6 @@ type ProductApp interface {
 	// ProductVariantGetPrice
 	ProductVariantGetPrice(product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
 	ProductVariantIsDigital(productVariantID string) (bool, *model.AppError)                                                                   // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
-	DigitalContentByProductVariantID(variantID string) (*product_and_discount.DigitalContent, *model.AppError)                                 // DigitalContentByProductVariantID finds and returns 1 digital content that is related to given product variant
 	GetDefaultDigitalContentSettings(shop *shop.Shop) *shop.ShopDefaultDigitalContentSettings                                                  // GetDefaultDigitalContentSettings takes a shop and returns some setting of the shop
 	CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError)                                             // CollectionsByProductID finds and returns all collections related to given product
 	ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError)                                    // ProductVariantByOrderLineID returns a product variant by given order line id
@@ -233,6 +232,7 @@ type ProductApp interface {
 	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)                                                    // ProductVariantGetWeight returns weight of given product variant
 	CategoriesByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, *model.AppError)                  // CategoriesByOption returns all categories that satisfy given option
 	CategoryByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, *model.AppError)                      // CategoryByOption returns 1 category that satisfies given option
+	DigitalContentbyOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, *model.AppError)   // DigitalContentbyOption returns 1 digital content filtered using given option
 }
 
 type WishlistApp interface {

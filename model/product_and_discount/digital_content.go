@@ -33,6 +33,12 @@ type DigitalContent struct {
 	model.ModelMetadata
 }
 
+// DigitalContenetFilterOption is used for building sql queries
+type DigitalContenetFilterOption struct {
+	Id               *model.StringFilter
+	ProductVariantID *model.StringFilter
+}
+
 func (d *DigitalContent) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.digital_content.is_valid.%s.app_error",

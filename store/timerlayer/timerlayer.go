@@ -2757,10 +2757,10 @@ func (s *TimerLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
 	start := timemodule.Now()
 
-	result, err := s.DigitalContentStore.GetByProductVariantID(variantID)
+	result, err := s.DigitalContentStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2768,7 +2768,23 @@ func (s *TimerLayerDigitalContentStore) GetByProductVariantID(variantID string) 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.GetByProductVariantID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentStore.Save(content)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.Save", success, elapsed)
 	}
 	return result, err
 }

@@ -45,15 +45,47 @@ func (ds *SqlDigitalContentStore) ModelFields() []string {
 	}
 }
 
-// GetByProductVariantID finds and returns 1 digital content that is related to given product variant
-func (ds *SqlDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
+// Save inserts given digital content into database then returns it
+func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+	content.PreSave()
+	if err := content.IsValid(); err != nil {
+		return nil, err
+	}
+
+	err := ds.GetMaster().Insert(content)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to save digital content with id=%s", content.Id)
+	}
+
+	return content, nil
+}
+
+// GetByOption finds and returns 1 digital content filtered using given option
+func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
+	query := ds.GetQueryBuilder().
+		Select(ds.ModelFields()...).
+		From(store.ProductDigitalContentTableName)
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("DigitalContents.Id"))
+	}
+	if option.ProductVariantID != nil {
+		query = query.Where(option.ProductVariantID.ToSquirrel("DigitalContents.ProductVariantID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	}
+
 	var res product_and_discount.DigitalContent
-	err := ds.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductDigitalContentTableName+" WHERE ProductVariantID = :ID", map[string]interface{}{"ID": variantID})
+	err = ds.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductDigitalContentTableName, "productVariantID="+variantID)
+			return nil, store.NewErrNotFound(store.ProductDigitalContentTableName, "option")
 		}
-		return nil, errors.Wrapf(err, "failed to find digital content with product variant id=%s", variantID)
+		return nil, errors.Wrap(err, "failed to find digital content with given option")
 	}
 
 	return &res, nil

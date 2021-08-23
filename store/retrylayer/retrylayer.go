@@ -3172,11 +3172,31 @@ func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 
 }
 
-func (s *RetryLayerDigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
 
 	tries := 0
 	for {
-		result, err := s.DigitalContentStore.GetByProductVariantID(variantID)
+		result, err := s.DigitalContentStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentStore.Save(content)
 		if err == nil {
 			return result, nil
 		}
