@@ -2805,10 +2805,10 @@ func (s *TimerLayerDigitalContentUrlStore) Get(id string) (*product_and_discount
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
 	start := timemodule.Now()
 
-	result, err := s.DigitalContentUrlStore.Save(contentURL)
+	result, err := s.DigitalContentUrlStore.Upsert(contentURL)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2816,7 +2816,7 @@ func (s *TimerLayerDigitalContentUrlStore) Save(contentURL *product_and_discount
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -6534,38 +6534,6 @@ func (s *TimerLayerUserStore) Count(options account.UserCountOptions) (int64, er
 	return result, err
 }
 
-func (s *TimerLayerUserStore) DeactivateGuests() ([]string, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.DeactivateGuests()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.DeactivateGuests", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) DemoteUserToGuest(userID string) (*account.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.DemoteUserToGuest(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.DemoteUserToGuest", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
 	start := timemodule.Now()
 
@@ -6933,22 +6901,6 @@ func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) PromoteGuestToUser(userID string) error {
-	start := timemodule.Now()
-
-	err := s.UserStore.PromoteGuestToUser(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.PromoteGuestToUser", success, elapsed)
-	}
-	return err
-}
-
 func (s *TimerLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
 	start := timemodule.Now()
 
@@ -7137,6 +7089,22 @@ func (s *TimerLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.UpdateUpdateAt", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerUserStore) UserByOrderID(orderID string) (*account.User, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserStore.UserByOrderID(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.UserByOrderID", success, elapsed)
 	}
 	return result, err
 }

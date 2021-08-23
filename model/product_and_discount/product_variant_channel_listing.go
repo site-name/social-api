@@ -21,6 +21,16 @@ type ProductVariantChannelListing struct {
 	CreateAt        int64            `json:"create_at"`
 }
 
+// ProductVariantChannelListingFilterOption is used to build sql queries
+type ProductVariantChannelListingFilterOption struct {
+	Id          *model.StringFilter
+	VariantID   *model.StringFilter
+	ChannelID   *model.StringFilter
+	PriceAmount *model.NumberFilter
+
+	VariantProductID *model.StringFilter // INNER JOIN ProductVariants
+}
+
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.product_variant_channel_listing.is_valid.%s.app_error",

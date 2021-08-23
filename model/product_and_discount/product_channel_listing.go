@@ -7,6 +7,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 )
@@ -18,10 +19,12 @@ type ProductChannelListing struct {
 	VisibleInListings     bool             `json:"visible_in_listings"`
 	AvailableForPurchase  *time.Time       `json:"available_for_purchase"` // UTC time
 	Currency              string           `json:"currency"`
-	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"` // can be NULL
-	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"`
+	DiscountedPriceAmount *decimal.Decimal `json:"discounted_price_amount"`           // can be NULL
+	DiscountedPrice       *goprices.Money  `json:"discounted_price,omitempty" db:"-"` // can be NULL
 	CreateAt              uint64           `json:"create_at"`
 	model.Publishable
+
+	Channel *channel.Channel `json:"-" db:"-"` // this field may be populated when store performs prefetching
 }
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
@@ -35,6 +38,35 @@ type ProductChannelListingFilterOption struct {
 	ProductVariantsId    *model.StringFilter // inner join product, product variant
 	PublicationDate      *model.TimeFilter
 	IsPublished          *bool
+	PrefetchChannel      bool // this tell store to prefetch channel instances also
+}
+
+type ProductChannelListings []*ProductChannelListing
+
+type WhichID uint8
+
+const (
+	Ids WhichID = iota
+	ChannelIDs
+	ProductIDs
+)
+
+func (p ProductChannelListings) GetIDs(whichID WhichID) []string {
+	var res []string
+	for _, item := range p {
+		if item != nil {
+			switch whichID {
+			case Ids:
+				res = append(res, item.Id)
+			case ProductIDs:
+				res = append(res, item.ProductID)
+			case ChannelIDs:
+				res = append(res, item.ChannelID)
+			}
+		}
+	}
+
+	return res
 }
 
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
@@ -64,7 +96,9 @@ func (p *ProductChannelListing) IsValid() *model.AppError {
 }
 
 func (p *ProductChannelListing) PopulateNonDbFields() {
-	p.DiscountedPrice, _ = goprices.NewMoney(p.DiscountedPriceAmount, p.Currency)
+	if p.DiscountedPriceAmount != nil && p.Currency != "" {
+		p.DiscountedPrice, _ = goprices.NewMoney(p.DiscountedPriceAmount, p.Currency)
+	}
 }
 
 func (p *ProductChannelListing) commonPre() {

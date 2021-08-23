@@ -511,6 +511,7 @@ func (a *AppDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discount.D
 	return discountInfos, nil
 }
 
+// FetchActiveDiscounts returns discounts that are activated
 func (a *AppDiscount) FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError) {
 	return a.FetchDiscounts(util.NewTime(time.Now().UTC()))
 }

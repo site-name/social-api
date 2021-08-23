@@ -1033,3 +1033,24 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 func (us *SqlUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
 	panic("not implemented")
 }
+
+// UserByOrderID finds and returns an user who whose order is given
+func (us *SqlUserStore) UserByOrderID(orderID string) (*account.User, error) {
+	var res account.User
+	err := us.GetReplica().SelectOne(
+		&res,
+		"SELECT * FROM "+store.UserTableName+" WHERE Id = (SELECT UserID FROM Orders WHERE Id = :OrderID)",
+		map[string]interface{}{
+			"OrderID": orderID,
+		},
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.UserTableName, "OrderID="+orderID)
+		}
+		return nil, errors.Wrapf(err, "failed to find user who owns order with id=%s", orderID)
+	}
+
+	return &res, nil
+}

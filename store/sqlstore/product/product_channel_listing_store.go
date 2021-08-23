@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -136,6 +137,34 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 	var listings []*product_and_discount.ProductChannelListing
 	if _, err = ps.GetReplica().Select(&listings, sqlString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
+	}
+
+	// check if we need prefetch channels and founded `listings` is not empty
+	if option.PrefetchChannel && len(listings) > 0 {
+
+		channelIDs := product_and_discount.ProductChannelListings(listings).GetIDs(product_and_discount.ChannelIDs)
+		if len(channelIDs) > 0 {
+			channels, err := ps.Channel().FilterByOption(&channel.ChannelFilterOption{
+				Id: &model.StringFilter{
+					StringOption: &model.StringOption{
+						In: channelIDs,
+					},
+				},
+			})
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find channels by IDs")
+			}
+
+		outerLoop:
+			for _, listing := range listings {
+				for _, chanNel := range channels {
+					if listing.ChannelID == chanNel.Id {
+						listing.Channel = chanNel
+						continue outerLoop
+					}
+				}
+			}
+		}
 	}
 
 	return listings, nil

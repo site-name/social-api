@@ -3232,11 +3232,11 @@ func (s *RetryLayerDigitalContentUrlStore) Get(id string) (*product_and_discount
 
 }
 
-func (s *RetryLayerDigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
 
 	tries := 0
 	for {
-		result, err := s.DigitalContentUrlStore.Save(contentURL)
+		result, err := s.DigitalContentUrlStore.Upsert(contentURL)
 		if err == nil {
 			return result, nil
 		}
@@ -7815,46 +7815,6 @@ func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, er
 
 }
 
-func (s *RetryLayerUserStore) DeactivateGuests() ([]string, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.DeactivateGuests()
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) DemoteUserToGuest(userID string) (*account.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.DemoteUserToGuest(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
 
 	tries := 0
@@ -8273,26 +8233,6 @@ func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) PromoteGuestToUser(userID string) error {
-
-	tries := 0
-	for {
-		err := s.UserStore.PromoteGuestToUser(userID)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
 func (s *RetryLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
 
 	tries := 0
@@ -8518,6 +8458,26 @@ func (s *RetryLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 	tries := 0
 	for {
 		result, err := s.UserStore.UpdateUpdateAt(userID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserStore) UserByOrderID(orderID string) (*account.User, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserStore.UserByOrderID(orderID)
 		if err == nil {
 			return result, nil
 		}

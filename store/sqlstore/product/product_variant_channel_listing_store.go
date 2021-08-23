@@ -76,3 +76,44 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 
 	return &res, nil
 }
+
+// FilterbyOption finds and returns all product variant channel listings filterd using given option
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductVariantChannelListingTableName).
+		OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName])
+
+	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("ProductVariantChannelListings.Id"))
+	}
+	if option.VariantID != nil {
+		query = query.Where(option.VariantID.ToSquirrel("ProductVariantChannelListings.VariantID"))
+	}
+	if option.ChannelID != nil {
+		query = query.Where(option.ChannelID.ToSquirrel("ProductVariantChannelListings.ChannelID"))
+	}
+
+	if option.PriceAmount != nil {
+		query = query.Where(option.PriceAmount.ToSquirrel("ProductVariantChannelListings.PriceAmount"))
+	}
+	if option.VariantProductID != nil {
+		query = query.
+			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)").
+			Where(option.VariantProductID.ToSquirrel("ProductVariants.ProductID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+
+	var res []*product_and_discount.ProductVariantChannelListing
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product variant channel listings by given option")
+	}
+
+	return res, nil
+}

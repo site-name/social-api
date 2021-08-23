@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -22,14 +21,15 @@ var ContentTypeString = map[string]string{
 }
 
 type DigitalContent struct {
-	Id                   string  `json:"id"`
-	UseDefaultSettings   *bool   `json:"use_defaults_settings"` // default true
-	AutomaticFulfillment *bool   `json:"automatic_fulfillment"` // default false
-	ContentType          string  `json:"content_type"`
-	ProductVariantID     string  `json:"product_variant_id"`
-	ContentFile          string  `json:"content_file"`
-	MaxDownloads         *uint16 `json:"max_downloads"`
-	UrlValidDays         *uint16 `json:"url_valid_days"`
+	Id                   string `json:"id"`
+	ShopID               string `json:"shop_id"`               // shop that owns this content
+	UseDefaultSettings   *bool  `json:"use_defaults_settings"` // default true
+	AutomaticFulfillment *bool  `json:"automatic_fulfillment"` // default false
+	ContentType          string `json:"content_type"`
+	ProductVariantID     string `json:"product_variant_id"`
+	ContentFile          string `json:"content_file"`
+	MaxDownloads         *uint  `json:"max_downloads"`
+	UrlValidDays         *uint  `json:"url_valid_days"`
 	model.ModelMetadata
 }
 
@@ -48,6 +48,9 @@ func (d *DigitalContent) IsValid() *model.AppError {
 	if !model.IsValidId(d.Id) {
 		return outer("id", nil)
 	}
+	if !model.IsValidId(d.ShopID) {
+		return outer("shop_id", &d.ShopID)
+	}
 	if len(d.ContentType) > DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH {
 		return outer("content_type", &d.Id)
 	}
@@ -60,12 +63,6 @@ func (d *DigitalContent) IsValid() *model.AppError {
 
 func (d *DigitalContent) ToJson() string {
 	return model.ModelToJson(d)
-}
-
-func DigitalContentFromJson(data io.Reader) *DigitalContent {
-	var d DigitalContent
-	model.ModelFromJson(&d, data)
-	return &d
 }
 
 func (d *DigitalContent) PreSave() {
@@ -92,9 +89,9 @@ type DigitalContentUrl struct {
 	Id          string  `json:"id"`
 	Token       string  `json:"token"` // uuid field, not editable, unique
 	ContentID   string  `json:"content_id"`
-	CreateAt    int64   `json:"create_at"`
-	DownloadNum int64   `json:"download_num"`
-	LineID      *string `json:"line_id"` // order line, unique
+	CreateAt    int64   `json:"create_at"`    // DEFAULT UTC now
+	DownloadNum int     `json:"download_num"` //
+	LineID      *string `json:"line_id"`      // order line, unique
 }
 
 func (d *DigitalContentUrl) IsValid() *model.AppError {
@@ -139,9 +136,4 @@ func (d *DigitalContentUrl) NewToken(force bool) {
 	if (d.Token != "" && force) || d.Token == "" {
 		d.Token = strings.ReplaceAll(model.NewId(), "-", "")
 	}
-}
-
-// TODO: fixme
-func (d *DigitalContentUrl) GetAbsoluteUrl() string {
-	panic("not implemented")
 }

@@ -30,25 +30,50 @@ func (ps *SqlDigitalContentUrlStore) CreateIndexesIfNotExists() {
 	ps.CreateForeignKeyIfNotExists(store.ProductDigitalContentURLTableName, "LineID", store.OrderLineTableName, "Id", true)
 }
 
-// Save insert given digital content url into database then returns it
-func (ps *SqlDigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+// Upsert inserts or updates given digital content url into database then returns it
+func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
 
-	for {
+	var isSaving bool
+	if contentURL.Id == "" {
+		isSaving = true
 		contentURL.PreSave()
-		if err := contentURL.IsValid(); err != nil {
-			return nil, err
+	}
+
+	if err := contentURL.IsValid(); err != nil {
+		return nil, err
+	}
+
+	var (
+		err           error
+		oldContentURL *product_and_discount.DigitalContentUrl
+		numUpdated    int64
+	)
+	for {
+		if isSaving {
+			err = ps.GetMaster().Insert(contentURL)
+		} else {
+			oldContentURL, err = ps.Get(contentURL.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			contentURL.CreateAt = oldContentURL.CreateAt
+
+			numUpdated, err = ps.GetMaster().Update(contentURL)
 		}
 
-		err := ps.GetMaster().Insert(contentURL)
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"Token", "digitalcontenturls_token_key"}) {
 				contentURL.NewToken(true)
 				continue
 			}
 			if ps.IsUniqueConstraintError(err, []string{"LineID", "digitalcontenturls_lineid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ProductDigitalContentURLTableName, "LinesID", contentURL.LineID)
+				return nil, store.NewErrInvalidInput(store.ProductDigitalContentURLTableName, "LineID", contentURL.LineID)
 			}
-			return nil, errors.Wrapf(err, "failed to save digital content url with given id=%s", contentURL.Id)
+			return nil, errors.Wrapf(err, "failed to upsert content url with id=%s", contentURL.Id)
+		}
+		if numUpdated > 1 {
+			return nil, errors.Errorf("multiple content urls were updated for content url with id=%s: %d instead of 1", contentURL.Id, numUpdated)
 		}
 
 		return contentURL, nil

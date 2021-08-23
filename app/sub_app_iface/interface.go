@@ -209,6 +209,7 @@ type AccountApp interface {
 	SetStatusOffline(userID string, manual bool)                                                      // SetStatusOffline sets user's status to offline
 	DeleteAddresses(addressIDs []string) *model.AppError                                              // DeleteAddress deletes given address and returns an error
 	UpsertAddress(addr *account.Address) (*account.Address, *model.AppError)                          // UpsertAddress inserts or updates given address by checking its Id attribute
+	UserByOrderId(orderID string) (*account.User, *model.AppError)                                    // UserByOrderId returns an user who owns given order
 }
 
 type ProductApp interface {
@@ -342,6 +343,7 @@ type DiscountApp interface {
 	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                   // VoucherById finds and returns a voucher with given id
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                              // BulkDeleteOrderDiscounts performs bulk delete given order discounts
+	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                   // FetchActiveDiscounts returns discounts that are activated
 }
 
 type OrderApp interface {

@@ -1313,3 +1313,13 @@ func (a *AppAccount) UpdateUserActive(c *request.Context, userID string, active 
 
 	return nil
 }
+
+// UserByOrderId returns an user who owns given order
+func (a *AppAccount) UserByOrderId(orderID string) (*account.User, *model.AppError) {
+	user, err := a.Srv().Store.User().UserByOrderID(orderID)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("UserByOrderId", "app.account.error_finding_user_by_order_id.app_error", err)
+	}
+
+	return user, nil
+}

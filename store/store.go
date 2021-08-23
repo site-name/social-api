@@ -459,8 +459,8 @@ type (
 	}
 	DigitalContentUrlStore interface {
 		CreateIndexesIfNotExists()
-		Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) // Save insert given digital content url into database then returns it
-		Get(id string) (*product_and_discount.DigitalContentUrl, error)                                           // Get finds and returns a digital content url with given id
+		Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) // Upsert inserts or updates given digital content url into database then returns it
+		Get(id string) (*product_and_discount.DigitalContentUrl, error)                                             // Get finds and returns a digital content url with given id
 	}
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
@@ -471,8 +471,9 @@ type (
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                            // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)          // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                     // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) // FilterbyOption finds and returns all product variant channel listings filterd using given option
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -900,6 +901,7 @@ type (
 		Delete(userID, termsOfServiceId string) error                                             // Delete deletes from database an usder term of service with given userId and term of service id
 	}
 	UserStore interface {
+		ClearCaches()
 		CreateIndexesIfNotExists()                                                    //
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
@@ -914,7 +916,6 @@ type (
 		Get(ctx context.Context, id string) (*account.User, error)
 		GetMany(ctx context.Context, ids []string) ([]*account.User, error)
 		GetAll() ([]*account.User, error)
-		ClearCaches()
 		InvalidateProfileCacheForUser(userID string) // InvalidateProfileCacheForUser
 		GetByEmail(email string) (*account.User, error)
 		GetByAuth(authData *string, authService string) (*account.User, error)
@@ -936,9 +937,6 @@ type (
 		InferSystemInstallDate() (int64, error)
 		GetAllAfter(limit int, afterID string) ([]*account.User, error)
 		GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*account.UserForIndexing, error)
-		PromoteGuestToUser(userID string) error
-		DemoteUserToGuest(userID string) (*account.User, error)
-		DeactivateGuests() ([]string, error)
 		GetKnownUsers(userID string) ([]string, error)
 		Count(options account.UserCountOptions) (int64, error)
 		AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error)
@@ -948,7 +946,12 @@ type (
 		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error)
 		GetProfilesByUsernames(usernames []string) ([]*account.User, error)
 		GetProfiles(options *account.UserGetOptions) ([]*account.User, error)
-		GetUnreadCount(userID string) (int64, error) // TODO: consider me
+		GetUnreadCount(userID string) (int64, error)         // TODO: consider me
+		UserByOrderID(orderID string) (*account.User, error) // UserByOrderID finds and returns an user who whose order is given
+
+		// PromoteGuestToUser(userID string) error
+		// DemoteUserToGuest(userID string) (*account.User, error)
+		// DeactivateGuests() ([]string, error)
 	}
 	TokenStore interface {
 		CreateIndexesIfNotExists()

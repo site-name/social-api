@@ -19,6 +19,7 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	for _, db := range s.GetAllConns() {
 		table := db.AddTableWithName(product_and_discount.DigitalContent{}, store.ProductDigitalContentTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ContentType").SetMaxSize(product_and_discount.DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH)
 		table.ColMap("ContentFile").SetMaxSize(model.URL_LINK_MAX_LENGTH)
@@ -28,11 +29,13 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 
 func (ds *SqlDigitalContentStore) CreateIndexesIfNotExists() {
 	ds.CreateForeignKeyIfNotExists(store.ProductDigitalContentTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+	ds.CreateForeignKeyIfNotExists(store.ProductDigitalContentTableName, "ShopID", store.ShopTableName, "Id", true)
 }
 
 func (ds *SqlDigitalContentStore) ModelFields() []string {
 	return []string{
 		"DigitalContents.Id",
+		"DigitalContents.ShopID",
 		"DigitalContents.UseDefaultSettings",
 		"DigitalContents.AutomaticFulfillment",
 		"DigitalContents.ContentType",

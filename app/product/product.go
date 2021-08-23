@@ -2,6 +2,7 @@ package product
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -12,11 +13,15 @@ import (
 
 type AppProduct struct {
 	app.AppIface
+	sync.WaitGroup
+	sync.Mutex
 }
 
 func init() {
 	app.RegisterProductApp(func(a app.AppIface) sub_app_iface.ProductApp {
-		return &AppProduct{a}
+		return &AppProduct{
+			AppIface: a,
+		}
 	})
 }
 
