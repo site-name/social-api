@@ -19,13 +19,13 @@ func (_m *DigitalContentStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// GetByProductVariantID provides a mock function with given fields: variantID
-func (_m *DigitalContentStore) GetByProductVariantID(variantID string) (*product_and_discount.DigitalContent, error) {
-	ret := _m.Called(variantID)
+// GetByOption provides a mock function with given fields: option
+func (_m *DigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
+	ret := _m.Called(option)
 
 	var r0 *product_and_discount.DigitalContent
-	if rf, ok := ret.Get(0).(func(string) *product_and_discount.DigitalContent); ok {
-		r0 = rf(variantID)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.DigitalContenetFilterOption) *product_and_discount.DigitalContent); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*product_and_discount.DigitalContent)
@@ -33,8 +33,8 @@ func (_m *DigitalContentStore) GetByProductVariantID(variantID string) (*product
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(variantID)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.DigitalContenetFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,4 +56,27 @@ func (_m *DigitalContentStore) ModelFields() []string {
 	}
 
 	return r0
+}
+
+// Save provides a mock function with given fields: content
+func (_m *DigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+	ret := _m.Called(content)
+
+	var r0 *product_and_discount.DigitalContent
+	if rf, ok := ret.Get(0).(func(*product_and_discount.DigitalContent) *product_and_discount.DigitalContent); ok {
+		r0 = rf(content)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*product_and_discount.DigitalContent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.DigitalContent) error); ok {
+		r1 = rf(content)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

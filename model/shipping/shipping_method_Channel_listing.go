@@ -27,8 +27,6 @@ type ShippingMethodChannelListing struct {
 type ShippingMethodChannelListingFilterOption struct {
 	ShippingMethodID *model.StringFilter
 	ChannelID        *model.StringFilter
-	// MinimumOrderPriceAmount *model.NumberFilter
-	// MaximumOrderPriceAmount *model.NumberFilter
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *model.AppError {

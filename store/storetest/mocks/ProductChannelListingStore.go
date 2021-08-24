@@ -14,6 +14,29 @@ type ProductChannelListingStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: listings
+func (_m *ProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+	ret := _m.Called(listings)
+
+	var r0 []*product_and_discount.ProductChannelListing
+	if rf, ok := ret.Get(0).(func([]*product_and_discount.ProductChannelListing) []*product_and_discount.ProductChannelListing); ok {
+		r0 = rf(listings)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.ProductChannelListing)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]*product_and_discount.ProductChannelListing) error); ok {
+		r1 = rf(listings)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *ProductChannelListingStore) CreateIndexesIfNotExists() {
 	_m.Called()
@@ -79,27 +102,4 @@ func (_m *ProductChannelListingStore) ModelFields() []string {
 	}
 
 	return r0
-}
-
-// Save provides a mock function with given fields: channelListing
-func (_m *ProductChannelListingStore) Save(channelListing *product_and_discount.ProductChannelListing) (*product_and_discount.ProductChannelListing, error) {
-	ret := _m.Called(channelListing)
-
-	var r0 *product_and_discount.ProductChannelListing
-	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductChannelListing) *product_and_discount.ProductChannelListing); ok {
-		r0 = rf(channelListing)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*product_and_discount.ProductChannelListing)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductChannelListing) error); ok {
-		r1 = rf(channelListing)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }

@@ -14,13 +14,18 @@ type CollectionStore struct {
 	mock.Mock
 }
 
-// CollectionsByProductID provides a mock function with given fields: productID
-func (_m *CollectionStore) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, error) {
-	ret := _m.Called(productID)
+// CreateIndexesIfNotExists provides a mock function with given fields:
+func (_m *CollectionStore) CreateIndexesIfNotExists() {
+	_m.Called()
+}
+
+// FilterByOption provides a mock function with given fields: option
+func (_m *CollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
+	ret := _m.Called(option)
 
 	var r0 []*product_and_discount.Collection
-	if rf, ok := ret.Get(0).(func(string) []*product_and_discount.Collection); ok {
-		r0 = rf(productID)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.CollectionFilterOption) []*product_and_discount.Collection); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*product_and_discount.Collection)
@@ -28,18 +33,13 @@ func (_m *CollectionStore) CollectionsByProductID(productID string) ([]*product_
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(productID)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.CollectionFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
-}
-
-// CreateIndexesIfNotExists provides a mock function with given fields:
-func (_m *CollectionStore) CreateIndexesIfNotExists() {
-	_m.Called()
 }
 
 // Get provides a mock function with given fields: collectionID

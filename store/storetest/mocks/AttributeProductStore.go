@@ -43,11 +43,11 @@ func (_m *AttributeProductStore) Get(attributeProductID string) (*attribute.Attr
 }
 
 // GetByOption provides a mock function with given fields: option
-func (_m *AttributeProductStore) GetByOption(option *attribute.AttributeProductGetOption) (*attribute.AttributeProduct, error) {
+func (_m *AttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
 	ret := _m.Called(option)
 
 	var r0 *attribute.AttributeProduct
-	if rf, ok := ret.Get(0).(func(*attribute.AttributeProductGetOption) *attribute.AttributeProduct); ok {
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeProductFilterOption) *attribute.AttributeProduct); ok {
 		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
@@ -56,7 +56,7 @@ func (_m *AttributeProductStore) GetByOption(option *attribute.AttributeProductG
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*attribute.AttributeProductGetOption) error); ok {
+	if rf, ok := ret.Get(1).(func(*attribute.AttributeProductFilterOption) error); ok {
 		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)

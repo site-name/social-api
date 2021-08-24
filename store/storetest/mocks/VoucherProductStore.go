@@ -42,29 +42,6 @@ func (_m *VoucherProductStore) Get(voucherProductID string) (*product_and_discou
 	return r0, r1
 }
 
-// ProductsByVoucherID provides a mock function with given fields: voucherID
-func (_m *VoucherProductStore) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, error) {
-	ret := _m.Called(voucherID)
-
-	var r0 []*product_and_discount.Product
-	if rf, ok := ret.Get(0).(func(string) []*product_and_discount.Product); ok {
-		r0 = rf(voucherID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*product_and_discount.Product)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(voucherID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Upsert provides a mock function with given fields: voucherProduct
 func (_m *VoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
 	ret := _m.Called(voucherProduct)

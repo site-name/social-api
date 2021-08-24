@@ -1051,6 +1051,22 @@ func (_m *Store) MenuItemTranslation() store.MenuItemTranslationStore {
 	return r0
 }
 
+// OpenExchangeRate provides a mock function with given fields:
+func (_m *Store) OpenExchangeRate() store.OpenExchangeRateStore {
+	ret := _m.Called()
+
+	var r0 store.OpenExchangeRateStore
+	if rf, ok := ret.Get(0).(func() store.OpenExchangeRateStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.OpenExchangeRateStore)
+		}
+	}
+
+	return r0
+}
+
 // Order provides a mock function with given fields:
 func (_m *Store) Order() store.OrderStore {
 	ret := _m.Called()

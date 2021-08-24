@@ -114,8 +114,6 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 	}
 
 	return numberOfInclude == resultLength && atLeastOneValueTrue || (numberOfExclude == resultLength && allValueAreFalse)
-
-	return false
 }
 
 // FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.

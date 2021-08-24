@@ -19,6 +19,29 @@ func (_m *ProductVariantChannelListingStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterbyOption provides a mock function with given fields: option
+func (_m *ProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	ret := _m.Called(option)
+
+	var r0 []*product_and_discount.ProductVariantChannelListing
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductVariantChannelListingFilterOption) []*product_and_discount.ProductVariantChannelListing); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.ProductVariantChannelListing)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductVariantChannelListingFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: variantChannelListingID
 func (_m *ProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
 	ret := _m.Called(variantChannelListingID)

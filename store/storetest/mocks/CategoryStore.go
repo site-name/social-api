@@ -19,6 +19,29 @@ func (_m *CategoryStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: option
+func (_m *CategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+	ret := _m.Called(option)
+
+	var r0 []*product_and_discount.Category
+	if rf, ok := ret.Get(0).(func(*product_and_discount.CategoryFilterOption) []*product_and_discount.Category); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.Category)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.CategoryFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: categoryID
 func (_m *CategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
 	ret := _m.Called(categoryID)
@@ -42,13 +65,13 @@ func (_m *CategoryStore) Get(categoryID string) (*product_and_discount.Category,
 	return r0, r1
 }
 
-// GetCategoryByProductID provides a mock function with given fields: productID
-func (_m *CategoryStore) GetCategoryByProductID(productID string) (*product_and_discount.Category, error) {
-	ret := _m.Called(productID)
+// GetByOption provides a mock function with given fields: option
+func (_m *CategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+	ret := _m.Called(option)
 
 	var r0 *product_and_discount.Category
-	if rf, ok := ret.Get(0).(func(string) *product_and_discount.Category); ok {
-		r0 = rf(productID)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.CategoryFilterOption) *product_and_discount.Category); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*product_and_discount.Category)
@@ -56,8 +79,8 @@ func (_m *CategoryStore) GetCategoryByProductID(productID string) (*product_and_
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(productID)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.CategoryFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

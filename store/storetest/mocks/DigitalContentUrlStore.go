@@ -42,8 +42,8 @@ func (_m *DigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalC
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: contentURL
-func (_m *DigitalContentUrlStore) Save(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+// Upsert provides a mock function with given fields: contentURL
+func (_m *DigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
 	ret := _m.Called(contentURL)
 
 	var r0 *product_and_discount.DigitalContentUrl

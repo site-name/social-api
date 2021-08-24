@@ -14,29 +14,6 @@ type VoucherCollectionStore struct {
 	mock.Mock
 }
 
-// CollectionsByVoucherID provides a mock function with given fields: voucherID
-func (_m *VoucherCollectionStore) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, error) {
-	ret := _m.Called(voucherID)
-
-	var r0 []*product_and_discount.Collection
-	if rf, ok := ret.Get(0).(func(string) []*product_and_discount.Collection); ok {
-		r0 = rf(voucherID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*product_and_discount.Collection)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(voucherID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *VoucherCollectionStore) CreateIndexesIfNotExists() {
 	_m.Called()
