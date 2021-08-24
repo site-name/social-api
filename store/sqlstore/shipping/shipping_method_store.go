@@ -338,3 +338,38 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 
 	return shippingMethods, nil
 }
+
+// GetShippingMethods
+// func (ss *SqlShippingMethodStore) GetShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, excludedProductIDs []string) ([]*shipping.ShippingMethod, error) {
+// 	priceAmountSelect := ss.GetQueryBuilder().
+// 		Select("ShippingMethodChannelListings.PriceAmount").
+// 		From(store.ShippingMethodChannelListingTableName).
+// 		Where("ShippingMethodChannelListings.ChannelID = ?", channelID).
+// 		Where("ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id")
+
+// 	mainQuery := ss.GetQueryBuilder().
+// 		Select(ss.ModelFields()...).
+// 		Column(squirrel.Alias(priceAmountSelect, "PriceAmount")). // additional column select
+// 		From(store.ShippingMethodTableName).
+// 		InnerJoin(store.ShippingMethodChannelListingTableName + " ON (ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id)").
+// 		InnerJoin(store.ShippingZoneTableName + " ON (ShippingMethods.ShippingZoneID = ShippingZones.Id)").
+// 		InnerJoin(store.ShippingZoneChannelTableName + " ON (ShippingZones.Id = ShippingZoneChannels.ShippingZoneID)").
+// 		OrderBy("PriceAmount ASC")
+
+// 	var excludedProductsQuery squirrel.SelectBuilder
+// 	if len(excludedProductIDs) > 0 {
+// 		excludedProductsQuery = ss.GetQueryBuilder().
+// 			Select(`(1) AS "a"`).
+// 			Prefix("NOT EXISTS(").
+// 			From(store.ShippingMethodExcludedProductTableName).
+// 			Where("ShippingMethodExcludedProducts.ProductID IN ?", excludedProductIDs).
+// 			Where("ShippingMethodExcludedProducts.ShippingMethodID = ShippingMethods.Id").
+// 			Suffix(")")
+// 	}
+
+// 	applicablePriceBasedSelect := ss.GetQueryBuilder().
+// 		Select("ShippingMethodChannelListings.ShippingMethodID").
+// 		From(store.ShippingMethodChannelListingTableName).
+// 		Where("ShippingMethodChannelListings.ChannelID = ?", channelID).
+// 		Where("ShippingMethodChannelListings.ShippingMethodID IN ?", )
+// }

@@ -69,10 +69,10 @@ func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
 		res = append(res, squirrel.NotEq{key: st.NotIn})
 	}
 	if st.Like != "" {
-		res = append(res, squirrel.Like{key: st.Like})
+		res = append(res, squirrel.Like{key: "%" + st.Like + "%"})
 	}
 	if st.ILike != "" {
-		res = append(res, squirrel.ILike{key: st.ILike})
+		res = append(res, squirrel.ILike{key: "%" + st.ILike + "%"})
 	}
 	if st.NULL != nil {
 		var compareToNull squirrel.Sqlizer = squirrel.NotEq{key: nil}

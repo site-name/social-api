@@ -3,6 +3,7 @@ package shop
 import (
 	"net/mail"
 	"net/url"
+	"regexp"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
@@ -35,7 +36,7 @@ type Shop struct {
 	DefaultDigitalMaxDownloads          *uint   `json:"default_digital_max_downloads"`
 	DefaultDigitalUrlValidDays          *uint   `json:"default_digital_url_valid_days"`
 	AddressID                           *string `json:"address_id"`
-	DefaultMailSenderName               *string `json:"default_mail_sender_name"`
+	DefaultMailSenderName               string  `json:"default_mail_sender_name"`
 	DefaultMailSenderAddress            string  `json:"default_mail_sender_address"`
 	CustomerSetPasswordUrl              *string `json:"customer_set_password_url"`
 	AutomaticallyConfirmAllNewOrders    *bool   `json:"automatically_confirm_all_new_orders"` // default true
@@ -99,8 +100,10 @@ func (s *Shop) IsValid() *model.AppError {
 			return outer("customer_set_password_url", &s.Id)
 		}
 	}
-
-	if s.DefaultMailSenderName != nil && utf8.RuneCountInString(*s.DefaultMailSenderName) > SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH {
+	if matched, err := regexp.MatchString(`[\n\r]`, s.DefaultMailSenderName); err == nil && matched {
+		return outer("default_mail_sender_name", &s.Id)
+	}
+	if utf8.RuneCountInString(s.DefaultMailSenderName) > SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH {
 		return outer("default_mail_sender_name", &s.Id)
 	}
 
@@ -115,10 +118,10 @@ func (s *Shop) PreSave() {
 		s.CreateAt = model.GetMillis()
 	}
 	s.UpdateAt = s.CreateAt
-	s.UpsertCommon()
+	s.commonPre()
 }
 
-func (s *Shop) UpsertCommon() {
+func (s *Shop) commonPre() {
 	s.Name = model.SanitizeUnicode(s.Name)
 	s.Description = model.SanitizeUnicode(s.Description)
 	if s.IncludeTaxesInPrice == nil {
@@ -140,5 +143,5 @@ func (s *Shop) UpsertCommon() {
 
 func (s *Shop) PreUpdate() {
 	s.UpdateAt = model.GetMillis()
-	s.UpsertCommon()
+	s.commonPre()
 }

@@ -46,6 +46,25 @@ func (as *SqlAddressStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", store.AddressTableName, "lower(LastName) text_pattern_ops")
 }
 
+func (as *SqlAddressStore) ModelFields() []string {
+	return []string{
+		"Addresses.Id",
+		"Addresses.FirstName",
+		"Addresses.LastName",
+		"Addresses.CompanyName",
+		"Addresses.StreetAddress1",
+		"Addresses.StreetAddress2",
+		"Addresses.City",
+		"Addresses.CityArea",
+		"Addresses.PostalCode",
+		"Addresses.Country",
+		"Addresses.CountryArea",
+		"Addresses.Phone",
+		"Addresses.CreateAt",
+		"Addresses.UpdateAt",
+	}
+}
+
 func (as *SqlAddressStore) Save(address *account.Address) (*account.Address, error) {
 	address.PreSave()
 	if err := address.IsValid(); err != nil {

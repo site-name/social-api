@@ -6,6 +6,8 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/shipping"
 )
 
 // max lengths for some warehouse's fields
@@ -21,8 +23,12 @@ type WareHouse struct {
 	AddressID *string `json:"address_id"` // nullable
 	Email     string  `json:"email"`
 	model.ModelMetadata
+
+	Address       *account.Address         `json:"-" db:"-"` // this field hold data from select related queries
+	ShippingZones []*shipping.ShippingZone `json:"-" db:"-"` // this field hold data from prefetch_related queries
 }
 
+// WarehouseFilterOption is used to build squirrel queries
 type WarehouseFilterOption struct {
 	Id                     *model.StringFilter
 	Name                   *model.StringFilter
@@ -30,6 +36,25 @@ type WarehouseFilterOption struct {
 	AddressID              *model.StringFilter
 	Email                  *model.StringFilter
 	ShippingZonesCountries *model.StringFilter // join shipping zone table
+
+	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property also also
+	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also
+}
+
+type Warehouses []*WareHouse
+
+func (ws Warehouses) IDs() []string {
+	res := []string{}
+	meetMap := map[string]bool{}
+
+	for _, warehouse := range ws {
+		if warehouse != nil && !meetMap[warehouse.Id] {
+			res = append(res, warehouse.Id)
+			meetMap[warehouse.Id] = true
+		}
+	}
+
+	return nil
 }
 
 func (w *WareHouse) IsValid() *model.AppError {

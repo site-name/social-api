@@ -382,6 +382,7 @@ type (
 		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
 		FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)                                // FilterForCountryAndChannel
 		GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error)                                                                                                                           // GetbyOption finds 1 stock by given option then returns it
+		ChangeQuantity(stockID string, quantity int) error                                                                                                                                                   // ChangeQuantity reduce or increase the quantity of given stock
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
@@ -391,6 +392,7 @@ type (
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
+		Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) // Save inserts given warehouse-shipping zone relation into database
 	}
 )
 
@@ -888,6 +890,7 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
+		ModelFields() []string
 		CreateIndexesIfNotExists()                                                      // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(address *account.Address) (*account.Address, error)                        // Save saves address into database
 		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist

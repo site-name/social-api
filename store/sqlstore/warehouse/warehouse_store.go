@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
@@ -84,8 +87,15 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 
 // FilterByOprion returns a slice of warehouses with given option
 func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+	selectFields := wh.ModelFields()
+
+	// check if it requires select related address also
+	if option.SelectRelatedAddress {
+		selectFields = append(selectFields, wh.Address().ModelFields()...)
+	}
+
 	query := wh.GetQueryBuilder().
-		Select(wh.ModelFields()...).
+		Select(selectFields...).
 		Distinct().
 		From(store.WarehouseTableName).
 		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
@@ -112,19 +122,110 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 			InnerJoin(store.ShippingZoneTableName + " ON (WarehouseShippingZones.ShippingZoneID = ShippingZones.Id)").
 			Where(option.ShippingZonesCountries.ToSquirrel("ShippingZones.Countries"))
 	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	// check if we need to join address table:
+	if option.SelectRelatedAddress {
+		query.InnerJoin(store.AddressTableName + " ON (Addresses.Id = Warehouses.AddressID)")
 	}
 
-	var res []*warehouse.WareHouse
-	_, err = wh.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(wh.GetReplica()).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find warehouses with given option")
+		return nil, errors.Wrap(err, "failed to query rows with given option")
 	}
 
-	return res, nil
+	var (
+		returnWarehouses []*warehouse.WareHouse
+		warehousesMap    = map[string]*warehouse.WareHouse{} // keys are warehouse IDs
+		wareHouse        warehouse.WareHouse
+		address          account.Address
+	)
+	var scanItems []interface{} = []interface{}{
+		&wareHouse.Id,
+		&wareHouse.Name,
+		&wareHouse.Slug,
+		&wareHouse.AddressID,
+		&wareHouse.Email,
+		&wareHouse.Metadata,
+		&wareHouse.PrivateMetadata,
+	}
+	if option.SelectRelatedAddress {
+		scanItems = append(
+			scanItems,
+
+			&address.Id,
+			&address.FirstName,
+			&address.LastName,
+			&address.CompanyName,
+			&address.StreetAddress1,
+			&address.StreetAddress2,
+			&address.City,
+			&address.CityArea,
+			&address.PostalCode,
+			&address.Country,
+			&address.CountryArea,
+			&address.Phone,
+			&address.CreateAt,
+			&address.UpdateAt,
+		)
+	}
+	for rows.Next() {
+		err = rows.Scan(scanItems...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of warehouse and address")
+		}
+
+		wareHouse.Address = &address
+		returnWarehouses = append(returnWarehouses, &wareHouse)
+		warehousesMap[wareHouse.Id] = &wareHouse // set a key-value in the map
+	}
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed closing rows of warehouses and addresses")
+	}
+
+	// check if we need prefetch related data:
+	if option.PrefetchShippingZones && len(returnWarehouses) > 0 {
+		rows, err = wh.GetQueryBuilder().
+			Select(wh.ShippingZone().ModelFields()...).
+			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")).
+			From(store.ShippingZoneTableName).
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where("WarehouseShippingZones.WarehouseID IN ?", warehouse.Warehouses(returnWarehouses).IDs()).
+			RunWith(wh.GetReplica()).Query()
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
+		}
+		var (
+			shippingZone shipping.ShippingZone
+			WarehouseID  string
+		)
+
+		for rows.Next() {
+			err = rows.Scan(
+				&shippingZone.Id,
+				&shippingZone.Name,
+				&shippingZone.Countries,
+				&shippingZone.Default,
+				&shippingZone.Description,
+				&shippingZone.Metadata,
+				&shippingZone.PrivateMetadata,
+
+				&WarehouseID,
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to scan a row of shipping zone")
+			}
+
+			if warehousesMap[WarehouseID] != nil {
+				warehousesMap[WarehouseID].ShippingZones = append(warehousesMap[WarehouseID].ShippingZones, &shippingZone)
+			}
+		}
+
+		if err = rows.Close(); err != nil {
+			return nil, errors.Wrap(err, "failed closing rows of shipping zones")
+		}
+	}
+
+	return returnWarehouses, nil
 }
 
 // WarehouseByStockID returns 1 warehouse by given stock id

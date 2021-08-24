@@ -892,7 +892,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 		return appError
 	}
 
-	warehouses, appError := a.WarehouseApp().WarehouseByOption(&warehouse.WarehouseFilterOption{
+	warehouses, appError := a.WarehouseApp().WarehousesByOption(&warehouse.WarehouseFilterOption{
 		ShippingZonesCountries: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Like: countryCode,
@@ -942,7 +942,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 			go func(anOrderLine *order.OrderLine) {
 				productVariant, appErr := a.ProductApp().ProductVariantById(*anOrderLine.VariantID)
 				if appErr != nil {
-					setAppError(appErr) //
+					setAppError(appErr)
 				} else {
 					if *productVariant.TrackInventory {
 						if anOrderLine.QuantityUnFulfilled() > 0 {
@@ -965,20 +965,20 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 								},
 							})
 							if appErr != nil {
-								setAppError(appErr) //
+								setAppError(appErr)
 							} else {
 								warehouse := defaultWarehouse
 								if len(allocations) > 0 {
 									warehouseOfOrderLine, appErr := a.WarehouseApp().WarehouseByStockID(allocations[0].StockID)
 									if appErr != nil {
-										setAppError(appErr) //
+										setAppError(appErr)
 									} else {
 										warehouse = warehouseOfOrderLine
 									}
 								}
 
 								appErr = a.WarehouseApp().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
-								setAppError(appErr) //
+								setAppError(appErr)
 							}
 						}
 					}
@@ -987,7 +987,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 						anOrderLine.QuantityFulfilled = 0
 
 						_, appErr = a.UpsertOrderLine(anOrderLine)
-						setAppError(appErr) //
+						setAppError(appErr)
 					}
 				}
 

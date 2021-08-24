@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -114,11 +115,6 @@ func (ss *SqlStockStore) GetbyOption(option *warehouse.StockFilterOption) (*ware
 
 // queryBuildHelperWithOptions common method for building sql query
 func queryBuildHelperWithOptions(options *warehouse.ForCountryAndChannelFilter) (string, map[string]interface{}, error) {
-	// check if valid country code is provided and valid
-	_, exist := model.Countries[options.CountryCode]
-	if !exist {
-		return "", nil, store.NewErrInvalidInput(store.StockTableName, "countryCode", options.CountryCode)
-	}
 
 	subQueryCondition := `ShippingZones.Countries :: text ILIKE :CountryCode`
 	query := `SELECT Warehouses.Id FROM ` + store.WarehouseTableName + `
@@ -316,4 +312,35 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 	params["ProductID"] = productID
 
 	return ss.commonLookup(mainQuery, params)
+}
+
+// ChangeQuantity reduce or increase the quantity of given stock
+func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
+	_, err := ss.GetMaster().Exec("UPDATE Stocks SET Quantity = Quantity + $1 WHERE Id = $2", quantity, stockID)
+	if err != nil {
+		return errors.Wrapf(err, "failed to change stock quantity for stock with id=%s", stockID)
+	}
+
+	return nil
+}
+
+func (ss *SqlStockStore) warehouseSubQuery(countryCode string, channelSlug string) squirrel.SelectBuilder {
+	query := ss.GetQueryBuilder().
+		Select("*").
+		From(store.WarehouseTableName)
+
+	if countryCode != "" {
+		query = query.
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON (Warehouses.Id = WarehouseShippingZones.WarehouseID)").
+			InnerJoin(store.ShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where("ShippingZones.Countries :: text LIKE ?", "%"+countryCode+"%")
+	}
+	if channelSlug != "" {
+		query = query.
+			InnerJoin(store.ShippingZoneChannelTableName+" ON (ShippingZoneChannels.ShippingZoneID = ShippingZones.Id)").
+			InnerJoin(store.ChannelTableName+" ON (Channels.Id = ShippingZoneChannels.ChannelID)").
+			Where("Channels.Slug = ?", channelSlug)
+	}
+
+	return query
 }

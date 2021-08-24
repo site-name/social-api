@@ -15,7 +15,7 @@ const (
 type ShippingZone struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
-	Countries   string `json:"countries"` // multiple allowed
+	Countries   string `json:"countries"` // multiple allowed, a, b, b, ...
 	Default     *bool  `json:"default"`   // default false
 	Description string `json:"description"`
 	CreateAt    int64  `json:"create_at"`
@@ -26,6 +26,7 @@ type ShippingZone struct {
 type ShippingZoneFilterOption struct {
 	Id           *model.StringFilter // filter on Id field
 	DefaultValue *bool               // filter on Default field
+	WarehouseIDs []string
 }
 
 func (s *ShippingZone) String() string {

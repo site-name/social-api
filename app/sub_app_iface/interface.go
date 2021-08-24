@@ -281,7 +281,7 @@ type WarehouseApp interface {
 	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData            // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError                // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 	DecreaseAllocations(lineInfos []*order.OrderLineData) *model.AppError                                    // DecreaseAllocations Decreate allocations for provided order lines.
-	WarehouseByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)     // WarehouseByOption returns a list of warehouses based on given option
+	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)    // WarehouseByOption returns a list of warehouses based on given option
 	AllocationsByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) // AllocationsByOption returns all warehouse allocations filtered based on given option
 	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                               // WarehouseByStockID returns a warehouse that owns the given stock
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
@@ -395,6 +395,7 @@ type ShippingApp interface {
 	ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError)           // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
 	DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError)                                                                                                                  // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 	GetCountriesWithoutShippingZone() ([]string, *model.AppError)                                                                                                                                                 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
+	ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError)                                                                                                  // ShippingZonesByOption returns all shipping zones that satisfy given options
 }
 
 type WebhookApp interface {

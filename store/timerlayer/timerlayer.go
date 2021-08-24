@@ -5992,6 +5992,22 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 	return err
 }
 
+func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
+	start := timemodule.Now()
+
+	err := s.StockStore.ChangeQuantity(stockID, quantity)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.ChangeQuantity", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
@@ -7681,6 +7697,22 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehous
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.WarehouseByStockID", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.Save", success, elapsed)
 	}
 	return result, err
 }

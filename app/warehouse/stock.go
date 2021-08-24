@@ -1,6 +1,8 @@
 package warehouse
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -31,4 +33,22 @@ func (a *AppWarehouse) GetStockByOption(option *warehouse.StockFilterOption) (*w
 	}
 
 	return stock, nil
+}
+
+// StockIncreaseQuantity Return given quantity of product to a stock.
+func (a *AppWarehouse) StockIncreaseQuantity(stockID string, quantity int) *model.AppError {
+	err := a.Srv().Store.Stock().ChangeQuantity(stockID, quantity)
+	if err != nil {
+		return model.NewAppError("StockIncrease", "app.warehouse.error_increasing_stock_quantity", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}
+
+// StockDecreaseQuantity Return given quantity of product to a stock.
+func (a *AppWarehouse) StockDecreaseQuantity(stockID string, quantity int) *model.AppError {
+	err := a.Srv().Store.Stock().ChangeQuantity(stockID, -quantity)
+	if err != nil {
+		return model.NewAppError("StockIncrease", "app.warehouse.error_increasing_stock_quantity", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
 }

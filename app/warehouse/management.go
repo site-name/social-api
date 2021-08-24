@@ -15,7 +15,13 @@ import (
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
 func (a *AppWarehouse) AllocateStocks(orderLineInfos []*order.OrderLineData, countryCode string, channelSlug string) *model.AppError {
-	panic("not implemented")
+	// allocation only applied to order lines with variants with track inventory set to True
+	orderLineInfos = a.GetOrderLinesWithTrackInventory(orderLineInfos)
+	if len(orderLineInfos) == 0 {
+		return nil
+	}
+
+	variants := order.OrderLineDatas(orderLineInfos).Variants()
 }
 
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity

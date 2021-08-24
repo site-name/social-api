@@ -7163,6 +7163,26 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
+func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
+
+	tries := 0
+	for {
+		err := s.StockStore.ChangeQuantity(stockID, quantity)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
 
 	tries := 0
@@ -9198,6 +9218,26 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehous
 	tries := 0
 	for {
 		result, err := s.WarehouseStore.WarehouseByStockID(stockID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
 		if err == nil {
 			return result, nil
 		}

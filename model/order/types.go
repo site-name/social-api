@@ -7,7 +7,7 @@ type OrderLineData struct {
 	Quantity    int
 	Variant     *product_and_discount.ProductVariant // can be nil
 	Replace     bool                                 // default false
-	WarehouseID string                               // can be empty
+	WarehouseID *string                              // can be nil
 }
 
 type OrderLineDatas []*OrderLineData
@@ -16,6 +16,17 @@ func (a OrderLineDatas) DeepCopy() []*OrderLineData {
 	res := make([]*OrderLineData, len(a))
 	for i := range a {
 		res[i] = &(*a[i])
+	}
+
+	return res
+}
+
+func (a OrderLineDatas) Variants() []*product_and_discount.ProductVariant {
+	res := []*product_and_discount.ProductVariant{}
+	for _, item := range a {
+		if item != nil && item.Variant != nil {
+			res = append(res, item.Variant)
+		}
 	}
 
 	return res

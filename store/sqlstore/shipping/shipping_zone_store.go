@@ -99,7 +99,7 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZon
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
 	query := s.GetQueryBuilder().
-		Select("*").
+		Select(s.ModelFields()...).
 		From(store.ShippingZoneTableName).
 		OrderBy("CreateAt ASC")
 
@@ -107,10 +107,11 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 	if option != nil && option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Id"))
 	}
-
-	// check default value
 	if option != nil && option.DefaultValue != nil {
 		query = query.Where(squirrel.Eq{"Default": *option.DefaultValue})
+	}
+	if len(option.WarehouseIDs) > 0 {
+		query = query.Where("ShippingZones.Id IN (SELECT ShippingZoneID FROM ? WHERE WarehouseID IN ?)", store.WarehouseShippingZoneTableName, option.WarehouseIDs)
 	}
 
 	queryString, args, err := query.ToSql()

@@ -16,7 +16,7 @@ type Stock struct {
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
 }
 
-// StockFilteroption is used for build sql queries
+// StockFilteroption is used for build squirrel sql queries
 type StockFilterOption struct {
 	Id               *model.StringFilter
 	WarehouseID      *model.StringFilter
