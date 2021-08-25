@@ -7183,71 +7183,11 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, resultVar2, err := s.StockStore.FilterForCountryAndChannel(options)
-		if err == nil {
-			return result, resultVar1, resultVar2, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
-		}
-	}
-
-}
-
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, resultVar2, err := s.StockStore.FilterProductStocksForCountryAndChannel(options, productID)
-		if err == nil {
-			return result, resultVar1, resultVar2, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
-		}
-	}
-
-}
-
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-
-	tries := 0
-	for {
-		result, resultVar1, resultVar2, err := s.StockStore.FilterVariantStocksForCountry(options, productVariantID)
-		if err == nil {
-			return result, resultVar1, resultVar2, nil
-		}
-		if !isRepeatableError(err) {
-			return result, resultVar1, resultVar2, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, resultVar1, resultVar2, err
-		}
-	}
-
-}
-
-func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
-
-	tries := 0
-	for {
-		result, err := s.StockStore.Get(stockID)
+		result, err := s.StockStore.FilterForCountryAndChannel(options)
 		if err == nil {
 			return result, nil
 		}
@@ -7263,11 +7203,51 @@ func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 
 }
 
-func (s *RetryLayerStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.GetbyOption(option)
+		result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.FilterVariantStocksForCountry(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.Get(stockID)
 		if err == nil {
 			return result, nil
 		}

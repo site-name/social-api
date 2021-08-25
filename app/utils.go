@@ -147,7 +147,7 @@ func (a *App) ExchangeCurrency(base interface{}, toCurrency string, conversionRa
 
 	impl, ok := base.(goprices.Currencyable)
 	if ok {
-		if impl.Currency() != model.DEFAULT_CURRENCY && !strings.EqualFold(toCurrency, model.DEFAULT_CURRENCY) {
+		if impl.MyCurrency() != model.DEFAULT_CURRENCY && !strings.EqualFold(toCurrency, model.DEFAULT_CURRENCY) {
 			base, appErr = a.ExchangeCurrency(base, model.DEFAULT_CURRENCY, conversionRate)
 			if appErr != nil {
 				return nil, appErr
@@ -158,7 +158,7 @@ func (a *App) ExchangeCurrency(base interface{}, toCurrency string, conversionRa
 	}
 
 	if conversionRate == nil {
-		conversionRate, appErr = a.GetConversionRate(impl.Currency(), toCurrency)
+		conversionRate, appErr = a.GetConversionRate(impl.MyCurrency(), toCurrency)
 	}
 	if appErr != nil {
 		return nil, appErr

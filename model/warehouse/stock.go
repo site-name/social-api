@@ -14,13 +14,18 @@ type Stock struct {
 	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
+
+	*WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
+	*product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
 // StockFilteroption is used for build squirrel sql queries
 type StockFilterOption struct {
-	Id               *model.StringFilter
-	WarehouseID      *model.StringFilter
-	ProductVariantID *model.StringFilter
+	CountryCode      string
+	ChannelSlug      string
+	WarehouseID      string
+	ProductVariantID string
+	ProductID        string
 }
 
 func (s *Stock) IsValid() *model.AppError {

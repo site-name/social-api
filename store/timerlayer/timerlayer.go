@@ -6008,10 +6008,10 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, resultVar2, err := s.StockStore.FilterForCountryAndChannel(options)
+	result, err := s.StockStore.FilterForCountryAndChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6021,13 +6021,13 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.For
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterForCountryAndChannel", success, elapsed)
 	}
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, resultVar2, err := s.StockStore.FilterProductStocksForCountryAndChannel(options, productID)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6037,13 +6037,13 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterProductStocksForCountryAndChannel", success, elapsed)
 	}
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, resultVar2, err := s.StockStore.FilterVariantStocksForCountry(options, productVariantID)
+	result, err := s.StockStore.FilterVariantStocksForCountry(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6053,7 +6053,7 @@ func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterVariantStocksForCountry", success, elapsed)
 	}
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
 func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
@@ -6068,22 +6068,6 @@ func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
-	start := timemodule.Now()
-
-	result, err := s.StockStore.GetbyOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.GetbyOption", success, elapsed)
 	}
 	return result, err
 }

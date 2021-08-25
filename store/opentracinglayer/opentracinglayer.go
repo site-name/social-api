@@ -6601,7 +6601,7 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -6610,16 +6610,16 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *warehou
 	}()
 
 	defer span.Finish()
-	result, resultVar1, resultVar2, err := s.StockStore.FilterForCountryAndChannel(options)
+	result, err := s.StockStore.FilterForCountryAndChannel(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterProductStocksForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -6628,16 +6628,16 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(opt
 	}()
 
 	defer span.Finish()
-	result, resultVar1, resultVar2, err := s.StockStore.FilterProductStocksForCountryAndChannel(options, productID)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterVariantStocksForCountry")
 	s.Root.Store.SetContext(newCtx)
@@ -6646,13 +6646,13 @@ func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *ware
 	}()
 
 	defer span.Finish()
-	result, resultVar1, resultVar2, err := s.StockStore.FilterVariantStocksForCountry(options, productVariantID)
+	result, err := s.StockStore.FilterVariantStocksForCountry(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, resultVar1, resultVar2, err
+	return result, err
 }
 
 func (s *OpenTracingLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
@@ -6665,24 +6665,6 @@ func (s *OpenTracingLayerStockStore) Get(stockID string) (*warehouse.Stock, erro
 
 	defer span.Finish()
 	result, err := s.StockStore.Get(stockID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.GetbyOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.StockStore.GetbyOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

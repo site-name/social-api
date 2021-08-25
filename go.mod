@@ -3,22 +3,22 @@ module github.com/sitename/sitename
 go 1.16
 
 require (
-	code.sajari.com/docconv v1.1.1-0.20210427001343-7b3472bc323a
+	code.sajari.com/docconv v1.2.0
 	github.com/99designs/gqlgen v0.13.0
-	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
+	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Masterminds/squirrel v1.5.0
-	github.com/advancedlogic/GoOse v0.0.0-20210708011750-e3d1acc33807 // indirect
+	github.com/advancedlogic/GoOse v0.0.0-20210820140952-9d5822d4a625 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.23
+	github.com/aws/aws-sdk-go v1.40.29
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
-	github.com/cespare/xxhash/v2 v2.1.1
+	github.com/cespare/xxhash/v2 v2.1.2
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/disintegration/imaging v1.6.2
 	github.com/dyatlov/go-opengraph v0.0.0-20210112100619-dae8665a5b09
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/francoispqt/gojay v1.2.13
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
@@ -48,7 +48,7 @@ require (
 	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.0
-	github.com/minio/minio-go/v7 v7.0.12
+	github.com/minio/minio-go/v7 v7.0.13
 	github.com/nyaruka/phonenumbers v1.0.70
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/olivere/elastic v6.2.37+incompatible // indirect
@@ -61,7 +61,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.1.1
+	github.com/site-name/go-prices v1.1.2
 	github.com/site-name/i18naddress v0.0.0-20210815055342-14130957b11d
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0
@@ -76,7 +76,7 @@ require (
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1
 	go.uber.org/zap v1.19.0
-	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.5

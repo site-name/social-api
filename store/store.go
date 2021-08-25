@@ -376,13 +376,14 @@ type (
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
-		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                                                                                               // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
-		Get(stockID string) (*warehouse.Stock, error)                                                                                                                                                        // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)    // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
-		FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
-		FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error)                                // FilterForCountryAndChannel
-		GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error)                                                                                                                           // GetbyOption finds 1 stock by given option then returns it
-		ChangeQuantity(stockID string, quantity int) error                                                                                                                                                   // ChangeQuantity reduce or increase the quantity of given stock
+		ModelFields() []string
+		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                    // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
+		Get(stockID string) (*warehouse.Stock, error)                                                             // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
+		FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
+		FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel
+		ChangeQuantity(stockID string, quantity int) error                                                        // ChangeQuantity reduce or increase the quantity of given stock
+		// GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error)                                                  // GetbyOption finds 1 stock by given option then returns it
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
