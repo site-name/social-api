@@ -2,7 +2,9 @@ package sqlstore
 
 import (
 	"context"
+	"database/sql"
 	dbsql "database/sql"
+	"database/sql/driver"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -1089,14 +1091,7 @@ func (ss *SqlStore) AlterDefaultIfColumnExists(tableName string, columnName stri
 	}
 
 	var defaultValue string
-	if ss.DriverName() == model.DATABASE_DRIVER_MYSQL {
-		// Some column types in MySQL cannot have defaults, so don't try to configure anything.
-		if mySqlColDefault == nil {
-			return true
-		}
-
-		defaultValue = *mySqlColDefault
-	} else if ss.DriverName() == model.DATABASE_DRIVER_POSTGRES {
+	if ss.DriverName() == model.DATABASE_DRIVER_POSTGRES {
 		// Postgres doesn't have the same limitation, but preserve the interface.
 		if postgresColDefault == nil {
 			return true
@@ -1142,4 +1137,11 @@ func (ss *SqlStore) RemoveDefaultIfColumnExists(tableName, columnName string) bo
 	}
 
 	return true
+}
+
+// finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+func (s *SqlStore) FinalizeTransaction(transaction driver.Tx) {
+	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
+		slog.Error("Failed to rollback transaction", slog.Err(err))
+	}
 }

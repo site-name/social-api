@@ -1,6 +1,8 @@
 package warehouse
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
@@ -28,7 +30,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (int, *mo
 		}
 	}
 
-	allocations, appErr := a.AllocationsByOption(&warehouse.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(nil, &warehouse.AllocationFilterOption{
 		StockID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: stockIDs,
@@ -69,7 +71,7 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 		}
 		if quantity > availableQuantity {
 			return &warehouse.InsufficientStock{
-				Items: []warehouse.InsufficientStockData{
+				Items: []*warehouse.InsufficientStockData{
 					{Variant: *variant},
 				},
 			}, nil
@@ -83,12 +85,22 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
-	stocks, _, _, err := a.Srv().Store.Stock().FilterForCountryAndChannel(&warehouse.ForCountryAndChannelFilter{
-		CountryCode: countryCode,
-		ChannelSlug: channelSlug,
+	stocks, appErr := a.StocksByOption(nil, &warehouse.StockFilterOption{
+		ForCountryAndChannel: &warehouse.StockFilterForCountryAndChannel{
+			CountryCode: countryCode,
+			ChannelSlug: channelSlug,
+		},
+		ProductVariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: product_and_discount.ProductVariants(variants).IDs(),
+			},
+		},
 	})
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckStockQuantityBulk", "app.warehouse.stocks_filter_for_country_and_channel.app_error", err)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		stocks = []*warehouse.Stock{} // just in case stocks is nil
 	}
 
 	allVariantStocks := []*warehouse.Stock{}
@@ -108,7 +120,7 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 		variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
 	}
 
-	insufficientStocks := []warehouse.InsufficientStockData{}
+	insufficientStocks := []*warehouse.InsufficientStockData{}
 	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
 		stocks_, ok := variantStocks[variants[i].Id]
 
@@ -118,13 +130,13 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 		}
 
 		if !ok {
-			insufficientStocks = append(insufficientStocks, warehouse.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
 				Variant:           *variants[i],
 				AvailableQuantity: &availableQuantity,
 			})
 		} else if *variants[i].TrackInventory {
 			if quantities[i] > availableQuantity {
-				insufficientStocks = append(insufficientStocks, warehouse.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
 					Variant:           *variants[i],
 					AvailableQuantity: &availableQuantity,
 				})
@@ -143,10 +155,11 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.P
 
 // Check if there is any variant of given product available in given country
 func (a *AppWarehouse) IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) {
-	stocks, _, _, err := a.Srv().Store.Stock().FilterProductStocksForCountryAndChannel(&warehouse.ForCountryAndChannelFilter{
+	stocks, err := a.Srv().Store.Stock().FilterProductStocksForCountryAndChannel(&warehouse.StockFilterForCountryAndChannel{
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,
-	}, productID)
+		ProductID:   productID,
+	})
 
 	if err != nil {
 		return false, store.AppErrorFromDatabaseLookupError("IsProductInStock", "app.warehouse.product_stocks_for_country_and_channel_missing.app_error", err)

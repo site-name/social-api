@@ -19,8 +19,40 @@ type Stock struct {
 	*product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
-// StockFilteroption is used for build squirrel sql queries
+// StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
+	Id               *model.StringFilter //
+	WarehouseID      *model.StringFilter //
+	ProductVariantID *model.StringFilter //
+
+	// set this to true if you want to lock selected rows for update.
+	// This add `FOR UPDATE` to the end of sql queries
+	LockForUpdate bool
+	// add something after `FOR UPDATE` to the end of sql queries, to tell the database to lock specific rows instead of both selecting rows and foreign rows
+	//
+	// E.g:  ForUpdateOf: "Warehouse" => FOR UPDATE OF Warehouse.
+	//
+	// NOTE: Remember to set `LockForUpdate` property to true before setting this.
+	ForUpdateOf string
+
+	// set this if you want to make use of `GetForCountryAndChannel`
+	ForCountryAndChannel *StockFilterForCountryAndChannel
+}
+
+type Stocks []*Stock
+
+func (s Stocks) IDs() []string {
+	res := []string{}
+	for _, item := range s {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
+type StockFilterForCountryAndChannel struct {
 	CountryCode      string
 	ChannelSlug      string
 	WarehouseID      string
@@ -73,7 +105,7 @@ type InsufficientStockData struct {
 
 // InsufficientStock is an error indicating stock is insufficient
 type InsufficientStock struct {
-	Items []InsufficientStockData
+	Items []*InsufficientStockData
 }
 
 func (i *InsufficientStock) Error() string {

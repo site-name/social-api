@@ -7,6 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
+	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -1237,10 +1238,26 @@ func (s *TimerLayerAddressStore) Update(address *account.Address) (*account.Addr
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 	start := timemodule.Now()
 
-	result, err := s.AllocationStore.FilterByOption(option)
+	result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.FilterByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1265,22 +1282,6 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAllocationStore) Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error) {
-	start := timemodule.Now()
-
-	result, err := s.AllocationStore.Save(allocation)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -6008,10 +6009,10 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterForCountryAndChannel(options)
+	result, err := s.StockStore.FilterByOption(transaction, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6019,12 +6020,12 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *warehouse.Sto
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterForCountryAndChannel", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
@@ -6040,7 +6041,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(options)

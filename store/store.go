@@ -4,6 +4,7 @@ package store
 
 import (
 	"context"
+	"database/sql/driver"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
@@ -56,7 +57,8 @@ type Store interface {
 	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
 	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
 	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
-	MarkSystemRanUnitTests()
+	MarkSystemRanUnitTests()                                                                                           //
+	FinalizeTransaction(transaction driver.Tx)                                                                         // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -377,19 +379,19 @@ type (
 	StockStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                    // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
-		Get(stockID string) (*warehouse.Stock, error)                                                             // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
-		FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
-		FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel
-		ChangeQuantity(stockID string, quantity int) error                                                        // ChangeQuantity reduce or increase the quantity of given stock
-		// GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error)                                                  // GetbyOption finds 1 stock by given option then returns it
+		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                  // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
+		Get(stockID string) (*warehouse.Stock, error)                                                                           // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
+		FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
+		ChangeQuantity(stockID string, quantity int) error                                                                      // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)         // FilterByOption finds and returns a slice of stocks that satisfy given option
+		// FilterForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
-		Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error)                     // Save inserts new allocation into database and returns it
-		Get(allocationID string) (*warehouse.Allocation, error)                                   // Get find and returns allocation with given id
-		FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
+		BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
+		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
+		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()

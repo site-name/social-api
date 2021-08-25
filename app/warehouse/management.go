@@ -1,10 +1,22 @@
 package warehouse
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
+
+type StockData struct {
+	Pk       string // ID of a stock
+	Quantity int    // Quantity of the stock
+}
 
 // Allocate stocks for given `order_lines` in given country.
 //
@@ -14,14 +26,229 @@ import (
 // Iterate by stocks and allocate as many items as needed or available in stock
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
-func (a *AppWarehouse) AllocateStocks(orderLineInfos []*order.OrderLineData, countryCode string, channelSlug string) *model.AppError {
+func (a *AppWarehouse) AllocateStocks(orderLineInfos []*order.OrderLineData, countryCode string, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
 	// allocation only applied to order lines with variants with track inventory set to True
 	orderLineInfos = a.GetOrderLinesWithTrackInventory(orderLineInfos)
 	if len(orderLineInfos) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	variants := order.OrderLineDatas(orderLineInfos).Variants()
+	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+		ProductVariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: product_and_discount.ProductVariants(
+					order.OrderLineDatas(orderLineInfos).Variants(),
+				).IDs(),
+			},
+		},
+		ForCountryAndChannel: &warehouse.StockFilterForCountryAndChannel{ // with this, returned stocks gonna contains related data also
+			CountryCode: countryCode,
+			ChannelSlug: channelSlug,
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr // return immediately if error was caused by system
+		}
+		stocks = []*warehouse.Stock{} // just incase stocks is nil
+	}
+
+	quantityAllocationList, appErr := a.AllocationsByOption(nil, &warehouse.AllocationFilterOption{
+		StockID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: warehouse.Stocks(stocks).IDs(),
+			},
+		},
+		QuantityAllocated: &model.NumberFilter{
+			NumberOption: &model.NumberOption{
+				Gt: model.NewFloat64(0),
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr // return immediately if error was caused by system
+		}
+		quantityAllocationList = []*warehouse.Allocation{} // just in case quantityAllocationList is nil
+	}
+
+	quantityAllocationForStocks := map[string]int{} // keys are stock IDs and values are sum of allocatedQuantity of allocations (which belong to a stock)
+	for _, allocation := range quantityAllocationList {
+		quantityAllocationForStocks[allocation.StockID] += allocation.QuantityAllocated
+	}
+
+	// the map below has: keys are IDs of product variants
+	variantToStocks := map[string][]*StockData{}
+	for _, stock := range stocks {
+		variantToStocks[stock.ProductVariantID] = append(
+			variantToStocks[stock.ProductVariantID],
+			&StockData{
+				Pk:       stock.Id,
+				Quantity: stock.Quantity,
+			},
+		)
+	}
+
+	var (
+		insufficientStock []*warehouse.InsufficientStockData
+		allocations       []*warehouse.Allocation
+		allocationItems   []*warehouse.Allocation
+	)
+
+	for _, lineInfo := range orderLineInfos {
+		stockAllocations := variantToStocks[lineInfo.Variant.Id]
+		insufficientStock, allocationItems = a.createAllocations(
+			lineInfo,
+			stockAllocations,
+			quantityAllocationForStocks,
+			insufficientStock,
+		)
+		allocations = append(allocations, allocationItems...)
+	}
+
+	if len(insufficientStock) > 0 {
+		return &warehouse.InsufficientStock{Items: insufficientStock}, nil
+	}
+
+	if len(allocations) > 0 {
+		_, appErr = a.BulkUpsertAllocations(transaction, allocations)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("AllocateStocks", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
+}
+
+func (a *AppWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*warehouse.InsufficientStockData) ([]*warehouse.InsufficientStockData, []*warehouse.Allocation) {
+	quantity := lineInfo.Quantity
+	quantityAllocated := 0
+	allocations := []*warehouse.Allocation{}
+
+	for _, stockData := range stocks {
+		quantityAllocatedInStock := quantityAllocationForStocks[stockData.Pk]
+		quantityAvailableInStock := stockData.Quantity - quantityAllocatedInStock
+
+		quantityToAllocate := util.Min(
+			(quantity - quantityAllocated),
+			quantityAvailableInStock,
+		)
+
+		if quantityToAllocate > 0 {
+			allocations = append(allocations, &warehouse.Allocation{
+				OrderLineID:       lineInfo.Line.Id,
+				StockID:           stockData.Pk,
+				QuantityAllocated: quantityToAllocate,
+			})
+
+			quantityAllocated += quantityToAllocate
+			if quantityAllocated == quantity {
+				return insufficientStock, allocations
+			}
+		}
+	}
+
+	if quantityAllocated != quantity {
+		insufficientStock = append(insufficientStock, &warehouse.InsufficientStockData{
+			Variant:   *lineInfo.Variant,
+			OrderLine: &lineInfo.Line,
+		})
+	}
+
+	return insufficientStock, []*warehouse.Allocation{}
+}
+
+// DeallocateStock Deallocate stocks for given `order_lines`.
+//
+// Function lock for update stocks and allocations related to given `order_lines`.
+// Iterate over allocations sorted by `stock.pk` and deallocate as many items
+// as needed of available in stock for order line, until deallocated all required
+// quantity for the order line. If there is less quantity in stocks then
+// raise an exception.
+func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError) {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
+	linesAllocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+		OrderLineID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: order.OrderLineDatas(orderLineDatas).OrderLines().IDs(),
+			},
+		},
+		LockForUpdate:        true,
+		ForUpdateOf:          fmt.Sprintf("%s, %s", store.AllocationTableName, store.StockTableName),
+		SelectedRelatedStock: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	lineToAllocations := map[string][]*warehouse.Allocation{}
+	for _, allocation := range linesAllocations {
+		lineToAllocations[allocation.OrderLineID] = append(lineToAllocations[allocation.OrderLineID], allocation)
+	}
+
+	var (
+		allocationsToUpdate []*warehouse.Allocation
+		notDeallocatedLines []*order.OrderLine
+	)
+	for _, lineInfo := range orderLineDatas {
+		var (
+			orderLine           = lineInfo.Line
+			quantity            = lineInfo.Quantity
+			allocations         = lineToAllocations[orderLine.Id]
+			quantityDeAllocated = 0
+		)
+
+		for _, allocation := range allocations {
+			quantityToDeallocate := util.Min(
+				(quantity - quantityDeAllocated),
+				allocation.QuantityAllocated,
+			)
+			if quantityToDeallocate > 0 {
+				allocation.QuantityAllocated = allocation.QuantityAllocated - quantityToDeallocate
+				quantityDeAllocated += quantityToDeallocate
+
+				allocationsToUpdate = append(allocationsToUpdate, allocation)
+				if quantityDeAllocated == quantity {
+					break
+				}
+			}
+		}
+
+		if quantityDeAllocated != quantity {
+			notDeallocatedLines = append(notDeallocatedLines, &orderLine)
+		}
+	}
+
+	if len(notDeallocatedLines) > 0 {
+		return &warehouse.AllocationError{OrderLineDatas: notDeallocatedLines}, nil
+	}
+
+	_, appErr = a.BulkUpsertAllocations(transaction, allocationsToUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if err := transaction.Commit(); err != nil {
+		return nil, model.NewAppError("DeallocateStock", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
 }
 
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
@@ -84,15 +311,4 @@ func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.O
 	}
 
 	return orderLineInfos
-}
-
-// DeallocateStock Deallocate stocks for given `order_lines`.
-//
-// Function lock for update stocks and allocations related to given `order_lines`.
-// Iterate over allocations sorted by `stock.pk` and deallocate as many items
-// as needed of available in stock for order line, until deallocated all required
-// quantity for the order line. If there is less quantity in stocks then
-// raise an exception.
-func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError) {
-	panic("not implemented")
 }

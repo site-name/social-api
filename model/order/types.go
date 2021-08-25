@@ -13,9 +13,12 @@ type OrderLineData struct {
 type OrderLineDatas []*OrderLineData
 
 func (a OrderLineDatas) DeepCopy() []*OrderLineData {
-	res := make([]*OrderLineData, len(a))
-	for i := range a {
-		res[i] = &(*a[i])
+	res := []*OrderLineData{}
+	for _, orderLineData := range a {
+		if orderLineData != nil {
+			newItem := *orderLineData
+			res = append(res, &newItem)
+		}
 	}
 
 	return res
@@ -26,6 +29,17 @@ func (a OrderLineDatas) Variants() []*product_and_discount.ProductVariant {
 	for _, item := range a {
 		if item != nil && item.Variant != nil {
 			res = append(res, item.Variant)
+		}
+	}
+
+	return res
+}
+
+func (a OrderLineDatas) OrderLines() OrderLines {
+	res := []*OrderLine{}
+	for _, item := range a {
+		if item != nil {
+			res = append(res, &item.Line)
 		}
 	}
 

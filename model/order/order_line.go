@@ -102,6 +102,17 @@ func (o OrderLines) ProductVariantIDs() []string {
 	return res
 }
 
+func (o OrderLines) IDs() []string {
+	res := []string{}
+	for _, orderLine := range o {
+		if orderLine != nil {
+			res = append(res, orderLine.Id)
+		}
+	}
+
+	return res
+}
+
 func (o *OrderLine) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.order_line.is_valid.%s.app_error",

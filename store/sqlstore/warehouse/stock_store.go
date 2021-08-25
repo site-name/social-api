@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
@@ -73,46 +74,14 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	}
 }
 
-// GetbyOption finds 1 stock by given option then returns it
-// func (ss *SqlStockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
-// 	query := ss.GetQueryBuilder().
-// 		Select(ss.ModelFields()...).
-// 		From(store.StockTableName)
-
-// 	// parse option
-// 	if option.Id != nil {
-// 		query = query.Where(option.Id.ToSquirrel("Stocks.Id"))
-// 	}
-// 	if option.WarehouseID != nil {
-// 		query = query.
-// 			InnerJoin(store.WarehouseTableName + " ON (Stocks.WarehouseID = Warehouses.Id)").
-// 			Where(option.WarehouseID.ToSquirrel("Warehouses.Id"))
-// 	}
-// 	if option.ProductVariantID != nil {
-// 		query = query.
-// 			InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
-// 			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
-// 	}
-
-// 	queryString, args, err := query.ToSql()
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
-// 	}
-
-// 	var res *warehouse.Stock
-// 	err = ss.GetReplica().SelectOne(&res, queryString, args...)
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return nil, store.NewErrNotFound(store.StockTableName, "option")
-// 		}
-// 		return nil, errors.Wrap(err, "failed to find a stock with given option")
-// 	}
-
-// 	return res, nil
-// }
-
 // commonLookup is not exported
-func (ss *SqlStockStore) commonLookup(query squirrel.SelectBuilder) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) commonLookup(transaction *gorp.Transaction, query squirrel.SelectBuilder) ([]*warehouse.Stock, error) {
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "commonLookup.ToSql")
+	}
+
 	var (
 		returningStocks []*warehouse.Stock
 		stock           warehouse.Stock
@@ -120,7 +89,7 @@ func (ss *SqlStockStore) commonLookup(query squirrel.SelectBuilder) ([]*warehous
 		productVariant  product_and_discount.ProductVariant
 	)
 
-	rows, err := query.RunWith(ss.GetReplica()).Query()
+	rows, err := transaction.Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -253,30 +222,86 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
-	options.CountryCode = strings.ToUpper(options.CountryCode)
+// FilterByOption finds and returns a slice of stocks that satisfy given option
+func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+	// decide which query to use
+	var (
+		query                        squirrel.SelectBuilder
+		useForCountryAndChannelQuery bool
+	)
+	if options.ForCountryAndChannel != nil {
+		query = ss.FilterForCountryAndChannel(options.ForCountryAndChannel)
+		useForCountryAndChannelQuery = true // indicate that we are using query build by method `FilterForCountryAndChannel()`
+	} else {
+		query = ss.GetQueryBuilder().
+			Select(ss.ModelFields()...). // this selecting fields differ the query from `if` caluse
+			From(store.StockTableName).
+			OrderBy(store.TableOrderingMap[store.StockTableName])
+	}
 
-	subQuery := ss.warehouseSubQuery(options.CountryCode, options.ChannelSlug)
+	// parse options:
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+	}
+	if options.WarehouseID != nil {
+		query = query.Where(options.WarehouseID.ToSquirrel("Stocks.WarehouseID"))
+	}
+	if options.ProductVariantID != nil {
+		query = query.Where(options.ProductVariantID.ToSquirrel("Stocks.ProductVariantID"))
+	}
+	if options.LockForUpdate {
+		query = query.Suffix("FOR UPDATE")
+	}
+	if options.ForUpdateOf != "" {
+		query = query.Suffix("OF " + options.ForUpdateOf)
+	}
 
-	selectFields := ss.ModelFields()
-	selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
-	selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+	// check which query is used
+	if !useForCountryAndChannelQuery {
+		queryString, args, err := query.ToSql()
+		if err != nil {
+			return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+		}
 
-	query := ss.GetQueryBuilder().
-		Select(selectFields...).
-		From(store.StockTableName).
-		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
-		InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
-		Where(squirrel.Expr("Stocks.WarehouseID IN ?", subQuery)).
-		OrderBy(store.TableOrderingMap[store.StockTableName])
+		var res []*warehouse.Stock
+		_, err = transaction.Select(&res, queryString, args...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find stocks by given options")
+		}
+		return res, nil // these stocks does not contains related data
+	}
 
-	return ss.commonLookup(query)
+	stocks, err := ss.commonLookup(transaction, query) // these stocks contains related data suc as `Warehouse`, `ProductVariant`
+	return stocks, err
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) squirrel.SelectBuilder {
 	options.CountryCode = strings.ToUpper(options.CountryCode)
 
-	subQuery := ss.warehouseSubQuery(options.CountryCode, options.ChannelSlug)
+	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
+
+	selectFields := ss.ModelFields()
+	selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
+	selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+
+	return ss.GetQueryBuilder().
+		Select(selectFields...).
+		From(store.StockTableName).
+		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
+		InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
+		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery)).
+		OrderBy(store.TableOrderingMap[store.StockTableName])
+}
+
+func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	transaction, err := ss.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
+
+	options.CountryCode = strings.ToUpper(options.CountryCode)
+
+	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
 
 	selectFields := ss.ModelFields()
 	selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
@@ -287,17 +312,21 @@ func (ss *SqlStockStore) FilterVariantStocksForCountry(options *warehouse.StockF
 		From(store.StockTableName).
 		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
 		InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
-		Where(squirrel.Expr("Stocks.WarehouseID IN ?", subQuery)).
+		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery)).
 		Where(squirrel.Expr("Stocks.ProductVariantID = ?", options.ProductVariantID)).
 		OrderBy(store.TableOrderingMap[store.StockTableName])
 
-	return ss.commonLookup(query)
+	return ss.commonLookup(transaction, query)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
-	options.CountryCode = strings.ToUpper(options.CountryCode)
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	transaction, err := ss.GetReplica().Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "transaction_begin")
+	}
 
-	subQuery := ss.warehouseSubQuery(options.CountryCode, options.ChannelSlug)
+	options.CountryCode = strings.ToUpper(options.CountryCode)
+	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
 
 	selectingFields := ss.ModelFields()
 	selectingFields = append(selectingFields, ss.Warehouse().ModelFields()...)
@@ -309,15 +338,16 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *wareho
 		InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
 		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
 		InnerJoin(store.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
-		Where(squirrel.Expr("Stocks.WarehouseID IN ?", subQuery)).
-		Where(squirrel.Expr("Products.Id = ?", options.ProductID))
+		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery)).
+		Where(squirrel.Expr("Products.Id = ?", options.ProductID)).
+		OrderBy(store.TableOrderingMap[store.StockTableName])
 
-	return ss.commonLookup(query)
+	return ss.commonLookup(transaction, query)
 }
 
-func (ss *SqlStockStore) warehouseSubQuery(countryCode string, channelSlug string) squirrel.SelectBuilder {
+func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode string, channelSlug string) squirrel.SelectBuilder {
 	query := ss.GetQueryBuilder().
-		Select("*").
+		Select("Warehouses.Id").
 		From(store.WarehouseTableName)
 
 	if countryCode != "" {

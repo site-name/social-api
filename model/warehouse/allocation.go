@@ -13,13 +13,23 @@ type Allocation struct {
 	OrderLineID       string `json:"order_ldine_id"`     // NOT NULL
 	StockID           string `json:"stock_id"`           // NOT NULL
 	QuantityAllocated int    `json:"quantity_allocated"` // default 0
+
+	Stock     *Stock           `json:"-" db:"-"` // this field is populated with related stock
+	OrderLine *order.OrderLine `json:"-" db:"-"`
 }
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
 type AllocationFilterOption struct {
-	Id          *model.StringFilter
-	OrderLineID *model.StringFilter
-	StockID     *model.StringFilter
+	Id                *model.StringFilter
+	OrderLineID       *model.StringFilter
+	StockID           *model.StringFilter
+	QuantityAllocated *model.NumberFilter
+
+	LockForUpdate bool   // if true, `FOR UPDATE` will be placed in the end of sqlqueries
+	ForUpdateOf   string // this is placed after `FOR UPDATE`. E.g: "Warehouses" => `FOR UPDATE OF Warehouses`
+
+	SelectedRelatedStock   bool
+	SelectRelatedOrderLine bool
 }
 
 type AllocationError struct {
@@ -86,7 +96,15 @@ func (a *Allocation) PreSave() {
 		a.Id = model.NewId()
 	}
 	a.CreateAt = model.GetMillis()
+	a.commonPre()
+}
+
+func (a *Allocation) commonPre() {
 	if a.QuantityAllocated < 0 {
 		a.QuantityAllocated = 0
 	}
+}
+
+func (a *Allocation) PreUpdate() {
+	a.commonPre()
 }

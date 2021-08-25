@@ -8,6 +8,7 @@ import (
 	timemodule "time"
 
 	"github.com/lib/pq"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -1272,11 +1273,31 @@ func (s *RetryLayerAddressStore) Update(address *account.Address) (*account.Addr
 
 }
 
-func (s *RetryLayerAllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 
 	tries := 0
 	for {
-		result, err := s.AllocationStore.FilterByOption(option)
+		result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+
+	tries := 0
+	for {
+		result, err := s.AllocationStore.FilterByOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
@@ -1297,26 +1318,6 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 	tries := 0
 	for {
 		result, err := s.AllocationStore.Get(allocationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAllocationStore) Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error) {
-
-	tries := 0
-	for {
-		result, err := s.AllocationStore.Save(allocation)
 		if err == nil {
 			return result, nil
 		}
@@ -7183,11 +7184,11 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterForCountryAndChannel(options)
+		result, err := s.StockStore.FilterByOption(transaction, options)
 		if err == nil {
 			return result, nil
 		}
@@ -7203,7 +7204,7 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *warehouse.Sto
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -7223,7 +7224,7 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {

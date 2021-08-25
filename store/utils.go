@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"net/http"
 	"strconv"
@@ -46,7 +47,7 @@ func MapStringsToQueryParams(list []string, paramPrefix string) (string, map[str
 
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 func FinalizeTransaction(transaction driver.Tx) {
-	if err := transaction.Rollback(); err != nil {
+	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
 		slog.Error("Failed to rollback transaction", slog.Err(err))
 	}
 }
