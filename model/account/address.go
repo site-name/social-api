@@ -23,7 +23,7 @@ const (
 	ADDRESS_PHONE_MAX_LENGTH          = 20
 )
 
-// Address contains information belong to the address
+// Address contains information that tells details about an address
 type Address struct {
 	Id             string `json:"id"`
 	FirstName      string `json:"first_name"`
@@ -41,9 +41,21 @@ type Address struct {
 	UpdateAt       int64  `json:"update_at,omitempty"`
 }
 
+type AddressFilterOrderOption struct {
+	Id *model.StringFilter
+	// Either `ShippingAddressID` or `BillingAddressID`.
+	//
+	// since `Orders` have `ShippingAddressID` and `BillingAddressID`.
+	// This `On` specify which Id to put in the ON () conditions:
+	//
+	// E.g: On = "ShippingAddressID" => ON (Orders.ShippingAddressID = Addresses.Id)
+	On string
+}
+
 // AddressFilterOption is used to build sql queries to filter address(es)
 type AddressFilterOption struct {
-	Id *model.StringFilter
+	Id      *model.StringFilter
+	OrderID *AddressFilterOrderOption
 }
 
 func (add *Address) FullName() string {

@@ -50,3 +50,14 @@ func (a *AppWarehouse) BulkUpsertAllocations(transaction *gorp.Transaction, allo
 
 	return allocations, nil
 }
+
+// BulkDeleteAllocations performs bulk delete given allocations.
+// If non-nil transaction is provided, perform bulk delete operation within it.
+func (a *AppWarehouse) BulkDeleteAllocations(transaction *gorp.Transaction, allocationIDs []string) *model.AppError {
+	err := a.Srv().Store.Allocation().BulkDelete(transaction, allocationIDs)
+	if err != nil {
+		return model.NewAppError("BulkDeleteAllocations", "app.warehouse.error_deleting_allocations.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}

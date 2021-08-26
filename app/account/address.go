@@ -25,8 +25,19 @@ func (a *AppAccount) AddressById(id string) (*account.Address, *model.AppError) 
 // AddressesByOption returns a list of addresses by given option
 func (a *AppAccount) AddressesByOption(option *account.AddressFilterOption) ([]*account.Address, *model.AppError) {
 	addresses, err := a.Srv().Store.Address().FilterByOption(option)
+	var (
+		errorMessage string
+		statusCode   int = 0
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AddressesbyOption", "app.account.error_finding_addresses_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errorMessage = err.Error()
+	} else if len(addresses) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("AddressesByOption", "app.account.error_finding_addresses_by_opyion.app_error", nil, errorMessage, statusCode)
 	}
 
 	return addresses, nil

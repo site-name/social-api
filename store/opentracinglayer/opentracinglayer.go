@@ -1251,6 +1251,24 @@ func (s *OpenTracingLayerAddressStore) Update(address *account.Address) (*accoun
 	return result, err
 }
 
+func (s *OpenTracingLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.BulkDelete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.BulkUpsert")
@@ -6584,6 +6602,24 @@ func (s *OpenTracingLayerStatusStore) UpdateLastActivityAt(userID string, lastAc
 	return err
 }
 
+func (s *OpenTracingLayerStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.StockStore.BulkUpsert(transaction, stocks)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.ChangeQuantity")
@@ -6666,24 +6702,6 @@ func (s *OpenTracingLayerStockStore) Get(stockID string) (*warehouse.Stock, erro
 
 	defer span.Finish()
 	result, err := s.StockStore.Get(stockID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.StockStore.Save(stock)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -41,9 +41,11 @@ type ProductVariantFilterOption struct {
 type ProductVariants []*ProductVariant
 
 func (p ProductVariants) IDs() []string {
-	res := make([]string, len(p))
-	for i := range p {
-		res[i] = p[i].Id
+	res := []string{}
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.Id)
+		}
 	}
 
 	return res

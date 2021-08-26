@@ -24,7 +24,7 @@ func (a OrderLineDatas) DeepCopy() []*OrderLineData {
 	return res
 }
 
-func (a OrderLineDatas) Variants() []*product_and_discount.ProductVariant {
+func (a OrderLineDatas) Variants() product_and_discount.ProductVariants {
 	res := []*product_and_discount.ProductVariant{}
 	for _, item := range a {
 		if item != nil && item.Variant != nil {
@@ -40,6 +40,17 @@ func (a OrderLineDatas) OrderLines() OrderLines {
 	for _, item := range a {
 		if item != nil {
 			res = append(res, &item.Line)
+		}
+	}
+
+	return res
+}
+
+func (a OrderLineDatas) WarehouseIDs() []string {
+	res := []string{}
+	for _, item := range a {
+		if item != nil && item.WarehouseID != nil {
+			res = append(res, *item.WarehouseID)
 		}
 	}
 

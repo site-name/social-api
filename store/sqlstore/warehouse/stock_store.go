@@ -46,20 +46,64 @@ func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
 }
 
-func (ss *SqlStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
-	stock.PreSave()
-	if err := stock.IsValid(); err != nil {
-		return nil, err
+// BulkUpsert performs upserts or inserts given stocks, then returns them
+func (ss *SqlStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+
+	var (
+		isSaving   bool
+		insertFunc func(list ...interface{}) error          = ss.GetMaster().Insert
+		updateFunc func(list ...interface{}) (int64, error) = ss.GetMaster().Update
+	)
+	if transaction != nil {
+		insertFunc = transaction.Insert
+		updateFunc = transaction.Update
 	}
 
-	if err := ss.GetMaster().Insert(stock); err != nil {
-		if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
-			return nil, store.NewErrInvalidInput(store.StockTableName, "WarehouseID/ProductVariantID", stock.WarehouseID+"/"+stock.ProductVariantID)
+	for _, stock := range stocks {
+		isSaving = false // reset
+
+		if stock.Id == "" {
+			isSaving = true
+			stock.PreSave()
+		} else {
+			stock.PreUpdate()
 		}
-		return nil, errors.Wrapf(err, "failed to save stock object with id=%s", stock.Id)
+
+		if err := stock.IsValid(); err != nil {
+			return nil, err
+		}
+
+		var (
+			err       error
+			numUpdate int64
+			oldStock  *warehouse.Stock
+		)
+		if isSaving {
+			err = insertFunc(stock)
+		} else {
+			// try finding a stock with id:
+			oldStock, err = ss.Get(stock.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			stock.CreateAt = oldStock.CreateAt
+
+			numUpdate, err = updateFunc(stock)
+		}
+
+		if err != nil {
+			if ss.IsUniqueConstraintError(err, []string{"WarehouseID", "ProductVariantID", "stocks_warehouseid_productvariantid_key"}) {
+				return nil, store.NewErrInvalidInput(store.StockTableName, "WarehouseID/ProductVariantID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert a stock with id=%s", stock.Id)
+		}
+		if numUpdate > 1 {
+			return nil, errors.Errorf("multiple stocks with id=%d were updated: %d instead of 1", stock.Id, numUpdate)
+		}
 	}
 
-	return stock, nil
+	return stocks, nil
 }
 
 func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
@@ -76,7 +120,6 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 
 // commonLookup is not exported
 func (ss *SqlStockStore) commonLookup(transaction *gorp.Transaction, query squirrel.SelectBuilder) ([]*warehouse.Stock, error) {
-
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "commonLookup.ToSql")
@@ -89,7 +132,12 @@ func (ss *SqlStockStore) commonLookup(transaction *gorp.Transaction, query squir
 		productVariant  product_and_discount.ProductVariant
 	)
 
-	rows, err := transaction.Query(queryString, args...)
+	var rows *sql.Rows
+	if transaction == nil {
+		rows, err = ss.GetReplica().Query(queryString, args...)
+	} else {
+		rows, err = transaction.Query(queryString, args...)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -124,7 +172,7 @@ func (ss *SqlStockStore) commonLookup(transaction *gorp.Transaction, query squir
 			return nil, errors.Wrap(err, "failed to scan a row of stock, warehouse, product variant")
 		}
 
-		stock.WareHouse = &wareHouse
+		stock.Warehouse = &wareHouse
 		stock.ProductVariant = &productVariant
 		returningStocks = append(returningStocks, &stock)
 	}
@@ -252,7 +300,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
 	}
-	if options.ForUpdateOf != "" {
+	if options.ForUpdateOf != "" && options.LockForUpdate {
 		query = query.Suffix("OF " + options.ForUpdateOf)
 	}
 

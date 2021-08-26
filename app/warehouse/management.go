@@ -236,7 +236,7 @@ func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*
 	}
 
 	if len(notDeallocatedLines) > 0 {
-		return &warehouse.AllocationError{OrderLineDatas: notDeallocatedLines}, nil
+		return &warehouse.AllocationError{OrderLines: notDeallocatedLines}, nil
 	}
 
 	_, appErr = a.BulkUpsertAllocations(transaction, allocationsToUpdate)
@@ -251,14 +251,183 @@ func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*
 	return nil, nil
 }
 
-// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-func (a *AppWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) *model.AppError {
-	var orderLineIDs []string
-	for _, lineInfo := range lineInfos {
-		orderLineIDs = append(orderLineIDs, lineInfo.Line.Id)
+// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
+//
+// Function lock for update stock and allocations related to given `order_line`
+// in a given warehouse. If the stock exists, increase the stock quantity
+// by given value. If not exist create a stock with the given quantity. This function
+// can create the allocation for increased quantity in stock by passing True
+// to `allocate` argument. If the order line has the allocation in this stock
+// function increase `quantity_allocated`. If allocation does not exist function
+// create a new allocation for this order line in this stock.
+//
+// NOTE: allocate is default to false
+func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("IncreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
+	var stock *warehouse.Stock
+
+	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+		WarehouseID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: wareHouse.Id,
+			},
+		},
+		ProductVariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: *orderLine.VariantID,
+			},
+		},
+		LockForUpdate: true, //
+		ForUpdateOf:   store.StockTableName,
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+	} else {
+		stock = stocks[0]
 	}
 
-	panic("not implemented")
+	if stock != nil {
+		stock.Quantity += quantity
+	} else {
+		// validate given `orderLine` has VariantID property not nil
+		if orderLine.VariantID == nil {
+			return model.NewAppError("IncreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
+		}
+
+		stock = &warehouse.Stock{
+			WarehouseID:      wareHouse.Id,
+			ProductVariantID: *orderLine.VariantID, // validated above
+			Quantity:         quantity,
+		}
+	}
+	_, appErr = a.UpsertStocks(transaction, []*warehouse.Stock{stock})
+	if appErr != nil {
+		return appErr
+	}
+
+	if allocate && stock != nil {
+		var allocation *warehouse.Allocation
+
+		allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+			OrderLineID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: orderLine.Id,
+				},
+			},
+			StockID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: stock.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return appErr
+			}
+		} else {
+			allocation = allocations[0]
+		}
+
+		if allocation != nil {
+			allocation.QuantityAllocated += quantity
+		} else {
+			allocation = &warehouse.Allocation{
+				OrderLineID:       orderLine.Id,
+				StockID:           stock.Id,
+				QuantityAllocated: quantity,
+			}
+		}
+
+		_, appErr = a.BulkUpsertAllocations(transaction, []*warehouse.Allocation{allocation})
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("IncreaseStock", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
+// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+func (a *AppWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+	// validate lineInfos is not nil nor empty
+	if lineInfos == nil || len(lineInfos) == 0 {
+		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
+	}
+
+	// start a transaction
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("IncreaseAllocations", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
+	allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+		OrderLineID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: order.OrderLineDatas(lineInfos).OrderLines().IDs(),
+			},
+		},
+		LockForUpdate:          true,
+		ForUpdateOf:            fmt.Sprintf("%s, %s", store.AllocationTableName, store.StockTableName),
+		SelectedRelatedStock:   true,
+		SelectRelatedOrderLine: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// evaluate allocations query to trigger select_for_update lock
+
+	var (
+		allocationIDsToDelete = warehouse.Allocations(allocations).IDs()
+
+		// keys are IDs of order lines.
+		// Values are lists of allocated quantities of allocations
+		allocationQuantityMap = map[string][]int{}
+	)
+
+	for _, allocation := range allocations {
+		allocationQuantityMap[allocation.OrderLineID] = append(allocationQuantityMap[allocation.OrderLineID], allocation.QuantityAllocated)
+	}
+
+	for _, lineInfo := range lineInfos {
+		// lineInfo.quantity resembles amount to add, sum it with already allocated.
+		lineInfo.Quantity += util.SumOfIntSlice(allocationQuantityMap[lineInfo.Line.Id])
+	}
+
+	if len(allocationIDsToDelete) > 0 {
+		appErr = a.BulkDeleteAllocations(transaction, allocationIDsToDelete)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// find address of order of orderLine
+	address, appErr := a.OrderApp().AnAddressOfOrder(lineInfos[0].Line.OrderID, order.ShippingAddressID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	insufficientErr, appErr := a.AllocateStocks(lineInfos, address.Country, channelSlug)
+	if insufficientErr != nil || appErr != nil {
+		return insufficientErr, appErr
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("IncreaseAllocations", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
 }
 
 // DecreaseAllocations Decreate allocations for provided order lines.
@@ -283,22 +452,35 @@ func (a *AppWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData) *mo
 //
 // updateStocks default to true
 func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) *model.AppError {
-	panic("not implemented")
-}
+	// validate orderLineInfos is not nil nor empty
+	if orderLineInfos == nil || len(orderLineInfos) == 0 {
+		return model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
+	}
 
-// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
-//
-// Function lock for update stock and allocations related to given `order_line`
-// in a given warehouse. If the stock exists, increase the stock quantity
-// by given value. If not exist create a stock with the given quantity. This function
-// can create the allocation for increased quantity in stock by passing True
-// to `allocate` argument. If the order line has the allocation in this stock
-// function increase `quantity_allocated`. If allocation does not exist function
-// create a new allocation for this order line in this stock.
-//
-// NOTE: allocate is default to false
-func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, warehouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
-	panic("not implemented")
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("DecreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
+	var (
+		variantIDs   = order.OrderLineDatas(orderLineInfos).Variants().IDs()
+		warehouseIDs = order.OrderLineDatas(orderLineInfos).WarehouseIDs()
+	)
+
+	allocationErr, appErr := a.DeallocateStock(orderLineInfos)
+	if appErr != nil {
+		return appErr
+	}
+	if allocationErr != nil {
+		allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+			OrderLineID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: allocationErr.OrderLineIDs(),
+				},
+			},
+		})
+	}
 }
 
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True

@@ -1273,6 +1273,26 @@ func (s *RetryLayerAddressStore) Update(address *account.Address) (*account.Addr
 
 }
 
+func (s *RetryLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 
 	tries := 0
@@ -7164,6 +7184,26 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
+func (s *RetryLayerStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.BulkUpsert(transaction, stocks)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
 
 	tries := 0
@@ -7249,26 +7289,6 @@ func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	tries := 0
 	for {
 		result, err := s.StockStore.Get(stockID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
-
-	tries := 0
-	for {
-		result, err := s.StockStore.Save(stock)
 		if err == nil {
 			return result, nil
 		}

@@ -88,6 +88,13 @@ type OrderLineFilterOption struct {
 	PrefetchRelated OrderLinePrefetchRelated
 }
 
+func (o *OrderLine) String() string {
+	if o.VariantName != "" {
+		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
+	}
+	return o.ProductName
+}
+
 type OrderLines []*OrderLine
 
 // ProductVariantIDs returns only non-nil product variant ids
@@ -157,13 +164,6 @@ func (o *OrderLine) IsValid() *model.AppError {
 	}
 
 	return nil
-}
-
-func (o *OrderLine) String() string {
-	if o.VariantName != "" {
-		return fmt.Sprintf("%s (%s)", o.ProductName, o.VariantName)
-	}
-	return o.ProductName
 }
 
 func (o *OrderLine) PopulateNonDbFields() {

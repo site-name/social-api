@@ -58,6 +58,13 @@ var OrderOriginStrings = map[string]string{
 	REISSUE:  "Reissue",
 }
 
+type WhichOrderAddressID string
+
+const (
+	ShippingAddressID WhichOrderAddressID = "ShippingAddressID"
+	BillingAddressID  WhichOrderAddressID = "BillingAddressID"
+)
+
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"` // NOT editable
@@ -112,15 +119,6 @@ type OrderFilterOption struct {
 	ChannelSlug   *model.StringFilter // for comparing the channel of this order's slug
 	UserEmail     *model.StringFilter // for filtering order's UserEmail
 	UserID        *model.StringFilter // for filtering order's UserID
-}
-
-type OrderFilterWithPaymentRelatedOption struct {
-	OrderFilterOption
-	TotalGrossAmount *model.NumberFilter // for comparing order's TotalGrossAmount with total captured amount paid by order's payments
-	Payments         *struct {           // for filtering order's payments
-		IsActive     *bool
-		ChargeStatus *model.StringFilter
-	}
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.

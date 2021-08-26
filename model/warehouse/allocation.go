@@ -32,37 +32,17 @@ type AllocationFilterOption struct {
 	SelectRelatedOrderLine bool
 }
 
-type AllocationError struct {
-	OrderLineDatas []*order.OrderLine
-	builder        strings.Builder
-}
+type Allocations []*Allocation
 
-func (a *AllocationError) OrderLineIDs() string {
-	a.builder.Reset()
-
-	var suffix string = ", "
-	for i, line := range a.OrderLineDatas {
-		if i == len(a.OrderLineDatas)-1 {
-			suffix = ""
+func (a Allocations) IDs() []string {
+	res := []string{}
+	for _, item := range a {
+		if item != nil {
+			res = append(res, item.Id)
 		}
-		a.builder.WriteString(line.Id + suffix)
 	}
 
-	return a.builder.String()
-}
-
-func (a *AllocationError) Error() string {
-	a.builder.Reset()
-
-	var suffix string = ", "
-	for i, line := range a.OrderLineDatas {
-		if i == len(a.OrderLineDatas)-1 {
-			suffix = ""
-		}
-		a.builder.WriteString(line.String() + suffix)
-	}
-
-	return a.builder.String()
+	return res
 }
 
 func (a *Allocation) IsValid() *model.AppError {
@@ -107,4 +87,25 @@ func (a *Allocation) commonPre() {
 
 func (a *Allocation) PreUpdate() {
 	a.commonPre()
+}
+
+type AllocationError struct {
+	OrderLines order.OrderLines
+	builder    strings.Builder
+}
+
+func (a *AllocationError) Error() string {
+	a.builder.Reset()
+
+	a.builder.WriteString("Unable to deallocate stock for lines ")
+
+	var suffix string = ", "
+	for i, line := range a.OrderLines {
+		if i == len(a.OrderLines)-1 {
+			suffix = ""
+		}
+		a.builder.WriteString(line.String() + suffix)
+	}
+
+	return a.builder.String()
 }

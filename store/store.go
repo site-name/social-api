@@ -379,19 +379,19 @@ type (
 	StockStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(stock *warehouse.Stock) (*warehouse.Stock, error)                                                                  // Save inserts given stock into database and returns it. Returned error could be either (nil, *AppError, *InvalidInput)
 		Get(stockID string) (*warehouse.Stock, error)                                                                           // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
 		FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
 		ChangeQuantity(stockID string, quantity int) error                                                                      // ChangeQuantity reduce or increase the quantity of given stock
 		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)         // FilterByOption finds and returns a slice of stocks that satisfy given option
-		// FilterForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel
+		BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                        // BulkUpsert performs upserts or inserts given stocks, then returns them
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
 		BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
 		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
 		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
+		BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error                                                  // BulkDelete perform bulk deletes given allocations.
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()

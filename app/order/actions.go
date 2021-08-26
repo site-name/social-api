@@ -2,6 +2,7 @@ package order
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
@@ -171,12 +172,6 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 	// find order lines of given order that are:
 	// 1) NOT require shipping
 	// 2) has ProductVariant attached AND that productVariant has a digitalContent accompanies
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "AutomaticallyFulfillDigitalLines"
-		}
-	}()
-
 	digitalOrderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -274,7 +269,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			Line:        *orderLine,
 			Quantity:    orderLine.Quantity,
 			Variant:     orderLine.ProductVariant,
-			WarehouseID: stock.WarehouseID,
+			WarehouseID: &stock.WarehouseID,
 		})
 	}
 
@@ -443,7 +438,7 @@ func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.O
 		}
 
 		if allocationErr != nil {
-			slog.Warn("Unable to deallocate stock for order lines", slog.String("order_lines", allocationErr.OrderLineIDs()))
+			slog.Warn("Unable to deallocate stock for order lines", slog.String("lines", strings.Join(allocationErr.OrderLines.IDs(), ", ")))
 		}
 	}
 

@@ -150,7 +150,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 	if option.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
 	}
-	if option.ForUpdateOf != "" {
+	if option.ForUpdateOf != "" && option.LockForUpdate {
 		query = query.Suffix("OF " + option.ForUpdateOf)
 	}
 
@@ -246,4 +246,29 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 	}
 
 	return returnAllocations, nil
+}
+
+// BulkDelete perform bulk deletes given allocations.
+func (as *SqlAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+	// decide which exec function to use:
+	var (
+		execFunc func(query string, args ...interface{}) (sql.Result, error) = as.GetMaster().Exec
+	)
+	if transaction != nil {
+		execFunc = transaction.Exec
+	}
+
+	result, err := execFunc("DELETE FROM "+store.AllocationTableName+" WHERE Id IN $1", allocationIDs)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete allocations")
+	}
+	numDeleted, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to count number of allocations were deleted")
+	}
+	if numDeleted != int64(len(allocationIDs)) {
+		return errors.Errorf("%d allocations were deleted instead of %d", numDeleted, len(allocationIDs))
+	}
+
+	return nil
 }

@@ -15,8 +15,8 @@ type Stock struct {
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
 
-	*WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
-	*product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
+	Warehouse      *WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
+	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
 // StockFilterOption is used for build squirrel sql queries
@@ -91,9 +91,17 @@ func (s *Stock) PreSave() {
 		s.Id = model.NewId()
 	}
 	s.CreateAt = model.GetMillis()
+	s.commonPre()
+}
+
+func (s *Stock) commonPre() {
 	if s.Quantity < 0 {
 		s.Quantity = 0
 	}
+}
+
+func (s *Stock) PreUpdate() {
+	s.commonPre()
 }
 
 type InsufficientStockData struct {

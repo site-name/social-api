@@ -2,13 +2,13 @@ package order
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
@@ -349,9 +349,9 @@ func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppErro
 
 	address, err := a.Srv().Store.Address().Get(*addressID)
 	if err != nil {
-		var errNf *store.ErrNotFound
+
 		var statusCode int = http.StatusInternalServerError
-		if errors.As(err, &errNf) {
+		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
 		return "", model.NewAppError("GetOrderCountryCode", "app.order.get_address.app_error", nil, err.Error(), statusCode)
@@ -376,4 +376,23 @@ func (a *AppOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
 	}
 
 	return ord.UserEmail, nil
+}
+
+// AnAddressOfOrder returns shipping address of given order if presents
+func (a *AppOrder) AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) {
+	addresses, appErr := a.AccountApp().AddressesByOption(&account.AddressFilterOption{
+		OrderID: &account.AddressFilterOrderOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: orderID,
+				},
+			},
+			On: string(whichAddressID),
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return addresses[0], nil
 }

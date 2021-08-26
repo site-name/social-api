@@ -9,6 +9,26 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// UpsertStock updates or insderts given stock based on its Id property
+func (a *AppWarehouse) UpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.Srv().Store.Stock().BulkUpsert(transaction, stocks)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		} else if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertStocks", "app.warehouse.error_upserting_stocks.app_error", nil, err.Error(), statusCode)
+	}
+
+	return stocks, nil
+}
+
 // StocksByOption returns a list of stocks filtered using given options
 func (a *AppWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.Srv().Store.Stock().FilterByOption(transaction, option)

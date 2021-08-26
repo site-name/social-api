@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -109,13 +108,21 @@ func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
 	query := as.GetQueryBuilder().
-		Select("*").
+		Select(as.ModelFields()...).
 		From(store.AddressTableName).
 		OrderBy(store.TableOrderingMap[store.AddressTableName])
 
 	// parse query
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.OrderID != nil &&
+		option.OrderID.Id != nil &&
+		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
+
+		query = query.
+			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On). // tested
+			Where(option.OrderID.Id.ToSquirrel("Orders.Id"))
 	}
 
 	queryString, args, err := query.ToSql()
@@ -161,26 +168,17 @@ func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
 	}
 	defer store.FinalizeTransaction(tx)
 
-	for _, id := range addressIDs {
-		if !model.IsValidId(id) {
-			return store.NewErrInvalidInput(store.AddressTableName, "address id", id)
-		}
-
-		result, err := tx.Get(account.Address{}, id)
-		if err != nil {
-			return errors.Wrapf(err, "failed to find address with id=%s", id)
-		}
-		addr := result.(*account.Address)
-
-		numDeleted, err := tx.Delete(addr)
-		if err != nil {
-			return errors.Wrap(err, "failed to delete address")
-		}
-		if numDeleted > 1 {
-			return errors.Errorf("multiple addresses deleted: %d, expect: 1", numDeleted)
-		}
+	result, err := tx.Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN $1", addressIDs)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete addresses")
 	}
-
+	numDeleted, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to count number of addresses were deleted")
+	}
+	if numDeleted != int64(len(addressIDs)) {
+		return errors.Errorf("%d addresses were deleted instead of %d", numDeleted, len(addressIDs))
+	}
 	if err = tx.Commit(); err != nil {
 		return errors.Wrap(err, "commit_transaction")
 	}

@@ -215,6 +215,14 @@ func StringSliceDiff(a, b []string) []string {
 	return result
 }
 
+func SumOfIntSlice(slice []int) int {
+	var sum = 0
+	for _, item := range slice {
+		sum += item
+	}
+	return sum
+}
+
 func GetIPAddress(r *http.Request, trustedProxyIPHeader []string) string {
 	address := ""
 

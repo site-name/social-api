@@ -1238,6 +1238,22 @@ func (s *TimerLayerAddressStore) Update(address *account.Address) (*account.Addr
 	return result, err
 }
 
+func (s *TimerLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.BulkDelete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 	start := timemodule.Now()
 
@@ -5993,6 +6009,22 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 	return err
 }
 
+func (s *TimerLayerStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.BulkUpsert(transaction, stocks)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) error {
 	start := timemodule.Now()
 
@@ -6069,22 +6101,6 @@ func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerStockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
-	start := timemodule.Now()
-
-	result, err := s.StockStore.Save(stock)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.Save", success, elapsed)
 	}
 	return result, err
 }
