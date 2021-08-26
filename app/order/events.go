@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -12,7 +13,7 @@ import (
 )
 
 // CommonCreateOrderEvent is common method for creating desired order event instance
-func (a *AppOrder) CommonCreateOrderEvent(option *order.OrderEventOption) (*order.OrderEvent, *model.AppError) {
+func (a *AppOrder) CommonCreateOrderEvent(transaction *gorp.Transaction, option *order.OrderEventOption) (*order.OrderEvent, *model.AppError) {
 	newOrderEvent := &order.OrderEvent{
 		OrderID:    option.OrderID,
 		Type:       option.Type,
@@ -20,7 +21,7 @@ func (a *AppOrder) CommonCreateOrderEvent(option *order.OrderEventOption) (*orde
 		UserID:     option.UserID,
 	}
 
-	orderEvent, err := a.Srv().Store.OrderEvent().Save(newOrderEvent)
+	orderEvent, err := a.Srv().Store.OrderEvent().Save(transaction, newOrderEvent)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -82,15 +83,15 @@ func prepareDiscountObject(orderDiscount *product_and_discount.OrderDiscount, ol
 	return &discountParameters
 }
 
-func (a *AppOrder) OrderDiscountsAutomaticallyUpdatedEvent(ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError {
+func (a *AppOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError {
 	for _, tuple := range changedOrderDiscounts {
 		_, appErr := a.OrderDiscountAutomaticallyUpdatedEvent(
+			transaction,
 			ord,
 			tuple[1],
 			tuple[0],
 		)
 		if appErr != nil {
-			appErr.Where = "OrderDiscountsAutomaticallyUpdatedEvent"
 			return appErr
 		}
 	}
@@ -98,8 +99,9 @@ func (a *AppOrder) OrderDiscountsAutomaticallyUpdatedEvent(ord *order.Order, cha
 	return nil
 }
 
-func (a *AppOrder) OrderDiscountAutomaticallyUpdatedEvent(ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
+func (a *AppOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
 	return a.OrderDiscountEvent(
+		transaction,
 		order.ORDER_EVENT_TYPE__ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
 		ord,
 		nil,
@@ -108,7 +110,7 @@ func (a *AppOrder) OrderDiscountAutomaticallyUpdatedEvent(ord *order.Order, orde
 	)
 }
 
-func (a *AppOrder) OrderDiscountEvent(eventType string, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
+func (a *AppOrder) OrderDiscountEvent(transaction *gorp.Transaction, eventType string, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -118,7 +120,7 @@ func (a *AppOrder) OrderDiscountEvent(eventType string, ord *order.Order, user *
 
 	discountParameters := prepareDiscountObject(orderDiscount, oldOrderDiscount)
 
-	return a.CommonCreateOrderEvent(&order.OrderEventOption{
+	return a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 		OrderID:    ord.Id,
 		Type:       eventType,
 		UserID:     userID,
@@ -160,7 +162,7 @@ func (a *AppOrder) OrderLineDiscountEvent(eventType string, ord *order.Order, us
 	lineData := linePerQuantityToLineObject(int(line.Quantity), line)
 	lineData["discount"] = discountParameters
 
-	return a.CommonCreateOrderEvent(&order.OrderEventOption{
+	return a.CommonCreateOrderEvent(nil, &order.OrderEventOption{
 		OrderID: ord.Id,
 		Type:    eventType,
 		UserID:  userID,

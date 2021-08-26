@@ -9,8 +9,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// UpsertStock updates or insderts given stock based on its Id property
-func (a *AppWarehouse) UpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
+// BulkUpsertStocks updates or insderts given stock based on its Id property
+func (a *AppWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.Srv().Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

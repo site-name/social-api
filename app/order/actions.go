@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
@@ -50,7 +52,7 @@ func (a *AppOrder) OrderVoided(ord *order.Order, user *account.User, payMent *pa
 }
 
 // OrderReturned
-func (a *AppOrder) OrderReturned(ord *order.Order, user *account.User, returnedLines []*QuantityOrderLine) *model.AppError {
+func (a *AppOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, returnedLines []*QuantityOrderLine) *model.AppError {
 	var userID *string
 	if user == nil {
 		userID = nil
@@ -58,7 +60,7 @@ func (a *AppOrder) OrderReturned(ord *order.Order, user *account.User, returnedL
 		userID = &user.Id
 	}
 
-	_, appErr := a.CommonCreateOrderEvent(&order.OrderEventOption{
+	_, appErr := a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 		OrderID: ord.Id,
 		Type:    order.ORDER_EVENT_TYPE__FULFILLMENT_RETURNED,
 		UserID:  userID,
@@ -67,13 +69,11 @@ func (a *AppOrder) OrderReturned(ord *order.Order, user *account.User, returnedL
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "OrderReturned"
 		return appErr
 	}
 
-	appErr = a.UpdateOrderStatus(ord)
+	appErr = a.UpdateOrderStatus(transaction, ord)
 	if appErr != nil {
-		appErr.Where = "OrderReturned"
 		return appErr
 	}
 
@@ -139,18 +139,18 @@ func (a *AppOrder) CleanMarkOrderAsPaid(ord *order.Order) *model.AppError {
 }
 
 // FulfillOrderLines Fulfill order line with given quantity
-func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "FulfillOrderLines"
-		}
-	}()
+func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
 
 	orderLineInfosToDecreaseStock := a.WarehouseApp().GetOrderLinesWithTrackInventory(orderLineInfos)
 	if len(orderLineInfosToDecreaseStock) > 0 {
-		appErr := a.WarehouseApp().DecreaseStock(orderLineInfosToDecreaseStock, true)
-		if appErr != nil {
-			return appErr
+		insufficientErr, appErr := a.WarehouseApp().DecreaseStock(orderLineInfosToDecreaseStock, true)
+		if appErr != nil || insufficientErr != nil {
+			return insufficientErr, appErr
 		}
 	}
 
@@ -160,8 +160,16 @@ func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (app
 		orderLines = append(orderLines, &lineInfo.Line)
 	}
 
-	_, appErr = a.BulkUpsertOrderLines(orderLines)
-	return appErr
+	_, appErr := a.BulkUpsertOrderLines(transaction, orderLines)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
 }
 
 // AutomaticallyFulfillDigitalLines
@@ -169,6 +177,13 @@ func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (app
 //
 // Send confirmation email afterward.
 func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager interface{}) (appErr *model.AppError) {
+	// NOTE: remember to commit me in the end of this function
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
 	// find order lines of given order that are:
 	// 1) NOT require shipping
 	// 2) has ProductVariant attached AND that productVariant has a digitalContent accompanies
@@ -243,7 +258,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			Quantity:      orderLine.Quantity,
 		})
 
-		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 			OrderLineID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: orderLine.Id,
@@ -274,6 +289,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 	}
 
 	// TODO: fixme
+	// remember to commit order
 	panic("not implemented")
 }
 
@@ -384,12 +400,11 @@ func (a *AppOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, line
 
 // moveOrderLinesToTargetFulfillment Move order lines with given quantity to the target fulfillment
 func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
-
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "moveOrderLinesToTargetFulfillment"
-		}
-	}()
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("moveOrderLinesToTargetFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
 
 	var (
 		orderLinesToUpdate        []*order.OrderLine
@@ -410,7 +425,7 @@ func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.O
 			Quantity:      unFulfilledToMove,
 		})
 
-		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+		allocationsOfOrderLine, appErr := a.WarehouseApp().AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 			OrderLineID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: lineData.Line.Id,
@@ -423,7 +438,7 @@ func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.O
 			}
 		}
 
-		if len(allocationsOfOrderLine) > 0 {
+		if allocationsOfOrderLine != nil && len(allocationsOfOrderLine) > 0 {
 			orderLineDatasToDeAlocate = append(orderLineDatasToDeAlocate, &order.OrderLineData{
 				Line:     lineData.Line,
 				Quantity: unFulfilledToMove,
@@ -442,27 +457,30 @@ func (a *AppOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.O
 		}
 	}
 
-	fulfillmentLineToCreate, appErr = a.BulkUpsertFulfillmentLines(fulfillmentLineToCreate)
+	fulfillmentLineToCreate, appErr = a.BulkUpsertFulfillmentLines(transaction, fulfillmentLineToCreate)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	_, appErr = a.BulkUpsertOrderLines(orderLinesToUpdate)
+	_, appErr = a.BulkUpsertOrderLines(transaction, orderLinesToUpdate)
 	if appErr != nil {
 		return nil, appErr
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("moveOrderLinesToTargetFulfillment", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return fulfillmentLineToCreate, nil
 }
 
 // moveFulfillmentLinesToTargetFulfillment Move fulfillment lines with given quantity to the target fulfillment
-func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMove []*order.FulfillmentLineData, linesInTargetFulfillment []*order.FulfillmentLine, targetFulfillment *order.Fulfillment) (appErr *model.AppError) {
-
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "moveFulfillmentLinesToTargetFulfillment"
-		}
-	}()
+func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMove []*order.FulfillmentLineData, linesInTargetFulfillment []*order.FulfillmentLine, targetFulfillment *order.Fulfillment) *model.AppError {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("moveFulfillmentLinesToTargetFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
 
 	var (
 		fulfillmentLinesToCreate      []*order.FulfillmentLine
@@ -500,11 +518,11 @@ func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMov
 	}
 
 	// update the fulfillment lines with new values
-
+	var appError *model.AppError
 	setAppErr := func(err *model.AppError) {
 		a.mutex.Lock()
-		if err != nil {
-			appErr = err
+		if err != nil && appError == nil {
+			appError = err
 		}
 		a.mutex.Unlock()
 	}
@@ -512,19 +530,19 @@ func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMov
 	a.wg.Add(3)
 	go func() {
 		defer a.wg.Done()
-		_, err := a.BulkUpsertFulfillmentLines(fulfillmentLinesToUpdate)
+		_, err := a.BulkUpsertFulfillmentLines(transaction, fulfillmentLinesToUpdate)
 		setAppErr(err)
 	}()
 
 	go func() {
 		defer a.wg.Done()
-		_, err := a.BulkUpsertFulfillmentLines(fulfillmentLinesToCreate)
+		_, err := a.BulkUpsertFulfillmentLines(transaction, fulfillmentLinesToCreate)
 		setAppErr(err)
 	}()
 
 	go func() {
 		defer a.wg.Done()
-		err := a.DeleteFulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
+		err := a.DeleteFulfillmentLinesByOption(transaction, &order.FulfillmentLineFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
 					In: order.FulfillmentLines(emptyFulfillmentLinesToDelete).IDs(),
@@ -536,7 +554,15 @@ func (a *AppOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToMov
 
 	a.wg.Done()
 
-	return
+	if appError != nil {
+		return appError
+	}
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("moveFulfillmentLinesToTargetFulfillment", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 func getShippingRefundAmount(refundShippingCosts bool, refundAmount *decimal.Decimal, shippingPrice *decimal.Decimal) *decimal.Decimal {
@@ -563,7 +589,7 @@ func (a *AppOrder) CreateRefundFulfillment(requester *account.User, ord *order.O
 // populateReplaceOrderFields create new order based on the state of given originalOrder
 //
 // If original order has shippingAddress/billingAddress, the new order copy these address(es) and change their IDs
-func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
+func (a *AppOrder) populateReplaceOrderFields(transaction *gorp.Transaction, originalOrder *order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
 	replaceOrder = &order.Order{
 		Status:             order.STATUS_DRAFT,
 		UserID:             originalOrder.UserID,
@@ -604,7 +630,7 @@ func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (repla
 		for _, address := range addressesOfOriginalOrder {
 			originalOrderAddressID := address.Id
 			address.Id = ""
-			newAddress, appErr := a.AccountApp().UpsertAddress(address)
+			newAddress, appErr := a.AccountApp().UpsertAddress(transaction, address)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -617,20 +643,20 @@ func (a *AppOrder) populateReplaceOrderFields(originalOrder *order.Order) (repla
 		}
 	}
 
-	return a.UpsertOrder(replaceOrder)
+	return a.UpsertOrder(transaction, replaceOrder)
 }
 
 // CreateReplaceOrder Create draft order with lines to replace
-func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (replaceOrder *order.Order, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "CreateReplaceOrder"
-		}
-	}()
+func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (*order.Order, *model.AppError) {
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("CreateReplaceOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
 
-	replaceOrder, appErr = a.populateReplaceOrderFields(originalOrder)
+	replaceOrder, appErr := a.populateReplaceOrderFields(transaction, originalOrder)
 	if appErr != nil {
-		return
+		return nil, appErr
 	}
 
 	orderLinesToCreateMap := map[string]*order.OrderLine{}
@@ -662,7 +688,7 @@ func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *or
 		},
 	})
 	if appErr != nil {
-		return
+		return nil, appErr
 	}
 
 	orderLinesWithFulfillmentMap := map[string]*order.OrderLine{}
@@ -700,14 +726,14 @@ func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *or
 		orderLinesToCreate = append(orderLinesToCreate, orderLine)
 	}
 
-	_, appErr = a.BulkUpsertOrderLines(orderLinesToCreate)
+	_, appErr = a.BulkUpsertOrderLines(transaction, orderLinesToCreate)
 	if appErr != nil {
-		return
+		return nil, appErr
 	}
 
-	appErr = a.RecalculateOrder(replaceOrder, nil)
+	appErr = a.RecalculateOrder(transaction, replaceOrder, nil)
 	if appErr != nil {
-		return
+		return nil, appErr
 	}
 
 	var userID *string
@@ -715,7 +741,7 @@ func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *or
 		userID = &requester.Id
 	}
 
-	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+	_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 		OrderID: replaceOrder.Id,
 		Type:    order.ORDER_EVENT_TYPE__DRAFT_CREATED_FROM_REPLACE,
 		UserID:  userID,
@@ -725,7 +751,11 @@ func (a *AppOrder) CreateReplaceOrder(requester *account.User, originalOrder *or
 		},
 	})
 
-	return
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("CreateReplaceOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return replaceOrder, nil
 }
 
 func (a *AppOrder) moveLinesToReturnFulfillment(
@@ -857,6 +887,12 @@ func (a *AppOrder) CreateReturnFulfillment(
 
 ) (*order.Fulfillment, *model.AppError) {
 
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("CreateReturnFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
+
 	status := order.FULFILLMENT_RETURNED
 	if totalRefundAmount != nil {
 		status = order.FULFILLMENT_REFUNDED_AND_RETURNED
@@ -929,7 +965,13 @@ func (a *AppOrder) CreateReturnFulfillment(
 	for _, value := range returnedLines {
 		sliceOfQuantityOrderLine = append(sliceOfQuantityOrderLine, value)
 	}
-	appErr = a.OrderReturned(ord, requester, sliceOfQuantityOrderLine)
+
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("CreateReturnFulfillment", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// NOTE: this if called after transaction commit
+	appErr = a.OrderReturned(transaction, ord, requester, sliceOfQuantityOrderLine)
 
 	return returnFulfillment, appErr
 }
@@ -945,6 +987,12 @@ func (a *AppOrder) ProcessReplace(
 	fulfillmentLineDatas []*order.FulfillmentLineData,
 
 ) (*order.Fulfillment, *order.Order, *model.AppError) {
+
+	transaction, err := a.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, nil, model.NewAppError("ProcessReplace", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.Srv().Store.FinalizeTransaction(transaction)
 
 	replaceFulfillment, appErr := a.moveLinesToReplaceFulfillment(orderLineDatas, fulfillmentLineDatas, ord)
 	if appErr != nil {
@@ -980,7 +1028,7 @@ func (a *AppOrder) ProcessReplace(
 		userID = &requester.Id
 	}
 
-	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+	_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 		OrderID: ord.Id,
 		Type:    order.ORDER_EVENT_TYPE__FULFILLMENT_REPLACED,
 		UserID:  userID,
@@ -992,7 +1040,7 @@ func (a *AppOrder) ProcessReplace(
 		return nil, nil, appErr
 	}
 
-	_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+	_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 		OrderID: ord.Id,
 		Type:    order.ORDER_EVENT_TYPE__ORDER_REPLACEMENT_CREATED,
 		UserID:  userID,
@@ -1000,8 +1048,15 @@ func (a *AppOrder) ProcessReplace(
 			"related_order_pk": newOrder.Id,
 		},
 	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
 
-	return replaceFulfillment, newOrder, appErr
+	if err = transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("ProcessReplace", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return replaceFulfillment, newOrder, nil
 }
 
 // Process the request for replacing or returning the products.
@@ -1260,5 +1315,6 @@ func (a *AppOrder) processRefund(
 		}
 	}
 
+	// TODO: fix me
 	panic("not implt")
 }

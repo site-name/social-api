@@ -1206,10 +1206,10 @@ func (s *TimerLayerAddressStore) GetAddressesByUserID(userID string) ([]*account
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
+func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
-	result, err := s.AddressStore.Save(address)
+	result, err := s.AddressStore.Save(transaction, address)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1222,10 +1222,10 @@ func (s *TimerLayerAddressStore) Save(address *account.Address) (*account.Addres
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Update(address *account.Address) (*account.Address, error) {
+func (s *TimerLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
-	result, err := s.AddressStore.Update(address)
+	result, err := s.AddressStore.Update(transaction, address)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3303,10 +3303,10 @@ func (s *TimerLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentLineStore.BulkUpsert(fulfillmentLines)
+	result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3319,10 +3319,10 @@ func (s *TimerLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fu
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error {
+func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(option)
+	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4023,10 +4023,10 @@ func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
+func (s *TimerLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.Save(order)
+	result, err := s.OrderStore.Save(transaction, order)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4039,10 +4039,10 @@ func (s *TimerLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Update(order *order.Order) (*order.Order, error) {
+func (s *TimerLayerOrderStore) Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.Update(order)
+	result, err := s.OrderStore.Update(transaction, order)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4103,10 +4103,10 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderDiscountStore.Upsert(orderDiscount)
+	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4135,10 +4135,10 @@ func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent,
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderEventStore.Save(orderEvent)
+	result, err := s.OrderEventStore.Save(transaction, orderEvent)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4167,10 +4167,10 @@ func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	return err
 }
 
-func (s *TimerLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderLineStore.BulkUpsert(orderLines)
+	result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

@@ -9,4 +9,5 @@ const (
 	ErrorCalculatingMoneyErrorID      = "app.error_calculating_money.app_error"
 	ErrorCreatingTransactionErrorID   = "app.error_creating_transaction.app_error"
 	ErrorCommittingTransactionErrorID = "app.error_committing_transaction.app_error"
+	ErrorCalculatingMeasurementID     = "app.error_calculating_measurement.app_error"
 )

@@ -106,9 +106,9 @@ func (s *Stock) PreUpdate() {
 
 type InsufficientStockData struct {
 	Variant           product_and_discount.ProductVariant // Product variant ID
-	OrderLine         *order.OrderLine                    // OrderLine id
-	WarehouseID       *string
-	AvailableQuantity *int
+	OrderLine         *order.OrderLine                    // can be nil
+	WarehouseID       *string                             // can be nil
+	AvailableQuantity *int                                // can be nil
 }
 
 // InsufficientStock is an error indicating stock is insufficient

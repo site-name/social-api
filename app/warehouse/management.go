@@ -307,7 +307,7 @@ func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *ware
 			Quantity:         quantity,
 		}
 	}
-	_, appErr = a.UpsertStocks(transaction, []*warehouse.Stock{stock})
+	_, appErr = a.BulkUpsertStocks(transaction, []*warehouse.Stock{stock})
 	if appErr != nil {
 		return appErr
 	}
@@ -451,7 +451,7 @@ func (a *AppWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData) *mo
 // will stay unmodified (case of unconfirmed order editing).
 //
 // updateStocks default to true
-func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) *model.AppError {
+func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if orderLineInfos == nil || len(orderLineInfos) == 0 {
 		return model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
@@ -476,11 +476,97 @@ func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, upda
 		allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 			OrderLineID: &model.StringFilter{
 				StringOption: &model.StringOption{
-					In: allocationErr.OrderLineIDs(),
+					In: allocationErr.OrderLines.IDs(),
 				},
 			},
 		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return appErr
+			}
+		} else {
+			for _, allocation := range allocations {
+				allocation.QuantityAllocated = 0
+			}
+
+			_, appErr = a.BulkUpsertAllocations(transaction, allocations)
+			if appErr != nil {
+				return appErr
+			}
+		}
 	}
+
+	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+		ProductVariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: variantIDs,
+			},
+		},
+		WarehouseID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: warehouseIDs,
+			},
+		},
+		LockForUpdate: true,                 // add FOR UPDATE
+		ForUpdateOf:   store.StockTableName, // FOR UPDATE OF Stocks
+
+	})
+}
+
+// decreaseStocksQuantity
+func (a *AppWarehouse) decreaseStocksQuantity(orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*warehouse.InsufficientStock, *model.AppError) {
+
+	var (
+		insufficientStocks []*warehouse.InsufficientStockData
+		stocksToUpdate     []*warehouse.Stock
+	)
+
+	for _, lineInfo := range orderLinesInfo {
+		variant := lineInfo.Variant
+		if variant == nil {
+			continue
+		}
+
+		var stock *warehouse.Stock
+		stockMap, ok := variantAndwarehouseToStock[variant.Id]
+		if ok && stockMap != nil {
+			if lineInfo.WarehouseID != nil {
+				stock = stockMap[*lineInfo.WarehouseID]
+			}
+		}
+
+		if stock == nil {
+			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+				Variant:     *variant, // variant nil case is checked
+				OrderLine:   &lineInfo.Line,
+				WarehouseID: lineInfo.WarehouseID,
+			})
+			continue
+		}
+
+		quantityAllocated := quantityAllocationForStocks[stock.Id] // stock == nil already continued the loop
+		if (stock.Quantity - quantityAllocated) < lineInfo.Quantity {
+			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+				Variant:     *variant, // nil case checked
+				OrderLine:   &lineInfo.Line,
+				WarehouseID: lineInfo.WarehouseID,
+			})
+			continue
+		}
+
+		stock.Quantity -= lineInfo.Quantity
+		stocksToUpdate = append(stocksToUpdate, stock)
+	}
+
+	if len(insufficientStocks) > 0 {
+		return &warehouse.InsufficientStock{
+			Items: insufficientStocks,
+		}, nil
+	}
+
+	_, appErr := a.BulkUpsertStocks(nil, stocksToUpdate)
+
+	return nil, appErr
 }
 
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True

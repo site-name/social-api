@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -123,12 +124,23 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
-	tx, err := ols.GetMaster().Begin()
+func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+	var (
+		err error
+		// if the provided transaction is nil, we have to create a new one ourself
+		// in that case, remember to defer rollback and do commit right in the scope of this function
+		providedTransactionIsNil bool
+	)
+	if transaction == nil {
+		transaction, err = ols.GetMaster().Begin()
+		providedTransactionIsNil = true
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
 	}
-	defer store.FinalizeTransaction(tx)
+	if providedTransactionIsNil { // <- note
+		defer store.FinalizeTransaction(transaction)
+	}
 
 	var (
 		isSaving     bool
@@ -151,9 +163,9 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 		}
 
 		if isSaving {
-			err = tx.Insert(orderLine)
+			err = transaction.Insert(orderLine)
 		} else {
-			err = tx.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
+			err = transaction.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
 			if err != nil { // return immediately
 				if err == sql.ErrNoRows {
 					return nil, store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
@@ -165,7 +177,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 			orderLine.OrderID = oldOrderLine.OrderID
 			orderLine.CreateAt = oldOrderLine.CreateAt
 
-			numUpdated, err = tx.Update(orderLine)
+			numUpdated, err = transaction.Update(orderLine)
 		}
 
 		if err != nil {
@@ -176,8 +188,10 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 		}
 	}
 
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
+	if providedTransactionIsNil {
+		if err = transaction.Commit(); err != nil {
+			return nil, errors.Wrap(err, "transaction_commit")
+		}
 	}
 
 	return orderLines, nil

@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -156,8 +157,8 @@ func (a *AppOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *model
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *AppOrder) BulkUpsertOrderLines(orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
-	orderLines, err := a.Srv().Store.OrderLine().BulkUpsert(orderLines)
+func (a *AppOrder) BulkUpsertOrderLines(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
+	orderLines, err := a.Srv().Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

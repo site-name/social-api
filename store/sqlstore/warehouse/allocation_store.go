@@ -128,9 +128,13 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		From(store.AllocationTableName).
 		OrderBy(store.TableOrderingMap[store.AllocationTableName])
 
+	var (
+		joined_OrderLines_tableName bool
+	)
 	// parse option
 	if option.SelectRelatedOrderLine {
 		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+		joined_OrderLines_tableName = true // indicate for later check
 	}
 	if option.SelectedRelatedStock {
 		query = query.InnerJoin(store.StockTableName + " ON Stocks.Id = Allocations.StockID")
@@ -146,6 +150,12 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 	}
 	if option.QuantityAllocated != nil {
 		query = query.Where(option.QuantityAllocated.ToSquirrel("QuantityAllocated"))
+	}
+	if option.OrderLineOrderID != nil {
+		if !joined_OrderLines_tableName { // check if have joined Orderlines table
+			query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+		}
+		query = query.Where(option.OrderLineOrderID.ToSquirrel("Orderlines.OrderID"))
 	}
 	if option.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")

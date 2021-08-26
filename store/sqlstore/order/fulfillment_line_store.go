@@ -3,6 +3,7 @@ package order
 import (
 	"database/sql"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -67,13 +68,24 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, erro
 }
 
 // BulkUpsert upsert given fulfillment lines
-func (fls *SqlFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
-
-	tx, err := fls.GetMaster().Begin()
+func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+	var (
+		err error
+		// if the provided transaction argument is nil, this function has to create a new one
+		// In that case: we have to manually defer rollback and commit in this scope
+		providedTransactionIsNil bool
+	)
+	if transaction == nil {
+		transaction, err = fls.GetMaster().Begin()
+		providedTransactionIsNil = true
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
 	}
-	defer store.FinalizeTransaction(tx)
+	// defer rollback
+	if providedTransactionIsNil {
+		defer store.FinalizeTransaction(transaction)
+	}
 
 	var isSaving bool
 	for _, line := range fulfillmentLines {
@@ -88,9 +100,9 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fulfill
 			numUpdated int64
 		)
 		if isSaving {
-			err = tx.Insert(line)
+			err = transaction.Insert(line)
 		} else {
-			err = tx.SelectOne(&order.FulfillmentLine{}, "SELECT * FROM "+store.FulfillmentLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": line.Id})
+			err = transaction.SelectOne(&order.FulfillmentLine{}, "SELECT * FROM "+store.FulfillmentLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": line.Id})
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, store.NewErrNotFound(store.FulfillmentLineTableName, line.Id)
@@ -98,7 +110,7 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fulfill
 				return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", line.Id)
 			}
 
-			numUpdated, err = tx.Update(line)
+			numUpdated, err = transaction.Update(line)
 		}
 
 		if err != nil {
@@ -109,8 +121,11 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fulfill
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
+	// commit
+	if providedTransactionIsNil {
+		if err = transaction.Commit(); err != nil {
+			return nil, errors.Wrap(err, "transaction_commit")
+		}
 	}
 
 	return fulfillmentLines, nil
@@ -162,9 +177,8 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLine
 }
 
 // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
-func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error {
-	query := fls.GetQueryBuilder().
-		Delete(store.FulfillmentLineTableName)
+func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
+	query := fls.GetQueryBuilder().Delete(store.FulfillmentLineTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -177,7 +191,19 @@ func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order
 		query = query.Where(option.FulfillmentID.ToSquirrel("FulfillmentID"))
 	}
 
-	result, err := query.RunWith(fls.GetMaster()).Exec()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteFulfillmentLinesByOption_ToSql")
+	}
+
+	var (
+		execFunc func(query string, args ...interface{}) (sql.Result, error) = fls.GetMaster().Exec
+	)
+	if transaction != nil {
+		execFunc = transaction.Exec
+	}
+
+	result, err := execFunc(queryString, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillment lines by given option")
 	}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -174,14 +175,19 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 	return orders, nil
 }
 
-func (os *SqlOrderStore) Save(order *order.Order) (*order.Order, error) {
+func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
+	var insertFunc func(list ...interface{}) error = os.GetMaster().Insert
+	if transaction != nil {
+		insertFunc = transaction.Insert
+	}
+
 	order.PreSave()
 	if err := order.IsValid(); err != nil {
 		return nil, err
 	}
 
 	for {
-		if err := os.GetMaster().Insert(order); err != nil {
+		if err := insertFunc(order); err != nil {
 			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 				order.NewToken()
 				continue
@@ -208,7 +214,12 @@ func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	return &order, nil
 }
 
-func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
+func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.Order) (*order.Order, error) {
+	var updateFunc func(list ...interface{}) (int64, error) = os.GetMaster().Update
+	if transaction != nil {
+		updateFunc = transaction.Update
+	}
+
 	newOrder.PreUpdate()
 	if err := newOrder.IsValid(); err != nil {
 		return nil, err
@@ -230,7 +241,7 @@ func (os *SqlOrderStore) Update(newOrder *order.Order) (*order.Order, error) {
 	newOrder.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 	newOrder.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
-	numberOfUpdatedOrder, err := os.GetMaster().Update(newOrder)
+	numberOfUpdatedOrder, err := updateFunc(newOrder)
 	if err != nil {
 		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 			// this is user's intension to update token, he/she must be notified

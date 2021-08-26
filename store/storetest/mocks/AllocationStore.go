@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	mock "github.com/stretchr/testify/mock"
 
 	warehouse "github.com/sitename/sitename/model/warehouse"
@@ -15,18 +16,27 @@ type AllocationStore struct {
 	mock.Mock
 }
 
-// CreateIndexesIfNotExists provides a mock function with given fields:
-func (_m *AllocationStore) CreateIndexesIfNotExists() {
-	_m.Called()
+// BulkDelete provides a mock function with given fields: transaction, allocationIDs
+func (_m *AllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+	ret := _m.Called(transaction, allocationIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []string) error); ok {
+		r0 = rf(transaction, allocationIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
-// FilterByOption provides a mock function with given fields: option
-func (_m *AllocationStore) FilterByOption(option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
-	ret := _m.Called(option)
+// BulkUpsert provides a mock function with given fields: transaction, allocations
+func (_m *AllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+	ret := _m.Called(transaction, allocations)
 
 	var r0 []*warehouse.Allocation
-	if rf, ok := ret.Get(0).(func(*warehouse.AllocationFilterOption) []*warehouse.Allocation); ok {
-		r0 = rf(option)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.Allocation) []*warehouse.Allocation); ok {
+		r0 = rf(transaction, allocations)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*warehouse.Allocation)
@@ -34,8 +44,36 @@ func (_m *AllocationStore) FilterByOption(option *warehouse.AllocationFilterOpti
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.AllocationFilterOption) error); ok {
-		r1 = rf(option)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.Allocation) error); ok {
+		r1 = rf(transaction, allocations)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateIndexesIfNotExists provides a mock function with given fields:
+func (_m *AllocationStore) CreateIndexesIfNotExists() {
+	_m.Called()
+}
+
+// FilterByOption provides a mock function with given fields: transaction, option
+func (_m *AllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+	ret := _m.Called(transaction, option)
+
+	var r0 []*warehouse.Allocation
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.AllocationFilterOption) []*warehouse.Allocation); ok {
+		r0 = rf(transaction, option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Allocation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.AllocationFilterOption) error); ok {
+		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -59,29 +97,6 @@ func (_m *AllocationStore) Get(allocationID string) (*warehouse.Allocation, erro
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(allocationID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Save provides a mock function with given fields: allocation
-func (_m *AllocationStore) Save(allocation *warehouse.Allocation) (*warehouse.Allocation, error) {
-	ret := _m.Called(allocation)
-
-	var r0 *warehouse.Allocation
-	if rf, ok := ret.Get(0).(func(*warehouse.Allocation) *warehouse.Allocation); ok {
-		r0 = rf(allocation)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*warehouse.Allocation)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.Allocation) error); ok {
-		r1 = rf(allocation)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -102,6 +102,22 @@ func (_m *AddressStore) GetAddressesByUserID(userID string) ([]*account.Address,
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *AddressStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: address
 func (_m *AddressStore) Save(address *account.Address) (*account.Address, error) {
 	ret := _m.Called(address)

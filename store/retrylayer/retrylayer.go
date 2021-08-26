@@ -1233,11 +1233,11 @@ func (s *RetryLayerAddressStore) GetAddressesByUserID(userID string) ([]*account
 
 }
 
-func (s *RetryLayerAddressStore) Save(address *account.Address) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.Save(address)
+		result, err := s.AddressStore.Save(transaction, address)
 		if err == nil {
 			return result, nil
 		}
@@ -1253,11 +1253,11 @@ func (s *RetryLayerAddressStore) Save(address *account.Address) (*account.Addres
 
 }
 
-func (s *RetryLayerAddressStore) Update(address *account.Address) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.Update(address)
+		result, err := s.AddressStore.Update(transaction, address)
 		if err == nil {
 			return result, nil
 		}
@@ -3828,11 +3828,11 @@ func (s *RetryLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*or
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentLineStore.BulkUpsert(fulfillmentLines)
+		result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
 		if err == nil {
 			return result, nil
 		}
@@ -3848,11 +3848,11 @@ func (s *RetryLayerFulfillmentLineStore) BulkUpsert(fulfillmentLines []*order.Fu
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error {
+func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(option)
+		err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
 		if err == nil {
 			return nil
 		}
@@ -4728,11 +4728,11 @@ func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 
 }
 
-func (s *RetryLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.Save(order)
+		result, err := s.OrderStore.Save(transaction, order)
 		if err == nil {
 			return result, nil
 		}
@@ -4748,11 +4748,11 @@ func (s *RetryLayerOrderStore) Save(order *order.Order) (*order.Order, error) {
 
 }
 
-func (s *RetryLayerOrderStore) Update(order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.Update(order)
+		result, err := s.OrderStore.Update(transaction, order)
 		if err == nil {
 			return result, nil
 		}
@@ -4828,11 +4828,11 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderDiscountStore.Upsert(orderDiscount)
+		result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
 		if err == nil {
 			return result, nil
 		}
@@ -4868,11 +4868,11 @@ func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent,
 
 }
 
-func (s *RetryLayerOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderEventStore.Save(orderEvent)
+		result, err := s.OrderEventStore.Save(transaction, orderEvent)
 		if err == nil {
 			return result, nil
 		}
@@ -4908,11 +4908,11 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.BulkUpsert(orderLines)
+		result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
 		if err == nil {
 			return result, nil
 		}

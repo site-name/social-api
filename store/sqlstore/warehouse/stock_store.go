@@ -130,14 +130,13 @@ func (ss *SqlStockStore) commonLookup(transaction *gorp.Transaction, query squir
 		stock           warehouse.Stock
 		wareHouse       warehouse.WareHouse
 		productVariant  product_and_discount.ProductVariant
+		queryFunc       func(query string, args ...interface{}) (*sql.Rows, error) = ss.GetReplica().Query
 	)
-
-	var rows *sql.Rows
-	if transaction == nil {
-		rows, err = ss.GetReplica().Query(queryString, args...)
-	} else {
-		rows, err = transaction.Query(queryString, args...)
+	if transaction != nil {
+		queryFunc = transaction.Query
 	}
+
+	rows, err := queryFunc(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}

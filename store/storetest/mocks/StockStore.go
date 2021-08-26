@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	product_and_discount "github.com/sitename/sitename/model/product_and_discount"
+	gorp "github.com/mattermost/gorp"
 	mock "github.com/stretchr/testify/mock"
 
 	warehouse "github.com/sitename/sitename/model/warehouse"
@@ -16,17 +16,77 @@ type StockStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: transaction, stocks
+func (_m *StockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+	ret := _m.Called(transaction, stocks)
+
+	var r0 []*warehouse.Stock
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.Stock) []*warehouse.Stock); ok {
+		r0 = rf(transaction, stocks)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Stock)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.Stock) error); ok {
+		r1 = rf(transaction, stocks)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ChangeQuantity provides a mock function with given fields: stockID, quantity
+func (_m *StockStore) ChangeQuantity(stockID string, quantity int) error {
+	ret := _m.Called(stockID, quantity)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, int) error); ok {
+		r0 = rf(stockID, quantity)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *StockStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
+// FilterByOption provides a mock function with given fields: transaction, options
+func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+	ret := _m.Called(transaction, options)
+
+	var r0 []*warehouse.Stock
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterOption) []*warehouse.Stock); ok {
+		r0 = rf(transaction, options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Stock)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterOption) error); ok {
+		r1 = rf(transaction, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterProductStocksForCountryAndChannel provides a mock function with given fields: options
+func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	ret := _m.Called(options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.ForCountryAndChannelFilter) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
@@ -34,114 +94,37 @@ func (_m *StockStore) FilterForCountryAndChannel(options *warehouse.ForCountryAn
 		}
 	}
 
-	var r1 []*warehouse.WareHouse
-	if rf, ok := ret.Get(1).(func(*warehouse.ForCountryAndChannelFilter) []*warehouse.WareHouse); ok {
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForCountryAndChannel) error); ok {
 		r1 = rf(options)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*warehouse.WareHouse)
-		}
+		r1 = ret.Error(1)
 	}
 
-	var r2 []*product_and_discount.ProductVariant
-	if rf, ok := ret.Get(2).(func(*warehouse.ForCountryAndChannelFilter) []*product_and_discount.ProductVariant); ok {
-		r2 = rf(options)
-	} else {
-		if ret.Get(2) != nil {
-			r2 = ret.Get(2).([]*product_and_discount.ProductVariant)
-		}
-	}
-
-	var r3 error
-	if rf, ok := ret.Get(3).(func(*warehouse.ForCountryAndChannelFilter) error); ok {
-		r3 = rf(options)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1
 }
 
-// FilterProductStocksForCountryAndChannel provides a mock function with given fields: options, productID
-func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *warehouse.ForCountryAndChannelFilter, productID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	ret := _m.Called(options, productID)
+// FilterVariantStocksForCountry provides a mock function with given fields: options
+func (_m *StockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	ret := _m.Called(options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.ForCountryAndChannelFilter, string) []*warehouse.Stock); ok {
-		r0 = rf(options, productID)
+	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*warehouse.Stock)
 		}
 	}
 
-	var r1 []*warehouse.WareHouse
-	if rf, ok := ret.Get(1).(func(*warehouse.ForCountryAndChannelFilter, string) []*warehouse.WareHouse); ok {
-		r1 = rf(options, productID)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForCountryAndChannel) error); ok {
+		r1 = rf(options)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*warehouse.WareHouse)
-		}
+		r1 = ret.Error(1)
 	}
 
-	var r2 []*product_and_discount.ProductVariant
-	if rf, ok := ret.Get(2).(func(*warehouse.ForCountryAndChannelFilter, string) []*product_and_discount.ProductVariant); ok {
-		r2 = rf(options, productID)
-	} else {
-		if ret.Get(2) != nil {
-			r2 = ret.Get(2).([]*product_and_discount.ProductVariant)
-		}
-	}
-
-	var r3 error
-	if rf, ok := ret.Get(3).(func(*warehouse.ForCountryAndChannelFilter, string) error); ok {
-		r3 = rf(options, productID)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
-}
-
-// FilterVariantStocksForCountry provides a mock function with given fields: options, productVariantID
-func (_m *StockStore) FilterVariantStocksForCountry(options *warehouse.ForCountryAndChannelFilter, productVariantID string) ([]*warehouse.Stock, []*warehouse.WareHouse, []*product_and_discount.ProductVariant, error) {
-	ret := _m.Called(options, productVariantID)
-
-	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.ForCountryAndChannelFilter, string) []*warehouse.Stock); ok {
-		r0 = rf(options, productVariantID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*warehouse.Stock)
-		}
-	}
-
-	var r1 []*warehouse.WareHouse
-	if rf, ok := ret.Get(1).(func(*warehouse.ForCountryAndChannelFilter, string) []*warehouse.WareHouse); ok {
-		r1 = rf(options, productVariantID)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*warehouse.WareHouse)
-		}
-	}
-
-	var r2 []*product_and_discount.ProductVariant
-	if rf, ok := ret.Get(2).(func(*warehouse.ForCountryAndChannelFilter, string) []*product_and_discount.ProductVariant); ok {
-		r2 = rf(options, productVariantID)
-	} else {
-		if ret.Get(2) != nil {
-			r2 = ret.Get(2).([]*product_and_discount.ProductVariant)
-		}
-	}
-
-	var r3 error
-	if rf, ok := ret.Get(3).(func(*warehouse.ForCountryAndChannelFilter, string) error); ok {
-		r3 = rf(options, productVariantID)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1
 }
 
 // Get provides a mock function with given fields: stockID
@@ -167,48 +150,18 @@ func (_m *StockStore) Get(stockID string) (*warehouse.Stock, error) {
 	return r0, r1
 }
 
-// GetbyOption provides a mock function with given fields: option
-func (_m *StockStore) GetbyOption(option *warehouse.StockFilterOption) (*warehouse.Stock, error) {
-	ret := _m.Called(option)
+// ModelFields provides a mock function with given fields:
+func (_m *StockStore) ModelFields() []string {
+	ret := _m.Called()
 
-	var r0 *warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterOption) *warehouse.Stock); ok {
-		r0 = rf(option)
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*warehouse.Stock)
+			r0 = ret.Get(0).([]string)
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterOption) error); ok {
-		r1 = rf(option)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Save provides a mock function with given fields: stock
-func (_m *StockStore) Save(stock *warehouse.Stock) (*warehouse.Stock, error) {
-	ret := _m.Called(stock)
-
-	var r0 *warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.Stock) *warehouse.Stock); ok {
-		r0 = rf(stock)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*warehouse.Stock)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.Stock) error); ok {
-		r1 = rf(stock)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }

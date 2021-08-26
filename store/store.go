@@ -577,32 +577,32 @@ type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error)                    // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*order.OrderLine, error)                                        // Get returns a order line with id of given id
-		BulkDelete(orderLineIDs []string) error                                         // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) // FilterbyOption finds and returns order lines by given option
-		BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error)           // BulkUpsert performs upsert multiple order lines in once
+		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error)                                         // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id
+		BulkDelete(orderLineIDs []string) error                                                              // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error)                      // FilterbyOption finds and returns order lines by given option
+		BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()
-		Save(order *order.Order) (*order.Order, error)                          // Save insert an order into database and returns that order if success
-		Get(id string) (*order.Order, error)                                    // Get find order in database with given id
-		Update(order *order.Order) (*order.Order, error)                        // Update update order
-		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) // FilterByOption returns a list of orders, filtered by given option
-		BulkUpsert(orders []*order.Order) ([]*order.Order, error)               // BulkUpsert performs bulk upsert given orders
+		Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
+		Get(id string) (*order.Order, error)                                            // Get find order in database with given id
+		Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) // Update update order
+		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error)         // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(orders []*order.Order) ([]*order.Order, error)                       // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {
 		CreateIndexesIfNotExists()
-		Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) // Save inserts given order event into database then returns it
-		Get(orderEventID string) (*order.OrderEvent, error)           // Get finds order event with given id then returns it
+		Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) // Save inserts given order event into database then returns it
+		Get(orderEventID string) (*order.OrderEvent, error)                                          // Get finds order event with given id then returns it
 	}
 	FulfillmentLineStore interface {
 		CreateIndexesIfNotExists()
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
-		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) // FilterbyOption finds and returns a list of fulfillment lines by given option
-		BulkUpsert(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error)     // BulkUpsert upsert given fulfillment lines
-		DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) error             // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
+		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error)                            // FilterbyOption finds and returns a list of fulfillment lines by given option
+		BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
+		DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()
@@ -674,10 +674,10 @@ type (
 type (
 	OrderDiscountStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error)                // Upsert depends on given order discount's Id property to decide to update/insert it
-		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                              // Get finds and returns an order discount with given id
-		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) // FilterbyOption filters order discounts that satisfy given option, then returns them
-		BulkDelete(orderDiscountIDs []string) error                                                                           // BulkDelete perform bulk delete all given order discount ids
+		Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                                              // Get finds and returns an order discount with given id
+		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error)                 // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(orderDiscountIDs []string) error                                                                                           // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -894,13 +894,13 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ModelFields() []string
-		CreateIndexesIfNotExists()                                                      // CreateIndexesIfNotExists creates indexes for table if needed
-		Save(address *account.Address) (*account.Address, error)                        // Save saves address into database
-		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist
-		GetAddressesByUserID(userID string) ([]*account.Address, error)                 // GetAddressesByUserID returns slice of addresses belong to given user
-		Update(address *account.Address) (*account.Address, error)                      // Update update given address and returns it
-		DeleteAddresses(addressIDs []string) error                                      // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
+		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
+		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
+		Get(addressID string) (*account.Address, error)                                           // Get returns an Address with given addressID is exist
+		GetAddressesByUserID(userID string) ([]*account.Address, error)                           // GetAddressesByUserID returns slice of addresses belong to given user
+		Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) // Update update given address and returns it
+		DeleteAddresses(addressIDs []string) error                                                // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error)           // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserTermOfServiceStore interface {
 		CreateIndexesIfNotExists()                                                                //

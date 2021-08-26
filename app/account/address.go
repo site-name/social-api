@@ -3,6 +3,7 @@ package account
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -44,14 +45,14 @@ func (a *AppAccount) AddressesByOption(option *account.AddressFilterOption) ([]*
 }
 
 // UpsertAddress depends on given address's Id to decide update or insert it
-func (a *AppAccount) UpsertAddress(address *account.Address) (*account.Address, *model.AppError) {
+func (a *AppAccount) UpsertAddress(transaction *gorp.Transaction, address *account.Address) (*account.Address, *model.AppError) {
 	var (
 		err error
 	)
 	if address.Id == "" {
-		address, err = a.Srv().Store.Address().Save(address)
+		address, err = a.Srv().Store.Address().Save(transaction, address)
 	} else {
-		address, err = a.Srv().Store.Address().Update(address)
+		address, err = a.Srv().Store.Address().Update(transaction, address)
 	}
 
 	if err != nil {
