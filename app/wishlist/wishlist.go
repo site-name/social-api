@@ -20,6 +20,7 @@ func init() {
 	})
 }
 
+// CreateWishlist inserts a new wishlist instance into database with given userID
 func (a *AppWishlist) CreateWishlist(userID string) (*wishlist.Wishlist, *model.AppError) {
 	newWl, err := a.Srv().Store.Wishlist().Save(&wishlist.Wishlist{
 		UserID: &userID,

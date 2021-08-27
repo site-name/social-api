@@ -222,9 +222,9 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		MethodName            string
 		Type                  string
 		ShippingZoneID        string
-		MinimumOrderWeight    *float32
+		MinimumOrderWeight    float32
 		MaximumOrderWeight    *float32
-		WeightUnit            string
+		WeightUnit            measurement.WeightUnit
 		MaximumDeliveryDays   *uint
 		MinimumDeliveryDays   *uint
 		MethodDescription     *model.StringInterface

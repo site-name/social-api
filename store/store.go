@@ -396,6 +396,7 @@ type (
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) // Save inserts given warehouse-shipping zone relation into database
 	}
 )
