@@ -24,7 +24,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks []*warehouse.Stock) (int, *mo
 
 	for i, stock := range stocks {
 		stockIDs[i] = stock.Id
-		if _, ok := meetMap[stock.Quantity]; !ok {
+		if _, met := meetMap[stock.Quantity]; !met {
 			totalQuantity += stock.Quantity
 			meetMap[stock.Quantity] = true
 		}
@@ -86,10 +86,6 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 func (a *AppWarehouse) CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	stocks, appErr := a.StocksByOption(nil, &warehouse.StockFilterOption{
-		ForCountryAndChannel: &warehouse.StockFilterForCountryAndChannel{
-			CountryCode: countryCode,
-			ChannelSlug: channelSlug,
-		},
 		ProductVariantID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: product_and_discount.ProductVariants(variants).IDs(),

@@ -25,22 +25,52 @@ type StockFilterOption struct {
 	WarehouseID      *model.StringFilter //
 	ProductVariantID *model.StringFilter //
 
+	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
+	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
+
+	AnnotateAvailabeQuantity bool
+
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries
 	LockForUpdate bool
-	// add something after `FOR UPDATE` to the end of sql queries, to tell the database to lock specific rows instead of both selecting rows and foreign rows
+	// adds something after `FOR UPDATE` to the end of sql queries.
+	// It tells the database to lock accesses to specific rows instead of both selecting rows and relative rows (foreign key rows)
 	//
-	// E.g:  ForUpdateOf: "Warehouse" => FOR UPDATE OF Warehouse.
+	// E.g:  ForUpdateOf: "Warehouses" results in `FOR UPDATE OF Warehouses`.
 	//
-	// NOTE: Remember to set `LockForUpdate` property to true before setting this.
+	// NOTE: Remember to set `LockForUpdate` to true before setting this.
 	ForUpdateOf string
+}
 
-	// set this if you want to make use of `GetForCountryAndChannel`
-	ForCountryAndChannel *StockFilterForCountryAndChannel
+type StockFilterForCountryAndChannel struct {
+	CountryCode      string
+	ChannelSlug      string
+	WarehouseID      string
+	ProductVariantID string
+	ProductID        string
+
+	// additional fields
+	Id                     *model.StringFilter //
+	WarehouseIDFilter      *model.StringFilter //
+	ProductVariantIDFilter *model.StringFilter //
+
+	AnnotateAvailabeQuantity bool
+
+	// set this to true if you want to lock selected rows for update.
+	// This add `FOR UPDATE` to the end of sql queries
+	LockForUpdate bool
+	// adds something after `FOR UPDATE` to the end of sql queries.
+	// It tells the database to lock accesses to specific rows instead of both selecting rows and relative rows (foreign key rows)
+	//
+	// E.g:  ForUpdateOf: "Warehouses" results in `FOR UPDATE OF Warehouses`.
+	//
+	// NOTE: Remember to set `LockForUpdate` to true before setting this.
+	ForUpdateOf string
 }
 
 type Stocks []*Stock
 
+// IDs returns a slice of ids of stocks contained in current `Stocks`
 func (s Stocks) IDs() []string {
 	res := []string{}
 	for _, item := range s {
@@ -50,14 +80,6 @@ func (s Stocks) IDs() []string {
 	}
 
 	return res
-}
-
-type StockFilterForCountryAndChannel struct {
-	CountryCode      string
-	ChannelSlug      string
-	WarehouseID      string
-	ProductVariantID string
-	ProductID        string
 }
 
 func (s *Stock) IsValid() *model.AppError {
