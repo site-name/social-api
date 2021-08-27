@@ -98,32 +98,73 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZon
 
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+	selectFields := s.ModelFields()
+	if option.SelectRelatedThroughData {
+		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
+	}
+
 	query := s.GetQueryBuilder().
-		Select(s.ModelFields()...).
+		Select(selectFields...).
 		From(store.ShippingZoneTableName).
-		OrderBy("CreateAt ASC")
+		OrderBy(store.TableOrderingMap[store.ShippingZoneTableName])
 
 	// check option id
 	if option != nil && option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id.ToSquirrel("ShippingZones.Id"))
 	}
 	if option != nil && option.DefaultValue != nil {
-		query = query.Where(squirrel.Eq{"Default": *option.DefaultValue})
+		query = query.Where(squirrel.Eq{"ShippingZones.Default": *option.DefaultValue})
 	}
-	if len(option.WarehouseIDs) > 0 {
-		query = query.Where("ShippingZones.Id IN (SELECT ShippingZoneID FROM ? WHERE WarehouseID IN ?)", store.WarehouseShippingZoneTableName, option.WarehouseIDs)
+	if option.WarehouseID != nil {
+		query = query.
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where(option.WarehouseID.ToSquirrel("WarehouseShippingZones.WarehouseID"))
 	}
 
-	queryString, args, err := query.ToSql()
+	rows, err := query.RunWith(s.GetReplica()).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
+	}
+	var (
+		shippingZone           shipping.ShippingZone
+		returningShippingZones shipping.ShippingZones
+		// shippingZonesMap is a map with keys are shipping zones's ids
+		shippingZonesMap = map[string]*shipping.ShippingZone{}
+		warehouseID      string
+	)
+	var scanFields []interface{} = []interface{}{
+		&shippingZone.Id,
+		&shippingZone.Name,
+		&shippingZone.Countries,
+		&shippingZone.Default,
+		&shippingZone.Description,
+		&shippingZone.Metadata,
+		&shippingZone.PrivateMetadata,
+	}
+	if option.SelectRelatedThroughData {
+		scanFields = append(
+			scanFields,
+
+			&warehouseID,
+		)
 	}
 
-	var shippingZones []*shipping.ShippingZone
-	_, err = s.GetReplica().Select(&shippingZones, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds shipping zones based ob given option")
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to to scan a row contains shipping zones")
+		}
+
+		if _, met := shippingZonesMap[shippingZone.Id]; !met {
+			returningShippingZones = append(returningShippingZones, &shippingZone)
+			shippingZonesMap[shippingZone.Id] = &shippingZone
+		}
+		shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
 	}
 
-	return shippingZones, nil
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of shipping zones")
+	}
+
+	return returningShippingZones, nil
 }

@@ -80,10 +80,10 @@ func init() {
 
 		RoleTableName: "Roles", //
 
-		CsvExportEventTablename: "ExportEvents", //
+		CsvExportEventTablename: "ExportEvents", // event
 		CsvExportFileTablename:  "ExportFiles",  //
 
-		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",                 //
+		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",                 // attribute
 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
 		AttributeTranslationTableName:          "AttributeTranslations",                  //
 		AttributeValueTableName:                "AttributeValues",                        //
@@ -113,7 +113,7 @@ func init() {
 		SaleCollectionRelationTableName: "CreateAt ASC",                     //
 		OrderDiscountTableName:          "",                                 //
 
-		ShopTableName:            "Shops",            //
+		ShopTableName:            "Shops",            // shop
 		ShopTranslationTableName: "ShopTranslations", //
 		ShopStaffTableName:       "ShopStaffs",       //
 
@@ -121,17 +121,17 @@ func init() {
 		MenuItemTableName:            "SortOrder ASC",    //
 		MenuItemTranslationTableName: "LanguageCode ASC", //
 
-		ShippingMethodTableName:                "ShippingMethods",                //
-		ShippingZoneTableName:                  "ShippingZones",                  //
+		ShippingMethodTableName:                "",                               // shipping
+		ShippingZoneTableName:                  "CreateAt ASC",                   //
 		ShippingZoneChannelTableName:           "ShippingZoneChannels",           //
-		ShippingMethodTranslationTableName:     "ShippingMethodTranslations",     //
-		ShippingMethodPostalCodeRuleTableName:  "ShippingMethodPostalCodeRules",  //
+		ShippingMethodTranslationTableName:     "",                               //
+		ShippingMethodPostalCodeRuleTableName:  "",                               //
 		ShippingMethodChannelListingTableName:  "CreateAt ASC",                   //
 		ShippingMethodExcludedProductTableName: "ShippingMethodExcludedProducts", //
 
-		JobTableName: "Jobs", //
+		JobTableName: "Jobs", // job
 
-		FileInfoTableName:      "FileInfos",      //
+		FileInfoTableName:      "FileInfos",      // file
 		UploadSessionTableName: "UploadSessions", //
 
 		PageTableName:            "Slug ASC",         // page

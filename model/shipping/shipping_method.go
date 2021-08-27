@@ -1,10 +1,12 @@
 package shipping
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
 
@@ -26,19 +28,22 @@ var ShippingMethodTypeString = map[string]string{
 }
 
 type ShippingMethod struct {
-	Id                            string                          `json:"id"`
-	Name                          string                          `json:"name"`
-	Type                          string                          `json:"type"`
-	ShippingZoneID                string                          `json:"shipping_zone_id"`
-	MinimumOrderWeight            *float32                        `json:"minimum_order_weight"`
-	MaximumOrderWeight            *float32                        `json:"maximum_order_weight"`
-	WeightUnit                    string                          `json:"weight_unit"`
-	MaximumDeliveryDays           *uint                           `json:"maximum_delivery_days"`
-	MinimumDeliveryDays           *uint                           `json:"minimum_delivery_days"`
-	Description                   *model.StringInterface          `json:"description"`
+	Id                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	Type                string                 `json:"type"`
+	ShippingZoneID      string                 `json:"shipping_zone_id"`
+	MinimumOrderWeight  float32                `json:"minimum_order_weight"` // default0 0
+	MaximumOrderWeight  *float32               `json:"maximum_order_weight"`
+	WeightUnit          measurement.WeightUnit `json:"weight_unit"`
+	MinOrderWeight      *measurement.Weight    `json:"min_order_weight" db:"-"`
+	MaxOrderWeight      *measurement.Weight    `json:"max_order_weight" db:"-"`
+	MaximumDeliveryDays *uint                  `json:"maximum_delivery_days"`
+	MinimumDeliveryDays *uint                  `json:"minimum_delivery_days"`
+	Description         *model.StringInterface `json:"description"`
+	model.ModelMetadata
+
 	ShippingZones                 []*ShippingZone                 `json:"-" db:"-"` // this field is used for holding prefetched related instances
 	ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule `json:"-" db:"-"` // this field is used for holding prefetched related instances
-	model.ModelMetadata
 }
 
 // ShippingMethodFilterOption is used for filtering shipping methods
@@ -50,8 +55,43 @@ type ShippingMethodFilterOption struct {
 	ChannelListingsChannelSlug *model.StringFilter
 }
 
+func (s *ShippingMethod) PopulateNonDbFields() {
+	s.MinOrderWeight = &measurement.Weight{
+		Amount: &s.MinimumOrderWeight,
+		Unit:   s.WeightUnit,
+	}
+	if s.MaximumOrderWeight != nil {
+		s.MaxOrderWeight = &measurement.Weight{
+			Amount: s.MaximumOrderWeight,
+			Unit:   s.WeightUnit,
+		}
+	}
+}
+
 func (s *ShippingMethod) String() string {
-	return s.Name
+	if s.Type == PRICE_BASED {
+		return fmt.Sprintf("ShippingMethod(type=%s)", s.Type)
+	}
+
+	return fmt.Sprintf("ShippingMethod(type=%s weight_range=(%s))", s.Type, s.getWeightTypeDisplay())
+}
+
+func (s *ShippingMethod) getWeightTypeDisplay() string {
+	s.PopulateNonDbFields()
+
+	if s.MinOrderWeight.Unit != measurement.STANDARD_WEIGHT_UNIT {
+		minWeight, _ := s.MinOrderWeight.ConvertTo(measurement.STANDARD_WEIGHT_UNIT)
+		s.MinOrderWeight = minWeight
+	}
+	if s.MaxOrderWeight == nil {
+		return fmt.Sprintf("%s and up", s.MinOrderWeight.String())
+	}
+
+	if s.MaxOrderWeight != nil && s.MaxOrderWeight.Unit != measurement.STANDARD_WEIGHT_UNIT {
+		maxWeight, _ := s.MinOrderWeight.ConvertTo(measurement.STANDARD_WEIGHT_UNIT)
+		s.MaxOrderWeight = maxWeight
+	}
+	return fmt.Sprintf("%s to %s", s.MinOrderWeight.String(), s.MaxOrderWeight.String())
 }
 
 func (s *ShippingMethod) IsValid() *model.AppError {
@@ -75,8 +115,6 @@ func (s *ShippingMethod) IsValid() *model.AppError {
 	}
 	return nil
 }
-
-// --------------------
 
 const SHIPPING_METHOD_TRANSLATION_NAME_MAX_LENGTH = 255
 

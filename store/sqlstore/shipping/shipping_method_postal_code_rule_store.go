@@ -25,8 +25,6 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 }
 
 func (s *SqlShippingMethodPostalCodeRuleStore) CreateIndexesIfNotExists() {
-	// s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_start", store.ShippingMethodPostalCodeRuleTableName, "Start")
-	// s.CreateIndexIfNotExists("idx_shipping_method_postal_code_rules_inclusion_type", store.ShippingMethodPostalCodeRuleTableName, "InclusionType")
 	s.CreateForeignKeyIfNotExists(store.ShippingMethodPostalCodeRuleTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", true)
 }
 

@@ -29,6 +29,14 @@ func (ws *SqlWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
 	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "ShippingZoneID", store.ShippingZoneTableName, "Id", false)
 }
 
+func (ws *SqlWarehouseShippingZoneStore) ModelFields() []string {
+	return []string{
+		"WarehouseShippingZones.Id",
+		"WarehouseShippingZones.WarehouseID",
+		"WarehouseShippingZones.ShippingZoneID",
+	}
+}
+
 // Save inserts given warehouse-shipping zone relation into database
 func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
 	warehouseShippingZone.PreSave()
@@ -46,3 +54,8 @@ func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.W
 
 	return warehouseShippingZone, nil
 }
+
+// FilterByOption finds and returns warehouse-shiping zone relations filtered using given option
+// func (ws *SqlWarehouseShippingZoneStore) FilterByOption(option *warehouse.WarehouseShippingZoneFilterOption) ([]*warehouse.WarehouseShippingZone, error) {
+
+// }

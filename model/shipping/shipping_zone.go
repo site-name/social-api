@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // max length for some fields
@@ -20,13 +21,46 @@ type ShippingZone struct {
 	Description string `json:"description"`
 	CreateAt    int64  `json:"create_at"`
 	model.ModelMetadata
+
+	RelativeWarehouseIDs []string `json:"-" db:"-"`
 }
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
 	Id           *model.StringFilter // filter on Id field
 	DefaultValue *bool               // filter on Default field
-	WarehouseIDs []string
+	WarehouseID  *model.StringFilter
+
+	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
+}
+
+type ShippingZones []*ShippingZone
+
+func (s ShippingZones) IDs() []string {
+	var res []string
+	for _, zone := range s {
+		if zone != nil {
+			res = append(res, zone.Id)
+		}
+	}
+
+	return res
+}
+
+// RelativeWarehouseIDsFlat joins all `RelativeWarehouseIDs` fields of all shipping zones into single slice of strings
+//
+// E.g: [["a", "b"], ["c", "d"]] => ["a", "b", "c", "d"]
+func (s ShippingZones) RelativeWarehouseIDsFlat(keepDuplicates bool) []string {
+	var res []string
+
+	for _, item := range s {
+		res = append(res, item.RelativeWarehouseIDs...)
+	}
+
+	if keepDuplicates {
+		return res
+	}
+	return util.RemoveDuplicatesFromStringArray(res)
 }
 
 func (s *ShippingZone) String() string {

@@ -9,6 +9,12 @@ type WarehouseShippingZone struct {
 	ShippingZoneID string `json:"shipping_zone_id"`
 }
 
+// WarehouseShippingZoneFilterOption is used to build squirrel sql queries
+type WarehouseShippingZoneFilterOption struct {
+	WarehouseID    *model.StringFilter
+	ShippingZoneID *model.StringFilter
+}
+
 func (w *WarehouseShippingZone) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.warehouse_shipping_zone.is_valid.%s.app_error",
