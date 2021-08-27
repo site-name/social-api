@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/mattermost/gorp"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -27,13 +26,6 @@ func (a *AppOrder) UpsertOrderLine(orderLine *order.OrderLine) (*order.OrderLine
 
 // DeleteOrderLines perform bulk delete given order lines
 func (a *AppOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
-	// validate given ids
-	for _, id := range orderLineIDs {
-		if !model.IsValidId(id) {
-			return model.NewAppError("DeleteOrderLines", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineIDs"}, "", http.StatusBadRequest)
-		}
-	}
-
 	err := a.Srv().Store.OrderLine().BulkDelete(orderLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteOrderLines", "app.order.error_deleting_order_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -45,8 +37,19 @@ func (a *AppOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
 // OrderLinesByOption returns a list of order lines by given option
 func (a *AppOrder) OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError) {
 	orderLines, err := a.Srv().Store.OrderLine().FilterbyOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("OrderLinesByOption", "app.order.error_finding_order_lines_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(orderLines) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("OrderLinesByOption", "app.order.error_finding_order_lines_by_option.app_error", nil, errMessage, statusCode)
 	}
 
 	return orderLines, nil
@@ -62,7 +65,6 @@ func (a *AppOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLi
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "AllDigitalOrderLinesOfOrder"
 		return nil, appErr
 	}
 

@@ -57,14 +57,13 @@ func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine
 	var appErr *model.AppError
 
 	if digitalContent == nil {
-		digitalContent, appErr = a.ProductApp().
-			DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-				ProductVariantID: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: *orderLine.VariantID,
-					},
+		digitalContent, appErr = a.ProductApp().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+			ProductVariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: *orderLine.VariantID,
 				},
-			})
+			},
+		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return false, appErr

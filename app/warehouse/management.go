@@ -40,7 +40,7 @@ func (a *AppWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, count
 		return nil, nil
 	}
 
-	stocks, appErr := a.GetStocksForCountryAndChannel(transaction, &warehouse.StockFilterForCountryAndChannel{
+	stocks, appErr := a.FilterStocksForCountryAndChannel(transaction, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,
 
@@ -283,8 +283,8 @@ func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *ware
 				Eq: *orderLine.VariantID,
 			},
 		},
-		LockForUpdate: true, //
-		ForUpdateOf:   store.StockTableName,
+		LockForUpdate: true,                 // FOR UPDATE
+		ForUpdateOf:   store.StockTableName, // FOR UPDATE Stocks
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

@@ -6073,10 +6073,10 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Tran
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6089,10 +6089,10 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterVariantStocksForCountry(options)
+	result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

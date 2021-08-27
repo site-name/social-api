@@ -7264,11 +7264,11 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Tran
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
+		result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
 		if err == nil {
 			return result, nil
 		}
@@ -7284,11 +7284,11 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterVariantStocksForCountry(options)
+		result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
 		if err == nil {
 			return result, nil
 		}

@@ -6674,7 +6674,7 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction *gor
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterProductStocksForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -6683,7 +6683,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(opt
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6692,7 +6692,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(opt
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterVariantStocksForCountry")
 	s.Root.Store.SetContext(newCtx)
@@ -6701,7 +6701,7 @@ func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *ware
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterVariantStocksForCountry(options)
+	result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

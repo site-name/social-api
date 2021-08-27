@@ -15,8 +15,9 @@ type Stock struct {
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
 
-	Warehouse      *WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
-	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
+	AvailableQuantity int                                  `json:"-" db:"-"` // this field will be populated in same queries
+	Warehouse         *WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
+	ProductVariant    *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
 // StockFilterOption is used for build squirrel sql queries

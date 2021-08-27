@@ -379,13 +379,13 @@ type (
 	StockStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterForCountryAndChannel finds and returns stocks with given options
-		Get(stockID string) (*warehouse.Stock, error)                                                                                             // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)                             // FilterVariantStocksForCountry can returns error with type of either: (nil, *ErrNotfound, *ErrInvalidParam, server lookup error)
-		FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)                   // FilterProductStocksForCountryAndChannel can returns error with type of either: (nil, *ErrNotFound, *ErrinvalidParam, server lookup error)
-		ChangeQuantity(stockID string, quantity int) error                                                                                        // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)                           // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                                          // BulkUpsert performs upserts or inserts given stocks, then returns them
+		Get(stockID string) (*warehouse.Stock, error)                                                                                                          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                                                                     // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()

@@ -53,8 +53,8 @@ func (a *AppWarehouse) StocksByOption(transaction *gorp.Transaction, option *war
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *AppWarehouse) GetVariantStocksForCountry(countryCode string, channelSlug string, variantID string, quantity int) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(&warehouse.StockFilterForCountryAndChannel{
+func (a *AppWarehouse) GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(transaction, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,
 		ProductVariantID: variantID,
@@ -77,13 +77,9 @@ func (a *AppWarehouse) GetVariantStocksForCountry(countryCode string, channelSlu
 	return stocks, nil
 }
 
-const (
-	ErrorFindingStocksId = "app.warehouse.error_finding_stocks_by_option.app_error"
-)
-
 // GetProductStocksForCountryAndChannel
 func (a *AppWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterProductStocksForCountryAndChannel(options)
+	stocks, err := a.Srv().Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
 		errorMessage string
@@ -102,8 +98,8 @@ func (a *AppWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Tr
 	return stocks, nil
 }
 
-// GetStocksForCountryAndChannel finds stocks by given options
-func (a *AppWarehouse) GetStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+// FilterStocksForCountryAndChannel finds stocks by given options
+func (a *AppWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.Srv().Store.Stock().FilterForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
@@ -117,17 +113,17 @@ func (a *AppWarehouse) GetStocksForCountryAndChannel(transaction *gorp.Transacti
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("GetStocksForCountryAndChannel", ErrorFindingStocksId, nil, errorMessage, statusCode)
+		return nil, model.NewAppError("FilterStocksForCountryAndChannel", ErrorFindingStocksId, nil, errorMessage, statusCode)
 	}
 
 	return stocks, nil
 }
 
-// GetStockByOption takes options for filtering 1 stock
-func (a *AppWarehouse) GetStockByOption(option *warehouse.StockFilterOption) (*warehouse.Stock, *model.AppError) {
-	stock, err := a.Srv().Store.Stock().GetbyOption(option)
+// GetStockById takes options for filtering 1 stock
+func (a *AppWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.AppError) {
+	stock, err := a.Srv().Store.Stock().Get(stockID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetStockByOption", "app.warehouse.error_finding_stock_by_option.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("GetStockById", "app.warehouse.error_finding_stock_by_option.app_error", err)
 	}
 
 	return stock, nil

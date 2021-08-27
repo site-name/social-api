@@ -176,8 +176,7 @@ func (a *AppOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (*wa
 // Fulfill all digital lines which have enabled automatic fulfillment setting.
 //
 // Send confirmation email afterward.
-func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager interface{}) (appErr *model.AppError) {
-	// NOTE: remember to commit me in the end of this function
+func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager interface{}) *model.AppError {
 	transaction, err := a.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -204,10 +203,10 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 		},
 	})
 	if appErr != nil {
-		return
+		return appErr
 	}
 
-	if len(digitalOrderLinesOfOrder) == 0 {
+	if digitalOrderLinesOfOrder == nil || len(digitalOrderLinesOfOrder) == 0 {
 		return nil
 	}
 
@@ -219,13 +218,13 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 		},
 	})
 	if appErr != nil {
-		return
+		return appErr
 	}
 
 	// finding shop that hold this order:
 	ownerShopOfOrder, appErr := a.ShopApp().ShopById(ord.ShopID)
 	if appErr != nil {
-		return
+		return appErr
 	}
 	shopDefaultDigitalContentSettings := a.ProductApp().GetDefaultDigitalContentSettings(ownerShopOfOrder)
 
@@ -269,13 +268,7 @@ func (a *AppOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager in
 			return appErr
 		}
 
-		stock, appErr := a.WarehouseApp().GetStockByOption(&warehouse.StockFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: allocationsOfOrderLine[0].StockID,
-				},
-			},
-		})
+		stock, appErr := a.WarehouseApp().GetStockById(allocationsOfOrderLine[0].StockID)
 		if appErr != nil {
 			return appErr
 		}

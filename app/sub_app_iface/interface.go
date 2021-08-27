@@ -276,14 +276,14 @@ type ChannelApp interface {
 }
 
 type WarehouseApp interface {
-	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)
-	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
-	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)                                      // IsProductInStock
-	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData                                           // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-	DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError)                                   // DecreaseAllocations Decreate allocations for provided order lines.
-	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)                                   // WarehouseByOption returns a list of warehouses based on given option
-	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) // AllocationsByOption returns all warehouse allocations filtered based on given option
-	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                                                              // WarehouseByStockID returns a warehouse that owns the given stock
+	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)          // Validate if there is stock available for given variant in given country. If so - returns None. If there is less stock then required raise InsufficientStock exception.
+	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // Validate if there is stock available for given variants in given country. It raises InsufficientStock: when there is not enough items in stock for a variant
+	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)                                                                              // IsProductInStock
+	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData                                                                                   // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
+	DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError)                                                                           // DecreaseAllocations Decreate allocations for provided order lines.
+	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)                                                                           // WarehouseByOption returns a list of warehouses based on given option
+	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)                                         // AllocationsByOption returns all warehouse allocations filtered based on given option
+	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                                                                                                      // WarehouseByStockID returns a warehouse that owns the given stock
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
 	//
 	// Function lock for update stock and allocations related to given `order_line`
@@ -316,8 +316,8 @@ type WarehouseApp interface {
 	//
 	// updateStocks default to true
 	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError)
-	GetStockByOption(option *warehouse.StockFilterOption) (*warehouse.Stock, *model.AppError)                                 // GetStockByOption takes options for filtering 1 stock
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                          // GetStockById takes options for filtering 1 stock
 }
 
 type DiscountApp interface {
