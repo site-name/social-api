@@ -51,6 +51,7 @@ func (p ProductVariants) IDs() []string {
 	return res
 }
 
+// ProductIDs returns all product ids of current product variants
 func (p ProductVariants) ProductIDs() []string {
 	res := make([]string, len(p))
 	for i := range p {

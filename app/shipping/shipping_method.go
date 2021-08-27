@@ -100,7 +100,6 @@ func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, chann
 			},
 		})
 		if appErr != nil {
-			appErr.Where = "ApplicableShippingMethodsForOrder"
 			return nil, appErr
 		}
 

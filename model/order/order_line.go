@@ -83,7 +83,7 @@ type OrderLineFilterOption struct {
 	IsShippingRequired *bool
 
 	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products
-	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN digitalContent
+	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN DigitalContents
 
 	PrefetchRelated OrderLinePrefetchRelated
 }

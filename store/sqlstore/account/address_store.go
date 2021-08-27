@@ -3,6 +3,7 @@ package account
 import (
 	"database/sql"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
@@ -64,26 +65,38 @@ func (as *SqlAddressStore) ModelFields() []string {
 	}
 }
 
-func (as *SqlAddressStore) Save(address *account.Address) (*account.Address, error) {
+func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+	var (
+		insertFunc func(list ...interface{}) error = as.GetMaster().Insert
+	)
+	if transaction != nil {
+		insertFunc = transaction.Insert
+	}
+
 	address.PreSave()
 	if err := address.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(address); err != nil {
+	if err := insertFunc(address); err != nil {
 		return nil, errors.Wrapf(err, "failed to save Address with addressId=%s", address.Id)
 	}
 
 	return address, nil
 }
 
-func (as *SqlAddressStore) Update(address *account.Address) (*account.Address, error) {
+func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+	var updateFunc func(list ...interface{}) (int64, error) = as.GetMaster().Update
+	if transaction != nil {
+		updateFunc = transaction.Update
+	}
+
 	address.PreUpdate()
 	if err := address.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if numUpdate, err := as.GetMaster().Update(address); err != nil {
+	if numUpdate, err := updateFunc(address); err != nil {
 		return nil, errors.Wrapf(err, "failed to update address with id=%s", address.Id)
 	} else if numUpdate > 1 {
 		return nil, errors.New("multiple addresses updated instead of one")

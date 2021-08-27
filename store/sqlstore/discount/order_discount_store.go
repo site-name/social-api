@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -37,8 +38,17 @@ func (ods *SqlOrderDiscountStore) CreateIndexesIfNotExists() {
 }
 
 // Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
-	var isSaving bool
+func (ods *SqlOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+	var (
+		isSaving   bool
+		insertFunc func(list ...interface{}) error = ods.GetMaster().Insert
+		updateFunc func(list ...interface{}) (int64, error)
+	)
+	if transaction != nil {
+		insertFunc = transaction.Insert
+		updateFunc = transaction.Update
+	}
+
 	if orderDiscount.Id == "" {
 		orderDiscount.PreSave()
 		isSaving = true
@@ -55,14 +65,14 @@ func (ods *SqlOrderDiscountStore) Upsert(orderDiscount *product_and_discount.Ord
 		numUpdated int64
 	)
 	if isSaving {
-		err = ods.GetMaster().Insert(orderDiscount)
+		err = insertFunc(orderDiscount)
 	} else {
 		_, err = ods.Get(orderDiscount.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		numUpdated, err = ods.GetMaster().Update(orderDiscount)
+		numUpdated, err = updateFunc(orderDiscount)
 	}
 
 	if err != nil {

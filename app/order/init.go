@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -13,7 +14,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-type RecalculateOrderPricesFunc func(*order.Order, map[string]interface{}) *model.AppError
+type RecalculateOrderPricesFunc func(*gorp.Transaction, *order.Order, map[string]interface{}) *model.AppError
 
 type AppOrder struct {
 	app.AppIface
@@ -37,7 +38,7 @@ func init() {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) RecalculateOrderPricesFunc {
-	return func(ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+	return func(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})
 		}
@@ -70,30 +71,23 @@ func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Recalcu
 		// set discount
 		kwargs["discount"] = discount
 
-		return fun(ord, kwargs)
+		return fun(transaction, ord, kwargs)
 	}
 }
 
-func (a *AppOrder) decoratedFunc(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "RecalculateOrderPrices"
-		}
-	}()
-
+func (a *AppOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
-	orderLines, apErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: ord.Id,
 			},
 		},
 	})
-	if apErr != nil {
-		appErr = apErr
-		return
+	if appErr != nil {
+		return appErr
 	}
 
 	totalPrice := ord.ShippingPrice
@@ -140,12 +134,12 @@ func (a *AppOrder) decoratedFunc(ord *order.Order, kwargs map[string]interface{}
 		if assignedOrderDiscount != nil {
 			assignedOrderDiscount.AmountValue = voucherDiscount.Amount
 			assignedOrderDiscount.Value = voucherDiscount.Amount
-			_, appErr = a.DiscountApp().UpsertOrderDiscount(assignedOrderDiscount)
+			_, appErr = a.DiscountApp().UpsertOrderDiscount(transaction, assignedOrderDiscount)
 			if appErr != nil {
-				return
+				return appErr
 			}
 		}
 	}
 
-	return
+	return nil
 }

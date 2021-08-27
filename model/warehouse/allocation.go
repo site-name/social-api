@@ -22,6 +22,7 @@ type Allocation struct {
 type AllocationFilterOption struct {
 	Id                *model.StringFilter
 	OrderLineID       *model.StringFilter
+	OrderLineOrderID  *model.StringFilter // INNER JOIN OrderLines ON (...) WHERE OrderLines.OrderID = ...
 	StockID           *model.StringFilter
 	QuantityAllocated *model.NumberFilter
 

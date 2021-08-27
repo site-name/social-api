@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -19,8 +20,8 @@ func (a *AppOrder) FulfillmentLinesByOption(option *order.FulfillmentLineFilterO
 }
 
 // BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
-func (a *AppOrder) BulkUpsertFulfillmentLines(fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, *model.AppError) {
-	fulfillmentLines, err := a.Srv().Store.FulfillmentLine().BulkUpsert(fulfillmentLines)
+func (a *AppOrder) BulkUpsertFulfillmentLines(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, *model.AppError) {
+	fulfillmentLines, err := a.Srv().Store.FulfillmentLine().BulkUpsert(transaction, fulfillmentLines)
 	if err != nil {
 		return nil, model.NewAppError("BulkUpsertFulfillmentLines", "app.order.error_bulk_creating_fulfillment_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -29,8 +30,8 @@ func (a *AppOrder) BulkUpsertFulfillmentLines(fulfillmentLines []*order.Fulfillm
 }
 
 // DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
-func (a *AppOrder) DeleteFulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) *model.AppError {
-	err := a.Srv().Store.FulfillmentLine().DeleteFulfillmentLinesByOption(option)
+func (a *AppOrder) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) *model.AppError {
+	err := a.Srv().Store.FulfillmentLine().DeleteFulfillmentLinesByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteFulfillmentLinesByOption", "app.order.error_deleting_fulfillment_lines_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

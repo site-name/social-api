@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -123,12 +124,23 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
-	tx, err := ols.GetMaster().Begin()
+func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+	var (
+		err error
+		// if the provided transaction is nil, we have to create a new one ourself
+		// in that case, remember to defer rollback and do commit right in the scope of this function
+		providedTransactionIsNil bool
+	)
+	if transaction == nil {
+		transaction, err = ols.GetMaster().Begin()
+		providedTransactionIsNil = true
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
 	}
-	defer store.FinalizeTransaction(tx)
+	if providedTransactionIsNil { // <- note
+		defer store.FinalizeTransaction(transaction)
+	}
 
 	var (
 		isSaving     bool
@@ -151,9 +163,9 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 		}
 
 		if isSaving {
-			err = tx.Insert(orderLine)
+			err = transaction.Insert(orderLine)
 		} else {
-			err = tx.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
+			err = transaction.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
 			if err != nil { // return immediately
 				if err == sql.ErrNoRows {
 					return nil, store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
@@ -165,7 +177,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 			orderLine.OrderID = oldOrderLine.OrderID
 			orderLine.CreateAt = oldOrderLine.CreateAt
 
-			numUpdated, err = tx.Update(orderLine)
+			numUpdated, err = transaction.Update(orderLine)
 		}
 
 		if err != nil {
@@ -176,8 +188,10 @@ func (ols *SqlOrderLineStore) BulkUpsert(orderLines []*order.OrderLine) ([]*orde
 		}
 	}
 
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
+	if providedTransactionIsNil {
+		if err = transaction.Commit(); err != nil {
+			return nil, errors.Wrap(err, "transaction_commit")
+		}
 	}
 
 	return orderLines, nil
@@ -230,7 +244,6 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 //  +) find all order lines that satisfy given option
 //  +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
 func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
-
 	query := ols.GetQueryBuilder().
 		Select(ols.ModelFields()...).
 		From(store.OrderLineTableName).
@@ -247,25 +260,24 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
 	}
 
-	// parse either field
+	var (
+		joined_ProductVariantTableName bool
+	)
 	if option.VariantDigitalContentID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
 			InnerJoin(store.ProductDigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
-			Where(option.VariantDigitalContentID.ToSquirrel("DigitalContents.Id")) // digitalContent.Id IS (NOT) NULL
-	} else if option.VariantProductID != nil {
+			Where(option.VariantDigitalContentID.ToSquirrel("DigitalContents.Id"))
+		joined_ProductVariantTableName = true // indicate joined the table
+	}
+	if option.VariantProductID != nil {
+		if !joined_ProductVariantTableName {
+			query = query.InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)")
+		}
 		query = query.
-			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
 			InnerJoin(store.ProductTableName + " ON (ProductVariants.ProductID = Products.Id)").
 			Where(option.VariantProductID.ToSquirrel("Products.Id"))
 	}
-
-	// begin a transaction
-	tx, err := ols.GetReplica().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	defer store.FinalizeTransaction(tx)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -273,101 +285,96 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	var (
-		orderLines      []*order.OrderLine
-		productVariants []*product_and_discount.ProductVariant
+		orderLines order.OrderLines
+
+		productVariants product_and_discount.ProductVariants
 		digitalContents []*product_and_discount.DigitalContent
-		products        []*product_and_discount.Product
+
+		products []*product_and_discount.Product
 	)
-	_, err = tx.Select(&orderLines, queryString, args...)
+	_, err = ols.GetReplica().Select(&orderLines, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
 	}
 
+	// check if prefetching is needed and order lines have been found to proceed
 	if (option.PrefetchRelated.VariantDigitalContent || option.PrefetchRelated.VariantProduct) && len(orderLines) > 0 {
 
 		// prefetch product variants
-		_, err = tx.Select(
+		_, err = ols.GetReplica().Select(
 			&productVariants,
-			`SELECT * FROM `+store.ProductVariantTableName+`
-			WHERE (
-				ProductVariants.Id IN :IDs
-			)
-			ORDER BY :OrderBy`,
+			`SELECT * FROM `+store.ProductVariantTableName+` WHERE ProductVariants.Id IN :IDs`,
 			map[string]interface{}{
-				"IDs":     order.OrderLines(orderLines).ProductVariantIDs(),
-				"OrderBy": store.TableOrderingMap[store.ProductVariantTableName],
+				"IDs": orderLines.ProductVariantIDs(),
 			},
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find product variants with given IDs")
 		}
 
-		// prefetch digital contents || products
-		if len(productVariants) > 0 { // only proceed if product variants are found
-			switch {
-			case option.PrefetchRelated.VariantDigitalContent:
-				_, err = tx.Select(
-					&digitalContents,
-					`SELECT * FROM `+store.ProductDigitalContentTableName+`
-					WHERE (
-						DigitalContents.ProductVariantID IN :IDs
-					)`,
-					map[string]interface{}{
-						"IDs": product_and_discount.ProductVariants(productVariants).IDs(),
-					},
-				)
-				if err != nil {
-					return nil, errors.Wrap(err, "failed to find digital contents with given product variant IDs")
-				}
+		// prefetch digital contents or products, productVariants must not be empty to proceed
+		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
+			_, err = ols.GetReplica().Select(
+				&digitalContents,
+				`SELECT * FROM `+store.ProductDigitalContentTableName+` WHERE DigitalContents.ProductVariantID IN :IDs`,
+				map[string]interface{}{
+					"IDs": productVariants.IDs(),
+				},
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find digital contents with given product variant IDs")
+			}
+		}
 
-			case option.PrefetchRelated.VariantProduct:
-				_, err = tx.Select(
-					&products,
-					`SELECT * FROM `+store.ProductTableName+`
-					WHERE (
-						Products.Id IN :IDs
-					)`,
-					map[string]interface{}{
-						"IDs": product_and_discount.ProductVariants(productVariants).ProductIDs(),
-					},
-				)
-				if err != nil {
-					return nil, errors.Wrap(err, "failed to find products with given product variant IDs")
-				}
+		if option.PrefetchRelated.VariantProduct && len(productVariants) > 0 {
+			_, err = ols.GetReplica().Select(
+				&products,
+				`SELECT * FROM `+store.ProductTableName+` WHERE Products.Id IN :IDs`,
+				map[string]interface{}{
+					"IDs": productVariants.ProductIDs(),
+				},
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find products with given product variant IDs")
 			}
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
-	}
-
-	if option.PrefetchRelated.VariantDigitalContent || option.PrefetchRelated.VariantProduct {
+	// joining prefetched data.
+	// if slice of productVariants is not empty, this means we have prefetched related data
+	if len(productVariants) > 0 {
+		productVariantsMap := map[string]*product_and_discount.ProductVariant{}
+		for _, variant := range productVariants {
+			productVariantsMap[variant.Id] = variant
+		}
 
 		for _, line := range orderLines {
+			if line.VariantID != nil && productVariantsMap[*line.VariantID] != nil {
+				line.ProductVariant = productVariantsMap[*line.VariantID]
+			}
+		}
+
+		if len(digitalContents) > 0 {
+			digitalContentsMap := map[string]*product_and_discount.DigitalContent{}
+			for _, digitalContent := range digitalContents {
+				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
+			}
+
 			for _, variant := range productVariants {
-				if line.VariantID != nil && *line.VariantID == variant.Id {
-					line.ProductVariant = variant
+				if content := digitalContentsMap[variant.Id]; content != nil {
+					variant.DigitalContent = content
 				}
 			}
 		}
 
-		if option.PrefetchRelated.VariantDigitalContent {
-			for _, variant := range productVariants {
-				for _, content := range digitalContents {
-					if content.ProductVariantID == variant.Id {
-						variant.DigitalContent = content
-					}
-				}
+		if len(products) > 0 {
+			productsMap := map[string]*product_and_discount.Product{}
+			for _, product := range products {
+				productsMap[product.Id] = product
 			}
-		}
-
-		if option.PrefetchRelated.VariantProduct {
 			for _, variant := range productVariants {
-				for _, product := range products {
-					if product.Id == variant.ProductID {
-						variant.Product = product
-					}
+				if product := productsMap[variant.ProductID]; product != nil {
+					variant.Product = product
 				}
 			}
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -16,14 +17,14 @@ import (
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *AppOrder) UpsertOrder(ord *order.Order) (*order.Order, *model.AppError) {
+func (a *AppOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError) {
 	var (
 		err error
 	)
 	if ord.Id == "" {
-		ord, err = a.Srv().Store.Order().Save(ord)
+		ord, err = a.Srv().Store.Order().Save(transaction, ord)
 	} else {
-		ord, err = a.Srv().Store.Order().Update(ord)
+		ord, err = a.Srv().Store.Order().Update(transaction, ord)
 	}
 
 	if err != nil {
@@ -124,10 +125,9 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
+func (a *AppOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError {
 	order, appErr := a.OrderById(orderID)
 	if appErr != nil {
-		appErr.Where = "UpdateOrderTotalPaid"
 		return appErr
 	}
 	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
@@ -146,9 +146,8 @@ func (a *AppOrder) UpdateOrderTotalPaid(orderID string) *model.AppError {
 
 	order.TotalPaidAmount = &total
 
-	_, appErr = a.UpsertOrder(order)
+	_, appErr = a.UpsertOrder(transaction, order)
 	if appErr != nil {
-		appErr.Where = "UpdateOrderTotalPaid"
 		return appErr
 	}
 

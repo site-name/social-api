@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -56,17 +57,15 @@ func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine
 	var appErr *model.AppError
 
 	if digitalContent == nil {
-		digitalContent, appErr = a.ProductApp().
-			DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-				ProductVariantID: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: *orderLine.VariantID,
-					},
+		digitalContent, appErr = a.ProductApp().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+			ProductVariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: *orderLine.VariantID,
 				},
-			})
+			},
+		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
-				appErr.Where = "OrderLineNeedsAutomaticFulfillment"
 				return false, appErr
 			}
 			return false, nil
@@ -121,7 +120,6 @@ func (a *AppOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product
 		})
 
 	if appErr != nil {
-		appErr.Where = "GetVoucherDiscountAssignedToOrder"
 		return nil, appErr
 	}
 
@@ -132,22 +130,21 @@ func (a *AppOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *AppOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
 	var changedOrderDiscounts [][2]*product_and_discount.OrderDiscount
 
-	orderDiscounts, appErr := a.DiscountApp().
-		OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
-			OrderID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: ord.Id,
-				},
+	orderDiscounts, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
 			},
-			Type: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product_and_discount.MANUAL,
-				},
+		},
+		Type: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: product_and_discount.MANUAL,
 			},
-		})
+		},
+	})
 
 	if appErr != nil {
 		return nil, appErr
@@ -158,7 +155,7 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 		previousOrderDiscount := orderDiscount.DeepCopy()
 		currentTotal := ord.Total.Gross.Amount
 
-		appErr = a.UpdateOrderDiscountForOrder(ord, orderDiscount, "", "", nil)
+		appErr = a.UpdateOrderDiscountForOrder(transaction, ord, orderDiscount, "", "", nil)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -187,38 +184,32 @@ func (a *AppOrder) RecalculateOrderDiscounts(ord *order.Order) ([][2]*product_an
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *AppOrder) RecalculateOrder(ord *order.Order, kwargs map[string]interface{}) (appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "RecalculateOrder"
-		}
-	}()
-
-	appErr = a.RecalculateOrderPrices(ord, kwargs)
+func (a *AppOrder) RecalculateOrder(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+	appErr := a.RecalculateOrderPrices(transaction, ord, kwargs)
 	if appErr != nil {
-		return
+		return appErr
 	}
 
-	changedOrderDiscounts, appErr := a.RecalculateOrderDiscounts(ord)
+	changedOrderDiscounts, appErr := a.RecalculateOrderDiscounts(transaction, ord)
 	if appErr != nil {
-		return
+		return appErr
 	}
 
-	appErr = a.OrderDiscountsAutomaticallyUpdatedEvent(ord, changedOrderDiscounts)
+	appErr = a.OrderDiscountsAutomaticallyUpdatedEvent(transaction, ord, changedOrderDiscounts)
 	if appErr != nil {
-		return
+		return appErr
 	}
 
-	ord, appErr = a.UpsertOrder(ord)
+	ord, appErr = a.UpsertOrder(transaction, ord)
 	if appErr != nil {
-		return
+		return appErr
 	}
 
-	return a.ReCalculateOrderWeight(ord)
+	return a.ReCalculateOrderWeight(transaction, ord)
 }
 
 // ReCalculateOrderWeight
-func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
+func (a *AppOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -258,7 +249,7 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 					a.mutex.Lock()
 					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))
 					if err != nil {
-						setAppError(model.NewAppError("ReCalculateOrderWeight", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError))
+						setAppError(model.NewAppError("ReCalculateOrderWeight", app.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
 						weight = addedWeight
 					}
@@ -282,7 +273,7 @@ func (a *AppOrder) ReCalculateOrderWeight(ord *order.Order) *model.AppError {
 	weight, _ = weight.ConvertTo(ord.WeightUnit)
 	ord.WeightAmount = *weight.Amount
 
-	_, appError = a.UpsertOrder(ord)
+	_, appError = a.UpsertOrder(transaction, ord)
 	return appError
 }
 
@@ -298,7 +289,7 @@ func (a *AppOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order
 		}
 	}
 
-	_, appErr := a.BulkUpsertOrderLines(lines)
+	_, appErr := a.BulkUpsertOrderLines(nil, lines)
 	return appErr
 }
 
@@ -516,9 +507,6 @@ func (a *AppOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.Orde
 // Raise NotApplicable if voucher of given type cannot be applied.
 func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	defer func() {
-		if appErr != nil {
-			appErr.Where = "GetVoucherDiscountForOrder"
-		}
 		if notApplicableErr != nil {
 			notApplicableErr.Where = "GetVoucherDiscountForOrder"
 		}
@@ -663,7 +651,7 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *AppOrder) UpdateOrderStatus(ord *order.Order) *model.AppError {
+func (a *AppOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
 		return appErr
@@ -686,7 +674,7 @@ func (a *AppOrder) UpdateOrderStatus(ord *order.Order) *model.AppError {
 
 	if status != ord.Status {
 		ord.Status = status
-		_, appErr := a.UpsertOrder(ord)
+		_, appErr := a.UpsertOrder(transaction, ord)
 		if appErr != nil {
 			return appErr
 		}
@@ -745,14 +733,14 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 	return totalPriceLeft, nil
 }
 
-func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) *model.AppError {
+func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
-		return nil
+		return nil, nil
 	}
 
 	orderLinesWithTrackInventory := a.WarehouseApp().GetOrderLinesWithTrackInventory([]*order.OrderLineData{lineInfo})
 	if len(orderLinesWithTrackInventory) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	if oldQuantity < newQuantity {
@@ -767,8 +755,7 @@ func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQu
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *AppOrder) ChangeOrderLineQuantity(userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) *model.AppError {
-
+func (a *AppOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -776,15 +763,13 @@ func (a *AppOrder) ChangeOrderLineQuantity(userID string, lineInfo *order.OrderL
 	if newQuantity > 0 {
 		order, appErr := a.OrderById(lineInfo.Line.OrderID)
 		if appErr != nil {
-			appErr.Where = "ChangeOrderLineQuantity"
-			return appErr
+			return nil, appErr
 		}
 
 		if order.IsUnconfirmed() {
-			appErr = a.updateAllocationsForLine(lineInfo, oldQuantity, newQuantity, channelSlug)
-			if appErr != nil {
-				appErr.Where = "ChangeOrderLineQuantity"
-				return appErr
+			insufficientStock, appErr := a.updateAllocationsForLine(lineInfo, oldQuantity, newQuantity, channelSlug)
+			if appErr != nil || insufficientStock != nil {
+				return insufficientStock, appErr
 			}
 		}
 
@@ -802,31 +787,28 @@ func (a *AppOrder) ChangeOrderLineQuantity(userID string, lineInfo *order.OrderL
 
 		_, appErr = a.UpsertOrderLine(&orderLine)
 		if appErr != nil {
-			appErr.Where = "ChangeOrderLineQuantity"
-			return appErr
+			return nil, appErr
 		}
-	} else { // ------------
-		appErr := a.DeleteOrderLine(lineInfo)
-		if appErr != nil {
-			appErr.Where = "ChangeOrderLineQuantity"
-			return appErr
+	} else {
+		insufficientErr, appErr := a.DeleteOrderLine(lineInfo)
+		if appErr != nil || insufficientErr != nil {
+			return insufficientErr, appErr
 		}
 	}
 
 	quantityDiff := int(oldQuantity) - int(newQuantity)
 
 	if sendEvent {
-		appErr := a.CreateOrderEvent(&orderLine, userID, quantityDiff)
+		appErr := a.CreateOrderEvent(transaction, &orderLine, userID, quantityDiff)
 		if appErr != nil {
-			appErr.Where = "ChangeOrderLineQuantity"
-			return appErr
+			return nil, appErr
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (a *AppOrder) CreateOrderEvent(orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
+func (a *AppOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
 	var appErr *model.AppError
 
 	var savingUserID *string
@@ -835,7 +817,7 @@ func (a *AppOrder) CreateOrderEvent(orderLine *order.OrderLine, userID string, q
 	}
 
 	if quantityDiff > 0 {
-		_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+		_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
 			Type:    order.ORDER_EVENT_TYPE__REMOVED_PRODUCTS,
@@ -849,7 +831,7 @@ func (a *AppOrder) CreateOrderEvent(orderLine *order.OrderLine, userID string, q
 			},
 		})
 	} else if quantityDiff < 0 {
-		_, appErr = a.CommonCreateOrderEvent(&order.OrderEventOption{
+		_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
 			Type:    order.ORDER_EVENT_TYPE__ADDED_PRODUCTS,
@@ -868,21 +850,20 @@ func (a *AppOrder) CreateOrderEvent(orderLine *order.OrderLine, userID string, q
 }
 
 // Delete an order line from an order.
-func (a *AppOrder) DeleteOrderLine(lineInfo *order.OrderLineData) *model.AppError {
+func (a *AppOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
-		appErr.Where = "DeleteOrderLine"
-		return appErr
+		return nil, appErr
 	}
 
 	if ord.IsUnconfirmed() {
-		appErr = a.WarehouseApp().DecreaseAllocations([]*order.OrderLineData{lineInfo})
-		if appErr != nil {
-			return appErr
+		insufficientErr, appErr := a.WarehouseApp().DecreaseAllocations([]*order.OrderLineData{lineInfo})
+		if appErr != nil || insufficientErr != nil {
+			return insufficientErr, appErr
 		}
 	}
 
-	return a.DeleteOrderLines([]string{lineInfo.Line.Id})
+	return nil, a.DeleteOrderLines([]string{lineInfo.Line.Id})
 }
 
 // RestockOrderLines Return ordered products to corresponding stocks
@@ -900,7 +881,6 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 		},
 	})
 	if appError != nil {
-		appError.Where = "RestockOrderLines"
 		return appError
 	}
 	defaultWarehouse := warehouses[0]
@@ -913,7 +893,6 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 		},
 	})
 	if appError != nil {
-		appError.Where = "RestockOrderLines"
 		return appError
 	}
 
@@ -927,7 +906,6 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 			a.mutex.Lock()
 			if appError == nil {
 				appError = err
-				appError.Where = "RestockOrderLines"
 			}
 			a.mutex.Unlock()
 		}
@@ -957,7 +935,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 						}
 
 						if anOrderLine.QuantityFulfilled > 0 {
-							allocations, appErr := a.WarehouseApp().AllocationsByOption(&warehouse.AllocationFilterOption{
+							allocations, appErr := a.WarehouseApp().AllocationsByOption(nil, &warehouse.AllocationFilterOption{
 								OrderLineID: &model.StringFilter{
 									StringOption: &model.StringOption{
 										Eq: anOrderLine.Id,
@@ -1010,13 +988,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "RestockFulfillmentLines"
-		}
-	}()
-
+func (a *AppOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
 		FulfillmentID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -1087,7 +1059,7 @@ func (a *AppOrder) RestockFulfillmentLines(fulfillment *order.Fulfillment, wareh
 		orderLineOfFulfillment.QuantityFulfilled -= fulfillmentLine.Quantity
 	}
 
-	_, appErr = a.BulkUpsertOrderLines(orderLinesOfFulfillmentLines)
+	_, appErr = a.BulkUpsertOrderLines(transaction, orderLinesOfFulfillmentLines)
 	return appErr
 }
 
@@ -1118,7 +1090,6 @@ func (a *AppOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*
 func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shipping.ShippingMethod, *model.AppError) {
 	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
-		appErr.Where = "GetValidShippingMethodsForOrder"
 		return nil, appErr
 	}
 
@@ -1132,13 +1103,11 @@ func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shippin
 
 	orderSubTotal, appErr := a.OrderSubTotal(ord)
 	if appErr != nil {
-		appErr.Where = "GetValidShippingMethodsForOrder"
 		return nil, appErr
 	}
 
 	shippingAddress, appErr := a.AccountApp().AddressById(*ord.ShippingAddressID)
 	if appErr != nil {
-		appErr.Where = "GetValidShippingMethodsForOrder"
 		return nil, appErr
 	}
 
@@ -1148,7 +1117,7 @@ func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shippin
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *AppOrder) UpdateOrderDiscountForOrder(ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
+func (a *AppOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1183,9 +1152,8 @@ func (a *AppOrder) UpdateOrderDiscountForOrder(ord *order.Order, orderDiscountTo
 	}
 	ord.Total = newOrderTotal
 
-	_, appErr := a.DiscountApp().UpsertOrderDiscount(orderDiscountToUpdate)
+	_, appErr := a.DiscountApp().UpsertOrderDiscount(transaction, orderDiscountToUpdate)
 	if appErr != nil {
-		appErr.Where = "UpdateOrderDiscountForOrder"
 		return appErr
 	}
 	return nil
@@ -1218,7 +1186,6 @@ func (a *AppOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*gopric
 		voucher, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
-				appErr.Where = "GetProductsVoucherDiscountForOrder"
 				return nil, appErr
 			}
 			// ignore not found error
@@ -1232,13 +1199,11 @@ func (a *AppOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*gopric
 					},
 				})
 				if appErr != nil {
-					appErr.Where = "GetProductsVoucherDiscountForOrder"
 					return nil, appErr
 				}
 
 				discountedPrices, appErr := a.GetPricesOfDiscountedSpecificProduct(orderLinesOfOrder, voucher)
 				if appErr != nil {
-					appErr.Where = "GetProductsVoucherDiscountForOrder"
 					return nil, appErr
 				}
 
@@ -1276,13 +1241,11 @@ func (a *AppOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "MatchOrdersWithNewUser"
 		return appErr
 	}
 
 	_, appErr = a.BulkUpsertOrders(ordersByOption)
 	if appErr != nil {
-		appErr.Where = "MatchOrdersWithNewUser"
 		return appErr
 	}
 	return nil
@@ -1298,7 +1261,6 @@ func (a *AppOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *mo
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "GetTotalOrderDiscount"
 		return nil, appErr
 	}
 
@@ -1335,7 +1297,6 @@ func (a *AppOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "GetOrderDiscounts"
 		return nil, appErr
 	}
 
@@ -1343,7 +1304,7 @@ func (a *AppOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *AppOrder) CreateOrderDiscountForOrder(ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *AppOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1358,14 +1319,13 @@ func (a *AppOrder) CreateOrderDiscountForOrder(ord *order.Order, reason string, 
 	sub, _ := ord.Total.Sub(grossTotal.(*goprices.Money))
 	newAmount := sub.Gross
 
-	newOrderDiscount, appErr := a.DiscountApp().UpsertOrderDiscount(&product_and_discount.OrderDiscount{
+	newOrderDiscount, appErr := a.DiscountApp().UpsertOrderDiscount(transaction, &product_and_discount.OrderDiscount{
 		ValueType: valueType,
 		Value:     value,
 		Reason:    &reason,
 		Amount:    newAmount,
 	})
 	if appErr != nil {
-		appErr.Where = "CreateOrderDiscountForOrder"
 		return nil, appErr
 	}
 
@@ -1375,9 +1335,8 @@ func (a *AppOrder) CreateOrderDiscountForOrder(ord *order.Order, reason string, 
 	}
 
 	ord.Total = newOrderTotal
-	_, appErr = a.UpsertOrder(ord)
+	_, appErr = a.UpsertOrder(transaction, ord)
 	if appErr != nil {
-		appErr.Where = "CreateOrderDiscountForOrder"
 		return nil, appErr
 	}
 
@@ -1385,10 +1344,9 @@ func (a *AppOrder) CreateOrderDiscountForOrder(ord *order.Order, reason string, 
 }
 
 // RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-func (a *AppOrder) RemoveOrderDiscountFromOrder(ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
+func (a *AppOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
 	appErr := a.DiscountApp().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
 	if appErr != nil {
-		appErr.Where = "RemoveOrderDiscountFromOrder"
 		return appErr
 	}
 
@@ -1401,9 +1359,8 @@ func (a *AppOrder) RemoveOrderDiscountFromOrder(ord *order.Order, orderDiscount 
 	}
 
 	ord.Total = newOrderTotal
-	_, appErr = a.UpsertOrder(ord)
+	_, appErr = a.UpsertOrder(transaction, ord)
 	if appErr != nil {
-		appErr.Where = "RemoveOrderDiscountFromOrder"
 		return appErr
 	}
 

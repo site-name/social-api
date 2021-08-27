@@ -6,8 +6,10 @@ package mocks
 
 import (
 	context "context"
+	driver "database/sql/driver"
 
 	gorp "github.com/mattermost/gorp"
+
 	mock "github.com/stretchr/testify/mock"
 
 	squirrel "github.com/Masterminds/squirrel"
@@ -766,6 +768,11 @@ func (_m *Store) FileInfo() store.FileInfoStore {
 	}
 
 	return r0
+}
+
+// FinalizeTransaction provides a mock function with given fields: transaction
+func (_m *Store) FinalizeTransaction(transaction driver.Tx) {
+	_m.Called(transaction)
 }
 
 // Fulfillment provides a mock function with given fields:

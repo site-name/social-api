@@ -3,6 +3,7 @@ package order
 import (
 	"database/sql"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -30,13 +31,18 @@ func (oes *SqlOrderEventStore) CreateIndexesIfNotExists() {
 	oes.CreateForeignKeyIfNotExists(store.OrderEventTableName, "UserID", store.UserTableName, "Id", false)
 }
 
-func (oes *SqlOrderEventStore) Save(orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (oes *SqlOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+	var insertFunc func(list ...interface{}) error = oes.GetMaster().Insert
+	if transaction != nil {
+		insertFunc = transaction.Insert
+	}
+
 	orderEvent.PreSave()
 	if err := orderEvent.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := oes.GetMaster().Insert(orderEvent); err != nil {
+	if err := insertFunc(orderEvent); err != nil {
 		return nil, errors.Wrapf(err, "failed to save order event with id=%s", orderEvent.Id)
 	}
 

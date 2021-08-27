@@ -203,14 +203,14 @@ type AccountApp interface {
 	AddStatusCache(status *account.Status)
 	StatusByID(statusID string) (*account.Status, *model.AppError)
 	StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError)
-	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) // CreateUserAccessToken creates new user access token for user
-	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)     // GetUserAccessToken get access token for user
-	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                             // RevokeUserAccessToken
-	SetStatusOnline(userID string, manual bool)                                                       // SetStatusOnline sets given user's status to online
-	SetStatusOffline(userID string, manual bool)                                                      // SetStatusOffline sets user's status to offline
-	DeleteAddresses(addressIDs []string) *model.AppError                                              // DeleteAddress deletes given address and returns an error
-	UpsertAddress(addr *account.Address) (*account.Address, *model.AppError)                          // UpsertAddress inserts or updates given address by checking its Id attribute
-	UserByOrderId(orderID string) (*account.User, *model.AppError)                                    // UserByOrderId returns an user who owns given order
+	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)       // CreateUserAccessToken creates new user access token for user
+	GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError)           // GetUserAccessToken get access token for user
+	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                                   // RevokeUserAccessToken
+	SetStatusOnline(userID string, manual bool)                                                             // SetStatusOnline sets given user's status to online
+	SetStatusOffline(userID string, manual bool)                                                            // SetStatusOffline sets user's status to offline
+	DeleteAddresses(addressIDs []string) *model.AppError                                                    // DeleteAddress deletes given address and returns an error
+	UpsertAddress(transaction *gorp.Transaction, addr *account.Address) (*account.Address, *model.AppError) // UpsertAddress inserts or updates given address by checking its Id attribute
+	UserByOrderId(orderID string) (*account.User, *model.AppError)                                          // UserByOrderId returns an user who owns given order
 }
 
 type ProductApp interface {
@@ -276,14 +276,14 @@ type ChannelApp interface {
 }
 
 type WarehouseApp interface {
-	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)
-	CheckStockQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError)
-	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)                                      // IsProductInStock
-	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData                                           // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-	DecreaseAllocations(lineInfos []*order.OrderLineData) *model.AppError                                                                   // DecreaseAllocations Decreate allocations for provided order lines.
-	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)                                   // WarehouseByOption returns a list of warehouses based on given option
-	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) // AllocationsByOption returns all warehouse allocations filtered based on given option
-	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                                                              // WarehouseByStockID returns a warehouse that owns the given stock
+	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)          // Validate if there is stock available for given variant in given country. If so - returns None. If there is less stock then required raise InsufficientStock exception.
+	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // Validate if there is stock available for given variants in given country. It raises InsufficientStock: when there is not enough items in stock for a variant
+	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)                                                                              // IsProductInStock
+	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData                                                                                   // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
+	DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError)                                                                           // DecreaseAllocations Decreate allocations for provided order lines.
+	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)                                                                           // WarehouseByOption returns a list of warehouses based on given option
+	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)                                         // AllocationsByOption returns all warehouse allocations filtered based on given option
+	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                                                                                                      // WarehouseByStockID returns a warehouse that owns the given stock
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
 	//
 	// Function lock for update stock and allocations related to given `order_line`
@@ -315,9 +315,9 @@ type WarehouseApp interface {
 	// will stay unmodified (case of unconfirmed order editing).
 	//
 	// updateStocks default to true
-	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) *model.AppError
-	GetStockByOption(option *warehouse.StockFilterOption) (*warehouse.Stock, *model.AppError)                                 // GetStockByOption takes options for filtering 1 stock
+	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError)
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                          // GetStockById takes options for filtering 1 stock
 }
 
 type DiscountApp interface {
@@ -339,13 +339,13 @@ type DiscountApp interface {
 	//
 	// `discounts` is optional
 	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError)
-	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)          // OrderDiscountsByOption filters and returns order discounts with given option
-	UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)                    // UpsertOrderDiscount updates or inserts given order discount
-	ValidateVoucherInOrder(ord *order.Order) (*model.NotApplicable, *model.AppError)                                                                 // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
-	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                   // VoucherById finds and returns a voucher with given id
-	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError) // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
-	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                              // BulkDeleteOrderDiscounts performs bulk delete given order discounts
-	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                   // FetchActiveDiscounts returns discounts that are activated
+	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)                      // OrderDiscountsByOption filters and returns order discounts with given option
+	UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) // UpsertOrderDiscount updates or inserts given order discount
+	ValidateVoucherInOrder(ord *order.Order) (*model.NotApplicable, *model.AppError)                                                                             // ValidateVoucherInOrder validates order has voucher and the voucher satisfies all requirements
+	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)                                                                               // VoucherById finds and returns a voucher with given id
+	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)             // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
+	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                                          // BulkDeleteOrderDiscounts performs bulk delete given order discounts
+	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                               // FetchActiveDiscounts returns discounts that are activated
 }
 
 type OrderApp interface {
@@ -356,7 +356,7 @@ type OrderApp interface {
 	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
 	OrderTotalQuantity(orderID string) (int, *model.AppError)                                                      // OrderTotalQuantity return total quantity of given order
-	UpdateOrderTotalPaid(orderID string) *model.AppError                                                           // UpdateOrderTotalPaid update given order's total paid amount
+	UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError                            // UpdateOrderTotalPaid update given order's total paid amount
 	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                                   // OrderIsPreAuthorized checks if order is pre-authorized
 	OrderIsCaptured(orderID string) (bool, *model.AppError)                                                        // OrderIsCaptured checks if given order is captured
 	OrderSubTotal(order *order.Order) (*goprices.TaxedMoney, *model.AppError)                                      // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order

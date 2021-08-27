@@ -3,6 +3,7 @@ package discount
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
@@ -19,8 +20,8 @@ func (a *AppDiscount) OrderDiscountsByOption(option *product_and_discount.OrderD
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *AppDiscount) UpsertOrderDiscount(orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
-	orderDiscount, err := a.Srv().Store.OrderDiscount().Upsert(orderDiscount)
+func (a *AppDiscount) UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscount, err := a.Srv().Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
