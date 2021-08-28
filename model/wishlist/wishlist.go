@@ -11,6 +11,13 @@ type Wishlist struct {
 	CreateAt int64   `json:"create_at"`
 }
 
+// WishlistFilterOption is used to build squirrel sql queries
+type WishlistFilterOption struct {
+	Id     *model.StringFilter
+	Token  *model.StringFilter
+	UserID *model.StringFilter
+}
+
 func (w *Wishlist) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.wishlist.is_valid.%s.app_error",
@@ -38,11 +45,17 @@ func (w *Wishlist) ToJson() string {
 }
 
 func (w *Wishlist) PreSave() {
-	if w.Id == "" {
+	if !model.IsValidId(w.Id) {
 		w.Id = model.NewId()
 	}
-	if w.Token == "" {
+	if !model.IsValidId(w.Token) {
 		w.Token = model.NewId()
 	}
 	w.CreateAt = model.GetMillis()
+}
+
+func (w *Wishlist) PreUpdate() {
+	if !model.IsValidId(w.Token) {
+		w.Token = model.NewId()
+	}
 }

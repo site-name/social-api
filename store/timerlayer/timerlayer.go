@@ -149,7 +149,7 @@ type TimerLayer struct {
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
-	WishlistProductVariantStore        store.WishlistProductVariantStore
+	WishlistItemProductVariantStore    store.WishlistItemProductVariantStore
 }
 
 func (s *TimerLayer) Address() store.AddressStore {
@@ -588,8 +588,8 @@ func (s *TimerLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
 }
 
-func (s *TimerLayer) WishlistProductVariant() store.WishlistProductVariantStore {
-	return s.WishlistProductVariantStore
+func (s *TimerLayer) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
+	return s.WishlistItemProductVariantStore
 }
 
 type TimerLayerAddressStore struct {
@@ -1137,8 +1137,8 @@ type TimerLayerWishlistItemStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerWishlistProductVariantStore struct {
-	store.WishlistProductVariantStore
+type TimerLayerWishlistItemProductVariantStore struct {
+	store.WishlistItemProductVariantStore
 	Root *TimerLayer
 }
 
@@ -7750,10 +7750,10 @@ func (s *TimerLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error)
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
+func (s *TimerLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistStore.GetByUserID(userID)
+	result, err := s.WishlistStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7761,15 +7761,15 @@ func (s *TimerLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.GetByUserID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+func (s *TimerLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistStore.Save(wishlist)
+	result, err := s.WishlistStore.Upsert(wishList)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7777,7 +7777,39 @@ func (s *TimerLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.W
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.DeleteItemsByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.DeleteItemsByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -7798,10 +7830,10 @@ func (s *TimerLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.Save(wishlistItem)
+	result, err := s.WishlistItemStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7809,15 +7841,15 @@ func (s *TimerLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.WishlistItemsByWishlistId(wishlistID)
+	result, err := s.WishlistItemStore.Upsert(wishlistItem)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7825,15 +7857,15 @@ func (s *TimerLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID strin
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.WishlistItemsByWishlistId", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistProductVariantStore.GetById(id)
+	result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7841,15 +7873,15 @@ func (s *TimerLayerWishlistProductVariantStore) GetById(id string) (*wishlist.Wi
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.GetById", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.DeleteRelation", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistProductVariantStore.Save(wishlistVariant)
+	result, err := s.WishlistItemProductVariantStore.GetById(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7857,7 +7889,23 @@ func (s *TimerLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.W
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistProductVariantStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.GetById", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemProductVariantStore) Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -8001,6 +8049,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &TimerLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &TimerLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
-	newStore.WishlistProductVariantStore = &TimerLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}
+	newStore.WishlistItemProductVariantStore = &TimerLayerWishlistItemProductVariantStore{WishlistItemProductVariantStore: childStore.WishlistItemProductVariant(), Root: &newStore}
 	return &newStore
 }

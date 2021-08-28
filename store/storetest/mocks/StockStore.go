@@ -81,13 +81,13 @@ func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *war
 	return r0, r1
 }
 
-// FilterProductStocksForCountryAndChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
-	ret := _m.Called(options)
+// FilterForCountryAndChannel provides a mock function with given fields: transaction, options
+func (_m *StockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
-		r0 = rf(options)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*warehouse.Stock)
@@ -95,8 +95,8 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *warehouse
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForCountryAndChannel) error); ok {
-		r1 = rf(options)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -104,13 +104,13 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(options *warehouse
 	return r0, r1
 }
 
-// FilterVariantStocksForCountry provides a mock function with given fields: options
-func (_m *StockStore) FilterVariantStocksForCountry(options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
-	ret := _m.Called(options)
+// FilterProductStocksForCountryAndChannel provides a mock function with given fields: transaction, options
+func (_m *StockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
-		r0 = rf(options)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*warehouse.Stock)
@@ -118,8 +118,31 @@ func (_m *StockStore) FilterVariantStocksForCountry(options *warehouse.StockFilt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForCountryAndChannel) error); ok {
-		r1 = rf(options)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+		r1 = rf(transaction, options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterVariantStocksForCountry provides a mock function with given fields: transaction, options
+func (_m *StockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+	ret := _m.Called(transaction, options)
+
+	var r0 []*warehouse.Stock
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+		r0 = rf(transaction, options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Stock)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)
 	}

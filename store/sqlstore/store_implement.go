@@ -147,7 +147,7 @@ type SqlStoreStores struct {
 	warehouseShippingZone         store.WarehouseShippingZoneStore
 	wishlist                      store.WishlistStore
 	wishlistItem                  store.WishlistItemStore
-	wishlistProductVariant        store.WishlistProductVariantStore
+	wishlistItemProductVariant    store.WishlistItemProductVariantStore
 }
 
 // setup tables before performing database migration
@@ -262,7 +262,7 @@ func (store *SqlStore) setupTables() {
 		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
 		wishlist:                      wishlist.NewSqlWishlistStore(store),
 		wishlistItem:                  wishlist.NewSqlWishlistItemStore(store),
-		wishlistProductVariant:        wishlist.NewSqlWishlistProductVariantStore(store),
+		wishlistItemProductVariant:    wishlist.NewSqlWishlistItemProductVariantStore(store),
 	}
 }
 
@@ -378,7 +378,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.warehouseShippingZone.CreateIndexesIfNotExists()
 	store.stores.wishlist.CreateIndexesIfNotExists()
 	store.stores.wishlistItem.CreateIndexesIfNotExists()
-	store.stores.wishlistProductVariant.CreateIndexesIfNotExists()
+	store.stores.wishlistItemProductVariant.CreateIndexesIfNotExists()
 
 }
 
@@ -818,6 +818,6 @@ func (ss *SqlStore) WishlistItem() store.WishlistItemStore {
 	return ss.stores.wishlistItem
 }
 
-func (ss *SqlStore) WishlistProductVariant() store.WishlistProductVariantStore {
-	return ss.stores.wishlistProductVariant
+func (ss *SqlStore) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
+	return ss.stores.wishlistItemProductVariant
 }

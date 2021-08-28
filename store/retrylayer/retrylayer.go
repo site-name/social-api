@@ -149,7 +149,7 @@ type RetryLayer struct {
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
 	WishlistStore                      store.WishlistStore
 	WishlistItemStore                  store.WishlistItemStore
-	WishlistProductVariantStore        store.WishlistProductVariantStore
+	WishlistItemProductVariantStore    store.WishlistItemProductVariantStore
 }
 
 func (s *RetryLayer) Address() store.AddressStore {
@@ -588,8 +588,8 @@ func (s *RetryLayer) WishlistItem() store.WishlistItemStore {
 	return s.WishlistItemStore
 }
 
-func (s *RetryLayer) WishlistProductVariant() store.WishlistProductVariantStore {
-	return s.WishlistProductVariantStore
+func (s *RetryLayer) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
+	return s.WishlistItemProductVariantStore
 }
 
 type RetryLayerAddressStore struct {
@@ -1137,8 +1137,8 @@ type RetryLayerWishlistItemStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerWishlistProductVariantStore struct {
-	store.WishlistProductVariantStore
+type RetryLayerWishlistItemProductVariantStore struct {
+	store.WishlistItemProductVariantStore
 	Root *RetryLayer
 }
 
@@ -9294,11 +9294,11 @@ func (s *RetryLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error)
 
 }
 
-func (s *RetryLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
+func (s *RetryLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistStore.GetByUserID(userID)
+		result, err := s.WishlistStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -9314,11 +9314,51 @@ func (s *RetryLayerWishlistStore) GetByUserID(userID string) (*wishlist.Wishlist
 
 }
 
-func (s *RetryLayerWishlistStore) Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+func (s *RetryLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistStore.Save(wishlist)
+		result, err := s.WishlistStore.Upsert(wishList)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.DeleteItemsByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -9354,11 +9394,11 @@ func (s *RetryLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem
 
 }
 
-func (s *RetryLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.Save(wishlistItem)
+		result, err := s.WishlistItemStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -9374,11 +9414,11 @@ func (s *RetryLayerWishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) 
 
 }
 
-func (s *RetryLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.WishlistItemsByWishlistId(wishlistID)
+		result, err := s.WishlistItemStore.Upsert(wishlistItem)
 		if err == nil {
 			return result, nil
 		}
@@ -9394,11 +9434,11 @@ func (s *RetryLayerWishlistItemStore) WishlistItemsByWishlistId(wishlistID strin
 
 }
 
-func (s *RetryLayerWishlistProductVariantStore) GetById(id string) (*wishlist.WishlistProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistProductVariantStore.GetById(id)
+		result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
 		if err == nil {
 			return result, nil
 		}
@@ -9414,11 +9454,31 @@ func (s *RetryLayerWishlistProductVariantStore) GetById(id string) (*wishlist.Wi
 
 }
 
-func (s *RetryLayerWishlistProductVariantStore) Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistProductVariantStore.Save(wishlistVariant)
+		result, err := s.WishlistItemProductVariantStore.GetById(id)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemProductVariantStore) Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)
 		if err == nil {
 			return result, nil
 		}
@@ -9572,6 +9632,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
 	newStore.WishlistStore = &RetryLayerWishlistStore{WishlistStore: childStore.Wishlist(), Root: &newStore}
 	newStore.WishlistItemStore = &RetryLayerWishlistItemStore{WishlistItemStore: childStore.WishlistItem(), Root: &newStore}
-	newStore.WishlistProductVariantStore = &RetryLayerWishlistProductVariantStore{WishlistProductVariantStore: childStore.WishlistProductVariant(), Root: &newStore}
+	newStore.WishlistItemProductVariantStore = &RetryLayerWishlistItemProductVariantStore{WishlistItemProductVariantStore: childStore.WishlistItemProductVariant(), Root: &newStore}
 	return &newStore
 }

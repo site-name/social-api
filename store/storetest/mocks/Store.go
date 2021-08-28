@@ -1996,16 +1996,16 @@ func (_m *Store) WishlistItem() store.WishlistItemStore {
 	return r0
 }
 
-// WishlistProductVariant provides a mock function with given fields:
-func (_m *Store) WishlistProductVariant() store.WishlistProductVariantStore {
+// WishlistItemProductVariant provides a mock function with given fields:
+func (_m *Store) WishlistItemProductVariant() store.WishlistItemProductVariantStore {
 	ret := _m.Called()
 
-	var r0 store.WishlistProductVariantStore
-	if rf, ok := ret.Get(0).(func() store.WishlistProductVariantStore); ok {
+	var r0 store.WishlistItemProductVariantStore
+	if rf, ok := ret.Get(0).(func() store.WishlistItemProductVariantStore); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(store.WishlistProductVariantStore)
+			r0 = ret.Get(0).(store.WishlistItemProductVariantStore)
 		}
 	}
 

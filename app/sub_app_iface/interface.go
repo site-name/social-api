@@ -238,9 +238,8 @@ type ProductApp interface {
 }
 
 type WishlistApp interface {
-	CreateWishlist(userID string) (*wishlist.Wishlist, *model.AppError)                      // CreateWishlist creates new wishlist for given user and returns it
-	WishlistByUserID(userID string) (*wishlist.Wishlist, *model.AppError)                    // WishlistByUserID returns a wishlist belongs to given user
-	WishlistItemsByWishlistID(wishlistID string) ([]*wishlist.WishlistItem, *model.AppError) // WishlistItemsByWishlistID returns a list of wishlist items that belong to given wishlist
+	UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError)             // UpsertWishlist inserts a new wishlist instance into database with given userID
+	WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError) // WishlistByOption returns 1 wishlist filtered by given option
 }
 
 type AttributeApp interface {

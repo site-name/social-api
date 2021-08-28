@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210820140952-9d5822d4a625 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.29
+	github.com/aws/aws-sdk-go v1.40.32
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.2
@@ -49,7 +49,7 @@ require (
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/minio/minio-go/v7 v7.0.13
-	github.com/nyaruka/phonenumbers v1.0.70
+	github.com/nyaruka/phonenumbers v1.0.71
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/olivere/elastic v6.2.37+incompatible // indirect
 	github.com/oov/psd v0.0.0-20210618170533-9fb823ddb631

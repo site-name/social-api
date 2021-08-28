@@ -166,6 +166,9 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 		OrderBy(store.TableOrderingMap[store.ProductVariantTableName])
 
 	// parse option
+	if option.Distinct {
+		query = query.Distinct()
+	}
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("ProductVariants.Id"))
 	}
@@ -182,12 +185,18 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	}
 	if option.ProductVariantChannelListingChannelSlug != nil {
 		if !joinedProductVariantChannelListingTable { // check if joined or not
-			query = query.
-				InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)")
+			query = query.InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)")
 		}
 		query = query.
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariantChannelListings.ChannelID)").
 			Where(option.ProductVariantChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
+	}
+
+	if option.WishlistID != nil {
+		query = query.
+			InnerJoin(store.WishlistProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)").
+			InnerJoin(store.WishlistItemTableName + " ON (WishlistItemProductVariants.WishlistItemID = WishlistItems.Id)").
+			Where(option.WishlistID.ToSquirrel("WishlistItems.WishlistID"))
 	}
 
 	queryString, args, err := query.ToSql()

@@ -5,7 +5,9 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	account "github.com/sitename/sitename/model/account"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -118,13 +120,13 @@ func (_m *AddressStore) ModelFields() []string {
 	return r0
 }
 
-// Save provides a mock function with given fields: address
-func (_m *AddressStore) Save(address *account.Address) (*account.Address, error) {
-	ret := _m.Called(address)
+// Save provides a mock function with given fields: transaction, address
+func (_m *AddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+	ret := _m.Called(transaction, address)
 
 	var r0 *account.Address
-	if rf, ok := ret.Get(0).(func(*account.Address) *account.Address); ok {
-		r0 = rf(address)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *account.Address) *account.Address); ok {
+		r0 = rf(transaction, address)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*account.Address)
@@ -132,8 +134,8 @@ func (_m *AddressStore) Save(address *account.Address) (*account.Address, error)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*account.Address) error); ok {
-		r1 = rf(address)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *account.Address) error); ok {
+		r1 = rf(transaction, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -141,13 +143,13 @@ func (_m *AddressStore) Save(address *account.Address) (*account.Address, error)
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: address
-func (_m *AddressStore) Update(address *account.Address) (*account.Address, error) {
-	ret := _m.Called(address)
+// Update provides a mock function with given fields: transaction, address
+func (_m *AddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+	ret := _m.Called(transaction, address)
 
 	var r0 *account.Address
-	if rf, ok := ret.Get(0).(func(*account.Address) *account.Address); ok {
-		r0 = rf(address)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *account.Address) *account.Address); ok {
+		r0 = rf(transaction, address)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*account.Address)
@@ -155,8 +157,8 @@ func (_m *AddressStore) Update(address *account.Address) (*account.Address, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*account.Address) error); ok {
-		r1 = rf(address)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *account.Address) error); ok {
+		r1 = rf(transaction, address)
 	} else {
 		r1 = ret.Error(1)
 	}

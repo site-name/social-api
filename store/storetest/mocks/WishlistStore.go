@@ -43,13 +43,13 @@ func (_m *WishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
 	return r0, r1
 }
 
-// GetByUserID provides a mock function with given fields: userID
-func (_m *WishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) {
-	ret := _m.Called(userID)
+// GetByOption provides a mock function with given fields: option
+func (_m *WishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
+	ret := _m.Called(option)
 
 	var r0 *wishlist.Wishlist
-	if rf, ok := ret.Get(0).(func(string) *wishlist.Wishlist); ok {
-		r0 = rf(userID)
+	if rf, ok := ret.Get(0).(func(*wishlist.WishlistFilterOption) *wishlist.Wishlist); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*wishlist.Wishlist)
@@ -57,8 +57,8 @@ func (_m *WishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
+	if rf, ok := ret.Get(1).(func(*wishlist.WishlistFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -66,13 +66,13 @@ func (_m *WishlistStore) GetByUserID(userID string) (*wishlist.Wishlist, error) 
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: _a0
-func (_m *WishlistStore) Save(_a0 *wishlist.Wishlist) (*wishlist.Wishlist, error) {
-	ret := _m.Called(_a0)
+// Upsert provides a mock function with given fields: wishList
+func (_m *WishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+	ret := _m.Called(wishList)
 
 	var r0 *wishlist.Wishlist
 	if rf, ok := ret.Get(0).(func(*wishlist.Wishlist) *wishlist.Wishlist); ok {
-		r0 = rf(_a0)
+		r0 = rf(wishList)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*wishlist.Wishlist)
@@ -81,7 +81,7 @@ func (_m *WishlistStore) Save(_a0 *wishlist.Wishlist) (*wishlist.Wishlist, error
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*wishlist.Wishlist) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(wishList)
 	} else {
 		r1 = ret.Error(1)
 	}

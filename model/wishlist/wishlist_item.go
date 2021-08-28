@@ -1,8 +1,6 @@
 package wishlist
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -11,6 +9,13 @@ type WishlistItem struct {
 	WishlistID string `json:"wishlist_id"`
 	ProductID  string `json:"product_id"`
 	CreateAt   int64  `json:"create_at"`
+}
+
+// WishlistItemFilterOption is used to build squirrel filtering options
+type WishlistItemFilterOption struct {
+	Id         *model.StringFilter
+	WishlistID *model.StringFilter
+	ProductID  *model.StringFilter
 }
 
 func (w *WishlistItem) IsValid() *model.AppError {
@@ -41,10 +46,4 @@ func (w *WishlistItem) PreSave() {
 
 func (w *WishlistItem) ToJson() string {
 	return model.ModelToJson(w)
-}
-
-func WishlistItemFromJson(data io.Reader) *WishlistItem {
-	var w WishlistItem
-	model.ModelFromJson(&w, data)
-	return &w
 }

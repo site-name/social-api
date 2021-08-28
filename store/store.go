@@ -147,7 +147,7 @@ type Store interface {
 	WarehouseShippingZone() WarehouseShippingZoneStore                 //
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
-	WishlistProductVariant() WishlistProductVariantStore               //
+	WishlistItemProductVariant() WishlistItemProductVariantStore       //
 	PluginConfiguration() PluginConfigurationStore                     // plugin
 	Compliance() ComplianceStore                                       // Compliance
 	Attribute() AttributeStore                                         // attribute
@@ -349,20 +349,23 @@ type PluginConfigurationStore interface {
 type (
 	WishlistStore interface {
 		CreateIndexesIfNotExists()
-		Save(wishlist *wishlist.Wishlist) (*wishlist.Wishlist, error) // Save inserts new wishlist into database
-		GetById(id string) (*wishlist.Wishlist, error)                // GetById returns a wishlist with given id
-		GetByUserID(userID string) (*wishlist.Wishlist, error)        // GetByUserID returns a wishlist belong to given user
+		GetById(id string) (*wishlist.Wishlist, error)                                 // GetById returns a wishlist with given id
+		Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error)                // Upsert inserts or update given wishlist and returns it
+		GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
 	}
 	WishlistItemStore interface {
 		CreateIndexesIfNotExists()
-		Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error)      // Save insert new wishlist item into database
-		GetById(id string) (*wishlist.WishlistItem, error)                             // GetById returns a wishlist item wish given id
-		WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) // WishlistItemsByWishlistId returns a list of wishlist items that belong to given wishlist
+		GetById(id string) (*wishlist.WishlistItem, error)                                          // GetById returns a wishlist item wish given id
+		Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error)                 // Upsert inserts or updates given wishlist item then returns it
+		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) // FilterByOption finds and returns a slice of wishlist items filtered using given options
+		GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error)      // GetByOption finds and returns a wishlist item filtered by given option
+		DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error)               // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
 	}
-	WishlistProductVariantStore interface {
+	WishlistItemProductVariantStore interface {
 		CreateIndexesIfNotExists()
-		Save(wishlistVariant *wishlist.WishlistProductVariant) (*wishlist.WishlistProductVariant, error) // Save inserts new wishlist product variant relation into database and returns it
-		GetById(id string) (*wishlist.WishlistProductVariant, error)                                     // GetByID returns a wishlist item product variant with given id
+		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) // Save inserts new wishlist product variant relation into database and returns it
+		GetById(id string) (*wishlist.WishlistItemProductVariant, error)                                         // GetByID returns a wishlist item product variant with given id
+		DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error)                             // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
 	}
 )
 
