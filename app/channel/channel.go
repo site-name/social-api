@@ -75,3 +75,13 @@ func (a *AppChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model
 
 	return channel, nil
 }
+
+// ChannelsByOption returns a list of channels by given options
+func (a *AppChannel) ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError) {
+	channels, err := a.Srv().Store.Channel().FilterByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ChannelsByOption", "app.channel.error_finding_channels_by_option.app_error", err)
+	}
+
+	return channels, nil
+}

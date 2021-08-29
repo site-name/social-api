@@ -247,7 +247,6 @@ type (
 		CreateIndexesIfNotExists()
 		Save(attr *attribute.Attribute) (*attribute.Attribute, error)                           // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
 		Get(id string) (*attribute.Attribute, error)                                            // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
-		GetAttributesByIds(ids []string) ([]*attribute.Attribute, error)                        // GetAttributesByIds try finding all attributes with given `ids` then returns them. Returned error can be wither *store.ErrNotFound or system error
 		GetBySlug(slug string) (*attribute.Attribute, error)                                    // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
 		FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) // FilterbyOption returns a list of attributes by given option
 	}

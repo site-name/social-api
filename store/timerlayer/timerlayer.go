@@ -1766,22 +1766,6 @@ func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) 
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeStore.GetAttributesByIds(ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetAttributesByIds", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	start := timemodule.Now()
 

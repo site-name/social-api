@@ -1845,24 +1845,6 @@ func (s *OpenTracingLayerAttributeStore) Get(id string) (*attribute.Attribute, e
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetAttributesByIds")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeStore.GetAttributesByIds(ids)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetBySlug")

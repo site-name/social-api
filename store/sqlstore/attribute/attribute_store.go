@@ -3,7 +3,6 @@ package attribute
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -57,6 +56,7 @@ func (as *SqlAttributeStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributes_slug", store.AttributeTableName, "Slug")
 }
 
+// Save inserts given attribute into database then returns it
 func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	attr.PreSave()
 	if err := attr.IsValid(); err != nil {
@@ -86,19 +86,6 @@ func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
 	return &res, nil
 }
 
-func (as *SqlAttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	query, args, err := as.GetQueryBuilder().Select("*").From(store.AttributeTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "get_attributes_by_ids")
-	}
-	var attrs []*attribute.Attribute
-	if _, err := as.GetMaster().Select(&attrs, query, args...); err != nil {
-		return nil, errors.Wrap(err, "failed to find Attributes")
-	}
-
-	return attrs, nil
-}
-
 func (as *SqlAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	var attr *attribute.Attribute
 	err := as.GetReplica().SelectOne(&attr, "SELECT * FROM "+store.AttributeTableName+" WHERE Slug = :Slug", map[string]interface{}{"Slug": slug})
@@ -119,6 +106,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 		From(store.AttributeTableName).
 		OrderBy(store.TableOrderingMap[store.AttributeTableName])
 
+	// parse options
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Attributes.Id"))
 	}

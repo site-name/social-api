@@ -257,6 +257,7 @@ type AttributeApp interface {
 	AttributeByID(id string) (*attribute.Attribute, *model.AppError)                                                                         // AttributeByID finds attribute with given id
 	AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError)                                                                     // AttributeBySlug finds an attribute with given slug
 	AssignedVariantAttributesByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) // AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
+	AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError)                                    // AttributesByOption returns a list of attributes filtered using given options
 }
 
 type InvoiceApp interface {
@@ -272,8 +273,9 @@ type ChannelApp interface {
 	//
 	// 2) If given slug if nil, it try
 	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
-	ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError) // ValidateChannel finds a channel with given slug, then check if the channel is active. If no channel found or found but not active, return an error
-	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)         // GetDefaultChannelSlugOrGraphqlError returns a default channel slug
+	ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError)                     // ValidateChannel finds a channel with given slug, then check if the channel is active. If no channel found or found but not active, return an error
+	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)                             // GetDefaultChannelSlugOrGraphqlError returns a default channel slug
+	ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError) // ChannelsByOption returns a list of channels by given options
 }
 
 type WarehouseApp interface {

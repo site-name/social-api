@@ -65,7 +65,8 @@ type AppIface interface {
 	FileApp() sub_app_iface.FileApp
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
-	// GetConversionRate get conversion rate to use in exchange
+	// GetConversionRate get conversion rate to use in exchange.
+	// It first try getting exchange rate from cache and returns the found value. If nothing found, it try finding from database
 	GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError)
 	// GetCookieDomain
 	GetCookieDomain() string
