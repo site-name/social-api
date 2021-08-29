@@ -9334,11 +9334,31 @@ func (s *RetryLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist
 
 }
 
-func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.DeleteItemsByOption(option)
+		result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
@@ -9374,11 +9394,11 @@ func (s *RetryLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistIt
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.GetById(id)
+		result, err := s.WishlistItemStore.GetById(selector, id)
 		if err == nil {
 			return result, nil
 		}
@@ -9414,11 +9434,11 @@ func (s *RetryLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemF
 
 }
 
-func (s *RetryLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemStore.Upsert(wishlistItem)
+		result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
 		if err == nil {
 			return result, nil
 		}
@@ -9454,11 +9474,11 @@ func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *wis
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.WishlistItemProductVariantStore.GetById(id)
+		result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
 		if err == nil {
 			return result, nil
 		}

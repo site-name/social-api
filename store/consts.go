@@ -15,6 +15,21 @@ type StoreResult struct {
 	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
 }
 
+type Upsertor interface {
+	Insert(list ...interface{}) error
+	Update(list ...interface{}) (int64, error)
+}
+
+type Selector interface {
+	SelectOne(holder interface{}, query string, args ...interface{}) error
+	Select(i interface{}, query string, args ...interface{}) ([]interface{}, error)
+}
+
+type SelectUpsertor interface {
+	Upsertor
+	Selector
+}
+
 var TableOrderingMap map[string]string
 
 func init() {

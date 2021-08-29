@@ -8575,7 +8575,25 @@ func (s *OpenTracingLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wi
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *OpenTracingLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.DeleteItemsByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -8584,7 +8602,7 @@ func (s *OpenTracingLayerWishlistItemStore) DeleteItemsByOption(option *wishlist
 	}()
 
 	defer span.Finish()
-	result, err := s.WishlistItemStore.DeleteItemsByOption(option)
+	result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8611,7 +8629,7 @@ func (s *OpenTracingLayerWishlistItemStore) FilterByOption(option *wishlist.Wish
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+func (s *OpenTracingLayerWishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.GetById")
 	s.Root.Store.SetContext(newCtx)
@@ -8620,7 +8638,7 @@ func (s *OpenTracingLayerWishlistItemStore) GetById(id string) (*wishlist.Wishli
 	}()
 
 	defer span.Finish()
-	result, err := s.WishlistItemStore.GetById(id)
+	result, err := s.WishlistItemStore.GetById(selector, id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8647,16 +8665,16 @@ func (s *OpenTracingLayerWishlistItemStore) GetByOption(option *wishlist.Wishlis
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+func (s *OpenTracingLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.Upsert")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.WishlistItemStore.Upsert(wishlistItem)
+	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -8683,7 +8701,7 @@ func (s *OpenTracingLayerWishlistItemProductVariantStore) DeleteRelation(relatio
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.GetById")
 	s.Root.Store.SetContext(newCtx)
@@ -8692,7 +8710,7 @@ func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(id string) (*w
 	}()
 
 	defer span.Finish()
-	result, err := s.WishlistItemProductVariantStore.GetById(id)
+	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

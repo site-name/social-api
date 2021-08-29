@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -269,7 +270,13 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 		if session.UserId != obj.ID {
 			return nil, permissionDenied("Wishlist")
 		}
-		wl, appErr := r.WishlistApp().WishlistByUserID(obj.ID)
+		wl, appErr := r.WishlistApp().WishlistByOption(&wishlist.WishlistFilterOption{
+			UserID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: obj.ID,
+				},
+			},
+		})
 		if appErr != nil {
 			return nil, appErr
 		}

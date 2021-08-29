@@ -18,6 +18,30 @@ type WishlistItemFilterOption struct {
 	ProductID  *model.StringFilter
 }
 
+type WishlistItems []*WishlistItem
+
+func (w WishlistItems) IDs() []string {
+	var res []string
+	for _, item := range w {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
+func (w WishlistItems) ProductIDs() []string {
+	var res []string
+	for _, item := range w {
+		if item != nil {
+			res = append(res, item.ProductID)
+		}
+	}
+
+	return res
+}
+
 func (w *WishlistItem) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.wishlist_item.is_valid.%s.app_error",

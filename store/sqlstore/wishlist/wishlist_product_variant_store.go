@@ -3,6 +3,7 @@ package wishlist
 import (
 	"database/sql"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
@@ -49,17 +50,71 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemPro
 	}
 }
 
+func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+	var (
+		isSaving   bool
+		insertFunc func(list ...interface{}) error          = w.GetMaster().Insert
+		updateFunc func(list ...interface{}) (int64, error) = w.GetMaster().Update
+		err        error
+		numUpdated int64
+	)
+	if transaction != nil {
+		insertFunc = transaction.Insert
+		updateFunc = transaction.Update
+	}
+
+	for _, relation := range relations {
+		isSaving = false // reset
+
+		if !model.IsValidId(relation.Id) {
+			relation.PreSave()
+			isSaving = true
+		}
+
+		if err := relation.IsValid(); err != nil {
+			return nil, err
+		}
+
+		if isSaving {
+			err = insertFunc(relation)
+		} else {
+			_, err = w.GetById(transaction, relation.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			numUpdated, err = updateFunc(relation)
+		}
+
+		if err != nil {
+			if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
+				return nil, store.NewErrInvalidInput(store.WishlistProductVariantTableName, "WishlistItemID/ProductVariantID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert relation with id=%s", relation.Id)
+		}
+		if numUpdated > 1 {
+			return nil, errors.Errorf("multiple wishlist item-product variant relations were updated: %d instead of 1", numUpdated)
+		}
+	}
+
+	return relations, nil
+}
+
 // GetById finds and returns a product variant-wishlist item relation and returns it
-func (w *SqlWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) GetById(transaction *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
+	var selector store.Selector = w.GetReplica()
+	if transaction != nil {
+		selector = transaction
+	}
+
 	var res wishlist.WishlistItemProductVariant
-	if err := w.GetReplica().SelectOne(&res, "SELECT * FROM "+store.WishlistProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := selector.SelectOne(&res, "SELECT * FROM "+store.WishlistProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find item with Id=%s", id)
-	} else {
-		return &res, nil
 	}
+	return &res, nil
 }
 
 // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database

@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	mock "github.com/stretchr/testify/mock"
 
 	wishlist "github.com/sitename/sitename/model/wishlist"
@@ -15,27 +16,48 @@ type WishlistItemStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: transaction, wishlistItems
+func (_m *WishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+	ret := _m.Called(transaction, wishlistItems)
+
+	var r0 wishlist.WishlistItems
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, wishlist.WishlistItems) wishlist.WishlistItems); ok {
+		r0 = rf(transaction, wishlistItems)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(wishlist.WishlistItems)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, wishlist.WishlistItems) error); ok {
+		r1 = rf(transaction, wishlistItems)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *WishlistItemStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// GetById provides a mock function with given fields: id
-func (_m *WishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
-	ret := _m.Called(id)
+// DeleteItemsByOption provides a mock function with given fields: transaction, option
+func (_m *WishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+	ret := _m.Called(transaction, option)
 
-	var r0 *wishlist.WishlistItem
-	if rf, ok := ret.Get(0).(func(string) *wishlist.WishlistItem); ok {
-		r0 = rf(id)
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *wishlist.WishlistItemFilterOption) int64); ok {
+		r0 = rf(transaction, option)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*wishlist.WishlistItem)
-		}
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *wishlist.WishlistItemFilterOption) error); ok {
+		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -43,36 +65,13 @@ func (_m *WishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) 
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: wishlistItem
-func (_m *WishlistItemStore) Save(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
-	ret := _m.Called(wishlistItem)
-
-	var r0 *wishlist.WishlistItem
-	if rf, ok := ret.Get(0).(func(*wishlist.WishlistItem) *wishlist.WishlistItem); ok {
-		r0 = rf(wishlistItem)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*wishlist.WishlistItem)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*wishlist.WishlistItem) error); ok {
-		r1 = rf(wishlistItem)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WishlistItemsByWishlistId provides a mock function with given fields: wishlistID
-func (_m *WishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wishlist.WishlistItem, error) {
-	ret := _m.Called(wishlistID)
+// FilterByOption provides a mock function with given fields: option
+func (_m *WishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+	ret := _m.Called(option)
 
 	var r0 []*wishlist.WishlistItem
-	if rf, ok := ret.Get(0).(func(string) []*wishlist.WishlistItem); ok {
-		r0 = rf(wishlistID)
+	if rf, ok := ret.Get(0).(func(*wishlist.WishlistItemFilterOption) []*wishlist.WishlistItem); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*wishlist.WishlistItem)
@@ -80,8 +79,54 @@ func (_m *WishlistItemStore) WishlistItemsByWishlistId(wishlistID string) ([]*wi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(wishlistID)
+	if rf, ok := ret.Get(1).(func(*wishlist.WishlistItemFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetById provides a mock function with given fields: selector, id
+func (_m *WishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+	ret := _m.Called(selector, id)
+
+	var r0 *wishlist.WishlistItem
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string) *wishlist.WishlistItem); ok {
+		r0 = rf(selector, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*wishlist.WishlistItem)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, string) error); ok {
+		r1 = rf(selector, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByOption provides a mock function with given fields: option
+func (_m *WishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
+	ret := _m.Called(option)
+
+	var r0 *wishlist.WishlistItem
+	if rf, ok := ret.Get(0).(func(*wishlist.WishlistItemFilterOption) *wishlist.WishlistItem); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*wishlist.WishlistItem)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*wishlist.WishlistItemFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

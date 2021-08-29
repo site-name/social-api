@@ -7782,10 +7782,26 @@ func (s *TimerLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.DeleteItemsByOption(option)
+	result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7814,10 +7830,10 @@ func (s *TimerLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistIt
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.GetById(id)
+	result, err := s.WishlistItemStore.GetById(selector, id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7846,10 +7862,10 @@ func (s *TimerLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemF
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemStore.Upsert(wishlistItem)
+	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7857,7 +7873,7 @@ func (s *TimerLayerWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemStore.Upsert", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WishlistItemProductVariantStore.BulkUpsert", success, elapsed)
 	}
 	return result, err
 }
@@ -7878,10 +7894,10 @@ func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *wis
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) GetById(id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.WishlistItemProductVariantStore.GetById(id)
+	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

@@ -3,6 +3,8 @@ package wishlist
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
@@ -32,53 +34,67 @@ func (ws *SqlWishlistItemStore) CreateIndexesIfNotExists() {
 	ws.CreateForeignKeyIfNotExists(store.WishlistItemTableName, "ProductID", store.ProductVariantTableName, "Id", true)
 }
 
-// Upsert inserts or updates given wishlist item then returns it
-func (ws *SqlWishlistItemStore) Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error) {
-	var isSaving bool
-	if !model.IsValidId(wishlistItem.Id) {
-		wishlistItem.PreSave()
-		isSaving = true
-	}
-
-	if err := wishlistItem.IsValid(); err != nil {
-		return nil, err
-	}
-
+// BulkUpsert inserts or updates given wishlist items then returns it
+func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	var (
+		isSaving        bool
 		err             error
 		numUpdated      int64
 		oldWishlistItem *wishlist.WishlistItem
+		upsertor        store.Upsertor = ws.GetMaster()
 	)
-	if isSaving {
-		err = ws.GetMaster().Insert(wishlistItem)
-	} else {
-		oldWishlistItem, err = ws.GetById(wishlistItem.Id)
-		if err != nil {
+	if transaction != nil {
+		upsertor = transaction
+	}
+
+	for _, wishlistItem := range wishlistItems {
+		isSaving = false // reset
+
+		if !model.IsValidId(wishlistItem.Id) {
+			wishlistItem.PreSave()
+			isSaving = true
+		}
+
+		if err := wishlistItem.IsValid(); err != nil {
 			return nil, err
 		}
 
-		wishlistItem.CreateAt = oldWishlistItem.CreateAt
+		if isSaving {
+			err = upsertor.Insert(wishlistItem)
+		} else {
+			oldWishlistItem, err = ws.GetById(transaction, wishlistItem.Id)
+			if err != nil {
+				return nil, err
+			}
 
-		numUpdated, err = ws.GetMaster().Update(wishlistItem)
-	}
+			wishlistItem.CreateAt = oldWishlistItem.CreateAt
 
-	if err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"WishlistID", "ProductID", "wishlistitems_wishlistid_productid_key"}) {
-			return nil, store.NewErrInvalidInput(store.WishlistItemTableName, "WishlistID/ProductID", "duplicate")
+			numUpdated, err = upsertor.Update(wishlistItem)
 		}
-		return nil, errors.Wrapf(err, "failed to upsert wishlist item with id=%s", wishlistItem.Id)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple wishlist items were updated: %d instead of 1", numUpdated)
+
+		if err != nil {
+			if ws.IsUniqueConstraintError(err, []string{"WishlistID", "ProductID", "wishlistitems_wishlistid_productid_key"}) {
+				return nil, store.NewErrInvalidInput(store.WishlistItemTableName, "WishlistID/ProductID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert wishlist item with id=%s", wishlistItem.Id)
+		}
+		if numUpdated > 1 {
+			return nil, errors.Errorf("multiple wishlist items (id=%s) were updated for: %d instead of 1", wishlistItem.Id, numUpdated)
+		}
 	}
 
-	return wishlistItem, nil
+	return wishlistItems, nil
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(id string) (*wishlist.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) GetById(transaction *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+	var selectOneFunc func(holder interface{}, query string, args ...interface{}) error = ws.GetReplica().SelectOne
+	if transaction != nil {
+		selectOneFunc = transaction.SelectOne
+	}
+
 	var res wishlist.WishlistItem
-	if err := ws.GetReplica().SelectOne(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := selectOneFunc(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemTableName, id)
 		}
@@ -142,9 +158,13 @@ func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterO
 }
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
-func (ws *SqlWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error) {
-	query := ws.GetQueryBuilder().
-		Delete(store.WishlistItemTableName)
+func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+	var runner squirrel.BaseRunner = ws.GetMaster()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query := ws.GetQueryBuilder().Delete(store.WishlistItemTableName)
 
 	// parse options
 	if option.Id != nil {
@@ -157,7 +177,7 @@ func (ws *SqlWishlistItemStore) DeleteItemsByOption(option *wishlist.WishlistIte
 		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
 	}
 
-	result, err := query.RunWith(ws.GetMaster()).Exec()
+	result, err := query.RunWith(runner).Exec()
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete wishlist item wiht given option")
 	}

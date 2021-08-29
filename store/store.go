@@ -355,17 +355,18 @@ type (
 	}
 	WishlistItemStore interface {
 		CreateIndexesIfNotExists()
-		GetById(id string) (*wishlist.WishlistItem, error)                                          // GetById returns a wishlist item wish given id
-		Upsert(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, error)                 // Upsert inserts or updates given wishlist item then returns it
-		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) // FilterByOption finds and returns a slice of wishlist items filtered using given options
-		GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error)      // GetByOption finds and returns a wishlist item filtered by given option
-		DeleteItemsByOption(option *wishlist.WishlistItemFilterOption) (int64, error)               // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
+		GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error)                                  // GetById returns a wishlist item wish given id
+		BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) // Upsert inserts or updates given wishlist item then returns it
+		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error)                     // FilterByOption finds and returns a slice of wishlist items filtered using given options
+		GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error)                          // GetByOption finds and returns a wishlist item filtered by given option
+		DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error)    // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
 	}
 	WishlistItemProductVariantStore interface {
 		CreateIndexesIfNotExists()
-		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) // Save inserts new wishlist product variant relation into database and returns it
-		GetById(id string) (*wishlist.WishlistItemProductVariant, error)                                         // GetByID returns a wishlist item product variant with given id
-		DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error)                             // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
+		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error)                                    // Save inserts new wishlist product variant relation into database and returns it
+		BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
+		GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error)                                                // GetByID returns a wishlist item product variant with given id
+		DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error)                                                                // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
 	}
 )
 

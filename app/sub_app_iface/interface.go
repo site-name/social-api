@@ -238,8 +238,10 @@ type ProductApp interface {
 }
 
 type WishlistApp interface {
-	UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError)             // UpsertWishlist inserts a new wishlist instance into database with given userID
-	WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError) // WishlistByOption returns 1 wishlist filtered by given option
+	UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError)                            // UpsertWishlist inserts a new wishlist instance into database with given userID
+	WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError)                // WishlistByOption returns 1 wishlist filtered by given option
+	WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError)    // WishlistItemByOption returns 1 wishlist item filtered using given option
+	WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError) // WishlistItemsByOption returns a slice of wishlist items filtered using given option
 }
 
 type AttributeApp interface {

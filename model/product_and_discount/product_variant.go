@@ -34,7 +34,8 @@ type ProductVariantFilterOption struct {
 	Id   *model.StringFilter
 	Name *model.StringFilter
 
-	WishlistID *model.StringFilter // INNER JOIN WishlistItemProductVariants INNER JOIN WishlistItems WHERE WishlistItems.WishlistID ...
+	WishlistItemID *model.StringFilter // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
+	WishlistID     *model.StringFilter // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
 
 	ProductVariantChannelListingPriceAmount *model.NumberFilter // LEFT JOIN `ProductVariantChannelListing`
 	ProductVariantChannelListingChannelSlug *model.StringFilter // LEFT JOIN `ProductVariantChannelListing`

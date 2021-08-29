@@ -90,7 +90,7 @@ func (a *AppWishlist) AddProduct(wishlistID string, productID string) (*wishlist
 
 // RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
 func (a *AppWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
-	_, appErr := a.DeleteWishlistItemsByOption(&wishlist.WishlistItemFilterOption{
+	_, appErr := a.DeleteWishlistItemsByOption(nil, &wishlist.WishlistItemFilterOption{
 		WishlistID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: wishlistID,
@@ -154,7 +154,7 @@ func (a *AppWishlist) RemoveProductVariant(wishlistID string, productVariant *pr
 	}
 
 	if numOfRelationsLeft == 0 {
-		_, appErr = a.DeleteWishlistItemsByOption(&wishlist.WishlistItemFilterOption{
+		_, appErr = a.DeleteWishlistItemsByOption(nil, &wishlist.WishlistItemFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: wishlistItem.Id,

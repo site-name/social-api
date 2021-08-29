@@ -7,11 +7,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 func (r *wishlistResolver) Items(ctx context.Context, obj *gqlmodel.Wishlist) ([]*gqlmodel.WishlistItem, error) {
-	items, appErr := r.WishlistApp().WishlistItemsByWishlistID(obj.ID)
+	items, appErr := r.WishlistApp().WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
+		WishlistID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: obj.ID,
+			},
+		},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}

@@ -192,9 +192,22 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 			Where(option.ProductVariantChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
 	}
 
-	if option.WishlistID != nil {
+	var (
+		joined_WishlistProductVariantTableName_table bool
+	)
+	if option.WishlistItemID != nil {
 		query = query.
 			InnerJoin(store.WishlistProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)").
+			Where(option.WishlistItemID.ToSquirrel("WishlistItemProductVariants.WishlistItemID"))
+
+		joined_WishlistProductVariantTableName_table = true // indicate we have already joined `WishlistProductVariantTableName`
+	}
+
+	if option.WishlistID != nil {
+		if !joined_WishlistProductVariantTableName_table {
+			query = query.InnerJoin(store.WishlistProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)")
+		}
+		query = query.
 			InnerJoin(store.WishlistItemTableName + " ON (WishlistItemProductVariants.WishlistItemID = WishlistItems.Id)").
 			Where(option.WishlistID.ToSquirrel("WishlistItems.WishlistID"))
 	}
