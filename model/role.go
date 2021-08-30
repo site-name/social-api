@@ -17,237 +17,237 @@ var NewSystemRoleIDs []string
 
 func init() {
 	NewSystemRoleIDs = []string{
-		SYSTEM_USER_MANAGER_ROLE_ID,
-		SYSTEM_READ_ONLY_ADMIN_ROLE_ID,
-		SYSTEM_MANAGER_ROLE_ID,
+		SystemUserManagerRoleId,
+		SystemReadOnlyAdminRoleId,
+		SystemManagerRoleId,
 	}
 
 	BuiltInSchemeManagedRoleIDs = append([]string{
-		SYSTEM_GUEST_ROLE_ID,
-		SYSTEM_USER_ROLE_ID,
-		SYSTEM_ADMIN_ROLE_ID,
-		SYSTEM_POST_ALL_ROLE_ID,
-		SYSTEM_POST_ALL_PUBLIC_ROLE_ID,
-		SYSTEM_USER_ACCESS_TOKEN_ROLE_ID,
+		SystemGuestRoleId,
+		SystemUserRoleId,
+		SystemAdminRoleId,
+		SystemPostAllRoleId,
+		SystemPostAllPublicRoleId,
+		SystemUserAccessTokenRoleId,
 	}, NewSystemRoleIDs...)
 
 	// When updating the values here, the values in mattermost-redux must also be updated.
 	SysconsoleAncillaryPermissions = map[string][]*Permission{
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS.Id: {
-			PERMISSION_GET_ANALYTICS,
+		PermissionSysconsoleReadUserManagementUsers.Id: {
+			PermissionGetAnalytics,
 		},
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH.Id: {
-			PERMISSION_READ_ELASTICSEARCH_POST_INDEXING_JOB,
-			PERMISSION_READ_ELASTICSEARCH_POST_AGGREGATION_JOB,
+		PermissionSysconsoleReadEnvironmentElasticsearch.Id: {
+			PermissionReadElasticsearchPostIndexingJob,
+			PermissionReadElasticsearchPostAggregationJob,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_WEB_SERVER.Id: {
-			PERMISSION_TEST_SITE_URL,
-			PERMISSION_RELOAD_CONFIG,
-			PERMISSION_INVALIDATE_CACHES,
+		PermissionSysconsoleWriteEnvironmentWebServer.Id: {
+			PermissionTestSiteUrl,
+			PermissionReloadConfig,
+			PermissionInvalidateCaches,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DATABASE.Id: {
-			PERMISSION_RECYCLE_DATABASE_CONNECTIONS,
+		PermissionSysconsoleWriteEnvironmentDatabase.Id: {
+			PermissionRecycleDatabaseConnections,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_ELASTICSEARCH.Id: {
-			PERMISSION_TEST_ELASTICSEARCH,
-			PERMISSION_CREATE_ELASTICSEARCH_POST_INDEXING_JOB,
-			PERMISSION_CREATE_ELASTICSEARCH_POST_AGGREGATION_JOB,
-			PERMISSION_PURGE_ELASTICSEARCH_INDEXES,
+		PermissionSysconsoleWriteEnvironmentElasticsearch.Id: {
+			PermissionTestElasticsearch,
+			PermissionCreateElasticsearchPostIndexingJob,
+			PermissionCreateElasticsearchPostAggregationJob,
+			PermissionPurgeElasticsearchIndexes,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_FILE_STORAGE.Id: {
-			PERMISSION_TEST_S3,
+		PermissionSysconsoleWriteEnvironmentFileStorage.Id: {
+			PermissionTestS3,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP.Id: {
-			PERMISSION_TEST_EMAIL,
+		PermissionSysconsoleWriteEnvironmentSmtp.Id: {
+			PermissionTestEmail,
 		},
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SERVER_LOGS.Id: {
-			PERMISSION_GET_LOGS,
+		PermissionSysconsoleReadReportingServerLogs.Id: {
+			PermissionGetLogs,
 		},
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS.Id: {
-			PERMISSION_GET_ANALYTICS,
+		PermissionSysconsoleReadReportingSiteStatistics.Id: {
+			PermissionGetAnalytics,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_USERS.Id: {
-			PERMISSION_EDIT_OTHER_USERS,
+		PermissionSysconsoleWriteUserManagementUsers.Id: {
+			PermissionEditOtherUsers,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_SITE_CUSTOMIZATION.Id: {
-			PERMISSION_EDIT_BRAND,
+		PermissionSysconsoleWriteSiteCustomization.Id: {
+			PermissionEditBrand,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_DATA_RETENTION_POLICY.Id: {
-			PERMISSION_CREATE_DATA_RETENTION_JOB,
+		PermissionSysconsoleWriteComplianceDataRetentionPolicy.Id: {
+			PermissionCreateDataRetentionJob,
 		},
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY.Id: {
-			PERMISSION_READ_DATA_RETENTION_JOB,
+		PermissionSysconsoleReadComplianceDataRetentionPolicy.Id: {
+			PermissionReadDataRetentionJob,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_COMPLIANCE_COMPLIANCE_EXPORT.Id: {
-			PERMISSION_CREATE_COMPLIANCE_EXPORT_JOB,
-			PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT,
+		PermissionSysconsoleWriteComplianceComplianceExport.Id: {
+			PermissionCreateComplianceExportJob,
+			PermissionDownloadComplianceExportResult,
 		},
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT.Id: {
-			PERMISSION_READ_COMPLIANCE_EXPORT_JOB,
-			PERMISSION_DOWNLOAD_COMPLIANCE_EXPORT_RESULT,
+		PermissionSysconsoleReadComplianceComplianceExport.Id: {
+			PermissionReadComplianceExportJob,
+			PermissionDownloadComplianceExportResult,
 		},
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id: {
-			PERMISSION_READ_AUDITS,
+		PermissionSysconsoleReadComplianceCustomTermsOfService.Id: {
+			PermissionReadAudits,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_EXPERIMENTAL_BLEVE.Id: {
-			PERMISSION_CREATE_POST_BLEVE_INDEXES_JOB,
-			PERMISSION_PURGE_BLEVE_INDEXES,
+		PermissionSysconsoleWriteExperimentalBleve.Id: {
+			PermissionCreatePostBleveIndexesJob,
+			PermissionPurgeBleveIndexes,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_LDAP.Id: {
-			PERMISSION_CREATE_LDAP_SYNC_JOB,
-			PERMISSION_ADD_LDAP_PUBLIC_CERT,
-			PERMISSION_REMOVE_LDAP_PUBLIC_CERT,
-			PERMISSION_ADD_LDAP_PRIVATE_CERT,
-			PERMISSION_REMOVE_LDAP_PRIVATE_CERT,
+		PermissionSysconsoleWriteAuthenticationLdap.Id: {
+			PermissionCreateLdapSyncJob,
+			PermissionAddLdapPublicCert,
+			PermissionRemoveLdapPublicCert,
+			PermissionAddLdapPrivateCert,
+			PermissionRemoveLdapPrivateCert,
 		},
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP.Id: {
-			PERMISSION_TEST_LDAP,
-			PERMISSION_READ_LDAP_SYNC_JOB,
+		PermissionSysconsoleReadAuthenticationLdap.Id: {
+			PermissionTestLdap,
+			PermissionReadLdapSyncJob,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_EMAIL.Id: {
-			PERMISSION_INVALIDATE_EMAIL_INVITE,
+		PermissionSysconsoleWriteAuthenticationEmail.Id: {
+			PermissionInvalidateEmailInvite,
 		},
-		PERMISSION_SYSCONSOLE_WRITE_AUTHENTICATION_SAML.Id: {
-			PERMISSION_GET_SAML_METADATA_FROM_IDP,
-			PERMISSION_ADD_SAML_PUBLIC_CERT,
-			PERMISSION_ADD_SAML_PRIVATE_CERT,
-			PERMISSION_ADD_SAML_IDP_CERT,
-			PERMISSION_REMOVE_SAML_PUBLIC_CERT,
-			PERMISSION_REMOVE_SAML_PRIVATE_CERT,
-			PERMISSION_REMOVE_SAML_IDP_CERT,
-			PERMISSION_GET_SAML_CERT_STATUS,
+		PermissionSysconsoleWriteAuthenticationSaml.Id: {
+			PermissionGetSamlMetadataFromIdp,
+			PermissionAddSamlPublicCert,
+			PermissionAddSamlPrivateCert,
+			PermissionAddSamlIdpCert,
+			PermissionRemoveSamlPublicCert,
+			PermissionRemoveSamlPrivateCert,
+			PermissionRemoveSamlIdpCert,
+			PermissionGetSamlCertStatus,
 		},
 	}
 
 	SystemUserManagerDefaultPermissions = []string{
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_GROUPS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_PERMISSIONS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_EMAIL.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_PASSWORD.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_MFA.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SAML.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_OPENID.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS.Id,
+		PermissionSysconsoleReadUserManagementGroups.Id,
+		PermissionSysconsoleReadUserManagementPermissions.Id,
+		PermissionSysconsoleWriteUserManagementGroups.Id,
+		PermissionSysconsoleReadAuthenticationSignup.Id,
+		PermissionSysconsoleReadAuthenticationEmail.Id,
+		PermissionSysconsoleReadAuthenticationPassword.Id,
+		PermissionSysconsoleReadAuthenticationMfa.Id,
+		PermissionSysconsoleReadAuthenticationLdap.Id,
+		PermissionSysconsoleReadAuthenticationSaml.Id,
+		PermissionSysconsoleReadAuthenticationOpenid.Id,
+		PermissionSysconsoleReadAuthenticationGuestAccess.Id,
 	}
 
 	SystemReadOnlyAdminDefaultPermissions = []string{
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS.Id,
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SERVER_LOGS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_USERS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_GROUPS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_PERMISSIONS.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_WEB_SERVER.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DATABASE.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_FILE_STORAGE.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_IMAGE_PROXY.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SMTP.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PUSH_NOTIFICATION_SERVER.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_HIGH_AVAILABILITY.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_RATE_LIMITING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_LOGGING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SESSION_LENGTHS.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PERFORMANCE_MONITORING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DEVELOPER.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_CUSTOMIZATION.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_LOCALIZATION.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_NOTIFICATIONS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_ANNOUNCEMENT_BANNER.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_POSTS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_FILE_SHARING_AND_DOWNLOADS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_PUBLIC_LINKS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_NOTICES.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_EMAIL.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_PASSWORD.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_MFA.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SAML.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_OPENID.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS.Id,
-		PERMISSION_SYSCONSOLE_READ_PLUGINS.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_INTEGRATION_MANAGEMENT.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_BOT_ACCOUNTS.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_GIF.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_CORS.Id,
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_DATA_RETENTION_POLICY.Id,
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_EXPORT.Id,
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_COMPLIANCE_MONITORING.Id,
-		PERMISSION_SYSCONSOLE_READ_COMPLIANCE_CUSTOM_TERMS_OF_SERVICE.Id,
-		PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURES.Id,
-		PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_FEATURE_FLAGS.Id,
-		PERMISSION_SYSCONSOLE_READ_EXPERIMENTAL_BLEVE.Id,
+		PermissionSysconsoleReadReportingSiteStatistics.Id,
+		PermissionSysconsoleReadReportingServerLogs.Id,
+		PermissionSysconsoleReadUserManagementUsers.Id,
+		PermissionSysconsoleReadUserManagementGroups.Id,
+		PermissionSysconsoleReadUserManagementPermissions.Id,
+		PermissionSysconsoleReadEnvironmentWebServer.Id,
+		PermissionSysconsoleReadEnvironmentDatabase.Id,
+		PermissionSysconsoleReadEnvironmentElasticsearch.Id,
+		PermissionSysconsoleReadEnvironmentFileStorage.Id,
+		PermissionSysconsoleReadEnvironmentImageProxy.Id,
+		PermissionSysconsoleReadEnvironmentSmtp.Id,
+		PermissionSysconsoleReadEnvironmentPushNotificationServer.Id,
+		PermissionSysconsoleReadEnvironmentHighAvailability.Id,
+		PermissionSysconsoleReadEnvironmentRateLimiting.Id,
+		PermissionSysconsoleReadEnvironmentLogging.Id,
+		PermissionSysconsoleReadEnvironmentSessionLengths.Id,
+		PermissionSysconsoleReadEnvironmentPerformanceMonitoring.Id,
+		PermissionSysconsoleReadEnvironmentDeveloper.Id,
+		PermissionSysconsoleReadSiteCustomization.Id,
+		PermissionSysconsoleReadSiteLocalization.Id,
+		PermissionSysconsoleReadSiteNotifications.Id,
+		PermissionSysconsoleReadSiteAnnouncementBanner.Id,
+		PermissionSysconsoleReadSitePosts.Id,
+		PermissionSysconsoleReadSiteFileSharingAndDownloads.Id,
+		PermissionSysconsoleReadSitePublicLinks.Id,
+		PermissionSysconsoleReadSiteNotices.Id,
+		PermissionSysconsoleReadAuthenticationSignup.Id,
+		PermissionSysconsoleReadAuthenticationEmail.Id,
+		PermissionSysconsoleReadAuthenticationPassword.Id,
+		PermissionSysconsoleReadAuthenticationMfa.Id,
+		PermissionSysconsoleReadAuthenticationLdap.Id,
+		PermissionSysconsoleReadAuthenticationSaml.Id,
+		PermissionSysconsoleReadAuthenticationOpenid.Id,
+		PermissionSysconsoleReadAuthenticationGuestAccess.Id,
+		PermissionSysconsoleReadPlugins.Id,
+		PermissionSysconsoleReadIntegrationsIntegrationManagement.Id,
+		PermissionSysconsoleReadIntegrationsBotAccounts.Id,
+		PermissionSysconsoleReadIntegrationsGif.Id,
+		PermissionSysconsoleReadIntegrationsCors.Id,
+		PermissionSysconsoleReadComplianceDataRetentionPolicy.Id,
+		PermissionSysconsoleReadComplianceComplianceExport.Id,
+		PermissionSysconsoleReadComplianceComplianceMonitoring.Id,
+		PermissionSysconsoleReadComplianceCustomTermsOfService.Id,
+		PermissionSysconsoleReadExperimentalFeatures.Id,
+		PermissionSysconsoleReadExperimentalFeatureFlags.Id,
+		PermissionSysconsoleReadExperimentalBleve.Id,
 	}
 
 	SystemManagerDefaultPermissions = []string{
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SITE_STATISTICS.Id,
-		PERMISSION_SYSCONSOLE_READ_REPORTING_SERVER_LOGS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_GROUPS.Id,
-		PERMISSION_SYSCONSOLE_READ_USERMANAGEMENT_PERMISSIONS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_GROUPS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_USERMANAGEMENT_PERMISSIONS.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_WEB_SERVER.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DATABASE.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_ELASTICSEARCH.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_FILE_STORAGE.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_IMAGE_PROXY.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SMTP.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PUSH_NOTIFICATION_SERVER.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_HIGH_AVAILABILITY.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_RATE_LIMITING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_LOGGING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_SESSION_LENGTHS.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_PERFORMANCE_MONITORING.Id,
-		PERMISSION_SYSCONSOLE_READ_ENVIRONMENT_DEVELOPER.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_WEB_SERVER.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DATABASE.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_ELASTICSEARCH.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_FILE_STORAGE.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_IMAGE_PROXY.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SMTP.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PUSH_NOTIFICATION_SERVER.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_HIGH_AVAILABILITY.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_RATE_LIMITING.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_LOGGING.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_SESSION_LENGTHS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_PERFORMANCE_MONITORING.Id,
-		PERMISSION_SYSCONSOLE_WRITE_ENVIRONMENT_DEVELOPER.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_CUSTOMIZATION.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_CUSTOMIZATION.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_LOCALIZATION.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_LOCALIZATION.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_NOTIFICATIONS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_NOTIFICATIONS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_ANNOUNCEMENT_BANNER.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_ANNOUNCEMENT_BANNER.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_POSTS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_POSTS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_FILE_SHARING_AND_DOWNLOADS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_FILE_SHARING_AND_DOWNLOADS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_PUBLIC_LINKS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_PUBLIC_LINKS.Id,
-		PERMISSION_SYSCONSOLE_READ_SITE_NOTICES.Id,
-		PERMISSION_SYSCONSOLE_WRITE_SITE_NOTICES.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SIGNUP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_EMAIL.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_PASSWORD.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_MFA.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_LDAP.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_SAML.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_OPENID.Id,
-		PERMISSION_SYSCONSOLE_READ_AUTHENTICATION_GUEST_ACCESS.Id,
-		PERMISSION_SYSCONSOLE_READ_PLUGINS.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_INTEGRATION_MANAGEMENT.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_BOT_ACCOUNTS.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_GIF.Id,
-		PERMISSION_SYSCONSOLE_READ_INTEGRATIONS_CORS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_INTEGRATION_MANAGEMENT.Id,
-		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_BOT_ACCOUNTS.Id,
-		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_GIF.Id,
-		PERMISSION_SYSCONSOLE_WRITE_INTEGRATIONS_CORS.Id,
+		PermissionSysconsoleReadReportingSiteStatistics.Id,
+		PermissionSysconsoleReadReportingServerLogs.Id,
+		PermissionSysconsoleReadUserManagementGroups.Id,
+		PermissionSysconsoleReadUserManagementPermissions.Id,
+		PermissionSysconsoleWriteUserManagementGroups.Id,
+		PermissionSysconsoleWriteUserManagementPermissions.Id,
+		PermissionSysconsoleReadEnvironmentWebServer.Id,
+		PermissionSysconsoleReadEnvironmentDatabase.Id,
+		PermissionSysconsoleReadEnvironmentElasticsearch.Id,
+		PermissionSysconsoleReadEnvironmentFileStorage.Id,
+		PermissionSysconsoleReadEnvironmentImageProxy.Id,
+		PermissionSysconsoleReadEnvironmentSmtp.Id,
+		PermissionSysconsoleReadEnvironmentPushNotificationServer.Id,
+		PermissionSysconsoleReadEnvironmentHighAvailability.Id,
+		PermissionSysconsoleReadEnvironmentRateLimiting.Id,
+		PermissionSysconsoleReadEnvironmentLogging.Id,
+		PermissionSysconsoleReadEnvironmentSessionLengths.Id,
+		PermissionSysconsoleReadEnvironmentPerformanceMonitoring.Id,
+		PermissionSysconsoleReadEnvironmentDeveloper.Id,
+		PermissionSysconsoleWriteEnvironmentWebServer.Id,
+		PermissionSysconsoleWriteEnvironmentDatabase.Id,
+		PermissionSysconsoleWriteEnvironmentElasticsearch.Id,
+		PermissionSysconsoleWriteEnvironmentFileStorage.Id,
+		PermissionSysconsoleWriteEnvironmentImageProxy.Id,
+		PermissionSysconsoleWriteEnvironmentSmtp.Id,
+		PermissionSysconsoleWriteEnvironmentPushNotificationServer.Id,
+		PermissionSysconsoleWriteEnvironmentHighAvailability.Id,
+		PermissionSysconsoleWriteEnvironmentRateLimiting.Id,
+		PermissionSysconsoleWriteEnvironmentLogging.Id,
+		PermissionSysconsoleWriteEnvironmentSessionLengths.Id,
+		PermissionSysconsoleWriteEnvironmentPerformanceMonitoring.Id,
+		PermissionSysconsoleWriteEnvironmentDeveloper.Id,
+		PermissionSysconsoleReadSiteCustomization.Id,
+		PermissionSysconsoleWriteSiteCustomization.Id,
+		PermissionSysconsoleReadSiteLocalization.Id,
+		PermissionSysconsoleWriteSiteLocalization.Id,
+		PermissionSysconsoleReadSiteNotifications.Id,
+		PermissionSysconsoleWriteSiteNotifications.Id,
+		PermissionSysconsoleReadSiteAnnouncementBanner.Id,
+		PermissionSysconsoleWriteSiteAnnouncementBanner.Id,
+		PermissionSysconsoleReadSitePosts.Id,
+		PermissionSysconsoleWriteSitePosts.Id,
+		PermissionSysconsoleReadSiteFileSharingAndDownloads.Id,
+		PermissionSysconsoleWriteSiteFileSharingAndDownloads.Id,
+		PermissionSysconsoleReadSitePublicLinks.Id,
+		PermissionSysconsoleWriteSitePublicLinks.Id,
+		PermissionSysconsoleReadSiteNotices.Id,
+		PermissionSysconsoleWriteSiteNotices.Id,
+		PermissionSysconsoleReadAuthenticationSignup.Id,
+		PermissionSysconsoleReadAuthenticationEmail.Id,
+		PermissionSysconsoleReadAuthenticationPassword.Id,
+		PermissionSysconsoleReadAuthenticationMfa.Id,
+		PermissionSysconsoleReadAuthenticationLdap.Id,
+		PermissionSysconsoleReadAuthenticationSaml.Id,
+		PermissionSysconsoleReadAuthenticationOpenid.Id,
+		PermissionSysconsoleReadAuthenticationGuestAccess.Id,
+		PermissionSysconsoleReadPlugins.Id,
+		PermissionSysconsoleReadIntegrationsIntegrationManagement.Id,
+		PermissionSysconsoleReadIntegrationsBotAccounts.Id,
+		PermissionSysconsoleReadIntegrationsGif.Id,
+		PermissionSysconsoleReadIntegrationsCors.Id,
+		PermissionSysconsoleWriteIntegrationsIntegrationManagement.Id,
+		PermissionSysconsoleWriteIntegrationsBotAccounts.Id,
+		PermissionSysconsoleWriteIntegrationsGif.Id,
+		PermissionSysconsoleWriteIntegrationsCors.Id,
 	}
 
 	// Add the ancillary permissions to each system role
@@ -260,19 +260,19 @@ type RoleType string
 type RoleScope string
 
 const (
-	SYSTEM_GUEST_ROLE_ID             = "system_guest"
-	SYSTEM_USER_ROLE_ID              = "system_user"
-	SYSTEM_ADMIN_ROLE_ID             = "system_admin"
-	SYSTEM_POST_ALL_ROLE_ID          = "system_post_all"
-	SYSTEM_POST_ALL_PUBLIC_ROLE_ID   = "system_post_all_public"
-	SYSTEM_USER_ACCESS_TOKEN_ROLE_ID = "system_user_access_token"
-	SYSTEM_USER_MANAGER_ROLE_ID      = "system_user_manager"
-	SYSTEM_READ_ONLY_ADMIN_ROLE_ID   = "system_read_only_admin"
-	SYSTEM_MANAGER_ROLE_ID           = "system_manager"
+	SystemGuestRoleId           = "system_guest"
+	SystemUserRoleId            = "system_user"
+	SystemAdminRoleId           = "system_admin"
+	SystemPostAllRoleId         = "system_post_all"
+	SystemPostAllPublicRoleId   = "system_post_all_public"
+	SystemUserAccessTokenRoleId = "system_user_access_token"
+	SystemUserManagerRoleId     = "system_user_manager"
+	SystemReadOnlyAdminRoleId   = "system_read_only_admin"
+	SystemManagerRoleId         = "system_manager"
 
-	ROLE_NAME_MAX_LENGTH         = 64
-	ROLE_DISPLAY_NAME_MAX_LENGTH = 128
-	ROLE_DESCRIPTION_MAX_LENGTH  = 1024
+	RoleNameMaxLength        = 64
+	RoleDisplayNameMaxLength = 128
+	RoleDescriptionMaxLength = 1024
 
 	RoleScopeSystem RoleScope = "System"
 
@@ -450,11 +450,11 @@ func (r *Role) IsValidWithoutId() (bool, string, interface{}) {
 		return false, "Name", r.Name
 	}
 
-	if r.DisplayName == "" || len(r.DisplayName) > ROLE_DISPLAY_NAME_MAX_LENGTH {
+	if r.DisplayName == "" || len(r.DisplayName) > RoleDisplayNameMaxLength {
 		return false, "DisplayName", r.DisplayName
 	}
 
-	if len(r.Description) > ROLE_DESCRIPTION_MAX_LENGTH {
+	if len(r.Description) > RoleDescriptionMaxLength {
 		return false, "Description", r.Description
 	}
 
@@ -501,7 +501,7 @@ func CleanRoleNames(roleNames []string) ([]string, bool) {
 //
 // contains no character other than English's 26 letters, 10 digits and underscore
 func IsValidRoleName(roleName string) bool {
-	if roleName == "" || len(roleName) > ROLE_NAME_MAX_LENGTH {
+	if roleName == "" || len(roleName) > RoleNameMaxLength {
 		return false
 	}
 
@@ -516,7 +516,7 @@ func IsValidRoleName(roleName string) bool {
 func MakeDefaultRoles() map[string]*Role {
 	roles := make(map[string]*Role)
 
-	roles[SYSTEM_GUEST_ROLE_ID] = &Role{
+	roles[SystemGuestRoleId] = &Role{
 		Name:          "system_guest",
 		DisplayName:   "authentication.roles.global_guest.name",
 		Description:   "authentication.roles.global_guest.description",
@@ -525,53 +525,53 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_USER_ROLE_ID] = &Role{
+	roles[SystemUserRoleId] = &Role{
 		Name:        "system_user",
 		DisplayName: "authentication.roles.global_user.name",
 		Description: "authentication.roles.global_user.description",
 		Permissions: []string{
-			PERMISSION_VIEW_MEMBERS.Id,
+			PermissionViewMembers.Id,
 		},
 		SchemeManaged: true,
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_POST_ALL_ROLE_ID] = &Role{
+	roles[SystemPostAllRoleId] = &Role{
 		Name:        "system_post_all",
 		DisplayName: "authentication.roles.system_post_all.name",
 		Description: "authentication.roles.system_post_all.description",
 		Permissions: []string{
-			PERMISSION_CREATE_POST.Id,
+			PermissionCreatePost.Id,
 		},
 		SchemeManaged: false,
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_POST_ALL_PUBLIC_ROLE_ID] = &Role{
+	roles[SystemPostAllPublicRoleId] = &Role{
 		Name:        "system_post_all_public",
 		DisplayName: "authentication.roles.system_post_all_public.name",
 		Description: "authentication.roles.system_post_all_public.description",
 		Permissions: []string{
-			PERMISSION_CREATE_POST_PUBLIC.Id,
+			PermissionCreatePostPublic.Id,
 		},
 		SchemeManaged: false,
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_USER_ACCESS_TOKEN_ROLE_ID] = &Role{
+	roles[SystemUserAccessTokenRoleId] = &Role{
 		Name:        "system_user_access_token",
 		DisplayName: "authentication.roles.system_user_access_token.name",
 		Description: "authentication.roles.system_user_access_token.description",
 		Permissions: []string{
-			PERMISSION_CREATE_USER_ACCESS_TOKEN.Id,
-			PERMISSION_READ_USER_ACCESS_TOKEN.Id,
-			PERMISSION_REVOKE_USER_ACCESS_TOKEN.Id,
+			PermissionCreateUserAccessToken.Id,
+			PermissionReadUserAccessToken.Id,
+			PermissionRevokeUserAccessToken.Id,
 		},
 		SchemeManaged: false,
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_USER_MANAGER_ROLE_ID] = &Role{
+	roles[SystemUserManagerRoleId] = &Role{
 		Name:          "system_user_manager",
 		DisplayName:   "authentication.roles.system_user_manager.name",
 		Description:   "authentication.roles.system_user_manager.description",
@@ -580,7 +580,7 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_READ_ONLY_ADMIN_ROLE_ID] = &Role{
+	roles[SystemReadOnlyAdminRoleId] = &Role{
 		Name:          "system_read_only_admin",
 		DisplayName:   "authentication.roles.system_read_only_admin.name",
 		Description:   "authentication.roles.system_read_only_admin.description",
@@ -589,7 +589,7 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_MANAGER_ROLE_ID] = &Role{
+	roles[SystemManagerRoleId] = &Role{
 		Name:          "system_manager",
 		DisplayName:   "authentication.roles.system_manager.name",
 		Description:   "authentication.roles.system_manager.description",
@@ -598,17 +598,18 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	roles[SYSTEM_ADMIN_ROLE_ID] = &Role{
+	allPermissionIDs := []string{}
+	for _, permission := range AllPermissions {
+		allPermissionIDs = append(allPermissionIDs, permission.Id)
+	}
+
+	roles[SystemAdminRoleId] = &Role{
 		Name:          "system_admin",
 		DisplayName:   "authentication.roles.global_admin.name",
 		Description:   "authentication.roles.global_admin.description",
-		Permissions:   []string{}, // system admin can do every thing
+		Permissions:   allPermissionIDs,
 		SchemeManaged: true,
 		BuiltIn:       true,
-	}
-
-	for _, permission := range AllPermissions {
-		roles[SYSTEM_ADMIN_ROLE_ID].Permissions = append(roles[SYSTEM_ADMIN_ROLE_ID].Permissions, permission.Id)
 	}
 
 	return roles

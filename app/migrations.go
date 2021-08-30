@@ -103,21 +103,21 @@ func (s *Server) doSystemConsoleRolesCreationMigration() {
 	roles := model.MakeDefaultRoles()
 
 	allSucceeded := true
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SYSTEM_MANAGER_ROLE_ID); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SYSTEM_MANAGER_ROLE_ID]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SYSTEM_MANAGER_ROLE_ID))
+	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemManagerRoleId); err != nil {
+		if _, err := s.Store.Role().Save(roles[model.SystemManagerRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemManagerRoleId))
 			allSucceeded = false
 		}
 	}
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID))
+	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemReadOnlyAdminRoleId); err != nil {
+		if _, err := s.Store.Role().Save(roles[model.SystemReadOnlyAdminRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemReadOnlyAdminRoleId))
 			allSucceeded = false
 		}
 	}
-	if _, err := s.Store.Role().GetByName(context.Background(), model.SYSTEM_USER_MANAGER_ROLE_ID); err != nil {
-		if _, err := s.Store.Role().Save(roles[model.SYSTEM_USER_MANAGER_ROLE_ID]); err != nil {
-			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SYSTEM_USER_MANAGER_ROLE_ID))
+	if _, err := s.Store.Role().GetByName(context.Background(), model.SystemUserManagerRoleId); err != nil {
+		if _, err := s.Store.Role().Save(roles[model.SystemUserManagerRoleId]); err != nil {
+			slog.Critical("Failed to create new role.", slog.Err(err), slog.String("role", model.SystemUserManagerRoleId))
 			allSucceeded = false
 		}
 	}
@@ -175,17 +175,17 @@ func (s *Server) doAppMigrations() {
 
 func SetRolePermissionsFromConfig(roles map[string]*model.Role, cfg *model.Config) map[string]*model.Role {
 	if !*cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_EnableOnlyAdminIntegrations {
-		roles[model.SYSTEM_USER_ROLE_ID].Permissions = append(
-			roles[model.SYSTEM_USER_ROLE_ID].Permissions,
-			model.PERMISSION_MANAGE_OAUTH.Id,
+		roles[model.SystemUserRoleId].Permissions = append(
+			roles[model.SystemUserRoleId].Permissions,
+			model.PermissionManageOAuth.Id,
 		)
 	}
 
 	switch *cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_AllowEditPost {
 	case model.ALLOW_EDIT_POST_ALWAYS, model.ALLOW_EDIT_POST_TIME_LIMIT:
-		roles[model.SYSTEM_ADMIN_ROLE_ID].Permissions = append(
-			roles[model.SYSTEM_ADMIN_ROLE_ID].Permissions,
-			model.PERMISSION_EDIT_POST.Id,
+		roles[model.SystemAdminRoleId].Permissions = append(
+			roles[model.SystemAdminRoleId].Permissions,
+			model.PermissionEditPost.Id,
 		)
 	}
 

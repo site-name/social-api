@@ -656,12 +656,12 @@ func (u *User) IsInRole(inRole string) bool {
 //
 // IsGuest checks if user's roles contains "system_guest"
 func (u *User) IsGuest() bool {
-	return IsInRole(u.Roles, model.SYSTEM_GUEST_ROLE_ID)
+	return IsInRole(u.Roles, model.SystemGuestRoleId)
 }
 
 // IsSystemAdmin checks if user's roles contains "system_admin"
 func (u *User) IsSystemAdmin() bool {
-	return IsInRole(u.Roles, model.SYSTEM_ADMIN_ROLE_ID)
+	return IsInRole(u.Roles, model.SystemAdminRoleId)
 }
 
 // Make sure you acually want to use this function. In context.go there are functions to check permissions

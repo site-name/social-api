@@ -805,14 +805,14 @@ func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) s
 		for _, role := range systemRoles {
 			queryRole := store.WildcardSearchTerm(role)
 			switch role {
-			case model.SYSTEM_USER_ROLE_ID:
+			case model.SystemUserRoleId:
 				// If querying for a `system_user` ensure that the user is only a system_user.
 				sqOr = append(sqOr, squirrel.Eq{"u.Roles": role})
-			case model.SYSTEM_GUEST_ROLE_ID,
-				model.SYSTEM_ADMIN_ROLE_ID,
-				model.SYSTEM_USER_MANAGER_ROLE_ID,
-				model.SYSTEM_READ_ONLY_ADMIN_ROLE_ID,
-				model.SYSTEM_MANAGER_ROLE_ID:
+			case model.SystemGuestRoleId,
+				model.SystemAdminRoleId,
+				model.SystemUserManagerRoleId,
+				model.SystemReadOnlyAdminRoleId,
+				model.SystemManagerRoleId:
 				// If querying for any other roles search using a wildcard
 				sqOr = append(sqOr, squirrel.ILike{"u.Roles": queryRole})
 			}

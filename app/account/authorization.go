@@ -49,7 +49,7 @@ func (a *AppAccount) SessionHasPermissionToUser(session *model.Session, userID s
 		return true
 	}
 
-	if a.SessionHasPermissionTo(session, model.PERMISSION_EDIT_OTHER_USERS) {
+	if a.SessionHasPermissionTo(session, model.PermissionEditOtherUsers) {
 		return true
 	}
 
@@ -72,7 +72,7 @@ func (a *AppAccount) HasPermissionToUser(askingUserId string, userID string) boo
 		return true
 	}
 
-	if a.HasPermissionTo(askingUserId, model.PERMISSION_EDIT_OTHER_USERS) {
+	if a.HasPermissionTo(askingUserId, model.PermissionEditOtherUsers) {
 		return true
 	}
 

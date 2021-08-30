@@ -38,7 +38,7 @@ func testCount(t *testing.T, ss store.Store) {
 	// channelId := model.NewId()
 	regularUser := &account.User{}
 	regularUser.Email = MakeEmail()
-	regularUser.Roles = model.SYSTEM_USER_ROLE_ID
+	regularUser.Roles = model.SystemUserRoleId
 	_, err := ss.User().Save(regularUser)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, ss.User().PermanentDelete(regularUser.Id)) }()
@@ -50,7 +50,7 @@ func testCount(t *testing.T, ss store.Store) {
 
 	guestUser := &account.User{}
 	guestUser.Email = MakeEmail()
-	guestUser.Roles = model.SYSTEM_GUEST_ROLE_ID
+	guestUser.Roles = model.SystemGuestRoleId
 	_, err = ss.User().Save(guestUser)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, ss.User().PermanentDelete(guestUser.Id)) }()
@@ -62,7 +62,7 @@ func testCount(t *testing.T, ss store.Store) {
 
 	teamAdmin := &account.User{}
 	teamAdmin.Email = MakeEmail()
-	teamAdmin.Roles = model.SYSTEM_USER_ROLE_ID
+	teamAdmin.Roles = model.SystemUserRoleId
 	_, err = ss.User().Save(teamAdmin)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, ss.User().PermanentDelete(teamAdmin.Id)) }()
@@ -74,7 +74,7 @@ func testCount(t *testing.T, ss store.Store) {
 
 	sysAdmin := &account.User{}
 	sysAdmin.Email = MakeEmail()
-	sysAdmin.Roles = model.SYSTEM_ADMIN_ROLE_ID + " " + model.SYSTEM_USER_ROLE_ID
+	sysAdmin.Roles = model.SystemAdminRoleId + " " + model.SystemUserRoleId
 	_, err = ss.User().Save(sysAdmin)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, ss.User().PermanentDelete(sysAdmin.Id)) }()
@@ -201,7 +201,7 @@ func testCount(t *testing.T, ss store.Store) {
 			"Filter by system admins only",
 			account.UserCountOptions{
 				// TeamId: teamId,
-				Roles: []string{model.SYSTEM_ADMIN_ROLE_ID},
+				Roles: []string{model.SystemAdminRoleId},
 			},
 			1,
 		},
@@ -209,7 +209,7 @@ func testCount(t *testing.T, ss store.Store) {
 			"Filter by system users only",
 			account.UserCountOptions{
 				// TeamId: teamId,
-				Roles: []string{model.SYSTEM_USER_ROLE_ID},
+				Roles: []string{model.SystemUserRoleId},
 			},
 			2,
 		},
@@ -217,7 +217,7 @@ func testCount(t *testing.T, ss store.Store) {
 			"Filter by system guests only",
 			account.UserCountOptions{
 				// TeamId: teamId,
-				Roles: []string{model.SYSTEM_GUEST_ROLE_ID},
+				Roles: []string{model.SystemGuestRoleId},
 			},
 			1,
 		},
@@ -225,7 +225,7 @@ func testCount(t *testing.T, ss store.Store) {
 			"Filter by system admins and system users",
 			account.UserCountOptions{
 				// TeamId: teamId,
-				Roles: []string{model.SYSTEM_ADMIN_ROLE_ID, model.SYSTEM_USER_ROLE_ID},
+				Roles: []string{model.SystemAdminRoleId, model.SystemUserRoleId},
 			},
 			3,
 		},
@@ -233,7 +233,7 @@ func testCount(t *testing.T, ss store.Store) {
 			"Filter by system admins, system user and system guests",
 			account.UserCountOptions{
 				// TeamId: teamId,
-				Roles: []string{model.SYSTEM_ADMIN_ROLE_ID, model.SYSTEM_USER_ROLE_ID, model.SYSTEM_GUEST_ROLE_ID},
+				Roles: []string{model.SystemAdminRoleId, model.SystemUserRoleId, model.SystemGuestRoleId},
 			},
 			4,
 		},

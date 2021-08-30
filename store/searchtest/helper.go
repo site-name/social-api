@@ -182,7 +182,7 @@ func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName 
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     th.makeEmail(),
-		Roles:     model.SYSTEM_GUEST_ROLE_ID,
+		Roles:     model.SystemGuestRoleId,
 	})
 }
 
