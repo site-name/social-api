@@ -22,16 +22,7 @@ type webConnActivityMessage struct {
 func (a *App) InvalidateCacheForUser(userID string) {
 	a.Srv().invalidateCacheForUserSkipClusterSend(userID)
 
-	a.Srv().Store.User().InvalidateProfileCacheForUser(userID)
-
-	if a.Cluster() != nil {
-		msg := &cluster.ClusterMessage{
-			Event:    cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_USER,
-			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
-			Data:     userID,
-		}
-		a.Cluster().SendClusterMessage(msg)
-	}
+	a.srv.AccountService().InvalidateCacheForUser(userID)
 }
 
 // Publish push websocket event to all subscribers

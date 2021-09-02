@@ -19,7 +19,7 @@ type ServiceCsv struct {
 }
 
 func init() {
-	app.RegisterCsvApp(func(s *app.Server) (sub_app_iface.CsvService, error) {
+	app.RegisterCsvService(func(s *app.Server) (sub_app_iface.CsvService, error) {
 		return &ServiceCsv{
 			srv: s,
 		}, nil

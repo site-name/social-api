@@ -14,7 +14,7 @@ type ServiceShipping struct {
 }
 
 func init() {
-	app.RegisterShippingApp(func(s *app.Server) (sub_app_iface.ShippingService, error) {
+	app.RegisterShippingService(func(s *app.Server) (sub_app_iface.ShippingService, error) {
 		return &ServiceShipping{
 			srv: s,
 		}, nil

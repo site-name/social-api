@@ -19,7 +19,7 @@ type ServiceGiftcard struct {
 }
 
 func init() {
-	app.RegisterGiftcardApp(func(s *app.Server) (sub_app_iface.GiftcardService, error) {
+	app.RegisterGiftcardService(func(s *app.Server) (sub_app_iface.GiftcardService, error) {
 		return &ServiceGiftcard{
 			srv: s,
 		}, nil

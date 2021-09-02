@@ -20,7 +20,7 @@ type ServiceDiscount struct {
 }
 
 func init() {
-	app.RegisterDiscountApp(func(s *app.Server) (sub_app_iface.DiscountService, error) {
+	app.RegisterDiscountService(func(s *app.Server) (sub_app_iface.DiscountService, error) {
 		return &ServiceDiscount{
 			srv: s,
 		}, nil

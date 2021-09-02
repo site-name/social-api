@@ -24,7 +24,7 @@ type ServiceChannel struct {
 }
 
 func init() {
-	app.RegisterChannelApp(func(s *app.Server) (sub_app_iface.ChannelService, error) {
+	app.RegisterChannelService(func(s *app.Server) (sub_app_iface.ChannelService, error) {
 		return &ServiceChannel{
 			srv: s,
 		}, nil

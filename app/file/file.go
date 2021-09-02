@@ -22,7 +22,7 @@ type ServiceFile struct {
 }
 
 func init() {
-	app.RegisterFileApp(func(s *app.Server) (sub_app_iface.FileService, error) {
+	app.RegisterFileService(func(s *app.Server) (sub_app_iface.FileService, error) {
 		service := &ServiceFile{
 			srv:           s,
 			uploadLockMap: map[string]bool{},

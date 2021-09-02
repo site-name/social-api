@@ -14,7 +14,7 @@ type ServicePage struct {
 }
 
 func init() {
-	app.RegisterPageApp(func(s *app.Server) (sub_app_iface.PageService, error) {
+	app.RegisterPageService(func(s *app.Server) (sub_app_iface.PageService, error) {
 		return &ServicePage{
 			srv: s,
 		}, nil

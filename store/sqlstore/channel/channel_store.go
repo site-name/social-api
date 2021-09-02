@@ -104,6 +104,7 @@ func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) (
 		From(store.ChannelTableName).
 		OrderBy(store.TableOrderingMap[store.ChannelTableName])
 
+	// parse options
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Id"))
 	}

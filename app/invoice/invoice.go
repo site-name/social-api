@@ -14,7 +14,7 @@ type ServiceInvoice struct {
 }
 
 func init() {
-	app.RegisterInvoiceApp(func(s *app.Server) (sub_app_iface.InvoiceService, error) {
+	app.RegisterInvoiceService(func(s *app.Server) (sub_app_iface.InvoiceService, error) {
 		return &ServiceInvoice{
 			srv: s,
 		}, nil

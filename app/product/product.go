@@ -22,7 +22,7 @@ type ServiceProduct struct {
 }
 
 func init() {
-	app.RegisterProductApp(func(s *app.Server) (sub_app_iface.ProductService, error) {
+	app.RegisterProductService(func(s *app.Server) (sub_app_iface.ProductService, error) {
 		return &ServiceProduct{
 			srv: s,
 		}, nil

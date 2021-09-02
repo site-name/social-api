@@ -14,7 +14,7 @@ type ServiceWebhook struct {
 }
 
 func init() {
-	app.RegisterWebhookApp(func(s *app.Server) (sub_app_iface.WebhookService, error) {
+	app.RegisterWebhookService(func(s *app.Server) (sub_app_iface.WebhookService, error) {
 		return &ServiceWebhook{
 			srv: s,
 		}, nil

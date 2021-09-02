@@ -21,7 +21,7 @@ const (
 )
 
 func init() {
-	app.RegisterAttributeApp(func(s *app.Server) (sub_app_iface.AttributeService, error) {
+	app.RegisterAttributeService(func(s *app.Server) (sub_app_iface.AttributeService, error) {
 		return &ServiceAttribute{
 			srv: s,
 		}, nil

@@ -11,11 +11,13 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/email"
 	fileApp "github.com/sitename/sitename/app/file"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
@@ -190,9 +192,9 @@ func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*ac
 	// message.Add("user_id", ruser.Id)
 	// a.Publish(message)
 
-	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
+	if pluginsEnvironment := a.srv.GetPluginsEnvironment(); pluginsEnvironment != nil {
 		a.srv.Go(func() {
-			pluginContext := a.PluginContext()
+			pluginContext := app.PluginContext(c)
 			pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
 				hooks.UserHasBeenCreated(pluginContext, user)
 				return true
@@ -248,7 +250,7 @@ func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *account.U
 		return nil, err
 	}
 
-	if token.Type != app.TokenTypeGuestInvitation {
+	if token.Type != email.TokenTypeGuestInvitation {
 		return nil, model.NewAppError("CreateUserWithToken", "api.user.create_user.signup_link_invalid.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -292,7 +294,7 @@ func (a *ServiceAccount) GetVerifyEmailToken(token string) (*model.Token, *model
 	if err != nil {
 		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.bad_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
-	if rtoken.Type != app.TokenTypeVerifyEmail {
+	if rtoken.Type != email.TokenTypeVerifyEmail {
 		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.broken_token.app_error", nil, "", http.StatusBadRequest)
 	}
 	return rtoken, nil
@@ -378,7 +380,7 @@ func (a *ServiceAccount) GetUserByUsername(username string) (*account.User, *mod
 }
 
 func (a *ServiceAccount) IsFirstUserAccount() bool {
-	cachedSessions, err := a.srv.SessionCache.Len()
+	cachedSessions, err := a.sessionCache.Len()
 	if err != nil {
 		return false
 	}
@@ -1042,7 +1044,7 @@ func (a *ServiceAccount) GetPasswordRecoveryToken(token string) (*model.Token, *
 	if err != nil {
 		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.invalid_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
-	if rtoken.Type != app.TokenTypePasswordRecovery {
+	if rtoken.Type != email.TokenTypePasswordRecovery {
 		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.broken_token.app_error", nil, "", http.StatusBadRequest)
 	}
 	return rtoken, nil
@@ -1164,10 +1166,10 @@ func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, 
 	return a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
 }
 
-func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError) {
+func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model.AppError) {
 	tokenExtra := tokenExtra{
 		UserId: userID,
-		Email:  email,
+		Email:  eMail,
 	}
 	jsonData, err := json.JSON.Marshal(tokenExtra)
 
@@ -1175,7 +1177,7 @@ func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, email string) (*mod
 		return nil, model.NewAppError("CreatePasswordRecoveryToken", "api.user.create_password_token.error", nil, "", http.StatusInternalServerError)
 	}
 
-	token := model.NewToken(app.TokenTypePasswordRecovery, string(jsonData))
+	token := model.NewToken(email.TokenTypePasswordRecovery, string(jsonData))
 
 	if err := a.srv.Store.Token().Save(token); err != nil {
 		var appErr *model.AppError
@@ -1323,4 +1325,24 @@ func (a *ServiceAccount) UserByOrderId(orderID string) (*account.User, *model.Ap
 	}
 
 	return user, nil
+}
+
+// InvalidateCacheForUser invalidates cache for given user
+func (us *ServiceAccount) InvalidateCacheForUser(userID string) {
+	// us.srv.Store.User().InvalidateProfilesInChannelCacheByUser(userID)
+	us.srv.Store.User().InvalidateProfileCacheForUser(userID)
+
+	if us.srv.Cluster != nil {
+		msg := &cluster.ClusterMessage{
+			Event:    cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_USER,
+			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
+			Data:     userID,
+		}
+		us.srv.Cluster.SendClusterMessage(msg)
+	}
+}
+
+// ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
+func (us *ServiceAccount) ClearAllUsersSessionCacheLocal() {
+	us.sessionCache.Purge()
 }

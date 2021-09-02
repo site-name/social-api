@@ -211,6 +211,8 @@ type AccountService interface {
 	DeleteAddresses(addressIDs []string) *model.AppError                                                    // DeleteAddress deletes given address and returns an error
 	UpsertAddress(transaction *gorp.Transaction, addr *account.Address) (*account.Address, *model.AppError) // UpsertAddress inserts or updates given address by checking its Id attribute
 	UserByOrderId(orderID string) (*account.User, *model.AppError)                                          // UserByOrderId returns an user who owns given order
+	InvalidateCacheForUser(userID string)                                                                   // InvalidateCacheForUser invalidates cache for given user
+	ClearAllUsersSessionCacheLocal()                                                                        // ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 }
 
 type ProductService interface {

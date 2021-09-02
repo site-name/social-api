@@ -119,7 +119,6 @@ type Server struct {
 	newStore func() (store.Store, error)
 
 	htmlTemplateWatcher *templates.Container
-	SessionCache        cache.Cache // cache for storing sessions
 	// seenPendingPostIdsCache cache.Cache
 	// licenseListenerId       string
 	// searchLicenseListenerId string
@@ -188,7 +187,7 @@ type Server struct {
 
 	ExchangeRateMap sync.Map // this is cache for storing currency exchange rates. Keys are strings, values are float64
 
-	// these are services
+	// these are sub services
 	account   sub_app_iface.AccountService
 	order     sub_app_iface.OrderService
 	payment   sub_app_iface.PaymentService
@@ -319,26 +318,13 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// at the moment we only have this implementation
 	// in the future the cache provider will be built based on the loaded config
+	// this must be created before registering sub services
 	s.CacheProvider = cache.NewProvider()
 	if err := s.CacheProvider.Connect(); err != nil {
 		return nil, errors.Wrapf(err, "Unable to connect to cache provider")
 	}
 
 	var err error
-	if s.SessionCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-		Size:           model.SESSION_CACHE_SIZE,
-		Striped:        true,
-		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
-	}); err != nil {
-		return nil, errors.Wrap(err, "Unable to create session cache")
-	}
-
-	// NOTE: not sure need this:
-	// if s.seenPendingPostIdsCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-	// 	Size: 25000,
-	// }); err != nil {
-	// 	return nil, errors.Wrap(err, "Unable to create status cache")
-	// }
 
 	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           account.STATUS_CACHE_SIZE,
@@ -407,17 +393,6 @@ func NewServer(options ...Option) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create store")
 	}
-
-	// s.configListenerId = s.AddConfigListener(func(_, _ *model.Config) {
-	// 	s.configOrLicenseListener()
-
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_CONFIG_CHANGED, "", "", "", nil)
-
-	// 	message.Add("config", s.ClientConfigWithComputed())
-	// 	s.Go(func() {
-	// 		s.Publish(message)
-	// 	})
-	// })
 
 	// This enterprise init should happen after the store is set
 	// but we don't want to move the s.initEnterprise() call because
@@ -510,21 +485,6 @@ func NewServer(options ...Option) (*Server, error) {
 		slog.Error("SiteURL must be set. Some features will operate incorrectly if the SiteURL is not set.")
 	}
 
-	// backend, appErr := s.FileBackend()
-	// if appErr != nil {
-	// 	slog.Error("Problem with file storage settings", slog.Err(appErr))
-	// } else {
-	// 	nErr := backend.TestConnection()
-	// 	if nErr != nil {
-	// 		if _, ok := nErr.(*filestore.S3FileBackendNoBucketError); ok {
-	// 			nErr = backend.(*filestore.S3FileBackend).MakeBucket()
-	// 		}
-	// 		if nErr != nil {
-	// 			slog.Error("Problem with file storage settings", slog.Err(nErr))
-	// 		}
-	// 	}
-	// }
-
 	s.timezones = timezones.New()
 	// Start email batching because it's not like the other jobs
 	s.AddConfigListener(func(_, _ *model.Config) {
@@ -561,11 +521,6 @@ func NewServer(options ...Option) (*Server, error) {
 		slog.String("build_hash", model.BuildHash),
 		slog.String("build_hash_enterprise", model.BuildHashEnterprise),
 	)
-	// if model.BuildEnterpriseReady == "true" {
-	// 	slog.Info("Enterprise Build", slog.Bool("enterprise_build", true))
-	// } else {
-	// 	slog.Info("Team Edition Build", slog.Bool("enterprise_build", false))
-	// }
 
 	pwd, _ := os.Getwd()
 	slog.Info("Printing current working", slog.String("directory", pwd))
@@ -612,6 +567,11 @@ func NewServer(options ...Option) (*Server, error) {
 		// runDNDStatusExpireJob(app)
 		// })
 		s.runJobs()
+	}
+
+	// register all sub services
+	if err = s.registerSubServices(); err != nil {
+		return nil, err
 	}
 
 	s.doAppMigrations()
@@ -1580,9 +1540,3 @@ func (s *Server) GetCookieDomain() string {
 	}
 	return ""
 }
-
-// func (s *Server) InvalidateCacheForUser(userID string) {
-// 	s.invalidateCacheForUserSkipClusterSend(userID)
-
-// 	s.AccountService().InvalidateCacheForUser(userID)
-// }

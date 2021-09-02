@@ -28,7 +28,7 @@ type ServiceCheckout struct {
 }
 
 func init() {
-	app.RegisterCheckoutApp(func(s *app.Server) (sub_app_iface.CheckoutService, error) {
+	app.RegisterCheckoutService(func(s *app.Server) (sub_app_iface.CheckoutService, error) {
 		return &ServiceCheckout{
 			srv: s,
 		}, nil

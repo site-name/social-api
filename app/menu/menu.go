@@ -25,7 +25,7 @@ type ServiceMenuConfig struct {
 }
 
 func init() {
-	app.RegisterMenuApp(func(s *app.Server) (sub_app_iface.MenuService, error) {
+	app.RegisterMenuService(func(s *app.Server) (sub_app_iface.MenuService, error) {
 		return &ServiceMenu{
 			srv: s,
 		}, nil

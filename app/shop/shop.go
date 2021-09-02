@@ -17,7 +17,7 @@ type ServiceShop struct {
 }
 
 func init() {
-	app.RegisterShopApp(func(s *app.Server) (sub_app_iface.ShopService, error) {
+	app.RegisterShopService(func(s *app.Server) (sub_app_iface.ShopService, error) {
 		return &ServiceShop{
 			srv: s,
 		}, nil

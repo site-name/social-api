@@ -16,7 +16,7 @@ type ServiceWishlist struct {
 }
 
 func init() {
-	app.RegisterWishlistApp(func(s *app.Server) (sub_app_iface.WishlistService, error) {
+	app.RegisterWishlistService(func(s *app.Server) (sub_app_iface.WishlistService, error) {
 		return &ServiceWishlist{
 			srv: s,
 		}, nil

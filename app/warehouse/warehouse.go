@@ -21,7 +21,7 @@ type ServiceWarehouse struct {
 }
 
 func init() {
-	app.RegisterWarehouseApp(func(s *app.Server) (sub_app_iface.WarehouseService, error) {
+	app.RegisterWarehouseService(func(s *app.Server) (sub_app_iface.WarehouseService, error) {
 		return &ServiceWarehouse{
 			srv: s,
 		}, nil

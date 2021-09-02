@@ -104,7 +104,7 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppErr
 	var session = a.sessionPool.Get().(*model.Session)
 
 	var err *model.AppError
-	if err := a.srv.SessionCache.Get(token, session); err == nil {
+	if err := a.sessionCache.Get(token, session); err == nil {
 		if metrics != nil {
 			metrics.IncrementMemCacheHitCounterSession()
 		}
@@ -284,7 +284,7 @@ func (a *ServiceAccount) SetSessionExpireInDays(session *model.Session, days int
 }
 
 func (a *ServiceAccount) SessionCacheLength() int {
-	if l, err := a.srv.SessionCache.Len(); err == nil {
+	if l, err := a.sessionCache.Len(); err == nil {
 		return l
 	}
 

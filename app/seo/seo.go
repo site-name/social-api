@@ -14,7 +14,7 @@ type ServiceSeo struct {
 }
 
 func init() {
-	app.RegisterSeoApp(func(s *app.Server) (sub_app_iface.SeoService, error) {
+	app.RegisterSeoService(func(s *app.Server) (sub_app_iface.SeoService, error) {
 		return &ServiceSeo{
 			srv: s,
 		}, nil

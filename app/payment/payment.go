@@ -22,7 +22,7 @@ type ServicePayment struct {
 }
 
 func init() {
-	app.RegisterPaymentApp(func(s *app.Server) (sub_app_iface.PaymentService, error) {
+	app.RegisterPaymentService(func(s *app.Server) (sub_app_iface.PaymentService, error) {
 		return &ServicePayment{
 			srv: s,
 		}, nil
