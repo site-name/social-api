@@ -9,8 +9,8 @@ import (
 )
 
 // AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-func (a *AppAttribute) AssignedProductAttributeByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError) {
-	assignedProductAttr, err := a.app.Srv().Store.AssignedProductAttribute().GetWithOption(option)
+func (a *ServiceAttribute) AssignedProductAttributeByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError) {
+	assignedProductAttr, err := a.srv.Store.AssignedProductAttribute().GetWithOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AssignedProductAttributeByOption", "app.attribute.error_finding_assigned_product_attribute_by_option", err)
 	}
@@ -19,7 +19,7 @@ func (a *AppAttribute) AssignedProductAttributeByOption(option *attribute.Assign
 }
 
 // GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-func (a *AppAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, *model.AppError) {
+func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, *model.AppError) {
 	// try get first:
 	option := new(attribute.AssignedProductAttributeFilterOption)
 	if assignedProductAttribute.ProductID != "" {
@@ -43,7 +43,7 @@ func (a *AppAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttrib
 			return nil, appErr
 		}
 		// create new one
-		assignedProductAttr, err := a.app.Srv().Store.AssignedProductAttribute().Save(assignedProductAttribute)
+		assignedProductAttr, err := a.srv.Store.AssignedProductAttribute().Save(assignedProductAttribute)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
 				return nil, appErr

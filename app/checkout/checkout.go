@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package checkout
 
 import (
@@ -23,16 +27,12 @@ type ServiceCheckout struct {
 	mutex sync.Mutex
 }
 
-type ServiceCheckoutConfig struct {
-	srv   *app.Server
-	wg    sync.WaitGroup
-	mutex sync.Mutex
-}
-
-func NewServiceCheckout(config *ServiceCheckoutConfig) sub_app_iface.CheckoutService {
-	return &ServiceCheckout{
-		srv: config.srv,
-	}
+func init() {
+	app.RegisterCheckoutApp(func(s *app.Server) (sub_app_iface.CheckoutService, error) {
+		return &ServiceCheckout{
+			srv: s,
+		}, nil
+	})
 }
 
 const (

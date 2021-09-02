@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package product
 
 import (
@@ -17,14 +21,12 @@ type ServiceProduct struct {
 	sync.Mutex
 }
 
-type ServiceProductConfig struct {
-	Server *app.Server
-}
-
-func NewServiceProduct(config *ServiceProductConfig) sub_app_iface.ProductService {
-	return &ServiceProduct{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterProductApp(func(s *app.Server) (sub_app_iface.ProductService, error) {
+		return &ServiceProduct{
+			srv: s,
+		}, nil
+	})
 }
 
 // ProductById returns 1 product by given id

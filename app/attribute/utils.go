@@ -22,7 +22,7 @@ import (
 // `attributeID` must be ID of processing `Attribute`
 //
 // Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError) {
+func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError) {
 
 	// validate if valid `instance` was provided
 	switch instance.(type) {
@@ -47,7 +47,7 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 	// save in bulk value relationships:
 	switch v := assignment.(type) {
 	case *attribute.AssignedProductAttribute:
-		_, err := a.app.Srv().Store.AssignedProductAttributeValue().SaveInBulk(v.Id, valueIDs)
+		_, err := a.srv.Store.AssignedProductAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
 				return nil, appErr
@@ -60,7 +60,7 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 		}
 
 	case *attribute.AssignedVariantAttribute:
-		_, err := a.app.Srv().Store.AssignedVariantAttributeValue().SaveInBulk(v.Id, valueIDs)
+		_, err := a.srv.Store.AssignedVariantAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
 				return nil, appErr
@@ -73,7 +73,7 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 		}
 
 	case *attribute.AssignedPageAttribute:
-		_, err := a.app.Srv().Store.AssignedPageAttributeValue().SaveInBulk(v.Id, valueIDs)
+		_, err := a.srv.Store.AssignedPageAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
 				return nil, appErr
@@ -99,7 +99,7 @@ func (a *AppAttribute) AssociateAttributeValuesToInstance(instance interface{}, 
 }
 
 // validateAttributeOwnsValues Checks given value IDs are belonging to the given attribute.
-func (a *AppAttribute) validateAttributeOwnsValues(attributeID string, valueIDs []string) *model.AppError {
+func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, valueIDs []string) *model.AppError {
 	attributeValues, appErr := a.AttributeValuesOfAttribute(attributeID)
 	if appErr != nil {
 		return appErr
@@ -126,7 +126,7 @@ func (a *AppAttribute) validateAttributeOwnsValues(attributeID string, valueIDs 
 //  +) *AssignedProductAttribute
 //  +) *AssignedVariantAttribute
 //  +) *AssignedPageAttribute
-func (a *AppAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
+func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
 
 	switch v := instance.(type) {
 	case *product_and_discount.Product:
@@ -209,7 +209,7 @@ func (a *AppAttribute) associateAttributeToInstance(instance interface{}, attrib
 //  +) *ProductVariant - *AssignedVariantAttribute
 //
 //  +) *Page           - *AssignedPageAttribute
-func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
+func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
 	// validate if `instance` and `assignment` are provided accordingly:
 	invalidArgumentErrorHandler := func(field string) *model.AppError {
 		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": field}, "Please read doc for this method", http.StatusBadRequest)
@@ -222,7 +222,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 	switch instance.(type) {
 	case *product_and_discount.Product:
 		if assignmentValue, ok := assignment.(*attribute.AssignedProductAttribute); !ok {
-			assignedProductAttrValues, attrValues, err := a.app.Srv().Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedProductAttrValues, attrValues, err := a.srv.Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_product_attribute_values_for_sort.app_error", err)
@@ -235,7 +235,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 				value.SortOrder = i
 			}
 			// update if database:
-			if err = a.app.Srv().Store.AssignedProductAttributeValue().UpdateInBulk(assignedProductAttrValues); err != nil {
+			if err = a.srv.Store.AssignedProductAttributeValue().UpdateInBulk(assignedProductAttrValues); err != nil {
 				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.error_updating_assigned_product_attribute_values.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
@@ -243,7 +243,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 		return invalidArgumentErrorHandler("assignment")
 	case *product_and_discount.ProductVariant:
 		if assignmentValue, ok := assignment.(*attribute.AssignedVariantAttribute); ok {
-			assignedVariantAttrValues, attrValues, err := a.app.Srv().Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedVariantAttrValues, attrValues, err := a.srv.Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_variant_attribute_values_for_sort.app_error", err)
@@ -256,7 +256,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 				value.SortOrder = i
 			}
 			// update if database:
-			if err = a.app.Srv().Store.AssignedVariantAttributeValue().UpdateInBulk(assignedVariantAttrValues); err != nil {
+			if err = a.srv.Store.AssignedVariantAttributeValue().UpdateInBulk(assignedVariantAttrValues); err != nil {
 				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.error_updating_assigned_variant_attribute_values.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		}
@@ -264,7 +264,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 		return invalidArgumentErrorHandler("assignment")
 	case *page.Page:
 		if assignmentValue, ok := assignment.(*attribute.AssignedPageAttribute); ok {
-			assignedPageAttrValues, attrValues, err := a.app.Srv().Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.Id)
+			assignedPageAttrValues, attrValues, err := a.srv.Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
 				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_page_attribute_values_for_sort.app_error", err)
@@ -277,7 +277,7 @@ func (a *AppAttribute) sortAssignedAttributeValues(instance interface{}, assignm
 				value.SortOrder = i
 			}
 			// update if database:
-			if err = a.app.Srv().Store.AssignedPageAttributeValue().UpdateInBulk(assignedPageAttrValues); err != nil {
+			if err = a.srv.Store.AssignedPageAttributeValue().UpdateInBulk(assignedPageAttrValues); err != nil {
 				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.error_updating_assigned_page_attribute_values.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 		}

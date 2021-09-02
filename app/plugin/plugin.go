@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package plugin
 
 import (
@@ -35,14 +39,12 @@ type ServicePlugin struct {
 	srv *app.Server
 }
 
-type ServicePluginConfig struct {
-	Server *app.Server
-}
-
-func NewServicePlugin(config *ServicePluginConfig) sub_app_iface.PluginService {
-	return &ServicePlugin{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterPluginApp(func(s *app.Server) (sub_app_iface.PluginService, error) {
+		return &ServicePlugin{
+			srv: s,
+		}, nil
+	})
 }
 
 type pluginSignaturePath struct {

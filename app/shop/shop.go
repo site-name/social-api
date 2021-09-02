@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package shop
 
 import (
@@ -12,14 +16,12 @@ type ServiceShop struct {
 	srv *app.Server
 }
 
-type ServiceShopConfig struct {
-	Server *app.Server
-}
-
-func NewServiceShop(config *ServiceShopConfig) sub_app_iface.ShopService {
-	return &ServiceShop{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterShopApp(func(s *app.Server) (sub_app_iface.ShopService, error) {
+		return &ServiceShop{
+			srv: s,
+		}, nil
+	})
 }
 
 // ShopById finds shop by given id

@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package webhook
 
 import (
@@ -9,12 +13,10 @@ type ServiceWebhook struct {
 	srv *app.Server
 }
 
-type ServiceWebhookConfig struct {
-	Server *app.Server
-}
-
-func NewServiceWebhook(config *ServiceWebhookConfig) sub_app_iface.WebhookService {
-	return &ServiceWebhook{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterWebhookApp(func(s *app.Server) (sub_app_iface.WebhookService, error) {
+		return &ServiceWebhook{
+			srv: s,
+		}, nil
+	})
 }

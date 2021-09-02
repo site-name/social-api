@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package file
 
 import (
@@ -17,21 +21,19 @@ type ServiceFile struct {
 	uploadLockMap    map[string]bool
 }
 
-type ServiceFileConfig struct {
-	Server *app.Server
-}
+func init() {
+	app.RegisterFileApp(func(s *app.Server) (sub_app_iface.FileService, error) {
+		service := &ServiceFile{
+			srv:           s,
+			uploadLockMap: map[string]bool{},
+		}
 
-func NewServiceFile(config *ServiceFileConfig) (sub_app_iface.FileService, error) {
-	fa := &ServiceFile{
-		srv:           config.Server,
-		uploadLockMap: map[string]bool{},
-	}
+		// test file backend connection:
+		backend, appErr := service.FileBackend()
+		if appErr != nil {
+			return nil, appErr
+		}
 
-	// test file backend connection:
-	backend, appErr := fa.FileBackend()
-	if appErr != nil {
-		return nil, appErr
-	} else {
 		nErr := backend.TestConnection()
 		if nErr != nil {
 			if _, ok := nErr.(*filestore.S3FileBackendNoBucketError); ok {
@@ -41,7 +43,7 @@ func NewServiceFile(config *ServiceFileConfig) (sub_app_iface.FileService, error
 				return nil, nErr
 			}
 		}
-	}
 
-	return fa, nil
+		return service, nil
+	})
 }

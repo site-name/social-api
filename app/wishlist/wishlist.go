@@ -15,14 +15,12 @@ type ServiceWishlist struct {
 	srv *app.Server
 }
 
-type ServiceWishlistConfig struct {
-	Server *app.Server
-}
-
-func NewServiceWishlist(config *ServiceWishlistConfig) sub_app_iface.WishlistService {
-	return &ServiceWishlist{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterWishlistApp(func(s *app.Server) (sub_app_iface.WishlistService, error) {
+		return &ServiceWishlist{
+			srv: s,
+		}, nil
+	})
 }
 
 // UpsertWishlist inserts a new wishlist instance into database with given userID

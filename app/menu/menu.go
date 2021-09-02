@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package menu
 
 import (
@@ -20,10 +24,12 @@ type ServiceMenuConfig struct {
 	Server *app.Server
 }
 
-func NewServiceMenuConfig(config *ServiceMenuConfig) sub_app_iface.MenuService {
-	return &ServiceMenu{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterMenuApp(func(s *app.Server) (sub_app_iface.MenuService, error) {
+		return &ServiceMenu{
+			srv: s,
+		}, nil
+	})
 }
 
 func (a *ServiceMenu) MenuById(id string) (*menu.Menu, *model.AppError) {

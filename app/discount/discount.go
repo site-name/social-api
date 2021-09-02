@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package discount
 
 import (
@@ -15,15 +19,12 @@ type ServiceDiscount struct {
 	mutex sync.Mutex     // this is for prevent data racing in methods that have concurrent executions
 }
 
-type ServiceDiscountConfig struct {
-	Server *app.Server
-}
-
-func NewServiceDiscount(config *ServiceDiscountConfig) sub_app_iface.DiscountService {
-
-	return &ServiceDiscount{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterDiscountApp(func(s *app.Server) (sub_app_iface.DiscountService, error) {
+		return &ServiceDiscount{
+			srv: s,
+		}, nil
+	})
 }
 
 // DiscountCalculator number of `args` must be 1 or 2

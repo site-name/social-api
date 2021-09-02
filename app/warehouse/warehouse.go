@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package warehouse
 
 import (
@@ -16,14 +20,12 @@ type ServiceWarehouse struct {
 	srv *app.Server
 }
 
-type ServiceWarehouseConfig struct {
-	Server *app.Server
-}
-
-func NewServiceWarehouse(config *ServiceWarehouseConfig) sub_app_iface.WarehouseService {
-	return &ServiceWarehouse{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterWarehouseApp(func(s *app.Server) (sub_app_iface.WarehouseService, error) {
+		return &ServiceWarehouse{
+			srv: s,
+		}, nil
+	})
 }
 
 // WarehouseByOption returns a list of warehouses based on given option

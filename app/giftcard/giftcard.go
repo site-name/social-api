@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package giftcard
 
 import (
@@ -14,14 +18,12 @@ type ServiceGiftcard struct {
 	srv *app.Server
 }
 
-type ServiceGiftcardConfig struct {
-	Server *app.Server
-}
-
-func NewServiceGiftcard(config *ServiceGiftcardConfig) sub_app_iface.GiftcardService {
-	return &ServiceGiftcard{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterGiftcardApp(func(s *app.Server) (sub_app_iface.GiftcardService, error) {
+		return &ServiceGiftcard{
+			srv: s,
+		}, nil
+	})
 }
 
 func (a *ServiceGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError) {

@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package csv
 
 import (
@@ -14,12 +18,10 @@ type ServiceCsv struct {
 	sync.Mutex
 }
 
-type ServiceCsvConfig struct {
-	Server *app.Server
-}
-
-func NewServiceCsv(config *ServiceCsvConfig) sub_app_iface.CsvService {
-	return &ServiceCsv{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterCsvApp(func(s *app.Server) (sub_app_iface.CsvService, error) {
+		return &ServiceCsv{
+			srv: s,
+		}, nil
+	})
 }

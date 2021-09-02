@@ -1,46 +1,131 @@
 package app
 
 import (
-	"github.com/sitename/sitename/app/account"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 // all sub applications of platform
 var (
-	accountApp   func(AppIface) sub_app_iface.AccountService
-	giftcardApp  func(AppIface) sub_app_iface.GiftcardService
-	paymentApp   func(AppIface) sub_app_iface.PaymentService
-	checkoutApp  func(AppIface) sub_app_iface.CheckoutService
-	warehouseApp func(AppIface) sub_app_iface.WarehouseService
-	productApp   func(AppIface) sub_app_iface.ProductService
-	wishlistApp  func(AppIface) sub_app_iface.WishlistService
-	orderApp     func(AppIface) sub_app_iface.OrderService
-	webhookApp   func(AppIface) sub_app_iface.WebhookService
-	menuApp      func(AppIface) sub_app_iface.MenuService
-	pageApp      func(AppIface) sub_app_iface.PageService
-	seoApp       func(AppIface) sub_app_iface.SeoService
-	shopApp      func(AppIface) sub_app_iface.ShopService
-	shippingApp  func(AppIface) sub_app_iface.ShippingService
-	discountApp  func(AppIface) sub_app_iface.DiscountService
-	csvApp       func(AppIface) sub_app_iface.CsvService
-	attributeApp func(AppIface) sub_app_iface.AttributeService
-	channelApp   func(AppIface) sub_app_iface.ChannelService
-	invoiceApp   func(AppIface) sub_app_iface.InvoiceService
-	fileApp      func(AppIface) sub_app_iface.FileService
-	pluginApp    func(AppIface) sub_app_iface.PluginService
+	accountApp   func(*Server) (sub_app_iface.AccountService, error)
+	giftcardApp  func(*Server) (sub_app_iface.GiftcardService, error)
+	paymentApp   func(*Server) (sub_app_iface.PaymentService, error)
+	checkoutApp  func(*Server) (sub_app_iface.CheckoutService, error)
+	warehouseApp func(*Server) (sub_app_iface.WarehouseService, error)
+	productApp   func(*Server) (sub_app_iface.ProductService, error)
+	wishlistApp  func(*Server) (sub_app_iface.WishlistService, error)
+	orderApp     func(*Server) (sub_app_iface.OrderService, error)
+	webhookApp   func(*Server) (sub_app_iface.WebhookService, error)
+	menuApp      func(*Server) (sub_app_iface.MenuService, error)
+	pageApp      func(*Server) (sub_app_iface.PageService, error)
+	seoApp       func(*Server) (sub_app_iface.SeoService, error)
+	shopApp      func(*Server) (sub_app_iface.ShopService, error)
+	shippingApp  func(*Server) (sub_app_iface.ShippingService, error)
+	discountApp  func(*Server) (sub_app_iface.DiscountService, error)
+	csvApp       func(*Server) (sub_app_iface.CsvService, error)
+	attributeApp func(*Server) (sub_app_iface.AttributeService, error)
+	channelApp   func(*Server) (sub_app_iface.ChannelService, error)
+	invoiceApp   func(*Server) (sub_app_iface.InvoiceService, error)
+	fileApp      func(*Server) (sub_app_iface.FileService, error)
+	pluginApp    func(*Server) (sub_app_iface.PluginService, error)
 )
+
+// RegisterPluginApp
+func RegisterPluginApp(f func(*Server) (sub_app_iface.PluginService, error)) {
+	pluginApp = f
+}
+
+// RegisterFileApp
+func RegisterFileApp(f func(*Server) (sub_app_iface.FileService, error)) {
+	fileApp = f
+}
+
+// RegisterGiftcardApp
+func RegisterGiftcardApp(f func(*Server) (sub_app_iface.GiftcardService, error)) {
+	giftcardApp = f
+}
+
+// RegisterPaymentApp
+func RegisterPaymentApp(f func(*Server) (sub_app_iface.PaymentService, error)) {
+	paymentApp = f
+}
+
+func RegisterProductApp(f func(*Server) (sub_app_iface.ProductService, error)) {
+	productApp = f
+}
+
+func RegisterWarehouseApp(f func(*Server) (sub_app_iface.WarehouseService, error)) {
+	warehouseApp = f
+}
+
+func RegisterWishlistApp(f func(*Server) (sub_app_iface.WishlistService, error)) {
+	wishlistApp = f
+}
+
+func RegisterCheckoutApp(f func(*Server) (sub_app_iface.CheckoutService, error)) {
+	checkoutApp = f
+}
+
+func RegisterOrderApp(f func(*Server) (sub_app_iface.OrderService, error)) {
+	orderApp = f
+}
+
+func RegisterWebhookApp(f func(*Server) (sub_app_iface.WebhookService, error)) {
+	webhookApp = f
+}
+
+func RegisterMenuApp(f func(*Server) (sub_app_iface.MenuService, error)) {
+	menuApp = f
+}
+
+func RegisterPageApp(f func(*Server) (sub_app_iface.PageService, error)) {
+	pageApp = f
+}
+
+func RegisterSeoApp(f func(*Server) (sub_app_iface.SeoService, error)) {
+	seoApp = f
+}
+
+func RegisterShopApp(f func(*Server) (sub_app_iface.ShopService, error)) {
+	shopApp = f
+}
+
+func RegisterShippingApp(f func(*Server) (sub_app_iface.ShippingService, error)) {
+	shippingApp = f
+}
+
+func RegisterDiscountApp(f func(*Server) (sub_app_iface.DiscountService, error)) {
+	discountApp = f
+}
+
+func RegisterCsvApp(f func(*Server) (sub_app_iface.CsvService, error)) {
+	csvApp = f
+}
+
+func RegisterAttributeApp(f func(*Server) (sub_app_iface.AttributeService, error)) {
+	attributeApp = f
+}
+
+func RegisterChannelApp(f func(*Server) (sub_app_iface.ChannelService, error)) {
+	channelApp = f
+}
+
+func RegisterAccountApp(f func(*Server) (sub_app_iface.AccountService, error)) {
+	accountApp = f
+}
+
+func RegisterInvoiceApp(f func(*Server) (sub_app_iface.InvoiceService, error)) {
+	invoiceApp = f
+}
 
 func criticalLog(app string) {
 	slog.Critical("Failed to register. Please check again", slog.String("app", app))
 }
 
 // registerSubServices register all sub services to App.
-func (server *Server) registerSubServices() error {
+func (s *Server) registerSubServices() error {
 	slog.Info("Registering all sub services...")
-	account.NewServiceAccount(&account.ServiceAccountConfig{
-		CacheProvider: server.,
-	})
+
 }
 
 // PluginService returns order sub app

@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package shipping
 
 import (
@@ -9,12 +13,10 @@ type ServiceShipping struct {
 	srv *app.Server
 }
 
-type ServiceShippingConfig struct {
-	Server *app.Server
-}
-
-func NewServiceShipping(config *ServiceShippingConfig) sub_app_iface.ShippingService {
-	return &ServiceShipping{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterShippingApp(func(s *app.Server) (sub_app_iface.ShippingService, error) {
+		return &ServiceShipping{
+			srv: s,
+		}, nil
+	})
 }

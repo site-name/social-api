@@ -935,7 +935,7 @@ func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user *account.U
 	}
 
 	for _, info := range infos {
-		res, err := a.FileService().FileExists(info.Path)
+		res, err := a.srv.FileService().FileExists(info.Path)
 		if err != nil {
 			slog.Warn(
 				"Error checking existance of file",

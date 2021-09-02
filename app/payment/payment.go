@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package payment
 
 import (
@@ -17,14 +21,12 @@ type ServicePayment struct {
 	srv *app.Server
 }
 
-type ServicePaymentConfig struct {
-	Server *app.Server
-}
-
-func NewServicePayment(config *ServicePaymentConfig) sub_app_iface.PaymentService {
-	return &ServicePayment{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterPaymentApp(func(s *app.Server) (sub_app_iface.PaymentService, error) {
+		return &ServicePayment{
+			srv: s,
+		}, nil
+	})
 }
 
 // PaymentByID returns a payment with given id

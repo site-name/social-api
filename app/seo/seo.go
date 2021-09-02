@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package seo
 
 import (
@@ -7,6 +11,14 @@ import (
 
 type ServiceSeo struct {
 	srv *app.Server
+}
+
+func init() {
+	app.RegisterSeoApp(func(s *app.Server) (sub_app_iface.SeoService, error) {
+		return &ServiceSeo{
+			srv: s,
+		}, nil
+	})
 }
 
 type ServiceSeoConfig struct {

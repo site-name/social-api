@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package invoice
 
 import (
@@ -9,12 +13,10 @@ type ServiceInvoice struct {
 	srv *app.Server
 }
 
-type ServiceInvoiceConfig struct {
-	Server *app.Server
-}
-
-func NewServiceInvoice(config *ServiceInvoiceConfig) sub_app_iface.InvoiceService {
-	return &ServiceInvoice{
-		srv: config.Server,
-	}
+func init() {
+	app.RegisterInvoiceApp(func(s *app.Server) (sub_app_iface.InvoiceService, error) {
+		return &ServiceInvoice{
+			srv: s,
+		}, nil
+	})
 }
