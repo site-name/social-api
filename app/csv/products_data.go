@@ -1,5 +1,5 @@
 package csv
 
-func (a *AppCsv) GetProductsData() {
+func (a *ServiceCsv) GetProductsData() {
 
 }

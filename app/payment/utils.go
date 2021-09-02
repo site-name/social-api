@@ -21,7 +21,7 @@ import (
 //
 // Returns information required to process payment and additional
 // billing/shipping addresses for optional fraud-prevention mechanisms.
-func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
+func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
 
 	var (
 		billingAddressID  string
@@ -33,7 +33,7 @@ func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentT
 	)
 
 	if payMent.CheckoutID != nil {
-		checkoutOfPayment, appErr := a.app.CheckoutApp().CheckoutByOption(&checkout.CheckoutFilterOption{
+		checkoutOfPayment, appErr := a.srv.CheckoutService().CheckoutByOption(&checkout.CheckoutFilterOption{
 			Token: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: *payMent.CheckoutID,
@@ -51,7 +51,7 @@ func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentT
 			if checkoutOfPayment.ShippingAddressID != nil {
 				shippingAddressID = *checkoutOfPayment.ShippingAddressID
 			}
-			emailOfCheckoutUser, appErr := a.app.CheckoutApp().GetCustomerEmail(checkoutOfPayment)
+			emailOfCheckoutUser, appErr := a.srv.CheckoutService().GetCustomerEmail(checkoutOfPayment)
 			if appErr != nil { // this is system caused error
 				return nil, appErr
 			}
@@ -61,7 +61,7 @@ func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentT
 			}
 		}
 	} else if payMent.OrderID != nil {
-		orderOfPayment, appErr := a.app.OrderApp().OrderById(*payMent.OrderID)
+		orderOfPayment, appErr := a.srv.OrderService().OrderById(*payMent.OrderID)
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
@@ -83,7 +83,7 @@ func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentT
 	}
 
 	if billingAddressID != "" || shippingAddressID != "" {
-		addresses, appErr := a.app.AccountApp().AddressesByOption(&account.AddressFilterOption{
+		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
 					In: []string{billingAddressID, shippingAddressID},
@@ -161,7 +161,7 @@ func (a *AppPayment) CreatePaymentInformation(payMent *payment.Payment, paymentT
 // NOTE: `customerIpAddress`, `paymentToken`, `returnUrl` and `externalReference` can be empty
 //
 // `extraData`, `ckout`, `ord` can be nil
-func (a *AppPayment) CreatePayment(
+func (a *ServicePayment) CreatePayment(
 	gateway string,
 	total *decimal.Decimal,
 	currency string,
@@ -195,7 +195,7 @@ func (a *AppPayment) CreatePayment(
 		billingAddressID = *ord.BillingAddressID
 	}
 
-	billingAddress, appErr := a.app.AccountApp().AddressById(billingAddressID)
+	billingAddress, appErr := a.srv.AccountService().AddressById(billingAddressID)
 	if appErr != nil {
 		return nil, nil, appErr // this error can be either system error/not found error
 	}
@@ -232,11 +232,11 @@ func (a *AppPayment) CreatePayment(
 		payment.OrderID = &ord.Id
 	}
 
-	payment, appErr = a.app.PaymentApp().CreateOrUpdatePayment(payment)
+	payment, appErr = a.srv.PaymentService().CreateOrUpdatePayment(payment)
 	return payment, nil, appErr
 }
 
-func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError) {
 	// get all transactions that belong to given payment
 	trans, appErr := a.GetAllPaymentTransactions(paymentID)
 	if appErr != nil {
@@ -263,7 +263,7 @@ func (a *AppPayment) GetAlreadyProcessedTransaction(paymentID string, gatewayRes
 }
 
 // CreateTransaction reate a transaction based on transaction kind and gateway response.
-func (a *AppPayment) CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError) {
 	// Default values for token, amount, currency are only used in cases where
 	// response from gateway was invalid or an exception occured
 	if gatewayResponse == nil {
@@ -300,7 +300,7 @@ func (a *AppPayment) CreateTransaction(paymentID string, kind string, paymentInf
 	return a.SaveTransaction(tran)
 }
 
-func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
 		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
 		if appErr == nil {
@@ -315,7 +315,7 @@ func (a *AppPayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymen
 }
 
 // CleanCapture Check if payment can be captured.
-func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError {
+func (a *ServicePayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError {
 	if amount.LessThanOrEqual(decimal.Zero) {
 		return payment.NewPaymentError("CleanCapture", "Amount should be a positive number.", payment.INVALID)
 	}
@@ -331,7 +331,7 @@ func (a *AppPayment) CleanCapture(pm *payment.Payment, amount decimal.Decimal) *
 }
 
 // CleanAuthorize Check if payment can be authorized
-func (a *AppPayment) CleanAuthorize(payMent *payment.Payment) *payment.PaymentError {
+func (a *ServicePayment) CleanAuthorize(payMent *payment.Payment) *payment.PaymentError {
 	if !payMent.CanAuthorize() {
 		return payment.NewPaymentError("CleanAuthorize", "Charged transactions cannot be authorized again.", payment.INVALID)
 	}
@@ -339,7 +339,7 @@ func (a *AppPayment) CleanAuthorize(payMent *payment.Payment) *payment.PaymentEr
 }
 
 // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-func (a *AppPayment) ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError {
+func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError {
 	if response == nil {
 		return &payment.GatewayError{
 			Where:   "ValidateGatewayResponse",
@@ -373,12 +373,12 @@ func (a *AppPayment) ValidateGatewayResponse(response *payment.GatewayResponse) 
 }
 
 // GatewayPostProcess
-func (a *AppPayment) GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
-	tx, err := a.app.Srv().Store.GetMaster().Begin()
+func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
+	tx, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.app.Srv().Store.FinalizeTransaction(tx)
+	defer a.srv.Store.FinalizeTransaction(tx)
 
 	if paymentTransaction == nil || payMent == nil {
 		return model.NewAppError("GatewayPostProcess", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "paymentTransaction/payMent"}, "", http.StatusBadRequest)
@@ -464,7 +464,7 @@ func (a *AppPayment) GatewayPostProcess(paymentTransaction *payment.PaymentTrans
 	}
 
 	if util.StringInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
-		if appErr = a.app.OrderApp().UpdateOrderTotalPaid(tx, *payMent.OrderID); appErr != nil {
+		if appErr = a.srv.OrderService().UpdateOrderTotalPaid(tx, *payMent.OrderID); appErr != nil {
 			return appErr
 		}
 	}
@@ -478,7 +478,7 @@ func (a *AppPayment) GatewayPostProcess(paymentTransaction *payment.PaymentTrans
 
 // FetchCustomerId Retrieve users customer_id stored for desired gateway.
 // returning string could be "" or long string
-func (a *AppPayment) FetchCustomerId(user *account.User, gateway string) (string, *model.AppError) {
+func (a *ServicePayment) FetchCustomerId(user *account.User, gateway string) (string, *model.AppError) {
 	// validate arguments are valid
 	var argumentErrorFields string
 	if user == nil {
@@ -497,7 +497,7 @@ func (a *AppPayment) FetchCustomerId(user *account.User, gateway string) (string
 }
 
 // StoreCustomerId stores new value into given user's PrivateMetadata
-func (a *AppPayment) StoreCustomerId(userID string, gateway string, customerID string) *model.AppError {
+func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customerID string) *model.AppError {
 	// validate arguments are valid:
 	var argumentErrFields string
 	if !model.IsValidId(userID) {
@@ -515,7 +515,7 @@ func (a *AppPayment) StoreCustomerId(userID string, gateway string, customerID s
 	}
 
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
-	user, appErr := a.app.AccountApp().UserById(context.Background(), userID)
+	user, appErr := a.srv.AccountService().UserById(context.Background(), userID)
 	if appErr != nil {
 		return appErr
 	}
@@ -525,7 +525,7 @@ func (a *AppPayment) StoreCustomerId(userID string, gateway string, customerID s
 		},
 		account.PrivateMetadata,
 	)
-	_, appErr = a.app.AccountApp().UpdateUser(user, false)
+	_, appErr = a.srv.AccountService().UpdateUser(user, false)
 	return appErr
 }
 
@@ -536,7 +536,7 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 	return strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 }
 
-func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
+func (a *ServicePayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
 
 	var changed bool
 	var appErr *model.AppError
@@ -576,7 +576,7 @@ func (a *AppPayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment
 	return appErr
 }
 
-func (a *AppPayment) updatePaymentMethodDetails(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse, changedFields []string) {
+func (a *ServicePayment) updatePaymentMethodDetails(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse, changedFields []string) {
 	if changedFields == nil {
 		changedFields = []string{}
 	}
@@ -602,7 +602,7 @@ func (a *AppPayment) updatePaymentMethodDetails(payMent *payment.Payment, gatewa
 	}
 }
 
-func (a *AppPayment) GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError) {
+func (a *ServicePayment) GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
 		Kind: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -622,7 +622,7 @@ func (a *AppPayment) GetPaymentToken(payMent *payment.Payment) (string, *payment
 }
 
 // IsCurrencySupported checks if given currency is supported by system
-func (a *AppPayment) IsCurrencySupported(currency string, gatewayID string, manager interface{}) (bool, *model.AppError) {
+func (a *ServicePayment) IsCurrencySupported(currency string, gatewayID string, manager interface{}) (bool, *model.AppError) {
 	panic("not implemented")
 }
 

@@ -5,12 +5,16 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppShipping struct {
-	app.AppIface
+type ServiceShipping struct {
+	srv *app.Server
 }
 
-func init() {
-	app.RegisterShippingApp(func(a app.AppIface) sub_app_iface.ShippingApp {
-		return &AppShipping{a}
-	})
+type ServiceShippingConfig struct {
+	Server *app.Server
+}
+
+func NewServiceShipping(config *ServiceShippingConfig) sub_app_iface.ShippingService {
+	return &ServiceShipping{
+		srv: config.Server,
+	}
 }

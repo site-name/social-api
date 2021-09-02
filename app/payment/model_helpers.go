@@ -12,7 +12,7 @@ import (
 )
 
 // GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
-func (a *AppPayment) GetLastpayment(payments []*payment.Payment) *payment.Payment {
+func (a *ServicePayment) GetLastpayment(payments []*payment.Payment) *payment.Payment {
 	if len(payments) == 0 {
 		return nil
 	}
@@ -27,7 +27,7 @@ func (a *AppPayment) GetLastpayment(payments []*payment.Payment) *payment.Paymen
 	return latestPayment
 }
 
-func (a *AppPayment) GetTotalAuthorized(payments []*payment.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {
+func (a *ServicePayment) GetTotalAuthorized(payments []*payment.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {
 	zeroMoney, err := util.ZeroMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model.NewAppError("GetTotalAuthorized", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
@@ -47,7 +47,7 @@ func (a *AppPayment) GetTotalAuthorized(payments []*payment.Payment, fallbackCur
 }
 
 // GetSubTotal adds up all Total prices of given order lines
-func (a *AppPayment) GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServicePayment) GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError) {
 	total, err := util.ZeroTaxedMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model.NewAppError("GetSubTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)

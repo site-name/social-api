@@ -18,7 +18,7 @@ const (
 	HTTPRequestTimeout = 1 * time.Hour
 )
 
-func (s *AppFile) DownloadFromURL(downloadURL string) ([]byte, error) {
+func (s *ServiceFile) DownloadFromURL(downloadURL string) ([]byte, error) {
 	if !model.IsValidHttpUrl(downloadURL) {
 		return nil, errors.Errorf("invalid url %s", downloadURL)
 	}
@@ -27,11 +27,11 @@ func (s *AppFile) DownloadFromURL(downloadURL string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Errorf("failed to parse url %s", downloadURL)
 	}
-	if !*s.Config().PluginSettings.AllowInsecureDownloadUrl && u.Scheme != "https" {
+	if !*s.srv.Config().PluginSettings.AllowInsecureDownloadUrl && u.Scheme != "https" {
 		return nil, errors.Errorf("insecure url not allowed %s", downloadURL)
 	}
 
-	client := s.Srv().HTTPService.MakeClient(true)
+	client := s.srv.HTTPService.MakeClient(true)
 	client.Timeout = HTTPRequestTimeout
 
 	var resp *http.Response

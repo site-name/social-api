@@ -12,8 +12,8 @@ import (
 
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
-func (a *AppCheckout) FetchCheckoutLines(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
-	checkoutLineInfos, err := a.app.Srv().Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
+func (a *ServiceCheckout) FetchCheckoutLines(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
+	checkoutLineInfos, err := a.srv.Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
 	if err != nil {
 		return nil, model.NewAppError("FetchCheckoutLines", "app.checkout.error_collecting_checkout_line_infos.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -21,29 +21,29 @@ func (a *AppCheckout) FetchCheckoutLines(ckout *checkout.Checkout) ([]*checkout.
 	return checkoutLineInfos, nil
 }
 
-func (a *AppCheckout) FetCheckoutInfo(ckout *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*checkout.CheckoutInfo, *model.AppError) {
+func (a *ServiceCheckout) FetCheckoutInfo(ckout *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*checkout.CheckoutInfo, *model.AppError) {
 	panic("not implt")
 
 }
 
-func (a *AppCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo) *model.AppError {
 	panic("not implt")
 
 }
 
-func (a *AppCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) ([]*shipping.ShippingMethod, *model.AppError) {
 	panic("not implt")
 
 }
 
 // UpdateCheckoutInfoShippingMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
-func (a *AppCheckout) UpdateCheckoutInfoShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
 	checkoutInfo.ShippingMethod = shippingMethod
 
 	checkoutInfo.ShippingMethodChannelListings = nil
 	if shippingMethod != nil {
-		listings, appErr := a.app.ShippingApp().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
+		listings, appErr := a.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
 			ShippingMethodID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: shippingMethod.Id,

@@ -9,8 +9,8 @@ import (
 )
 
 // ProductChannelListingsByOption returns a list of product channel listings filtered using given option
-func (a *AppProduct) ProductChannelListingsByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
-	listings, err := a.Srv().Store.ProductChannelListing().FilterByOption(option)
+func (a *ServiceProduct) ProductChannelListingsByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
+	listings, err := a.srv.Store.ProductChannelListing().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductChannelListingsByOption", "app.product.product_channel_listings_by_option_missing.app_error", err)
 	}
@@ -19,8 +19,8 @@ func (a *AppProduct) ProductChannelListingsByOption(option *product_and_discount
 }
 
 // BulkUpsertProductChannelListings bulk update/inserts given product channel listings and returns them
-func (a *AppProduct) BulkUpsertProductChannelListings(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
-	listings, err := a.Srv().Store.ProductChannelListing().BulkUpsert(listings)
+func (a *ServiceProduct) BulkUpsertProductChannelListings(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, *model.AppError) {
+	listings, err := a.srv.Store.ProductChannelListing().BulkUpsert(listings)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

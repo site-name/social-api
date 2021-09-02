@@ -300,19 +300,19 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		Locale:    locale,
 	}
 
-	ruser, err := a.AccountApp().CreateUser(&request.Context{}, user)
+	ruser, err := a.Srv().AccountService().CreateUser(&request.Context{}, user)
 	if ruser == nil {
 		return errors.New("Unable to create user. Error: " + err.Error())
 	}
 
 	if systemAdmin {
-		if _, err := a.AccountApp().UpdateUserRolesWithUser(ruser, "system_user system_admin", false); err != nil {
+		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(ruser, "system_user system_admin", false); err != nil {
 			return errors.New("Unable to make user system admin. Error: " + err.Error())
 		}
 	} else {
 		// This else case exists to prevent the first user created from being
 		// created as a system admin unless explicitly specified.
-		if _, err := a.AccountApp().UpdateUserRolesWithUser(ruser, "system_user", false); err != nil {
+		if _, err := a.Srv().AccountService().UpdateUserRolesWithUser(ruser, "system_user", false); err != nil {
 			return errors.New("If this is the first user: Unable to prevent user from being system admin. Error: " + err.Error())
 		}
 	}
@@ -402,7 +402,7 @@ func changeUserActiveStatus(a *app.App, user *account.User, userArg string, acti
 	if user.IsSSOUser() {
 		fmt.Println("You must also deactivate this user in the SSO provider or they will be reactivated on next login or sync.")
 	}
-	updatedUser, err := a.AccountApp().UpdateActive(&request.Context{}, user, activate)
+	updatedUser, err := a.Srv().AccountService().UpdateActive(&request.Context{}, user, activate)
 	if err != nil {
 		return fmt.Errorf("Unable to change activation status of user: %v", userArg)
 	}
@@ -580,7 +580,7 @@ func deleteAllUsersCommandF(command *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := a.AccountApp().PermanentDeleteAllUsers(&request.Context{}); err != nil {
+	if err := a.Srv().AccountService().PermanentDeleteAllUsers(&request.Context{}); err != nil {
 		return err
 	}
 	CommandPrettyPrintln("All user accounts successfully deleted.")
@@ -625,7 +625,7 @@ func deleteUserCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.AccountApp().PermanentDeleteUser(&request.Context{}, user); err != nil {
+		if err := a.Srv().AccountService().PermanentDeleteUser(&request.Context{}, user); err != nil {
 			return err
 		}
 
@@ -654,7 +654,7 @@ func resetUserMfaCmdF(command *cobra.Command, args []string) error {
 			return errors.New("Unable to find user '" + args[i] + "'")
 		}
 
-		if err := a.AccountApp().DeactivateMfa(user.Id); err != nil {
+		if err := a.Srv().AccountService().DeactivateMfa(user.Id); err != nil {
 			return err
 		}
 
@@ -693,7 +693,7 @@ func updateUserEmailCmdF(command *cobra.Command, args []string) error {
 	}
 
 	user.Email = newEmail
-	_, errUpdate := a.AccountApp().UpdateUser(user, true)
+	_, errUpdate := a.Srv().AccountService().UpdateUser(user, true)
 	if errUpdate != nil {
 		return errors.New(errUpdate.Message)
 	}

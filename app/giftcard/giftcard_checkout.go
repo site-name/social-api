@@ -9,8 +9,8 @@ import (
 )
 
 // DeleteGiftCardCheckout drops a giftcard-checkout relation
-func (s *AppGiftcard) DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError {
-	err := s.Srv().Store.GiftCardCheckout().Delete(giftcardID, checkoutToken)
+func (s *ServiceGiftcard) DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError {
+	err := s.srv.Store.GiftCardCheckout().Delete(giftcardID, checkoutToken)
 	if err != nil {
 		if _, ok := err.(*store.ErrNotFound); ok {
 			return nil
@@ -22,8 +22,8 @@ func (s *AppGiftcard) DeleteGiftCardCheckout(giftcardID string, checkoutToken st
 }
 
 // CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
-func (a *AppGiftcard) CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*giftcard.GiftCardCheckout, *model.AppError) {
-	giftCardCheckout, err := a.Srv().Store.GiftCardCheckout().Save(&giftcard.GiftCardCheckout{
+func (a *ServiceGiftcard) CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*giftcard.GiftCardCheckout, *model.AppError) {
+	giftCardCheckout, err := a.srv.Store.GiftCardCheckout().Save(&giftcard.GiftCardCheckout{
 		GiftcardID: giftcardID,
 		CheckoutID: checkoutToken,
 	})

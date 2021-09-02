@@ -35,7 +35,7 @@ import (
 )
 
 // GiftCardApp defines methods for giftcard app
-type GiftcardApp interface {
+type GiftcardService interface {
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                  // GetGiftCard returns a giftcard with given id
 	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                             // GiftcardsByCheckout returns all giftcards belong to given checkout
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
@@ -46,8 +46,8 @@ type GiftcardApp interface {
 	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                             // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
 }
 
-// PaymentApp defines methods for payment sub app
-type PaymentApp interface {
+// PaymentService defines methods for payment sub app
+type PaymentService interface {
 	PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError)                                                                                                                                                          // PaymentsByOption returns all payments that satisfy given option
 	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)                                                                                                                                                                              // GetLastOrderPayment get most recent payment made for given order
 	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)                                                                                                                                                         // GetAllPaymentTransactions returns all transactions belong to given payment
@@ -82,8 +82,8 @@ type PaymentApp interface {
 	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 }
 
-// CheckoutApp
-type CheckoutApp interface {
+// CheckoutService
+type CheckoutService interface {
 	CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError)                                                                                                                                            // CheckoutByOption returns a checkout filtered by given option
 	CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError)                                                                                                                                         // CheckoutsByOption returns a list of checkouts, filtered by given option
 	FetchCheckoutLines(checkout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)                                                                                                                                          // CheckoutLineShippingRequired(checkoutLine *checkout.CheckoutLine) (bool, *model.AppError) // CheckoutLineShippingRequired check if given checkout line's product variant requires shipping
@@ -105,8 +105,8 @@ type CheckoutApp interface {
 	CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError)                                                                                                                               // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
 }
 
-// AccountApp
-type AccountApp interface {
+// AccountService
+type AccountService interface {
 	AddressById(id string) (*account.Address, *model.AppError)                                                                                           // GetAddressById returns address with given id. If not found returns nil and concret error
 	AddressesByOption(option *account.AddressFilterOption) ([]*account.Address, *model.AppError)                                                         // AddressesByOption returns a list of addresses by given option
 	UserById(ctx context.Context, userID string) (*account.User, *model.AppError)                                                                        // GetUserById get user from database with given userId
@@ -213,7 +213,7 @@ type AccountApp interface {
 	UserByOrderId(orderID string) (*account.User, *model.AppError)                                          // UserByOrderId returns an user who owns given order
 }
 
-type ProductApp interface {
+type ProductService interface {
 	ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError)                                                                           // ProductVariantById returns a product variants with given id
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)                                                        // ProductTypesByCheckoutToken returns all product types related to given checkout
 	ProductById(productID string) (*product_and_discount.Product, *model.AppError)                                                                                  // ProductById returns a product with id of given id
@@ -237,14 +237,14 @@ type ProductApp interface {
 	DigitalContentbyOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, *model.AppError)   // DigitalContentbyOption returns 1 digital content filtered using given option
 }
 
-type WishlistApp interface {
+type WishlistService interface {
 	UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError)                            // UpsertWishlist inserts a new wishlist instance into database with given userID
 	WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError)                // WishlistByOption returns 1 wishlist filtered by given option
 	WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError)    // WishlistItemByOption returns 1 wishlist item filtered using given option
 	WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError) // WishlistItemsByOption returns a slice of wishlist items filtered using given option
 }
 
-type AttributeApp interface {
+type AttributeService interface {
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) // AttributeValuesOfAttribute finds all attribute values of given attribute, it may return an app-error indicates error occured. returned error could be either (*store.ErrNotFound or system error)
 	// AssociateAttributeValuesToInstance assigns given attribute values to a product or variant.
 	//
@@ -260,10 +260,10 @@ type AttributeApp interface {
 	AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError)                                    // AttributesByOption returns a list of attributes filtered using given options
 }
 
-type InvoiceApp interface {
+type InvoiceService interface {
 }
 
-type ChannelApp interface {
+type ChannelService interface {
 	GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) // GetChannelBySlug returns a channel (if found) from database with given slug
 	GetDefaultActiveChannel() (*channel.Channel, *model.AppError)     // GetDefaultChannel get random channel that is active
 	// CleanChannel performs:
@@ -278,7 +278,7 @@ type ChannelApp interface {
 	ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError) // ChannelsByOption returns a list of channels by given options
 }
 
-type WarehouseApp interface {
+type WarehouseService interface {
 	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)          // Validate if there is stock available for given variant in given country. If so - returns None. If there is less stock then required raise InsufficientStock exception.
 	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // Validate if there is stock available for given variants in given country. It raises InsufficientStock: when there is not enough items in stock for a variant
 	IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError)                                                                              // IsProductInStock
@@ -323,7 +323,7 @@ type WarehouseApp interface {
 	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                          // GetStockById takes options for filtering 1 stock
 }
 
-type DiscountApp interface {
+type DiscountService interface {
 	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)                         // VouchersByOption finds all vouchers with given option then returns them
 	ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (*model.NotApplicable, *model.AppError) // ValidateMinSpent validates if the order cost at least a specific amount of money
 	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError)                  // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
@@ -351,7 +351,7 @@ type DiscountApp interface {
 	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                               // FetchActiveDiscounts returns discounts that are activated
 }
 
-type OrderApp interface {
+type OrderService interface {
 	// OrderShippingIsRequired checks if an order requires ship or not by:
 	//
 	// 1) Find all child order lines that belong to given order
@@ -377,7 +377,7 @@ type OrderApp interface {
 	AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) // AnAddressOfOrder returns shipping address of given order if presents
 }
 
-type MenuApp interface {
+type MenuService interface {
 	MenuById(id string) (*menu.Menu, *model.AppError)     // MenuById returns a menu with given id
 	MenuByName(name string) (*menu.Menu, *model.AppError) // MenuByName returns a menu with given name
 	MenuBySlug(slug string) (*menu.Menu, *model.AppError) // MenuBySlug returns a menu with given slug
@@ -386,15 +386,15 @@ type MenuApp interface {
 type AppApp interface {
 }
 
-type CsvApp interface {
+type CsvService interface {
 }
 
-type ShopApp interface {
+type ShopService interface {
 	ShopById(shopID string) (*shop.Shop, *model.AppError)                                                         // ShopById finds shop by given id
 	ShopStaffRelationByShopIDAndStaffID(shopID string, staffID string) (*shop.ShopStaffRelation, *model.AppError) // ShopStaffRelationByShopIDAndStaffID finds a shop-staff relation and returns it
 }
 
-type ShippingApp interface {
+type ShippingService interface {
 	ShippingMethodChannelListingsByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, *model.AppError)                                                  // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
 	ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
 	ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError)           // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
@@ -403,16 +403,16 @@ type ShippingApp interface {
 	ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError)                                                                                                  // ShippingZonesByOption returns all shipping zones that satisfy given options
 }
 
-type WebhookApp interface {
+type WebhookService interface {
 }
 
-type PageApp interface {
+type PageService interface {
 }
 
-type SeoApp interface {
+type SeoService interface {
 }
 
-type FileApp interface {
+type FileService interface {
 	FileBackend() (filestore.FileBackend, *model.AppError)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	TestFileStoreConnection() *model.AppError
@@ -444,7 +444,7 @@ type FileApp interface {
 	DownloadFromURL(downloadURL string) ([]byte, error) // DownloadFromURL
 }
 
-type PluginApp interface {
+type PluginService interface {
 	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
 	// initialized.
 	//

@@ -30,7 +30,7 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 		*/
 		if obj.UserID != nil && *obj.UserID == session.UserId {
 			// TODO, there are two more conditions need implemented
-			user, appErr := r.AccountApp().UserById(ctx, *obj.UserID)
+			user, appErr := r.Srv().AccountService().UserById(ctx, *obj.UserID)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -52,7 +52,7 @@ func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.Custome
 			return nil, nil
 		}
 
-		order, appErr := r.OrderApp().OrderById(*obj.OrderID)
+		order, appErr := r.Srv().OrderService().OrderById(*obj.OrderID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -72,7 +72,7 @@ func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.Cus
 		if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
 			return nil, nil
 		}
-		orderLine, appErr := r.OrderApp().OrderLineById(*obj.OrderLineID)
+		orderLine, appErr := r.Srv().OrderService().OrderLineById(*obj.OrderLineID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -86,7 +86,7 @@ func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput)
 	// embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
 	// if *r.Config().ExperimentalSettings.ClientSideCertEnable {
-	// 	certPem, certSubject, certEmail := r.AccountApp().CheckForClientSideCert(embedCtx.GetRequest())
+	// 	certPem, certSubject, certEmail := r.Srv().AccountService().CheckForClientSideCert(embedCtx.GetRequest())
 	// 	slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
 
 	// 	if certPem == "" || certEmail == "" {
@@ -98,7 +98,7 @@ func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput)
 	// 		input.Password = "certificate"
 	// 	}
 
-	// 	user, err := r.AccountApp().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.MfaToken, "", input.LdapOnly)
+	// 	user, err := r.Srv().AccountService().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.MfaToken, "", input.LdapOnly)
 
 	// }
 	panic("not implt")
@@ -120,7 +120,7 @@ func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
 	if session, appErr := checkUserAuthenticated("Me", ctx); appErr != nil {
 		return nil, appErr
 	} else {
-		user, err := r.AccountApp().UserById(ctx, session.UserId)
+		user, err := r.Srv().AccountService().UserById(ctx, session.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -135,9 +135,9 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 	)
 
 	if id != nil && model.IsValidId(*id) {
-		user, appErr = r.AccountApp().UserById(ctx, *id)
+		user, appErr = r.Srv().AccountService().UserById(ctx, *id)
 	} else if email != nil && model.IsValidEmail(*email) {
-		user, appErr = r.AccountApp().UserByEmail(*email)
+		user, appErr = r.Srv().AccountService().UserByEmail(*email)
 	}
 
 	if appErr != nil || user == nil {
@@ -159,7 +159,7 @@ func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel
 			return nil, nil
 		}
 
-		address, appErr := r.AccountApp().AddressById(*obj.DefaultShippingAddressID)
+		address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultShippingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -180,7 +180,7 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 			return nil, nil
 		}
 
-		address, appErr := r.AccountApp().AddressById(*obj.DefaultBillingAddressID)
+		address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultBillingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -197,7 +197,7 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 		if session.UserId != obj.ID {
 			return nil, permissionDenied("Addresses")
 		}
-		addresses, AppErr := r.AccountApp().AddressesByUserId(obj.ID)
+		addresses, AppErr := r.Srv().AccountService().AddressesByUserId(obj.ID)
 		if AppErr != nil {
 			return nil, AppErr
 		}
@@ -241,7 +241,7 @@ func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmo
 		if session.UserId != obj.ID {
 			return nil, permissionDenied("Events")
 		}
-		events, appErr := r.AccountApp().CustomerEventsByUser(obj.ID)
+		events, appErr := r.Srv().AccountService().CustomerEventsByUser(obj.ID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -270,7 +270,7 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 		if session.UserId != obj.ID {
 			return nil, permissionDenied("Wishlist")
 		}
-		wl, appErr := r.WishlistApp().WishlistByOption(&wishlist.WishlistFilterOption{
+		wl, appErr := r.Srv().WishlistService().WishlistByOption(&wishlist.WishlistFilterOption{
 			UserID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: obj.ID,

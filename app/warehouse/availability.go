@@ -10,7 +10,7 @@ import (
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
-func (a *AppWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *model.AppError) {
+func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *model.AppError) {
 	if len(stocks) == 0 {
 		return 0, nil
 	}
@@ -54,7 +54,7 @@ func (a *AppWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *mode
 //
 // If so - returns None. If there is less stock then required raise InsufficientStock
 // exception.
-func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError) {
 	if *variant.TrackInventory {
 		stocks, appErr := a.GetVariantStocksForCountry(nil, countryCode, channelSlug, variant.Id)
 		if appErr != nil {
@@ -91,7 +91,7 @@ func (a *AppWarehouse) CheckStockQuantity(variant *product_and_discount.ProductV
 // Validate if there is stock available for given variants in given country.
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
-func (a *AppWarehouse) CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	allVariantStocks, appErr := a.FilterStocksForCountryAndChannel(nil, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,
@@ -152,7 +152,7 @@ func (a *AppWarehouse) CheckStockQuantityBulk(variants product_and_discount.Prod
 }
 
 // Check if there is any variant of given product available in given country
-func (a *AppWarehouse) IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) {
+func (a *ServiceWarehouse) IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) {
 	stocks, appErr := a.GetProductStocksForCountryAndChannel(nil, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode:              countryCode,
 		ChannelSlug:              channelSlug,

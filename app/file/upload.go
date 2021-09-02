@@ -17,16 +17,16 @@ import (
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
-func (a *AppFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
-	uss, err := a.Srv().Store.UploadSession().GetForUser(userID)
+func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
+	uss, err := a.srv.Store.UploadSession().GetForUser(userID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSessionForUser", "app.file.upload_session_for_user_missing.app_error", err)
 	}
 	return uss, nil
 }
 
-func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
-	us, err := a.Srv().Store.UploadSession().Get(uploadId)
+func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
+	us, err := a.srv.Store.UploadSession().Get(uploadId)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSession", "app.file.upload_session_missing.app_error", err)
 	}
@@ -34,7 +34,7 @@ func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model
 	return us, nil
 }
 
-// func (a *AppFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
+// func (a *ServiceFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
 // 	if us.FileSize > *a.Config().FileSettings.MaxFileSize {
 // 		return nil, model.NewAppError(
 // 			"CreateUploadSession",
@@ -67,7 +67,7 @@ func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model
 // 		}
 // 	}
 
-// 	us, storeErr := a.Srv().Store.UploadSession().Save(us)
+// 	us, storeErr := a.srv.Store.UploadSession().Save(us)
 // 	if storeErr != nil {
 // 		return nil, model.NewAppError("CreateUploadSession", "app.upload.create.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 // 	}
@@ -75,7 +75,7 @@ func (a *AppFile) GetUploadSession(uploadId string) (*file.UploadSession, *model
 // 	return us, nil
 // }
 
-func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
 	a.uploadLockMapMut.Lock()
@@ -138,7 +138,7 @@ func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.R
 	}
 	if written > 0 {
 		us.FileOffset += written
-		if storeErr := a.Srv().Store.UploadSession().Update(us); storeErr != nil {
+		if storeErr := a.srv.Store.UploadSession().Update(us); storeErr != nil {
 			return nil, model.NewAppError("UploadData", "app.upload.upload_data.update.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -200,7 +200,7 @@ func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.R
 	}
 
 	var storeErr error
-	if info, storeErr = a.Srv().Store.FileInfo().Save(info); storeErr != nil {
+	if info, storeErr = a.srv.Store.FileInfo().Save(info); storeErr != nil {
 		var appErr *model.AppError
 		switch {
 		case errors.As(storeErr, &appErr):
@@ -210,9 +210,9 @@ func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.R
 		}
 	}
 
-	if *a.Config().FileSettings.ExtractContent {
+	if *a.srv.Config().FileSettings.ExtractContent {
 		infoCopy := *info
-		a.Srv().Go(func() {
+		a.srv.Go(func() {
 			err := a.ExtractContentFromFileInfo(&infoCopy)
 			if err != nil {
 				slog.Error("Failed to extract file content", slog.Err(err), slog.String("fileInfoId", infoCopy.Id))
@@ -221,7 +221,7 @@ func (a *AppFile) UploadData(c *request.Context, us *file.UploadSession, rd io.R
 	}
 
 	// delete upload session
-	if storeErr := a.Srv().Store.UploadSession().Delete(us.Id); storeErr != nil {
+	if storeErr := a.srv.Store.UploadSession().Delete(us.Id); storeErr != nil {
 		slog.Warn("Failed to delete UploadSession", slog.Err(storeErr))
 	}
 

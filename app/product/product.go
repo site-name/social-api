@@ -11,22 +11,24 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppProduct struct {
-	app.AppIface
+type ServiceProduct struct {
+	srv *app.Server
 	sync.WaitGroup
 	sync.Mutex
 }
 
-func init() {
-	app.RegisterProductApp(func(a app.AppIface) sub_app_iface.ProductApp {
-		return &AppProduct{
-			AppIface: a,
-		}
-	})
+type ServiceProductConfig struct {
+	Server *app.Server
+}
+
+func NewServiceProduct(config *ServiceProductConfig) sub_app_iface.ProductService {
+	return &ServiceProduct{
+		srv: config.Server,
+	}
 }
 
 // ProductById returns 1 product by given id
-func (a *AppProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
+func (a *ServiceProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
 	return a.ProductByOption(&product_and_discount.ProductFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -37,8 +39,8 @@ func (a *AppProduct) ProductById(productID string) (*product_and_discount.Produc
 }
 
 // ProductsByOption returns a list of products that satisfy given option
-func (a *AppProduct) ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError) {
-	products, err := a.Srv().Store.Product().FilterByOption(option)
+func (a *ServiceProduct) ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError) {
+	products, err := a.srv.Store.Product().FilterByOption(option)
 	var (
 		statusCode int
 		errMsg     string
@@ -58,8 +60,8 @@ func (a *AppProduct) ProductsByOption(option *product_and_discount.ProductFilter
 }
 
 // ProductByOption returns 1 product that satisfy given option
-func (a *AppProduct) ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError) {
-	product, err := a.Srv().Store.Product().GetByOption(option)
+func (a *ServiceProduct) ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError) {
+	product, err := a.srv.Store.Product().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductByOption", "app.error_finding_product_by_option.app_error", err)
 	}
@@ -68,7 +70,7 @@ func (a *AppProduct) ProductByOption(option *product_and_discount.ProductFilterO
 }
 
 // ProductsByVoucherID finds all products that have relationships with given voucher
-func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
+func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
 	products, appErr := a.ProductsByOption(&product_and_discount.ProductFilterOption{
 		VoucherIDs: []string{voucherID},
 	})
@@ -80,7 +82,7 @@ func (a *AppProduct) ProductsByVoucherID(voucherID string) ([]*product_and_disco
 }
 
 // ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
-func (a *AppProduct) ProductsRequireShipping(productIDs []string) (bool, *model.AppError) {
+func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *model.AppError) {
 	productTypes, appErr := a.ProductTypesByProductIDs(productIDs)
 	if appErr != nil { // this error caused by system
 		return false, appErr
@@ -96,7 +98,7 @@ func (a *AppProduct) ProductsRequireShipping(productIDs []string) (bool, *model.
 }
 
 // ProductGetFirstImage returns first media of given product
-func (a *AppProduct) ProductGetFirstImage(productID string) (*product_and_discount.ProductMedia, *model.AppError) {
+func (a *ServiceProduct) ProductGetFirstImage(productID string) (*product_and_discount.ProductMedia, *model.AppError) {
 	mediasOfProduct, appErr := a.ProductMediasByOption(&product_and_discount.ProductMediaFilterOption{
 		ProductID: &model.StringFilter{
 			StringOption: &model.StringOption{

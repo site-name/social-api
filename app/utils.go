@@ -93,7 +93,7 @@ func PluginContext(c *request.Context) *plugin.Context {
 // ToLocalCurrency performs convert given price to local currency
 //
 // NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
-func (a *App) ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError) {
+func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError) {
 	// validate if currency exchange is enabled
 	if a.Config().ServiceSettings.OpenExchangeRateApiKey == nil {
 		return nil, model.NewAppError("ToLocalCurrency", "app.setting.currency_conversion_disabled.app_error", nil, "", http.StatusNotAcceptable)
@@ -142,7 +142,7 @@ func (a *App) ToLocalCurrency(price interface{}, currency string) (interface{}, 
 // `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange. `conversionrate` can be nil
 //
 // NOTE: `base` and `toCurrency` must be validated before given to me.
-func (a *App) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError) {
+func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError) {
 	var appErr *model.AppError
 
 	impl, ok := base.(goprices.Currencyable)
@@ -213,7 +213,7 @@ func (a *App) ExchangeCurrency(base interface{}, toCurrency string, conversionRa
 
 // GetConversionRate get conversion rate to use in exchange.
 // It first try getting exchange rate from cache and returns the found value. If nothing found, it try finding from database
-func (a *App) GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError) {
+func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError) {
 	fromCurrency = strings.ToUpper(fromCurrency)
 	toCurrency = strings.ToUpper(toCurrency)
 
@@ -230,11 +230,11 @@ func (a *App) GetConversionRate(fromCurrency string, toCurrency string) (*decima
 
 	var rate decimal.Decimal
 	// try get rate from the cache first, if not found, find in database
-	rateInterface, exist := a.srv.ExchangeRateMap.Load(rateCurrency)
+	rateInterface, exist := a.ExchangeRateMap.Load(rateCurrency)
 	if exist {
 		rate = *(rateInterface.(*external_services.OpenExchangeRate).Rate)
 	} else {
-		exchangeRatesFromDatabase, err := a.srv.Store.OpenExchangeRate().GetAll()
+		exchangeRatesFromDatabase, err := a.Store.OpenExchangeRate().GetAll()
 		if err != nil {
 			return nil, model.NewAppError("GetConversionRate", "app.currency.error_finding_conversion_rates.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}

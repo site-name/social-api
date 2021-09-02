@@ -15,12 +15,12 @@ import (
 	"golang.org/x/crypto/openpgp/armor"
 )
 
-func (a *AppPlugin) GetPluginPublicKeyFiles() ([]string, *model.AppError) {
-	return a.Config().PluginSettings.SignaturePublicKeyFiles, nil
+func (a *ServicePlugin) GetPluginPublicKeyFiles() ([]string, *model.AppError) {
+	return a.srv.Config().PluginSettings.SignaturePublicKeyFiles, nil
 }
 
-func (a *AppPlugin) GetPublicKey(name string) ([]byte, *model.AppError) {
-	data, err := a.Srv().ConfigStore.GetFile(name)
+func (a *ServicePlugin) GetPublicKey(name string) ([]byte, *model.AppError) {
+	data, err := a.srv.ConfigStore.GetFile(name)
 	if err != nil {
 		return nil, model.NewAppError("GetPublicKey", "app.plugin.get_public_key.get_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -28,20 +28,20 @@ func (a *AppPlugin) GetPublicKey(name string) ([]byte, *model.AppError) {
 }
 
 // AddPublicKey will add plugin public key to the config. Overwrites the previous file
-func (a *AppPlugin) AddPublicKey(name string, key io.Reader) *model.AppError {
-	if model.IsSamlFile(&a.Config().SamlSettings, name) {
+func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError {
+	if model.IsSamlFile(&a.srv.Config().SamlSettings, name) {
 		return model.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
 	}
 	data, err := ioutil.ReadAll(key)
 	if err != nil {
 		return model.NewAppError("AddPublicKey", "app.plugin.write_file.read.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	err = a.Srv().ConfigStore.SetFile(name, data)
+	err = a.srv.ConfigStore.SetFile(name, data)
 	if err != nil {
 		return model.NewAppError("AddPublicKey", "app.plugin.write_file.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	a.UpdateConfig(func(cfg *model.Config) {
+	a.srv.UpdateConfig(func(cfg *model.Config) {
 		if !util.StringInSlice(name, cfg.PluginSettings.SignaturePublicKeyFiles) {
 			cfg.PluginSettings.SignaturePublicKeyFiles = append(cfg.PluginSettings.SignaturePublicKeyFiles, name)
 		}
@@ -51,23 +51,23 @@ func (a *AppPlugin) AddPublicKey(name string, key io.Reader) *model.AppError {
 }
 
 // DeletePublicKey will delete plugin public key from the config.
-func (a *AppPlugin) DeletePublicKey(name string) *model.AppError {
-	if model.IsSamlFile(&a.Config().SamlSettings, name) {
+func (a *ServicePlugin) DeletePublicKey(name string) *model.AppError {
+	if model.IsSamlFile(&a.srv.Config().SamlSettings, name) {
 		return model.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
 	}
 	filename := filepath.Base(name)
-	if err := a.Srv().ConfigStore.RemoveFile(filename); err != nil {
+	if err := a.srv.ConfigStore.RemoveFile(filename); err != nil {
 		return model.NewAppError("DeletePublicKey", "app.plugin.delete_public_key.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	a.UpdateConfig(func(cfg *model.Config) {
+	a.srv.UpdateConfig(func(cfg *model.Config) {
 		cfg.PluginSettings.SignaturePublicKeyFiles = util.RemoveStringFromSlice(filename, cfg.PluginSettings.SignaturePublicKeyFiles)
 	})
 
 	return nil
 }
 
-func (a *AppPlugin) VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError {
+func (a *ServicePlugin) VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError {
 	if err := verifySignature(bytes.NewReader(sitenamePluginPublicKey), plugin, signature); err == nil {
 		return nil
 	}

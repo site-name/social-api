@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model/plugins"
 )
 
-func (a *AppPlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError) {
+func (a *ServicePlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -21,8 +21,8 @@ func (a *AppPlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *model.Ap
 	for _, status := range pluginStatuses {
 		if status.PluginId == id {
 			// Add our cluster ID
-			if a.Srv().Cluster != nil {
-				status.ClusterId = a.Srv().Cluster.GetClusterId()
+			if a.srv.Cluster != nil {
+				status.ClusterId = a.srv.Cluster.GetClusterId()
 			}
 
 			return status, nil
@@ -33,7 +33,7 @@ func (a *AppPlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *model.Ap
 }
 
 // GetPluginStatuses returns the status for plugins installed on this server.
-func (a *AppPlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
+func (a *ServicePlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -46,8 +46,8 @@ func (a *AppPlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError
 
 	// Add our cluster ID
 	for _, status := range pluginStatuses {
-		if a.Srv().Cluster != nil {
-			status.ClusterId = a.Srv().Cluster.GetClusterId()
+		if a.srv.Cluster != nil {
+			status.ClusterId = a.srv.Cluster.GetClusterId()
 		} else {
 			status.ClusterId = ""
 		}
@@ -57,14 +57,14 @@ func (a *AppPlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError
 }
 
 // GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
-func (a *AppPlugin) GetClusterPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
+func (a *ServicePlugin) GetClusterPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
 	pluginStatuses, err := a.GetPluginStatuses()
 	if err != nil {
 		return nil, err
 	}
 
-	if a.Srv().Cluster != nil && *a.Config().ClusterSettings.Enable {
-		clusterPluginStatuses, err := a.Srv().Cluster.GetPluginStatuses()
+	if a.srv.Cluster != nil && *a.srv.Config().ClusterSettings.Enable {
+		clusterPluginStatuses, err := a.srv.Cluster.GetPluginStatuses()
 		if err != nil {
 			return nil, model.NewAppError("GetClusterPluginStatuses", "app.plugin.get_cluster_plugin_statuses.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -75,7 +75,7 @@ func (a *AppPlugin) GetClusterPluginStatuses() (plugins.PluginStatuses, *model.A
 	return pluginStatuses, nil
 }
 
-func (a *AppPlugin) notifyPluginStatusesChanged() error {
+func (a *ServicePlugin) notifyPluginStatusesChanged() error {
 	pluginStatuses, err := a.GetClusterPluginStatuses()
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (a *AppPlugin) notifyPluginStatusesChanged() error {
 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_STATUSES_CHANGED, "", nil)
 	message.Add("plugin_statuses", pluginStatuses)
 	message.GetBroadcast().ContainsSensitiveData = true
-	a.Srv().Publish(message)
+	a.srv.Publish(message)
 
 	return nil
 }

@@ -207,8 +207,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, tokenLocation := app.ParseAuthTokenFromRequest(r)
 
 	if token != "" && tokenLocation != app.TokenLocationCloudHeader && tokenLocation != app.TokenLocationRemoteClusterHeader {
-		session, err := c.App.AccountApp().GetSession(token)
-		defer c.App.AccountApp().ReturnSessionToPool(session)
+		session, err := c.App.Srv().AccountService().GetSession(token)
+		defer c.App.Srv().AccountService().ReturnSessionToPool(session)
 
 		if err != nil {
 			c.Logger.Info("Invalid session", slog.Err(err))
@@ -232,7 +232,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.checkCSRFToken(c, r, token, tokenLocation, session)
 	} else if token != "" && tokenLocation == app.TokenLocationCloudHeader {
 		// Check to see if this provided token matches our CWS Token
-		session, err := c.App.AccountApp().GetCloudSession(token)
+		session, err := c.App.Srv().AccountService().GetCloudSession(token)
 		if err != nil {
 			c.Logger.Warn("Invalid SWS token", slog.Err(err))
 			c.Err = err

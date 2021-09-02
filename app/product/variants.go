@@ -8,8 +8,8 @@ import (
 )
 
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
-func (a *AppProduct) GenerateAndSetVariantName(variant *product_and_discount.ProductVariant, sku string) *model.AppError {
-	_, _ = a.AttributeApp().AssignedVariantAttributesByOption(&attribute.AssignedVariantAttributeFilterOption{
+func (a *ServiceProduct) GenerateAndSetVariantName(variant *product_and_discount.ProductVariant, sku string) *model.AppError {
+	_, _ = a.srv.AttributeService().AssignedVariantAttributesByOption(&attribute.AssignedVariantAttributeFilterOption{
 		AssignmentAttributeInputType: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: attribute.ALLOWED_IN_VARIANT_SELECTION,
@@ -28,7 +28,7 @@ func (a *AppProduct) GenerateAndSetVariantName(variant *product_and_discount.Pro
 //
 // Attribute must be product attribute and attribute input type must be
 // in ALLOWED_IN_VARIANT_SELECTION list.
-func (a *AppProduct) GetVariantSelectionAttributes(attributes []*attribute.Attribute) []*attribute.Attribute {
+func (a *ServiceProduct) GetVariantSelectionAttributes(attributes []*attribute.Attribute) []*attribute.Attribute {
 
 	for i, attr := range attributes {
 		if !util.StringInSlice(attr.InputType, attribute.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != attribute.PRODUCT_TYPE {

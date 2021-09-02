@@ -31,6 +31,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/email"
 	"github.com/sitename/sitename/app/imaging"
+	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -186,6 +187,29 @@ type Server struct {
 	ImgEncoder *imaging.Encoder
 
 	ExchangeRateMap sync.Map // this is cache for storing currency exchange rates. Keys are strings, values are float64
+
+	// these are services
+	account   sub_app_iface.AccountService
+	order     sub_app_iface.OrderService
+	payment   sub_app_iface.PaymentService
+	giftcard  sub_app_iface.GiftcardService
+	checkout  sub_app_iface.CheckoutService
+	product   sub_app_iface.ProductService
+	warehouse sub_app_iface.WarehouseService
+	wishlist  sub_app_iface.WishlistService
+	webhook   sub_app_iface.WebhookService
+	shipping  sub_app_iface.ShippingService
+	discount  sub_app_iface.DiscountService
+	menu      sub_app_iface.MenuService
+	csv       sub_app_iface.CsvService
+	page      sub_app_iface.PageService
+	shop      sub_app_iface.ShopService
+	seo       sub_app_iface.SeoService
+	attribute sub_app_iface.AttributeService
+	channel   sub_app_iface.ChannelService
+	invoice   sub_app_iface.InvoiceService
+	file      sub_app_iface.FileService
+	plugin    sub_app_iface.PluginService
 }
 
 // NewServer create new system server
@@ -1542,3 +1566,23 @@ func (s *Server) StartSearchEngine() string {
 
 	return configListenerId
 }
+
+func (s *Server) GetSiteURL() string {
+	return *s.Config().ServiceSettings.SiteURL
+}
+
+// GetCookieDomain
+func (s *Server) GetCookieDomain() string {
+	if *s.Config().ServiceSettings.AllowCookiesForSubdomains {
+		if siteURL, err := url.Parse(*s.Config().ServiceSettings.SiteURL); err == nil {
+			return siteURL.Hostname()
+		}
+	}
+	return ""
+}
+
+// func (s *Server) InvalidateCacheForUser(userID string) {
+// 	s.invalidateCacheForUserSkipClusterSend(userID)
+
+// 	s.AccountService().InvalidateCacheForUser(userID)
+// }

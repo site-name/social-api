@@ -13,7 +13,7 @@ import (
 )
 
 // getVariantPricesInChannelsDict
-func (a *AppProduct) getVariantPricesInChannelsDict(product *product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
+func (a *ServiceProduct) getVariantPricesInChannelsDict(product *product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
 	variantChannelListings, appErr := a.
 		ProductVariantChannelListingsByOption(&product_and_discount.ProductVariantChannelListingFilterOption{
 			VariantProductID: &model.StringFilter{
@@ -40,7 +40,7 @@ func (a *AppProduct) getVariantPricesInChannelsDict(product *product_and_discoun
 	return pricesDict, nil
 }
 
-func (a *AppProduct) getProductDiscountedPrice(
+func (a *ServiceProduct) getProductDiscountedPrice(
 	variantPrices []*goprices.Money,
 	product *product_and_discount.Product,
 	collections []*product_and_discount.Collection,
@@ -60,7 +60,7 @@ func (a *AppProduct) getProductDiscountedPrice(
 			return nil, model.NewAppError("getProductDiscountedPrice", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "variantPrices"}, "", http.StatusBadRequest)
 		}
 
-		discoutnedvariantPrice, appErr := a.DiscountApp().CalculateDiscountedPrice(
+		discoutnedvariantPrice, appErr := a.srv.DiscountService().CalculateDiscountedPrice(
 			product,
 			item,
 			collections,
@@ -81,11 +81,11 @@ func (a *AppProduct) getProductDiscountedPrice(
 // UpdateProductDiscountedPrice
 //
 // NOTE: `discounts` can be nil
-func (a *AppProduct) UpdateProductDiscountedPrice(product *product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductDiscountedPrice(product *product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
 
 	var functionAppError *model.AppError
 	if len(discounts) == 0 {
-		discounts, functionAppError = a.DiscountApp().FetchActiveDiscounts()
+		discounts, functionAppError = a.srv.DiscountService().FetchActiveDiscounts()
 		if functionAppError != nil {
 			return functionAppError
 		}
@@ -205,11 +205,11 @@ func (a *AppProduct) UpdateProductDiscountedPrice(product *product_and_discount.
 }
 
 // UpdateProductsDiscountedPrices
-func (a *AppProduct) UpdateProductsDiscountedPrices(products []*product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
 
 	var appError *model.AppError
 	if discounts == nil || len(discounts) == 0 {
-		discounts, appError = a.DiscountApp().FetchActiveDiscounts()
+		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
 		if appError != nil {
 			return appError
 		}
@@ -240,8 +240,8 @@ func (a *AppProduct) UpdateProductsDiscountedPrices(products []*product_and_disc
 	return appError
 }
 
-func (a *AppProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError {
-	products, err := a.Srv().Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError {
+	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
 	var (
 		statusCode   int
 		errorMessage string
@@ -263,7 +263,7 @@ func (a *AppProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs []str
 // UpdateProductsDiscountedPricesOfDiscount
 //
 // NOTE: discount must be either *Sale or *Voucher
-func (a *AppProduct) UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError {
 	// validate discount is validly provided:
 	var (
 		productFilterOption    product_and_discount.ProductFilterOption

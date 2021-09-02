@@ -6,8 +6,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppAccount) CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError) {
-	events, err := a.Srv().Store.CustomerEvent().GetEventsByUserID(userID)
+func (a *ServiceAccount) CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError) {
+	events, err := a.srv.Store.CustomerEvent().GetEventsByUserID(userID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CustomerEventsByUser", "app.account.customer_event_missing", err)
 	}

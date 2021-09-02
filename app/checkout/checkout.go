@@ -17,27 +17,31 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppCheckout struct {
-	app   app.AppIface
+type ServiceCheckout struct {
+	srv   *app.Server
 	wg    sync.WaitGroup
 	mutex sync.Mutex
+}
+
+type ServiceCheckoutConfig struct {
+	srv   *app.Server
+	wg    sync.WaitGroup
+	mutex sync.Mutex
+}
+
+func NewServiceCheckout(config *ServiceCheckoutConfig) sub_app_iface.CheckoutService {
+	return &ServiceCheckout{
+		srv: config.srv,
+	}
 }
 
 const (
 	CheckoutMissingAppErrorId = "app.checkout.missing_checkout.app_error"
 )
 
-func init() {
-	app.RegisterCheckoutApp(func(a app.AppIface) sub_app_iface.CheckoutApp {
-		return &AppCheckout{
-			app: a,
-		}
-	})
-}
-
 // CheckoutByOption returns a checkout filtered by given option
-func (a *AppCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
-	chekout, err := a.app.Srv().Store.Checkout().GetByOption(option)
+func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
+	chekout, err := a.srv.Store.Checkout().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CheckoutbyOption", "app.checkout.error_finding_checkout_by_option.app_error", err)
 	}
@@ -46,8 +50,8 @@ func (a *AppCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*
 }
 
 // CheckoutsByOption returns a list of checkouts, filtered by given option
-func (a *AppCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError) {
-	checkouts, err := a.app.Srv().Store.Checkout().FilterByOption(option)
+func (a *ServiceCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError) {
+	checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CheckoutsByOption", "app.checkout_error_finding_checkouts_by_option.app_error", err)
 	}
@@ -55,9 +59,9 @@ func (a *AppCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) (
 }
 
 // GetCustomerEmail returns checkout's user's email
-func (a *AppCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError) {
+func (a *ServiceCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError) {
 	if ckout.UserID != nil {
-		user, appErr := a.app.AccountApp().UserById(context.Background(), *ckout.UserID)
+		user, appErr := a.srv.AccountService().UserById(context.Background(), *ckout.UserID)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotFound {
 				return ckout.Email, nil
@@ -70,7 +74,7 @@ func (a *AppCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model
 }
 
 // CheckoutShippingRequired checks if given checkout require shipping
-func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) {
+func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError) {
 	/*
 					checkout
 					|      |
@@ -79,7 +83,7 @@ func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *mod
 													 ...checkoutLine <--|              ...product <--|
 	*/
 
-	productTypes, appErr := a.app.ProductApp().ProductTypesByCheckoutToken(checkoutToken)
+	productTypes, appErr := a.srv.ProductService().ProductTypesByCheckoutToken(checkoutToken)
 	if appErr != nil {
 		// if product types not found for checkout:
 		if appErr.StatusCode == http.StatusNotFound {
@@ -97,7 +101,7 @@ func (a *AppCheckout) CheckoutShippingRequired(checkoutToken string) (bool, *mod
 	return false, nil
 }
 
-func (a *AppCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError {
+func (a *ServiceCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError {
 	// no need to validate country code here, since checkout.IsValid() does that
 	ckout.Country = strings.ToUpper(strings.TrimSpace(newCountryCode))
 	_, appErr := a.UpsertCheckout(ckout)
@@ -105,8 +109,8 @@ func (a *AppCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCod
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *AppCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError) {
-	ckout, err := a.app.Srv().Store.Checkout().Upsert(ckout)
+func (a *ServiceCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError) {
+	ckout, err := a.srv.Store.Checkout().Upsert(ckout)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -125,7 +129,7 @@ func (a *AppCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checko
 	return ckout, nil
 }
 
-func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError) {
+func (a *ServiceCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError) {
 	addressID := ckout.ShippingAddressID
 	if addressID == nil {
 		addressID = ckout.BillingAddressID
@@ -135,7 +139,7 @@ func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.
 		return ckout.Country, nil
 	}
 
-	address, appErr := a.app.AccountApp().AddressById(*addressID)
+	address, appErr := a.srv.AccountService().AddressById(*addressID)
 	if appErr != nil {
 		// return immediately if the error is caused by system
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -159,8 +163,8 @@ func (a *AppCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.
 }
 
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
-func (a *AppCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError) {
-	giftcards, appErr := a.app.GiftcardApp().GiftcardsByCheckout(checkout.Token)
+func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout) (*goprices.Money, *model.AppError) {
+	giftcards, appErr := a.srv.GiftcardService().GiftcardsByCheckout(checkout.Token)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -178,7 +182,7 @@ func (a *AppCheckout) CheckoutTotalGiftCardsBalance(checkout *checkout.Checkout)
 	}, nil
 }
 
-func (a *AppCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) {
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(checkout.Token)
 	if appErr != nil {
 		// in case checkout has no checkout lines:
@@ -197,8 +201,8 @@ func (a *AppCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, produ
 	return nil, nil
 }
 
-func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
-	payments, appErr := a.app.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		CheckoutToken: checkout.Token,
 	})
 	if appErr != nil {
@@ -220,7 +224,7 @@ func (a *AppCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*p
 }
 
 // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
-func (a *AppCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError) {
+func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError) {
 	checkoutLineIDs := []string{}
 	for _, lineInfo := range checkoutLineInfos {
 		if !model.IsValidId(lineInfo.Line.Id) {
@@ -228,7 +232,7 @@ func (a *AppCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.Checkout
 		}
 	}
 
-	totalWeight, err := a.app.Srv().Store.CheckoutLine().TotalWeightForCheckoutLines(checkoutLineIDs)
+	totalWeight, err := a.srv.Store.CheckoutLine().TotalWeightForCheckoutLines(checkoutLineIDs)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {

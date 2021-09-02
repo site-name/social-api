@@ -91,9 +91,9 @@ func (r *queryResolver) Attribute(ctx context.Context, id *string, slug *string)
 
 	// check if `id` is provided correctly:
 	if id != nil && model.IsValidId(*id) {
-		attr, appErr = r.AttributeApp().AttributeByID(*id)
+		attr, appErr = r.Srv().AttributeService().AttributeByID(*id)
 	} else if slug != nil {
-		attr, appErr = r.AttributeApp().AttributeBySlug(*slug)
+		attr, appErr = r.Srv().AttributeService().AttributeBySlug(*slug)
 	}
 
 	if appErr != nil {

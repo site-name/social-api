@@ -10,8 +10,8 @@ import (
 )
 
 // OrderDiscountsByOption filters and returns order discounts with given option
-func (a *AppDiscount) OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError) {
-	orderDiscounts, err := a.Srv().Store.OrderDiscount().FilterbyOption(option)
+func (a *ServiceDiscount) OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscounts, err := a.srv.Store.OrderDiscount().FilterbyOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("OrderDiscountsByOption", "app.discount.order_discount_by_option.app_error.app_error", err)
 	}
@@ -20,8 +20,8 @@ func (a *AppDiscount) OrderDiscountsByOption(option *product_and_discount.OrderD
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *AppDiscount) UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
-	orderDiscount, err := a.Srv().Store.OrderDiscount().Upsert(transaction, orderDiscount)
+func (a *ServiceDiscount) UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscount, err := a.srv.Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -33,8 +33,8 @@ func (a *AppDiscount) UpsertOrderDiscount(transaction *gorp.Transaction, orderDi
 }
 
 // BulkDeleteOrderDiscounts performs bulk delete given order discounts
-func (a *AppDiscount) BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError {
-	err := a.Srv().Store.OrderDiscount().BulkDelete(orderDiscountIDs)
+func (a *ServiceDiscount) BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError {
+	err := a.srv.Store.OrderDiscount().BulkDelete(orderDiscountIDs)
 	if err != nil {
 		return model.NewAppError("BulkDeleteOrderDiscounts", "app.discount.error_bulk_deleting_order_discounts.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

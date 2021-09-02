@@ -12,8 +12,8 @@ const (
 	VoucherCustomerNotFoundErrId = "app.discount.voucher_customer_missing.app_error"
 )
 
-func (a *AppDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError) {
-	voucher, err := a.Srv().Store.VoucherCustomer().Save(&product_and_discount.VoucherCustomer{
+func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError) {
+	voucher, err := a.srv.Store.VoucherCustomer().Save(&product_and_discount.VoucherCustomer{
 		CustomerEmail: customerEmail,
 		VoucherID:     voucherID,
 	})
@@ -28,8 +28,8 @@ func (a *AppDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail s
 }
 
 // VoucherCustomerById finds a voucher customer relation and returns it with an error
-func (a *AppDiscount) VoucherCustomerById(id string) (*product_and_discount.VoucherCustomer, *model.AppError) {
-	voucherCustomer, err := a.Srv().Store.VoucherCustomer().Get(id)
+func (a *ServiceDiscount) VoucherCustomerById(id string) (*product_and_discount.VoucherCustomer, *model.AppError) {
+	voucherCustomer, err := a.srv.Store.VoucherCustomer().Get(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerById", VoucherCustomerNotFoundErrId, err)
 	}
@@ -38,8 +38,8 @@ func (a *AppDiscount) VoucherCustomerById(id string) (*product_and_discount.Vouc
 }
 
 // VoucherCustomerByCustomerEmailAndVoucherID finds voucher customer with given voucherID and customerEmail
-func (a *AppDiscount) VoucherCustomerByCustomerEmailAndVoucherID(voucherID string, customerEmail string) ([]*product_and_discount.VoucherCustomer, *model.AppError) {
-	res, err := a.Srv().Store.VoucherCustomer().FilterByEmailAndCustomerEmail(voucherID, customerEmail)
+func (a *ServiceDiscount) VoucherCustomerByCustomerEmailAndVoucherID(voucherID string, customerEmail string) ([]*product_and_discount.VoucherCustomer, *model.AppError) {
+	res, err := a.srv.Store.VoucherCustomer().FilterByEmailAndCustomerEmail(voucherID, customerEmail)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerByCustomerEmailAndVoucherID", VoucherCustomerNotFoundErrId, err)
 	}

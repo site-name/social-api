@@ -46,7 +46,7 @@ type aStructType struct {
 // getProductPriceRange
 //
 // NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange
-func (a *AppProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (*aStructType, *model.AppError) {
+func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (*aStructType, *model.AppError) {
 
 	// validate `discounted` and `unDiscounted` and `localCurrency`
 	// are provided valid and have same currencies
@@ -90,11 +90,11 @@ func (a *AppProduct) getProductPriceRange(discounted interface{}, unDiscounted i
 	)
 	// validate provided currency is calid
 	if goprices.CurrenciesMap[localCurrency] != "" {
-		priceRangeLocal, appErr := a.ToLocalCurrency(discounted, localCurrency)
+		priceRangeLocal, appErr := a.srv.ToLocalCurrency(discounted, localCurrency)
 		if appErr != nil {
 			return nil, appErr
 		}
-		unDiscountedLocal, appErr := a.ToLocalCurrency(unDiscounted, localCurrency)
+		unDiscountedLocal, appErr := a.srv.ToLocalCurrency(unDiscounted, localCurrency)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -123,7 +123,7 @@ func (a *AppProduct) getProductPriceRange(discounted interface{}, unDiscounted i
 }
 
 // GetVariantPrice
-func (a *AppProduct) GetVariantPrice(
+func (a *ServiceProduct) GetVariantPrice(
 	variant *product_and_discount.ProductVariant,
 	variantChannelListing *product_and_discount.ProductVariantChannelListing,
 	product *product_and_discount.Product,
@@ -135,7 +135,7 @@ func (a *AppProduct) GetVariantPrice(
 
 	variantChannelListing.PopulateNonDbFields() // must call this initially
 
-	return a.DiscountApp().CalculateDiscountedPrice(
+	return a.srv.DiscountService().CalculateDiscountedPrice(
 		product,
 		variantChannelListing.Price,
 		collections,
@@ -144,7 +144,7 @@ func (a *AppProduct) GetVariantPrice(
 	)
 }
 
-func (a *AppProduct) GetProductPriceRange(
+func (a *ServiceProduct) GetProductPriceRange(
 	product *product_and_discount.Product,
 	variants []*product_and_discount.ProductVariant,
 	variantsChannelListing []*product_and_discount.ProductVariantChannelListing,
@@ -207,7 +207,7 @@ func (a *AppProduct) GetProductPriceRange(
 	return nil, nil
 }
 
-func (a *AppProduct) GetProductAvailability(
+func (a *ServiceProduct) GetProductAvailability(
 	product *product_and_discount.Product,
 	productChannelListing *product_and_discount.ProductChannelListing,
 	variants []*product_and_discount.ProductVariant,
@@ -241,7 +241,7 @@ func (a *AppProduct) GetProductAvailability(
 
 }
 
-func (a *AppProduct) GetVariantAvailability(
+func (a *ServiceProduct) GetVariantAvailability(
 	variant *product_and_discount.ProductVariant,
 	variantChannelListing *product_and_discount.ProductVariantChannelListing,
 	product *product_and_discount.Product,

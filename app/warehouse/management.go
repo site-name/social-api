@@ -27,12 +27,12 @@ type StockData struct {
 // Iterate by stocks and allocate as many items as needed or available in stock
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
-func (a *AppWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	// allocation only applied to order lines with variants with track inventory set to True
 	orderLineInfos = a.GetOrderLinesWithTrackInventory(orderLineInfos)
@@ -132,7 +132,7 @@ func (a *AppWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, count
 	return nil, nil
 }
 
-func (a *AppWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*warehouse.InsufficientStockData) ([]*warehouse.InsufficientStockData, []*warehouse.Allocation) {
+func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*warehouse.InsufficientStockData) ([]*warehouse.InsufficientStockData, []*warehouse.Allocation) {
 	quantity := lineInfo.Quantity
 	quantityAllocated := 0
 	allocations := []*warehouse.Allocation{}
@@ -177,12 +177,12 @@ func (a *AppWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks [
 // as needed of available in stock for order line, until deallocated all required
 // quantity for the order line. If there is less quantity in stocks then
 // raise an exception.
-func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError) {
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+func (a *ServiceWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError) {
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	linesAllocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 		OrderLineID: &model.StringFilter{
@@ -263,12 +263,12 @@ func (a *AppWarehouse) DeallocateStock(orderLineDatas []*order.OrderLineData) (*
 // create a new allocation for this order line in this stock.
 //
 // NOTE: allocate is default to false
-func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("IncreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var stock *warehouse.Stock
 
@@ -360,18 +360,18 @@ func (a *AppWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *ware
 }
 
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-func (a *AppWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	// validate lineInfos is not nil nor empty
 	if lineInfos == nil || len(lineInfos) == 0 {
 		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
 	}
 
 	// start a transaction
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("IncreaseAllocations", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 		OrderLineID: &model.StringFilter{
@@ -415,7 +415,7 @@ func (a *AppWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, cha
 	}
 
 	// find address of order of orderLine
-	address, appErr := a.OrderApp().AnAddressOfOrder(lineInfos[0].Line.OrderID, order.ShippingAddressID)
+	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, order.ShippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -432,7 +432,7 @@ func (a *AppWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, cha
 }
 
 // DecreaseAllocations Decreate allocations for provided order lines.
-func (a *AppWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
 	trackedOrderLines := a.GetOrderLinesWithTrackInventory(lineInfos)
 	if len(trackedOrderLines) == 0 {
 		return nil, nil
@@ -452,17 +452,17 @@ func (a *AppWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData) (*w
 // will stay unmodified (case of unconfirmed order editing).
 //
 // updateStocks default to true
-func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if orderLineInfos == nil || len(orderLineInfos) == 0 {
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
 	}
 
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("DecreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
 		variantIDs   = order.OrderLineDatas(orderLineInfos).Variants().IDs()
@@ -564,7 +564,7 @@ func (a *AppWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, upda
 }
 
 // decreaseStocksQuantity
-func (a *AppWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*warehouse.InsufficientStock, *model.AppError) {
 
 	var (
 		insufficientStocks []*warehouse.InsufficientStockData
@@ -620,7 +620,7 @@ func (a *AppWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, ord
 }
 
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData {
+func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData {
 	for i, lineInfo := range orderLineInfos {
 		if lineInfo.Variant == nil || !*lineInfo.Variant.TrackInventory {
 			orderLineInfos = append(orderLineInfos[:i], orderLineInfos[i:]...)
@@ -631,12 +631,12 @@ func (a *AppWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.O
 }
 
 // DeAllocateStockForOrder Remove all allocations for given order
-func (a *AppWarehouse) DeAllocateStockForOrder(ord *order.Order) *model.AppError {
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("DeAllocateStockForOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
 		QuantityAllocated: &model.NumberFilter{

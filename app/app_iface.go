@@ -4,14 +4,11 @@
 package app
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"io"
 	"net/http"
 	"reflect"
 
-	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -26,69 +23,27 @@ import (
 
 // AppIface is extracted from App struct and contains all it's exported methods. It's provided to allow partial interface passing and app layers creation.
 type AppIface interface {
-	// Account returns account sub app
-	AccountApp() sub_app_iface.AccountApp
 	// AsymmetricSigningKey will return a private key that can be used for asymmetric signing.
 	AsymmetricSigningKey() *ecdsa.PrivateKey
-	// Attribute returns attribute sub app
-	AttributeApp() sub_app_iface.AttributeApp
-	// Channel returns channel sub app
-	ChannelApp() sub_app_iface.ChannelApp
-	// CheckRolesExist get role model instances with given roleNames,
-	// checks if at least one db role has name contained in given roleNames.
-	CheckRolesExist(roleNames []string) *model.AppError
-	// Checkout returns checkout sub app
-	CheckoutApp() sub_app_iface.CheckoutApp
 	// ClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	ClientConfigWithComputed() map[string]string
 	// Configs return system's configurations
 	Config() *model.Config
-	// CreateRole takes a role struct and save it to database
-	CreateRole(role *model.Role) (*model.Role, *model.AppError)
-	// Csv returns csv sub app
-	CsvApp() sub_app_iface.CsvApp
-	// DiscountApp returns discount sub app
-	DiscountApp() sub_app_iface.DiscountApp
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
-	// ExchangeCurrency Exchanges Money, TaxedMoney and their ranges to the specified currency.
-	// get_rate parameter is a callable taking single argument (target currency)
-	// that returns proper conversion rate
-	//
-	// `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange. `conversionrate` can be nil
-	//
-	// NOTE: `base` and `toCurrency` must be validated before given to me.
-	ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError)
-	// FileApp returns file sub app
-	FileApp() sub_app_iface.FileApp
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
-	// GetConversionRate get conversion rate to use in exchange.
-	// It first try getting exchange rate from cache and returns the found value. If nothing found, it try finding from database
-	GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError)
-	// GetCookieDomain
-	GetCookieDomain() string
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
 	// If filter is not nil and returns false for a struct field, that field will be omitted.
 	GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
-	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
-	GetRole(id string) (*model.Role, *model.AppError)
-	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
-	GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError)
-	// GetRolesByNames returns a slice of model.Role by given names
-	GetRolesByNames(names []string) ([]*model.Role, *model.AppError)
 	// GetSanitizedConfig gets the configuration for a system admin without any secrets.
 	GetSanitizedConfig() *model.Config
 	// GetSiteURL returns service's siteurl configuration.
 	GetSiteURL() string
-	// Giftcard returns giftcard sub app
-	GiftcardApp() sub_app_iface.GiftcardApp
 	// InvalidateCacheForUser
 	InvalidateCacheForUser(userID string)
-	// Invoice returns invoice sub app
-	InvoiceApp() sub_app_iface.InvoiceApp
 	// LimitedClientConfigWithComputed gets the configuration in a format suitable for sending to the client.
 	LimitedClientConfigWithComputed() map[string]string
 	// Log returns system logger
@@ -99,48 +54,20 @@ type AppIface interface {
 	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
-	// Menu returns menu sub app
-	MenuApp() sub_app_iface.MenuApp
 	// NotificationsLog returns system notification log
 	NotificationsLog() *slog.Logger
-	// Order returns order sub app
-	OrderApp() sub_app_iface.OrderApp
-	// Page returns page sub app
-	PageApp() sub_app_iface.PageApp
-	// Payment returns payment sub app
-	PaymentApp() sub_app_iface.PaymentApp
-	// PluginApp returns order sub app
-	PluginApp() sub_app_iface.PluginApp
-	// Product returns product sub app
-	ProductApp() sub_app_iface.ProductApp
 	// Publish puplish websocket events
 	Publish(message *model.WebSocketEvent)
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
-	// Seo returns order seo app
-	SeoApp() sub_app_iface.SeoApp
-	// Shipping returns shipping sub app
-	ShippingApp() sub_app_iface.ShippingApp
-	// ShopApp returns shop sub app
-	ShopApp() sub_app_iface.ShopApp
 	// Srv returns system server
 	Srv() *Server
 	// This function migrates the default built in roles from code/config to the database.
 	DoAdvancedPermissionsMigration()
-	// ToLocalCurrency performs convert given price to local currency
-	//
-	// NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
-	ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError)
 	// UpdateConfig updates config
 	UpdateConfig(f func(*model.Config))
-	// Warehouse returns warehouse sub app
-	WarehouseApp() sub_app_iface.WarehouseApp
-	// Webhook returns webhook sub app
-	WebhookApp() sub_app_iface.WebhookApp
-	// Wishlist returns wishlist sub app
-	WishlistApp() sub_app_iface.WishlistApp
 	// func (a *App) Cloud() einterfaces.CloudInterface {
 	// 	return a.srv.Cloud
 	// }
@@ -173,7 +100,6 @@ type AppIface interface {
 	NewClusterDiscoveryService() *ClusterDiscoveryService
 	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
-	PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError)
 	PostActionCookieSecret() []byte
 	ReloadConfig() error
 	RemoveConfigListener(id string)
@@ -182,5 +108,4 @@ type AppIface interface {
 	SetPhase2PermissionsMigrationStatus(isComplete bool) error
 	SetServer(srv *Server)
 	Timezones() *timezones.Timezones
-	UpdateRole(role *model.Role) (*model.Role, *model.AppError)
 }

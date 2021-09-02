@@ -13,14 +13,14 @@ import (
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
 	if ckout.ShippingAddressID == nil || !model.IsValidId(*ckout.ShippingAddressID) {
 		return nil, nil
 	}
 
 	var appErr *model.AppError
 	if countryCode == "" {
-		countryCode, appErr = a.CheckoutApp().CheckoutCountry(ckout)
+		countryCode, appErr = a.srv.CheckoutService().CheckoutCountry(ckout)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -30,7 +30,7 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 
 	// check if checkout line infos are provided
 	if len(lines) == 0 {
-		_, _, products, err := a.Srv().Store.CheckoutLine().CheckoutLinesByCheckoutWithPrefetch(ckout.Token)
+		_, _, products, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutWithPrefetch(ckout.Token)
 		if err != nil {
 			return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.get_applicable_shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -50,7 +50,7 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 	for _, lineInfo := range lines {
 		checkoutLineIDs = append(checkoutLineIDs, lineInfo.Line.Id)
 	}
-	totalWeight, err := a.Srv().Store.CheckoutLine().TotalWeightForCheckoutLines(checkoutLineIDs)
+	totalWeight, err := a.srv.Store.CheckoutLine().TotalWeightForCheckoutLines(checkoutLineIDs)
 	if err != nil {
 		if _, ok := err.(*store.ErrNotFound); !ok {
 			return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.get_total_weight_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -58,7 +58,7 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 		totalWeight = measurement.ZeroWeight
 	}
 
-	shippingMethods, err := a.Srv().Store.ShippingMethod().ApplicableShippingMethods(
+	shippingMethods, err := a.srv.Store.ShippingMethod().ApplicableShippingMethods(
 		price,
 		channelID,
 		totalWeight,
@@ -74,13 +74,13 @@ func (a *AppShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Check
 }
 
 // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
 	if oder.ShippingAddressID == nil || !model.IsValidId(*oder.ShippingAddressID) {
 		return nil, nil
 	}
 
 	if countryCode == "" {
-		address, appErr := a.AccountApp().AddressById(*oder.ShippingAddressID)
+		address, appErr := a.srv.AccountService().AddressById(*oder.ShippingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -89,7 +89,7 @@ func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, chann
 
 	var orderProductIDs []string
 	if len(lines) == 0 {
-		orderLines, appErr := a.OrderApp().OrderLinesByOption(&order.OrderLineFilterOption{
+		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
 			OrderID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: oder.Id,
@@ -114,7 +114,7 @@ func (a *AppShipping) ApplicableShippingMethodsForOrder(oder *order.Order, chann
 		}
 	}
 
-	applicableShippingMethods, err := a.Srv().Store.ShippingMethod().ApplicableShippingMethods(
+	applicableShippingMethods, err := a.srv.Store.ShippingMethod().ApplicableShippingMethods(
 		price,
 		channelID,
 		oder.GetTotalWeight(),

@@ -20,7 +20,7 @@ type AppChannel struct {
 }
 
 func init() {
-	app.RegisterChannelApp(func(a app.AppIface) sub_app_iface.ChannelApp {
+	app.RegisterChannelApp(func(a app.AppIface) sub_app_iface.ChannelService {
 		return &AppChannel{a}
 	})
 }

@@ -8,19 +8,23 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppShop struct {
-	app app.AppIface
+type ServiceShop struct {
+	srv *app.Server
 }
 
-func init() {
-	app.RegisterShopApp(func(a app.AppIface) sub_app_iface.ShopApp {
-		return &AppShop{a}
-	})
+type ServiceShopConfig struct {
+	Server *app.Server
+}
+
+func NewServiceShop(config *ServiceShopConfig) sub_app_iface.ShopService {
+	return &ServiceShop{
+		srv: config.Server,
+	}
 }
 
 // ShopById finds shop by given id
-func (a *AppShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
-	shop, err := a.app.Srv().Store.Shop().Get(shopID)
+func (a *ServiceShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
+	shop, err := a.srv.Store.Shop().Get(shopID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.error_finding_shop_by_id.app_error", err)
 	}

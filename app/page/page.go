@@ -5,12 +5,16 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppPage struct {
-	app.AppIface
+type ServicePage struct {
+	srv *app.Server
 }
 
-func init() {
-	app.RegisterPageApp(func(a app.AppIface) sub_app_iface.PageApp {
-		return &AppPage{a}
-	})
+type ServicePageConfig struct {
+	Server *app.Server
+}
+
+func NewServicePage(config *ServicePageConfig) sub_app_iface.PageService {
+	return &ServicePage{
+		srv: config.Server,
+	}
 }

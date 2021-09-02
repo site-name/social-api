@@ -9,18 +9,21 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppDiscount struct {
-	app.AppIface
+type ServiceDiscount struct {
+	srv   *app.Server
 	wg    sync.WaitGroup // this is for some methods that need concurrent executions
 	mutex sync.Mutex     // this is for prevent data racing in methods that have concurrent executions
 }
 
-func init() {
-	app.RegisterDiscountApp(func(a app.AppIface) sub_app_iface.DiscountApp {
-		return &AppDiscount{
-			AppIface: a,
-		}
-	})
+type ServiceDiscountConfig struct {
+	Server *app.Server
+}
+
+func NewServiceDiscount(config *ServiceDiscountConfig) sub_app_iface.DiscountService {
+
+	return &ServiceDiscount{
+		srv: config.Server,
+	}
 }
 
 // DiscountCalculator number of `args` must be 1 or 2

@@ -19,6 +19,7 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
+	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -37,8 +38,8 @@ type tokenExtra struct {
 	Email  string
 }
 
-func (a *AppAccount) UserById(ctx context.Context, userID string) (*account.User, *model.AppError) {
-	user, err := a.Srv().Store.User().Get(ctx, userID)
+func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*account.User, *model.AppError) {
+	user, err := a.srv.Store.User().Get(ctx, userID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("UserById", "app.account.missing_user.app_error", err)
 	}
@@ -46,7 +47,7 @@ func (a *AppAccount) UserById(ctx context.Context, userID string) (*account.User
 	return user, nil
 }
 
-func (a *AppAccount) UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) {
 	// check if address is owned by user
 	addresses, appErr := a.AddressesByUserId(userID)
 	if appErr != nil {
@@ -78,7 +79,7 @@ func (a *AppAccount) UserSetDefaultAddress(userID, addressID, addressType string
 	}
 
 	// update
-	userUpdate, err := a.Srv().Store.User().Update(user, false)
+	userUpdate, err := a.srv.Store.User().Update(user, false)
 	if err != nil {
 		if appErr, ok := (err).(*model.AppError); ok {
 			return nil, appErr
@@ -105,8 +106,8 @@ func (a *AppAccount) UserSetDefaultAddress(userID, addressID, addressType string
 	return userUpdate.New, nil
 }
 
-func (a *AppAccount) UserByEmail(email string) (*account.User, *model.AppError) {
-	user, err := a.Srv().Store.User().GetByEmail(email)
+func (a *ServiceAccount) UserByEmail(email string) (*account.User, *model.AppError) {
+	user, err := a.srv.Store.User().GetByEmail(email)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("UserByEmail", "app.account.user_missing.app_error", err)
 	}
@@ -114,7 +115,7 @@ func (a *AppAccount) UserByEmail(email string) (*account.User, *model.AppError) 
 	return user, nil
 }
 
-func (a *AppAccount) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 	if err := a.IsUserSignUpAllowed(); err != nil {
 		return nil, err
 	}
@@ -126,14 +127,14 @@ func (a *AppAccount) CreateUserFromSignup(c *request.Context, user *account.User
 		return nil, err
 	}
 
-	a.Srv().Go(func() {
-		if err := a.Srv().EmailService.SendWelcomeEmail(
+	a.srv.Go(func() {
+		if err := a.srv.EmailService.SendWelcomeEmail(
 			ruser.Id,
 			ruser.Email,
 			ruser.EmailVerified,
 			ruser.DisableWelcomeEmail,
 			ruser.Locale,
-			a.GetSiteURL(),
+			a.srv.GetSiteURL(),
 			redirect,
 		); err != nil {
 			slog.Warn("Failed to send welcome email on create user from signup", slog.Err(err))
@@ -143,25 +144,25 @@ func (a *AppAccount) CreateUserFromSignup(c *request.Context, user *account.User
 	return ruser, nil
 }
 
-func (a *AppAccount) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
-	user.Roles = model.SYSTEM_USER_ROLE_ID
+func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
+	user.Roles = model.SystemUserRoleId
 
-	if !user.IsLDAPUser() && !user.IsSAMLUser() && user.IsGuest() && !CheckUserDomain(user, *a.Config().GuestAccountsSettings.RestrictCreationToDomains) {
+	if !user.IsLDAPUser() && !user.IsSAMLUser() && user.IsGuest() && !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
 		return nil, model.NewAppError("CreateUser", "api.user.create_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	// Below is a special case where the first user in the entire
 	// system is granted the system_admin role
-	count, err := a.Srv().Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
+	count, err := a.srv.Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
 	if err != nil {
 		return nil, model.NewAppError("createUserOrGuest", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	if count <= 0 {
-		user.Roles = model.SYSTEM_ADMIN_ROLE_ID + " " + model.SYSTEM_USER_ROLE_ID
+		user.Roles = model.SystemAdminRoleId + " " + model.SystemUserRoleId
 	}
 
 	if _, ok := i18n.GetSupportedLocales()[user.Locale]; !ok {
-		user.Locale = *a.Config().LocalizationSettings.DefaultClientLocale
+		user.Locale = *a.srv.Config().LocalizationSettings.DefaultClientLocale
 	}
 
 	user, appErr := a.createUser(user)
@@ -179,7 +180,7 @@ func (a *AppAccount) CreateUser(c *request.Context, user *account.User) (*accoun
 		Name:     user.Id,
 		Value:    "0",
 	}
-	if err := a.Srv().Store.Preference().Save(&model.Preferences{pref}); err != nil {
+	if err := a.srv.Store.Preference().Save(&model.Preferences{pref}); err != nil {
 		slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
 	}
 
@@ -189,27 +190,27 @@ func (a *AppAccount) CreateUser(c *request.Context, user *account.User) (*accoun
 	// message.Add("user_id", ruser.Id)
 	// a.Publish(message)
 
-	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-	// 	a.Srv().Go(func() {
-	// 		pluginContext := a.PluginContext()
-	// 		pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
-	// 			hooks.UserHasBeenCreated(pluginContext, user)
-	// 			return true
-	// 		}, plugin.UserHasBeenCreatedID)
-	// 	})
-	// }
+	if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
+		a.srv.Go(func() {
+			pluginContext := a.PluginContext()
+			pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
+				hooks.UserHasBeenCreated(pluginContext, user)
+				return true
+			}, plugin.UserHasBeenCreatedID)
+		})
+	}
 
 	return user, nil
 }
 
-func (a *AppAccount) createUser(user *account.User) (*account.User, *model.AppError) {
+func (a *ServiceAccount) createUser(user *account.User) (*account.User, *model.AppError) {
 	user.MakeNonNil()
 
 	if err := a.isPasswordValid(user.Password); user.AuthService == "" && err != nil {
 		return nil, model.NewAppError("CreateUser", "api.user.check_user_password.invalid.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	ruser, nErr := a.Srv().Store.User().Save(user)
+	ruser, nErr := a.srv.Store.User().Save(user)
 	if nErr != nil {
 		var appErr *model.AppError
 		var invErr *store.ErrInvalidInput
@@ -242,7 +243,7 @@ func (a *AppAccount) createUser(user *account.User) (*account.User, *model.AppEr
 	return ruser, nil
 }
 
-func (a *AppAccount) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
 	if err := a.IsUserSignUpAllowed(); err != nil {
 		return nil, err
 	}
@@ -273,21 +274,21 @@ func (a *AppAccount) CreateUserWithToken(c *request.Context, user *account.User,
 	return ruser, nil
 }
 
-func (a *AppAccount) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
 	ruser, err := a.CreateUser(c, user)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := a.Srv().EmailService.SendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale, a.GetSiteURL(), redirect); err != nil {
+	if err := a.srv.EmailService.SendWelcomeEmail(ruser.Id, ruser.Email, ruser.EmailVerified, ruser.DisableWelcomeEmail, ruser.Locale, a.srv.GetSiteURL(), redirect); err != nil {
 		slog.Warn("Failed to send welcome email to the new user, created by system admin", slog.Err(err))
 	}
 
 	return ruser, nil
 }
 
-func (a *AppAccount) GetVerifyEmailToken(token string) (*model.Token, *model.AppError) {
-	rtoken, err := a.Srv().Store.Token().GetByToken(token)
+func (a *ServiceAccount) GetVerifyEmailToken(token string) (*model.Token, *model.AppError) {
+	rtoken, err := a.srv.Store.Token().GetByToken(token)
 	if err != nil {
 		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.bad_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -297,7 +298,7 @@ func (a *AppAccount) GetVerifyEmailToken(token string) (*model.Token, *model.App
 	return rtoken, nil
 }
 
-func (a *AppAccount) VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError {
+func (a *ServiceAccount) VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError {
 	token, err := a.GetVerifyEmailToken(userSuppliedTokenString)
 	if err != nil {
 		return err
@@ -323,8 +324,8 @@ func (a *AppAccount) VerifyEmailFromToken(userSuppliedTokenString string) *model
 	}
 
 	if user.Email != tokenData.Email {
-		a.Srv().Go(func() {
-			if err := a.Srv().EmailService.SendEmailChangeEmail(user.Email, tokenData.Email, user.Locale, a.GetSiteURL()); err != nil {
+		a.srv.Go(func() {
+			if err := a.srv.EmailService.SendEmailChangeEmail(user.Email, tokenData.Email, user.Locale, a.srv.GetSiteURL()); err != nil {
 				slog.Error("Failed to send email change email", slog.Err(err))
 			}
 		})
@@ -337,24 +338,24 @@ func (a *AppAccount) VerifyEmailFromToken(userSuppliedTokenString string) *model
 	return nil
 }
 
-func (a *AppAccount) DeleteToken(token *model.Token) *model.AppError {
-	err := a.Srv().Store.Token().Delete(token.Token)
+func (a *ServiceAccount) DeleteToken(token *model.Token) *model.AppError {
+	err := a.srv.Store.Token().Delete(token.Token)
 	if err != nil {
 		return model.NewAppError("DeleteToken", "app.recover.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
 }
 
-func (a *AppAccount) IsUserSignUpAllowed() *model.AppError {
-	if !*a.Config().EmailSettings.EnableSignUpWithEmail {
+func (a *ServiceAccount) IsUserSignUpAllowed() *model.AppError {
+	if !*a.srv.Config().EmailSettings.EnableSignUpWithEmail {
 		err := model.NewAppError("IsUserSignUpAllowed", "api.user.create_user.signup_email_disabled.app_error", nil, "", http.StatusNotImplemented)
 		return err
 	}
 	return nil
 }
 
-func (a *AppAccount) VerifyUserEmail(userID, email string) *model.AppError {
-	if _, err := a.Srv().Store.User().VerifyEmail(userID, email); err != nil {
+func (a *ServiceAccount) VerifyUserEmail(userID, email string) *model.AppError {
+	if _, err := a.srv.Store.User().VerifyEmail(userID, email); err != nil {
 		return model.NewAppError("VerifyUserEmail", "app.user.verify_email.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -368,21 +369,21 @@ func (a *AppAccount) VerifyUserEmail(userID, email string) *model.AppError {
 	return nil
 }
 
-func (a *AppAccount) GetUserByUsername(username string) (*account.User, *model.AppError) {
-	result, err := a.Srv().Store.User().GetByUsername(username)
+func (a *ServiceAccount) GetUserByUsername(username string) (*account.User, *model.AppError) {
+	result, err := a.srv.Store.User().GetByUsername(username)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetUserByUsername", "app.account.user_by_username.app_error", err)
 	}
 	return result, nil
 }
 
-func (a *AppAccount) IsFirstUserAccount() bool {
-	cachedSessions, err := a.Srv().SessionCache.Len()
+func (a *ServiceAccount) IsFirstUserAccount() bool {
+	cachedSessions, err := a.srv.SessionCache.Len()
 	if err != nil {
 		return false
 	}
 	if cachedSessions == 0 {
-		count, err := a.Srv().Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
+		count, err := a.srv.Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
 		if err != nil {
 			slog.Debug("There was an error fetching if first usder account", slog.Err(err))
 			return false
@@ -394,20 +395,20 @@ func (a *AppAccount) IsFirstUserAccount() bool {
 	return false
 }
 
-func (a *AppAccount) IsUsernameTaken(name string) bool {
+func (a *ServiceAccount) IsUsernameTaken(name string) bool {
 	if !model.IsValidUsername(name) {
 		return false
 	}
 
-	if _, err := a.Srv().Store.User().GetByUsername(name); err != nil {
+	if _, err := a.srv.Store.User().GetByUsername(name); err != nil {
 		return false
 	}
 
 	return true
 }
 
-func (a *AppAccount) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
-	user, err := a.Srv().Store.User().GetByAuth(authData, authService)
+func (a *ServiceAccount) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
+	user, err := a.srv.Store.User().GetByAuth(authData, authService)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
 		var nfErr *store.ErrNotFound
@@ -424,8 +425,8 @@ func (a *AppAccount) GetUserByAuth(authData *string, authService string) (*accou
 	return user, nil
 }
 
-func (a *AppAccount) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
-	users, err := a.Srv().Store.User().GetAllProfiles(options)
+func (a *ServiceAccount) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
+	users, err := a.srv.Store.User().GetAllProfiles(options)
 	if err != nil {
 		return nil, model.NewAppError("GetUsers", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -433,17 +434,17 @@ func (a *AppAccount) GetUsers(options *account.UserGetOptions) ([]*account.User,
 	return users, nil
 }
 
-func (a *AppAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError) {
+func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError) {
 	user, appErr := a.UserById(context.Background(), userID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
+	if !*a.srv.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return nil, model.NewAppError("GenerateMfaSecret", "mfa.mfa_disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	secret, img, err := mfa.New(a.Srv().Store.User()).GenerateSecret(*a.Config().ServiceSettings.SiteURL, user.Email, user.Id)
+	secret, img, err := mfa.New(a.srv.Store.User()).GenerateSecret(*a.srv.Config().ServiceSettings.SiteURL, user.Email, user.Id)
 	if err != nil {
 		return nil, model.NewAppError("GenerateMfaSecret", "mfa.generate_qr_code.create_code.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -455,8 +456,8 @@ func (a *AppAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *model.
 	return mfaSecret, nil
 }
 
-func (a *AppAccount) ActivateMfa(userID, token string) *model.AppError {
-	user, err := a.Srv().Store.User().Get(context.Background(), userID)
+func (a *ServiceAccount) ActivateMfa(userID, token string) *model.AppError {
+	user, err := a.srv.Store.User().Get(context.Background(), userID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
 		switch {
@@ -471,11 +472,11 @@ func (a *AppAccount) ActivateMfa(userID, token string) *model.AppError {
 		return model.NewAppError("ActiveMfa", "api.user.activate_mfa.email_and_ldap_only.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	if !*a.Config().ServiceSettings.EnableMultifactorAuthentication {
+	if !*a.srv.Config().ServiceSettings.EnableMultifactorAuthentication {
 		return model.NewAppError("ActiveMfa", "mfa.mfa_disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
 
-	if err := mfa.New(a.Srv().Store.User()).Activate(user.MfaSecret, user.Id, token); err != nil {
+	if err := mfa.New(a.srv.Store.User()).Activate(user.MfaSecret, user.Id, token); err != nil {
 		switch {
 		case errors.Is(err, mfa.InvalidToken):
 			return model.NewAppError("ActivateMfa", "mfa.activate.bad_token.app_error", nil, "", http.StatusUnauthorized)
@@ -490,8 +491,8 @@ func (a *AppAccount) ActivateMfa(userID, token string) *model.AppError {
 	return nil
 }
 
-func (a *AppAccount) DeactivateMfa(userID string) *model.AppError {
-	if err := mfa.New(a.Srv().Store.User()).Deactivate(userID); err != nil {
+func (a *ServiceAccount) DeactivateMfa(userID string) *model.AppError {
+	if err := mfa.New(a.srv.Store.User()).Deactivate(userID); err != nil {
 		return model.NewAppError("DeactivateMfa", "mfa.deactivate.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -501,8 +502,8 @@ func (a *AppAccount) DeactivateMfa(userID string) *model.AppError {
 	return nil
 }
 
-func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
-	if *a.Config().FileSettings.DriverName == "" {
+func (a *ServiceAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
+	if *a.srv.Config().FileSettings.DriverName == "" {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
 			return nil, false, appErr
@@ -511,7 +512,7 @@ func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.A
 	}
 
 	path := "users/" + user.Id + "/profile.png"
-	data, err := a.FileApp().ReadFile(path)
+	data, err := a.srv.FileService().ReadFile(path)
 	if err != nil {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
@@ -519,7 +520,7 @@ func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.A
 		}
 
 		if user.LastPictureUpdate == 0 {
-			if _, err := a.FileApp().WriteFile(bytes.NewReader(img), path); err != nil {
+			if _, err := a.srv.FileService().WriteFile(bytes.NewReader(img), path); err != nil {
 				return nil, false, err
 			}
 		}
@@ -529,11 +530,11 @@ func (a *AppAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.A
 	return data, false, nil
 }
 
-func (a *AppAccount) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
-	return CreateProfileImage(user.Username, user.Id, *a.Config().FileSettings.InitialFont)
+func (a *ServiceAccount) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
+	return CreateProfileImage(user.Username, user.Id, *a.srv.Config().FileSettings.InitialFont)
 }
 
-func (a *AppAccount) SetDefaultProfileImage(user *account.User) *model.AppError {
+func (a *ServiceAccount) SetDefaultProfileImage(user *account.User) *model.AppError {
 	img, appErr := a.GetDefaultProfileImage(user)
 	if appErr != nil {
 		return appErr
@@ -541,11 +542,11 @@ func (a *AppAccount) SetDefaultProfileImage(user *account.User) *model.AppError 
 
 	path := "users/" + user.Id + "/profile.png"
 
-	if _, err := a.FileApp().WriteFile(bytes.NewReader(img), path); err != nil {
+	if _, err := a.srv.FileService().WriteFile(bytes.NewReader(img), path); err != nil {
 		return err
 	}
 
-	if err := a.Srv().Store.User().ResetLastPictureUpdate(user.Id); err != nil {
+	if err := a.srv.Store.User().ResetLastPictureUpdate(user.Id); err != nil {
 		slog.Warn("Failed to reset last picture update", slog.Err(err))
 	}
 
@@ -557,7 +558,7 @@ func (a *AppAccount) SetDefaultProfileImage(user *account.User) *model.AppError 
 		return nil
 	}
 
-	options := a.Config().GetSanitizeOptions()
+	options := a.srv.Config().GetSanitizeOptions()
 	updatedUser.SanitizeProfile(options)
 
 	// message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_UPDATED, "", "", "", nil)
@@ -567,13 +568,13 @@ func (a *AppAccount) SetDefaultProfileImage(user *account.User) *model.AppError 
 	return nil
 }
 
-func (a *AppAccount) SanitizeProfile(user *account.User, asAdmin bool) {
+func (a *ServiceAccount) SanitizeProfile(user *account.User, asAdmin bool) {
 	options := a.GetSanitizeOptions(asAdmin)
 	user.SanitizeProfile(options)
 }
 
-func (a *AppAccount) GetSanitizeOptions(asAdmin bool) map[string]bool {
-	options := a.Config().GetSanitizeOptions()
+func (a *ServiceAccount) GetSanitizeOptions(asAdmin bool) map[string]bool {
+	options := a.srv.Config().GetSanitizeOptions()
 	if asAdmin {
 		options["email"] = true
 		options["fullname"] = true
@@ -582,7 +583,7 @@ func (a *AppAccount) GetSanitizeOptions(asAdmin bool) map[string]bool {
 	return options
 }
 
-func (a *AppAccount) SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError {
+func (a *ServiceAccount) SetProfileImage(userID string, imageData *multipart.FileHeader) *model.AppError {
 	file, err := imageData.Open()
 	if err != nil {
 		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.open.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -591,7 +592,7 @@ func (a *AppAccount) SetProfileImage(userID string, imageData *multipart.FileHea
 	return a.SetProfileImageFromMultiPartFile(userID, file)
 }
 
-func (a *AppAccount) SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError {
+func (a *ServiceAccount) SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError {
 	if limitErr := fileApp.CheckImageLimits(f); limitErr != nil {
 		return model.NewAppError("SetProfileImage", "app.account.upload_profile_image.check_image_limits.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -599,9 +600,9 @@ func (a *AppAccount) SetProfileImageFromMultiPartFile(userID string, f multipart
 	return a.SetProfileImageFromFile(userID, f)
 }
 
-func (a *AppAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError) {
+func (a *ServiceAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError) {
 	// Decode image into Image object
-	img, _, err := a.Srv().ImgDecoder.Decode(file)
+	img, _, err := a.srv.ImgDecoder.Decode(file)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -614,14 +615,14 @@ func (a *AppAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError
 	img = imaging.FillCenter(img, profileWidthAndHeight, profileWidthAndHeight)
 
 	buf := new(bytes.Buffer)
-	err = a.Srv().ImgEncoder.EncodePNG(buf, img)
+	err = a.srv.ImgEncoder.EncodePNG(buf, img)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.encode.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return buf, nil
 }
 
-func (a *AppAccount) SetProfileImageFromFile(userID string, file io.Reader) *model.AppError {
+func (a *ServiceAccount) SetProfileImageFromFile(userID string, file io.Reader) *model.AppError {
 	buf, err := a.AdjustImage(file)
 	if err != nil {
 		return err
@@ -629,11 +630,11 @@ func (a *AppAccount) SetProfileImageFromFile(userID string, file io.Reader) *mod
 
 	path := "users/" + userID + "/profile.png"
 
-	if _, err := a.FileApp().WriteFile(buf, path); err != nil {
+	if _, err := a.srv.FileService().WriteFile(buf, path); err != nil {
 		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.upload_profile.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	if err := a.Srv().Store.User().UpdateLastPictureUpdate(userID); err != nil {
+	if err := a.srv.Store.User().UpdateLastPictureUpdate(userID); err != nil {
 		slog.Warn("Error with updating last picture update", slog.Err(err))
 	}
 
@@ -642,7 +643,7 @@ func (a *AppAccount) SetProfileImageFromFile(userID string, file io.Reader) *mod
 	return nil
 }
 
-func (a *AppAccount) userDeactivated(c *request.Context, userID string) *model.AppError {
+func (a *ServiceAccount) userDeactivated(c *request.Context, userID string) *model.AppError {
 	if err := a.RevokeAllSessions(userID); err != nil {
 		return err
 	}
@@ -650,7 +651,7 @@ func (a *AppAccount) userDeactivated(c *request.Context, userID string) *model.A
 	return nil
 }
 
-func (a *AppAccount) UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError) {
 	user.UpdateAt = model.GetMillis()
 	if active {
 		user.DeleteAt = 0
@@ -658,7 +659,7 @@ func (a *AppAccount) UpdateActive(c *request.Context, user *account.User, active
 		user.DeleteAt = user.UpdateAt
 	}
 
-	userUpdate, err := a.Srv().Store.User().Update(user, true)
+	userUpdate, err := a.srv.Store.User().Update(user, true)
 	if err != nil {
 		var appErr *model.AppError
 		var invErr *store.ErrInvalidInput
@@ -687,7 +688,7 @@ func (a *AppAccount) UpdateActive(c *request.Context, user *account.User, active
 	return ruser, nil
 }
 
-func (a *AppAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError {
+func (a *ServiceAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError {
 	user, err := a.UserById(context.Background(), userID)
 	if err != nil {
 		return err
@@ -696,8 +697,8 @@ func (a *AppAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword stri
 	return a.UpdateHashedPassword(user, newHashedPassword)
 }
 
-func (a *AppAccount) UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError {
-	if err := a.Srv().Store.User().UpdatePassword(user.Id, newHashedPassword); err != nil {
+func (a *ServiceAccount) UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError {
+	if err := a.srv.Store.User().UpdatePassword(user.Id, newHashedPassword); err != nil {
 		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -706,7 +707,7 @@ func (a *AppAccount) UpdateHashedPassword(user *account.User, newHashedPassword 
 	return nil
 }
 
-func (a *AppAccount) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
 
 	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
 		return nil, err
@@ -715,14 +716,14 @@ func (a *AppAccount) UpdateUserRolesWithUser(user *account.User, newRoles string
 	user.Roles = newRoles
 	uchan := make(chan store.StoreResult, 1)
 	go func() {
-		userUpdate, err := a.Srv().Store.User().Update(user, true)
+		userUpdate, err := a.srv.Store.User().Update(user, true)
 		uchan <- store.StoreResult{Data: userUpdate, NErr: err}
 		close(uchan)
 	}()
 
 	schan := make(chan store.StoreResult, 1)
 	go func() {
-		id, err := a.Srv().Store.Session().UpdateRoles(user.Id, newRoles)
+		id, err := a.srv.Store.Session().UpdateRoles(user.Id, newRoles)
 		schan <- store.StoreResult{Data: id, NErr: err}
 		close(schan)
 	}()
@@ -760,8 +761,8 @@ func (a *AppAccount) UpdateUserRolesWithUser(user *account.User, newRoles string
 	return ruser, nil
 }
 
-func (a *AppAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppError {
-	users, err := a.Srv().Store.User().GetAll()
+func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppError {
+	users, err := a.srv.Store.User().GetAll()
 	if err != nil {
 		return model.NewAppError("PermanentDeleteAllUsers", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -772,21 +773,21 @@ func (a *AppAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppError
 	return nil
 }
 
-func (a *AppAccount) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
-	prev, err := a.Srv().Store.User().Get(context.Background(), user.Id)
+func (a *ServiceAccount) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
+	prev, err := a.srv.Store.User().Get(context.Background(), user.Id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("UpdateUser", MissingAccountError, err)
 	}
 
 	var newEmail string
 	if user.Email != prev.Email {
-		if !CheckUserDomain(user, *a.Config().GuestAccountsSettings.RestrictCreationToDomains) {
+		if !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
 			if prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
 				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_guest_domain.app_error", nil, "", http.StatusBadRequest)
 			}
 		}
 
-		if *a.Config().EmailSettings.RequireEmailVerification {
+		if *a.srv.Config().EmailSettings.RequireEmailVerification {
 			newEmail = user.Email
 			// Don't set new eMail on user account if email verification is required, this will be done as a post-verification action
 			// to avoid users being able to set non-controlled eMails as their account email
@@ -798,7 +799,7 @@ func (a *AppAccount) UpdateUser(user *account.User, sendNotifications bool) (*ac
 		}
 	}
 
-	userUpdate, err := a.Srv().Store.User().Update(user, false)
+	userUpdate, err := a.srv.Store.User().Update(user, false)
 	if err != nil {
 		var appErr *model.AppError
 		var invErr *store.ErrInvalidInput
@@ -820,15 +821,15 @@ func (a *AppAccount) UpdateUser(user *account.User, sendNotifications bool) (*ac
 
 	if sendNotifications {
 		if userUpdate.New.Email != userUpdate.Old.Email || newEmail != "" {
-			if *a.Config().EmailSettings.RequireEmailVerification {
-				a.Srv().Go(func() {
+			if *a.srv.Config().EmailSettings.RequireEmailVerification {
+				a.srv.Go(func() {
 					if err := a.SendEmailVerification(userUpdate.New, newEmail, ""); err != nil {
 						slog.Error("Failed to send email verification", slog.Err(err))
 					}
 				})
 			} else {
-				a.Srv().Go(func() {
-					if err := a.Srv().EmailService.SendEmailChangeEmail(userUpdate.Old.Email, userUpdate.New.Email, userUpdate.New.Locale, a.GetSiteURL()); err != nil {
+				a.srv.Go(func() {
+					if err := a.srv.EmailService.SendEmailChangeEmail(userUpdate.Old.Email, userUpdate.New.Email, userUpdate.New.Locale, a.srv.GetSiteURL()); err != nil {
 						slog.Error("Failed to send email change email", slog.Err(err))
 					}
 				})
@@ -836,8 +837,8 @@ func (a *AppAccount) UpdateUser(user *account.User, sendNotifications bool) (*ac
 		}
 
 		if userUpdate.New.Username != userUpdate.Old.Username {
-			a.Srv().Go(func() {
-				if err := a.Srv().EmailService.SendChangeUsernameEmail(userUpdate.New.Username, userUpdate.New.Email, userUpdate.New.Locale, a.GetSiteURL()); err != nil {
+			a.srv.Go(func() {
+				if err := a.srv.EmailService.SendChangeUsernameEmail(userUpdate.New.Username, userUpdate.New.Email, userUpdate.New.Locale, a.srv.GetSiteURL()); err != nil {
 					slog.Error("Failed to send change username email", slog.Err(err))
 				}
 			})
@@ -850,20 +851,20 @@ func (a *AppAccount) UpdateUser(user *account.User, sendNotifications bool) (*ac
 	return userUpdate.New, nil
 }
 
-func (a *AppAccount) SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError {
-	token, err := a.Srv().EmailService.CreateVerifyEmailToken(user.Id, newEmail)
+func (a *ServiceAccount) SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError {
+	token, err := a.srv.EmailService.CreateVerifyEmailToken(user.Id, newEmail)
 	if err != nil {
 		return err
 	}
 
 	if _, err := a.GetStatus(user.Id); err != nil {
-		return a.Srv().EmailService.SendVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token, redirect)
+		return a.srv.EmailService.SendVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token, redirect)
 	}
-	return a.Srv().EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.GetSiteURL(), token.Token)
+	return a.srv.EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token)
 }
 
-func (a *AppAccount) GetStatus(userID string) (*account.Status, *model.AppError) {
-	if !*a.Config().ServiceSettings.EnableUserStatuses {
+func (a *ServiceAccount) GetStatus(userID string) (*account.Status, *model.AppError) {
+	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
 		return &account.Status{}, nil
 	}
 
@@ -872,7 +873,7 @@ func (a *AppAccount) GetStatus(userID string) (*account.Status, *model.AppError)
 		return status, nil
 	}
 
-	status, err := a.Srv().Store.Status().Get(userID)
+	status, err := a.srv.Store.Status().Get(userID)
 	if err != nil {
 		var nfErr *store.ErrNotFound
 		switch {
@@ -886,9 +887,9 @@ func (a *AppAccount) GetStatus(userID string) (*account.Status, *model.AppError)
 	return status, nil
 }
 
-func (a *AppAccount) GetStatusFromCache(userID string) *account.Status {
+func (a *ServiceAccount) GetStatusFromCache(userID string) *account.Status {
 	var status *account.Status
-	if err := a.Srv().StatusCache.Get(userID, &status); err == nil {
+	if err := a.srv.StatusCache.Get(userID, &status); err == nil {
 		statusCopy := &account.Status{}
 		*statusCopy = *status
 		return statusCopy
@@ -897,10 +898,10 @@ func (a *AppAccount) GetStatusFromCache(userID string) *account.Status {
 	return nil
 }
 
-func (a *AppAccount) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
+func (a *ServiceAccount) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
 	term := strings.TrimSpace(props.Term)
 
-	users, err := a.Srv().Store.User().Search(term, options)
+	users, err := a.srv.Store.User().Search(term, options)
 	if err != nil {
 		return nil, model.NewAppError("SearchUsersInTeam", "app.user.search.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -912,29 +913,29 @@ func (a *AppAccount) SearchUsers(props *account.UserSearch, options *account.Use
 	return users, nil
 }
 
-func (a *AppAccount) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
+func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
 	slog.Warn("Attempting to permanently delete account", slog.String("user_id", user.Id), slog.String("user_email", user.Email))
-	if user.IsInRole(model.SYSTEM_ADMIN_ROLE_ID) {
+	if user.IsInRole(model.SystemAdminRoleId) {
 		slog.Warn("You are deleting a user that is a system administrator.  You may need to set another account as the system administrator using the command line tools.", slog.String("user_email", user.Email))
 	}
 
 	if _, err := a.UpdateActive(c, user, false); err != nil {
 		return err
 	}
-	if err := a.Srv().Store.Session().PermanentDeleteSessionsByUser(user.Id); err != nil {
+	if err := a.srv.Store.Session().PermanentDeleteSessionsByUser(user.Id); err != nil {
 		return model.NewAppError("PermanentDeleteUser", "app.session.permanent_delete_sessions_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if err := a.Srv().Store.UserAccessToken().DeleteAllForUser(user.Id); err != nil {
+	if err := a.srv.Store.UserAccessToken().DeleteAllForUser(user.Id); err != nil {
 		return model.NewAppError("PermanentDeleteUser", "app.user_access_token.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	infos, err := a.Srv().Store.FileInfo().GetForUser(user.Id)
+	infos, err := a.srv.Store.FileInfo().GetForUser(user.Id)
 	if err != nil {
 		slog.Warn("Error getting file list for user from FileInfoStore", slog.Err(err))
 	}
 
 	for _, info := range infos {
-		res, err := a.FileApp().FileExists(info.Path)
+		res, err := a.FileService().FileExists(info.Path)
 		if err != nil {
 			slog.Warn(
 				"Error checking existance of file",
@@ -949,19 +950,19 @@ func (a *AppAccount) PermanentDeleteUser(c *request.Context, user *account.User)
 			continue
 		}
 
-		err = a.FileApp().RemoveFile(info.Path)
+		err = a.srv.FileService().RemoveFile(info.Path)
 		if err != nil {
 			slog.Warn("Unable to remove file", slog.String("path", info.Path), slog.Err(err))
 		}
 	}
 
-	if _, err := a.Srv().Store.FileInfo().PermanentDeleteByUser(user.Id); err != nil {
+	if _, err := a.srv.Store.FileInfo().PermanentDeleteByUser(user.Id); err != nil {
 		return model.NewAppError("PermanentDeleteUser", "app.file_info.permanent_delete_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if err := a.Srv().Store.User().PermanentDelete(user.Id); err != nil {
+	if err := a.srv.Store.User().PermanentDelete(user.Id); err != nil {
 		return model.NewAppError("PermanentDeleteUser", "app.user.permanent_delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if err := a.Srv().Store.Audit().PermanentDeleteByUser(user.Id); err != nil {
+	if err := a.srv.Store.Audit().PermanentDeleteByUser(user.Id); err != nil {
 		return model.NewAppError("PermanentDeleteUser", "app.audit.permanent_delete_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -970,7 +971,7 @@ func (a *AppAccount) PermanentDeleteUser(c *request.Context, user *account.User)
 	return nil
 }
 
-func (a *AppAccount) UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError {
+func (a *ServiceAccount) UpdatePasswordAsUser(userID, currentPassword, newPassword string) *model.AppError {
 	user, err := a.UserById(context.Background(), userID)
 	if err != nil {
 		return err
@@ -998,13 +999,13 @@ func (a *AppAccount) UpdatePasswordAsUser(userID, currentPassword, newPassword s
 	return a.UpdatePasswordSendEmail(user, newPassword, T("api.user.update_password.menu"))
 }
 
-func (a *AppAccount) UpdatePassword(user *account.User, newPassword string) *model.AppError {
+func (a *ServiceAccount) UpdatePassword(user *account.User, newPassword string) *model.AppError {
 	if err := a.isPasswordValid(newPassword); err != nil {
 		return err
 	}
 	hashedPassword := HashPassword(newPassword)
 
-	if err := a.Srv().Store.User().UpdatePassword(user.Id, hashedPassword); err != nil {
+	if err := a.srv.Store.User().UpdatePassword(user.Id, hashedPassword); err != nil {
 		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -1013,13 +1014,13 @@ func (a *AppAccount) UpdatePassword(user *account.User, newPassword string) *mod
 	return nil
 }
 
-func (a *AppAccount) UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError {
+func (a *ServiceAccount) UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError {
 	if err := a.UpdatePassword(user, newPassword); err != nil {
 		return err
 	}
 
-	a.Srv().Go(func() {
-		if err := a.Srv().EmailService.SendPasswordChangeEmail(user.Email, method, user.Locale, a.GetSiteURL()); err != nil {
+	a.srv.Go(func() {
+		if err := a.srv.EmailService.SendPasswordChangeEmail(user.Email, method, user.Locale, a.srv.GetSiteURL()); err != nil {
 			slog.Error("Failed to send password change email", slog.Err(err))
 		}
 	})
@@ -1027,7 +1028,7 @@ func (a *AppAccount) UpdatePasswordSendEmail(user *account.User, newPassword, me
 	return nil
 }
 
-func (a *AppAccount) UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError {
+func (a *ServiceAccount) UpdatePasswordByUserIdSendEmail(userID, newPassword, method string) *model.AppError {
 	user, err := a.UserById(context.Background(), userID)
 	if err != nil {
 		return err
@@ -1036,8 +1037,8 @@ func (a *AppAccount) UpdatePasswordByUserIdSendEmail(userID, newPassword, method
 	return a.UpdatePasswordSendEmail(user, newPassword, method)
 }
 
-func (a *AppAccount) GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError) {
-	rtoken, err := a.Srv().Store.Token().GetByToken(token)
+func (a *ServiceAccount) GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError) {
+	rtoken, err := a.srv.Store.Token().GetByToken(token)
 	if err != nil {
 		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.invalid_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -1047,7 +1048,7 @@ func (a *AppAccount) GetPasswordRecoveryToken(token string) (*model.Token, *mode
 	return rtoken, nil
 }
 
-func (a *AppAccount) ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError {
+func (a *ServiceAccount) ResetPasswordFromToken(userSuppliedTokenString, newPassword string) *model.AppError {
 	token, err := a.GetPasswordRecoveryToken(userSuppliedTokenString)
 	if err != nil {
 		return err
@@ -1088,7 +1089,7 @@ func (a *AppAccount) ResetPasswordFromToken(userSuppliedTokenString, newPassword
 	return nil
 }
 
-func (a *AppAccount) sanitizeProfiles(users []*account.User, asAdmin bool) []*account.User {
+func (a *ServiceAccount) sanitizeProfiles(users []*account.User, asAdmin bool) []*account.User {
 	for _, u := range users {
 		a.SanitizeProfile(u, asAdmin)
 	}
@@ -1096,8 +1097,8 @@ func (a *AppAccount) sanitizeProfiles(users []*account.User, asAdmin bool) []*ac
 	return users
 }
 
-func (a *AppAccount) GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError) {
-	users, err := a.Srv().Store.User().GetProfileByIds(context.Background(), userIDs, options, true)
+func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError) {
+	users, err := a.srv.Store.User().GetProfileByIds(context.Background(), userIDs, options, true)
 	if err != nil {
 		return nil, model.NewAppError("GetUsersByIds", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1105,16 +1106,16 @@ func (a *AppAccount) GetUsersByIds(userIDs []string, options *store.UserGetByIds
 	return a.sanitizeProfiles(users, options.IsAdmin), nil
 }
 
-func (a *AppAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError) {
-	users, err := a.Srv().Store.User().GetProfilesByUsernames(usernames)
+func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError) {
+	users, err := a.srv.Store.User().GetProfilesByUsernames(usernames)
 	if err != nil {
 		return nil, model.NewAppError("GetUsersByUsernames", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return a.sanitizeProfiles(users, asAdmin), nil
 }
 
-func (a *AppAccount) GetTotalUsersStats() (*account.UsersStats, *model.AppError) {
-	count, err := a.Srv().Store.User().Count(account.UserCountOptions{})
+func (a *ServiceAccount) GetTotalUsersStats() (*account.UsersStats, *model.AppError) {
+	count, err := a.srv.Store.User().Count(account.UserCountOptions{})
 	if err != nil {
 		return nil, model.NewAppError("GetTotalUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1124,8 +1125,8 @@ func (a *AppAccount) GetTotalUsersStats() (*account.UsersStats, *model.AppError)
 	return stats, nil
 }
 
-func (a *AppAccount) GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError) {
-	count, err := a.Srv().Store.User().Count(*options)
+func (a *ServiceAccount) GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError) {
+	count, err := a.srv.Store.User().Count(*options)
 	if err != nil {
 		return nil, model.NewAppError("GetFilteredUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -1135,7 +1136,7 @@ func (a *AppAccount) GetFilteredUsersStats(options *account.UserCountOptions) (*
 	return stats, nil
 }
 
-func (a *AppAccount) UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
 	user, err := a.UserById(context.Background(), userID)
 	if err != nil {
 		err.StatusCode = http.StatusBadRequest
@@ -1145,7 +1146,7 @@ func (a *AppAccount) UpdateUserRoles(userID string, newRoles string, sendWebSock
 	return a.UpdateUserRolesWithUser(user, newRoles, sendWebSocketEvent)
 }
 
-func (a *AppAccount) SendPasswordReset(email string, siteURL string) (bool, *model.AppError) {
+func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, *model.AppError) {
 	user, err := a.UserByEmail(email)
 	if err != nil {
 		return false, nil
@@ -1160,10 +1161,10 @@ func (a *AppAccount) SendPasswordReset(email string, siteURL string) (bool, *mod
 		return false, err
 	}
 
-	return a.Srv().EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
+	return a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
 }
 
-func (a *AppAccount) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError) {
+func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, email string) (*model.Token, *model.AppError) {
 	tokenExtra := tokenExtra{
 		UserId: userID,
 		Email:  email,
@@ -1176,7 +1177,7 @@ func (a *AppAccount) CreatePasswordRecoveryToken(userID, email string) (*model.T
 
 	token := model.NewToken(app.TokenTypePasswordRecovery, string(jsonData))
 
-	if err := a.Srv().Store.Token().Save(token); err != nil {
+	if err := a.srv.Store.Token().Save(token); err != nil {
 		var appErr *model.AppError
 		switch {
 		case errors.As(err, &appErr):
@@ -1189,7 +1190,7 @@ func (a *AppAccount) CreatePasswordRecoveryToken(userID, email string) (*model.T
 	return token, nil
 }
 
-func (a *AppAccount) CheckProviderAttributes(user *account.User, patch *account.UserPatch) string {
+func (a *ServiceAccount) CheckProviderAttributes(user *account.User, patch *account.UserPatch) string {
 	tryingToChange := func(userValue, patchValue *string) bool {
 		return patchValue != nil && *patchValue != *userValue
 	}
@@ -1199,15 +1200,15 @@ func (a *AppAccount) CheckProviderAttributes(user *account.User, patch *account.
 		return "username"
 	}
 
-	LdapSettings := &a.Config().LdapSettings
-	SamlSettings := &a.Config().SamlSettings
+	LdapSettings := &a.srv.Config().LdapSettings
+	SamlSettings := &a.srv.Config().SamlSettings
 
 	conflictField := ""
-	if a.Ldap() != nil &&
+	if a.srv.Ldap != nil &&
 		(user.IsLDAPUser() || (user.IsSAMLUser() && *SamlSettings.EnableSyncWithLdap)) {
-		conflictField = a.Ldap().CheckProviderAttributes(LdapSettings, user, patch)
-	} else if a.Saml() != nil && user.IsSAMLUser() {
-		conflictField = a.Saml().CheckProviderAttributes(SamlSettings, user, patch)
+		conflictField = a.srv.Ldap.CheckProviderAttributes(LdapSettings, user, patch)
+	} else if a.srv.Saml != nil && user.IsSAMLUser() {
+		conflictField = a.srv.Saml.CheckProviderAttributes(SamlSettings, user, patch)
 	} else if user.IsOAuthUser() {
 		if tryingToChange(&user.FirstName, patch.FirstName) || tryingToChange(&user.LastName, patch.LastName) {
 			conflictField = "full name"
@@ -1217,7 +1218,7 @@ func (a *AppAccount) CheckProviderAttributes(user *account.User, patch *account.
 	return conflictField
 }
 
-func (a *AppAccount) UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError) {
 	updatedUser, err := a.UpdateUser(user, true)
 	if err != nil {
 		return nil, err
@@ -1226,9 +1227,9 @@ func (a *AppAccount) UpdateUserAsUser(user *account.User, asAdmin bool) (*accoun
 	return updatedUser, nil
 }
 
-func (a *AppAccount) UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError) {
+func (a *ServiceAccount) UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError) {
 	userAuth.Password = ""
-	if _, err := a.Srv().Store.User().UpdateAuthData(userID, userAuth.AuthService, userAuth.AuthData, "", false); err != nil {
+	if _, err := a.srv.Store.User().UpdateAuthData(userID, userAuth.AuthService, userAuth.AuthData, "", false); err != nil {
 		var invErr *store.ErrInvalidInput
 		switch {
 		case errors.As(err, &invErr):
@@ -1241,7 +1242,7 @@ func (a *AppAccount) UpdateUserAuth(userID string, userAuth *account.UserAuth) (
 	return userAuth, nil
 }
 
-func (a *AppAccount) UpdateMfa(activate bool, userID, token string) *model.AppError {
+func (a *ServiceAccount) UpdateMfa(activate bool, userID, token string) *model.AppError {
 	if activate {
 		if err := a.ActivateMfa(userID, token); err != nil {
 			return err
@@ -1252,14 +1253,14 @@ func (a *AppAccount) UpdateMfa(activate bool, userID, token string) *model.AppEr
 		}
 	}
 
-	a.Srv().Go(func() {
+	a.srv.Go(func() {
 		user, err := a.UserById(context.Background(), userID)
 		if err != nil {
 			slog.Error("Failed to get user", slog.Err(err))
 			return
 		}
 
-		if err := a.Srv().EmailService.SendMfaChangeEmail(user.Email, activate, user.Locale, a.GetSiteURL()); err != nil {
+		if err := a.srv.EmailService.SendMfaChangeEmail(user.Email, activate, user.Locale, a.srv.GetSiteURL()); err != nil {
 			slog.Error("Failed to send mfa change email", slog.Err(err))
 		}
 	})
@@ -1267,8 +1268,8 @@ func (a *AppAccount) UpdateMfa(activate bool, userID, token string) *model.AppEr
 	return nil
 }
 
-func (a *AppAccount) GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError) {
-	u, err := a.Srv().Store.UserTermOfService().GetByUser(userID)
+func (a *ServiceAccount) GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError) {
+	u, err := a.srv.Store.UserTermOfService().GetByUser(userID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetUserTermsOfService", "app.account.user_term_of_service_missing.app_error", err)
 	}
@@ -1276,14 +1277,14 @@ func (a *AppAccount) GetUserTermsOfService(userID string) (*account.UserTermsOfS
 	return u, nil
 }
 
-func (a *AppAccount) SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError {
+func (a *ServiceAccount) SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError {
 	if accepted {
 		userTermsOfService := &account.UserTermsOfService{
 			UserId:           userID,
 			TermsOfServiceId: termsOfServiceId,
 		}
 
-		if _, err := a.Srv().Store.UserTermOfService().Save(userTermsOfService); err != nil {
+		if _, err := a.srv.Store.UserTermOfService().Save(userTermsOfService); err != nil {
 			var appErr *model.AppError
 			switch {
 			case errors.As(err, &appErr):
@@ -1293,7 +1294,7 @@ func (a *AppAccount) SaveUserTermsOfService(userID, termsOfServiceId string, acc
 			}
 		}
 	} else {
-		if err := a.Srv().Store.UserTermOfService().Delete(userID, termsOfServiceId); err != nil {
+		if err := a.srv.Store.UserTermOfService().Delete(userID, termsOfServiceId); err != nil {
 			return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -1301,7 +1302,7 @@ func (a *AppAccount) SaveUserTermsOfService(userID, termsOfServiceId string, acc
 	return nil
 }
 
-func (a *AppAccount) UpdateUserActive(c *request.Context, userID string, active bool) *model.AppError {
+func (a *ServiceAccount) UpdateUserActive(c *request.Context, userID string, active bool) *model.AppError {
 	user, appErr := a.UserById(context.Background(), userID)
 	if appErr != nil {
 		return appErr
@@ -1315,8 +1316,8 @@ func (a *AppAccount) UpdateUserActive(c *request.Context, userID string, active 
 }
 
 // UserByOrderId returns an user who owns given order
-func (a *AppAccount) UserByOrderId(orderID string) (*account.User, *model.AppError) {
-	user, err := a.Srv().Store.User().UserByOrderID(orderID)
+func (a *ServiceAccount) UserByOrderId(orderID string) (*account.User, *model.AppError) {
+	user, err := a.srv.Store.User().UserByOrderID(orderID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("UserByOrderId", "app.account.error_finding_user_by_order_id.app_error", err)
 	}

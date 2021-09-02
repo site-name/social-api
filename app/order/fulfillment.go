@@ -10,8 +10,8 @@ import (
 )
 
 // FulfillmentsByOption returns a list of fulfillments be given options
-func (a *AppOrder) FulfillmentsByOption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, *model.AppError) {
-	fulfillments, err := a.Srv().Store.Fulfillment().FilterByoption(option)
+func (a *ServiceOrder) FulfillmentsByOption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, *model.AppError) {
+	fulfillments, err := a.srv.Store.Fulfillment().FilterByoption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentsByOption", "app.order.error_finding_fulfillments_by_option.app_error", err)
 	}
@@ -20,7 +20,7 @@ func (a *AppOrder) FulfillmentsByOption(option *order.FulfillmentFilterOption) (
 }
 
 // UpsertFulfillment performs some actions then save given fulfillment
-func (a *AppOrder) UpsertFulfillment(fulfillment *order.Fulfillment) (*order.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) UpsertFulfillment(fulfillment *order.Fulfillment) (*order.Fulfillment, *model.AppError) {
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
 		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(&order.FulfillmentFilterOption{
@@ -49,7 +49,7 @@ func (a *AppOrder) UpsertFulfillment(fulfillment *order.Fulfillment) (*order.Ful
 		}
 	}
 
-	fulfillment, err := a.Srv().Store.Fulfillment().Upsert(fulfillment)
+	fulfillment, err := a.srv.Store.Fulfillment().Upsert(fulfillment)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -65,8 +65,8 @@ func (a *AppOrder) UpsertFulfillment(fulfillment *order.Fulfillment) (*order.Ful
 
 // GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
 // If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-func (a *AppOrder) GetOrCreateFulfillment(option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
-	fulfillmentByOption, err := a.Srv().Store.Fulfillment().GetByOption(option)
+func (a *ServiceOrder) GetOrCreateFulfillment(option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
+	fulfillmentByOption, err := a.srv.Store.Fulfillment().GetByOption(option)
 	if err != nil {
 		if _, ok := err.(*store.ErrNotFound); ok { // fulfillment not found. Creating a new one
 			fulfillmentByOption = new(order.Fulfillment)

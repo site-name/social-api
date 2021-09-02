@@ -5,12 +5,16 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppInvoice struct {
-	app.AppIface
+type ServiceInvoice struct {
+	srv *app.Server
 }
 
-func init() {
-	app.RegisterInvoiceApp(func(a app.AppIface) sub_app_iface.InvoiceApp {
-		return &AppInvoice{a}
-	})
+type ServiceInvoiceConfig struct {
+	Server *app.Server
+}
+
+func NewServiceInvoice(config *ServiceInvoiceConfig) sub_app_iface.InvoiceService {
+	return &ServiceInvoice{
+		srv: config.Server,
+	}
 }

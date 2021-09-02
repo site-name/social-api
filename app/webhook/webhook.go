@@ -5,12 +5,16 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppWebhook struct {
-	app.AppIface
+type ServiceWebhook struct {
+	srv *app.Server
 }
 
-func init() {
-	app.RegisterWebhookApp(func(a app.AppIface) sub_app_iface.WebhookApp {
-		return &AppWebhook{a}
-	})
+type ServiceWebhookConfig struct {
+	Server *app.Server
+}
+
+func NewServiceWebhook(config *ServiceWebhookConfig) sub_app_iface.WebhookService {
+	return &ServiceWebhook{
+		srv: config.Server,
+	}
 }

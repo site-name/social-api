@@ -7,16 +7,19 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppCsv struct {
-	app.AppIface
+type ServiceCsv struct {
+	srv *app.Server
+
 	sync.WaitGroup
 	sync.Mutex
 }
 
-func init() {
-	app.RegisterCsvApp(func(a app.AppIface) sub_app_iface.CsvApp {
-		return &AppCsv{
-			AppIface: a,
-		}
-	})
+type ServiceCsvConfig struct {
+	Server *app.Server
+}
+
+func NewServiceCsv(config *ServiceCsvConfig) sub_app_iface.CsvService {
+	return &ServiceCsv{
+		srv: config.Server,
+	}
 }

@@ -24,7 +24,7 @@ func (r *orderResolver) getOrderCountryCode(order *gqlmodel.Order) (string, *mod
 	// remember to grant value to BillingAddressID, ShippingAddressID if available
 	// in graphql Order model initializations
 	addressID := order.BillingAddressID
-	requireShip, appErr := r.OrderApp().OrderShippingIsRequired(order.ID)
+	requireShip, appErr := r.Srv().OrderService().OrderShippingIsRequired(order.ID)
 	if appErr != nil {
 		return "", appErr
 	}
@@ -35,7 +35,7 @@ func (r *orderResolver) getOrderCountryCode(order *gqlmodel.Order) (string, *mod
 		return *r.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
-	address, appErr := r.AccountApp().AddressById(*addressID)
+	address, appErr := r.Srv().AccountService().AddressById(*addressID)
 	if appErr != nil {
 		return "", appErr
 	}
@@ -103,7 +103,7 @@ func (r *orderResolver) ValidateDraftOrder(order *gqlmodel.Order, orderCountryCo
 		return err, nil
 	}
 
-	requireShip, appErr := r.OrderApp().OrderShippingIsRequired(order.ID)
+	requireShip, appErr := r.Srv().OrderService().OrderShippingIsRequired(order.ID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -118,7 +118,7 @@ func (r *orderResolver) ValidateDraftOrder(order *gqlmodel.Order, orderCountryCo
 		}
 	}
 	// check total quantity
-	if totalQuantity, appErr := r.OrderApp().OrderTotalQuantity(order.ID); appErr != nil {
+	if totalQuantity, appErr := r.Srv().OrderService().OrderTotalQuantity(order.ID); appErr != nil {
 		return nil, appErr
 	} else if totalQuantity == 0 {
 		return newOrderError("graphql.order.quantity_empty.app_error", gqlmodel.OrderErrorCodeRequired), nil

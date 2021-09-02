@@ -7,13 +7,13 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 )
 
-func (a *AppCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo) *model.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo) *model.AppError {
 	productIDs := []string{}
 	for _, line := range lines {
 		productIDs = append(productIDs, line.Product.Id)
 	}
 
-	requireShipping, appErr := a.app.ProductApp().ProductsRequireShipping(productIDs)
+	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(productIDs)
 	if appErr != nil {
 		return appErr
 	}
@@ -40,7 +40,7 @@ func (a *AppCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo,
 	return nil
 }
 
-func (a *AppCheckout) CleanBillingAddress(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
 	if checkoutInfo.BillingAddress == nil {
 		return model.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -48,6 +48,6 @@ func (a *AppCheckout) CleanBillingAddress(checkoutInfo *checkout.CheckoutInfo) *
 	return nil
 }
 
-func (a *AppCheckout) CleanCheckoutPayment() {
+func (a *ServiceCheckout) CleanCheckoutPayment() {
 	panic("not implemented")
 }

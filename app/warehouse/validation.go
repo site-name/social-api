@@ -12,8 +12,8 @@ import (
 //	Every ShippingZone can be assigned to only one warehouse.
 //
 // If not there would be issue with automatically selecting stock for operation.
-func (a *AppWarehouse) ValidateWarehouseCount(shippingZones shipping.ShippingZones, instance *warehouse.WareHouse) (bool, *model.AppError) {
-	shippingZones, appErr := a.ShippingApp().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
+func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones shipping.ShippingZones, instance *warehouse.WareHouse) (bool, *model.AppError) {
+	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: shippingZones.IDs(),

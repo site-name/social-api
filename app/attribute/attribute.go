@@ -17,7 +17,7 @@ const (
 )
 
 func init() {
-	app.RegisterAttributeApp(func(a app.AppIface) sub_app_iface.AttributeApp {
+	app.RegisterAttributeApp(func(a app.AppIface) sub_app_iface.AttributeService {
 		return &AppAttribute{
 			app: a,
 		}

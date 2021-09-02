@@ -8,8 +8,8 @@ import (
 )
 
 // ProductMediasByOption returns a list of product medias that satisfy given option
-func (a *AppProduct) ProductMediasByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, *model.AppError) {
-	productMedias, err := a.Srv().Store.ProductMedia().FilterByOption(option)
+func (a *ServiceProduct) ProductMediasByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, *model.AppError) {
+	productMedias, err := a.srv.Store.ProductMedia().FilterByOption(option)
 	var (
 		errMsg     string
 		statusCode int

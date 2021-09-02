@@ -8,8 +8,8 @@ import (
 )
 
 // TransactionsByOption returns a list of transactions filtered based on given option
-func (a *AppPayment) TransactionsByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, *model.AppError) {
-	transactions, err := a.app.Srv().Store.PaymentTransaction().FilterByOption(option)
+func (a *ServicePayment) TransactionsByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, *model.AppError) {
+	transactions, err := a.srv.Store.PaymentTransaction().FilterByOption(option)
 
 	var statusCode int
 	var appErrMsg string
@@ -27,7 +27,7 @@ func (a *AppPayment) TransactionsByOption(option *payment.PaymentTransactionFilt
 	return nil, model.NewAppError("TransactionsByOption", "app.payment.error_finding_transactions_by_option.app_error", nil, appErrMsg, statusCode)
 }
 
-func (a *AppPayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
 		PaymentID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -42,7 +42,7 @@ func (a *AppPayment) GetAllPaymentTransactions(paymentID string) ([]*payment.Pay
 	return transactions, nil
 }
 
-func (a *AppPayment) GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError) {
 	trans, appErr := a.GetAllPaymentTransactions(paymentID)
 	if appErr != nil {
 		return nil, appErr
@@ -62,8 +62,8 @@ func (a *AppPayment) GetLastPaymentTransaction(paymentID string) (*payment.Payme
 	return lastTran, nil
 }
 
-func (a *AppPayment) SaveTransaction(tran *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
-	tran, err := a.app.Srv().Store.PaymentTransaction().Save(tran)
+func (a *ServicePayment) SaveTransaction(tran *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
+	tran, err := a.srv.Store.PaymentTransaction().Save(tran)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -74,8 +74,8 @@ func (a *AppPayment) SaveTransaction(tran *payment.PaymentTransaction) (*payment
 	return tran, nil
 }
 
-func (a *AppPayment) UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
-	tran, err := a.app.Srv().Store.PaymentTransaction().Update(transaction)
+func (a *ServicePayment) UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
+	tran, err := a.srv.Store.PaymentTransaction().Update(transaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

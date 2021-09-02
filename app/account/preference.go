@@ -8,16 +8,16 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppAccount) GetPreferencesForUser(userID string) (model.Preferences, *model.AppError) {
-	preferences, err := a.Srv().Store.Preference().GetAll(userID)
+func (a *ServiceAccount) GetPreferencesForUser(userID string) (model.Preferences, *model.AppError) {
+	preferences, err := a.srv.Store.Preference().GetAll(userID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetPreferencesForUser", "app.account.get_all.app_error", err)
 	}
 	return preferences, nil
 }
 
-func (a *AppAccount) GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError) {
-	preferences, err := a.Srv().Store.Preference().GetCategory(userID, category)
+func (a *ServiceAccount) GetPreferenceByCategoryForUser(userID string, category string) (model.Preferences, *model.AppError) {
+	preferences, err := a.srv.Store.Preference().GetCategory(userID, category)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetPreferenceByCategoryForUser", "app.account.get_category.app_error", err)
 	}
@@ -28,15 +28,15 @@ func (a *AppAccount) GetPreferenceByCategoryForUser(userID string, category stri
 	return preferences, nil
 }
 
-func (a *AppAccount) GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError) {
-	res, err := a.Srv().Store.Preference().Get(userID, category, preferenceName)
+func (a *ServiceAccount) GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError) {
+	res, err := a.srv.Store.Preference().Get(userID, category, preferenceName)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetPreferenceByCategoryAndNameForUser", "app.account.get_preference.app_error", err)
 	}
 	return res, nil
 }
 
-func (a *AppAccount) UpdatePreferences(userID string, preferences model.Preferences) *model.AppError {
+func (a *ServiceAccount) UpdatePreferences(userID string, preferences model.Preferences) *model.AppError {
 	for _, preference := range preferences {
 		if userID != preference.UserId {
 			return model.NewAppError("savePreferences", "api.preference.update_preferences.set.app_error", nil,
@@ -44,7 +44,7 @@ func (a *AppAccount) UpdatePreferences(userID string, preferences model.Preferen
 		}
 	}
 
-	if err := a.Srv().Store.Preference().Save(&preferences); err != nil {
+	if err := a.srv.Store.Preference().Save(&preferences); err != nil {
 		var appErr *model.AppError
 		switch {
 		case errors.As(err, &appErr):
@@ -54,7 +54,7 @@ func (a *AppAccount) UpdatePreferences(userID string, preferences model.Preferen
 		}
 	}
 
-	// if err := a.Srv().Store.Channel().UpdateSidebarChannelsByPreferences(&preferences); err != nil {
+	// if err := a.srv.Store.Channel().UpdateSidebarChannelsByPreferences(&preferences); err != nil {
 	// 	return model.NewAppError("UpdatePreferences", "api.preference.update_preferences.update_sidebar.app_error", nil, err.Error(), http.StatusInternalServerError)
 	// }
 
@@ -69,7 +69,7 @@ func (a *AppAccount) UpdatePreferences(userID string, preferences model.Preferen
 	return nil
 }
 
-func (a *AppAccount) DeletePreferences(userID string, preferences model.Preferences) *model.AppError {
+func (a *ServiceAccount) DeletePreferences(userID string, preferences model.Preferences) *model.AppError {
 	for _, preference := range preferences {
 		if userID != preference.UserId {
 			err := model.NewAppError(
@@ -83,12 +83,12 @@ func (a *AppAccount) DeletePreferences(userID string, preferences model.Preferen
 	}
 
 	for _, preference := range preferences {
-		if err := a.Srv().Store.Preference().Delete(userID, preference.Category, preference.Name); err != nil {
+		if err := a.srv.Store.Preference().Delete(userID, preference.Category, preference.Name); err != nil {
 			return model.NewAppError("DeletePreferences", "app.preference.delete.app_error", nil, err.Error(), http.StatusBadRequest)
 		}
 	}
 
-	// if err := a.Srv().Store.Channel().DeleteSidebarChannelsByPreferences(&preferences); err != nil {
+	// if err := a.srv.Store.Channel().DeleteSidebarChannelsByPreferences(&preferences); err != nil {
 	// 	return model.NewAppError("DeletePreferences", "api.preference.delete_preferences.update_sidebar.app_error", nil, err.Error(), http.StatusInternalServerError)
 	// }
 
