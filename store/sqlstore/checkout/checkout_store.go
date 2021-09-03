@@ -2,8 +2,8 @@ package checkout
 
 import (
 	"database/sql"
-	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -198,12 +198,12 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch checkout lines:
 	var (
-		checkoutLines     []*checkout.CheckoutLine
+		checkoutLines     checkout.CheckoutLines
 		productVariantIDs []string
 	)
 	_, err = tx.Select(
 		&checkoutLines,
-		"SELECT * FROM CheckoutLines WHERE CheckoutID = :CheckoutID ORDER BY :OrderBy",
+		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = :CheckoutID ORDER BY :OrderBy",
 		map[string]interface{}{
 			"CheckoutID": ckout.Token,
 			"OrderBy":    store.TableOrderingMap[store.CheckoutLineTableName],
@@ -212,142 +212,156 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", ckout.Token)
 	}
-	for _, line := range checkoutLines {
-		productVariantIDs = append(productVariantIDs, line.VariantID)
-	}
+	productVariantIDs = checkoutLines.VariantIDs()
 
 	// fetch product variants
 	var (
-		productVariants   []*product_and_discount.ProductVariant
-		productIDs        []string
+		productVariants []*product_and_discount.ProductVariant
+		productIDs      []string
+		// productVariantMap has keys are product variant ids
 		productVariantMap = map[string]*product_and_discount.ProductVariant{}
 	)
-	_, err = tx.Select(
-		&productVariants,
-		"SELECT * FROM ProductVariants WHERE Id IN :IDs ORDER BY :OrderBy",
-		map[string]interface{}{
-			"IDs":     productVariantIDs,
-			"OrderBy": store.TableOrderingMap[store.ProductVariantTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variants")
-	}
-	for _, variant := range productVariants {
-		productIDs = append(productIDs, variant.ProductID)
-		productVariantMap[variant.Id] = variant
+	// check if we can proceed:
+	if len(productVariantIDs) > 0 {
+		_, err = tx.Select(
+			&productVariants,
+			"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
+			map[string]interface{}{
+				"IDs":     productVariantIDs,
+				"OrderBy": store.TableOrderingMap[store.ProductVariantTableName],
+			},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find product variants")
+		}
+		for _, variant := range productVariants {
+			productIDs = append(productIDs, variant.ProductID)
+			productVariantMap[variant.Id] = variant
+		}
 	}
 
 	// fetch products
 	var (
 		products       []*product_and_discount.Product
 		productTypeIDs []string
-		productMap     = map[string]*product_and_discount.Product{}
+		// productMap has keys are product ids
+		productMap = map[string]*product_and_discount.Product{}
 	)
-	_, err = tx.Select(
-		&products,
-		"SELECT * FROM Products WHERE Id IN :IDs ORDER BY :OrderBy",
-		map[string]interface{}{
-			"IDs":     productIDs,
-			"OrderBy": store.TableOrderingMap[store.ProductTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds products")
-	}
-	for _, prd := range products {
-		productTypeIDs = append(productTypeIDs, prd.ProductTypeID)
-		productMap[prd.Id] = prd
+	// check if we can proceed:
+	if len(productIDs) > 0 {
+		_, err = tx.Select(
+			&products,
+			"SELECT * FROM "+store.ProductTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
+			map[string]interface{}{
+				"IDs":     productIDs,
+				"OrderBy": store.TableOrderingMap[store.ProductTableName],
+			},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to finds products")
+		}
+		for _, product := range products {
+			productTypeIDs = append(productTypeIDs, product.ProductTypeID)
+			productMap[product.Id] = product
+		}
 	}
 
 	// fetch product collections
 	var (
 		collectionXs []*struct {
-			PrefetchRelatedValProductID string
 			product_and_discount.Collection
+			PrefetchRelatedValProductID string
 		}
+		// collectionsByProducts has keys are product ids
 		collectionsByProducts = map[string][]*product_and_discount.Collection{}
 	)
-	_, err = tx.Select(
-		&collectionXs,
-		`SELECT 
-			ProductCollections.ProductID AS PrefetchRelatedValProductID, `+strings.Join(cs.Collection().ModelFields(), ", ")+`
-		FROM
-			Collections
-		INNER JOIN ProductCollections ON (
-			ProductCollections.CollectionID = Collections.Id
-		)
-		WHERE
-			ProductCollections.ProductID IN :IDs
-		ORDER BY :OrderBy`,
-		map[string]interface{}{
-			"IDs":     productIDs,
-			"OrderBy": store.TableOrderingMap[store.ProductCollectionTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find collections")
-	}
-	for _, collectionX := range collectionXs {
-		collectionsByProducts[collectionX.PrefetchRelatedValProductID] = append(collectionsByProducts[collectionX.PrefetchRelatedValProductID], &collectionX.Collection)
+	// check if we can proceed
+	if len(productIDs) > 0 {
+		query, args, _ := cs.GetQueryBuilder().
+			Select(cs.Collection().ModelFields()...).
+			From(store.ProductCollectionTableName).
+			Column(squirrel.Alias(squirrel.Expr("ProductCollections.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
+			InnerJoin(store.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
+			Where(squirrel.Eq{
+				"ProductCollections.ProductID": productIDs,
+			}).
+			OrderBy(store.TableOrderingMap[store.ProductCollectionTableName]).
+			ToSql()
+
+		_, err = tx.Select(&collectionXs, query, args...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find collections")
+		}
+		for _, collectionX := range collectionXs {
+			collectionsByProducts[collectionX.PrefetchRelatedValProductID] = append(collectionsByProducts[collectionX.PrefetchRelatedValProductID], &collectionX.Collection)
+		}
 	}
 
 	// fetch product variant channel listing
 	var (
-		productVariantChannelListings                 []*product_and_discount.ProductVariantChannelListing
-		channelIDs                                    []string
+		productVariantChannelListings []*product_and_discount.ProductVariantChannelListing
+		channelIDs                    []string
+		// productVariantChannelListingsByProductVariant has keys are product variant ids
 		productVariantChannelListingsByProductVariant = map[string][]*product_and_discount.ProductVariantChannelListing{}
 	)
-	_, err = tx.Select(
-		&productVariantChannelListings,
-		"SELECT * FROM ProductVariantChannelListings WHERE VariantID IN :IDs ORDER BY :OrderBy",
-		map[string]interface{}{
-			"IDs":     productVariantIDs,
-			"OrderBy": store.TableOrderingMap[store.ProductVariantChannelListingTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variant channel listing")
-	}
-	for _, listing := range productVariantChannelListings {
-		channelIDs = append(channelIDs, listing.ChannelID)
-		productVariantChannelListingsByProductVariant[listing.VariantID] = append(productVariantChannelListingsByProductVariant[listing.VariantID], listing)
+	// check if we can proceed:
+	if len(productVariantIDs) > 0 {
+		_, err = tx.Select(
+			&productVariantChannelListings,
+			"SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE VariantID IN :IDs ORDER BY :OrderBy",
+			map[string]interface{}{
+				"IDs":     productVariantIDs,
+				"OrderBy": store.TableOrderingMap[store.ProductVariantChannelListingTableName],
+			},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find product variant channel listing")
+		}
+		for _, listing := range productVariantChannelListings {
+			channelIDs = append(channelIDs, listing.ChannelID)
+			productVariantChannelListingsByProductVariant[listing.VariantID] = append(productVariantChannelListingsByProductVariant[listing.VariantID], listing)
+		}
 	}
 
 	// fetch channels
-	var (
-		channels []*channel.Channel
-	)
-	_, err = tx.Select(
-		&channels,
-		"SELECT * FROM Channels WHERE Id in :IDs ORDER BY :OrderBy",
-		map[string]interface{}{
-			"IDs":     channelIDs,
-			"OrderBy": store.TableOrderingMap[store.ChannelTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find channels")
+	var channels []*channel.Channel
+	// check if we can proceed
+	if len(channelIDs) > 0 {
+		_, err = tx.Select(
+			&channels,
+			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in :IDs ORDER BY :OrderBy",
+			map[string]interface{}{
+				"IDs":     channelIDs,
+				"OrderBy": store.TableOrderingMap[store.ChannelTableName],
+			},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find channels")
+		}
 	}
 
 	// fetch product types
 	var (
-		productTypes   []*product_and_discount.ProductType
+		productTypes []*product_and_discount.ProductType
+		// productTypeMap has keys are product type ids
 		productTypeMap = map[string]*product_and_discount.ProductType{}
 	)
-	_, err = tx.Select(
-		&productTypes,
-		"SELECT * FROM ProductTypes WHERE Id IN :IDs ORDER BY :OrderBy",
-		map[string]interface{}{
-			"IDs":     productTypeIDs,
-			"OrderBy": store.TableOrderingMap[store.ProductTypeTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to finds product types")
-	}
-	for _, prdType := range productTypes {
-		productTypeMap[prdType.Id] = prdType
+	// check if we can proceed
+	if len(productTypeIDs) > 0 {
+		_, err = tx.Select(
+			&productTypes,
+			"SELECT * FROM "+store.ProductTypeTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
+			map[string]interface{}{
+				"IDs":     productTypeIDs,
+				"OrderBy": store.TableOrderingMap[store.ProductTypeTableName],
+			},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to finds product types")
+		}
+		for _, productType := range productTypes {
+			productTypeMap[productType.Id] = productType
+		}
 	}
 
 	// commit transaction
@@ -359,31 +373,38 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	for _, checkoutLine := range checkoutLines {
 		productVariant := productVariantMap[checkoutLine.VariantID]
-		product := productMap[productVariant.ProductID]
-		productType := productTypeMap[product.ProductTypeID]
-		collections := collectionsByProducts[product.Id]
 
-		var variantChannelListing *product_and_discount.ProductVariantChannelListing
-		for _, listing := range productVariantChannelListingsByProductVariant[productVariant.Id] {
-			if listing.ChannelID == ckout.ChannelID {
-				variantChannelListing = listing
+		if productVariant != nil {
+			var variantChannelListing *product_and_discount.ProductVariantChannelListing
+			for _, listing := range productVariantChannelListingsByProductVariant[productVariant.Id] {
+				if listing.ChannelID == ckout.ChannelID {
+					variantChannelListing = listing
+				}
+			}
+
+			// FIXME: Temporary solution to pass type checks. Figure out how to handle case
+			// when variant channel listing is not defined for a checkout line.
+			if variantChannelListing == nil {
+				continue
+			}
+
+			product := productMap[productVariant.ProductID]
+			if product != nil {
+				productType := productTypeMap[product.ProductTypeID]
+				collections := collectionsByProducts[product.Id]
+
+				if productType != nil && collections != nil {
+					checkoutLineInfos = append(checkoutLineInfos, &checkout.CheckoutLineInfo{
+						Line:           *checkoutLine,
+						Variant:        productVariant,
+						ChannelListing: variantChannelListing,
+						Product:        *product,
+						ProductType:    *productType,
+						Collections:    collections,
+					})
+				}
 			}
 		}
-
-		// FIXME: Temporary solution to pass type checks. Figure out how to handle case
-		// when variant channel listing is not defined for a checkout line.
-		if variantChannelListing == nil {
-			continue
-		}
-
-		checkoutLineInfos = append(checkoutLineInfos, &checkout.CheckoutLineInfo{
-			Line:           *checkoutLine,
-			Variant:        productVariant,
-			ChannelListing: variantChannelListing,
-			Product:        *product,
-			ProductType:    *productType,
-			Collections:    collections,
-		})
 	}
 
 	return checkoutLineInfos, nil

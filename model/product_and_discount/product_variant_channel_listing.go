@@ -6,6 +6,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"golang.org/x/text/currency"
 )
 
@@ -19,6 +20,8 @@ type ProductVariantChannelListing struct {
 	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // can be NULL
 	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
 	CreateAt        int64            `json:"create_at"`
+
+	Channel *channel.Channel `json:"-" db:"-"`
 }
 
 // ProductVariantChannelListingFilterOption is used to build sql queries

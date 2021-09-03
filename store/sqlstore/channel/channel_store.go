@@ -74,19 +74,6 @@ func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 	return &channel, nil
 }
 
-func (cs *SqlChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
-	var channel channel.Channel
-	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Slug = :slug", map[string]interface{}{"slug": slug})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ChannelTableName, "slug="+slug)
-		}
-		return nil, errors.Wrapf(err, "Failed to get Channel with slug=%s", slug)
-	}
-
-	return &channel, nil
-}
-
 func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	var channels = []*channel.Channel{}
 	_, err := cs.GetReplica().Select(&channels, "SELECT * FROM "+store.ChannelTableName+" WHERE IsActive")
@@ -97,10 +84,9 @@ func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	return channels[0], nil
 }
 
-// FilterByOption returns a list of channels with given option
-func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
-		Select("*").
+		Select(cs.ModelFields()...).
 		From(store.ChannelTableName).
 		OrderBy(store.TableOrderingMap[store.ChannelTableName])
 
@@ -121,7 +107,33 @@ func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) (
 		query = query.Where(option.Currency.ToSquirrel("Currency"))
 	}
 
-	queryString, args, err := query.ToSql()
+	return query.ToSql()
+}
+
+// GetbyOption finds and returns 1 channel filtered using given options
+func (cs *SqlChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+
+	queryString, args, err := cs.commonQueryBuilder(option)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	}
+
+	var res channel.Channel
+	err = cs.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ChannelTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed to find channel by given options")
+	}
+
+	return &res, nil
+}
+
+// FilterByOption returns a list of channels with given option
+func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+
+	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}

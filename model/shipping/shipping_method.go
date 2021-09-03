@@ -48,6 +48,7 @@ type ShippingMethod struct {
 
 // ShippingMethodFilterOption is used for filtering shipping methods
 type ShippingMethodFilterOption struct {
+	Id                         *model.StringFilter
 	Type                       *model.StringFilter // type of shipping method
 	MinimumOrderWeight         *model.NumberFilter // minimum order weight of shipping method
 	MaximumOrderWeight         *model.NumberFilter // max number weight of shipping method

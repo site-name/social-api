@@ -33,6 +33,9 @@ type Product struct {
 	Rating               *float32               `json:"rating"`
 	model.ModelMetadata
 	seo.Seo
+
+	Collections Collections  `json:"-" db:"-"`
+	ProductType *ProductType `json:"-" db:"-"`
 }
 
 // ProductFilterOption is used to compose squirrel sql queries

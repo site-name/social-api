@@ -2134,22 +2134,6 @@ func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelStore.GetBySlug(slug)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetBySlug", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	start := timemodule.Now()
 
@@ -2162,6 +2146,22 @@ func (s *TimerLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, err
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetRandomActiveChannel", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelStore.GetbyOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetbyOption", success, elapsed)
 	}
 	return result, err
 }

@@ -2,6 +2,7 @@ package checkout
 
 import (
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // max lengths for checkout line table's fields
@@ -18,6 +19,32 @@ type CheckoutLine struct {
 	CheckoutID string `json:"checkout_id"`
 	VariantID  string `json:"variant_id"`
 	Quantity   int    `json:"quantity"`
+
+	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"`
+}
+
+type CheckoutLines []*CheckoutLine
+
+func (c CheckoutLines) VariantIDs() []string {
+	res := []string{}
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item.VariantID)
+		}
+	}
+
+	return res
+}
+
+func (c CheckoutLines) IDs() []string {
+	res := []string{}
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
 }
 
 func (c *CheckoutLine) ToJson() string {

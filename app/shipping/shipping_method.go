@@ -128,3 +128,13 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, c
 
 	return a.FilterShippingMethodsByPostalCodeRules(applicableShippingMethods, *oder.ShippingAddressID) // already checked ShippingAddressID == nil
 }
+
+// ShippingMethodByOption returns a shipping method with given options
+func (s *ServiceShipping) ShippingMethodByOption(option *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, *model.AppError) {
+	method, err := s.srv.Store.ShippingMethod().GetbyOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("ShippingMethodByOption", "app.shipping.error_finding_shipping_method_by_option.app_error", err)
+	}
+
+	return method, nil
+}

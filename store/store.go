@@ -419,6 +419,7 @@ type (
 		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethods finds all shipping methods with given conditions
+		GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error)                                                                                 // GetbyOption finds and returns a shipping method that satisfy given options
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		CreateIndexesIfNotExists()
@@ -812,9 +813,9 @@ type ChannelStore interface {
 	ModelFields() []string
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
-	GetBySlug(slug string) (*channel.Channel, error)                                // GetBySlug returns channel by given slug
 	GetRandomActiveChannel() (*channel.Channel, error)                              // GetRandomActiveChannel get an abitrary channel that is active
 	FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) // FilterByOption returns a list of channels with given option
+	GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
 }
 
 // app

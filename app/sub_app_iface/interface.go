@@ -278,6 +278,7 @@ type ChannelService interface {
 	ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError)                     // ValidateChannel finds a channel with given slug, then check if the channel is active. If no channel found or found but not active, return an error
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)                             // GetDefaultChannelSlugOrGraphqlError returns a default channel slug
 	ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError) // ChannelsByOption returns a list of channels by given options
+	ChannelByOption(option *channel.ChannelFilterOption) (*channel.Channel, *model.AppError)    // ChannelByOption returns a channel that satisfies given options
 }
 
 type WarehouseService interface {
@@ -403,6 +404,7 @@ type ShippingService interface {
 	DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError)                                                                                                                  // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 	GetCountriesWithoutShippingZone() ([]string, *model.AppError)                                                                                                                                                 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 	ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError)                                                                                                  // ShippingZonesByOption returns all shipping zones that satisfy given options
+	ShippingMethodByOption(option *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, *model.AppError)                                                                                               // ShippingMethodByOption returns a shipping method with given options
 }
 
 type WebhookService interface {
