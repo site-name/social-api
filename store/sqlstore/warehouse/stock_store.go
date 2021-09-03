@@ -157,7 +157,8 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
 		Where(warehouseShippingZoneQuery).
 		OrderBy(store.TableOrderingMap[store.StockTableName]).
-		RunWith(ss.GetReplica()).Query()
+		RunWith(ss.GetReplica()).
+		Query()
 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given channel slug")

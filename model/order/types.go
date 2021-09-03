@@ -62,3 +62,22 @@ type FulfillmentLineData struct {
 	Quantity int
 	Replace  bool // default false
 }
+
+// QuantityOrderLine
+type QuantityOrderLine struct {
+	Quantity  int
+	OrderLine *OrderLine
+}
+
+type QuantityOrderLines []*QuantityOrderLine
+
+func (q QuantityOrderLines) OrderLines() OrderLines {
+	res := []*OrderLine{}
+	for _, item := range q {
+		if item != nil {
+			res = append(res, item.OrderLine)
+		}
+	}
+
+	return res
+}

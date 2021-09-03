@@ -822,7 +822,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 			UserID:  savingUserID,
 			Type:    order.ORDER_EVENT_TYPE__REMOVED_PRODUCTS,
 			Parameters: &model.StringInterface{
-				"lines": linesPerQuantityToLineObjectList([]*QuantityOrderLine{
+				"lines": linesPerQuantityToLineObjectList([]*order.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff,
 						OrderLine: orderLine,
@@ -836,7 +836,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 			UserID:  savingUserID,
 			Type:    order.ORDER_EVENT_TYPE__ADDED_PRODUCTS,
 			Parameters: &model.StringInterface{
-				"lines": linesPerQuantityToLineObjectList([]*QuantityOrderLine{
+				"lines": linesPerQuantityToLineObjectList([]*order.QuantityOrderLine{
 					{
 						Quantity:  quantityDiff * -1,
 						OrderLine: orderLine,

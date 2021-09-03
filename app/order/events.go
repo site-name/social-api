@@ -40,15 +40,10 @@ func linePerQuantityToLineObject(quantity int, line *order.OrderLine) map[string
 	}
 }
 
-type QuantityOrderLine struct {
-	Quantity  int
-	OrderLine *order.OrderLine
-}
-
-func orderLinesToQuantityOrderLine(orderLines []*order.OrderLine) []*QuantityOrderLine {
-	var res []*QuantityOrderLine
+func orderLinesToQuantityOrderLine(orderLines []*order.OrderLine) []*order.QuantityOrderLine {
+	var res []*order.QuantityOrderLine
 	for _, line := range orderLines {
-		res = append(res, &QuantityOrderLine{
+		res = append(res, &order.QuantityOrderLine{
 			Quantity:  line.Quantity,
 			OrderLine: line,
 		})
@@ -57,7 +52,7 @@ func orderLinesToQuantityOrderLine(orderLines []*order.OrderLine) []*QuantityOrd
 	return res
 }
 
-func linesPerQuantityToLineObjectList(quantitiesPerOrderLine []*QuantityOrderLine) []map[string]interface{} {
+func linesPerQuantityToLineObjectList(quantitiesPerOrderLine []*order.QuantityOrderLine) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, item := range quantitiesPerOrderLine {
 		res = append(res, linePerQuantityToLineObject(item.Quantity, item.OrderLine))

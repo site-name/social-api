@@ -41,8 +41,20 @@ func (a *ServicePayment) PaymentByID(paymentID string, lockForUpdate bool) (*pay
 // PaymentsByOption returns all payments that satisfy given option
 func (a *ServicePayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError) {
 	payments, err := a.srv.Store.Payment().FilterByOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+
+	} else if len(payments) > 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", nil, errMessage, statusCode)
 	}
 
 	return payments, nil

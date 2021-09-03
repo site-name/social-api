@@ -38,6 +38,16 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interface{}, ord *order.Orde
 
 // CancelOrder Release allocation of unfulfilled order items.
 func (a *ServiceOrder) CancelOrder(ord *order.Order, user *account.User, manager interface{}) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	// FIXME
 	panic("not implemented")
 }
 
@@ -81,9 +91,16 @@ func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.O
 }
 
 // OrderFulfilled
-//
-// notifyCustomer default to true
 func (a *ServiceOrder) OrderFulfilled(fulfillments []*order.Fulfillment, user *account.User, fulfillmentLines []*order.FulfillmentLine, manager interface{}, notifyCustomer bool) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
 	panic("not implemented")
 }
 
@@ -109,6 +126,16 @@ func (a *ServiceOrder) FulfillmentTrackingUpdated(fulfillment *order.Fulfillment
 
 // CancelFulfillment Return products to corresponding stocks.
 func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *account.User, warehouse *warehouse.WareHouse, manager interface{}) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
 	panic("not implemented")
 }
 
@@ -119,23 +146,36 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *a
 //
 // externalReference can be empty
 func (a *ServiceOrder) MarkOrderAsPaid(ord *order.Order, requestUser *account.User, manager interface{}, externalReference string) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
 	panic("not implemented")
 }
 
 // CleanMarkOrderAsPaid Check if an order can be marked as paid.
-func (a *ServiceOrder) CleanMarkOrderAsPaid(ord *order.Order) *model.AppError {
+func (a *ServiceOrder) CleanMarkOrderAsPaid(ord *order.Order) (*payment.PaymentError, *model.AppError) {
 	paymentsForOrder, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID: ord.Id,
 	})
 	if appErr != nil {
-		appErr.Where = "CleanMarkOrderAsPaid"
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return nil, nil
 	}
 
 	if len(paymentsForOrder) > 0 {
-		return model.NewAppError("CleanMarkOrderAsPaid", "app.order.order_with_payments_can_not_be_marked_as_paid.app_error", nil, "", http.StatusNotAcceptable)
+		return payment.NewPaymentError("CleanMarkOrderAsPaid", "Orders with payments can not be manually marked as paid.", payment.INVALID), nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 // FulfillOrderLines Fulfill order line with given quantity
@@ -173,9 +213,7 @@ func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) 
 }
 
 // AutomaticallyFulfillDigitalLines
-// Fulfill all digital lines which have enabled automatic fulfillment setting.
-//
-// Send confirmation email afterward.
+// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
 func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manager interface{}) *model.AppError {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -281,8 +319,10 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manage
 		})
 	}
 
+	if err = transaction.Commit(); err != nil {
+		return model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
 	// TODO: fixme
-	// remember to commit order
 	panic("not implemented")
 }
 

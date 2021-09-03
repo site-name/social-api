@@ -71,6 +71,7 @@ type OrderLine struct {
 	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
 }
 
+// OrderLinePrefetchRelated
 type OrderLinePrefetchRelated struct {
 	VariantProduct        bool
 	VariantDigitalContent bool
