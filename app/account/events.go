@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 )
 
-func (a *AppAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError) {
+func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError) {
 	event := &account.CustomerEvent{
 		Type:       eventType,
 		Parameters: params,
@@ -15,7 +15,7 @@ func (a *AppAccount) CommonCustomerCreateEvent(userID *string, orderID *string, 
 		UserID:     userID,
 	}
 
-	event, err := a.Srv().Store.CustomerEvent().Save(event)
+	event, err := a.srv.Store.CustomerEvent().Save(event)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

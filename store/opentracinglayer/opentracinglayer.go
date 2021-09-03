@@ -2259,24 +2259,6 @@ func (s *OpenTracingLayerChannelStore) Get(id string) (*channel.Channel, error) 
 	return result, err
 }
 
-func (s *OpenTracingLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.GetBySlug")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ChannelStore.GetBySlug(slug)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.GetRandomActiveChannel")
@@ -2287,6 +2269,24 @@ func (s *OpenTracingLayerChannelStore) GetRandomActiveChannel() (*channel.Channe
 
 	defer span.Finish()
 	result, err := s.ChannelStore.GetRandomActiveChannel()
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.GetbyOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ChannelStore.GetbyOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

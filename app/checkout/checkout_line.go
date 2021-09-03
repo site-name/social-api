@@ -9,8 +9,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError) {
-	lines, err := a.app.Srv().Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
+func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError) {
+	lines, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CheckoutLinesByCheckoutID", "app.checkout.checkout_lines_by_checkout.app_error", err)
 	}
@@ -18,7 +18,7 @@ func (a *AppCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*che
 	return lines, nil
 }
 
-func (a *AppCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError {
 	// validate id list
 	for _, id := range checkoutLineIDs {
 		if !model.IsValidId(id) {
@@ -26,7 +26,7 @@ func (a *AppCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppEr
 		}
 	}
 
-	err := a.app.Srv().Store.CheckoutLine().DeleteLines(checkoutLineIDs)
+	err := a.srv.Store.CheckoutLine().DeleteLines(checkoutLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -34,8 +34,8 @@ func (a *AppCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppEr
 	return nil
 }
 
-func (a *AppCheckout) UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError) {
-	checkoutLine, err := a.app.Srv().SqlStore.CheckoutLine().Upsert(checkoutLine)
+func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError) {
+	checkoutLine, err := a.srv.SqlStore.CheckoutLine().Upsert(checkoutLine)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -46,8 +46,8 @@ func (a *AppCheckout) UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*
 	return checkoutLine, nil
 }
 
-func (a *AppCheckout) BulkCreateCheckoutLines(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, *model.AppError) {
-	checkoutLines, err := a.app.Srv().Store.CheckoutLine().BulkCreate(checkoutLines)
+func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, *model.AppError) {
+	checkoutLines, err := a.srv.Store.CheckoutLine().BulkCreate(checkoutLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -62,8 +62,8 @@ func (a *AppCheckout) BulkCreateCheckoutLines(checkoutLines []*checkout.Checkout
 	return checkoutLines, nil
 }
 
-func (a *AppCheckout) BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError {
-	err := a.app.Srv().Store.CheckoutLine().BulkUpdate(checkoutLines)
+func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError {
+	err := a.srv.Store.CheckoutLine().BulkUpdate(checkoutLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return appErr

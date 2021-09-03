@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package attribute
 
 import (
@@ -8,8 +12,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppAttribute struct {
-	app app.AppIface
+type ServiceAttribute struct {
+	srv *app.Server
 }
 
 const (
@@ -17,16 +21,16 @@ const (
 )
 
 func init() {
-	app.RegisterAttributeApp(func(a app.AppIface) sub_app_iface.AttributeApp {
-		return &AppAttribute{
-			app: a,
-		}
+	app.RegisterAttributeService(func(s *app.Server) (sub_app_iface.AttributeService, error) {
+		return &ServiceAttribute{
+			srv: s,
+		}, nil
 	})
 }
 
 // AttributeByID returns an attribute with given id
-func (a *AppAttribute) AttributeByID(id string) (*attribute.Attribute, *model.AppError) {
-	attr, err := a.app.Srv().Store.Attribute().Get(id)
+func (a *ServiceAttribute) AttributeByID(id string) (*attribute.Attribute, *model.AppError) {
+	attr, err := a.srv.Store.Attribute().Get(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AttributeByID", AttributeMissingErrID, err)
 	}
@@ -35,8 +39,8 @@ func (a *AppAttribute) AttributeByID(id string) (*attribute.Attribute, *model.Ap
 }
 
 // AttributeBySlug returns an attribute with given slug
-func (a *AppAttribute) AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) {
-	attr, err := a.app.Srv().Store.Attribute().GetBySlug(slug)
+func (a *ServiceAttribute) AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) {
+	attr, err := a.srv.Store.Attribute().GetBySlug(slug)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AttributeBySlug", AttributeMissingErrID, err)
 	}
@@ -44,8 +48,8 @@ func (a *AppAttribute) AttributeBySlug(slug string) (*attribute.Attribute, *mode
 }
 
 // AttributesByOption returns a list of attributes filtered using given options
-func (a *AppAttribute) AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError) {
-	attributes, err := a.app.Srv().Store.Attribute().FilterbyOption(option)
+func (a *ServiceAttribute) AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError) {
+	attributes, err := a.srv.Store.Attribute().FilterbyOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AttributesByOption", "app.attribute.error_finding_attributes_by_option.app_error", err)
 	}

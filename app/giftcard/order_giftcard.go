@@ -10,8 +10,8 @@ import (
 )
 
 // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
-func (a *AppGiftcard) CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) {
-	orderGiftCard, err := a.Srv().Store.GiftCardOrder().Save(orderGiftCard)
+func (a *ServiceGiftcard) CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) {
+	orderGiftCard, err := a.srv.Store.GiftCardOrder().Save(orderGiftCard)
 	if err != nil {
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			return nil, model.NewAppError("CreateOrderGiftcardRelation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderGiftcard"}, err.Error(), http.StatusBadRequest)

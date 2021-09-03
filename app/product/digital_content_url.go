@@ -9,8 +9,8 @@ import (
 )
 
 // UpsertDigitalContentURL create a digital content url then returns it
-func (a *AppProduct) UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError) {
-	contentURL, err := a.Srv().Store.DigitalContentUrl().Upsert(contentURL)
+func (a *ServiceProduct) UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError) {
+	contentURL, err := a.srv.Store.DigitalContentUrl().Upsert(contentURL)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

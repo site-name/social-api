@@ -23,7 +23,7 @@ import (
 )
 
 // GetOrderCountry Return country to which order will be shipped
-func (a *AppOrder) GetOrderCountry(ord *order.Order) (string, *model.AppError) {
+func (a *ServiceOrder) GetOrderCountry(ord *order.Order) (string, *model.AppError) {
 	addressID := ord.BillingAddressID
 	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
@@ -37,7 +37,7 @@ func (a *AppOrder) GetOrderCountry(ord *order.Order) (string, *model.AppError) {
 		return model.DEFAULT_COUNTRY, nil
 	}
 
-	address, appErr := a.AccountApp().AddressById(*addressID)
+	address, appErr := a.srv.AccountService().AddressById(*addressID)
 	if appErr != nil {
 		return "", appErr
 	}
@@ -48,7 +48,7 @@ func (a *AppOrder) GetOrderCountry(ord *order.Order) (string, *model.AppError) {
 // OrderLineNeedsAutomaticFulfillment Check if given line is digital and should be automatically fulfilled.
 //
 // NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
-func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine, shopDigitalSettings *shop.ShopDefaultDigitalContentSettings) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine, shopDigitalSettings *shop.ShopDefaultDigitalContentSettings) (bool, *model.AppError) {
 	if orderLine.VariantID == nil || orderLine.ProductVariant == nil {
 		return false, nil
 	}
@@ -57,7 +57,7 @@ func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine
 	var appErr *model.AppError
 
 	if digitalContent == nil {
-		digitalContent, appErr = a.ProductApp().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
 			ProductVariantID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: *orderLine.VariantID,
@@ -83,13 +83,13 @@ func (a *AppOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine
 }
 
 // OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-func (a *AppOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *model.AppError) {
 	// finding shop that hold this order:
-	ownerShopOfOrder, appErr := a.ShopApp().ShopById(ord.ShopID)
+	ownerShopOfOrder, appErr := a.srv.ShopService().ShopById(ord.ShopID)
 	if appErr != nil {
 		return false, appErr
 	}
-	shopDefaultDigitalContentSettings := a.ProductApp().GetDefaultDigitalContentSettings(ownerShopOfOrder)
+	shopDefaultDigitalContentSettings := a.srv.ProductService().GetDefaultDigitalContentSettings(ownerShopOfOrder)
 
 	digitalOrderLinesOfOrder, appErr := a.AllDigitalOrderLinesOfOrder(ord.Id)
 	if appErr != nil {
@@ -109,8 +109,8 @@ func (a *AppOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *mode
 	return false, nil
 }
 
-func (a *AppOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product_and_discount.OrderDiscount, *model.AppError) {
-	orderDiscountsOfOrder, appErr := a.DiscountApp().
+func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscountsOfOrder, appErr := a.srv.DiscountService().
 		OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
 			Type: &model.StringFilter{
 				StringOption: &model.StringOption{
@@ -130,10 +130,10 @@ func (a *AppOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *AppOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
 	var changedOrderDiscounts [][2]*product_and_discount.OrderDiscount
 
-	orderDiscounts, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: ord.Id,
@@ -184,7 +184,7 @@ func (a *AppOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, ord 
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *AppOrder) RecalculateOrder(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) RecalculateOrder(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 	appErr := a.RecalculateOrderPrices(transaction, ord, kwargs)
 	if appErr != nil {
 		return appErr
@@ -209,7 +209,7 @@ func (a *AppOrder) RecalculateOrder(transaction *gorp.Transaction, ord *order.Or
 }
 
 // ReCalculateOrderWeight
-func (a *AppOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
+func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -242,7 +242,7 @@ func (a *AppOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *or
 			a.wg.Add(1)
 
 			go func(anOrderLine *order.OrderLine) {
-				productVariantWeight, appErr := a.ProductApp().ProductVariantGetWeight(*anOrderLine.VariantID)
+				productVariantWeight, appErr := a.srv.ProductService().ProductVariantGetWeight(*anOrderLine.VariantID)
 				if appErr != nil {
 					setAppError(appErr)
 				} else {
@@ -277,11 +277,11 @@ func (a *AppOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *or
 	return appError
 }
 
-func (a *AppOrder) UpdateTaxesForOrderLine(line *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateTaxesForOrderLine(line *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
 	panic("not implt")
 }
 
-func (a *AppOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order.Order, manager interface{}, taxIncludeed bool) *model.AppError {
+func (a *ServiceOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order.Order, manager interface{}, taxIncludeed bool) *model.AppError {
 	for _, line := range lines {
 		appErr := a.UpdateTaxesForOrderLine(line, ord, manager, taxIncludeed)
 		if appErr != nil {
@@ -294,7 +294,7 @@ func (a *AppOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order
 }
 
 // UpdateOrderPrices Update prices in order with given discounts and proper taxes.
-func (a *AppOrder) UpdateOrderPrices(ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateOrderPrices(ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
 	panic("not implemented")
 }
 
@@ -336,7 +336,7 @@ func collectionsIntersection(
 }
 
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*order.OrderLine, *model.AppError) {
 	var (
 		discountedProducts    []*product_and_discount.Product
 		discountedCategories  []*product_and_discount.Category
@@ -356,7 +356,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	a.wg.Add(3)
 
 	go func() {
-		products, appErr := a.ProductApp().ProductsByVoucherID(voucher.Id)
+		products, appErr := a.srv.ProductService().ProductsByVoucherID(voucher.Id)
 		if appErr != nil {
 			setFirstAppErr(appErr)
 		} else {
@@ -366,7 +366,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	}()
 
 	go func() {
-		categories, appErr := a.ProductApp().CategoriesByOption(&product_and_discount.CategoryFilterOption{
+		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
 			VoucherIDs: []string{voucher.Id},
 		})
 		if appErr != nil {
@@ -384,7 +384,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 	}()
 
 	go func() {
-		collections, appErr := a.ProductApp().CollectionsByVoucherID(voucher.Id)
+		collections, appErr := a.srv.ProductService().CollectionsByVoucherID(voucher.Id)
 		if appErr != nil {
 			setFirstAppErr(appErr)
 		} else {
@@ -428,7 +428,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 				a.wg.Add(1)
 
 				go func(anOrderLine *order.OrderLine) {
-					orderLineProduct, appErr := a.ProductApp().ProductByOption(&product_and_discount.ProductFilterOption{
+					orderLineProduct, appErr := a.srv.ProductService().ProductByOption(&product_and_discount.ProductFilterOption{
 						ProductVariantID: &model.StringFilter{
 							StringOption: &model.StringOption{
 								Eq: *anOrderLine.VariantID,
@@ -438,13 +438,13 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 					if appErr != nil {
 						setAppError(appErr)
 					} else {
-						orderLineCategory, appErr := a.ProductApp().CategoryByOption(&product_and_discount.CategoryFilterOption{
+						orderLineCategory, appErr := a.srv.ProductService().CategoryByOption(&product_and_discount.CategoryFilterOption{
 							ProductIDs: []string{orderLineProduct.Id},
 						})
 						if appErr != nil {
 							setAppError(appErr)
 						} else {
-							orderLineCollections, appErr := a.ProductApp().CollectionsByProductID(orderLineProduct.Id)
+							orderLineCollections, appErr := a.srv.ProductService().CollectionsByProductID(orderLineProduct.Id)
 							if appErr != nil {
 								setAppError(appErr)
 							} else {
@@ -483,7 +483,7 @@ func (a *AppOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher *pr
 // Specific products are products, collections and categories.
 // Product must be assigned directly to the discounted category, assigning
 // product to child category won't work
-func (a *AppOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*goprices.Money, *model.AppError) {
+func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*goprices.Money, *model.AppError) {
 	discountedOrderLines, appErr := a.GetDiscountedLines(orderLines, voucher)
 	if appErr != nil {
 		return nil, appErr
@@ -505,7 +505,7 @@ func (a *AppOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.Orde
 // Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if notApplicableErr != nil {
 			notApplicableErr.Where = "GetVoucherDiscountForOrder"
@@ -523,7 +523,7 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interfac
 		return
 	}
 
-	notApplicableErr, appErr = a.DiscountApp().ValidateVoucherInOrder(ord)
+	notApplicableErr, appErr = a.srv.DiscountService().ValidateVoucherInOrder(ord)
 	if appErr != nil || notApplicableErr != nil {
 		return
 	}
@@ -539,22 +539,22 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interfac
 		return
 	}
 
-	orderSubTotal, appErr := a.PaymentApp().GetSubTotal(orderLines, ord.Currency)
+	orderSubTotal, appErr := a.srv.PaymentService().GetSubTotal(orderLines, ord.Currency)
 	if appErr != nil {
 		return
 	}
 
-	voucherOfDiscount, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
+	voucherOfDiscount, appErr := a.srv.DiscountService().VoucherById(*ord.VoucherID)
 	if appErr != nil {
 		return
 	}
 
 	if voucherOfDiscount.Type == product_and_discount.ENTIRE_ORDER {
-		result, appErr = a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
+		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, orderSubTotal.Gross, ord.ChannelID)
 		return
 	}
 	if voucherOfDiscount.Type == product_and_discount.SHIPPING {
-		result, appErr = a.DiscountApp().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
+		result, appErr = a.srv.DiscountService().GetDiscountAmountFor(voucherOfDiscount, ord.ShippingPrice, ord.ChannelID)
 		return
 	}
 	// otherwise: Type is product_and_discount.SPECIFIC_PRODUCT
@@ -567,11 +567,11 @@ func (a *AppOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interfac
 		return
 	}
 
-	result, appErr = a.DiscountApp().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
+	result, appErr = a.srv.DiscountService().GetProductsVoucherDiscount(voucherOfDiscount, prices, ord.ChannelID)
 	return
 }
 
-func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {
+func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -651,7 +651,7 @@ func (a *AppOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *AppOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
 		return appErr
@@ -686,14 +686,14 @@ func (a *AppOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.O
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (a *AppOrder) AddVariantToOrder(ord *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, manager interface{}, discounts interface{}, allocateStock bool) {
+func (a *ServiceOrder) AddVariantToOrder(ord *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, manager interface{}, discounts interface{}, allocateStock bool) {
 	panic("not implemented")
 }
 
 // Add gift card to order.
 //
 // Return a total price left after applying the gift cards.
-func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
+func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
 	// validate given arguments's currencies are valid
 	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)
 	if err != nil || !strings.EqualFold(giftCard.Currency, totalPriceLeft.Currency) {
@@ -706,7 +706,7 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 	// add new order-giftcard relationship
 	if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
 		// create new order-goftcard relation instance
-		_, appErr := a.GiftcardApp().CreateOrderGiftcardRelation(&giftcard.OrderGiftCard{
+		_, appErr := a.srv.GiftcardService().CreateOrderGiftcardRelation(&giftcard.OrderGiftCard{
 			GiftCardID: giftCard.Id,
 			OrderID:    ord.Id,
 		})
@@ -724,7 +724,7 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 
 		// update giftcard
 		giftCard.LastUsedOn = model.GetMillis()
-		_, appErr = a.GiftcardApp().UpsertGiftcard(giftCard)
+		_, appErr = a.srv.GiftcardService().UpsertGiftcard(giftCard)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -733,29 +733,29 @@ func (a *AppOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftC
 	return totalPriceLeft, nil
 }
 
-func (a *AppOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
 	}
 
-	orderLinesWithTrackInventory := a.WarehouseApp().GetOrderLinesWithTrackInventory([]*order.OrderLineData{lineInfo})
+	orderLinesWithTrackInventory := a.srv.WarehouseService().GetOrderLinesWithTrackInventory([]*order.OrderLineData{lineInfo})
 	if len(orderLinesWithTrackInventory) == 0 {
 		return nil, nil
 	}
 
 	if oldQuantity < newQuantity {
 		lineInfo.Quantity = newQuantity - oldQuantity
-		return a.WarehouseApp().IncreaseAllocations([]*order.OrderLineData{lineInfo}, channelSlug)
+		return a.srv.WarehouseService().IncreaseAllocations([]*order.OrderLineData{lineInfo}, channelSlug)
 	} else {
 		lineInfo.Quantity = oldQuantity - newQuantity
-		return a.WarehouseApp().DecreaseAllocations([]*order.OrderLineData{lineInfo})
+		return a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo})
 	}
 }
 
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *AppOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -808,7 +808,7 @@ func (a *AppOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID
 	return nil, nil
 }
 
-func (a *AppOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
+func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
 	var appErr *model.AppError
 
 	var savingUserID *string
@@ -850,14 +850,14 @@ func (a *AppOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine *or
 }
 
 // Delete an order line from an order.
-func (a *AppOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	if ord.IsUnconfirmed() {
-		insufficientErr, appErr := a.WarehouseApp().DecreaseAllocations([]*order.OrderLineData{lineInfo})
+		insufficientErr, appErr := a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo})
 		if appErr != nil || insufficientErr != nil {
 			return insufficientErr, appErr
 		}
@@ -867,13 +867,13 @@ func (a *AppOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehouse.In
 }
 
 // RestockOrderLines Return ordered products to corresponding stocks
-func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
+func (a *ServiceOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 	countryCode, appError := a.GetOrderCountry(ord)
 	if appError != nil {
 		return appError
 	}
 
-	warehouses, appError := a.WarehouseApp().WarehousesByOption(&warehouse.WarehouseFilterOption{
+	warehouses, appError := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
 		ShippingZonesCountries: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Like: countryCode,
@@ -918,7 +918,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 			a.wg.Add(1)
 
 			go func(anOrderLine *order.OrderLine) {
-				productVariant, appErr := a.ProductApp().ProductVariantById(*anOrderLine.VariantID)
+				productVariant, appErr := a.srv.ProductService().ProductVariantById(*anOrderLine.VariantID)
 				if appErr != nil {
 					setAppError(appErr)
 				} else {
@@ -935,7 +935,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 						}
 
 						if anOrderLine.QuantityFulfilled > 0 {
-							allocations, appErr := a.WarehouseApp().AllocationsByOption(nil, &warehouse.AllocationFilterOption{
+							allocations, appErr := a.srv.WarehouseService().AllocationsByOption(nil, &warehouse.AllocationFilterOption{
 								OrderLineID: &model.StringFilter{
 									StringOption: &model.StringOption{
 										Eq: anOrderLine.Id,
@@ -947,7 +947,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 							} else {
 								warehouse := defaultWarehouse
 								if len(allocations) > 0 {
-									warehouseOfOrderLine, appErr := a.WarehouseApp().WarehouseByStockID(allocations[0].StockID)
+									warehouseOfOrderLine, appErr := a.srv.WarehouseService().WarehouseByStockID(allocations[0].StockID)
 									if appErr != nil {
 										setAppError(appErr)
 									} else {
@@ -955,7 +955,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 									}
 								}
 
-								appErr = a.WarehouseApp().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
+								appErr = a.srv.WarehouseService().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
 								setAppError(appErr)
 							}
 						}
@@ -979,7 +979,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 	}
 
 	if len(dellocatingStockLines) > 0 {
-		_, appError = a.WarehouseApp().DeallocateStock(dellocatingStockLines)
+		_, appError = a.srv.WarehouseService().DeallocateStock(dellocatingStockLines)
 	}
 
 	return appError
@@ -988,7 +988,7 @@ func (a *AppOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *AppOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
+func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
 		FulfillmentID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -1021,7 +1021,7 @@ func (a *AppOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfil
 		}
 	}
 
-	productVariantsOfOrderLines, appErr := a.ProductApp().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+	productVariantsOfOrderLines, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: order.OrderLines(orderLinesOfFulfillmentLines).ProductVariantIDs(),
@@ -1050,7 +1050,7 @@ func (a *AppOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfil
 		variantOfOrderLine := mapOrderLine_productVariant[orderLineOfFulfillment.Id] // variantOfOrderLine can be nil
 
 		if variantOfOrderLine != nil && *variantOfOrderLine.TrackInventory {
-			appErr := a.WarehouseApp().IncreaseStock(orderLineOfFulfillment, warehouse, fulfillmentLine.Quantity, true)
+			appErr := a.srv.WarehouseService().IncreaseStock(orderLineOfFulfillment, warehouse, fulfillmentLine.Quantity, true)
 			if appErr != nil {
 				return appErr
 			}
@@ -1063,7 +1063,7 @@ func (a *AppOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfil
 	return appErr
 }
 
-func (a *AppOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError) {
 	taxedSum, _ := util.ZeroTaxedMoney(currencyCode)
 	if len(orders) == 0 {
 		return taxedSum, nil
@@ -1087,7 +1087,7 @@ func (a *AppOrder) SumOrderTotals(orders []*order.Order, currencyCode string) (*
 }
 
 // GetValidShippingMethodsForOrder returns a list of valid shipping methods for given order
-func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shipping.ShippingMethod, *model.AppError) {
 	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
 		return nil, appErr
@@ -1106,18 +1106,18 @@ func (a *AppOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shippin
 		return nil, appErr
 	}
 
-	shippingAddress, appErr := a.AccountApp().AddressById(*ord.ShippingAddressID)
+	shippingAddress, appErr := a.srv.AccountService().AddressById(*ord.ShippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return a.ShippingApp().ApplicableShippingMethodsForOrder(ord, ord.ChannelID, orderSubTotal.Gross, shippingAddress.Country, nil)
+	return a.srv.ShippingService().ApplicableShippingMethodsForOrder(ord, ord.ChannelID, orderSubTotal.Gross, shippingAddress.Country, nil)
 }
 
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *AppOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1152,7 +1152,7 @@ func (a *AppOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, or
 	}
 	ord.Total = newOrderTotal
 
-	_, appErr := a.DiscountApp().UpsertOrderDiscount(transaction, orderDiscountToUpdate)
+	_, appErr := a.srv.DiscountService().UpsertOrderDiscount(transaction, orderDiscountToUpdate)
 	if appErr != nil {
 		return appErr
 	}
@@ -1160,7 +1160,7 @@ func (a *AppOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, or
 }
 
 // ApplyDiscountToValue Calculate the price based on the provided values
-func (a *AppOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
+func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
 	// validate currency
 	money, _ := goprices.NewMoney(value, currency)
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
@@ -1176,14 +1176,14 @@ func (a *AppOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string
 }
 
 // GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
-func (a *AppOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError) {
+func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError) {
 	var (
 		prices  []*goprices.Money
 		voucher *product_and_discount.Voucher
 	)
 
 	if ord.VoucherID != nil {
-		voucher, appErr := a.DiscountApp().VoucherById(*ord.VoucherID)
+		voucher, appErr := a.srv.DiscountService().VoucherById(*ord.VoucherID)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, appErr
@@ -1216,10 +1216,10 @@ func (a *AppOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*gopric
 		return nil, model.NewAppError("GetProductsVoucherDiscountForOrder", "app.order.offer_only_valid_for_selected_items.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
-	return a.DiscountApp().GetProductsVoucherDiscount(voucher, prices, ord.ChannelID)
+	return a.srv.DiscountService().GetProductsVoucherDiscount(voucher, prices, ord.ChannelID)
 }
 
-func (a *AppOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
+func (a *ServiceOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
 	ordersByOption, appErr := a.FilterOrdersByOptions(&order.OrderFilterOption{
 		Status: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -1252,8 +1252,8 @@ func (a *AppOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
 }
 
 // GetTotalOrderDiscount Return total order discount assigned to the order
-func (a *AppOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *model.AppError) {
-	orderDiscountsOfOrder, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+func (a *ServiceOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *model.AppError) {
+	orderDiscountsOfOrder, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: ord.Id,
@@ -1283,8 +1283,8 @@ func (a *AppOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *mo
 }
 
 // GetOrderDiscounts Return all discounts applied to the order by staff user
-func (a *AppOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError) {
-	orderDiscounts, appErr := a.DiscountApp().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
+func (a *ServiceOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError) {
+	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
 		Type: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: product_and_discount.MANUAL,
@@ -1304,7 +1304,7 @@ func (a *AppOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *AppOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1319,7 +1319,7 @@ func (a *AppOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, or
 	sub, _ := ord.Total.Sub(grossTotal.(*goprices.Money))
 	newAmount := sub.Gross
 
-	newOrderDiscount, appErr := a.DiscountApp().UpsertOrderDiscount(transaction, &product_and_discount.OrderDiscount{
+	newOrderDiscount, appErr := a.srv.DiscountService().UpsertOrderDiscount(transaction, &product_and_discount.OrderDiscount{
 		ValueType: valueType,
 		Value:     value,
 		Reason:    &reason,
@@ -1344,8 +1344,8 @@ func (a *AppOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, or
 }
 
 // RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-func (a *AppOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
-	appErr := a.DiscountApp().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
+func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
+	appErr := a.srv.DiscountService().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
 	if appErr != nil {
 		return appErr
 	}
@@ -1370,7 +1370,7 @@ func (a *AppOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transaction, o
 // UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 //
 // `reason`, `valueType` can be empty. `value` can be nil
-func (a *AppOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *order.Order, reason string, valueType string, value *decimal.Decimal, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *order.Order, reason string, valueType string, value *decimal.Decimal, manager interface{}, taxIncluded bool) *model.AppError {
 
 	ord.PopulateNonDbFields()
 	orderLine.PopulateNonDbFields()
@@ -1422,7 +1422,7 @@ func (a *AppOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *o
 }
 
 // RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-func (a *AppOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
 	orderLine.PopulateNonDbFields()
 
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice

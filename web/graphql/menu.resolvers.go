@@ -87,7 +87,7 @@ func (r *mutationResolver) MenuItemMove(ctx context.Context, menu string, moves 
 func (r *queryResolver) Menu(ctx context.Context, channel *string, id *string, name *string, slug *string) (*gqlmodel.Menu, error) {
 	// var channelSlug string
 	// if channel == nil {
-	// 	ch, appErr := r.ChannelApp().GetDefaultActiveChannel()
+	// 	ch, appErr := r.ChannelService().GetDefaultActiveChannel()
 	// 	if appErr != nil {
 	// 		return nil, appErr
 	// 	}
@@ -102,11 +102,11 @@ func (r *queryResolver) Menu(ctx context.Context, channel *string, id *string, n
 	)
 
 	if id != nil && model.IsValidId(*id) {
-		mnu, appErr = r.MenuApp().MenuById(*id)
+		mnu, appErr = r.Srv().MenuService().MenuById(*id)
 	} else if name != nil {
-		mnu, appErr = r.MenuApp().MenuByName(*name)
+		mnu, appErr = r.Srv().MenuService().MenuByName(*name)
 	} else if slug != nil {
-		mnu, appErr = r.MenuApp().MenuBySlug(*slug)
+		mnu, appErr = r.Srv().MenuService().MenuBySlug(*slug)
 	}
 
 	if appErr != nil {

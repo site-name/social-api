@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"net/url"
 	"reflect"
 	"strconv"
 	"time"
@@ -338,16 +337,6 @@ func (a *App) PostActionCookieSecret() []byte {
 	return a.Srv().PostActionCookieSecret()
 }
 
-// GetCookieDomain
-func (a *App) GetCookieDomain() string {
-	if *a.Config().ServiceSettings.AllowCookiesForSubdomains {
-		if siteURL, err := url.Parse(*a.Config().ServiceSettings.SiteURL); err == nil {
-			return siteURL.Hostname()
-		}
-	}
-	return ""
-}
-
 // GetSiteURL returns service's siteurl configuration.
 func (a *App) GetSiteURL() string {
 	return *a.Config().ServiceSettings.SiteURL
@@ -362,7 +351,7 @@ func (a *App) ClientConfigWithComputed() map[string]string {
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountApp().IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.Srv().AccountService().IsFirstUserAccount())
 	// respCfg["MaxPostSize"] = strconv.Itoa(s.MaxPostSize())
 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
 	respCfg["InstallationDate"] = ""
@@ -382,7 +371,7 @@ func (a *App) LimitedClientConfigWithComputed() map[string]string {
 
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
-	respCfg["NoAccounts"] = strconv.FormatBool(a.AccountApp().IsFirstUserAccount())
+	respCfg["NoAccounts"] = strconv.FormatBool(a.Srv().AccountService().IsFirstUserAccount())
 
 	return respCfg
 }

@@ -16,28 +16,30 @@ import (
 
 type RecalculateOrderPricesFunc func(*gorp.Transaction, *order.Order, map[string]interface{}) *model.AppError
 
-type AppOrder struct {
-	app.AppIface
+type ServiceOrder struct {
+	srv   *app.Server
 	wg    sync.WaitGroup
 	mutex sync.Mutex
 
 	RecalculateOrderPrices RecalculateOrderPricesFunc // This attribute is initialized as this app is started
 }
 
-func init() {
-	app.RegisterOrderApp(func(a app.AppIface) sub_app_iface.OrderApp {
-		orderApp := &AppOrder{
-			AppIface: a,
-		}
+type ServiceOrderConfig struct {
+	Server *app.Server
+}
 
-		orderApp.RecalculateOrderPrices = orderApp.UpdateVoucherDiscount(orderApp.decoratedFunc)
+func NewServiceOrder(config *ServiceOrderConfig) sub_app_iface.OrderService {
+	sv := &ServiceOrder{
+		srv: config.Server,
+	}
 
-		return orderApp
-	})
+	sv.RecalculateOrderPrices = sv.UpdateVoucherDiscount(sv.decoratedFunc)
+
+	return sv
 }
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
-func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) RecalculateOrderPricesFunc {
+func (a *ServiceOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) RecalculateOrderPricesFunc {
 	return func(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})
@@ -75,7 +77,7 @@ func (a *AppOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Recalcu
 	}
 }
 
-func (a *AppOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
@@ -134,7 +136,7 @@ func (a *AppOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.Order
 		if assignedOrderDiscount != nil {
 			assignedOrderDiscount.AmountValue = voucherDiscount.Amount
 			assignedOrderDiscount.Value = voucherDiscount.Amount
-			_, appErr = a.DiscountApp().UpsertOrderDiscount(transaction, assignedOrderDiscount)
+			_, appErr = a.srv.DiscountService().UpsertOrderDiscount(transaction, assignedOrderDiscount)
 			if appErr != nil {
 				return appErr
 			}

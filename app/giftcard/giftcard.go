@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package giftcard
 
 import (
@@ -10,18 +14,20 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppGiftcard struct {
-	app.AppIface
+type ServiceGiftcard struct {
+	srv *app.Server
 }
 
 func init() {
-	app.RegisterGiftcardApp(func(a app.AppIface) sub_app_iface.GiftcardApp {
-		return &AppGiftcard{a}
+	app.RegisterGiftcardService(func(s *app.Server) (sub_app_iface.GiftcardService, error) {
+		return &ServiceGiftcard{
+			srv: s,
+		}, nil
 	})
 }
 
-func (a *AppGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError) {
-	gc, err := a.Srv().Store.GiftCard().GetById(id)
+func (a *ServiceGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError) {
+	gc, err := a.srv.Store.GiftCard().GetById(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetGiftCard", "app.giftcard.giftcard_missing.app_error", err)
 	}
@@ -29,13 +35,13 @@ func (a *AppGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.AppErro
 	return gc, nil
 }
 
-func (a *AppGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError) {
+func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError) {
 	// validate given checkout token is valid uuid
 	if !model.IsValidId(checkoutToken) {
 		return nil, model.NewAppError("GiftcardsByCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutToken"}, "", http.StatusBadRequest)
 	}
 
-	giftcardsOfCheckout, err := a.Srv().Store.GiftCard().GetAllByCheckout(checkoutToken)
+	giftcardsOfCheckout, err := a.srv.Store.GiftCard().GetAllByCheckout(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GiftcardsByCheckout", "app.giftcard.giftcards_by_checkout_missing.app_error", err)
 	}
@@ -43,7 +49,7 @@ func (a *AppGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.Gif
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
-func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
+func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -60,8 +66,8 @@ func (a *AppGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
-func (a *AppGiftcard) GiftcardsByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) {
-	giftcards, err := a.Srv().Store.GiftCard().FilterByOption(option)
+func (a *ServiceGiftcard) GiftcardsByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) {
+	giftcards, err := a.srv.Store.GiftCard().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GiftCardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", err)
 	}
@@ -70,8 +76,8 @@ func (a *AppGiftcard) GiftcardsByOption(option *giftcard.GiftCardFilterOption) (
 }
 
 // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
-func (a *AppGiftcard) UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
-	giftcard, err := a.Srv().Store.GiftCard().Upsert(giftcard)
+func (a *ServiceGiftcard) UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
+	giftcard, err := a.srv.Store.GiftCard().Upsert(giftcard)
 	if err != nil {
 		return nil, model.NewAppError("UpsertGiftcard", "app.giftcard.error_updating_giftcard.app_error", nil, err.Error(), http.StatusExpectationFailed)
 	}

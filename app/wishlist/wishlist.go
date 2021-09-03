@@ -11,19 +11,21 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppWishlist struct {
-	app.AppIface
+type ServiceWishlist struct {
+	srv *app.Server
 }
 
 func init() {
-	app.RegisterWishlistApp(func(a app.AppIface) sub_app_iface.WishlistApp {
-		return &AppWishlist{a}
+	app.RegisterWishlistService(func(s *app.Server) (sub_app_iface.WishlistService, error) {
+		return &ServiceWishlist{
+			srv: s,
+		}, nil
 	})
 }
 
 // UpsertWishlist inserts a new wishlist instance into database with given userID
-func (a *AppWishlist) UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError) {
-	newWl, err := a.Srv().Store.Wishlist().Upsert(wishList)
+func (a *ServiceWishlist) UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError) {
+	newWl, err := a.srv.Store.Wishlist().Upsert(wishList)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -40,8 +42,8 @@ func (a *AppWishlist) UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wis
 }
 
 // WishlistByOption returns 1 wishlist filtered by given option
-func (a *AppWishlist) WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError) {
-	wl, err := a.Srv().Store.Wishlist().GetByOption(option)
+func (a *ServiceWishlist) WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError) {
+	wl, err := a.srv.Store.Wishlist().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("WishlistByOption", "app.wishlist.error_finding_wishlist.app_error", err)
 	}
@@ -50,7 +52,7 @@ func (a *AppWishlist) WishlistByOption(option *wishlist.WishlistFilterOption) (*
 }
 
 // SetUser assigns given user to given wishlist
-func (a *AppWishlist) SetUserForWishlist(wishList *wishlist.Wishlist, userID string) *model.AppError {
+func (a *ServiceWishlist) SetUserForWishlist(wishList *wishlist.Wishlist, userID string) *model.AppError {
 	// validate given user is valid
 	if !model.IsValidId(userID) || wishList.UserID == &userID {
 		return model.NewAppError("SetUserForWishlist", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "userID"}, "", http.StatusBadRequest)
@@ -62,8 +64,8 @@ func (a *AppWishlist) SetUserForWishlist(wishList *wishlist.Wishlist, userID str
 }
 
 // GetAllVariants returns all product variants in child wishlist items of given wishlist
-func (a *AppWishlist) GetAllVariants(wishlistID string) ([]*product_and_discount.ProductVariant, *model.AppError) {
-	productVariants, appErr := a.ProductApp().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+func (a *ServiceWishlist) GetAllVariants(wishlistID string) ([]*product_and_discount.ProductVariant, *model.AppError) {
+	productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
 		WishlistID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: wishlistID,
@@ -79,7 +81,7 @@ func (a *AppWishlist) GetAllVariants(wishlistID string) ([]*product_and_discount
 }
 
 // AddProduct add or create a wishlist item that belongs to given wishlist and contains given product
-func (a *AppWishlist) AddProduct(wishlistID string, productID string) (*wishlist.WishlistItem, *model.AppError) {
+func (a *ServiceWishlist) AddProduct(wishlistID string, productID string) (*wishlist.WishlistItem, *model.AppError) {
 	item, appErr := a.GetOrCreateWishlistItem(&wishlist.WishlistItem{
 		WishlistID: wishlistID,
 		ProductID:  productID,
@@ -89,7 +91,7 @@ func (a *AppWishlist) AddProduct(wishlistID string, productID string) (*wishlist
 }
 
 // RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
-func (a *AppWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
+func (a *ServiceWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
 	_, appErr := a.DeleteWishlistItemsByOption(nil, &wishlist.WishlistItemFilterOption{
 		WishlistID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -107,7 +109,7 @@ func (a *AppWishlist) RemoveProduct(wishlistID string, productID string) *model.
 }
 
 // AddProductVariant add given product variant into given wishlist
-func (a *AppWishlist) AddProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) (*wishlist.WishlistItem, *model.AppError) {
+func (a *ServiceWishlist) AddProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) (*wishlist.WishlistItem, *model.AppError) {
 	item, appErr := a.AddProduct(wishlistID, productVariant.ProductID)
 	if appErr != nil {
 		return nil, appErr
@@ -125,7 +127,7 @@ func (a *AppWishlist) AddProductVariant(wishlistID string, productVariant *produ
 }
 
 // RemoveProductVariant remove a wishlist item from given wishlist
-func (a *AppWishlist) RemoveProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) *model.AppError {
+func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) *model.AppError {
 	wishlistItem, appErr := a.WishlistItemByOption(&wishlist.WishlistItemFilterOption{
 		WishlistID: &model.StringFilter{
 			StringOption: &model.StringOption{

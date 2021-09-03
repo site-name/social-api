@@ -9,9 +9,7 @@ import (
 
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -33,38 +31,22 @@ type OpenTracingAppLayer struct {
 	log              *slog.Logger
 	notificationsLog *slog.Logger
 
-	cluster      einterfaces.ClusterInterface
-	compliance   einterfaces.ComplianceInterface
-	searchEngine *searchengine.Broker
-	ldap         einterfaces.LdapInterface
-	metrics      einterfaces.MetricsInterface
-	httpService  httpservice.HTTPService
-	imageProxy   *imageproxy.ImageProxy
-	timezones    *timezones.Timezones
-	// notification     einterfaces.NotificationInterface
-	saml einterfaces.SamlInterface
-	// messageExport    einterfaces.MessageExportInterface
+	cluster          einterfaces.ClusterInterface
+	compliance       einterfaces.ComplianceInterface
+	searchEngine     *searchengine.Broker
+	ldap             einterfaces.LdapInterface
+	metrics          einterfaces.MetricsInterface
+	httpService      httpservice.HTTPService
+	imageProxy       *imageproxy.ImageProxy
+	timezones        *timezones.Timezones
+	saml             einterfaces.SamlInterface
 	dataRetention    einterfaces.DataRetentionInterface
 	accountMigration einterfaces.AccountMigrationInterface
 
+	// messageExport    einterfaces.MessageExportInterface
+	// notification     einterfaces.NotificationInterface
+
 	ctx context.Context
-}
-
-func (a *OpenTracingAppLayer) AccountApp() sub_app_iface.AccountApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AccountApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.AccountApp()
-
-	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) AddConfigListener(listener func(*model.Config, *model.Config)) string {
@@ -97,79 +79,6 @@ func (a *OpenTracingAppLayer) AsymmetricSigningKey() *ecdsa.PrivateKey {
 
 	defer span.Finish()
 	resultVar0 := a.app.AsymmetricSigningKey()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) AttributeApp() sub_app_iface.AttributeApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.AttributeApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.AttributeApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) ChannelApp() sub_app_iface.ChannelApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ChannelApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.ChannelApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) CheckRolesExist(roleNames []string) *model.AppError {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckRolesExist")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.CheckRolesExist(roleNames)
-
-	if resultVar0 != nil {
-		span.LogFields(spanlog.Error(resultVar0))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) CheckoutApp() sub_app_iface.CheckoutApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CheckoutApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.CheckoutApp()
 
 	return resultVar0
 }
@@ -242,45 +151,6 @@ func (a *OpenTracingAppLayer) Config() *model.Config {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) CreateRole(role *model.Role) (*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CreateRole")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.CreateRole(role)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) CsvApp() sub_app_iface.CsvApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.CsvApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.CsvApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) DBHealthCheckDelete() error {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DBHealthCheckDelete")
@@ -321,23 +191,6 @@ func (a *OpenTracingAppLayer) DBHealthCheckWrite() error {
 		span.LogFields(spanlog.Error(resultVar0))
 		ext.Error.Set(span, true)
 	}
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) DiscountApp() sub_app_iface.DiscountApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.DiscountApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.DiscountApp()
 
 	return resultVar0
 }
@@ -426,28 +279,6 @@ func (a *OpenTracingAppLayer) EnvironmentConfig(filter func(reflect.StructField)
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ExchangeCurrency")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.ExchangeCurrency(base, toCurrency, conversionRate)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
 func (a *OpenTracingAppLayer) ExportPermissions(w io.Writer) error {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ExportPermissions")
@@ -466,23 +297,6 @@ func (a *OpenTracingAppLayer) ExportPermissions(w io.Writer) error {
 		span.LogFields(spanlog.Error(resultVar0))
 		ext.Error.Set(span, true)
 	}
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) FileApp() sub_app_iface.FileApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.FileApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.FileApp()
 
 	return resultVar0
 }
@@ -570,45 +384,6 @@ func (a *OpenTracingAppLayer) GetConfigFile(name string) ([]byte, error) {
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetConversionRate(fromCurrency string, toCurrency string) (*decimal.Decimal, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetConversionRate")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.GetConversionRate(fromCurrency, toCurrency)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) GetCookieDomain() string {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetCookieDomain")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.GetCookieDomain()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) GetEnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{} {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetEnvironmentConfig")
@@ -624,72 +399,6 @@ func (a *OpenTracingAppLayer) GetEnvironmentConfig(filter func(reflect.StructFie
 	resultVar0 := a.app.GetEnvironmentConfig(filter)
 
 	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) GetRole(id string) (*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetRole")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.GetRole(id)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetRoleByName")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.GetRoleByName(ctx, name)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) GetRolesByNames(names []string) ([]*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetRolesByNames")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.GetRolesByNames(names)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
 }
 
 func (a *OpenTracingAppLayer) GetSanitizedConfig() *model.Config {
@@ -770,23 +479,6 @@ func (a *OpenTracingAppLayer) GetWarnMetricsStatus() (map[string]*model.WarnMetr
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GiftcardApp() sub_app_iface.GiftcardApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GiftcardApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.GiftcardApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) Handle404(w http.ResponseWriter, r *http.Request) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.Handle404")
@@ -830,23 +522,6 @@ func (a *OpenTracingAppLayer) InvalidateCacheForUser(userID string) {
 
 	defer span.Finish()
 	a.app.InvalidateCacheForUser(userID)
-}
-
-func (a *OpenTracingAppLayer) InvoiceApp() sub_app_iface.InvoiceApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.InvoiceApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.InvoiceApp()
-
-	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) IsLeader() bool {
@@ -947,23 +622,6 @@ func (a *OpenTracingAppLayer) MakeAuditRecord(event string, initialStatus string
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) MenuApp() sub_app_iface.MenuApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.MenuApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.MenuApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) NewClusterDiscoveryService() *app.ClusterDiscoveryService {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.NewClusterDiscoveryService")
@@ -1003,23 +661,6 @@ func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sen
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) OrderApp() sub_app_iface.OrderApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.OrderApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.OrderApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) OriginChecker() func(*http.Request) bool {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.OriginChecker")
@@ -1037,79 +678,6 @@ func (a *OpenTracingAppLayer) OriginChecker() func(*http.Request) bool {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) PageApp() sub_app_iface.PageApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PageApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.PageApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) PatchRole(role *model.Role, patch *model.RolePatch) (*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PatchRole")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.PatchRole(role, patch)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) PaymentApp() sub_app_iface.PaymentApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PaymentApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.PaymentApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) PluginApp() sub_app_iface.PluginApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PluginApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.PluginApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.PostActionCookieSecret")
@@ -1123,23 +691,6 @@ func (a *OpenTracingAppLayer) PostActionCookieSecret() []byte {
 
 	defer span.Finish()
 	resultVar0 := a.app.PostActionCookieSecret()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) ProductApp() sub_app_iface.ProductApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ProductApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.ProductApp()
 
 	return resultVar0
 }
@@ -1257,23 +808,6 @@ func (a *OpenTracingAppLayer) SearchEngine() *searchengine.Broker {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SeoApp() sub_app_iface.SeoApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SeoApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.SeoApp()
-
-	return resultVar0
-}
-
 func (a *OpenTracingAppLayer) SetPhase2PermissionsMigrationStatus(isComplete bool) error {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SetPhase2PermissionsMigrationStatus")
@@ -1296,62 +830,6 @@ func (a *OpenTracingAppLayer) SetPhase2PermissionsMigrationStatus(isComplete boo
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) ShippingApp() sub_app_iface.ShippingApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ShippingApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.ShippingApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) ShopApp() sub_app_iface.ShopApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ShopApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.ShopApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ToLocalCurrency")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.ToLocalCurrency(price, currency)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
 func (a *OpenTracingAppLayer) UpdateConfig(f func(*model.Config)) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateConfig")
@@ -1365,79 +843,6 @@ func (a *OpenTracingAppLayer) UpdateConfig(f func(*model.Config)) {
 
 	defer span.Finish()
 	a.app.UpdateConfig(f)
-}
-
-func (a *OpenTracingAppLayer) UpdateRole(role *model.Role) (*model.Role, *model.AppError) {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.UpdateRole")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0, resultVar1 := a.app.UpdateRole(role)
-
-	if resultVar1 != nil {
-		span.LogFields(spanlog.Error(resultVar1))
-		ext.Error.Set(span, true)
-	}
-
-	return resultVar0, resultVar1
-}
-
-func (a *OpenTracingAppLayer) WarehouseApp() sub_app_iface.WarehouseApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WarehouseApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.WarehouseApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) WebhookApp() sub_app_iface.WebhookApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WebhookApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.WebhookApp()
-
-	return resultVar0
-}
-
-func (a *OpenTracingAppLayer) WishlistApp() sub_app_iface.WishlistApp {
-	origCtx := a.ctx
-	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.WishlistApp")
-
-	a.ctx = newCtx
-	a.app.Srv().Store.SetContext(newCtx)
-	defer func() {
-		a.app.Srv().Store.SetContext(origCtx)
-		a.ctx = origCtx
-	}()
-
-	defer span.Finish()
-	resultVar0 := a.app.WishlistApp()
-
-	return resultVar0
 }
 
 func NewOpenTracingAppLayer(childApp app.AppIface, ctx context.Context) *OpenTracingAppLayer {
@@ -1455,13 +860,14 @@ func NewOpenTracingAppLayer(childApp app.AppIface, ctx context.Context) *OpenTra
 	newApp.dataRetention = childApp.DataRetention()
 	newApp.searchEngine = childApp.SearchEngine()
 	newApp.ldap = childApp.Ldap()
-	// newApp.messageExport = childApp.MessageExport()
 	newApp.metrics = childApp.Metrics()
-	// newApp.notification = childApp.Notification()
 	newApp.saml = childApp.Saml()
 	newApp.httpService = childApp.HTTPService()
 	newApp.imageProxy = childApp.ImageProxy()
 	newApp.timezones = childApp.Timezones()
+
+	// newApp.notification = childApp.Notification()
+	// newApp.messageExport = childApp.MessageExport()
 
 	return &newApp
 }
@@ -1490,14 +896,13 @@ func (a *OpenTracingAppLayer) DataRetention() einterfaces.DataRetentionInterface
 func (a *OpenTracingAppLayer) Ldap() einterfaces.LdapInterface {
 	return a.ldap
 }
-
-// func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
-// 	return a.messageExport
-// }
 func (a *OpenTracingAppLayer) Metrics() einterfaces.MetricsInterface {
 	return a.metrics
 }
 
+// func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
+// 	return a.messageExport
+// }
 // func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
 // 	return a.notification
 // }

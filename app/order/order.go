@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package order
 
 import (
@@ -17,14 +21,14 @@ import (
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *AppOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError) {
 	var (
 		err error
 	)
 	if ord.Id == "" {
-		ord, err = a.Srv().Store.Order().Save(transaction, ord)
+		ord, err = a.srv.Store.Order().Save(transaction, ord)
 	} else {
-		ord, err = a.Srv().Store.Order().Update(transaction, ord)
+		ord, err = a.srv.Store.Order().Update(transaction, ord)
 	}
 
 	if err != nil {
@@ -42,8 +46,8 @@ func (a *AppOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) 
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *AppOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError) {
-	orders, err := a.Srv().Store.Order().BulkUpsert(orders)
+func (a *ServiceOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError) {
+	orders, err := a.srv.Store.Order().BulkUpsert(orders)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
 			return nil, appErr
@@ -60,8 +64,8 @@ func (a *AppOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *mod
 }
 
 // FilterOrdersByOptions is common method for filtering orders by given option
-func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
-	orders, err := a.Srv().Store.Order().FilterByOption(option)
+func (a *ServiceOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
+	orders, err := a.srv.Store.Order().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", err)
 	}
@@ -70,8 +74,8 @@ func (a *AppOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*or
 }
 
 // OrderById retuns an order with given id
-func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
-	order, err := a.Srv().Store.Order().Get(id)
+func (a *ServiceOrder) OrderById(id string) (*order.Order, *model.AppError) {
+	order, err := a.srv.Store.Order().Get(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("OrderById", "app.order.order_missing.app_error", err)
 	}
@@ -80,7 +84,7 @@ func (a *AppOrder) OrderById(id string) (*order.Order, *model.AppError) {
 }
 
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
-func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -103,7 +107,7 @@ func (a *AppOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppErro
 }
 
 // OrderTotalQuantity return total quantity of given order
-func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
+func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -125,12 +129,12 @@ func (a *AppOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *AppOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError {
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError {
 	order, appErr := a.OrderById(orderID)
 	if appErr != nil {
 		return appErr
 	}
-	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID: orderID,
 	})
 	if appErr != nil {
@@ -155,8 +159,8 @@ func (a *AppOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID s
 }
 
 // OrderIsPreAuthorized checks if order is pre-authorized
-func (a *AppOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID:  orderID,
 		IsActive: model.NewBool(true),
 		TransactionsKind: &model.StringFilter{
@@ -175,8 +179,8 @@ func (a *AppOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) 
 }
 
 // OrderIsCaptured checks if given order is captured
-func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID:  orderID,
 		IsActive: model.NewBool(true),
 		TransactionsKind: &model.StringFilter{
@@ -195,7 +199,7 @@ func (a *AppOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 }
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-func (a *AppOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
 		OrderID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -208,12 +212,12 @@ func (a *AppOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model
 		return nil, appErr
 	}
 
-	return a.PaymentApp().GetSubTotal(lines, ord.Currency)
+	return a.srv.PaymentService().GetSubTotal(lines, ord.Currency)
 }
 
 // OrderCanCalcel checks if given order can be canceled
-func (a *AppOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
-	fulfillments, err := a.Srv().Store.Fulfillment().
+func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
+	fulfillments, err := a.srv.Store.Fulfillment().
 		FilterByoption(&order.FulfillmentFilterOption{
 			OrderID: &model.StringFilter{
 				StringOption: &model.StringOption{
@@ -242,11 +246,11 @@ func (a *AppOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
 }
 
 // OrderCanCapture
-func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var err *model.AppError
 
 	if payment == nil {
-		payment, err = a.PaymentApp().GetLastOrderPayment(ord.Id)
+		payment, err = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 		if err != nil {
 			return false, err
 		}
@@ -262,10 +266,10 @@ func (a *AppOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (
 }
 
 // OrderCanVoid
-func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if payment == nil {
-		payment, appErr = a.PaymentApp().GetLastOrderPayment(ord.Id)
+		payment, appErr = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	}
 
 	if appErr != nil {
@@ -276,14 +280,14 @@ func (a *AppOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (boo
 		return false, nil
 	}
 
-	return a.PaymentApp().PaymentCanVoid(payment)
+	return a.srv.PaymentService().PaymentCanVoid(payment)
 }
 
 // OrderCanRefund checks if order can refund
-func (a *AppOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if payment == nil {
-		payment, appErr = a.PaymentApp().GetLastOrderPayment(ord.Id)
+		payment, appErr = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	}
 
 	if appErr != nil {
@@ -302,10 +306,10 @@ func (a *AppOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment) (b
 }
 
 // CanMarkOrderAsPaid checks if given order can be marked as paid.
-func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.PaymentApp().PaymentsByOption(&payment.PaymentFilterOption{
+		payments, appErr = a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 			OrderID: ord.Id,
 		})
 	}
@@ -318,13 +322,13 @@ func (a *AppOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Paym
 }
 
 // OrderTotalAuthorized returns order's total authorized amount
-func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
-	lastPayment, appErr := a.PaymentApp().GetLastOrderPayment(ord.Id)
+func (a *ServiceOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
+	lastPayment, appErr := a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
 	if lastPayment != nil && *lastPayment.IsActive {
-		return a.PaymentApp().PaymentGetAuthorizedAmount(lastPayment)
+		return a.srv.PaymentService().PaymentGetAuthorizedAmount(lastPayment)
 	}
 
 	zeroMoney, _ := util.ZeroMoney(ord.Currency)
@@ -332,7 +336,7 @@ func (a *AppOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *mod
 }
 
 // GetOrderCountryCode is helper function, returns contry code of given order
-func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
+func (a *ServiceOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
 	addressID := ord.BillingAddressID
 	requireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
@@ -343,10 +347,10 @@ func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppErro
 		addressID = ord.ShippingAddressID
 	}
 	if addressID == nil {
-		return *a.Config().LocalizationSettings.DefaultCountryCode, nil
+		return *a.srv.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
-	address, err := a.Srv().Store.Address().Get(*addressID)
+	address, err := a.srv.Store.Address().Get(*addressID)
 	if err != nil {
 
 		var statusCode int = http.StatusInternalServerError
@@ -360,9 +364,9 @@ func (a *AppOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppErro
 }
 
 // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
-func (a *AppOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
+func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
 	if ord.UserID != nil {
-		user, appErr := a.AccountApp().UserById(context.Background(), *ord.UserID)
+		user, appErr := a.srv.AccountService().UserById(context.Background(), *ord.UserID)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return "", appErr
@@ -378,8 +382,8 @@ func (a *AppOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
 }
 
 // AnAddressOfOrder returns shipping address of given order if presents
-func (a *AppOrder) AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) {
-	addresses, appErr := a.AccountApp().AddressesByOption(&account.AddressFilterOption{
+func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) {
+	addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 		OrderID: &account.AddressFilterOrderOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{

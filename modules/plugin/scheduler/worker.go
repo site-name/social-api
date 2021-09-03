@@ -67,7 +67,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 		return
 	}
 
-	if err := worker.app.PluginApp().DeleteAllExpiredPluginKeys(); err != nil {
+	if err := worker.app.Srv().PluginService().DeleteAllExpiredPluginKeys(); err != nil {
 		slog.Error("Worker: Failed to delete expired keys", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 		return

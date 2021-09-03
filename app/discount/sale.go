@@ -12,7 +12,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (DiscountCalculator, *model.AppError) {
 	if saleChannelListing == nil {
 		return nil, model.NewAppError("GetSaleDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "saleChannelListing"}, "", http.StatusBadRequest)
 	}
@@ -29,8 +29,8 @@ func (a *AppDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleChann
 
 // FilterSalesByOption should be used to filter active or expired sales
 // refer: saleor/discount/models.SaleQueryset for details
-func (a *AppDiscount) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError) {
-	sales, err := a.Srv().Store.DiscountSale().FilterSalesByOption(option)
+func (a *ServiceDiscount) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError) {
+	sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FilterSalesByOption", "app.discount.filter_sales_by_option.app_error", err)
 	}
@@ -41,12 +41,12 @@ func (a *AppDiscount) FilterSalesByOption(option *product_and_discount.SaleFilte
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 //
 //  (end_date == NULL || end_date >= date) && start_date <= date
-func (a *AppDiscount) ActiveSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
+func (a *ServiceDiscount) ActiveSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
 	}
 
-	activeSalesByDate, err := a.Srv().Store.DiscountSale().
+	activeSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&product_and_discount.SaleFilterOption{
 			EndDate: &model.TimeFilter{
 				Or: &model.TimeOption{
@@ -70,12 +70,12 @@ func (a *AppDiscount) ActiveSales(date *time.Time) ([]*product_and_discount.Sale
 // ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
 //
 //  end_date <= date && start_date <= date
-func (a *AppDiscount) ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
+func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
 	}
 
-	expiredSalesByDate, err := a.Srv().Store.DiscountSale().
+	expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&product_and_discount.SaleFilterOption{
 			EndDate: &model.TimeFilter{
 				TimeOption: &model.TimeOption{

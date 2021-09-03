@@ -19,7 +19,7 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
 	if *r.Config().ExperimentalSettings.ClientSideCertEnable {
-		certPem, certSubject, certEmail := r.AccountApp().CheckForClientSideCert(embedCtx.GetRequest())
+		certPem, certSubject, certEmail := r.Srv().AccountService().CheckForClientSideCert(embedCtx.GetRequest())
 		slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
 
 		if certPem == "" || certEmail == "" {
@@ -32,21 +32,21 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 		}
 	}
 
-	user, err := r.AccountApp().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.Token, "", input.LdapOnly == "true")
+	user, err := r.Srv().AccountService().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.Token, "", input.LdapOnly == "true")
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.AccountApp().DoLogin(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest(), user, input.DeviceID, false, false, false)
+	err = r.Srv().AccountService().DoLogin(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest(), user, input.DeviceID, false, false, false)
 	if err != nil {
 		return nil, err
 	}
 
 	if embedCtx.GetRequest().Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
-		r.AccountApp().AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
+		r.Srv().AccountService().AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
 	}
 
-	userTermOfService, err := r.AccountApp().GetUserTermsOfService(user.Id)
+	userTermOfService, err := r.Srv().AccountService().GetUserTermsOfService(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 		return nil, appErr
 	}
 
-	userWithEmail, appErr := r.AccountApp().UserByEmail(email)
+	userWithEmail, appErr := r.Srv().AccountService().UserByEmail(email)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -113,7 +113,7 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 	}
 
 	// if !userWithEmail.IsStaff {
-	// 	activeChannel, appErr := r.ChannelApp().CleanChannel(channel)
+	// 	activeChannel, appErr := r.ChannelService().CleanChannel(channel)
 	// 	if appErr != nil {
 	// 		return nil, appErr
 	// 	}
@@ -121,7 +121,7 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 	// } else
 
 	if channel != nil {
-		channelBySlug, appErr := r.ChannelApp().ValidateChannel(*channel)
+		channelBySlug, appErr := r.Srv().ChannelService().ValidateChannel(*channel)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -150,7 +150,7 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 			return nil, invalidParameterError("PasswordChange", "old password", "old password must not be empty")
 		}
 
-		if appErr = r.AccountApp().UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
+		if appErr = r.Srv().AccountService().UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
 			return nil, appErr
 		}
 

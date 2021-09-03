@@ -13,6 +13,7 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/email"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -24,7 +25,7 @@ import (
 const cwsTokenEnv = "CWS_CLOUD_TOKEN"
 
 // CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
-func (a *AppAccount) CheckForClientSideCert(r *http.Request) (string, string, string) {
+func (a *ServiceAccount) CheckForClientSideCert(r *http.Request) (string, string, string) {
 	pem := r.Header.Get("X-SSL-Client-Cert")
 	subject := r.Header.Get("X-SSL-Client-Cert-Subject-DN")
 	email := ""
@@ -42,14 +43,14 @@ func (a *AppAccount) CheckForClientSideCert(r *http.Request) (string, string, st
 }
 
 // AuthenticateUserForLogin
-func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
+func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
 	// Do statistics
 	defer func() {
-		if a.Metrics() != nil {
+		if a.metrics != nil {
 			if user == nil || err != nil {
-				a.Metrics().IncrementLoginFail()
+				a.metrics.IncrementLoginFail()
 			} else {
-				a.Metrics().IncrementLogin()
+				a.metrics.IncrementLogin()
 			}
 		}
 	}()
@@ -66,7 +67,7 @@ func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, p
 	// CWS login allow to use the one-time token to login the users when they're redirected to their
 	// installation for the first time
 	if IsCWSLogin(a, cwsToken) {
-		token, err := a.Srv().Store.Token().GetByToken(cwsToken)
+		token, err := a.srv.Store.Token().GetByToken(cwsToken)
 		if nfErr := new(store.ErrNotFound); err != nil && !errors.As(err, &nfErr) {
 			slog.Debug("Error retrieving the cws token from the store", slog.Err(err))
 			return nil, model.NewAppError(
@@ -92,9 +93,9 @@ func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, p
 			token = &model.Token{
 				Token:    cwsToken,
 				CreateAt: model.GetMillis(),
-				Type:     app.TokenTypeCWSAccess,
+				Type:     email.TokenTypeCWSAccess,
 			}
-			err := a.Srv().Store.Token().Save(token)
+			err := a.srv.Store.Token().Save(token)
 			if err != nil {
 				slog.Debug("Error storing the cws token in the store", slog.Err(err))
 				return nil, model.NewAppError(
@@ -119,7 +120,7 @@ func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, p
 	// If client side cert is enable and it's checking as a primary source
 	// then trust the proxy and cert that the correct user is supplied and allow
 	// them access
-	if *a.Config().ExperimentalSettings.ClientSideCertEnable && *a.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
+	if *a.srv.Config().ExperimentalSettings.ClientSideCertEnable && *a.srv.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
 		return user, nil
 	}
 
@@ -131,9 +132,9 @@ func (a *AppAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, p
 }
 
 // GetUserForLogin
-func (a *AppAccount) GetUserForLogin(id, loginId string) (*account.User, *model.AppError) {
-	enableUsername := *a.Config().EmailSettings.EnableSignInWithUsername
-	enableEmail := *a.Config().EmailSettings.EnableSignInWithEmail
+func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*account.User, *model.AppError) {
+	enableUsername := *a.srv.Config().EmailSettings.EnableSignInWithUsername
+	enableEmail := *a.srv.Config().EmailSettings.EnableSignInWithEmail
 
 	// if we are given a userID then fail if we can't find a user with that ID
 	if id != "" {
@@ -150,14 +151,14 @@ func (a *AppAccount) GetUserForLogin(id, loginId string) (*account.User, *model.
 	}
 
 	// Try to get the user by username/email
-	if user, err := a.Srv().Store.User().GetForLogin(loginId, enableUsername, enableEmail); err == nil {
+	if user, err := a.srv.Store.User().GetForLogin(loginId, enableUsername, enableEmail); err == nil {
 		return user, nil
 	}
 
 	// Try to get the user with LDAP if enabled
-	if *a.Config().LdapSettings.Enable && a.Ldap() != nil {
-		if ldapUser, err := a.Ldap().GetUser(loginId); err == nil {
-			if user, err := a.AccountApp().GetUserByAuth(ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP); err == nil {
+	if *a.srv.Config().LdapSettings.Enable && a.srv.Ldap != nil {
+		if ldapUser, err := a.srv.Ldap.GetUser(loginId); err == nil {
+			if user, err := a.GetUserByAuth(ldapUser.AuthData, model.USER_AUTH_SERVICE_LDAP); err == nil {
 				return user, nil
 			}
 			return ldapUser, nil
@@ -167,7 +168,7 @@ func (a *AppAccount) GetUserForLogin(id, loginId string) (*account.User, *model.
 	return nil, model.NewAppError("GetUserForLogin", "store.sql_user.get_for_login.app_error", nil, "", http.StatusBadRequest)
 }
 
-func (a *AppAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
+func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
 	// TODO: implement more if plugins enabled
 	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
 	// 	var rejectionReason string
@@ -195,7 +196,7 @@ func (a *AppAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.
 	session.GenerateCSRF()
 
 	if deviceID != "" {
-		a.SetSessionExpireInDays(session, *a.Config().ServiceSettings.SessionLengthMobileInDays)
+		a.SetSessionExpireInDays(session, *a.srv.Config().ServiceSettings.SessionLengthMobileInDays)
 
 		// A special case where we log out of all other sessions with the same Id
 		if err := a.RevokeSessionsForDeviceId(user.Id, deviceID, ""); err != nil {
@@ -203,11 +204,11 @@ func (a *AppAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.
 			return err
 		}
 	} else if isMobile {
-		a.SetSessionExpireInDays(session, *a.Config().ServiceSettings.SessionLengthMobileInDays)
+		a.SetSessionExpireInDays(session, *a.srv.Config().ServiceSettings.SessionLengthMobileInDays)
 	} else if isOAuthUser || isSaml {
-		a.SetSessionExpireInDays(session, *a.Config().ServiceSettings.SessionLengthSSOInDays)
+		a.SetSessionExpireInDays(session, *a.srv.Config().ServiceSettings.SessionLengthSSOInDays)
 	} else {
-		a.SetSessionExpireInDays(session, *a.Config().ServiceSettings.SessionLengthWebInDays)
+		a.SetSessionExpireInDays(session, *a.srv.Config().ServiceSettings.SessionLengthWebInDays)
 	}
 
 	ua := uasurfer.Parse(r.UserAgent())
@@ -229,17 +230,17 @@ func (a *AppAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.
 	w.Header().Set(model.HEADER_TOKEN, session.Token)
 
 	c.SetSession(session)
-	if a.Ldap() != nil {
+	if a.srv.Ldap != nil {
 		userVal := *user
 		sessionVal := *session
 
-		a.Srv().Go(func() {
-			a.Ldap().UpdateProfilePictureIfNecessary(userVal, sessionVal)
+		a.srv.Go(func() {
+			a.srv.Ldap.UpdateProfilePictureIfNecessary(userVal, sessionVal)
 		})
 	}
 
 	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
-	// 	a.Srv().Go(func() {
+	// 	a.srv.Go(func() {
 	// 		pluginContext := pluginContext(c)
 	// 		pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
 	// 			hooks.UserHasLoggedIn(pluginContext, user)
@@ -266,15 +267,15 @@ func GetProtocol(r *http.Request) string {
 // 2) user cookie with value of user id
 //
 // 3) csrf cookie with value of csrf in session
-func (a *AppAccount) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
+func (a *ServiceAccount) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
 	secure := false
 	if GetProtocol(r) == "https" {
 		secure = true
 	}
 
-	maxAge := *a.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
-	domain := a.GetCookieDomain()
-	subpath, _ := util.GetSubpathFromConfig(a.Config())
+	maxAge := *a.srv.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
+	domain := a.srv.GetCookieDomain()
+	subpath, _ := util.GetSubpathFromConfig(a.srv.Config())
 
 	expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
 	sessionCookie := &http.Cookie{
@@ -314,6 +315,6 @@ func (a *AppAccount) AttachSessionCookies(c *request.Context, w http.ResponseWri
 }
 
 // IsCWSLogin returns true if token != "" else false
-func IsCWSLogin(a *AppAccount, token string) bool {
+func IsCWSLogin(a *ServiceAccount, token string) bool {
 	return token != ""
 }

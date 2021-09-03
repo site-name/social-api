@@ -36,17 +36,17 @@ func ComparePassword(hash string, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
-func (a *AppAccount) isPasswordValid(password string) *model.AppError {
+func (a *ServiceAccount) isPasswordValid(password string) *model.AppError {
 
-	if *a.Config().ServiceSettings.EnableDeveloper {
+	if *a.srv.Config().ServiceSettings.EnableDeveloper {
 		return nil
 	}
 
-	if err := IsPasswordValidWithSettings(password, &a.Config().PasswordSettings); err != nil {
+	if err := IsPasswordValidWithSettings(password, &a.srv.Config().PasswordSettings); err != nil {
 		var invErr *ErrInvalidPassword
 		switch {
 		case errors.As(err, &invErr):
-			return model.NewAppError("User.IsValid", invErr.Id(), map[string]interface{}{"Min": *a.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
+			return model.NewAppError("User.IsValid", invErr.Id(), map[string]interface{}{"Min": *a.srv.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
 		default:
 			return model.NewAppError("User.IsValid", "app.valid_password_generic.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}

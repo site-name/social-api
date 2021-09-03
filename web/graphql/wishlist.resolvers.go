@@ -13,7 +13,7 @@ import (
 )
 
 func (r *wishlistResolver) Items(ctx context.Context, obj *gqlmodel.Wishlist) ([]*gqlmodel.WishlistItem, error) {
-	items, appErr := r.WishlistApp().WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
+	items, appErr := r.Srv().WishlistService().WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
 		WishlistID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: obj.ID,
@@ -30,7 +30,7 @@ func (r *wishlistItemResolver) Product(ctx context.Context, obj *gqlmodel.Wishli
 	if obj.ProductID == nil {
 		return nil, nil
 	}
-	product, appErr := r.ProductApp().ProductById(*obj.ProductID)
+	product, appErr := r.Srv().ProductService().ProductById(*obj.ProductID)
 	if appErr != nil {
 		return nil, appErr
 	}

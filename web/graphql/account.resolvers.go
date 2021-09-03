@@ -26,7 +26,7 @@ func (r *mutationResolver) AccountAddressDelete(ctx context.Context, id string) 
 	if session, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
 		return nil, appErr
 	} else {
-		appErr := r.AccountApp().AddressDeleteForUser(session.UserId, id)
+		appErr := r.Srv().AccountService().AddressDeleteForUser(session.UserId, id)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -51,7 +51,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 		default:
 			return nil, invalidParameterError("AccountSetDefaultAddress", "address type", "Invalid address type")
 		}
-		updatedUser, appErr := r.AccountApp().UserSetDefaultAddress(session.UserId, id, addressType)
+		updatedUser, appErr := r.Srv().AccountService().UserSetDefaultAddress(session.UserId, id, addressType)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -90,7 +90,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 	if cleanedInput.RedirectURL != nil {
 		redirect = *cleanedInput.RedirectURL
 	}
-	ruser, err := r.AccountApp().CreateUserFromSignup(embedContext.AppContext, user, redirect)
+	ruser, err := r.Srv().AccountService().CreateUserFromSignup(embedContext.AppContext, user, redirect)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *
 	// 		return nil, appErr
 	// 	}
 
-	// 	chn, appErr := r.ChannelApp().CleanChannel(channel)
+	// 	chn, appErr := r.ChannelService().CleanChannel(channel)
 	// 	if appErr != nil {
 	// 		return nil, appErr
 	// 	}

@@ -7,8 +7,8 @@ import (
 )
 
 // AttributePageByOption returns an attribute page filtered using given option
-func (a *AppAttribute) AttributePageByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, *model.AppError) {
-	attributePage, err := a.app.Srv().Store.AttributePage().GetByOption(option)
+func (a *ServiceAttribute) AttributePageByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, *model.AppError) {
+	attributePage, err := a.srv.Store.AttributePage().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AttributePageByOption", "app.attribute.error_finding_attribute_page_by_option.app_error", err)
 	}

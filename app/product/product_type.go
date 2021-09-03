@@ -6,8 +6,8 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) {
-	types, err := a.Srv().Store.ProductType().FilterProductTypesByCheckoutID(checkoutToken)
+func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) {
+	types, err := a.srv.Store.ProductType().FilterProductTypesByCheckoutID(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductTypesByCheckoutToken", "app.product.product_types_by_checkout_missing.app_error", err)
 	}
@@ -16,8 +16,8 @@ func (a *AppProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*produ
 }
 
 // ProductTypesByProductIDs returns all product types that belong to given products
-func (a *AppProduct) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, *model.AppError) {
-	types, err := a.Srv().Store.ProductType().ProductTypesByProductIDs(productIDs)
+func (a *ServiceProduct) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, *model.AppError) {
+	types, err := a.srv.Store.ProductType().ProductTypesByProductIDs(productIDs)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductTypesByProductIDs", "app.product.product_types_by_product_ids.app_error", err)
 	}

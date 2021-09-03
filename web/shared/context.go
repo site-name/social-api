@@ -111,7 +111,7 @@ func (c *Context) MfaRequired() {
 		return
 	}
 
-	user, err := c.App.AccountApp().UserById(context.Background(), c.AppContext.Session().UserId)
+	user, err := c.App.Srv().AccountService().UserById(context.Background(), c.AppContext.Session().UserId)
 	if err != nil {
 		c.Err = model.NewAppError("MfaRequired", "api.context.get_user.app_error", nil, err.Error(), http.StatusUnauthorized)
 		return
@@ -161,8 +161,8 @@ func (c *Context) LogErrorByCode(err *model.AppError) {
 // ExtendSessionExpiryIfNeeded will update Session.ExpiresAt based on session lengths in config.
 // Session cookies will be resent to the client with updated max age.
 func (c *Context) ExtendSessionExpiryIfNeeded(w http.ResponseWriter, r *http.Request) {
-	if ok := c.App.AccountApp().ExtendSessionExpiryIfNeeded(c.AppContext.Session()); ok {
-		c.App.AccountApp().AttachSessionCookies(c.AppContext, w, r)
+	if ok := c.App.Srv().AccountService().ExtendSessionExpiryIfNeeded(c.AppContext.Session()); ok {
+		c.App.Srv().AccountService().AttachSessionCookies(c.AppContext, w, r)
 	}
 }
 
@@ -232,7 +232,7 @@ func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWrite
 
 // IsSystemAdmin checks if given session contains info of system's administrator.
 func (c *Context) IsSystemAdmin() bool {
-	return c.App.AccountApp().SessionHasPermissionTo(c.AppContext.Session(), model.PermissionManageSystem)
+	return c.App.Srv().AccountService().SessionHasPermissionTo(c.AppContext.Session(), model.PermissionManageSystem)
 }
 
 func NewInvalidParamError(parameter string) *model.AppError {
@@ -264,7 +264,7 @@ func NewJSONEncodingError() *model.AppError {
 }
 
 func (c *Context) SetPermissionError(permissions ...*model.Permission) {
-	c.Err = c.App.AccountApp().MakePermissionError(c.AppContext.Session(), permissions)
+	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions)
 }
 
 func (c *Context) SetSiteURLHeader(url string) {

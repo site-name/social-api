@@ -8,25 +8,25 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *AppAccount) AddStatusCacheSkipClusterSend(status *account.Status) {
-	a.Srv().StatusCache.Set(status.UserId, status)
+func (a *ServiceAccount) AddStatusCacheSkipClusterSend(status *account.Status) {
+	a.srv.StatusCache.Set(status.UserId, status)
 }
 
-func (a *AppAccount) AddStatusCache(status *account.Status) {
+func (a *ServiceAccount) AddStatusCache(status *account.Status) {
 	a.AddStatusCacheSkipClusterSend(status)
 
-	if a.Cluster() != nil {
+	if a.cluster != nil {
 		msg := &cluster.ClusterMessage{
 			Event:    cluster.CLUSTER_EVENT_UPDATE_STATUS,
 			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
 			Data:     status.ToClusterJson(),
 		}
-		a.Cluster().SendClusterMessage(msg)
+		a.cluster.SendClusterMessage(msg)
 	}
 }
 
-func (a *AppAccount) StatusByID(statusID string) (*account.Status, *model.AppError) {
-	status, err := a.Srv().Store.Status().Get(statusID)
+func (a *ServiceAccount) StatusByID(statusID string) (*account.Status, *model.AppError) {
+	status, err := a.srv.Store.Status().Get(statusID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("StatusByID", "app.account.status_missing.app_error", err)
 	}
@@ -34,8 +34,8 @@ func (a *AppAccount) StatusByID(statusID string) (*account.Status, *model.AppErr
 	return status, nil
 }
 
-func (a *AppAccount) StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError) {
-	statuses, err := a.Srv().Store.Status().GetByIds(statusIDs)
+func (a *ServiceAccount) StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError) {
+	statuses, err := a.srv.Store.Status().GetByIds(statusIDs)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("StatusesByIDs", "app.account.statuses_missing.app_error", err)
 	}
@@ -43,8 +43,8 @@ func (a *AppAccount) StatusesByIDs(statusIDs []string) ([]*account.Status, *mode
 	return statuses, nil
 }
 
-func (a *AppAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) {
-	if !*a.Config().ServiceSettings.EnableUserStatuses {
+func (a *ServiceAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) {
+	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
 		return []*account.Status{}, nil
 	}
 
@@ -53,15 +53,15 @@ func (a *AppAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, 
 	missingUserIds := []string{}
 	for _, userID := range userIDs {
 		var status *account.Status
-		if err := a.Srv().StatusCache.Get(userID, &status); err == nil {
+		if err := a.srv.StatusCache.Get(userID, &status); err == nil {
 			statusMap = append(statusMap, status)
-			if a.Metrics() != nil {
-				a.Metrics().IncrementMemCacheHitCounter("Status")
+			if a.metrics != nil {
+				a.metrics.IncrementMemCacheHitCounter("Status")
 			}
 		} else {
 			missingUserIds = append(missingUserIds, userID)
-			if a.Metrics() != nil {
-				a.Metrics().IncrementMemCacheMissCounter("Status")
+			if a.metrics != nil {
+				a.metrics.IncrementMemCacheMissCounter("Status")
 			}
 		}
 	}
@@ -100,8 +100,8 @@ func (a *AppAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, 
 	return statusMap, nil
 }
 
-func (a *AppAccount) SetStatusOnline(userID string, manual bool) {
-	if !*a.Config().ServiceSettings.EnableUserStatuses {
+func (a *ServiceAccount) SetStatusOnline(userID string, manual bool) {
+	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
 		return
 	}
 
@@ -140,11 +140,11 @@ func (a *AppAccount) SetStatusOnline(userID string, manual bool) {
 	// or enough time has passed since the previous action
 	if status.Status != oldStatus || status.Manual != oldManual || status.LastActivityAt-oldTime > account.STATUS_MIN_UPDATE_TIME {
 		if broadcast {
-			if err := a.Srv().Store.Status().SaveOrUpdate(status); err != nil {
+			if err := a.srv.Store.Status().SaveOrUpdate(status); err != nil {
 				slog.Warn("Failed to save status", slog.String("user_id", userID), slog.Err(err), slog.String("user_id", userID))
 			}
 		} else {
-			if err := a.Srv().Store.Status().UpdateLastActivityAt(status.UserId, status.LastActivityAt); err != nil {
+			if err := a.srv.Store.Status().UpdateLastActivityAt(status.UserId, status.LastActivityAt); err != nil {
 				slog.Error("Failed to save status", slog.String("user_id", userID), slog.Err(err), slog.String("user_id", userID))
 			}
 		}
@@ -155,8 +155,8 @@ func (a *AppAccount) SetStatusOnline(userID string, manual bool) {
 	}
 }
 
-func (a *AppAccount) SetStatusOffline(userID string, manual bool) {
-	if !*a.Config().ServiceSettings.EnableUserStatuses {
+func (a *ServiceAccount) SetStatusOffline(userID string, manual bool) {
+	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
 		return
 	}
 
@@ -170,23 +170,23 @@ func (a *AppAccount) SetStatusOffline(userID string, manual bool) {
 	a.SaveAndBroadcastStatus(status)
 }
 
-func (a *AppAccount) SaveAndBroadcastStatus(status *account.Status) {
+func (a *ServiceAccount) SaveAndBroadcastStatus(status *account.Status) {
 	a.AddStatusCache(status)
 
-	if err := a.Srv().Store.Status().SaveOrUpdate(status); err != nil {
+	if err := a.srv.Store.Status().SaveOrUpdate(status); err != nil {
 		slog.Warn("Failed to save status", slog.String("user_id", status.UserId), slog.Err(err))
 	}
 
 	a.BroadcastStatus(status)
 }
 
-func (a *AppAccount) BroadcastStatus(status *account.Status) {
-	if a.Srv().Busy.IsBusy() {
+func (a *ServiceAccount) BroadcastStatus(status *account.Status) {
+	if a.srv.Busy.IsBusy() {
 		// this is considered a non-critical service and will be disabled when server busy.
 		return
 	}
 	event := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_STATUS_CHANGE, status.UserId, nil)
 	event.Add("status", status.Status)
 	event.Add("user_id", status.UserId)
-	a.Publish(event)
+	a.srv.Publish(event)
 }

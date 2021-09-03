@@ -117,8 +117,8 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 }
 
 // FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
-func (a *AppShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*shipping.ShippingMethod, shippingAddressID string) ([]*shipping.ShippingMethod, *model.AppError) {
-	shippingAddress, appErr := a.AccountApp().AddressById(shippingAddressID)
+func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*shipping.ShippingMethod, shippingAddressID string) ([]*shipping.ShippingMethod, *model.AppError) {
+	shippingAddress, appErr := a.srv.AccountService().AddressById(shippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}

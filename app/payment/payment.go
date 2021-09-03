@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package payment
 
 import (
@@ -12,20 +16,22 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// AppPayment handle all logics related to payment
-type AppPayment struct {
-	app app.AppIface
+// ServicePayment handle all logics related to payment
+type ServicePayment struct {
+	srv *app.Server
 }
 
 func init() {
-	app.RegisterPaymentApp(func(a app.AppIface) sub_app_iface.PaymentApp {
-		return &AppPayment{a}
+	app.RegisterPaymentService(func(s *app.Server) (sub_app_iface.PaymentService, error) {
+		return &ServicePayment{
+			srv: s,
+		}, nil
 	})
 }
 
 // PaymentByID returns a payment with given id
-func (a *AppPayment) PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
-	payMent, err := a.app.Srv().Store.Payment().Get(paymentID, lockForUpdate)
+func (a *ServicePayment) PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
+	payMent, err := a.srv.Store.Payment().Get(paymentID, lockForUpdate)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", err)
 	}
@@ -33,8 +39,8 @@ func (a *AppPayment) PaymentByID(paymentID string, lockForUpdate bool) (*payment
 }
 
 // PaymentsByOption returns all payments that satisfy given option
-func (a *AppPayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError) {
-	payments, err := a.app.Srv().Store.Payment().FilterByOption(option)
+func (a *ServicePayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError) {
+	payments, err := a.srv.Store.Payment().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("PaymentsByOption", "app.payment.error_finding_payments_by_option.app_error", err)
 	}
@@ -42,7 +48,7 @@ func (a *AppPayment) PaymentsByOption(option *payment.PaymentFilterOption) ([]*p
 	return payments, nil
 }
 
-func (a *AppPayment) GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError) {
 	payments, appError := a.PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID: orderID,
 	})
@@ -60,7 +66,7 @@ func (a *AppPayment) GetLastOrderPayment(orderID string) (*payment.Payment, *mod
 	return latestPayment, nil
 }
 
-func (a *AppPayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
+func (a *ServicePayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppError) {
 	trans, err := a.GetAllPaymentTransactions(paymentID)
 	if err != nil {
 		return false, err
@@ -75,7 +81,7 @@ func (a *AppPayment) PaymentIsAuthorized(paymentID string) (bool, *model.AppErro
 	return false, nil
 }
 
-func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError) {
+func (a *ServicePayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError) {
 	authorizedMoney, err := util.ZeroMoney(pm.Currency)
 	if err != nil {
 		return nil, model.NewAppError("PaymentGetAuthorizedAmount", "app.payment.create_zero_money.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -110,7 +116,7 @@ func (a *AppPayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.
 	return authorizedMoney, nil
 }
 
-func (a *AppPayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError) {
+func (a *ServicePayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError) {
 	authorized, err := a.PaymentIsAuthorized(payMent.Id)
 	if err != nil {
 		return false, err
@@ -119,15 +125,15 @@ func (a *AppPayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppE
 	return *payMent.IsActive && payMent.IsNotCharged() && authorized, nil
 }
 
-func (a *AppPayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
 	var (
 		err error
 	)
 
 	if payMent.Id == "" { // id not set mean creating new payment
-		payMent, err = a.app.Srv().Store.Payment().Save(payMent)
+		payMent, err = a.srv.Store.Payment().Save(payMent)
 	} else { // otherwise update
-		payMent, err = a.app.Srv().Store.Payment().Update(payMent)
+		payMent, err = a.srv.Store.Payment().Update(payMent)
 	}
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -143,7 +149,7 @@ func (a *AppPayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payment.P
 	return payMent, nil
 }
 
-func (a *AppPayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError) {
+func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError) {
 	payments, appErr := a.PaymentsByOption(&payment.PaymentFilterOption{
 		CheckoutToken: checkoutToken,
 	})

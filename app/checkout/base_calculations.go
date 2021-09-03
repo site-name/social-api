@@ -17,7 +17,7 @@ import (
 )
 
 // BaseCalculationShippingPrice Return checkout shipping price.
-func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo) (*goprices.TaxedMoney, *model.AppError) {
 	var (
 		shippingRequired bool
 		appErr           *model.AppError
@@ -29,7 +29,7 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 			productIDs = append(productIDs, info.Product.Id)
 		}
 
-		shippingRequired, appErr = a.app.ProductApp().ProductsRequireShipping(productIDs)
+		shippingRequired, appErr = a.srv.ProductService().ProductsRequireShipping(productIDs)
 	} else {
 		shippingRequired, appErr = a.CheckoutShippingRequired(checkoutInfo.Checkout.Token)
 	}
@@ -44,7 +44,7 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 		return taxedMoney, nil
 	}
 
-	shippingMethodChannelListings, appErr := a.app.ShippingApp().
+	shippingMethodChannelListings, appErr := a.srv.ShippingService().
 		ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
 			ShippingMethodID: &model.StringFilter{
 				StringOption: &model.StringOption{
@@ -72,7 +72,7 @@ func (a *AppCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.Checko
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout
-func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError) {
 	// this method reqires all values's currencies are uppoer-cased and supported by system
 	currency = strings.ToUpper(currency)
 	currencyMap := map[string]bool{}
@@ -99,12 +99,12 @@ func (a *AppCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingP
 // BaseCheckoutLineTotal Return the total price of this line
 //
 // `discounts` can be nil
-func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	if discounts == nil {
 		discounts = []*product_and_discount.DiscountInfo{}
 	}
 
-	variantPrice, appErr := a.app.ProductApp().ProductVariantGetPrice(
+	variantPrice, appErr := a.srv.ProductService().ProductVariantGetPrice(
 		&checkoutLineInfo.Product,
 		checkoutLineInfo.Collections,
 		channel,
@@ -125,7 +125,7 @@ func (a *AppCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutL
 	}, nil
 }
 
-func (a *AppCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.TaxedMoney, *model.AppError) {
 	orderLine.PopulateNonDbFields()
 	if orderLine.UnitPrice != nil {
 		unitPrice, _ := orderLine.UnitPrice.Mul(int(orderLine.Quantity))
@@ -137,7 +137,7 @@ func (a *AppCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.
 	return nil, model.NewAppError("BaseOrderLineTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "", http.StatusBadRequest)
 }
 
-func (a *AppCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
+func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
 	taxRate := &decimal.Zero
 	if price != nil && price.Gross != nil && !price.Gross.Amount.Equal(decimal.Zero) {
 		tax, _ := price.Tax()

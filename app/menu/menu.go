@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package menu
 
 import (
@@ -12,18 +16,24 @@ const (
 	missingMenuErrId = "app.menu.missing_menu.app_error"
 )
 
-type AppMenu struct {
-	app.AppIface
+type ServiceMenu struct {
+	srv *app.Server
+}
+
+type ServiceMenuConfig struct {
+	Server *app.Server
 }
 
 func init() {
-	app.RegisterMenuApp(func(a app.AppIface) sub_app_iface.MenuApp {
-		return &AppMenu{a}
+	app.RegisterMenuService(func(s *app.Server) (sub_app_iface.MenuService, error) {
+		return &ServiceMenu{
+			srv: s,
+		}, nil
 	})
 }
 
-func (a *AppMenu) MenuById(id string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.Srv().Store.Menu().GetById(id)
+func (a *ServiceMenu) MenuById(id string) (*menu.Menu, *model.AppError) {
+	mnu, err := a.srv.Store.Menu().GetById(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("MenuById", missingMenuErrId, err)
 	}
@@ -31,8 +41,8 @@ func (a *AppMenu) MenuById(id string) (*menu.Menu, *model.AppError) {
 	return mnu, nil
 }
 
-func (a *AppMenu) MenuByName(name string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.Srv().Store.Menu().GetByName(name)
+func (a *ServiceMenu) MenuByName(name string) (*menu.Menu, *model.AppError) {
+	mnu, err := a.srv.Store.Menu().GetByName(name)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("MenuByName", missingMenuErrId, err)
 	}
@@ -40,8 +50,8 @@ func (a *AppMenu) MenuByName(name string) (*menu.Menu, *model.AppError) {
 	return mnu, nil
 }
 
-func (a *AppMenu) MenuBySlug(slug string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.Srv().Store.Menu().GetBySlug(slug)
+func (a *ServiceMenu) MenuBySlug(slug string) (*menu.Menu, *model.AppError) {
+	mnu, err := a.srv.Store.Menu().GetBySlug(slug)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("MenuBySlug", missingMenuErrId, err)
 	}

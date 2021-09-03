@@ -10,8 +10,8 @@ import (
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *AppWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().BulkUpsert(transaction, stocks)
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -30,8 +30,8 @@ func (a *AppWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stocks []
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *AppWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterByOption(transaction, option)
+func (a *ServiceWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
 	var (
 		statusCode   int
 		errorMessage string
@@ -53,8 +53,8 @@ func (a *AppWarehouse) StocksByOption(transaction *gorp.Transaction, option *war
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *AppWarehouse) GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterVariantStocksForCountry(transaction, &warehouse.StockFilterForCountryAndChannel{
+func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,
 		ProductVariantID: variantID,
@@ -78,8 +78,8 @@ func (a *AppWarehouse) GetVariantStocksForCountry(transaction *gorp.Transaction,
 }
 
 // GetProductStocksForCountryAndChannel
-func (a *AppWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
+func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
 		errorMessage string
@@ -99,8 +99,8 @@ func (a *AppWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Tr
 }
 
 // FilterStocksForCountryAndChannel finds stocks by given options
-func (a *AppWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.Srv().Store.Stock().FilterForCountryAndChannel(transaction, options)
+func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
 		errorMessage string
@@ -120,8 +120,8 @@ func (a *AppWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Transa
 }
 
 // GetStockById takes options for filtering 1 stock
-func (a *AppWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.AppError) {
-	stock, err := a.Srv().Store.Stock().Get(stockID)
+func (a *ServiceWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.AppError) {
+	stock, err := a.srv.Store.Stock().Get(stockID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetStockById", "app.warehouse.error_finding_stock_by_option.app_error", err)
 	}
@@ -130,8 +130,8 @@ func (a *AppWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.Ap
 }
 
 // StockIncreaseQuantity Return given quantity of product to a stock.
-func (a *AppWarehouse) StockIncreaseQuantity(stockID string, quantity int) *model.AppError {
-	err := a.Srv().Store.Stock().ChangeQuantity(stockID, quantity)
+func (a *ServiceWarehouse) StockIncreaseQuantity(stockID string, quantity int) *model.AppError {
+	err := a.srv.Store.Stock().ChangeQuantity(stockID, quantity)
 	if err != nil {
 		return model.NewAppError("StockIncrease", "app.warehouse.error_increasing_stock_quantity", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -139,8 +139,8 @@ func (a *AppWarehouse) StockIncreaseQuantity(stockID string, quantity int) *mode
 }
 
 // StockDecreaseQuantity Return given quantity of product to a stock.
-func (a *AppWarehouse) StockDecreaseQuantity(stockID string, quantity int) *model.AppError {
-	err := a.Srv().Store.Stock().ChangeQuantity(stockID, -quantity)
+func (a *ServiceWarehouse) StockDecreaseQuantity(stockID string, quantity int) *model.AppError {
+	err := a.srv.Store.Stock().ChangeQuantity(stockID, -quantity)
 	if err != nil {
 		return model.NewAppError("StockIncrease", "app.warehouse.error_increasing_stock_quantity", nil, err.Error(), http.StatusInternalServerError)
 	}

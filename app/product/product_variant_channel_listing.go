@@ -8,8 +8,8 @@ import (
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *AppProduct) ProductVariantChannelListingsByOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
-	listings, err := a.Srv().Store.ProductVariantChannelListing().FilterbyOption(option)
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
+	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(option)
 	var (
 		statusCode   int
 		errorMessage string

@@ -339,6 +339,49 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	return shippingMethods, nil
 }
 
+// GetbyOption finds and returns a shipping method that satisfy given options
+func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+	query := ss.GetQueryBuilder().
+		Select(ss.ModelFields()...).
+		From(store.ShippingMethodTableName)
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("ShippingMethods.Id"))
+	}
+	if options.Type != nil {
+		query = query.Where(options.Type.ToSquirrel("ShippingMethods.Type"))
+	}
+	if options.MinimumOrderWeight != nil {
+		query = query.Where(options.MinimumOrderWeight.ToSquirrel("ShippingMethods.MinimumOrderWeight"))
+	}
+	if options.MaximumOrderWeight != nil {
+		query = query.Where(options.MaximumOrderWeight.ToSquirrel("ShippingMethods.MaximumOrderWeight"))
+	}
+	if options.ShippingZoneChannelSlug != nil {
+		query = query.Where(options.ShippingZoneChannelSlug.ToSquirrel("ShippingMethods.ShippingZoneChannelSlug"))
+	}
+	if options.ChannelListingsChannelSlug != nil {
+		query = query.Where(options.ChannelListingsChannelSlug.ToSquirrel("ShippingMethods.ChannelListingsChannelSlug"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	}
+
+	var res shipping.ShippingMethod
+	err = ss.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ShippingMethodTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed to find shipping method by given options")
+	}
+
+	return &res, nil
+}
+
 // GetShippingMethods
 // func (ss *SqlShippingMethodStore) GetShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, excludedProductIDs []string) ([]*shipping.ShippingMethod, error) {
 // 	priceAmountSelect := ss.GetQueryBuilder().

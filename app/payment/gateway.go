@@ -14,7 +14,7 @@ const (
 	GENERIC_TRANSACTION_ERROR = "Transaction was unsuccessful."
 )
 
-func (a *AppPayment) raisePaymentError(where string, transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *payment.PaymentError) {
+func (a *ServicePayment) raisePaymentError(where string, transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *payment.PaymentError) {
 	if !transaction.IsSuccess {
 		msg := GENERIC_TRANSACTION_ERROR
 		if transaction.Error != nil {
@@ -26,7 +26,7 @@ func (a *AppPayment) raisePaymentError(where string, transaction *payment.Paymen
 	return transaction, nil
 }
 
-func (a *AppPayment) paymentPostProcess(transaction *payment.PaymentTransaction) *model.AppError {
+func (a *ServicePayment) paymentPostProcess(transaction *payment.PaymentTransaction) *model.AppError {
 	payMent, appErr := a.PaymentByID(transaction.PaymentID, false)
 	if appErr != nil {
 		return appErr
@@ -34,7 +34,7 @@ func (a *AppPayment) paymentPostProcess(transaction *payment.PaymentTransaction)
 	return a.GatewayPostProcess(transaction, payMent)
 }
 
-func (a *AppPayment) requireActivePayment(where string, payMent *payment.Payment) (*payment.Payment, *payment.PaymentError) {
+func (a *ServicePayment) requireActivePayment(where string, payMent *payment.Payment) (*payment.Payment, *payment.PaymentError) {
 	if !*payMent.IsActive {
 		return nil, payment.NewPaymentError(where, "This payment is no longer active", payment.INVALID)
 	}
@@ -42,11 +42,11 @@ func (a *AppPayment) requireActivePayment(where string, payMent *payment.Payment
 }
 
 // withLockedPayment Lock payment to protect from asynchronous modification.
-func (a *AppPayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
 	return a.PaymentByID(payMent.Id, true)
 }
 
-func (a *AppPayment) ProcessPayment(
+func (a *ServicePayment) ProcessPayment(
 	payMent *payment.Payment,
 	token string,
 	manager interface{},
@@ -75,7 +75,7 @@ func (a *AppPayment) ProcessPayment(
 	panic("not implemented")
 }
 
-func (a *AppPayment) Authorize(
+func (a *ServicePayment) Authorize(
 	payMent *payment.Payment,
 	token string,
 	manager interface{},
@@ -108,7 +108,7 @@ func (a *AppPayment) Authorize(
 	panic("not implt")
 }
 
-func (a *AppPayment) Capture(
+func (a *ServicePayment) Capture(
 	payMent *payment.Payment,
 	manager interface{},
 	channelSlug string,
@@ -131,7 +131,7 @@ func (a *AppPayment) Capture(
 	panic("not implemented")
 }
 
-func (a *AppPayment) Refund(
+func (a *ServicePayment) Refund(
 	payMent *payment.Payment,
 	manager interface{},
 	channelSlug string,
@@ -141,11 +141,11 @@ func (a *AppPayment) Refund(
 	panic("not implt")
 }
 
-func (a *AppPayment) Void(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+func (a *ServicePayment) Void(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
 	panic("not implt")
 }
 
-func (a *AppPayment) Confirm(
+func (a *ServicePayment) Confirm(
 	payMent *payment.Payment,
 	manager interface{},
 	channelSlug string,
@@ -155,7 +155,7 @@ func (a *AppPayment) Confirm(
 	panic("not implt")
 }
 
-func (a *AppPayment) ListPaymentSources(
+func (a *ServicePayment) ListPaymentSources(
 	gateway string,
 	customerID string,
 	manager interface{},
@@ -165,18 +165,18 @@ func (a *AppPayment) ListPaymentSources(
 	panic("not implemented")
 }
 
-func (a *AppPayment) ListGateways(
+func (a *ServicePayment) ListGateways(
 	manager interface{},
 	channelSlug string,
 ) ([]*payment.PaymentGateway, *model.AppError) {
 	panic("not implemented")
 }
 
-func (a *AppPayment) fetchGatewayResponse(fn func()) {
+func (a *ServicePayment) fetchGatewayResponse(fn func()) {
 	panic("not implemented")
 }
 
-func (a *AppPayment) getPastTransactionToken(payMent *payment.Payment, kind string) (string, *payment.PaymentError, *model.AppError) {
+func (a *ServicePayment) getPastTransactionToken(payMent *payment.Payment, kind string) (string, *payment.PaymentError, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
 		PaymentID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -201,7 +201,7 @@ func (a *AppPayment) getPastTransactionToken(payMent *payment.Payment, kind stri
 	}
 }
 
-func (a *AppPayment) validateRefundAmount(payMent *payment.Payment, amount *decimal.Decimal) *payment.PaymentError {
+func (a *ServicePayment) validateRefundAmount(payMent *payment.Payment, amount *decimal.Decimal) *payment.PaymentError {
 	if amount.LessThan(decimal.Zero) {
 		return payment.NewPaymentError("validateRefundAmount", "Amount should be positive number", payment.INVALID)
 	}
@@ -215,7 +215,7 @@ func (a *AppPayment) validateRefundAmount(payMent *payment.Payment, amount *deci
 	return nil
 }
 
-func (a *AppPayment) PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) *model.AppError {
+func (a *ServicePayment) PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) *model.AppError {
 	if payMent == nil {
 		return nil
 	}

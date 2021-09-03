@@ -11,7 +11,7 @@ import (
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-func (a *AppGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError {
+func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError {
 	now := model.NewTime(time.Now().UTC())
 
 	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
@@ -46,7 +46,7 @@ func (a *AppGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoC
 }
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-func (a *AppGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError {
+func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError {
 	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -70,7 +70,7 @@ func (a *AppGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, g
 }
 
 // ToggleGiftcardStatus set status of given giftcard to inactive/active
-func (a *AppGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError {
+func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError {
 	if *giftCard.IsActive {
 		giftCard.IsActive = model.NewBool(false)
 	} else {

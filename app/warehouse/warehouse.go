@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package warehouse
 
 import (
@@ -12,19 +16,21 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppWarehouse struct {
-	app.AppIface
+type ServiceWarehouse struct {
+	srv *app.Server
 }
 
 func init() {
-	app.RegisterWarehouseApp(func(a app.AppIface) sub_app_iface.WarehouseApp {
-		return &AppWarehouse{a}
+	app.RegisterWarehouseService(func(s *app.Server) (sub_app_iface.WarehouseService, error) {
+		return &ServiceWarehouse{
+			srv: s,
+		}, nil
 	})
 }
 
 // WarehouseByOption returns a list of warehouses based on given option
-func (a *AppWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError) {
-	warehouses, err := a.Srv().Store.Warehouse().FilterByOprion(option)
+func (a *ServiceWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError) {
+	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
 	var (
 		statusCode   int
 		errorMessage string
@@ -44,8 +50,8 @@ func (a *AppWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterOptio
 }
 
 // WarehouseByStockID returns a warehouse that owns the given stock
-func (a *AppWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError) {
-	warehouse, err := a.Srv().Store.Warehouse().WarehouseByStockID(stockID)
+func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError) {
+	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("WarehouseByStockID", "app.warehouse.error_finding_warehouse_by_stock_id.app_error", err)
 	}
@@ -54,8 +60,8 @@ func (a *AppWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse,
 }
 
 // WarehouseCountries returns countries of given warehouse
-func (a *AppWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
-	shippingZonesOfWarehouse, appErr := a.ShippingApp().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
+func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
+	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
 		WarehouseID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: warehouseID,
@@ -86,7 +92,7 @@ func (a *AppWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.
 }
 
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
-func (a *AppWarehouse) FindWarehousesForCountry(countryCode string) ([]*warehouse.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*warehouse.WareHouse, *model.AppError) {
 	countryCode = strings.ToUpper(countryCode)
 
 	return a.WarehousesByOption(&warehouse.WarehouseFilterOption{

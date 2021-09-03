@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package discount
 
 import (
@@ -9,17 +13,17 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
-type AppDiscount struct {
-	app.AppIface
+type ServiceDiscount struct {
+	srv   *app.Server
 	wg    sync.WaitGroup // this is for some methods that need concurrent executions
 	mutex sync.Mutex     // this is for prevent data racing in methods that have concurrent executions
 }
 
 func init() {
-	app.RegisterDiscountApp(func(a app.AppIface) sub_app_iface.DiscountApp {
-		return &AppDiscount{
-			AppIface: a,
-		}
+	app.RegisterDiscountService(func(s *app.Server) (sub_app_iface.DiscountService, error) {
+		return &ServiceDiscount{
+			srv: s,
+		}, nil
 	})
 }
 

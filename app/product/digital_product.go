@@ -10,7 +10,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-func (a *AppProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings {
+func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings {
 	return &shop.ShopDefaultDigitalContentSettings{
 		AutomaticFulfillmentDigitalProducts: aShop.AutomaticFulfillmentDigitalProducts,
 		DefaultDigitalMaxDownloads:          aShop.DefaultDigitalMaxDownloads,
@@ -22,7 +22,7 @@ func (a *AppProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.Sh
 //
 // It takes default settings or digital product's settings
 // to check if url is still valid.
-func (a *AppProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.DigitalContentUrl) (bool, *model.AppError) {
+func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.DigitalContentUrl) (bool, *model.AppError) {
 	digitalContent, appErr := a.DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -39,7 +39,7 @@ func (a *AppProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.D
 		maxDownloads *uint
 	)
 	if *digitalContent.UseDefaultSettings {
-		shop, appErr := a.ShopApp().ShopById(digitalContent.ShopID)
+		shop, appErr := a.srv.ShopService().ShopById(digitalContent.ShopID)
 		if appErr != nil {
 			return false, appErr
 		}
@@ -68,7 +68,7 @@ func (a *AppProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.D
 	return true, nil
 }
 
-func (a *AppProduct) IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError {
+func (a *ServiceProduct) IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError {
 	contentURL.DownloadNum++
 	_, appErr := a.UpsertDigitalContentURL(contentURL)
 	if appErr != nil {
@@ -76,17 +76,17 @@ func (a *AppProduct) IncrementDownloadCount(contentURL *product_and_discount.Dig
 	}
 
 	if contentURL.LineID != nil {
-		orderLine, appErr := a.OrderApp().OrderLineById(*contentURL.LineID)
+		orderLine, appErr := a.srv.OrderService().OrderLineById(*contentURL.LineID)
 		if appErr != nil {
 			return appErr
 		}
-		userByOrderId, appErr := a.AccountApp().UserByOrderId(orderLine.OrderID)
+		userByOrderId, appErr := a.srv.AccountService().UserByOrderId(orderLine.OrderID)
 		if appErr != nil {
 			return appErr
 		}
 
 		if orderLine != nil && userByOrderId != nil {
-			_, appErr = a.AccountApp().CommonCustomerCreateEvent(
+			_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
 				&userByOrderId.Id,
 				&orderLine.OrderID,
 				account.DIGITAL_LINK_DOWNLOADED,

@@ -28,10 +28,10 @@ func (s *Server) InvalidateAllCaches() *model.AppError {
 
 func (s *Server) InvalidateAllCachesSkipSend() {
 	slog.Info("Purging all caches")
-	s.SessionCache.Purge()
+	s.AccountService().ClearAllUsersSessionCacheLocal()
 	s.StatusCache.Purge()
 	s.Store.User().ClearCaches()
-	// s.Store.Post().ClearCaches()
 	s.Store.FileInfo().ClearCaches()
 	// s.Store.Webhook().ClearCaches()
+	// s.Store.Post().ClearCaches()
 }

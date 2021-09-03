@@ -19,7 +19,7 @@ func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegister
 	}
 
 	// clean channel
-	channel, appErr := r.ChannelApp().CleanChannel(data.Channel)
+	channel, appErr := r.Srv().ChannelService().CleanChannel(data.Channel)
 	if appErr != nil {
 		return nil, appErr
 	}

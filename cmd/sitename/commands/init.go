@@ -17,7 +17,7 @@ func initDBCommandContextCobra(command *cobra.Command, readOnlyConfigStore bool)
 		panic(err)
 	}
 
-	a.PluginApp().InitPlugins(&request.Context{}, *a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
+	a.Srv().PluginService().InitPlugins(&request.Context{}, *a.Config().PluginSettings.Directory, *a.Config().PluginSettings.ClientDirectory)
 	a.DoAppMigrations()
 
 	return a, nil

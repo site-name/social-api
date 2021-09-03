@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (a *AppAccount) MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError {
+func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError {
 	permissionsStr := "permission="
 	for _, permission := range permissions {
 		permissionsStr += permission.Id
@@ -19,7 +19,7 @@ func (a *AppAccount) MakePermissionError(s *model.Session, permissions []*model.
 }
 
 // SessionHasPermissionTo checks if this user has given permission to procceed
-func (a *AppAccount) SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool {
 	if session.IsUnrestricted() {
 		return true
 	}
@@ -27,7 +27,7 @@ func (a *AppAccount) SessionHasPermissionTo(session *model.Session, permission *
 }
 
 // SessionHasPermissionToAny checks if current user has atleast one of given permissions
-func (a *AppAccount) SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool {
 	for _, perm := range permissions {
 		if a.SessionHasPermissionTo(session, perm) {
 			return true
@@ -37,7 +37,7 @@ func (a *AppAccount) SessionHasPermissionToAny(session *model.Session, permissio
 }
 
 // SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
-func (a *AppAccount) SessionHasPermissionToUser(session *model.Session, userID string) bool {
+func (a *ServiceAccount) SessionHasPermissionToUser(session *model.Session, userID string) bool {
 	if userID == "" {
 		return false
 	}
@@ -57,8 +57,8 @@ func (a *AppAccount) SessionHasPermissionToUser(session *model.Session, userID s
 }
 
 // HasPermissionTo checks if an user with Id of `askingUserId` has permission of given permission
-func (a *AppAccount) HasPermissionTo(askingUserId string, permission *model.Permission) bool {
-	user, err := a.AccountApp().UserById(context.Background(), askingUserId)
+func (a *ServiceAccount) HasPermissionTo(askingUserId string, permission *model.Permission) bool {
+	user, err := a.UserById(context.Background(), askingUserId)
 	if err != nil {
 		return false
 	}
@@ -67,7 +67,7 @@ func (a *AppAccount) HasPermissionTo(askingUserId string, permission *model.Perm
 }
 
 // HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
-func (a *AppAccount) HasPermissionToUser(askingUserId string, userID string) bool {
+func (a *ServiceAccount) HasPermissionToUser(askingUserId string, userID string) bool {
 	if askingUserId == userID {
 		return true
 	}
@@ -85,7 +85,7 @@ func (a *AppAccount) HasPermissionToUser(askingUserId string, userID string) boo
 // 1) Not deleted
 //
 // 2) one item in the role's Permissions is equal to given permissionId
-func (a *AppAccount) RolesGrantPermission(roleNames []string, permissionId string) bool {
+func (a *ServiceAccount) RolesGrantPermission(roleNames []string, permissionId string) bool {
 	roles, err := a.GetRolesByNames(roleNames)
 	if err != nil {
 		// This should only happen if something is very broken. We can't realistically

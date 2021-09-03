@@ -14,8 +14,8 @@ import (
 )
 
 // UpsertVoucher update or insert given voucher
-func (a *AppDiscount) UpsertVoucher(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, *model.AppError) {
-	voucher, err := a.Srv().Store.DiscountVoucher().Upsert(voucher)
+func (a *ServiceDiscount) UpsertVoucher(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, *model.AppError) {
+	voucher, err := a.srv.Store.DiscountVoucher().Upsert(voucher)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -31,15 +31,15 @@ func (a *AppDiscount) UpsertVoucher(voucher *product_and_discount.Voucher) (*pro
 }
 
 // VoucherById finds and returns a voucher with given id
-func (a *AppDiscount) VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError) {
-	voucher, err := a.Srv().Store.DiscountVoucher().Get(voucherID)
+func (a *ServiceDiscount) VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError) {
+	voucher, err := a.srv.Store.DiscountVoucher().Get(voucherID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("VoucherById", "app.discount.voucher_missing.app_error", err)
 	}
 	return voucher, nil
 }
 
-func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (DiscountCalculator, *model.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&product_and_discount.VoucherChannelListingFilterOption{
 		VoucherID: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -75,7 +75,7 @@ func (a *AppDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, 
 //  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 //
 // NOTE: the returning interface's type should be identical to given price's type
-func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError) {
+func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError) {
 	// validate given price has valid type
 	switch priceType := price.(type) {
 	case *goprices.Money,
@@ -139,7 +139,7 @@ func (a *AppDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher
 }
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
-func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "ValidateMinSpent"
@@ -149,7 +149,7 @@ func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, va
 		}
 	}()
 
-	ownerShopOfVoucher, appErr := a.ShopApp().ShopById(voucher.ShopID)
+	ownerShopOfVoucher, appErr := a.srv.ShopService().ShopById(voucher.ShopID)
 	if appErr != nil {
 		return
 	}
@@ -198,7 +198,7 @@ func (a *AppDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, va
 }
 
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
-func (a *AppDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "ValidateOncePerCustomer"
@@ -224,7 +224,7 @@ func (a *AppDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Vouc
 }
 
 // ValidateVoucherOnlyForStaff validate if voucher is only for staff
-func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if notApplicableErr != nil {
 			notApplicableErr.Where = "ValidateVoucherOnlyForStaff"
@@ -245,7 +245,7 @@ func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.
 
 	// try checking if there is a relationship between the shop(owner of this voucher) and the customer
 	// if no reation found, it means this customer cannot have this voucher
-	relation, appErr := a.ShopApp().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customerID)
+	relation, appErr := a.srv.ShopService().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customerID)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound || relation == nil {
 			notApplicableErr = &model.NotApplicable{
@@ -261,8 +261,8 @@ func (a *AppDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.
 }
 
 // VouchersByOption finds all vouchers with given option then returns them
-func (a *AppDiscount) VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) {
-	vouchers, err := a.Srv().Store.DiscountVoucher().FilterVouchersByOption(option)
+func (a *ServiceDiscount) VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) {
+	vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("VouchersByOption", "app.discount.vouchers_by_option_error.app_error", err)
 	}
@@ -271,8 +271,8 @@ func (a *AppDiscount) VouchersByOption(option *product_and_discount.VoucherFilte
 }
 
 // PromoCodeIsVoucher checks if given code is belong to a voucher
-func (a *AppDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
-	vouchers, err := a.Srv().Store.DiscountVoucher().FilterVouchersByOption(&product_and_discount.VoucherFilterOption{
+func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
+	vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(&product_and_discount.VoucherFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: code,

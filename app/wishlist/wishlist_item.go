@@ -12,8 +12,8 @@ import (
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option
-func (a *AppWishlist) WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError) {
-	items, err := a.Srv().Store.WishlistItem().FilterByOption(option)
+func (a *ServiceWishlist) WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError) {
+	items, err := a.srv.Store.WishlistItem().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemsByOption", "app.wishlist.error_finding_wishlist_items_by_option.app_error", err)
 	}
@@ -21,8 +21,8 @@ func (a *AppWishlist) WishlistItemsByOption(option *wishlist.WishlistItemFilterO
 }
 
 // WishlistItemByOption returns 1 wishlist item filtered using given option
-func (a *AppWishlist) WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError) {
-	item, err := a.Srv().Store.WishlistItem().GetByOption(option)
+func (a *ServiceWishlist) WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError) {
+	item, err := a.srv.Store.WishlistItem().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemByOption", "app.wishlist.error_finding_wishlist_item_by_option.app_error", err)
 	}
@@ -31,8 +31,8 @@ func (a *AppWishlist) WishlistItemByOption(option *wishlist.WishlistItemFilterOp
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *AppWishlist) BulkUpsertWishlistItems(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError) {
-	wishlistItems, err := a.Srv().Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError) {
+	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -51,7 +51,7 @@ func (a *AppWishlist) BulkUpsertWishlistItems(transaction *gorp.Transaction, wis
 }
 
 // GetOrCreateWishlistItem insert or get wishlist items
-func (a *AppWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, *model.AppError) {
+func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, *model.AppError) {
 	option := &wishlist.WishlistItemFilterOption{}
 
 	if model.IsValidId(wishlistItem.Id) {
@@ -93,8 +93,8 @@ func (a *AppWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.WishlistIte
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *AppWishlist) DeleteWishlistItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError) {
-	numDeleted, err := a.Srv().Store.WishlistItem().DeleteItemsByOption(transaction, option)
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError) {
+	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -103,12 +103,12 @@ func (a *AppWishlist) DeleteWishlistItemsByOption(transaction *gorp.Transaction,
 }
 
 // MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
-func (a *AppWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, dstWishlist *wishlist.Wishlist) *model.AppError {
-	transaction, err := a.Srv().Store.GetMaster().Begin()
+func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, dstWishlist *wishlist.Wishlist) *model.AppError {
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("MoveItemsBetweenWishlists", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.Srv().Store.FinalizeTransaction(transaction)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
 		WishlistID: &model.StringFilter{
@@ -141,7 +141,7 @@ func (a *AppWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, 
 
 	// this function will not execute if not triggered
 	populate_productVariantsOfSourceWishlistMap := func() *model.AppError {
-		productVariantsOfSourceWishlist, appErr := a.ProductApp().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+		productVariantsOfSourceWishlist, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
 			WishlistItemID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					In: itemsOfSourceWishlist.IDs(),

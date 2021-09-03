@@ -2393,11 +2393,11 @@ func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
 
 }
 
-func (s *RetryLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.GetBySlug(slug)
+		result, err := s.ChannelStore.GetRandomActiveChannel()
 		if err == nil {
 			return result, nil
 		}
@@ -2413,11 +2413,11 @@ func (s *RetryLayerChannelStore) GetBySlug(slug string) (*channel.Channel, error
 
 }
 
-func (s *RetryLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.GetRandomActiveChannel()
+		result, err := s.ChannelStore.GetbyOption(option)
 		if err == nil {
 			return result, nil
 		}

@@ -1,3 +1,7 @@
+/*
+	NOTE: This package is initialized during server startup (modules/imports does that)
+	so the init() function get the chance to register a function to create `ServiceAccount`
+*/
 package shop
 
 import (
@@ -8,19 +12,21 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-type AppShop struct {
-	app app.AppIface
+type ServiceShop struct {
+	srv *app.Server
 }
 
 func init() {
-	app.RegisterShopApp(func(a app.AppIface) sub_app_iface.ShopApp {
-		return &AppShop{a}
+	app.RegisterShopService(func(s *app.Server) (sub_app_iface.ShopService, error) {
+		return &ServiceShop{
+			srv: s,
+		}, nil
 	})
 }
 
 // ShopById finds shop by given id
-func (a *AppShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
-	shop, err := a.app.Srv().Store.Shop().Get(shopID)
+func (a *ServiceShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
+	shop, err := a.srv.Store.Shop().Get(shopID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.error_finding_shop_by_id.app_error", err)
 	}

@@ -25,8 +25,9 @@ type ProductVariant struct {
 	model.Sortable
 	model.ModelMetadata
 
-	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
-	Product        *Product        `json:"-" db:"-"`
+	DigitalContent *DigitalContent                 `json:"-" db:"-"` // for storing value returned by prefetching
+	Product        *Product                        `json:"-" db:"-"`
+	ChannelListing []*ProductVariantChannelListing `json:"-" db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries

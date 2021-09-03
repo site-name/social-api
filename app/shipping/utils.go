@@ -9,7 +9,7 @@ import (
 )
 
 // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
-func (a *AppShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError) {
+func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError) {
 	return a.ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
@@ -21,8 +21,8 @@ func (a *AppShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*shipp
 }
 
 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
-func (a *AppShipping) GetCountriesWithoutShippingZone() ([]string, *model.AppError) {
-	zones, err := a.Srv().Store.ShippingZone().FilterByOption(nil) // nil mean find all
+func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]string, *model.AppError) {
+	zones, err := a.srv.Store.ShippingZone().FilterByOption(nil) // nil mean find all
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetCountriesWithoutShippingZone", "app.shipping.shipping_zones_with_option.app_error", err)
 	}

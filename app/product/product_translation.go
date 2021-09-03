@@ -6,7 +6,7 @@ import (
 )
 
 // ProductTranslationByProductID returns translation for given product
-func (a *AppProduct) ProductTranslationByProductID(productID string) (*product_and_discount.ProductTranslation, *model.AppError) {
+func (a *ServiceProduct) ProductTranslationByProductID(productID string) (*product_and_discount.ProductTranslation, *model.AppError) {
 	panic("not implt")
 
 }

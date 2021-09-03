@@ -8,8 +8,8 @@ import (
 )
 
 // ShippingZonesByOption returns all shipping zones that satisfy given options
-func (a *AppShipping) ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError) {
-	shippingZones, err := a.Srv().Store.ShippingZone().FilterByOption(option)
+func (a *ServiceShipping) ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError) {
+	shippingZones, err := a.srv.Store.ShippingZone().FilterByOption(option)
 
 	var (
 		statusCode    int = 0

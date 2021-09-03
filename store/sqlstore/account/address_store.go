@@ -175,13 +175,7 @@ func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Addre
 }
 
 func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
-	tx, err := as.GetMaster().Begin()
-	if err != nil {
-		return errors.Wrap(err, "begin_transaction")
-	}
-	defer store.FinalizeTransaction(tx)
-
-	result, err := tx.Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN $1", addressIDs)
+	result, err := as.GetMaster().Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN $1", addressIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete addresses")
 	}
@@ -191,9 +185,6 @@ func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
 	}
 	if numDeleted != int64(len(addressIDs)) {
 		return errors.Errorf("%d addresses were deleted instead of %d", numDeleted, len(addressIDs))
-	}
-	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "commit_transaction")
 	}
 
 	return nil

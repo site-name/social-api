@@ -9,8 +9,8 @@ import (
 )
 
 // AssignedPageAttributeByOption returns 1 assigned page attribute
-func (a *AppAttribute) AssignedPageAttributeByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, *model.AppError) {
-	assignedPageAttr, err := a.app.Srv().Store.AssignedPageAttribute().GetByOption(option)
+func (a *ServiceAttribute) AssignedPageAttributeByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, *model.AppError) {
+	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AssignedPageAttributeByOption", "app.attribute.error_finding_assigned_page_attribute_by_option.app_error", err)
 	}
@@ -19,7 +19,7 @@ func (a *AppAttribute) AssignedPageAttributeByOption(option *attribute.AssignedP
 }
 
 // GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-func (a *AppAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, *model.AppError) {
+func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, *model.AppError) {
 	option := new(attribute.AssignedPageAttributeFilterOption)
 	if assignedPageAttribute.PageID != "" {
 		option.PageID = &model.StringFilter{
@@ -41,7 +41,7 @@ func (a *AppAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *a
 			return nil, appErr
 		}
 		// create new
-		assignedPageAttr, err := a.app.Srv().Store.AssignedPageAttribute().Save(assignedPageAttribute)
+		assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().Save(assignedPageAttribute)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
 				return nil, appErr

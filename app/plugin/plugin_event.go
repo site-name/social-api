@@ -5,9 +5,9 @@ import (
 	"github.com/sitename/sitename/model/plugins"
 )
 
-func (s *AppPlugin) notifyClusterPluginEvent(event string, data plugins.PluginEventData) {
-	if s.Cluster() != nil {
-		s.Cluster().SendClusterMessage(&cluster.ClusterMessage{
+func (s *ServicePlugin) notifyClusterPluginEvent(event string, data plugins.PluginEventData) {
+	if s.srv.Cluster != nil {
+		s.srv.Cluster.SendClusterMessage(&cluster.ClusterMessage{
 			Event:            event,
 			SendType:         cluster.CLUSTER_SEND_RELIABLE,
 			WaitForAllToSend: true,

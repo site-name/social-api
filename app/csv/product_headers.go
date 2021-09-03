@@ -14,7 +14,7 @@ import (
 // Based on export_info returns exported fields, fields to headers mapping and
 // all headers.
 // Headers contains product, variant, attribute and warehouse headers.
-func (a *AppCsv) GetExportFieldsAndHeadersInfo(exportInfo map[string][]string) ([]string, []string, []string, *model.AppError) {
+func (a *ServiceCsv) GetExportFieldsAndHeadersInfo(exportInfo map[string][]string) ([]string, []string, []string, *model.AppError) {
 	exportFields, fileHeaders := GetProductExportFieldsAndHeaders(exportInfo)
 	attributeHeaders, appErr := a.GetAttributeHeaders(exportInfo)
 	if appErr != nil {
@@ -46,7 +46,7 @@ func (a *AppCsv) GetExportFieldsAndHeadersInfo(exportInfo map[string][]string) (
 // Headers are build from slug and contains information if it's a product or variant
 // attribute. Respectively for product: "slug-value (product attribute)"
 // and for variant: "slug-value (variant attribute)".
-func (a *AppCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
 	attributeIDs := exportInfo["attributes"]
 	if len(attributeIDs) == 0 {
 		return []string{}, nil
@@ -106,7 +106,7 @@ func (a *AppCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]string, 
 			defer a.Unlock()
 			defer a.Done()
 
-			attributes, appErr := a.AttributeApp().AttributesByOption(option)
+			attributes, appErr := a.srv.AttributeService().AttributesByOption(option)
 			if appErr != nil {
 				syncSetAppError(appErr)
 			} else {
@@ -143,13 +143,13 @@ func (a *AppCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]string, 
 
 // Get headers for exported warehouses.
 // Headers are build from slug. Example: "slug-value (warehouse quantity)"
-func (a *AppCsv) GetWarehousesHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetWarehousesHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
 	warehouseIDs := exportInfo["warehouses"]
 	if len(warehouseIDs) == 0 {
 		return []string{}, nil
 	}
 
-	warehouses, appErr := a.WarehouseApp().WarehousesByOption(&warehouse.WarehouseFilterOption{
+	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: warehouseIDs,
@@ -176,13 +176,13 @@ func (a *AppCsv) GetWarehousesHeaders(exportInfo map[string][]string) ([]string,
 // - currency code data header: "slug-value (channel currency code)"
 // - published data header: "slug-value (channel visible)"
 // - publication date data header: "slug-value (channel publication date)"
-func (a *AppCsv) GetChannelsHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetChannelsHeaders(exportInfo map[string][]string) ([]string, *model.AppError) {
 	channelIDs := exportInfo["channels"]
 	if len(channelIDs) == 0 {
 		return []string{}, nil
 	}
 
-	channels, appErr := a.ChannelApp().ChannelsByOption(&channel.ChannelFilterOption{
+	channels, appErr := a.srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: channelIDs,
