@@ -6188,6 +6188,24 @@ func (s *OpenTracingLayerShippingMethodStore) Get(methodID string) (*shipping.Sh
 	return result, err
 }
 
+func (s *OpenTracingLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.GetbyOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodStore.GetbyOption(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Upsert")

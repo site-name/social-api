@@ -68,6 +68,29 @@ func (_m *ShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, e
 	return r0, r1
 }
 
+// GetbyOption provides a mock function with given fields: options
+func (_m *ShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+	ret := _m.Called(options)
+
+	var r0 *shipping.ShippingMethod
+	if rf, ok := ret.Get(0).(func(*shipping.ShippingMethodFilterOption) *shipping.ShippingMethod); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*shipping.ShippingMethod)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*shipping.ShippingMethodFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ModelFields provides a mock function with given fields:
 func (_m *ShippingMethodStore) ModelFields() []string {
 	ret := _m.Called()

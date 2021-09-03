@@ -65,29 +65,6 @@ func (_m *ChannelStore) Get(id string) (*channel.Channel, error) {
 	return r0, r1
 }
 
-// GetBySlug provides a mock function with given fields: slug
-func (_m *ChannelStore) GetBySlug(slug string) (*channel.Channel, error) {
-	ret := _m.Called(slug)
-
-	var r0 *channel.Channel
-	if rf, ok := ret.Get(0).(func(string) *channel.Channel); ok {
-		r0 = rf(slug)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*channel.Channel)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(slug)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetRandomActiveChannel provides a mock function with given fields:
 func (_m *ChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	ret := _m.Called()
@@ -104,6 +81,29 @@ func (_m *ChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetbyOption provides a mock function with given fields: option
+func (_m *ChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+	ret := _m.Called(option)
+
+	var r0 *channel.Channel
+	if rf, ok := ret.Get(0).(func(*channel.ChannelFilterOption) *channel.Channel); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*channel.Channel)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*channel.ChannelFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

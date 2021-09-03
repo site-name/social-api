@@ -65,29 +65,6 @@ func (_m *AttributeStore) Get(id string) (*attribute.Attribute, error) {
 	return r0, r1
 }
 
-// GetAttributesByIds provides a mock function with given fields: ids
-func (_m *AttributeStore) GetAttributesByIds(ids []string) ([]*attribute.Attribute, error) {
-	ret := _m.Called(ids)
-
-	var r0 []*attribute.Attribute
-	if rf, ok := ret.Get(0).(func([]string) []*attribute.Attribute); ok {
-		r0 = rf(ids)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*attribute.Attribute)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(ids)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetBySlug provides a mock function with given fields: slug
 func (_m *AttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	ret := _m.Called(slug)

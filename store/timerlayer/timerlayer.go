@@ -5641,6 +5641,22 @@ func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.Shipping
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.GetbyOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.GetbyOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
 	start := timemodule.Now()
 
