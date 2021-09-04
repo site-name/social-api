@@ -20,6 +20,18 @@ type Stock struct {
 	ProductVariant    *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
+// StockFilterForChannelOption is used by a filter function at store/sqlstore/channel/channel_store.go
+type StockFilterForChannelOption struct {
+	ChannelSlug string
+
+	Id               *model.StringFilter // WHERE Id ...
+	WarehouseID      *model.StringFilter // WHERE WarehouseID ...
+	ProductVariantID *model.StringFilter // WHERE ProductVariantID ...
+
+	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
+	// SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
+}
+
 // StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
 	Id               *model.StringFilter //
@@ -29,7 +41,7 @@ type StockFilterOption struct {
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
 
-	AnnotateAvailabeQuantity bool
+	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries
@@ -43,6 +55,7 @@ type StockFilterOption struct {
 	ForUpdateOf string
 }
 
+// StockFilterForCountryAndChannel is used in specific filter function located at store/sqlstore/channel/channel_store.go
 type StockFilterForCountryAndChannel struct {
 	CountryCode      string
 	ChannelSlug      string
@@ -55,7 +68,7 @@ type StockFilterForCountryAndChannel struct {
 	WarehouseIDFilter      *model.StringFilter //
 	ProductVariantIDFilter *model.StringFilter //
 
-	AnnotateAvailabeQuantity bool
+	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries
@@ -127,8 +140,9 @@ func (s *Stock) PreUpdate() {
 	s.commonPre()
 }
 
+// InsufficientStockData is an error type
 type InsufficientStockData struct {
-	Variant           product_and_discount.ProductVariant // Product variant ID
+	Variant           product_and_discount.ProductVariant // Product variant
 	OrderLine         *order.OrderLine                    // can be nil
 	WarehouseID       *string                             // can be nil
 	AvailableQuantity *int                                // can be nil

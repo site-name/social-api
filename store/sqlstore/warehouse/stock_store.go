@@ -118,13 +118,13 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	}
 }
 
-// FilterForChannel
-func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stock, error) {
+// FilterForChannel finds and returns stocks that satisfy given options
+func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
 	channelQuery := ss.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where(squirrel.Expr("Channels.Slug = ?", channelSlug)).
+		Where(squirrel.Expr("Channels.Slug = ?", options.ChannelSlug)).
 		Where(squirrel.Expr("Channels.Id = ShippingZoneChannels.ChannelID")).
 		Limit(1).
 		Suffix(")")
@@ -147,18 +147,34 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 		Limit(1).
 		Suffix(")")
 
-	selectFields := append(
-		ss.ModelFields(),
-		ss.ProductVariant().ModelFields()...,
-	)
-	rows, err := ss.GetQueryBuilder().
+	selectFields := ss.ModelFields()
+	// check if we need select related data:
+	if options.SelectRelatedProductVariant {
+		selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+	}
+
+	query := ss.GetQueryBuilder().
 		Select(selectFields...).
 		From(store.StockTableName).
-		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
 		Where(warehouseShippingZoneQuery).
-		OrderBy(store.TableOrderingMap[store.StockTableName]).
-		RunWith(ss.GetReplica()).
-		Query()
+		OrderBy(store.TableOrderingMap[store.StockTableName])
+
+	// parse options
+
+	if options.SelectRelatedProductVariant {
+		query = query.InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)")
+	}
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+	}
+	if options.WarehouseID != nil {
+		query = query.Where(options.WarehouseID.ToSquirrel("Stocks.WarehouseID"))
+	}
+	if options.ProductVariantID != nil {
+		query = query.Where(options.ProductVariantID.ToSquirrel("Stocks.ProductVariantID"))
+	}
+
+	rows, err := query.RunWith(ss.GetReplica()).Query()
 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given channel slug")
@@ -168,15 +184,17 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 		returningStocks []*warehouse.Stock
 		stock           warehouse.Stock
 		productVariant  product_and_discount.ProductVariant
-	)
-
-	for rows.Next() {
-		err = rows.Scan(
+		scanFields      []interface{} = []interface{}{
 			&stock.Id,
 			&stock.CreateAt,
 			&stock.WarehouseID,
 			&stock.ProductVariantID,
 			&stock.Quantity,
+		}
+	)
+	if options.SelectRelatedProductVariant {
+		scanFields = append(
+			scanFields,
 
 			&productVariant.Id,
 			&productVariant.Name,
@@ -189,11 +207,17 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 			&productVariant.Metadata,
 			&productVariant.PrivateMetadata,
 		)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row contains stock, product variant")
 		}
 
-		stock.ProductVariant = &productVariant
+		if options.SelectRelatedProductVariant {
+			stock.ProductVariant = &productVariant
+		}
 		returningStocks = append(returningStocks, &stock)
 	}
 
@@ -206,7 +230,6 @@ func (ss *SqlStockStore) FilterForChannel(channelSlug string) ([]*warehouse.Stoc
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
-
 	selectFields := ss.ModelFields()
 	if options.SelectRelatedWarehouse {
 		selectFields = append(selectFields, ss.Warehouse().ModelFields()...)

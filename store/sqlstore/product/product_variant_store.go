@@ -2,7 +2,6 @@ package product
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -136,18 +135,15 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 // GetByOrderLineID finds and returns a product variant by given orderLineID
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
 	var res product_and_discount.ProductVariant
-	err := vs.GetReplica().SelectOne(
-		&res,
-		`SELECT `+strings.Join(vs.ModelFields(), ", ")+`
-		FROM `+store.ProductVariantTableName+`
-		INNER JOIN `+store.OrderLineTableName+` ON (
-			ProductVariants.Id = Orderlines.VariantID
-		)
-		WHERE Orderlines.Id = :OrderLineID`,
-		map[string]interface{}{
-			"OrderLineID": orderLineID,
-		},
-	)
+
+	query, args, _ := vs.GetQueryBuilder().
+		Select(vs.ModelFields()...).
+		From(store.ProductVariantTableName).
+		InnerJoin(store.OrderLineTableName + " ON (ProductVariants.Id = Orderlines.VariantID)").
+		Where(squirrel.Eq{"Orderlines.Id": orderLineID}).
+		ToSql()
+
+	err := vs.GetReplica().SelectOne(&res, query, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -160,8 +156,14 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product
 
 // FilterByOption finds and returns product variants based on given option
 func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+
+	selectFields := vs.ModelFields()
+	if option.SelectRelatedDigitalContent {
+		selectFields = append(selectFields, vs.DigitalContent().ModelFields()...)
+	}
+
 	query := vs.GetQueryBuilder().
-		Select(vs.ModelFields()...).
+		Select(selectFields...).
 		From(store.ProductVariantTableName).
 		OrderBy(store.TableOrderingMap[store.ProductVariantTableName])
 
@@ -177,6 +179,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	}
 
 	var joinedProductVariantChannelListingTable bool
+
 	if option.ProductVariantChannelListingPriceAmount != nil {
 		query = query.
 			InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)").
@@ -192,15 +195,14 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 			Where(option.ProductVariantChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
 	}
 
-	var (
-		joined_WishlistProductVariantTableName_table bool
-	)
+	var joined_WishlistProductVariantTableName_table bool
+
 	if option.WishlistItemID != nil {
 		query = query.
 			InnerJoin(store.WishlistProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)").
 			Where(option.WishlistItemID.ToSquirrel("WishlistItemProductVariants.WishlistItemID"))
 
-		joined_WishlistProductVariantTableName_table = true // indicate we have already joined `WishlistProductVariantTableName`
+		joined_WishlistProductVariantTableName_table = true // indicate joined `WishlistProductVariantTableName`
 	}
 
 	if option.WishlistID != nil {
@@ -212,15 +214,63 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 			Where(option.WishlistID.ToSquirrel("WishlistItems.WishlistID"))
 	}
 
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	if option.SelectRelatedDigitalContent {
+		query = query.InnerJoin(store.ProductDigitalContentTableName + " ON (ProductVariants.Id = DigitalContents.ProductVariantID)")
 	}
 
-	var res []*product_and_discount.ProductVariant
-	_, err = vs.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(vs.GetReplica()).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variants by given option")
+		return nil, errors.Wrap(err, "failed to find product variants by options")
+	}
+
+	var (
+		res            []*product_and_discount.ProductVariant
+		variant        product_and_discount.ProductVariant
+		digitalContent product_and_discount.DigitalContent
+
+		scanFields []interface{} = []interface{}{
+			&variant.Id,
+			&variant.Name,
+			&variant.ProductID,
+			&variant.Sku,
+			&variant.Weight,
+			&variant.WeightUnit,
+			&variant.TrackInventory,
+			&variant.SortOrder,
+			&variant.Metadata,
+			&variant.PrivateMetadata,
+		}
+	)
+	if option.SelectRelatedDigitalContent {
+		scanFields = append(
+			scanFields,
+
+			&digitalContent.Id,
+			&digitalContent.ShopID,
+			&digitalContent.UseDefaultSettings,
+			&digitalContent.AutomaticFulfillment,
+			&digitalContent.ContentType,
+			&digitalContent.ProductVariantID,
+			&digitalContent.ContentFile,
+			&digitalContent.MaxDownloads,
+			&digitalContent.UrlValidDays,
+			&digitalContent.Metadata,
+			&digitalContent.PrivateMetadata,
+		)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row on product variant and related digital content")
+		}
+
+		variant.DigitalContent = &digitalContent
+		res = append(res, &variant)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows")
 	}
 
 	return res, nil

@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -62,7 +63,7 @@ func (a *ServiceOrder) OrderVoided(ord *order.Order, user *account.User, payMent
 }
 
 // OrderReturned
-func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, returnedLines []*QuantityOrderLine) *model.AppError {
+func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, returnedLines []*order.QuantityOrderLine) *model.AppError {
 	var userID *string
 	if user == nil {
 		userID = nil
@@ -348,8 +349,164 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manage
 //
 //     Raise:
 //         InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas []map[string]*order.OrderLine, channelSlug string) ([]*order.FulfillmentLine, *model.AppError) {
-	panic("not impl")
+func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelSlug string) ([]*order.FulfillmentLine, *warehouse.InsufficientStock, *model.AppError) {
+
+	var (
+		variantIDs          = lineDatas.OrderLines().ProductVariantIDs()
+		appError            *model.AppError
+		stocksChan          = make(chan []*warehouse.Stock)
+		productVariantsChan = make(chan []*product_and_discount.ProductVariant)
+		syncSetAppError     = func(err *model.AppError) {
+			a.mutex.Lock()
+			defer a.mutex.Unlock()
+
+			if err != nil && appError == nil {
+				appError = err
+			}
+		}
+	)
+	defer func() {
+		close(stocksChan)
+		close(productVariantsChan)
+	}()
+
+	go func() {
+		stocks, appErr := a.srv.WarehouseService().FilterStocksForChannel(&warehouse.StockFilterForChannelOption{
+			ChannelSlug: channelSlug,
+			WarehouseID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: warehouseID,
+				},
+			},
+			ProductVariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: variantIDs,
+				},
+			},
+			SelectRelatedProductVariant: true,
+		})
+		if appErr != nil {
+			syncSetAppError(appErr)
+		}
+		stocksChan <- stocks
+
+	}()
+
+	go func() {
+		productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: variantIDs,
+				},
+			},
+			SelectRelatedDigitalContent: true, // NOTE: this asks store to populate related DigitalContent data to returned product variants
+		})
+		if appErr != nil {
+			syncSetAppError(appErr)
+		}
+		productVariantsChan <- productVariants
+	}()
+
+	// lock here:
+	productVariants := <-productVariantsChan
+	stocks := <-stocksChan
+
+	if appError != nil {
+		return nil, nil, appError
+	}
+
+	// productVariantsMap has keys are product variant ids
+	productVariantsMap := map[string]*product_and_discount.ProductVariant{}
+	for _, variant := range productVariants {
+		productVariantsMap[variant.Id] = variant
+	}
+
+	// variantToStock map has keys are product variant ids
+	variantToStock := map[string][]*warehouse.Stock{}
+	for _, stock := range stocks {
+		variantToStock[stock.ProductVariantID] = append(variantToStock[stock.ProductVariantID], stock)
+	}
+
+	var (
+		insufficientStocks              []*warehouse.InsufficientStockData
+		fulfillmentLines                []*order.FulfillmentLine
+		linesInfo                       []*order.OrderLineData
+		quantity                        int
+		orderLine                       *order.OrderLine
+		productVariantOfOrderLine       product_and_discount.ProductVariant
+		productVariantOfOrderLineIsReal bool
+	)
+
+	for _, line := range lineDatas {
+
+		productVariantOfOrderLineIsReal = false
+		quantity = line.Quantity
+		orderLine = line.OrderLine
+		productVariantOfOrderLine = product_and_discount.ProductVariant{}
+
+		if orderLine.VariantID != nil && productVariantsMap[*orderLine.VariantID] != nil {
+			productVariantOfOrderLine = *(productVariantsMap[*orderLine.VariantID])
+			productVariantOfOrderLineIsReal = true
+		}
+
+		if quantity > 0 {
+			if orderLine.VariantID == nil || variantToStock[*orderLine.VariantID] == nil {
+				insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+					Variant:     productVariantOfOrderLine,
+					OrderLine:   orderLine,
+					WarehouseID: &warehouseID,
+				})
+				continue
+			}
+
+			stock := variantToStock[*orderLine.VariantID][0]
+			linesInfo = append(linesInfo, &order.OrderLineData{
+				Line:        *orderLine,
+				Quantity:    line.Quantity,
+				Variant:     &productVariantOfOrderLine,
+				WarehouseID: &warehouseID,
+			})
+
+			orderLineIsDigital, appErr := a.srv.OrderService().OrderLineIsDigital(orderLine)
+			if appErr != nil {
+				return nil, nil, appErr
+			}
+			if orderLineIsDigital && productVariantOfOrderLineIsReal {
+
+				_, appErr = a.srv.ProductService().UpsertDigitalContentURL(&product_and_discount.DigitalContentUrl{
+					ContentID: productVariantOfOrderLine.DigitalContent.Id, // check out 2nd goroutine above to see why is it possible to access DigitalContent.
+					LineID:    &orderLine.Id,
+				})
+				if appErr != nil {
+					return nil, nil, appErr
+				}
+			}
+
+			fulfillmentLines = append(fulfillmentLines, &order.FulfillmentLine{
+				OrderLineID:   orderLine.Id,
+				FulfillmentID: fulfillment.Id,
+				Quantity:      line.Quantity,
+				StockID:       &stock.Id,
+			})
+		}
+	}
+
+	if len(insufficientStocks) > 0 {
+		return nil,
+			&warehouse.InsufficientStock{
+				Items: insufficientStocks,
+			},
+			nil
+	}
+
+	if len(linesInfo) > 0 {
+		insufficientStockErr, appErr := a.FulfillOrderLines(linesInfo)
+		if insufficientStockErr != nil || appErr != nil {
+			return nil, insufficientStockErr, appErr
+		}
+	}
+
+	return fulfillmentLines, nil, nil
 }
 
 // Fulfill order.
@@ -382,8 +539,67 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, wa
 //
 //     Raise:
 //         InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) CreateFulfillments(requester *account.User, ord *order.Order, fulfillmentLinesForWarehouse interface{}, manager interface{}, notifyCustomer bool) ([]*order.Fulfillment, *model.AppError) {
-	panic("not impl")
+func (a *ServiceOrder) CreateFulfillments(requester *account.User, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interface{}, notifyCustomer bool) ([]*order.Fulfillment, *warehouse.InsufficientStock, *model.AppError) {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return nil, nil, model.NewAppError("CreateFulfillments", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
+	var (
+		fulfillments     []*order.Fulfillment
+		fulfillmentLines []*order.FulfillmentLine
+	)
+
+	channel, appErr := a.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orDer.ChannelID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	for warehouseID, quantityOrderLine := range fulfillmentLinesForWarehouses {
+		fulfillment, appErr := a.UpsertFulfillment(&order.Fulfillment{
+			OrderID: orDer.Id,
+		})
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		fulfillments = append(fulfillments, fulfillment)
+		filmentLines, insufficientStockErr, appErr := a.createFulfillmentLines(
+			fulfillment,
+			warehouseID,
+			quantityOrderLine,
+			channel.Id,
+		)
+		if insufficientStockErr != nil || appErr != nil {
+			return nil, insufficientStockErr, appErr
+		}
+
+		fulfillmentLines = append(fulfillmentLines, filmentLines...)
+	}
+
+	fulfillmentLines, appErr = a.BulkUpsertFulfillmentLines(transaction, fulfillmentLines)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	// commit transaction
+	if err = transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("CreateFulfillments", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	appErr = a.OrderFulfilled(fulfillments, requester, fulfillmentLines, manager, notifyCustomer)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	return fulfillments, nil, nil
 }
 
 // getFulfillmentLineIfExists
@@ -943,7 +1159,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 		return nil, appErr
 	}
 
-	returnedLines := map[string]*QuantityOrderLine{}
+	returnedLines := map[string]*order.QuantityOrderLine{}
 
 	orderLineIDs := []string{}
 	for _, lineData := range fulfillmentLineDatas {
@@ -969,7 +1185,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 	)
 
 	for _, orderLineData := range orderLineDatas {
-		returnedLines[orderLineData.Line.Id] = &QuantityOrderLine{
+		returnedLines[orderLineData.Line.Id] = &order.QuantityOrderLine{
 			Quantity:  orderLineData.Quantity,
 			OrderLine: &orderLineData.Line,
 		}
@@ -981,12 +1197,12 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 			returnedLine := returnedLines[orderLine.Id]
 
 			if returnedLine != nil {
-				returnedLines[orderLine.Id] = &QuantityOrderLine{
+				returnedLines[orderLine.Id] = &order.QuantityOrderLine{
 					Quantity:  returnedLine.Quantity + fulfillmentLineData.Quantity,
 					OrderLine: returnedLine.OrderLine,
 				}
 			} else {
-				returnedLines[orderLine.Id] = &QuantityOrderLine{
+				returnedLines[orderLine.Id] = &order.QuantityOrderLine{
 					Quantity:  fulfillmentLineData.Quantity,
 					OrderLine: orderLine,
 				}
@@ -994,7 +1210,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 		}
 	}
 
-	sliceOfQuantityOrderLine := []*QuantityOrderLine{}
+	sliceOfQuantityOrderLine := []*order.QuantityOrderLine{}
 	for _, value := range returnedLines {
 		sliceOfQuantityOrderLine = append(sliceOfQuantityOrderLine, value)
 	}
@@ -1048,9 +1264,9 @@ func (a *ServiceOrder) ProcessReplace(
 		return nil, nil, appErr
 	}
 
-	replacedLines := []*QuantityOrderLine{}
+	replacedLines := []*order.QuantityOrderLine{}
 	for _, orderLine := range orderLinesOfOrder {
-		replacedLines = append(replacedLines, &QuantityOrderLine{
+		replacedLines = append(replacedLines, &order.QuantityOrderLine{
 			Quantity:  orderLine.Quantity,
 			OrderLine: orderLine,
 		})
@@ -1220,7 +1436,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 func (a *ServiceOrder) calculateRefundAmount(
 	returnOrderLineDatas []*order.OrderLineData,
 	returnFulfillmentLineDatas []*order.FulfillmentLineData,
-	linesToRefund map[string]*QuantityOrderLine,
+	linesToRefund map[string]*order.QuantityOrderLine,
 
 ) (*decimal.Decimal, *model.AppError) {
 
@@ -1231,7 +1447,7 @@ func (a *ServiceOrder) calculateRefundAmount(
 				unitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(lineData.Quantity))),
 			)
 		}
-		linesToRefund[lineData.Line.Id] = &QuantityOrderLine{
+		linesToRefund[lineData.Line.Id] = &order.QuantityOrderLine{
 			Quantity:  lineData.Quantity,
 			OrderLine: &lineData.Line,
 		}
@@ -1303,12 +1519,12 @@ func (a *ServiceOrder) calculateRefundAmount(
 
 			dataFromAllRefundedLines := linesToRefund[orderLine.Id]
 			if dataFromAllRefundedLines != nil {
-				linesToRefund[orderLine.Id] = &QuantityOrderLine{
+				linesToRefund[orderLine.Id] = &order.QuantityOrderLine{
 					Quantity:  dataFromAllRefundedLines.Quantity + lineData.Quantity,
 					OrderLine: dataFromAllRefundedLines.OrderLine,
 				}
 			} else {
-				linesToRefund[orderLine.Id] = &QuantityOrderLine{
+				linesToRefund[orderLine.Id] = &order.QuantityOrderLine{
 					Quantity:  lineData.Quantity,
 					OrderLine: orderLine,
 				}
@@ -1333,7 +1549,7 @@ func (a *ServiceOrder) processRefund(
 
 ) (*decimal.Decimal, *model.AppError) {
 
-	linesToRefund := map[string]*QuantityOrderLine{}
+	linesToRefund := map[string]*order.QuantityOrderLine{}
 
 	refundAmount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
 	if appErr != nil {

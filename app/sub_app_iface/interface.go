@@ -324,6 +324,7 @@ type WarehouseService interface {
 	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError)
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                          // GetStockById takes options for filtering 1 stock
+	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)               // FilterStocksForChannel returns a slice of stocks that filtered using given options
 }
 
 type DiscountService interface {
@@ -378,6 +379,7 @@ type OrderService interface {
 	CustomerEmail(ord *order.Order) (string, *model.AppError)                                                      // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
 	OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError)                  // OrderLinesByOption returns a list of order lines by given option
 	AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) // AnAddressOfOrder returns shipping address of given order if presents
+	OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError)                                         // OrderLineIsDigital Check if a variant is digital and contains digital content.
 }
 
 type MenuService interface {

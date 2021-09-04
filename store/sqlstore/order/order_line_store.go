@@ -260,9 +260,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
 	}
 
-	var (
-		joined_ProductVariantTableName bool
-	)
+	var joined_ProductVariantTableName bool
+
 	if option.VariantDigitalContentID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
@@ -341,7 +340,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	// joining prefetched data.
-	// if slice of productVariants is not empty, this means we have prefetched related data
+	// if slice of productVariants is not empty, this means we have prefetch-related data
 	if len(productVariants) > 0 {
 		productVariantsMap := map[string]*product_and_discount.ProductVariant{}
 		for _, variant := range productVariants {

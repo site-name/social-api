@@ -389,6 +389,7 @@ type (
 		ChangeQuantity(stockID string, quantity int) error                                                                                                     // ChangeQuantity reduce or increase the quantity of given stock
 		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
 		BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error)                                                           // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()

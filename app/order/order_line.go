@@ -84,7 +84,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 
 	for _, orderLine := range orderLines {
 		go func(anOrderLine *order.OrderLine) {
-			orderLineIsDigital, appErr := a.OrderLineIsDiagital(anOrderLine)
+			orderLineIsDigital, appErr := a.OrderLineIsDigital(anOrderLine)
 			if appErr != nil {
 				setAppError(appErr)
 			} else {
@@ -120,8 +120,8 @@ func (a *ServiceOrder) OrderLineById(orderLineID string) (*order.OrderLine, *mod
 	return orderLine, nil
 }
 
-// OrderLineIsDiagital Check if a variant is digital and contains digital content.
-func (a *ServiceOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *model.AppError) {
+// OrderLineIsDigital Check if a variant is digital and contains digital content.
+func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError) {
 	if orderLine.VariantID == nil {
 		return false, nil
 	}
@@ -135,14 +135,13 @@ func (a *ServiceOrder) OrderLineIsDiagital(orderLine *order.OrderLine) (bool, *m
 	var orderLineProductVariantHasDigitalContent bool
 
 	// check if there is a digital content accompanies order line's product variant:
-	digitalContent, appErr := a.srv.ProductService().
-		DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-			ProductVariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: *orderLine.VariantID,
-				},
+	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+		ProductVariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: *orderLine.VariantID,
 			},
-		})
+		},
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			orderLineProductVariantHasDigitalContent = false

@@ -129,6 +129,27 @@ func (a *ServiceWarehouse) GetStockById(stockID string) (*warehouse.Stock, *mode
 	return stock, nil
 }
 
+// FilterStocksForChannel returns a slice of stocks that filtered using given options
+func (a *ServiceWarehouse) FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterForChannel(option)
+	var (
+		statusCode   int
+		errorMessage string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errorMessage = err.Error()
+	} else if len(stocks) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("FilterStocksByChannel", "app.warehouse.error_finding_stocks_for_channel.app_error", nil, errorMessage, statusCode)
+	}
+
+	return stocks, nil
+}
+
 // StockIncreaseQuantity Return given quantity of product to a stock.
 func (a *ServiceWarehouse) StockIncreaseQuantity(stockID string, quantity int) *model.AppError {
 	err := a.srv.Store.Stock().ChangeQuantity(stockID, quantity)

@@ -7244,6 +7244,26 @@ func (s *RetryLayerStockStore) FilterByOption(transaction *gorp.Transaction, opt
 
 }
 
+func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.FilterForChannel(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0

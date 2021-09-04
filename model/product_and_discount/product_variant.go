@@ -42,6 +42,8 @@ type ProductVariantFilterOption struct {
 	ProductVariantChannelListingChannelSlug *model.StringFilter // LEFT JOIN `ProductVariantChannelListing`
 
 	Distinct bool // if true, use SELECT DISTINCT
+
+	SelectRelatedDigitalContent bool // if true, JOIN Digital content table and attach related values to returning values(s)
 }
 
 type ProductVariants []*ProductVariant
