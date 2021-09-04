@@ -116,7 +116,6 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "OrderTotalQuantity"
 		return 0, appErr
 	}
 
@@ -217,25 +216,24 @@ func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *m
 
 // OrderCanCalcel checks if given order can be canceled
 func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
-	fulfillments, err := a.srv.Store.Fulfillment().
-		FilterByoption(&order.FulfillmentFilterOption{
-			OrderID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: ord.Id,
+	fulfillments, err := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+		Status: &model.StringFilter{
+			StringOption: &model.StringOption{
+				NotIn: []string{
+					order.FULFILLMENT_CANCELED,
+					order.FULFILLMENT_REFUNDED,
+					order.FULFILLMENT_RETURNED,
+					order.FULFILLMENT_REFUNDED_AND_RETURNED,
+					order.FULFILLMENT_REPLACED,
 				},
 			},
-			Status: &model.StringFilter{
-				StringOption: &model.StringOption{
-					NotIn: []string{
-						order.FULFILLMENT_CANCELED,
-						order.FULFILLMENT_REFUNDED,
-						order.FULFILLMENT_RETURNED,
-						order.FULFILLMENT_REFUNDED_AND_RETURNED,
-						order.FULFILLMENT_REPLACED,
-					},
-				},
-			},
-		})
+		},
+	})
 
 	if err != nil {
 		// this means system error

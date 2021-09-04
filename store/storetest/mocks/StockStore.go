@@ -81,6 +81,29 @@ func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *war
 	return r0, r1
 }
 
+// FilterForChannel provides a mock function with given fields: options
+func (_m *StockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+	ret := _m.Called(options)
+
+	var r0 []*warehouse.Stock
+	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForChannelOption) []*warehouse.Stock); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.Stock)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForChannelOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterForCountryAndChannel provides a mock function with given fields: transaction, options
 func (_m *StockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, options)

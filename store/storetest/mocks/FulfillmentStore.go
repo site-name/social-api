@@ -19,8 +19,8 @@ func (_m *FulfillmentStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterByoption provides a mock function with given fields: option
-func (_m *FulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+// FilterByOption provides a mock function with given fields: option
+func (_m *FulfillmentStore) FilterByOption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	ret := _m.Called(option)
 
 	var r0 []*order.Fulfillment

@@ -1,7 +1,6 @@
 package order
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -49,6 +48,8 @@ type Fulfillment struct {
 	ShippingRefundAmount *decimal.Decimal `json:"shipping_refund_amount"`
 	TotalRefundAmount    *decimal.Decimal `json:"total_refund_amount"`
 	model.ModelMetadata
+
+	Order *Order `json:"-" db:"-"` // this field get populated in queries that require select related data
 }
 
 // FulfillmentFilterOption is used to build squirrel sql queries
@@ -56,6 +57,25 @@ type FulfillmentFilterOption struct {
 	Id      *model.StringFilter
 	OrderID *model.StringFilter
 	Status  *model.StringFilter
+
+	SelectRelatedOrder bool // if true, tells store to select related order also
+
+	FulfillmentLineID *model.StringFilter // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
+
+	SelectForUpdate bool // if true, add `FOR UPDATE`to the end of sql queries
+}
+
+type Fulfillments []*Fulfillment
+
+func (f Fulfillments) IDs() []string {
+	res := []string{}
+	for _, item := range f {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
 }
 
 func (f *Fulfillment) IsValid() *model.AppError {
@@ -94,11 +114,8 @@ func (f *Fulfillment) PreSave() {
 	}
 }
 
-func (f *Fulfillment) ComposedId() (string, error) {
-	if !model.IsValidId(f.Id) {
-		return "", errors.New("please save me first")
-	}
-	return fmt.Sprintf("%s-%d", f.OrderID, f.FulfillmentOrder), nil
+func (f *Fulfillment) ComposedId() string {
+	return fmt.Sprintf("%s-%d", f.OrderID, f.FulfillmentOrder)
 }
 
 // CanEdit checks if current Fulfillment's Status is "canceled"

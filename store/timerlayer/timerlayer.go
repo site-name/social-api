@@ -3223,10 +3223,10 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.FilterByoption(option)
+	result, err := s.FulfillmentStore.FilterByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3234,7 +3234,7 @@ func (s *TimerLayerFulfillmentStore) FilterByoption(option *order.FulfillmentFil
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.FilterByoption", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -3255,10 +3255,10 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.GetByOption(option)
+	result, err := s.FulfillmentStore.GetByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

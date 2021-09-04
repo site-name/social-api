@@ -3,6 +3,8 @@ package order
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
@@ -41,6 +43,21 @@ func (fs *SqlFulfillmentStore) ModelFields() []string {
 	}
 }
 
+func (fs *SqlFulfillmentStore) ScanFields(holder order.Fulfillment) []interface{} {
+	return []interface{}{
+		&holder.Id,
+		&holder.FulfillmentOrder,
+		&holder.OrderID,
+		&holder.Status,
+		&holder.TrackingNumber,
+		&holder.CreateAt,
+		&holder.ShippingRefundAmount,
+		&holder.TotalRefundAmount,
+		&holder.Metadata,
+		&holder.PrivateMetadata,
+	}
+}
+
 func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
 	fs.CreateForeignKeyIfNotExists(store.FulfillmentTableName, "OrderID", store.OrderTableName, "id", true)
 	fs.CreateIndexIfNotExists("idx_fulfillments_status", store.FulfillmentTableName, "Status")
@@ -48,8 +65,15 @@ func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
 }
 
 // Upsert depends on given fulfillment's Id to decide update or insert it
-func (fs *SqlFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
-	var isSaving bool
+func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+	var (
+		isSaving bool
+		upsertor store.Upsertor = fs.GetMaster()
+	)
+	if transaction != nil {
+		upsertor = transaction
+	}
+
 	if fulfillment.Id == "" {
 		isSaving = true
 		fulfillment.PreSave()
@@ -67,7 +91,7 @@ func (fs *SqlFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fu
 		oldFulfillment *order.Fulfillment
 	)
 	if isSaving {
-		err = fs.GetMaster().Insert(fulfillment)
+		err = upsertor.Insert(fulfillment)
 	} else {
 		oldFulfillment, err = fs.Get(fulfillment.Id)
 		if err != nil {
@@ -78,7 +102,7 @@ func (fs *SqlFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fu
 		fulfillment.OrderID = oldFulfillment.OrderID
 		fulfillment.CreateAt = oldFulfillment.CreateAt
 
-		numUpdated, err = fs.GetMaster().Update(fulfillment)
+		numUpdated, err = upsertor.Update(fulfillment)
 	}
 
 	if err != nil {
@@ -109,11 +133,18 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	return &ffm, nil
 }
 
-// GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) buildQuery(option *order.FulfillmentFilterOption) squirrel.SelectBuilder {
+	// decide which fiedlds to select
+	selectFields := fs.ModelFields()
+	if option.SelectRelatedOrder {
+		selectFields = append(selectFields, fs.Order().ModelFields()...)
+	}
+
+	// build query:
 	query := fs.GetQueryBuilder().
-		Select(fs.ModelFields()...).
-		From(store.FulfillmentTableName)
+		Select(selectFields...).
+		From(store.FulfillmentTableName).
+		OrderBy(store.TableOrderingMap[store.FulfillmentTableName])
 
 	// parse option
 	if option.Id != nil {
@@ -125,14 +156,47 @@ func (fs *SqlFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption
 	if option.Status != nil {
 		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
 	}
+	if option.FulfillmentLineID != nil {
+		// joinFunc can be wither LeftJoin or InnerJoin
+		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
 
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOption_ToSql")
+		if option.FulfillmentLineID.NULL != nil && *option.FulfillmentLineID.NULL { // meaning fulfillment must have no fulfillment line
+			joinFunc = query.LeftJoin
+		}
+
+		query = joinFunc(store.FulfillmentLineTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
+			Where(option.FulfillmentLineID.ToSquirrel("FulfillmentLines.Id"))
+	}
+	if option.SelectRelatedOrder {
+		query = query.InnerJoin(store.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")
+	}
+	if option.SelectForUpdate {
+		query = query.Suffix("FOR UPDATE")
 	}
 
-	var res order.Fulfillment
-	err = fs.GetReplica().SelectOne(&res, queryString, args...)
+	return query
+}
+
+// GetByOption returns 1 fulfillment, filtered by given option
+func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+	var runner squirrel.BaseRunner = fs.GetReplica()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query := fs.buildQuery(option)
+
+	row := query.RunWith(runner).QueryRow()
+	var (
+		fulfillment order.Fulfillment
+		anOrder     order.Order
+		scanFields  = fs.ScanFields(fulfillment)
+	)
+	if option.SelectRelatedOrder {
+		scanFields = append(scanFields, fs.Order().ScanFields(anOrder)...)
+	}
+
+	err := row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.FulfillmentTableName, "option")
@@ -140,39 +204,85 @@ func (fs *SqlFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption
 		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")
 	}
 
-	return &res, nil
+	// populate `Order` field for fulfillment
+	if option.SelectForUpdate {
+		fulfillment.Order = &anOrder
+	}
+
+	return &fulfillment, nil
 }
 
-// FilterByoption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
-	query := fs.GetQueryBuilder().
-		Select(fs.ModelFields()...).
-		From(store.FulfillmentTableName).
-		OrderBy(store.TableOrderingMap[store.FulfillmentTableName])
-
-	// parsing option
-	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Fulfillments.Id"))
-	}
-	if option.Status != nil {
-		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
-	}
-	if option.OrderID != nil {
-		query = query.
-			InnerJoin(store.OrderTableName + " ON (Fulfillments.OrderID = Orders.Id)").
-			Where(option.OrderID.ToSquirrel("Orders.Id"))
+// FilterByOption finds and returns a slice of fulfillments by given option
+func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+	var runner squirrel.BaseRunner = fs.GetReplica()
+	if transaction != nil {
+		runner = transaction
 	}
 
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
-	}
+	query := fs.buildQuery(option)
 
-	var res []*order.Fulfillment
-	_, err = fs.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(runner).Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
+	var (
+		res         []*order.Fulfillment
+		fulfillment order.Fulfillment
+		anOrder     order.Order
+		scanFields  = fs.ScanFields(fulfillment)
+	)
+	if option.SelectRelatedOrder {
+		scanFields = append(scanFields, fs.Order().ScanFields(anOrder)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row on fulfillment and related order")
+		}
+
+		if option.SelectRelatedOrder {
+			fulfillment.Order = &anOrder
+		}
+		res = append(res, &fulfillment)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of fulfillments and related orders")
+	}
 
 	return res, nil
+}
+
+// DeleteByOptions deletes fulfillment database records that satisfy given option. It returns an error indicates if there is a problem occured during deletion process
+func (fs *SqlFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+	var runner squirrel.BaseRunner = fs.GetMaster()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query := fs.GetQueryBuilder().
+		Delete(store.FulfillmentTableName)
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("Id"))
+	}
+	if options.OrderID != nil {
+		query = query.Where(options.OrderID.ToSquirrel("OrderID"))
+	}
+	if options.Status != nil {
+		query = query.Where(options.Status.ToSquirrel("Status"))
+	}
+
+	result, err := query.RunWith(runner).Exec()
+	if err != nil {
+		return errors.Wrap(err, "failed to delete fulfillments by given options")
+	}
+	_, err = result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to count number of deleted fulfillments")
+	}
+
+	return nil
 }

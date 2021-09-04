@@ -592,6 +592,8 @@ type (
 	}
 	OrderStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(holder order.Order) []interface{}
 		Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
 		Get(id string) (*order.Order, error)                                            // Get find order in database with given id
 		Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) // Update update order
@@ -613,10 +615,13 @@ type (
 	}
 	FulfillmentStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
-		Get(id string) (*order.Fulfillment, error)                                          // Get finds and return a fulfillment by given id
-		GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
-		FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByoption finds and returns a slice of fulfillments by given option
+		ModelFields() []string
+		ScanFields(holder order.Fulfillment) []interface{}
+		Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*order.Fulfillment, error)                                                                         // Get finds and return a fulfillment by given id
+		GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
+		FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
+		DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error                       // DeleteByOptions deletes fulfillment database records that satisfy given option. It returns an error indicates if there is a problem occured during deletion process
 	}
 )
 

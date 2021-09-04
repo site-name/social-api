@@ -3728,11 +3728,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByoption(option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.FilterByoption(option)
+		result, err := s.FulfillmentStore.FilterByOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
@@ -3768,11 +3768,11 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.GetByOption(option)
+		result, err := s.FulfillmentStore.GetByOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
