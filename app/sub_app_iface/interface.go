@@ -213,6 +213,7 @@ type AccountService interface {
 	UserByOrderId(orderID string) (*account.User, *model.AppError)                                          // UserByOrderId returns an user who owns given order
 	InvalidateCacheForUser(userID string)                                                                   // InvalidateCacheForUser invalidates cache for given user
 	ClearAllUsersSessionCacheLocal()                                                                        // ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
+	ClearUserSessionCacheLocal(userID string)
 }
 
 type ProductService interface {
@@ -478,4 +479,6 @@ type PluginService interface {
 	DeleteAllExpiredPluginKeys() *model.AppError
 	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model.AppError)
 	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model.AppError
+	InstallPluginFromData(data plugins.PluginEventData)
+	RemovePluginFromData(data plugins.PluginEventData)
 }

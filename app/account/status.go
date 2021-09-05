@@ -17,9 +17,9 @@ func (a *ServiceAccount) AddStatusCache(status *account.Status) {
 
 	if a.cluster != nil {
 		msg := &cluster.ClusterMessage{
-			Event:    cluster.CLUSTER_EVENT_UPDATE_STATUS,
-			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
-			Data:     status.ToClusterJson(),
+			Event:    cluster.ClusterEventUpdateStatus,
+			SendType: cluster.ClusterSendBestEffort,
+			Data:     []byte(status.ToClusterJson()),
 		}
 		a.cluster.SendClusterMessage(msg)
 	}
@@ -185,7 +185,7 @@ func (a *ServiceAccount) BroadcastStatus(status *account.Status) {
 		// this is considered a non-critical service and will be disabled when server busy.
 		return
 	}
-	event := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_STATUS_CHANGE, status.UserId, nil)
+	event := model.NewWebSocketEvent(model.WebsocketEventStatusChange, status.UserId, nil)
 	event.Add("status", status.Status)
 	event.Add("user_id", status.UserId)
 	a.srv.Publish(event)

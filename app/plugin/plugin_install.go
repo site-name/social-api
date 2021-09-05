@@ -119,6 +119,18 @@ func (a *ServicePlugin) installPluginLocally(pluginFile, signature io.ReadSeeker
 	return manifest, nil
 }
 
+func (s *ServicePlugin) RemovePluginFromData(data plugins.PluginEventData) {
+	slog.Debug("Removing plugin as per cluster message", slog.String("plugin_id", data.Id))
+
+	if err := s.removePluginLocally(data.Id); err != nil {
+		slog.Warn("Failed to remove plugin locally", slog.Err(err), slog.String("id", data.Id))
+	}
+
+	if err := s.notifyPluginStatusesChanged(); err != nil {
+		slog.Warn("failed to notify plugin status changed", slog.Err(err))
+	}
+}
+
 func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*plugins.Manifest, string, *model.AppError) {
 	pluginFile.Seek(0, 0)
 	if err := extractTarGz(pluginFile, extractDir); err != nil {
@@ -376,7 +388,7 @@ func (s *ServicePlugin) RemovePlugin(id string) *model.AppError {
 	}
 
 	s.notifyClusterPluginEvent(
-		cluster.CLUSTER_EVENT_REMOVE_PLUGIN,
+		cluster.ClusterEventRemovePlugin,
 		plugins.PluginEventData{
 			Id: id,
 		},
@@ -491,7 +503,7 @@ func (s *ServicePlugin) installPlugin(pluginFile, signature io.ReadSeeker, insta
 	}
 
 	s.notifyClusterPluginEvent(
-		cluster.CLUSTER_EVENT_INSTALL_PLUGIN,
+		cluster.ClusterEventInstallPlugin,
 		plugins.PluginEventData{
 			Id: manifest.Id,
 		},

@@ -192,7 +192,7 @@ func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*ac
 	// message.Add("user_id", ruser.Id)
 	// a.Publish(message)
 
-	if pluginsEnvironment := a.srv.GetPluginsEnvironment(); pluginsEnvironment != nil {
+	if pluginsEnvironment, appErr := a.srv.PluginService().GetPluginsEnvironment(); pluginsEnvironment != nil && appErr == nil {
 		a.srv.Go(func() {
 			pluginContext := app.PluginContext(c)
 			pluginsEnvironment.RunMultiPluginHook(func(hooks plugin.Hooks) bool {
@@ -856,13 +856,26 @@ func (a *ServiceAccount) UpdateUser(user *account.User, sendNotifications bool) 
 func (a *ServiceAccount) SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError {
 	token, err := a.srv.EmailService.CreateVerifyEmailToken(user.Id, newEmail)
 	if err != nil {
-		return err
+		switch {
+		case errors.Is(err, email.CreateEmailTokenError):
+			return model.NewAppError("CreateVerifyEmailToken", "api.user.create_email_token.error", nil, "", http.StatusInternalServerError)
+		default:
+			return model.NewAppError("CreateVerifyEmailToken", "app.recover.save.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
 	}
 
 	if _, err := a.GetStatus(user.Id); err != nil {
-		return a.srv.EmailService.SendVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token, redirect)
+		eErr := a.srv.EmailService.SendVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token, redirect)
+		if eErr != nil {
+			return model.NewAppError("SendVerifyEmail", "api.user.send_verify_email_and_forget.failed.error", nil, eErr.Error(), http.StatusInternalServerError)
+		}
+		return nil
 	}
-	return a.srv.EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token)
+	if err := a.srv.EmailService.SendEmailChangeVerifyEmail(newEmail, user.Locale, a.srv.GetSiteURL(), token.Token); err != nil {
+		return model.NewAppError("sendEmailChangeVerifyEmail", "api.user.send_email_change_verify_email_and_forget.error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 func (a *ServiceAccount) GetStatus(userID string) (*account.Status, *model.AppError) {
@@ -1163,7 +1176,12 @@ func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, 
 		return false, err
 	}
 
-	return a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
+	result, eErr := a.srv.EmailService.SendPasswordResetEmail(user.Email, token, user.Locale, siteURL)
+	if eErr != nil {
+		return result, model.NewAppError("SendPasswordReset", "api.user.send_password_reset.send.app_error", nil, "err="+eErr.Error(), http.StatusInternalServerError)
+	}
+
+	return result, nil
 }
 
 func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model.AppError) {
@@ -1334,9 +1352,9 @@ func (us *ServiceAccount) InvalidateCacheForUser(userID string) {
 
 	if us.srv.Cluster != nil {
 		msg := &cluster.ClusterMessage{
-			Event:    cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_USER,
-			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
-			Data:     userID,
+			Event:    cluster.ClusterEventInvalidateCacheForUser,
+			SendType: cluster.ClusterSendBestEffort,
+			Data:     []byte(userID),
 		}
 		us.srv.Cluster.SendClusterMessage(msg)
 	}

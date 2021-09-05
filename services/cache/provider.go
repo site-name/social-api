@@ -2,6 +2,8 @@ package cache
 
 import (
 	"time"
+
+	"github.com/sitename/sitename/model/cluster"
 )
 
 // CacheOptions contains options for initializaing a cache
@@ -9,7 +11,7 @@ type CacheOptions struct {
 	Size                   int
 	DefaultExpiry          time.Duration
 	Name                   string
-	InvalidateClusterEvent string
+	InvalidateClusterEvent cluster.ClusterEvent
 	Striped                bool
 	StripedBuckets         int
 }

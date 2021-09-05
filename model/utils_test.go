@@ -29,22 +29,6 @@ func TestIsValidPhoneNumber(t *testing.T) {
 	fmt.Println(num.String())
 }
 
-func TestModelToJson(t *testing.T) {
-	model := Session{
-		Id:       "jshd849034bnkjhruieyr",
-		CreateAt: GetMillis(),
-	}
-	res := ModelToJson(&model)
-	fmt.Println(res)
-
-	m := map[string]string{
-		"one": "1",
-		"two": "2",
-	}
-	res = ModelToJson(&m)
-	fmt.Println(res)
-}
-
 type Person struct {
 	Name string `json:"name"`
 	Age  uint8  `json:"age"`

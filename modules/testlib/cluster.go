@@ -64,7 +64,7 @@ func (c *FakeClusterInterface) ConfigChanged(previousConfig *model.Config, newCo
 func (c *FakeClusterInterface) SendClearRoleCacheMessage() {
 	if c.clusterMessageHandler != nil {
 		c.clusterMessageHandler(&cluster.ClusterMessage{
-			Event: cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_ROLES,
+			Event: cluster.ClusterEventInvalidateCacheForRoles,
 		})
 	}
 }

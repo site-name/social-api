@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	PluginClusterEventSendTypeReliable   = cluster.CLUSTER_SEND_RELIABLE
-	PluginClusterEventSendTypeBestEffort = cluster.CLUSTER_SEND_BEST_EFFORT
+	PluginClusterEventSendTypeReliable   = cluster.ClusterSendReliable
+	PluginClusterEventSendTypeBestEffort = cluster.ClusterSendBestEffort
 )
 
 // PluginClusterEvent is used to allow intra-cluster plugin communication.

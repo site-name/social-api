@@ -61,6 +61,8 @@ const (
 	ChannelCacheSec = 15 * 60 // 15 mins
 )
 
+var clearCacheMessageData = []byte("")
+
 type LocalCacheStore struct {
 	store.Store
 	metrics einterfaces.MetricsInterface
@@ -78,16 +80,18 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 	}
 
 	// Users
+	// Users
 	if localCacheStore.userProfileByIdsCache, err = cacheProvider.NewCache(&cache.CacheOptions{
 		Size:                   UserProfileByIDCacheSize,
 		Name:                   "UserProfileByIds",
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
-		InvalidateClusterEvent: cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS,
+		InvalidateClusterEvent: cluster.ClusterEventInvalidateCacheForProfileByIds,
 		Striped:                true,
 		StripedBuckets:         util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return
 	}
+
 	localCacheStore.user = &LocalCacheUserStore{
 		UserStore:                     baseStore.User(),
 		rootStore:                     &localCacheStore,
@@ -95,7 +99,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 	}
 
 	if cluster_ != nil {
-		cluster_.RegisterClusterMessageHandler(cluster.CLUSTER_EVENT_INVALIDATE_CACHE_FOR_PROFILE_BY_IDS, localCacheStore.user.handleClusterInvalidateScheme)
+		cluster_.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
 	}
 
 	return
@@ -115,8 +119,8 @@ func (s *LocalCacheStore) doInvalidateCacheCluster(cache cache.Cache, key string
 	if s.cluster != nil {
 		msg := &cluster.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
-			Data:     key,
+			SendType: cluster.ClusterSendBestEffort,
+			Data:     []byte(key),
 		}
 		s.cluster.SendClusterMessage(msg)
 	}
@@ -145,8 +149,8 @@ func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 	if s.cluster != nil {
 		msg := &cluster.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: cluster.CLUSTER_SEND_BEST_EFFORT,
-			Data:     ClearCacheMessageData,
+			SendType: cluster.ClusterSendBestEffort,
+			Data:     clearCacheMessageData,
 		}
 		s.cluster.SendClusterMessage(msg)
 	}

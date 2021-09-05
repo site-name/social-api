@@ -15,8 +15,8 @@ func (s *Server) InvalidateAllCaches() *model.AppError {
 	if s.Cluster != nil {
 
 		msg := &cluster.ClusterMessage{
-			Event:            cluster.CLUSTER_EVENT_INVALIDATE_ALL_CACHES,
-			SendType:         cluster.CLUSTER_SEND_RELIABLE,
+			Event:            cluster.ClusterEventInvalidateAllCaches,
+			SendType:         cluster.ClusterSendReliable,
 			WaitForAllToSend: true,
 		}
 
@@ -34,4 +34,14 @@ func (s *Server) InvalidateAllCachesSkipSend() {
 	s.Store.FileInfo().ClearCaches()
 	// s.Store.Webhook().ClearCaches()
 	// s.Store.Post().ClearCaches()
+}
+
+// serverBusyStateChanged is called when a CLUSTER_EVENT_BUSY_STATE_CHANGED is received.
+func (s *Server) serverBusyStateChanged(sbs *model.ServerBusyState) {
+	s.Busy.ClusterEventChanged(sbs)
+	if sbs.Busy {
+		slog.Warn("server busy state activitated via cluster event - non-critical services disabled", slog.Int64("expires_sec", sbs.Expires))
+	} else {
+		slog.Info("server busy state cleared via cluster event - non-critical services enabled")
+	}
 }

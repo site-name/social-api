@@ -85,17 +85,33 @@ func (a *ServiceAccount) ClearSessionCacheForUser(userID string) {
 
 	if a.cluster != nil {
 		msg := &cluster.ClusterMessage{
-			Event:    cluster.CLUSTER_EVENT_CLEAR_SESSION_CACHE_FOR_USER,
-			SendType: cluster.CLUSTER_SEND_RELIABLE,
-			Data:     userID,
+			Event:    cluster.ClusterEventClearSessionCacheForUser,
+			SendType: cluster.ClusterSendReliable,
+			Data:     []byte(userID),
 		}
 		a.cluster.SendClusterMessage(msg)
 	}
 }
 
+func (a *ServiceAccount) ClearUserSessionCacheLocal(userID string) {
+	if keys, err := a.sessionCache.Keys(); err == nil {
+		var session *model.Session
+		for _, key := range keys {
+			if err := a.sessionCache.Get(key, &session); err == nil {
+				if session.UserId == userID {
+					a.sessionCache.Remove(key)
+					if a.metrics != nil {
+						a.metrics.IncrementMemCacheInvalidationCounterSession()
+					}
+				}
+			}
+		}
+	}
+}
+
 // ClearSessionCacheForUserSkipClusterSend iterates through server's sessionCache, if it finds any session belong to given userID, removes that session.
 func (a *ServiceAccount) ClearSessionCacheForUserSkipClusterSend(userID string) {
-	a.srv.ClearSessionCacheForUserSkipClusterSend(userID)
+	a.ClearUserSessionCacheLocal(userID)
 }
 
 func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppError) {

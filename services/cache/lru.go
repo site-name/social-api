@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/tinylib/msgp/msgp"
 	"github.com/vmihailenco/msgpack/v5"
 	// "github.com/sitename/sitename/model/account"
@@ -21,7 +22,7 @@ type LRU struct {
 	items                  map[string]*list.Element
 	defaultExpiry          time.Duration
 	name                   string
-	invalidateClusterEvent string
+	invalidateClusterEvent cluster.ClusterEvent
 }
 
 // LRUOptions contains options for initializing LRU cache
@@ -29,7 +30,7 @@ type LRUOptions struct {
 	Name                   string
 	Size                   int
 	DefaultExpiry          time.Duration
-	InvalidateClusterEvent string
+	InvalidateClusterEvent cluster.ClusterEvent
 	// StripedBuckets is used only by LRUStriped and shouldn't be greater than the number
 	// of CPUs available on the machine running this cache.
 	StripedBuckets int
@@ -125,7 +126,7 @@ func (l *LRU) Len() (int, error) {
 }
 
 // GetInvalidateClusterEvent returns the cluster event configured when this cache was created.
-func (l *LRU) GetInvalidateClusterEvent() string {
+func (l *LRU) GetInvalidateClusterEvent() cluster.ClusterEvent {
 	return l.invalidateClusterEvent
 }
 

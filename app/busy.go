@@ -112,10 +112,10 @@ func (b *Busy) notifyServerBusyChange(sbs *model.ServerBusyState) {
 		return
 	}
 	msg := &cluster.ClusterMessage{
-		Event:            cluster.CLUSTER_EVENT_BUSY_STATE_CHANGED,
-		SendType:         cluster.CLUSTER_SEND_RELIABLE,
+		Event:            cluster.ClusterEventBusyStateChanged,
+		SendType:         cluster.ClusterSendReliable,
 		WaitForAllToSend: true,
-		Data:             sbs.ToJson(),
+		Data:             []byte(sbs.ToJson()),
 	}
 	b.cluster.SendClusterMessage(msg)
 }

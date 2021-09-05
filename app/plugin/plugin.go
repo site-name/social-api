@@ -776,7 +776,7 @@ func (s *ServicePlugin) notifyPluginEnabled(manifest *plugins.Manifest) error {
 	}
 
 	// Notify all cluster peer clients.
-	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_ENABLED, "", nil)
+	message := model.NewWebSocketEvent(model.WebsocketEventPluginEnabled, "", nil)
 	message.Add("manifest", manifest.ClientManifest())
 	s.srv.Publish(message)
 

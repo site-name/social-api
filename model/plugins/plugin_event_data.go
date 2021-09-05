@@ -1,8 +1,10 @@
 package plugins
 
 import (
-	"encoding/json"
 	"io"
+
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/json"
 )
 
 // PluginEventData used to notify peers about plugin changes.
@@ -10,13 +12,14 @@ type PluginEventData struct {
 	Id string `json:"id"`
 }
 
-func (p *PluginEventData) ToJson() string {
-	b, _ := json.Marshal(p)
-	return string(b)
+func (p *PluginEventData) ToJson() []byte {
+	res, _ := json.JSON.Marshal(p)
+	return res
 }
 
 func PluginEventDataFromJson(data io.Reader) PluginEventData {
 	var m PluginEventData
-	json.NewDecoder(data).Decode(&m)
+
+	model.ModelFromJson(&m, data)
 	return m
 }

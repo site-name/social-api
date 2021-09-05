@@ -82,7 +82,7 @@ func (a *ServicePlugin) notifyPluginStatusesChanged() error {
 	}
 
 	// Notify any system admins.
-	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PLUGIN_STATUSES_CHANGED, "", nil)
+	message := model.NewWebSocketEvent(model.WebsocketEventPluginStatusesChanged, "", nil)
 	message.Add("plugin_statuses", pluginStatuses)
 	message.GetBroadcast().ContainsSensitiveData = true
 	a.srv.Publish(message)
