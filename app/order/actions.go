@@ -1661,6 +1661,13 @@ func (a *ServiceOrder) processRefund(
 
 ) (*decimal.Decimal, *model.AppError) {
 
+	// transaction begin
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("processRefund", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
+
 	linesToRefund := map[string]*order.QuantityOrderLine{}
 
 	refundAmount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
@@ -1674,6 +1681,10 @@ func (a *ServiceOrder) processRefund(
 		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
 			amount = model.NewDecimal(amount.Add(*ord.ShippingPriceGrossAmount))
 		}
+	}
+
+	if amount != nil && !amount.Equal(decimal.Zero) {
+
 	}
 
 	// TODO: fix me

@@ -3728,6 +3728,26 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
+func (s *RetryLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+
+	tries := 0
+	for {
+		err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 
 	tries := 0
@@ -3788,11 +3808,11 @@ func (s *RetryLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, 
 
 }
 
-func (s *RetryLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 
 	tries := 0
 	for {
-		result, err := s.FulfillmentStore.Upsert(fulfillment)
+		result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
 		if err == nil {
 			return result, nil
 		}

@@ -22,9 +22,8 @@ import (
 
 // UpsertOrder depends on given order's Id property to decide update/save it
 func (a *ServiceOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError) {
-	var (
-		err error
-	)
+	var err error
+
 	if ord.Id == "" {
 		ord, err = a.srv.Store.Order().Save(transaction, ord)
 	} else {

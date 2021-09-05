@@ -3476,6 +3476,24 @@ func (s *OpenTracingLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileI
 	return result, err
 }
 
+func (s *OpenTracingLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.DeleteByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.FilterByOption")
@@ -3530,7 +3548,7 @@ func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction *gorp.Transac
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -3539,7 +3557,7 @@ func (s *OpenTracingLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment
 	}()
 
 	defer span.Finish()
-	result, err := s.FulfillmentStore.Upsert(fulfillment)
+	result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

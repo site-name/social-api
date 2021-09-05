@@ -3223,6 +3223,22 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
+func (s *TimerLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.DeleteByOptions", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	start := timemodule.Now()
 
@@ -3271,10 +3287,10 @@ func (s *TimerLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Upsert(fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	start := timemodule.Now()
 
-	result, err := s.FulfillmentStore.Upsert(fulfillment)
+	result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
