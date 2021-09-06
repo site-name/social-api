@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -34,7 +35,7 @@ func (r *queryResolver) PermissionGroup(ctx context.Context, id string) (*gqlmod
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Group returns GroupResolver implementation.
-func (r *Resolver) Group() GroupResolver { return &groupResolver{r} }
+// Group returns graphql1.GroupResolver implementation.
+func (r *Resolver) Group() graphql1.GroupResolver { return &groupResolver{r} }
 
 type groupResolver struct{ *Resolver }

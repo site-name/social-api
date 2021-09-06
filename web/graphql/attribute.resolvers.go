@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -102,7 +103,7 @@ func (r *queryResolver) Attribute(ctx context.Context, id *string, slug *string)
 	return gqlmodel.ModelAttributeToGraphqlAttribute(attr), nil
 }
 
-// Attribute returns AttributeResolver implementation.
-func (r *Resolver) Attribute() AttributeResolver { return &attributeResolver{r} }
+// Attribute returns graphql1.AttributeResolver implementation.
+func (r *Resolver) Attribute() graphql1.AttributeResolver { return &attributeResolver{r} }
 
 type attributeResolver struct{ *Resolver }

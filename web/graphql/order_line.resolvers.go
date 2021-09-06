@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -58,7 +59,7 @@ func (r *orderLineResolver) Allocations(ctx context.Context, obj *gqlmodel.Order
 	panic(fmt.Errorf("not implemented"))
 }
 
-// OrderLine returns OrderLineResolver implementation.
-func (r *Resolver) OrderLine() OrderLineResolver { return &orderLineResolver{r} }
+// OrderLine returns graphql1.OrderLineResolver implementation.
+func (r *Resolver) OrderLine() graphql1.OrderLineResolver { return &orderLineResolver{r} }
 
 type orderLineResolver struct{ *Resolver }

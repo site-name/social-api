@@ -4,8 +4,8 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: web/graphql/GRAPHQL_GENERATED.go
-  package: graphql
+  filename: web/graphql/generated/GRAPHQL_GENERATED.go
+  package: generated
 
 # Uncomment to enable federation
 # federation:

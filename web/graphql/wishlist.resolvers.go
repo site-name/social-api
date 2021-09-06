@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -42,11 +43,11 @@ func (r *wishlistItemResolver) Variants(ctx context.Context, obj *gqlmodel.Wishl
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Wishlist returns WishlistResolver implementation.
-func (r *Resolver) Wishlist() WishlistResolver { return &wishlistResolver{r} }
+// Wishlist returns graphql1.WishlistResolver implementation.
+func (r *Resolver) Wishlist() graphql1.WishlistResolver { return &wishlistResolver{r} }
 
-// WishlistItem returns WishlistItemResolver implementation.
-func (r *Resolver) WishlistItem() WishlistItemResolver { return &wishlistItemResolver{r} }
+// WishlistItem returns graphql1.WishlistItemResolver implementation.
+func (r *Resolver) WishlistItem() graphql1.WishlistItemResolver { return &wishlistItemResolver{r} }
 
 type wishlistResolver struct{ *Resolver }
 type wishlistItemResolver struct{ *Resolver }

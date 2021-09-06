@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/site-name/decimal"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -201,7 +202,7 @@ func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*gql
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Order returns OrderResolver implementation.
-func (r *Resolver) Order() OrderResolver { return &orderResolver{r} }
+// Order returns graphql1.OrderResolver implementation.
+func (r *Resolver) Order() graphql1.OrderResolver { return &orderResolver{r} }
 
 type orderResolver struct{ *Resolver }

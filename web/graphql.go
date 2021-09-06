@@ -7,17 +7,18 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/sitename/sitename/web/graphql"
+	"github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/shared"
 )
 
 const (
-	graphqlApi        string = "/api/graphql"
-	graphqlPlayground string = "/playground"
+	graphqlApi        = "/api/graphql"
+	graphqlPlayground = "/playground"
 )
 
 // InitGraphql registers graphql playground and graphql api endpoint routes
 func (web *Web) InitGraphql() {
-	graphqlServer := handler.NewDefaultServer(graphql.NewExecutableSchema(graphql.Config{
+	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &graphql.Resolver{
 			AppIface: web.app,
 		},

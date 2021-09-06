@@ -90,6 +90,22 @@ func (_m *OrderStore) Get(id string) (*order.Order, error) {
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *OrderStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: transaction, _a1
 func (_m *OrderStore) Save(transaction *gorp.Transaction, _a1 *order.Order) (*order.Order, error) {
 	ret := _m.Called(transaction, _a1)
@@ -111,6 +127,22 @@ func (_m *OrderStore) Save(transaction *gorp.Transaction, _a1 *order.Order) (*or
 	}
 
 	return r0, r1
+}
+
+// ScanFields provides a mock function with given fields: holder
+func (_m *OrderStore) ScanFields(holder order.Order) []interface{} {
+	ret := _m.Called(holder)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(order.Order) []interface{}); ok {
+		r0 = rf(holder)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
 }
 
 // Update provides a mock function with given fields: transaction, _a1

@@ -149,7 +149,7 @@ var (
 
 	PermissionViewMembers                           *Permission
 	PermissionEditBrand                             *Permission
-	PERMISSION_MANAGE_REMOTE_CLUSTERS               *Permission
+	PermissionManageRemoteClusters                  *Permission
 	PermissionDownloadComplianceExportResult        *Permission
 	PermissionCreateDataRetentionJob                *Permission
 	PermissionReadDataRetentionJob                  *Permission
@@ -507,7 +507,7 @@ func initializePermissions() {
 		"authentication.permissions.delete_others_posts.description",
 		PermissionScopeChannel,
 	}
-	PERMISSION_MANAGE_REMOTE_CLUSTERS = &Permission{
+	PermissionManageRemoteClusters = &Permission{
 		"manage_remote_clusters",
 		"authentication.permissions.manage_remote_clusters.name",
 		"authentication.permissions.manage_remote_clusters.description",
@@ -1603,7 +1603,7 @@ func initializePermissions() {
 		PermissionReadJobs,
 		PermissionManageJobs,
 		PermissionEditBrand,
-		PERMISSION_MANAGE_REMOTE_CLUSTERS,
+		PermissionManageRemoteClusters,
 		PermissionDownloadComplianceExportResult,
 		PermissionCreateDataRetentionJob,
 		PermissionReadDataRetentionJob,

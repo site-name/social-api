@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/wishlist"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -284,11 +285,11 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 	}
 }
 
-// CustomerEvent returns CustomerEventResolver implementation.
-func (r *Resolver) CustomerEvent() CustomerEventResolver { return &customerEventResolver{r} }
+// CustomerEvent returns graphql1.CustomerEventResolver implementation.
+func (r *Resolver) CustomerEvent() graphql1.CustomerEventResolver { return &customerEventResolver{r} }
 
-// User returns UserResolver implementation.
-func (r *Resolver) User() UserResolver { return &userResolver{r} }
+// User returns graphql1.UserResolver implementation.
+func (r *Resolver) User() graphql1.UserResolver { return &userResolver{r} }
 
 type customerEventResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

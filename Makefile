@@ -190,7 +190,7 @@ gen-serialized: ## Generates serialization methods for hot structs
 
 gqlgen:
 	$(GO) get -modfile=go.tools.mod github.com/99designs/gqlgen
-	$(GO) get -modfile=go.tools.mod github.com/vektah/gqlparser/v2
+	$(GO) get -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
 
 	$(GOBIN)/gqlgen run github.com/99designs/gqlgen
 	@echo Gqlgen has done generating.

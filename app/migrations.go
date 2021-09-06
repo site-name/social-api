@@ -20,7 +20,7 @@ func (a *App) DoAdvancedPermissionsMigration() {
 
 func (s *Server) doAdvancedPermissionsMigration() {
 	// If the migration is already marked as completed, don't do it again.
-	if _, err := s.Store.System().GetByName(model.ADVANCED_PERMISSIONS_MIGRATION_KEY); err == nil {
+	if _, err := s.Store.System().GetByName(model.AdvancedPermissionsMigrationKey); err == nil {
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 	// create a evidence to prove that all roles have been saved to database.
 	system := model.System{
-		Name:  model.ADVANCED_PERMISSIONS_MIGRATION_KEY,
+		Name:  model.AdvancedPermissionsMigrationKey,
 		Value: "true",
 	}
 
@@ -82,7 +82,7 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 func (a *App) SetPhase2PermissionsMigrationStatus(isComplete bool) error {
 	if !isComplete {
-		if _, err := a.Srv().Store.System().PermanentDeleteByName(model.MIGRATION_KEY_ADVANCED_PERMISSIONS_PHASE_2); err != nil {
+		if _, err := a.Srv().Store.System().PermanentDeleteByName(model.MigrationKeyAdvancedPermissionsPhase2); err != nil {
 			return err
 		}
 	}

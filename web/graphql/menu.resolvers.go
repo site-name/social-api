@@ -9,6 +9,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/menu"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -128,11 +129,11 @@ func (r *queryResolver) MenuItems(ctx context.Context, channel *string, sortBy *
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Menu returns MenuResolver implementation.
-func (r *Resolver) Menu() MenuResolver { return &menuResolver{r} }
+// Menu returns graphql1.MenuResolver implementation.
+func (r *Resolver) Menu() graphql1.MenuResolver { return &menuResolver{r} }
 
-// MenuItem returns MenuItemResolver implementation.
-func (r *Resolver) MenuItem() MenuItemResolver { return &menuItemResolver{r} }
+// MenuItem returns graphql1.MenuItemResolver implementation.
+func (r *Resolver) MenuItem() graphql1.MenuItemResolver { return &menuItemResolver{r} }
 
 type menuResolver struct{ *Resolver }
 type menuItemResolver struct{ *Resolver }

@@ -361,45 +361,6 @@ func (r *Role) Patch(patch *RolePatch) {
 	}
 }
 
-// MergeChannelHigherScopedPermissions is meant to be invoked on a channel scheme's role and merges the higher-scoped
-// channel role's permissions.
-// func (r *Role) MergeChannelHigherScopedPermissions(higherScopedPermissions *RolePermissions) {
-// 	mergedPermissions := []string{}
-
-// 	higherScopedPermissionsMap := AsStringBoolMap(higherScopedPermissions.Permissions)
-// 	rolePermissionsMap := AsStringBoolMap(r.Permissions)
-
-// 	for _, cp := range AllPermissions {
-// 		if cp.Scope != PermissionScopeChannel {
-// 			continue
-// 		}
-
-// 		_, presentOnHigherScope := higherScopedPermissionsMap[cp.Id]
-
-// 		// For the channel admin role always look to the higher scope to determine if the role has their permission.
-// 		// The channel admin is a special case because they're not part of the UI to be "channel moderated", only
-// 		// channel members and channel guests are.
-// 		if higherScopedPermissions.RoleID == CHANNEL_ADMIN_ROLE_ID && presentOnHigherScope {
-// 			mergedPermissions = append(mergedPermissions, cp.Id)
-// 			continue
-// 		}
-
-// 		_, permissionIsModerated := ChannelModeratedPermissionsMap[cp.Id]
-// 		if permissionIsModerated {
-// 			_, presentOnRole := rolePermissionsMap[cp.Id]
-// 			if presentOnRole && presentOnHigherScope {
-// 				mergedPermissions = append(mergedPermissions, cp.Id)
-// 			}
-// 		} else {
-// 			if presentOnHigherScope {
-// 				mergedPermissions = append(mergedPermissions, cp.Id)
-// 			}
-// 		}
-// 	}
-
-// 	r.Permissions = mergedPermissions
-// }
-
 // Returns an array of permissions that are in either role.Permissions
 // or patch.Permissions, but not both.
 func PermissionsChangedByPatch(role *Role, patch *RolePatch) []string {
@@ -517,7 +478,7 @@ func MakeDefaultRoles() map[string]*Role {
 	roles := make(map[string]*Role)
 
 	roles[SystemGuestRoleId] = &Role{
-		Name:          "system_guest",
+		Name:          SystemGuestRoleId,
 		DisplayName:   "authentication.roles.global_guest.name",
 		Description:   "authentication.roles.global_guest.description",
 		Permissions:   []string{},
@@ -526,7 +487,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemUserRoleId] = &Role{
-		Name:        "system_user",
+		Name:        SystemUserRoleId,
 		DisplayName: "authentication.roles.global_user.name",
 		Description: "authentication.roles.global_user.description",
 		Permissions: []string{
@@ -537,7 +498,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemPostAllRoleId] = &Role{
-		Name:        "system_post_all",
+		Name:        SystemPostAllRoleId,
 		DisplayName: "authentication.roles.system_post_all.name",
 		Description: "authentication.roles.system_post_all.description",
 		Permissions: []string{
@@ -548,7 +509,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemPostAllPublicRoleId] = &Role{
-		Name:        "system_post_all_public",
+		Name:        SystemPostAllPublicRoleId,
 		DisplayName: "authentication.roles.system_post_all_public.name",
 		Description: "authentication.roles.system_post_all_public.description",
 		Permissions: []string{
@@ -559,7 +520,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemUserAccessTokenRoleId] = &Role{
-		Name:        "system_user_access_token",
+		Name:        SystemUserAccessTokenRoleId,
 		DisplayName: "authentication.roles.system_user_access_token.name",
 		Description: "authentication.roles.system_user_access_token.description",
 		Permissions: []string{
@@ -572,7 +533,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemUserManagerRoleId] = &Role{
-		Name:          "system_user_manager",
+		Name:          SystemUserManagerRoleId,
 		DisplayName:   "authentication.roles.system_user_manager.name",
 		Description:   "authentication.roles.system_user_manager.description",
 		Permissions:   SystemUserManagerDefaultPermissions,
@@ -581,7 +542,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemReadOnlyAdminRoleId] = &Role{
-		Name:          "system_read_only_admin",
+		Name:          SystemReadOnlyAdminRoleId,
 		DisplayName:   "authentication.roles.system_read_only_admin.name",
 		Description:   "authentication.roles.system_read_only_admin.description",
 		Permissions:   SystemReadOnlyAdminDefaultPermissions,
@@ -590,7 +551,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemManagerRoleId] = &Role{
-		Name:          "system_manager",
+		Name:          SystemManagerRoleId,
 		DisplayName:   "authentication.roles.system_manager.name",
 		Description:   "authentication.roles.system_manager.description",
 		Permissions:   SystemManagerDefaultPermissions,
@@ -604,7 +565,7 @@ func MakeDefaultRoles() map[string]*Role {
 	}
 
 	roles[SystemAdminRoleId] = &Role{
-		Name:          "system_admin",
+		Name:          SystemAdminRoleId,
 		DisplayName:   "authentication.roles.global_admin.name",
 		Description:   "authentication.roles.global_admin.description",
 		Permissions:   allPermissionIDs,

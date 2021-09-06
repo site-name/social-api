@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -116,7 +117,7 @@ func (r *queryResolver) Products(ctx context.Context, filter *gqlmodel.ProductFi
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Product returns ProductResolver implementation.
-func (r *Resolver) Product() ProductResolver { return &productResolver{r} }
+// Product returns graphql1.ProductResolver implementation.
+func (r *Resolver) Product() graphql1.ProductResolver { return &productResolver{r} }
 
 type productResolver struct{ *Resolver }

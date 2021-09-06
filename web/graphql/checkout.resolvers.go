@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -99,7 +100,7 @@ func (r *queryResolver) Checkouts(ctx context.Context, channel *string, before *
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Checkout returns CheckoutResolver implementation.
-func (r *Resolver) Checkout() CheckoutResolver { return &checkoutResolver{r} }
+// Checkout returns graphql1.CheckoutResolver implementation.
+func (r *Resolver) Checkout() graphql1.CheckoutResolver { return &checkoutResolver{r} }
 
 type checkoutResolver struct{ *Resolver }

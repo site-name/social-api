@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -46,7 +47,7 @@ func (r *queryResolver) Category(ctx context.Context, id *string, slug *string) 
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Category returns CategoryResolver implementation.
-func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
+// Category returns graphql1.CategoryResolver implementation.
+func (r *Resolver) Category() graphql1.CategoryResolver { return &categoryResolver{r} }
 
 type categoryResolver struct{ *Resolver }

@@ -29,7 +29,7 @@ func init() {
 
 func MakeMigrationsList() []string {
 	return []string{
-		model.MIGRATION_KEY_ADVANCED_PERMISSIONS_PHASE_2,
+		model.MigrationKeyAdvancedPermissionsPhase2,
 	}
 }
 

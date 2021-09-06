@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/sitename/sitename/model"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -63,7 +64,7 @@ func (r *warehouseResolver) Address(ctx context.Context, obj *gqlmodel.Warehouse
 	}, nil
 }
 
-// Warehouse returns WarehouseResolver implementation.
-func (r *Resolver) Warehouse() WarehouseResolver { return &warehouseResolver{r} }
+// Warehouse returns graphql1.WarehouseResolver implementation.
+func (r *Resolver) Warehouse() graphql1.WarehouseResolver { return &warehouseResolver{r} }
 
 type warehouseResolver struct{ *Resolver }

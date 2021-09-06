@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
@@ -58,7 +59,7 @@ func (r *shopResolver) CompanyAddress(ctx context.Context, obj *gqlmodel.Shop) (
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Shop returns ShopResolver implementation.
-func (r *Resolver) Shop() ShopResolver { return &shopResolver{r} }
+// Shop returns graphql1.ShopResolver implementation.
+func (r *Resolver) Shop() graphql1.ShopResolver { return &shopResolver{r} }
 
 type shopResolver struct{ *Resolver }

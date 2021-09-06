@@ -10,6 +10,7 @@ import (
 
 	"github.com/site-name/i18naddress"
 	"github.com/sitename/sitename/model"
+	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
@@ -118,7 +119,7 @@ func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Addre
 	return gqlmodel.DatabaseAddressToGraphqlAddress(address), nil
 }
 
-// Address returns AddressResolver implementation.
-func (r *Resolver) Address() AddressResolver { return &addressResolver{r} }
+// Address returns graphql1.AddressResolver implementation.
+func (r *Resolver) Address() graphql1.AddressResolver { return &addressResolver{r} }
 
 type addressResolver struct{ *Resolver }
