@@ -56,8 +56,6 @@ const (
 	TeamCacheSize = 20000
 	TeamCacheSec  = 30 * 60
 
-	ClearCacheMessageData = ""
-
 	ChannelCacheSec = 15 * 60 // 15 mins
 )
 

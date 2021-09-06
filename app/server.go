@@ -428,7 +428,6 @@ func NewServer(options ...Option) (*Server, error) {
 		// s.setupFeatureFlags()
 	})
 
-	// TODO: fixme
 	if s.joinCluster && s.Cluster != nil {
 		s.registerClusterHandlers()
 		s.Cluster.StartInterNodeCommunication()

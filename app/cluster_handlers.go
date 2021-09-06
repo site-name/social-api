@@ -56,9 +56,6 @@ func (s *Server) registerClusterHandlers() {
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventPublish, s.clusterPublishHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventUpdateStatus, s.clusterUpdateStatusHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateAllCaches, s.clusterInvalidateAllCachesHandler)
-	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForChannelMembersNotifyProps, s.clusterInvalidateCacheForChannelMembersNotifyPropHandler)
-	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForChannelByName, s.clusterInvalidateCacheForChannelByNameHandler)
-	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForUserTeams, s.clusterInvalidateCacheForUserTeamsHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForUser, s.clusterInvalidateCacheForUserHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventBusyStateChanged, s.clusterBusyStateChgHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventClearSessionCacheForUser, s.clusterClearSessionCacheForUserHandler)
@@ -66,6 +63,9 @@ func (s *Server) registerClusterHandlers() {
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInstallPlugin, s.clusterInstallPluginHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventRemovePlugin, s.clusterRemovePluginHandler)
 	s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventPluginEvent, s.clusterPluginEventHandler)
+	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForChannelMembersNotifyProps, s.clusterInvalidateCacheForChannelMembersNotifyPropHandler)
+	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForChannelByName, s.clusterInvalidateCacheForChannelByNameHandler)
+	// s.Cluster.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForUserTeams, s.clusterInvalidateCacheForUserTeamsHandler)
 }
 
 func (s *Server) clusterBusyStateChgHandler(msg *cluster.ClusterMessage) {
