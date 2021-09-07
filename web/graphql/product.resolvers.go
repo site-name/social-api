@@ -77,7 +77,7 @@ func (r *productResolver) IsAvailable(ctx context.Context, obj *gqlmodel.Product
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *productResolver) ChannelListings(ctx context.Context, obj *gqlmodel.Product) ([]gqlmodel.ProductChannelListing, error) {
+func (r *productResolver) ChannelListings(ctx context.Context, obj *gqlmodel.Product) ([]*gqlmodel.ProductChannelListing, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -89,7 +89,7 @@ func (r *productResolver) Variants(ctx context.Context, obj *gqlmodel.Product) (
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *productResolver) Media(ctx context.Context, obj *gqlmodel.Product) ([]gqlmodel.ProductMedia, error) {
+func (r *productResolver) Media(ctx context.Context, obj *gqlmodel.Product) ([]*gqlmodel.ProductMedia, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -55,7 +55,7 @@ func (r *orderLineResolver) Variant(ctx context.Context, obj *gqlmodel.OrderLine
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *orderLineResolver) Allocations(ctx context.Context, obj *gqlmodel.OrderLine) ([]gqlmodel.Allocation, error) {
+func (r *orderLineResolver) Allocations(ctx context.Context, obj *gqlmodel.OrderLine) ([]*gqlmodel.Allocation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

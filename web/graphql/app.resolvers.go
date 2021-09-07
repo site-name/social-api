@@ -58,7 +58,7 @@ func (r *mutationResolver) AppDeactivate(ctx context.Context, id string) (*gqlmo
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) AppsInstallations(ctx context.Context) ([]gqlmodel.AppInstallation, error) {
+func (r *queryResolver) AppsInstallations(ctx context.Context) ([]*gqlmodel.AppInstallation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

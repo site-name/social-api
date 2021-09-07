@@ -35,11 +35,11 @@ func (r *queryResolver) Shop(ctx context.Context) (*gqlmodel.Shop, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *shopResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Shop, currency *string, channel *string) ([]gqlmodel.PaymentGateway, error) {
+func (r *shopResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Shop, currency *string, channel *string) ([]*gqlmodel.PaymentGateway, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *shopResolver) AvailableExternalAuthentications(ctx context.Context, obj *gqlmodel.Shop) ([]gqlmodel.ExternalAuthentication, error) {
+func (r *shopResolver) AvailableExternalAuthentications(ctx context.Context, obj *gqlmodel.Shop) ([]*gqlmodel.ExternalAuthentication, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -47,7 +47,7 @@ func (r *shopResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmod
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *shopResolver) Countries(ctx context.Context, obj *gqlmodel.Shop, languageCode *gqlmodel.LanguageCodeEnum) ([]gqlmodel.CountryDisplay, error) {
+func (r *shopResolver) Countries(ctx context.Context, obj *gqlmodel.Shop, languageCode *gqlmodel.LanguageCodeEnum) ([]*gqlmodel.CountryDisplay, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -33,6 +33,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 // GiftCardApp defines methods for giftcard app
@@ -395,9 +396,11 @@ type AppApp interface {
 }
 
 type CsvService interface {
-	CreateExportFile(file *csv.ExportFile) (*csv.ExportFile, *model.AppError)                 // CreateExportFile inserts given export file into database then returns it
-	ExportFileById(id string) (*csv.ExportFile, *model.AppError)                              // ExportFileById returns an export file found by given id
-	CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv.ExportEvent, *model.AppError) // CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
+	CreateExportFile(file *csv.ExportFile) (*csv.ExportFile, *model.AppError)                                                       // CreateExportFile inserts given export file into database then returns it
+	ExportFileById(id string) (*csv.ExportFile, *model.AppError)                                                                    // ExportFileById returns an export file found by given id
+	CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv.ExportEvent, *model.AppError)                                       // CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
+	ExportEventsByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, *model.AppError)                                // ExportEventsByOption returns a list of export events filtered using given options
+	ExportProducts(exportFile *csv.ExportFile, exportProductsInput *gqlmodel.ExportProductsInput, delimeter string) *model.AppError // ExportProducts is called by product export job, taks needed arguments then exports products
 }
 
 type ShopService interface {

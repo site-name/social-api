@@ -16,7 +16,6 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/account"
 	app_opentracing "github.com/sitename/sitename/app/opentracing"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -88,10 +87,13 @@ type Handler struct {
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w = newWrappedWriter(w)
-	now := time.Now()
 
-	requestID := model.NewId()
-	var statusCode string
+	var (
+		now        = time.Now()
+		requestID  = model.NewId()
+		statusCode string
+	)
+
 	defer func() {
 		responseLogFields := []slog.Field{
 			slog.String("method", r.Method),
@@ -106,7 +108,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	c := &shared.Context{
-		AppContext: &request.Context{},
+		AppContext: new(request.Context),
 		App:        h.App,
 	}
 
@@ -160,17 +162,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, *c.App.Config().FileSettings.MaxFileSize+bytes.MinRead)
 
 	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
-	siteURLHeader := account.GetProtocol(r) + "://" + r.Host + subpath
-	c.SetSiteURLHeader(siteURLHeader)
+	c.SetSiteURLHeader(app.GetProtocol(r) + "://" + r.Host + subpath)
 
-	w.Header().Set(model.HEADER_REQUEST_ID, c.AppContext.RequestId())
-	w.Header().Set(model.HEADER_VERSION_ID, fmt.Sprintf("%v.%v.%v", model.CurrentVersion, model.BuildNumber, c.App.ClientConfigHash()))
+	w.Header().Set(model.HeaderRequestId, c.AppContext.RequestId())
+	w.Header().Set(model.HeaderVersionId, fmt.Sprintf("%v.%v.%v", model.CurrentVersion, model.BuildNumber, c.App.ClientConfigHash()))
 
 	if *c.App.Config().ServiceSettings.TLSStrictTransport {
 		w.Header().Set("Strict-Transport-Security", fmt.Sprintf("max-age=%d", *c.App.Config().ServiceSettings.TLSStrictTransportMaxAge))
 	}
 
-	cloudCSP := ""
+	var cloudCSP string
+	if true {
+		cloudCSP = " js.stripe.com/v3"
+	}
 
 	if h.IsStatic {
 		// Instruct the browser not to display us in an iframe unless is the same origin for anti-clickjacking
@@ -263,7 +267,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if c.Err == nil {
 		h.HandleFunc(c, w, r)
-	} else {
+	}
+
+	if c.Err != nil {
 		c.Err.Translate(c.AppContext.T)
 		c.Err.RequestId = c.AppContext.RequestId()
 		c.LogErrorByCode(c.Err)

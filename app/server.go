@@ -417,7 +417,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	// s.setupFeatureFlags()
 
-	// initialize job worker and scheduler
+	// initialize job server
 	s.initJobs()
 
 	s.clusterLeaderListenerId = s.AddClusterLeaderChangedListener(func() {
@@ -603,8 +603,6 @@ func (s *Server) initJobs() {
 	if jobsMigrationsInterface != nil {
 		s.Jobs.Migrations = jobsMigrationsInterface(s)
 	}
-
-	// csv export
 	if csvExportInterface != nil {
 		s.Jobs.CsvExport = csvExportInterface(s)
 	}

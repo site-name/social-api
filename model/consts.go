@@ -4,8 +4,8 @@ import "regexp"
 
 // constants for access http(s) requests's headers
 const (
-	HEADER_REQUEST_ID          = "X-Request-ID"
-	HEADER_VERSION_ID          = "X-Version-ID"
+	HeaderRequestId            = "X-Request-ID"
+	HeaderVersionId            = "X-Version-ID"
 	HEADER_CLUSTER_ID          = "X-Cluster-ID"
 	HEADER_ETAG_SERVER         = "ETag"
 	HEADER_ETAG_CLIENT         = "If-None-Match"

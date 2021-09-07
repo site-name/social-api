@@ -253,3 +253,11 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 
 	return &rate, nil
 }
+
+// GetProtocol returns request's protocol
+func GetProtocol(r *http.Request) string {
+	if r.Header.Get(model.HEADER_FORWARDED_PROTO) == "https" || r.TLS != nil {
+		return "https"
+	}
+	return "http"
+}

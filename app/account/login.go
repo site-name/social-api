@@ -252,14 +252,6 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 	return nil
 }
 
-// GetProtocol returns request's protocol
-func GetProtocol(r *http.Request) string {
-	if r.Header.Get(model.HEADER_FORWARDED_PROTO) == "https" || r.TLS != nil {
-		return "https"
-	}
-	return "http"
-}
-
 // AttachSessionCookies sets:
 //
 // 1) session cookie with value of given s's session's token to given w
@@ -269,7 +261,7 @@ func GetProtocol(r *http.Request) string {
 // 3) csrf cookie with value of csrf in session
 func (a *ServiceAccount) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
 	secure := false
-	if GetProtocol(r) == "https" {
+	if app.GetProtocol(r) == "https" {
 		secure = true
 	}
 

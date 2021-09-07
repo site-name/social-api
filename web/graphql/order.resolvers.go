@@ -166,7 +166,7 @@ func (r *orderResolver) IsShippingRequired(ctx context.Context, obj *gqlmodel.Or
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *orderResolver) Discounts(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) ([]gqlmodel.OrderDiscount, error) {
+func (r *orderResolver) Discounts(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) ([]*gqlmodel.OrderDiscount, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

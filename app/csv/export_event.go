@@ -19,3 +19,26 @@ func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv
 
 	return newExportEvent, nil
 }
+
+// ExportEventsByOption returns a list of export events filtered using given options
+func (s *ServiceCsv) ExportEventsByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, *model.AppError) {
+	events, err := s.srv.Store.CsvExportEvent().FilterByOption(options)
+	var (
+		statusCode   int
+		errorMessage string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errorMessage = err.Error()
+	}
+
+	if len(events) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ExportEventsByOption", "app.csv.error_finding_export_events_by_options.app_error", nil, errorMessage, statusCode)
+	}
+
+	return events, nil
+}

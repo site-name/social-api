@@ -2,22 +2,22 @@ package csv_export
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/jobs"
 	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
-const (
-	CsvExportJobName string = "CsvExport"
-)
+const CsvExportJobName = "CsvExport"
 
 func init() {
 	app.RegisterCsvExportInterface(func(s *app.Server) tjobs.CsvExportInterface {
-		a := app.New(app.ServerConnector(s))
-		return &CsvExpfortInterfaceImpl{a}
+		return &CsvExpfortInterfaceImpl{s}
 	})
 }
 
@@ -25,13 +25,13 @@ type Worker struct {
 	name      string
 	stop      chan bool
 	stopped   chan bool
-	jobs      chan model.Job
+	job       chan model.Job
 	jobServer *jobs.JobServer
-	app       *app.App
+	srv       *app.Server
 }
 
 type CsvExpfortInterfaceImpl struct {
-	App *app.App
+	srv *app.Server
 }
 
 func (c *CsvExpfortInterfaceImpl) MakeWorker() model.Worker {
@@ -39,9 +39,9 @@ func (c *CsvExpfortInterfaceImpl) MakeWorker() model.Worker {
 		name:      CsvExportJobName,
 		stop:      make(chan bool, 1),
 		stopped:   make(chan bool, 1),
-		jobs:      make(chan model.Job),
-		jobServer: c.App.Srv().Jobs,
-		app:       c.App,
+		job:       make(chan model.Job),
+		jobServer: c.srv.Jobs,
+		srv:       c.srv,
 	}
 }
 
@@ -58,7 +58,7 @@ func (worker *Worker) Run() {
 		case <-worker.stop:
 			slog.Debug("Worker received stop signal", slog.String("worker", worker.name))
 			return
-		case job := <-worker.jobs:
+		case job := <-worker.job:
 			slog.Debug("Worker received a new candidate job.", slog.String("worker", worker.name))
 			worker.DoJob(&job)
 		}
@@ -73,7 +73,7 @@ func (worker *Worker) Stop() {
 
 // worker recieves job because of this function
 func (worker *Worker) JobChannel() chan<- model.Job {
-	return worker.jobs
+	return worker.job
 }
 
 func (worker *Worker) DoJob(job *model.Job) {
@@ -89,22 +89,53 @@ func (worker *Worker) DoJob(job *model.Job) {
 		return
 	}
 
-	_, err := worker.app.Srv().Store.CsvExportFile().Get(job.Data["exportFileID"]) // "exportFileID" is set in csv resolvers file.
+	var (
+		exportInputString = job.Data["input"]
+		csvExportFileID   = job.Data["export_file_id"]
+		exportInput       = gqlmodel.ExportProductsInput{}
+		err               = json.JSON.NewDecoder(strings.NewReader(exportInputString)).Decode(&exportInput)
+	)
+
 	if err != nil {
 		slog.Error(
-			"Worker failed to acquire csv export file",
+			"Worker failed to parse products export input options",
 			slog.String("worker", worker.name),
 			slog.String("job_id", job.Id),
 			slog.String("error", err.Error()),
 		)
-		worker.setJobError(job, model.NewAppError("DoJob", "app.csv.get_export_file.app_error", nil, err.Error(), http.StatusInternalServerError))
+		worker.setJobError(job, model.NewAppError("DoJob", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError))
 		return
 	}
 
+	exportFile, appErr := worker.srv.CsvService().ExportFileById(csvExportFileID)
+	if appErr != nil {
+		slog.Error(
+			"Worker failed to acquire csv export file",
+			slog.String("worker", worker.name),
+			slog.String("job_id", job.Id),
+			slog.String("error", appErr.DetailedError),
+		)
+		worker.setJobError(job, appErr)
+		return
+	}
+
+	appErr = worker.srv.CsvService().ExportProducts(exportFile, &exportInput, ";")
+	if appErr != nil {
+		slog.Error(
+			"Worker failed to export products",
+			slog.String("worker", worker.name),
+			slog.String("job_id", job.Id),
+			slog.String("error", appErr.DetailedError),
+		)
+		worker.setJobError(job, appErr)
+		return
+	}
+
+	worker.setJobSuccess(job)
 }
 
 func (worker *Worker) setJobSuccess(job *model.Job) {
-	if err := worker.app.Srv().Jobs.SetJobSuccess(job); err != nil {
+	if err := worker.srv.Jobs.SetJobSuccess(job); err != nil {
 		slog.Error(
 			"Worker: Failed to set success for job",
 			slog.String("worker", worker.name),
@@ -116,7 +147,7 @@ func (worker *Worker) setJobSuccess(job *model.Job) {
 }
 
 func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
-	if err := worker.app.Srv().Jobs.SetJobError(job, appError); err != nil {
+	if err := worker.srv.Jobs.SetJobError(job, appError); err != nil {
 		slog.Error(
 			"Worker: Failed to set job error",
 			slog.String("worker", worker.name),

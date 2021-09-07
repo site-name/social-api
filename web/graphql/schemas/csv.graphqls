@@ -3,8 +3,8 @@ extend type Mutation {
 }
 
 extend type Query {
-  exportFile(id: ID!): ExportFile
-  exportFiles(filter: ExportFileFilterInput, sortBy: ExportFileSortingInput, before: String, after: String, first: Int, last: Int): ExportFileCountableConnection
+  exportFile(id: ID!): ExportFile @hasPermissions(permissions: [MANAGE_PRODUCTS])
+  exportFiles(filter: ExportFileFilterInput, sortBy: ExportFileSortingInput, before: String, after: String, first: Int, last: Int): ExportFileCountableConnection @hasPermissions(permissions: [MANAGE_PRODUCTS])
 }
 
 input ExportProductsInput {
@@ -23,13 +23,13 @@ enum ExportScope {
 
 type ExportProducts {
   exportFile: ExportFile
-  errors: [ExportError!]!
+  # errors: [ExportError!]!
 }
 
 type ExportFile implements Node & Job {
   id: ID!
   user: User
-  app: App
+  # app: App
   status: JobStatusEnum!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -43,7 +43,7 @@ input ExportFileFilterInput {
   updatedAt: DateTimeRangeInput
   status: JobStatusEnum
   user: String
-  app: String
+  # app: String
 }
 
 input ExportFileSortingInput {
@@ -62,25 +62,25 @@ enum FileTypesEnum {
   XLSX
 }
 
-type ExportError {
-  field: String
-  message: String
-  code: ExportErrorCode!
-}
+# type ExportError {
+#   field: String
+#   message: String
+#   code: ExportErrorCode!
+# }
 
-enum ExportErrorCode {
-  GRAPHQL_ERROR
-  INVALID
-  NOT_FOUND
-  REQUIRED
-}
+# enum ExportErrorCode {
+#   GRAPHQL_ERROR
+#   INVALID
+#   NOT_FOUND
+#   REQUIRED
+# }
 
 type ExportEvent implements Node {
   id: ID!
   date: DateTime!
   type: ExportEventsEnum!
   user: User
-  app: App
+  # app: App
   message: String!
 }
 

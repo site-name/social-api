@@ -13,7 +13,7 @@ const (
 	EXPORT_FAILED           = "export_failed"
 	EXPORT_DELETED          = "export_deleted"
 	EXPORTED_FILE_SENT      = "exported_file_sent"
-	EXPORT_FAILED_INFO_SENT = "Export_failed_info_sent"
+	EXPORT_FAILED_INFO_SENT = "export_failed_info_sent"
 )
 
 var ExportTypeString = map[string]string{
@@ -33,6 +33,13 @@ type ExportEvent struct {
 	Parameters   *model.StringMap `json:"parameters"`
 	ExportFileID string           `json:"export_file_id"`
 	UserID       *string          `json:"user_id"`
+}
+
+// ExportEventFilterOption is used to build squirrel queries
+type ExportEventFilterOption struct {
+	Id           *model.StringFilter
+	ExportFileID *model.StringFilter
+	UserID       *model.StringFilter
 }
 
 func (e *ExportEvent) IsValid() *model.AppError {

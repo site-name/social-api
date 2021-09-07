@@ -95,8 +95,8 @@ func init() {
 
 		RoleTableName: "Roles", //
 
-		CsvExportEventTablename: "ExportEvents", // event
-		CsvExportFileTablename:  "ExportFiles",  //
+		CsvExportEventTablename: "Date ASC", // csv
+		CsvExportFileTablename:  "",         //
 
 		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",                 // attribute
 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //

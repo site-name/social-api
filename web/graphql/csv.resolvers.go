@@ -11,35 +11,79 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/shared"
 )
+
+func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEvent) (*gqlmodel.User, error) {
+	session, appErr := checkUserAuthenticated("exportEventResolver.User", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, gqlmodel.GraphqlPermissionToSystemPermission(gqlmodel.PermissionEnumManageStaff))) {
+		return nil, nil
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+}
+
+func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile) (*gqlmodel.User, error) {
+	session, appErr := checkUserAuthenticated("exportEventResolver.User", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, gqlmodel.GraphqlPermissionToSystemPermission(gqlmodel.PermissionEnumManageStaff))) {
+		return nil, appErr
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+}
+
+func (r *exportFileResolver) URL(ctx context.Context, obj *gqlmodel.ExportFile) (*string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *exportFileResolver) Events(ctx context.Context, obj *gqlmodel.ExportFile) ([]*gqlmodel.ExportEvent, error) {
+	events, appErr := r.Srv().CsvService().ExportEventsByOption(&csv.ExportEventFilterOption{
+		ExportFileID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: obj.ID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemExportEventsToGraphqlExportEvents(events), nil
+}
 
 func (r *mutationResolver) ExportProducts(ctx context.Context, input gqlmodel.ExportProductsInput) (*gqlmodel.ExportProducts, error) {
 	// authentication and permissions checks are already done, thank to directive.
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	// parse export scope
-	scope := map[string]interface{}{}
+	// validate scope is provided properly
 	switch input.Scope {
 	case gqlmodel.ExportScopeIDS:
 		if input.Ids == nil || len(input.Ids) == 0 {
 			return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "IDs"}, "", http.StatusBadRequest)
 		}
-		scope["ids"] = input.Ids
 	case gqlmodel.ExportScopeFilter:
 		if input.Filter == nil {
 			return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter"}, "", http.StatusBadRequest)
 		}
-		scope["filter"] = input.Filter
-	default:
-		scope["all"] = true
-	}
-
-	// parse export info
-	exportInfo := map[string]interface{}{}
-	if fields := len(input.ExportInfo.Fields); fields > 0 {
-		exportInfo["fields"] = fields
 	}
 
 	newExportFile, appErr := r.Srv().CsvService().CreateExportFile(&csv.ExportFile{
@@ -58,12 +102,44 @@ func (r *mutationResolver) ExportProducts(ctx context.Context, input gqlmodel.Ex
 		return nil, appErr
 	}
 
+	// embed input to job's data
+	exportInput, err := json.JSON.Marshal(input)
+	if err != nil {
+		return nil, model.NewAppError("graphql.ExportProducts", app.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	_, appErr = r.Srv().Jobs.CreateJob(model.JOB_TYPE_EXPORT_CSV, map[string]string{
+		"input":          string(exportInput),
+		"export_file_id": newExportFile.Id,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.ExportProducts{
+		ExportFile: gqlmodel.SystemExportFileToGraphqlExportFile(newExportFile),
+	}, nil
 }
 
 func (r *queryResolver) ExportFile(ctx context.Context, id string) (*gqlmodel.ExportFile, error) {
-	panic(fmt.Errorf("not implemented"))
+	// user authentication and permission checking are done in @directive already
+	exportFile, appErr := r.Srv().CsvService().ExportFileById(id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemExportFileToGraphqlExportFile(exportFile), nil
 }
 
 func (r *queryResolver) ExportFiles(ctx context.Context, filter *gqlmodel.ExportFileFilterInput, sortBy *gqlmodel.ExportFileSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.ExportFileCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// user authentication and permission checking are done in @directive already
+	panic("not implemented")
 }
+
+// ExportEvent returns generated.ExportEventResolver implementation.
+func (r *Resolver) ExportEvent() generated.ExportEventResolver { return &exportEventResolver{r} }
+
+// ExportFile returns generated.ExportFileResolver implementation.
+func (r *Resolver) ExportFile() generated.ExportFileResolver { return &exportFileResolver{r} }
+
+type exportEventResolver struct{ *Resolver }
+type exportFileResolver struct{ *Resolver }

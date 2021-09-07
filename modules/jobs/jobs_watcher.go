@@ -179,7 +179,6 @@ func (watcher *Watcher) PollAndNotify() {
 				default:
 				}
 			}
-		// csv export job received
 		case model.JOB_TYPE_EXPORT_CSV:
 			if watcher.workers.CsvExport != nil {
 				select {

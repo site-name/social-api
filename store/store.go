@@ -775,12 +775,13 @@ type (
 type (
 	CsvExportEventStore interface {
 		CreateIndexesIfNotExists()
-		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)
+		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)                           // Save inserts given export event into database then returns it
+		FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
 	}
 	CsvExportFileStore interface {
 		CreateIndexesIfNotExists()
-		Save(file *csv.ExportFile) (*csv.ExportFile, error)
-		Get(id string) (*csv.ExportFile, error)
+		Save(file *csv.ExportFile) (*csv.ExportFile, error) // Save inserts given export file into database then returns it
+		Get(id string) (*csv.ExportFile, error)             // Get finds and returns an export file found using given id
 	}
 )
 

@@ -34,6 +34,6 @@ func (r *queryResolver) Channel(ctx context.Context, id *string) (*gqlmodel.Chan
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Channels(ctx context.Context) ([]gqlmodel.Channel, error) {
+func (r *queryResolver) Channels(ctx context.Context) ([]*gqlmodel.Channel, error) {
 	panic(fmt.Errorf("not implemented"))
 }

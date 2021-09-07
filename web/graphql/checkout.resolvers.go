@@ -36,7 +36,7 @@ func (r *checkoutResolver) AvailableShippingMethods(ctx context.Context, obj *gq
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]gqlmodel.PaymentGateway, error) {
+func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.PaymentGateway, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -16,6 +16,10 @@ type ExportFile struct {
 	UpdateAt    int64   `json:"update_at"`
 }
 
+type ExportFileFilterOption struct {
+	Id *model.StringFilter
+}
+
 func (e *ExportFile) ToJson() string {
 	return model.ModelToJson(e)
 }

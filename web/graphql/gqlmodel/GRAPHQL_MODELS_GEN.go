@@ -72,7 +72,7 @@ type AccountRegisterInput struct {
 	Password     string            `json:"password"`
 	RedirectURL  *string           `json:"redirectUrl"`
 	LanguageCode *LanguageCodeEnum `json:"languageCode"`
-	Metadata     []MetadataInput   `json:"metadata"`
+	Metadata     []*MetadataInput  `json:"metadata"`
 	Channel      *string           `json:"channel"`
 }
 
@@ -89,15 +89,15 @@ type AccountUpdate struct {
 }
 
 type AddressCreate struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User           `json:"user"`
+	Errors  []*AccountError `json:"errors"`
+	Address *Address        `json:"address"`
 }
 
 type AddressDelete struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User           `json:"user"`
+	Errors  []*AccountError `json:"errors"`
+	Address *Address        `json:"address"`
 }
 
 type AddressInput struct {
@@ -115,14 +115,14 @@ type AddressInput struct {
 }
 
 type AddressSetDefault struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User   *User           `json:"user"`
+	Errors []*AccountError `json:"errors"`
 }
 
 type AddressUpdate struct {
-	User    *User          `json:"user"`
-	Errors  []AccountError `json:"errors"`
-	Address *Address       `json:"address"`
+	User    *User           `json:"user"`
+	Errors  []*AccountError `json:"errors"`
+	Address *Address        `json:"address"`
 }
 
 type AddressValidationData struct {
@@ -179,14 +179,14 @@ func (App) IsNode()               {}
 func (App) IsObjectWithMetadata() {}
 
 type AppActivate struct {
-	Errors []AppError `json:"errors"`
-	App    *App       `json:"app"`
+	Errors []*AppError `json:"errors"`
+	App    *App        `json:"app"`
 }
 
 type AppCountableConnection struct {
-	PageInfo   *PageInfo          `json:"pageInfo"`
-	Edges      []AppCountableEdge `json:"edges"`
-	TotalCount *int               `json:"totalCount"`
+	PageInfo   *PageInfo           `json:"pageInfo"`
+	Edges      []*AppCountableEdge `json:"edges"`
+	TotalCount *int                `json:"totalCount"`
 }
 
 type AppCountableEdge struct {
@@ -195,23 +195,23 @@ type AppCountableEdge struct {
 }
 
 type AppCreate struct {
-	AuthToken *string    `json:"authToken"`
-	Errors    []AppError `json:"errors"`
-	App       *App       `json:"app"`
+	AuthToken *string     `json:"authToken"`
+	Errors    []*AppError `json:"errors"`
+	App       *App        `json:"app"`
 }
 
 type AppDeactivate struct {
-	Errors []AppError `json:"errors"`
-	App    *App       `json:"app"`
+	Errors []*AppError `json:"errors"`
+	App    *App        `json:"app"`
 }
 
 type AppDelete struct {
-	Errors []AppError `json:"errors"`
-	App    *App       `json:"app"`
+	Errors []*AppError `json:"errors"`
+	App    *App        `json:"app"`
 }
 
 type AppDeleteFailedInstallation struct {
-	Errors          []AppError       `json:"errors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -223,8 +223,8 @@ type AppError struct {
 }
 
 type AppFetchManifest struct {
-	Manifest *Manifest  `json:"manifest"`
-	Errors   []AppError `json:"errors"`
+	Manifest *Manifest   `json:"manifest"`
+	Errors   []*AppError `json:"errors"`
 }
 
 type AppFilterInput struct {
@@ -239,7 +239,7 @@ type AppInput struct {
 }
 
 type AppInstall struct {
-	Errors          []AppError       `json:"errors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -264,7 +264,7 @@ func (AppInstallation) IsNode() {}
 func (AppInstallation) IsJob()  {}
 
 type AppRetryInstall struct {
-	Errors          []AppError       `json:"errors"`
+	Errors          []*AppError      `json:"errors"`
 	AppInstallation *AppInstallation `json:"appInstallation"`
 }
 
@@ -282,14 +282,14 @@ type AppToken struct {
 func (AppToken) IsNode() {}
 
 type AppTokenCreate struct {
-	AuthToken *string    `json:"authToken"`
-	Errors    []AppError `json:"errors"`
-	AppToken  *AppToken  `json:"appToken"`
+	AuthToken *string     `json:"authToken"`
+	Errors    []*AppError `json:"errors"`
+	AppToken  *AppToken   `json:"appToken"`
 }
 
 type AppTokenDelete struct {
-	Errors   []AppError `json:"errors"`
-	AppToken *AppToken  `json:"appToken"`
+	Errors   []*AppError `json:"errors"`
+	AppToken *AppToken   `json:"appToken"`
 }
 
 type AppTokenInput struct {
@@ -298,23 +298,23 @@ type AppTokenInput struct {
 }
 
 type AppTokenVerify struct {
-	Valid  bool       `json:"valid"`
-	Errors []AppError `json:"errors"`
+	Valid  bool        `json:"valid"`
+	Errors []*AppError `json:"errors"`
 }
 
 type AppUpdate struct {
-	Errors []AppError `json:"errors"`
-	App    *App       `json:"app"`
+	Errors []*AppError `json:"errors"`
+	App    *App        `json:"app"`
 }
 
 type AssignNavigation struct {
-	Menu   *Menu       `json:"menu"`
-	Errors []MenuError `json:"errors"`
+	Menu   *Menu        `json:"menu"`
+	Errors []*MenuError `json:"errors"`
 }
 
 type AttributeBulkDelete struct {
-	Count  int              `json:"count"`
-	Errors []AttributeError `json:"errors"`
+	Count  int               `json:"count"`
+	Errors []*AttributeError `json:"errors"`
 }
 
 type AttributeChoicesSortingInput struct {
@@ -323,9 +323,9 @@ type AttributeChoicesSortingInput struct {
 }
 
 type AttributeCountableConnection struct {
-	PageInfo   *PageInfo                `json:"pageInfo"`
-	Edges      []AttributeCountableEdge `json:"edges"`
-	TotalCount *int                     `json:"totalCount"`
+	PageInfo   *PageInfo                 `json:"pageInfo"`
+	Edges      []*AttributeCountableEdge `json:"edges"`
+	TotalCount *int                      `json:"totalCount"`
 }
 
 type AttributeCountableEdge struct {
@@ -334,8 +334,8 @@ type AttributeCountableEdge struct {
 }
 
 type AttributeCreate struct {
-	Attribute *Attribute       `json:"attribute"`
-	Errors    []AttributeError `json:"errors"`
+	Attribute *Attribute        `json:"attribute"`
+	Errors    []*AttributeError `json:"errors"`
 }
 
 type AttributeCreateInput struct {
@@ -356,8 +356,8 @@ type AttributeCreateInput struct {
 }
 
 type AttributeDelete struct {
-	Errors    []AttributeError `json:"errors"`
-	Attribute *Attribute       `json:"attribute"`
+	Errors    []*AttributeError `json:"errors"`
+	Attribute *Attribute        `json:"attribute"`
 }
 
 type AttributeError struct {
@@ -390,8 +390,8 @@ type AttributeInput struct {
 }
 
 type AttributeReorderValues struct {
-	Attribute *Attribute       `json:"attribute"`
-	Errors    []AttributeError `json:"errors"`
+	Attribute *Attribute        `json:"attribute"`
+	Errors    []*AttributeError `json:"errors"`
 }
 
 type AttributeSortingInput struct {
@@ -409,8 +409,8 @@ func (AttributeTranslatableContent) IsTranslatableItem() {}
 func (AttributeTranslatableContent) IsNode()             {}
 
 type AttributeTranslate struct {
-	Errors    []TranslationError `json:"errors"`
-	Attribute *Attribute         `json:"attribute"`
+	Errors    []*TranslationError `json:"errors"`
+	Attribute *Attribute          `json:"attribute"`
 }
 
 type AttributeTranslation struct {
@@ -422,8 +422,8 @@ type AttributeTranslation struct {
 func (AttributeTranslation) IsNode() {}
 
 type AttributeUpdate struct {
-	Attribute *Attribute       `json:"attribute"`
-	Errors    []AttributeError `json:"errors"`
+	Attribute *Attribute        `json:"attribute"`
+	Errors    []*AttributeError `json:"errors"`
 }
 
 type AttributeUpdateInput struct {
@@ -457,14 +457,14 @@ type AttributeValue struct {
 func (AttributeValue) IsNode() {}
 
 type AttributeValueBulkDelete struct {
-	Count  int              `json:"count"`
-	Errors []AttributeError `json:"errors"`
+	Count  int               `json:"count"`
+	Errors []*AttributeError `json:"errors"`
 }
 
 type AttributeValueCountableConnection struct {
-	PageInfo   *PageInfo                     `json:"pageInfo"`
-	Edges      []AttributeValueCountableEdge `json:"edges"`
-	TotalCount *int                          `json:"totalCount"`
+	PageInfo   *PageInfo                      `json:"pageInfo"`
+	Edges      []*AttributeValueCountableEdge `json:"edges"`
+	TotalCount *int                           `json:"totalCount"`
 }
 
 type AttributeValueCountableEdge struct {
@@ -473,9 +473,9 @@ type AttributeValueCountableEdge struct {
 }
 
 type AttributeValueCreate struct {
-	Attribute      *Attribute       `json:"attribute"`
-	Errors         []AttributeError `json:"errors"`
-	AttributeValue *AttributeValue  `json:"attributeValue"`
+	Attribute      *Attribute        `json:"attribute"`
+	Errors         []*AttributeError `json:"errors"`
+	AttributeValue *AttributeValue   `json:"attributeValue"`
 }
 
 type AttributeValueCreateInput struct {
@@ -485,9 +485,9 @@ type AttributeValueCreateInput struct {
 }
 
 type AttributeValueDelete struct {
-	Attribute      *Attribute       `json:"attribute"`
-	Errors         []AttributeError `json:"errors"`
-	AttributeValue *AttributeValue  `json:"attributeValue"`
+	Attribute      *Attribute        `json:"attribute"`
+	Errors         []*AttributeError `json:"errors"`
+	AttributeValue *AttributeValue   `json:"attributeValue"`
 }
 
 type AttributeValueFilterInput struct {
@@ -514,8 +514,8 @@ func (AttributeValueTranslatableContent) IsTranslatableItem() {}
 func (AttributeValueTranslatableContent) IsNode()             {}
 
 type AttributeValueTranslate struct {
-	Errors         []TranslationError `json:"errors"`
-	AttributeValue *AttributeValue    `json:"attributeValue"`
+	Errors         []*TranslationError `json:"errors"`
+	AttributeValue *AttributeValue     `json:"attributeValue"`
 }
 
 type AttributeValueTranslation struct {
@@ -533,9 +533,9 @@ type AttributeValueTranslationInput struct {
 }
 
 type AttributeValueUpdate struct {
-	Attribute      *Attribute       `json:"attribute"`
-	Errors         []AttributeError `json:"errors"`
-	AttributeValue *AttributeValue  `json:"attributeValue"`
+	Attribute      *Attribute        `json:"attribute"`
+	Errors         []*AttributeError `json:"errors"`
+	AttributeValue *AttributeValue   `json:"attributeValue"`
 }
 
 type BulkAttributeValueInput struct {
@@ -570,14 +570,14 @@ type CatalogueInput struct {
 }
 
 type CategoryBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []ProductError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*ProductError `json:"errors"`
 }
 
 type CategoryCountableConnection struct {
-	PageInfo   *PageInfo               `json:"pageInfo"`
-	Edges      []CategoryCountableEdge `json:"edges"`
-	TotalCount *int                    `json:"totalCount"`
+	PageInfo   *PageInfo                `json:"pageInfo"`
+	Edges      []*CategoryCountableEdge `json:"edges"`
+	TotalCount *int                     `json:"totalCount"`
 }
 
 type CategoryCountableEdge struct {
@@ -586,13 +586,13 @@ type CategoryCountableEdge struct {
 }
 
 type CategoryCreate struct {
-	Errors   []ProductError `json:"errors"`
-	Category *Category      `json:"category"`
+	Errors   []*ProductError `json:"errors"`
+	Category *Category       `json:"category"`
 }
 
 type CategoryDelete struct {
-	Errors   []ProductError `json:"errors"`
-	Category *Category      `json:"category"`
+	Errors   []*ProductError `json:"errors"`
+	Category *Category       `json:"category"`
 }
 
 type CategoryFilterInput struct {
@@ -629,8 +629,8 @@ func (CategoryTranslatableContent) IsTranslatableItem() {}
 func (CategoryTranslatableContent) IsNode()             {}
 
 type CategoryTranslate struct {
-	Errors   []TranslationError `json:"errors"`
-	Category *Category          `json:"category"`
+	Errors   []*TranslationError `json:"errors"`
+	Category *Category           `json:"category"`
 }
 
 type CategoryTranslation struct {
@@ -645,8 +645,8 @@ type CategoryTranslation struct {
 func (CategoryTranslation) IsNode() {}
 
 type CategoryUpdate struct {
-	Errors   []ProductError `json:"errors"`
-	Category *Category      `json:"category"`
+	Errors   []*ProductError `json:"errors"`
+	Category *Category       `json:"category"`
 }
 
 type Channel struct {
@@ -661,13 +661,13 @@ type Channel struct {
 func (Channel) IsNode() {}
 
 type ChannelActivate struct {
-	Channel *Channel       `json:"channel"`
-	Errors  []ChannelError `json:"errors"`
+	Channel *Channel        `json:"channel"`
+	Errors  []*ChannelError `json:"errors"`
 }
 
 type ChannelCreate struct {
-	Errors  []ChannelError `json:"errors"`
-	Channel *Channel       `json:"channel"`
+	Errors  []*ChannelError `json:"errors"`
+	Channel *Channel        `json:"channel"`
 }
 
 type ChannelCreateInput struct {
@@ -679,13 +679,13 @@ type ChannelCreateInput struct {
 }
 
 type ChannelDeactivate struct {
-	Channel *Channel       `json:"channel"`
-	Errors  []ChannelError `json:"errors"`
+	Channel *Channel        `json:"channel"`
+	Errors  []*ChannelError `json:"errors"`
 }
 
 type ChannelDelete struct {
-	Errors  []ChannelError `json:"errors"`
-	Channel *Channel       `json:"channel"`
+	Errors  []*ChannelError `json:"errors"`
+	Channel *Channel        `json:"channel"`
 }
 
 type ChannelDeleteInput struct {
@@ -700,8 +700,8 @@ type ChannelError struct {
 }
 
 type ChannelUpdate struct {
-	Errors  []ChannelError `json:"errors"`
-	Channel *Channel       `json:"channel"`
+	Errors  []*ChannelError `json:"errors"`
+	Channel *Channel        `json:"channel"`
 }
 
 type ChannelUpdateInput struct {
@@ -713,26 +713,26 @@ type ChannelUpdateInput struct {
 }
 
 type CheckoutAddPromoCode struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutBillingAddressUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutComplete struct {
-	Order              *Order          `json:"order"`
-	ConfirmationNeeded bool            `json:"confirmationNeeded"`
-	ConfirmationData   *string         `json:"confirmationData"`
-	Errors             []CheckoutError `json:"errors"`
+	Order              *Order           `json:"order"`
+	ConfirmationNeeded bool             `json:"confirmationNeeded"`
+	ConfirmationData   *string          `json:"confirmationData"`
+	Errors             []*CheckoutError `json:"errors"`
 }
 
 type CheckoutCountableConnection struct {
-	PageInfo   *PageInfo               `json:"pageInfo"`
-	Edges      []CheckoutCountableEdge `json:"edges"`
-	TotalCount *int                    `json:"totalCount"`
+	PageInfo   *PageInfo                `json:"pageInfo"`
+	Edges      []*CheckoutCountableEdge `json:"edges"`
+	TotalCount *int                     `json:"totalCount"`
 }
 
 type CheckoutCountableEdge struct {
@@ -741,9 +741,9 @@ type CheckoutCountableEdge struct {
 }
 
 type CheckoutCreate struct {
-	Created  *bool           `json:"created"`
-	Errors   []CheckoutError `json:"errors"`
-	Checkout *Checkout       `json:"checkout"`
+	Created  *bool            `json:"created"`
+	Errors   []*CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
 }
 
 type CheckoutCreateInput struct {
@@ -756,18 +756,18 @@ type CheckoutCreateInput struct {
 }
 
 type CheckoutCustomerAttach struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutCustomerDetach struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutEmailUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutError struct {
@@ -779,8 +779,8 @@ type CheckoutError struct {
 }
 
 type CheckoutLanguageCodeUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLine struct {
@@ -794,9 +794,9 @@ type CheckoutLine struct {
 func (CheckoutLine) IsNode() {}
 
 type CheckoutLineCountableConnection struct {
-	PageInfo   *PageInfo                   `json:"pageInfo"`
-	Edges      []CheckoutLineCountableEdge `json:"edges"`
-	TotalCount *int                        `json:"totalCount"`
+	PageInfo   *PageInfo                    `json:"pageInfo"`
+	Edges      []*CheckoutLineCountableEdge `json:"edges"`
+	TotalCount *int                         `json:"totalCount"`
 }
 
 type CheckoutLineCountableEdge struct {
@@ -805,8 +805,8 @@ type CheckoutLineCountableEdge struct {
 }
 
 type CheckoutLineDelete struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLineInput struct {
@@ -815,34 +815,34 @@ type CheckoutLineInput struct {
 }
 
 type CheckoutLinesAdd struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLinesUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutPaymentCreate struct {
-	Checkout *Checkout      `json:"checkout"`
-	Payment  *Payment       `json:"payment"`
-	Errors   []PaymentError `json:"errors"`
+	Checkout *Checkout       `json:"checkout"`
+	Payment  *Payment        `json:"payment"`
+	Errors   []*PaymentError `json:"errors"`
 }
 
 type CheckoutRemovePromoCode struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutShippingAddressUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutShippingMethodUpdate struct {
-	Checkout *Checkout       `json:"checkout"`
-	Errors   []CheckoutError `json:"errors"`
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
 }
 
 type ChoiceValue struct {
@@ -862,20 +862,20 @@ type Collection struct {
 	Products        *ProductCountableConnection `json:"products"`
 	BackgroundImage *Image                      `json:"backgroundImage"`
 	Translation     *CollectionTranslation      `json:"translation"`
-	ChannelListings []CollectionChannelListing  `json:"channelListings"`
+	ChannelListings []*CollectionChannelListing `json:"channelListings"`
 }
 
 func (Collection) IsNode()               {}
 func (Collection) IsObjectWithMetadata() {}
 
 type CollectionAddProducts struct {
-	Collection *Collection       `json:"collection"`
-	Errors     []CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
 }
 
 type CollectionBulkDelete struct {
-	Count  int               `json:"count"`
-	Errors []CollectionError `json:"errors"`
+	Count  int                `json:"count"`
+	Errors []*CollectionError `json:"errors"`
 }
 
 type CollectionChannelListing struct {
@@ -897,19 +897,19 @@ type CollectionChannelListingError struct {
 }
 
 type CollectionChannelListingUpdate struct {
-	Collection *Collection                     `json:"collection"`
-	Errors     []CollectionChannelListingError `json:"errors"`
+	Collection *Collection                      `json:"collection"`
+	Errors     []*CollectionChannelListingError `json:"errors"`
 }
 
 type CollectionChannelListingUpdateInput struct {
-	AddChannels    []PublishableChannelListingInput `json:"addChannels"`
-	RemoveChannels []string                         `json:"removeChannels"`
+	AddChannels    []*PublishableChannelListingInput `json:"addChannels"`
+	RemoveChannels []string                          `json:"removeChannels"`
 }
 
 type CollectionCountableConnection struct {
-	PageInfo   *PageInfo                 `json:"pageInfo"`
-	Edges      []CollectionCountableEdge `json:"edges"`
-	TotalCount *int                      `json:"totalCount"`
+	PageInfo   *PageInfo                  `json:"pageInfo"`
+	Edges      []*CollectionCountableEdge `json:"edges"`
+	TotalCount *int                       `json:"totalCount"`
 }
 
 type CollectionCountableEdge struct {
@@ -918,8 +918,8 @@ type CollectionCountableEdge struct {
 }
 
 type CollectionCreate struct {
-	Errors     []CollectionError `json:"errors"`
-	Collection *Collection       `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
 }
 
 type CollectionCreateInput struct {
@@ -935,8 +935,8 @@ type CollectionCreateInput struct {
 }
 
 type CollectionDelete struct {
-	Errors     []CollectionError `json:"errors"`
-	Collection *Collection       `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
 }
 
 type CollectionError struct {
@@ -966,13 +966,13 @@ type CollectionInput struct {
 }
 
 type CollectionRemoveProducts struct {
-	Collection *Collection       `json:"collection"`
-	Errors     []CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
 }
 
 type CollectionReorderProducts struct {
-	Collection *Collection       `json:"collection"`
-	Errors     []CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
 }
 
 type CollectionSortingInput struct {
@@ -994,8 +994,8 @@ func (CollectionTranslatableContent) IsTranslatableItem() {}
 func (CollectionTranslatableContent) IsNode()             {}
 
 type CollectionTranslate struct {
-	Errors     []TranslationError `json:"errors"`
-	Collection *Collection        `json:"collection"`
+	Errors     []*TranslationError `json:"errors"`
+	Collection *Collection         `json:"collection"`
 }
 
 type CollectionTranslation struct {
@@ -1010,8 +1010,8 @@ type CollectionTranslation struct {
 func (CollectionTranslation) IsNode() {}
 
 type CollectionUpdate struct {
-	Errors     []CollectionError `json:"errors"`
-	Collection *Collection       `json:"collection"`
+	Errors     []*CollectionError `json:"errors"`
+	Collection *Collection        `json:"collection"`
 }
 
 type ConfigurationItem struct {
@@ -1057,18 +1057,18 @@ type CreditCard struct {
 }
 
 type CustomerBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []AccountError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*AccountError `json:"errors"`
 }
 
 type CustomerCreate struct {
-	Errors []AccountError `json:"errors"`
-	User   *User          `json:"user"`
+	Errors []*AccountError `json:"errors"`
+	User   *User           `json:"user"`
 }
 
 type CustomerDelete struct {
-	Errors []AccountError `json:"errors"`
-	User   *User          `json:"user"`
+	Errors []*AccountError `json:"errors"`
+	User   *User           `json:"user"`
 }
 
 type CustomerFilterInput struct {
@@ -1091,8 +1091,8 @@ type CustomerInput struct {
 }
 
 type CustomerUpdate struct {
-	Errors []AccountError `json:"errors"`
-	User   *User          `json:"user"`
+	Errors []*AccountError `json:"errors"`
+	User   *User           `json:"user"`
 }
 
 type DateRangeInput struct {
@@ -1110,12 +1110,12 @@ type DeactivateAllUserTokens struct {
 }
 
 type DeleteMetadata struct {
-	Errors []MetadataError    `json:"errors"`
+	Errors []*MetadataError   `json:"errors"`
 	Item   ObjectWithMetadata `json:"item"`
 }
 
 type DeletePrivateMetadata struct {
-	Errors []MetadataError    `json:"errors"`
+	Errors []*MetadataError   `json:"errors"`
 	Item   ObjectWithMetadata `json:"item"`
 }
 
@@ -1136,9 +1136,9 @@ func (DigitalContent) IsNode()               {}
 func (DigitalContent) IsObjectWithMetadata() {}
 
 type DigitalContentCountableConnection struct {
-	PageInfo   *PageInfo                     `json:"pageInfo"`
-	Edges      []DigitalContentCountableEdge `json:"edges"`
-	TotalCount *int                          `json:"totalCount"`
+	PageInfo   *PageInfo                      `json:"pageInfo"`
+	Edges      []*DigitalContentCountableEdge `json:"edges"`
+	TotalCount *int                           `json:"totalCount"`
 }
 
 type DigitalContentCountableEdge struct {
@@ -1149,12 +1149,12 @@ type DigitalContentCountableEdge struct {
 type DigitalContentCreate struct {
 	Variant *ProductVariant `json:"variant"`
 	Content *DigitalContent `json:"content"`
-	Errors  []ProductError  `json:"errors"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type DigitalContentDelete struct {
 	Variant *ProductVariant `json:"variant"`
-	Errors  []ProductError  `json:"errors"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type DigitalContentInput struct {
@@ -1167,7 +1167,7 @@ type DigitalContentInput struct {
 type DigitalContentUpdate struct {
 	Variant *ProductVariant `json:"variant"`
 	Content *DigitalContent `json:"content"`
-	Errors  []ProductError  `json:"errors"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type DigitalContentUploadInput struct {
@@ -1190,7 +1190,7 @@ type DigitalContentURL struct {
 func (DigitalContentURL) IsNode() {}
 
 type DigitalContentURLCreate struct {
-	Errors            []ProductError     `json:"errors"`
+	Errors            []*ProductError    `json:"errors"`
 	DigitalContentURL *DigitalContentURL `json:"digitalContentUrl"`
 }
 
@@ -1213,18 +1213,18 @@ type Domain struct {
 }
 
 type DraftOrderBulkDelete struct {
-	Count  int          `json:"count"`
-	Errors []OrderError `json:"errors"`
+	Count  int           `json:"count"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type DraftOrderComplete struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type DraftOrderCreate struct {
-	Errors []OrderError `json:"errors"`
-	Order  *Order       `json:"order"`
+	Errors []*OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
 }
 
 type DraftOrderCreateInput struct {
@@ -1242,8 +1242,8 @@ type DraftOrderCreateInput struct {
 }
 
 type DraftOrderDelete struct {
-	Errors []OrderError `json:"errors"`
-	Order  *Order       `json:"order"`
+	Errors []*OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
 }
 
 type DraftOrderInput struct {
@@ -1260,51 +1260,19 @@ type DraftOrderInput struct {
 }
 
 type DraftOrderLinesBulkDelete struct {
-	Count  int          `json:"count"`
-	Errors []OrderError `json:"errors"`
+	Count  int           `json:"count"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type DraftOrderUpdate struct {
-	Errors []OrderError `json:"errors"`
-	Order  *Order       `json:"order"`
+	Errors []*OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
 }
-
-type ExportError struct {
-	Field   *string         `json:"field"`
-	Message *string         `json:"message"`
-	Code    ExportErrorCode `json:"code"`
-}
-
-type ExportEvent struct {
-	ID      string           `json:"id"`
-	Date    time.Time        `json:"date"`
-	Type    ExportEventsEnum `json:"type"`
-	User    *User            `json:"user"`
-	App     *App             `json:"app"`
-	Message string           `json:"message"`
-}
-
-func (ExportEvent) IsNode() {}
-
-type ExportFile struct {
-	ID        string        `json:"id"`
-	User      *User         `json:"user"`
-	App       *App          `json:"app"`
-	Status    JobStatusEnum `json:"status"`
-	CreatedAt time.Time     `json:"createdAt"`
-	UpdatedAt time.Time     `json:"updatedAt"`
-	Message   *string       `json:"message"`
-	URL       *string       `json:"url"`
-	Events    []ExportEvent `json:"events"`
-}
-
-func (ExportFile) IsNode() {}
-func (ExportFile) IsJob()  {}
 
 type ExportFileCountableConnection struct {
-	PageInfo   *PageInfo                 `json:"pageInfo"`
-	Edges      []ExportFileCountableEdge `json:"edges"`
-	TotalCount *int                      `json:"totalCount"`
+	PageInfo   *PageInfo                  `json:"pageInfo"`
+	Edges      []*ExportFileCountableEdge `json:"edges"`
+	TotalCount *int                       `json:"totalCount"`
 }
 
 type ExportFileCountableEdge struct {
@@ -1317,7 +1285,6 @@ type ExportFileFilterInput struct {
 	UpdatedAt *DateTimeRangeInput `json:"updatedAt"`
 	Status    *JobStatusEnum      `json:"status"`
 	User      *string             `json:"user"`
-	App       *string             `json:"app"`
 }
 
 type ExportFileSortingInput struct {
@@ -1333,8 +1300,7 @@ type ExportInfoInput struct {
 }
 
 type ExportProducts struct {
-	ExportFile *ExportFile   `json:"exportFile"`
-	Errors     []ExportError `json:"errors"`
+	ExportFile *ExportFile `json:"exportFile"`
 }
 
 type ExportProductsInput struct {
@@ -1384,8 +1350,8 @@ type File struct {
 }
 
 type FileUpload struct {
-	UploadedFile *File         `json:"uploadedFile"`
-	Errors       []UploadError `json:"errors"`
+	UploadedFile *File          `json:"uploadedFile"`
+	Errors       []*UploadError `json:"errors"`
 }
 
 type Fulfillment struct {
@@ -1405,9 +1371,9 @@ func (Fulfillment) IsNode()               {}
 func (Fulfillment) IsObjectWithMetadata() {}
 
 type FulfillmentCancel struct {
-	Fulfillment *Fulfillment `json:"fulfillment"`
-	Order       *Order       `json:"order"`
-	Errors      []OrderError `json:"errors"`
+	Fulfillment *Fulfillment  `json:"fulfillment"`
+	Order       *Order        `json:"order"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentCancelInput struct {
@@ -1423,23 +1389,23 @@ type FulfillmentLine struct {
 func (FulfillmentLine) IsNode() {}
 
 type FulfillmentRefundProducts struct {
-	Fulfillment *Fulfillment `json:"fulfillment"`
-	Order       *Order       `json:"order"`
-	Errors      []OrderError `json:"errors"`
+	Fulfillment *Fulfillment  `json:"fulfillment"`
+	Order       *Order        `json:"order"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentReturnProducts struct {
-	ReturnFulfillment  *Fulfillment `json:"returnFulfillment"`
-	ReplaceFulfillment *Fulfillment `json:"replaceFulfillment"`
-	Order              *Order       `json:"order"`
-	ReplaceOrder       *Order       `json:"replaceOrder"`
-	Errors             []OrderError `json:"errors"`
+	ReturnFulfillment  *Fulfillment  `json:"returnFulfillment"`
+	ReplaceFulfillment *Fulfillment  `json:"replaceFulfillment"`
+	Order              *Order        `json:"order"`
+	ReplaceOrder       *Order        `json:"replaceOrder"`
+	Errors             []*OrderError `json:"errors"`
 }
 
 type FulfillmentUpdateTracking struct {
-	Fulfillment *Fulfillment `json:"fulfillment"`
-	Order       *Order       `json:"order"`
-	Errors      []OrderError `json:"errors"`
+	Fulfillment *Fulfillment  `json:"fulfillment"`
+	Order       *Order        `json:"order"`
+	Errors      []*OrderError `json:"errors"`
 }
 
 type FulfillmentUpdateTrackingInput struct {
@@ -1469,14 +1435,14 @@ type GiftCard struct {
 func (GiftCard) IsNode() {}
 
 type GiftCardActivate struct {
-	GiftCard *GiftCard       `json:"giftCard"`
-	Errors   []GiftCardError `json:"errors"`
+	GiftCard *GiftCard        `json:"giftCard"`
+	Errors   []*GiftCardError `json:"errors"`
 }
 
 type GiftCardCountableConnection struct {
-	PageInfo   *PageInfo  `json:"pageInfo"`
-	Edges      []GiftCard `json:"edges"`
-	TotalCount *int       `json:"totalCount"`
+	PageInfo   *PageInfo   `json:"pageInfo"`
+	Edges      []*GiftCard `json:"edges"`
+	TotalCount *int        `json:"totalCount"`
 }
 
 type GiftCardCountableEdge struct {
@@ -1485,8 +1451,8 @@ type GiftCardCountableEdge struct {
 }
 
 type GiftCardCreate struct {
-	Errors   []GiftCardError `json:"errors"`
-	GiftCard *GiftCard       `json:"giftCard"`
+	Errors   []*GiftCardError `json:"errors"`
+	GiftCard *GiftCard        `json:"giftCard"`
 }
 
 type GiftCardCreateInput struct {
@@ -1498,8 +1464,8 @@ type GiftCardCreateInput struct {
 }
 
 type GiftCardDeactivate struct {
-	GiftCard *GiftCard       `json:"giftCard"`
-	Errors   []GiftCardError `json:"errors"`
+	GiftCard *GiftCard        `json:"giftCard"`
+	Errors   []*GiftCardError `json:"errors"`
 }
 
 type GiftCardError struct {
@@ -1509,8 +1475,8 @@ type GiftCardError struct {
 }
 
 type GiftCardUpdate struct {
-	Errors   []GiftCardError `json:"errors"`
-	GiftCard *GiftCard       `json:"giftCard"`
+	Errors   []*GiftCardError `json:"errors"`
+	GiftCard *GiftCard        `json:"giftCard"`
 }
 
 type GiftCardUpdateInput struct {
@@ -1521,9 +1487,9 @@ type GiftCardUpdateInput struct {
 }
 
 type GroupCountableConnection struct {
-	PageInfo   *PageInfo            `json:"pageInfo"`
-	Edges      []GroupCountableEdge `json:"edges"`
-	TotalCount *int                 `json:"totalCount"`
+	PageInfo   *PageInfo             `json:"pageInfo"`
+	Edges      []*GroupCountableEdge `json:"edges"`
+	TotalCount *int                  `json:"totalCount"`
 }
 
 type GroupCountableEdge struct {
@@ -1559,8 +1525,8 @@ func (Invoice) IsJob()                {}
 func (Invoice) IsNode()               {}
 
 type InvoiceCreate struct {
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type InvoiceCreateInput struct {
@@ -1569,8 +1535,8 @@ type InvoiceCreateInput struct {
 }
 
 type InvoiceDelete struct {
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type InvoiceError struct {
@@ -1580,24 +1546,24 @@ type InvoiceError struct {
 }
 
 type InvoiceRequest struct {
-	Order   *Order         `json:"order"`
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Order   *Order          `json:"order"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type InvoiceRequestDelete struct {
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type InvoiceSendNotification struct {
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type InvoiceUpdate struct {
-	Errors  []InvoiceError `json:"errors"`
-	Invoice *Invoice       `json:"invoice"`
+	Errors  []*InvoiceError `json:"errors"`
+	Invoice *Invoice        `json:"invoice"`
 }
 
 type LanguageDisplay struct {
@@ -1659,14 +1625,14 @@ type Margin struct {
 }
 
 type MenuBulkDelete struct {
-	Count  int         `json:"count"`
-	Errors []MenuError `json:"errors"`
+	Count  int          `json:"count"`
+	Errors []*MenuError `json:"errors"`
 }
 
 type MenuCountableConnection struct {
-	PageInfo   *PageInfo           `json:"pageInfo"`
-	Edges      []MenuCountableEdge `json:"edges"`
-	TotalCount *int                `json:"totalCount"`
+	PageInfo   *PageInfo            `json:"pageInfo"`
+	Edges      []*MenuCountableEdge `json:"edges"`
+	TotalCount *int                 `json:"totalCount"`
 }
 
 type MenuCountableEdge struct {
@@ -1675,8 +1641,8 @@ type MenuCountableEdge struct {
 }
 
 type MenuCreate struct {
-	Errors []MenuError `json:"errors"`
-	Menu   *Menu       `json:"menu"`
+	Errors []*MenuError `json:"errors"`
+	Menu   *Menu        `json:"menu"`
 }
 
 type MenuCreateInput struct {
@@ -1686,8 +1652,8 @@ type MenuCreateInput struct {
 }
 
 type MenuDelete struct {
-	Errors []MenuError `json:"errors"`
-	Menu   *Menu       `json:"menu"`
+	Errors []*MenuError `json:"errors"`
+	Menu   *Menu        `json:"menu"`
 }
 
 type MenuError struct {
@@ -1708,14 +1674,14 @@ type MenuInput struct {
 }
 
 type MenuItemBulkDelete struct {
-	Count  int         `json:"count"`
-	Errors []MenuError `json:"errors"`
+	Count  int          `json:"count"`
+	Errors []*MenuError `json:"errors"`
 }
 
 type MenuItemCountableConnection struct {
-	PageInfo   *PageInfo               `json:"pageInfo"`
-	Edges      []MenuItemCountableEdge `json:"edges"`
-	TotalCount *int                    `json:"totalCount"`
+	PageInfo   *PageInfo                `json:"pageInfo"`
+	Edges      []*MenuItemCountableEdge `json:"edges"`
+	TotalCount *int                     `json:"totalCount"`
 }
 
 type MenuItemCountableEdge struct {
@@ -1724,8 +1690,8 @@ type MenuItemCountableEdge struct {
 }
 
 type MenuItemCreate struct {
-	Errors   []MenuError `json:"errors"`
-	MenuItem *MenuItem   `json:"menuItem"`
+	Errors   []*MenuError `json:"errors"`
+	MenuItem *MenuItem    `json:"menuItem"`
 }
 
 type MenuItemCreateInput struct {
@@ -1739,8 +1705,8 @@ type MenuItemCreateInput struct {
 }
 
 type MenuItemDelete struct {
-	Errors   []MenuError `json:"errors"`
-	MenuItem *MenuItem   `json:"menuItem"`
+	Errors   []*MenuError `json:"errors"`
+	MenuItem *MenuItem    `json:"menuItem"`
 }
 
 type MenuItemFilterInput struct {
@@ -1757,8 +1723,8 @@ type MenuItemInput struct {
 }
 
 type MenuItemMove struct {
-	Menu   *Menu       `json:"menu"`
-	Errors []MenuError `json:"errors"`
+	Menu   *Menu        `json:"menu"`
+	Errors []*MenuError `json:"errors"`
 }
 
 type MenuItemMoveInput struct {
@@ -1782,8 +1748,8 @@ func (MenuItemTranslatableContent) IsTranslatableItem() {}
 func (MenuItemTranslatableContent) IsNode()             {}
 
 type MenuItemTranslate struct {
-	Errors   []TranslationError `json:"errors"`
-	MenuItem *MenuItem          `json:"menuItem"`
+	Errors   []*TranslationError `json:"errors"`
+	MenuItem *MenuItem           `json:"menuItem"`
 }
 
 type MenuItemTranslation struct {
@@ -1795,8 +1761,8 @@ type MenuItemTranslation struct {
 func (MenuItemTranslation) IsNode() {}
 
 type MenuItemUpdate struct {
-	Errors   []MenuError `json:"errors"`
-	MenuItem *MenuItem   `json:"menuItem"`
+	Errors   []*MenuError `json:"errors"`
+	MenuItem *MenuItem    `json:"menuItem"`
 }
 
 type MenuSortingInput struct {
@@ -1805,8 +1771,8 @@ type MenuSortingInput struct {
 }
 
 type MenuUpdate struct {
-	Errors []MenuError `json:"errors"`
-	Menu   *Menu       `json:"menu"`
+	Errors []*MenuError `json:"errors"`
+	Menu   *Menu        `json:"menu"`
 }
 
 type MetadataError struct {
@@ -1845,9 +1811,9 @@ type NameTranslationInput struct {
 }
 
 type OrderAddNote struct {
-	Order  *Order       `json:"order"`
-	Event  *OrderEvent  `json:"event"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Event  *OrderEvent   `json:"event"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderAddNoteInput struct {
@@ -1855,29 +1821,29 @@ type OrderAddNoteInput struct {
 }
 
 type OrderBulkCancel struct {
-	Count  int          `json:"count"`
-	Errors []OrderError `json:"errors"`
+	Count  int           `json:"count"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderCancel struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderCapture struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderConfirm struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderCountableConnection struct {
-	PageInfo   *PageInfo            `json:"pageInfo"`
-	Edges      []OrderCountableEdge `json:"edges"`
-	TotalCount *int                 `json:"totalCount"`
+	PageInfo   *PageInfo             `json:"pageInfo"`
+	Edges      []*OrderCountableEdge `json:"edges"`
+	TotalCount *int                  `json:"totalCount"`
 }
 
 type OrderCountableEdge struct {
@@ -1899,8 +1865,8 @@ type OrderDiscount struct {
 func (OrderDiscount) IsNode() {}
 
 type OrderDiscountAdd struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderDiscountCommonInput struct {
@@ -1910,13 +1876,13 @@ type OrderDiscountCommonInput struct {
 }
 
 type OrderDiscountDelete struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderDiscountUpdate struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderDraftFilterInput struct {
@@ -1965,9 +1931,9 @@ type OrderEvent struct {
 func (OrderEvent) IsNode() {}
 
 type OrderEventCountableConnection struct {
-	PageInfo   *PageInfo                 `json:"pageInfo"`
-	Edges      []OrderEventCountableEdge `json:"edges"`
-	TotalCount *int                      `json:"totalCount"`
+	PageInfo   *PageInfo                  `json:"pageInfo"`
+	Edges      []*OrderEventCountableEdge `json:"edges"`
+	TotalCount *int                       `json:"totalCount"`
 }
 
 type OrderEventCountableEdge struct {
@@ -2005,17 +1971,17 @@ type OrderFilterInput struct {
 type OrderFulfill struct {
 	Fulfillments []*Fulfillment `json:"fulfillments"`
 	Order        *Order         `json:"order"`
-	Errors       []OrderError   `json:"errors"`
+	Errors       []*OrderError  `json:"errors"`
 }
 
 type OrderFulfillInput struct {
-	Lines          []OrderFulfillLineInput `json:"lines"`
-	NotifyCustomer *bool                   `json:"notifyCustomer"`
+	Lines          []*OrderFulfillLineInput `json:"lines"`
+	NotifyCustomer *bool                    `json:"notifyCustomer"`
 }
 
 type OrderFulfillLineInput struct {
-	OrderLineID *string                  `json:"orderLineId"`
-	Stocks      []OrderFulfillStockInput `json:"stocks"`
+	OrderLineID *string                   `json:"orderLineId"`
+	Stocks      []*OrderFulfillStockInput `json:"stocks"`
 }
 
 type OrderFulfillStockInput struct {
@@ -2029,21 +1995,21 @@ type OrderLineCreateInput struct {
 }
 
 type OrderLineDelete struct {
-	Order     *Order       `json:"order"`
-	OrderLine *OrderLine   `json:"orderLine"`
-	Errors    []OrderError `json:"errors"`
+	Order     *Order        `json:"order"`
+	OrderLine *OrderLine    `json:"orderLine"`
+	Errors    []*OrderError `json:"errors"`
 }
 
 type OrderLineDiscountRemove struct {
-	OrderLine *OrderLine   `json:"orderLine"`
-	Order     *Order       `json:"order"`
-	Errors    []OrderError `json:"errors"`
+	OrderLine *OrderLine    `json:"orderLine"`
+	Order     *Order        `json:"order"`
+	Errors    []*OrderError `json:"errors"`
 }
 
 type OrderLineDiscountUpdate struct {
-	OrderLine *OrderLine   `json:"orderLine"`
-	Order     *Order       `json:"order"`
-	Errors    []OrderError `json:"errors"`
+	OrderLine *OrderLine    `json:"orderLine"`
+	Order     *Order        `json:"order"`
+	Errors    []*OrderError `json:"errors"`
 }
 
 type OrderLineInput struct {
@@ -2051,25 +2017,25 @@ type OrderLineInput struct {
 }
 
 type OrderLineUpdate struct {
-	Order     *Order       `json:"order"`
-	Errors    []OrderError `json:"errors"`
-	OrderLine *OrderLine   `json:"orderLine"`
+	Order     *Order        `json:"order"`
+	Errors    []*OrderError `json:"errors"`
+	OrderLine *OrderLine    `json:"orderLine"`
 }
 
 type OrderLinesCreate struct {
-	Order      *Order       `json:"order"`
-	OrderLines []OrderLine  `json:"orderLines"`
-	Errors     []OrderError `json:"errors"`
+	Order      *Order        `json:"order"`
+	OrderLines []*OrderLine  `json:"orderLines"`
+	Errors     []*OrderError `json:"errors"`
 }
 
 type OrderMarkAsPaid struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderRefund struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderRefundFulfillmentLineInput struct {
@@ -2083,10 +2049,10 @@ type OrderRefundLineInput struct {
 }
 
 type OrderRefundProductsInput struct {
-	OrderLines           []OrderRefundLineInput            `json:"orderLines"`
-	FulfillmentLines     []OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *decimal.Decimal                  `json:"amountToRefund"`
-	IncludeShippingCosts *bool                             `json:"includeShippingCosts"`
+	OrderLines           []*OrderRefundLineInput            `json:"orderLines"`
+	FulfillmentLines     []*OrderRefundFulfillmentLineInput `json:"fulfillmentLines"`
+	AmountToRefund       *decimal.Decimal                   `json:"amountToRefund"`
+	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
 }
 
 type OrderReturnFulfillmentLineInput struct {
@@ -2102,11 +2068,11 @@ type OrderReturnLineInput struct {
 }
 
 type OrderReturnProductsInput struct {
-	OrderLines           []OrderReturnLineInput            `json:"orderLines"`
-	FulfillmentLines     []OrderReturnFulfillmentLineInput `json:"fulfillmentLines"`
-	AmountToRefund       *decimal.Decimal                  `json:"amountToRefund"`
-	IncludeShippingCosts *bool                             `json:"includeShippingCosts"`
-	Refund               *bool                             `json:"refund"`
+	OrderLines           []*OrderReturnLineInput            `json:"orderLines"`
+	FulfillmentLines     []*OrderReturnFulfillmentLineInput `json:"fulfillmentLines"`
+	AmountToRefund       *decimal.Decimal                   `json:"amountToRefund"`
+	IncludeShippingCosts *bool                              `json:"includeShippingCosts"`
+	Refund               *bool                              `json:"refund"`
 }
 
 type OrderSettings struct {
@@ -2120,8 +2086,8 @@ type OrderSettingsError struct {
 }
 
 type OrderSettingsUpdate struct {
-	OrderSettings *OrderSettings       `json:"orderSettings"`
-	Errors        []OrderSettingsError `json:"errors"`
+	OrderSettings *OrderSettings        `json:"orderSettings"`
+	Errors        []*OrderSettingsError `json:"errors"`
 }
 
 type OrderSettingsUpdateInput struct {
@@ -2134,8 +2100,8 @@ type OrderSortingInput struct {
 }
 
 type OrderUpdate struct {
-	Errors []OrderError `json:"errors"`
-	Order  *Order       `json:"order"`
+	Errors []*OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
 }
 
 type OrderUpdateInput struct {
@@ -2145,8 +2111,8 @@ type OrderUpdateInput struct {
 }
 
 type OrderUpdateShipping struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type OrderUpdateShippingInput struct {
@@ -2154,54 +2120,54 @@ type OrderUpdateShippingInput struct {
 }
 
 type OrderVoid struct {
-	Order  *Order       `json:"order"`
-	Errors []OrderError `json:"errors"`
+	Order  *Order        `json:"order"`
+	Errors []*OrderError `json:"errors"`
 }
 
 type Page struct {
-	ID              string              `json:"id"`
-	SeoTitle        *string             `json:"seoTitle"`
-	SeoDescription  *string             `json:"seoDescription"`
-	Title           string              `json:"title"`
-	Content         *string             `json:"content"`
-	PublicationDate *time.Time          `json:"publicationDate"`
-	IsPublished     bool                `json:"isPublished"`
-	Slug            string              `json:"slug"`
-	PageType        *PageType           `json:"pageType"`
-	Created         time.Time           `json:"created"`
-	PrivateMetadata []*MetadataItem     `json:"privateMetadata"`
-	Metadata        []*MetadataItem     `json:"metadata"`
-	Translation     *PageTranslation    `json:"translation"`
-	Attributes      []SelectedAttribute `json:"attributes"`
+	ID              string               `json:"id"`
+	SeoTitle        *string              `json:"seoTitle"`
+	SeoDescription  *string              `json:"seoDescription"`
+	Title           string               `json:"title"`
+	Content         *string              `json:"content"`
+	PublicationDate *time.Time           `json:"publicationDate"`
+	IsPublished     bool                 `json:"isPublished"`
+	Slug            string               `json:"slug"`
+	PageType        *PageType            `json:"pageType"`
+	Created         time.Time            `json:"created"`
+	PrivateMetadata []*MetadataItem      `json:"privateMetadata"`
+	Metadata        []*MetadataItem      `json:"metadata"`
+	Translation     *PageTranslation     `json:"translation"`
+	Attributes      []*SelectedAttribute `json:"attributes"`
 }
 
 func (Page) IsNode()               {}
 func (Page) IsObjectWithMetadata() {}
 
 type PageAttributeAssign struct {
-	PageType *PageType   `json:"pageType"`
-	Errors   []PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
 }
 
 type PageAttributeUnassign struct {
-	PageType *PageType   `json:"pageType"`
-	Errors   []PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
 }
 
 type PageBulkDelete struct {
-	Count  int         `json:"count"`
-	Errors []PageError `json:"errors"`
+	Count  int          `json:"count"`
+	Errors []*PageError `json:"errors"`
 }
 
 type PageBulkPublish struct {
-	Count  int         `json:"count"`
-	Errors []PageError `json:"errors"`
+	Count  int          `json:"count"`
+	Errors []*PageError `json:"errors"`
 }
 
 type PageCountableConnection struct {
-	PageInfo   *PageInfo           `json:"pageInfo"`
-	Edges      []PageCountableEdge `json:"edges"`
-	TotalCount *int                `json:"totalCount"`
+	PageInfo   *PageInfo            `json:"pageInfo"`
+	Edges      []*PageCountableEdge `json:"edges"`
+	TotalCount *int                 `json:"totalCount"`
 }
 
 type PageCountableEdge struct {
@@ -2210,24 +2176,24 @@ type PageCountableEdge struct {
 }
 
 type PageCreate struct {
-	Errors []PageError `json:"errors"`
-	Page   *Page       `json:"page"`
+	Errors []*PageError `json:"errors"`
+	Page   *Page        `json:"page"`
 }
 
 type PageCreateInput struct {
-	Slug            *string               `json:"slug"`
-	Title           *string               `json:"title"`
-	Content         *string               `json:"content"`
-	Attributes      []AttributeValueInput `json:"attributes"`
-	IsPublished     *bool                 `json:"isPublished"`
-	PublicationDate *string               `json:"publicationDate"`
-	Seo             *SeoInput             `json:"seo"`
-	PageType        string                `json:"pageType"`
+	Slug            *string                `json:"slug"`
+	Title           *string                `json:"title"`
+	Content         *string                `json:"content"`
+	Attributes      []*AttributeValueInput `json:"attributes"`
+	IsPublished     *bool                  `json:"isPublished"`
+	PublicationDate *string                `json:"publicationDate"`
+	Seo             *SeoInput              `json:"seo"`
+	PageType        string                 `json:"pageType"`
 }
 
 type PageDelete struct {
-	Errors []PageError `json:"errors"`
-	Page   *Page       `json:"page"`
+	Errors []*PageError `json:"errors"`
+	Page   *Page        `json:"page"`
 }
 
 type PageError struct {
@@ -2252,18 +2218,18 @@ type PageInfo struct {
 }
 
 type PageInput struct {
-	Slug            *string               `json:"slug"`
-	Title           *string               `json:"title"`
-	Content         *string               `json:"content"`
-	Attributes      []AttributeValueInput `json:"attributes"`
-	IsPublished     *bool                 `json:"isPublished"`
-	PublicationDate *string               `json:"publicationDate"`
-	Seo             *SeoInput             `json:"seo"`
+	Slug            *string                `json:"slug"`
+	Title           *string                `json:"title"`
+	Content         *string                `json:"content"`
+	Attributes      []*AttributeValueInput `json:"attributes"`
+	IsPublished     *bool                  `json:"isPublished"`
+	PublicationDate *string                `json:"publicationDate"`
+	Seo             *SeoInput              `json:"seo"`
 }
 
 type PageReorderAttributeValues struct {
-	Page   *Page       `json:"page"`
-	Errors []PageError `json:"errors"`
+	Page   *Page        `json:"page"`
+	Errors []*PageError `json:"errors"`
 }
 
 type PageSortingInput struct {
@@ -2284,7 +2250,7 @@ func (PageTranslatableContent) IsTranslatableItem() {}
 func (PageTranslatableContent) IsNode()             {}
 
 type PageTranslate struct {
-	Errors []TranslationError       `json:"errors"`
+	Errors []*TranslationError      `json:"errors"`
 	Page   *PageTranslatableContent `json:"page"`
 }
 
@@ -2321,14 +2287,14 @@ func (PageType) IsNode()               {}
 func (PageType) IsObjectWithMetadata() {}
 
 type PageTypeBulkDelete struct {
-	Count  int         `json:"count"`
-	Errors []PageError `json:"errors"`
+	Count  int          `json:"count"`
+	Errors []*PageError `json:"errors"`
 }
 
 type PageTypeCountableConnection struct {
-	PageInfo   *PageInfo               `json:"pageInfo"`
-	Edges      []PageTypeCountableEdge `json:"edges"`
-	TotalCount *int                    `json:"totalCount"`
+	PageInfo   *PageInfo                `json:"pageInfo"`
+	Edges      []*PageTypeCountableEdge `json:"edges"`
+	TotalCount *int                     `json:"totalCount"`
 }
 
 type PageTypeCountableEdge struct {
@@ -2337,8 +2303,8 @@ type PageTypeCountableEdge struct {
 }
 
 type PageTypeCreate struct {
-	Errors   []PageError `json:"errors"`
-	PageType *PageType   `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
 }
 
 type PageTypeCreateInput struct {
@@ -2348,8 +2314,8 @@ type PageTypeCreateInput struct {
 }
 
 type PageTypeDelete struct {
-	Errors   []PageError `json:"errors"`
-	PageType *PageType   `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
 }
 
 type PageTypeFilterInput struct {
@@ -2357,8 +2323,8 @@ type PageTypeFilterInput struct {
 }
 
 type PageTypeReorderAttributes struct {
-	PageType *PageType   `json:"pageType"`
-	Errors   []PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
 }
 
 type PageTypeSortingInput struct {
@@ -2367,8 +2333,8 @@ type PageTypeSortingInput struct {
 }
 
 type PageTypeUpdate struct {
-	Errors   []PageError `json:"errors"`
-	PageType *PageType   `json:"pageType"`
+	Errors   []*PageError `json:"errors"`
+	PageType *PageType    `json:"pageType"`
 }
 
 type PageTypeUpdateInput struct {
@@ -2379,8 +2345,8 @@ type PageTypeUpdateInput struct {
 }
 
 type PageUpdate struct {
-	Errors []PageError `json:"errors"`
-	Page   *Page       `json:"page"`
+	Errors []*PageError `json:"errors"`
+	Page   *Page        `json:"page"`
 }
 
 type PasswordChange struct {
@@ -2411,14 +2377,14 @@ type Payment struct {
 func (Payment) IsNode() {}
 
 type PaymentCapture struct {
-	Payment *Payment       `json:"payment"`
-	Errors  []PaymentError `json:"errors"`
+	Payment *Payment        `json:"payment"`
+	Errors  []*PaymentError `json:"errors"`
 }
 
 type PaymentCountableConnection struct {
-	PageInfo   *PageInfo              `json:"pageInfo"`
-	Edges      []PaymentCountableEdge `json:"edges"`
-	TotalCount *int                   `json:"totalCount"`
+	PageInfo   *PageInfo               `json:"pageInfo"`
+	Edges      []*PaymentCountableEdge `json:"edges"`
+	TotalCount *int                    `json:"totalCount"`
 }
 
 type PaymentCountableEdge struct {
@@ -2437,15 +2403,15 @@ type PaymentFilterInput struct {
 }
 
 type PaymentGateway struct {
-	Name       string              `json:"name"`
-	ID         string              `json:"id"`
-	Config     []GatewayConfigLine `json:"config"`
-	Currencies []*string           `json:"currencies"`
+	Name       string               `json:"name"`
+	ID         string               `json:"id"`
+	Config     []*GatewayConfigLine `json:"config"`
+	Currencies []*string            `json:"currencies"`
 }
 
 type PaymentInitialize struct {
 	InitializedPayment *PaymentInitialized `json:"initializedPayment"`
-	Errors             []PaymentError      `json:"errors"`
+	Errors             []*PaymentError     `json:"errors"`
 }
 
 type PaymentInitialized struct {
@@ -2462,8 +2428,8 @@ type PaymentInput struct {
 }
 
 type PaymentRefund struct {
-	Payment *Payment       `json:"payment"`
-	Errors  []PaymentError `json:"errors"`
+	Payment *Payment        `json:"payment"`
+	Errors  []*PaymentError `json:"errors"`
 }
 
 type PaymentSource struct {
@@ -2472,8 +2438,8 @@ type PaymentSource struct {
 }
 
 type PaymentVoid struct {
-	Payment *Payment       `json:"payment"`
-	Errors  []PaymentError `json:"errors"`
+	Payment *Payment        `json:"payment"`
+	Errors  []*PaymentError `json:"errors"`
 }
 
 type Permission struct {
@@ -2482,8 +2448,8 @@ type Permission struct {
 }
 
 type PermissionGroupCreate struct {
-	Errors []PermissionGroupError `json:"errors"`
-	Group  *Group                 `json:"group"`
+	Errors []*PermissionGroupError `json:"errors"`
+	Group  *Group                  `json:"group"`
 }
 
 type PermissionGroupCreateInput struct {
@@ -2493,8 +2459,8 @@ type PermissionGroupCreateInput struct {
 }
 
 type PermissionGroupDelete struct {
-	Errors []PermissionGroupError `json:"errors"`
-	Group  *Group                 `json:"group"`
+	Errors []*PermissionGroupError `json:"errors"`
+	Group  *Group                  `json:"group"`
 }
 
 type PermissionGroupError struct {
@@ -2515,8 +2481,8 @@ type PermissionGroupSortingInput struct {
 }
 
 type PermissionGroupUpdate struct {
-	Errors []PermissionGroupError `json:"errors"`
-	Group  *Group                 `json:"group"`
+	Errors []*PermissionGroupError `json:"errors"`
+	Group  *Group                  `json:"group"`
 }
 
 type PermissionGroupUpdateInput struct {
@@ -2528,11 +2494,11 @@ type PermissionGroupUpdateInput struct {
 }
 
 type Plugin struct {
-	ID                    string                `json:"id"`
-	Name                  string                `json:"name"`
-	Description           string                `json:"description"`
-	GlobalConfiguration   *PluginConfiguration  `json:"globalConfiguration"`
-	ChannelConfigurations []PluginConfiguration `json:"channelConfigurations"`
+	ID                    string                 `json:"id"`
+	Name                  string                 `json:"name"`
+	Description           string                 `json:"description"`
+	GlobalConfiguration   *PluginConfiguration   `json:"globalConfiguration"`
+	ChannelConfigurations []*PluginConfiguration `json:"channelConfigurations"`
 }
 
 type PluginConfiguration struct {
@@ -2542,9 +2508,9 @@ type PluginConfiguration struct {
 }
 
 type PluginCountableConnection struct {
-	PageInfo   *PageInfo             `json:"pageInfo"`
-	Edges      []PluginCountableEdge `json:"edges"`
-	TotalCount *int                  `json:"totalCount"`
+	PageInfo   *PageInfo              `json:"pageInfo"`
+	Edges      []*PluginCountableEdge `json:"edges"`
+	TotalCount *int                   `json:"totalCount"`
 }
 
 type PluginCountableEdge struct {
@@ -2575,8 +2541,8 @@ type PluginStatusInChannelsInput struct {
 }
 
 type PluginUpdate struct {
-	Plugin *Plugin       `json:"plugin"`
-	Errors []PluginError `json:"errors"`
+	Plugin *Plugin        `json:"plugin"`
+	Errors []*PluginError `json:"errors"`
 }
 
 type PluginUpdateInput struct {
@@ -2590,8 +2556,8 @@ type PriceRangeInput struct {
 }
 
 type ProductAttributeAssign struct {
-	ProductType *ProductType   `json:"productType"`
-	Errors      []ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
 }
 
 type ProductAttributeAssignInput struct {
@@ -2600,13 +2566,13 @@ type ProductAttributeAssignInput struct {
 }
 
 type ProductAttributeUnassign struct {
-	ProductType *ProductType   `json:"productType"`
-	Errors      []ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
 }
 
 type ProductBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []ProductError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*ProductError `json:"errors"`
 }
 
 type ProductChannelListing struct {
@@ -2647,19 +2613,19 @@ type ProductChannelListingError struct {
 }
 
 type ProductChannelListingUpdate struct {
-	Product *Product                     `json:"product"`
-	Errors  []ProductChannelListingError `json:"errors"`
+	Product *Product                      `json:"product"`
+	Errors  []*ProductChannelListingError `json:"errors"`
 }
 
 type ProductChannelListingUpdateInput struct {
-	UpdateChannels []ProductChannelListingAddInput `json:"updateChannels"`
-	RemoveChannels []string                        `json:"removeChannels"`
+	UpdateChannels []*ProductChannelListingAddInput `json:"updateChannels"`
+	RemoveChannels []string                         `json:"removeChannels"`
 }
 
 type ProductCountableConnection struct {
-	PageInfo   *PageInfo              `json:"pageInfo"`
-	Edges      []ProductCountableEdge `json:"edges"`
-	TotalCount *int                   `json:"totalCount"`
+	PageInfo   *PageInfo               `json:"pageInfo"`
+	Edges      []*ProductCountableEdge `json:"edges"`
+	TotalCount *int                    `json:"totalCount"`
 }
 
 type ProductCountableEdge struct {
@@ -2668,28 +2634,28 @@ type ProductCountableEdge struct {
 }
 
 type ProductCreate struct {
-	Errors  []ProductError `json:"errors"`
-	Product *Product       `json:"product"`
+	Errors  []*ProductError `json:"errors"`
+	Product *Product        `json:"product"`
 }
 
 type ProductCreateInput struct {
-	Attributes  []AttributeValueInput `json:"attributes"`
-	Category    *string               `json:"category"`
-	ChargeTaxes *bool                 `json:"chargeTaxes"`
-	Collections []string              `json:"collections"`
-	Description *string               `json:"description"`
-	Name        *string               `json:"name"`
-	Slug        *string               `json:"slug"`
-	TaxCode     *string               `json:"taxCode"`
-	Seo         *SeoInput             `json:"seo"`
-	Weight      *measurement.Weight   `json:"weight"`
-	Rating      *float64              `json:"rating"`
-	ProductType string                `json:"productType"`
+	Attributes  []*AttributeValueInput `json:"attributes"`
+	Category    *string                `json:"category"`
+	ChargeTaxes *bool                  `json:"chargeTaxes"`
+	Collections []string               `json:"collections"`
+	Description *string                `json:"description"`
+	Name        *string                `json:"name"`
+	Slug        *string                `json:"slug"`
+	TaxCode     *string                `json:"taxCode"`
+	Seo         *SeoInput              `json:"seo"`
+	Weight      *measurement.Weight    `json:"weight"`
+	Rating      *float64               `json:"rating"`
+	ProductType string                 `json:"productType"`
 }
 
 type ProductDelete struct {
-	Errors  []ProductError `json:"errors"`
-	Product *Product       `json:"product"`
+	Errors  []*ProductError `json:"errors"`
+	Product *Product        `json:"product"`
 }
 
 type ProductError struct {
@@ -2718,17 +2684,17 @@ type ProductFilterInput struct {
 }
 
 type ProductInput struct {
-	Attributes  []AttributeValueInput `json:"attributes"`
-	Category    *string               `json:"category"`
-	ChargeTaxes *bool                 `json:"chargeTaxes"`
-	Collections []string              `json:"collections"`
-	Description *string               `json:"description"`
-	Name        *string               `json:"name"`
-	Slug        *string               `json:"slug"`
-	TaxCode     *string               `json:"taxCode"`
-	Seo         *SeoInput             `json:"seo"`
-	Weight      *measurement.Weight   `json:"weight"`
-	Rating      *float64              `json:"rating"`
+	Attributes  []*AttributeValueInput `json:"attributes"`
+	Category    *string                `json:"category"`
+	ChargeTaxes *bool                  `json:"chargeTaxes"`
+	Collections []string               `json:"collections"`
+	Description *string                `json:"description"`
+	Name        *string                `json:"name"`
+	Slug        *string                `json:"slug"`
+	TaxCode     *string                `json:"taxCode"`
+	Seo         *SeoInput              `json:"seo"`
+	Weight      *measurement.Weight    `json:"weight"`
+	Rating      *float64               `json:"rating"`
 }
 
 type ProductMedia struct {
@@ -2743,14 +2709,14 @@ type ProductMedia struct {
 func (ProductMedia) IsNode() {}
 
 type ProductMediaBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []ProductError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*ProductError `json:"errors"`
 }
 
 type ProductMediaCreate struct {
-	Product *Product       `json:"product"`
-	Media   *ProductMedia  `json:"media"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Media   *ProductMedia   `json:"media"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductMediaCreateInput struct {
@@ -2761,21 +2727,21 @@ type ProductMediaCreateInput struct {
 }
 
 type ProductMediaDelete struct {
-	Product *Product       `json:"product"`
-	Media   *ProductMedia  `json:"media"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Media   *ProductMedia   `json:"media"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductMediaReorder struct {
-	Product *Product       `json:"product"`
-	Media   []ProductMedia `json:"media"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Media   []*ProductMedia `json:"media"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductMediaUpdate struct {
-	Product *Product       `json:"product"`
-	Media   *ProductMedia  `json:"media"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Media   *ProductMedia   `json:"media"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductMediaUpdateInput struct {
@@ -2799,8 +2765,8 @@ type ProductPricingInfo struct {
 }
 
 type ProductReorderAttributeValues struct {
-	Product *Product       `json:"product"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductStockFilterInput struct {
@@ -2821,8 +2787,8 @@ func (ProductTranslatableContent) IsTranslatableItem() {}
 func (ProductTranslatableContent) IsNode()             {}
 
 type ProductTranslate struct {
-	Errors  []TranslationError `json:"errors"`
-	Product *Product           `json:"product"`
+	Errors  []*TranslationError `json:"errors"`
+	Product *Product            `json:"product"`
 }
 
 type ProductTranslation struct {
@@ -2856,14 +2822,14 @@ func (ProductType) IsNode()               {}
 func (ProductType) IsObjectWithMetadata() {}
 
 type ProductTypeBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []ProductError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*ProductError `json:"errors"`
 }
 
 type ProductTypeCountableConnection struct {
-	PageInfo   *PageInfo                  `json:"pageInfo"`
-	Edges      []ProductTypeCountableEdge `json:"edges"`
-	TotalCount *int                       `json:"totalCount"`
+	PageInfo   *PageInfo                   `json:"pageInfo"`
+	Edges      []*ProductTypeCountableEdge `json:"edges"`
+	TotalCount *int                        `json:"totalCount"`
 }
 
 type ProductTypeCountableEdge struct {
@@ -2872,13 +2838,13 @@ type ProductTypeCountableEdge struct {
 }
 
 type ProductTypeCreate struct {
-	Errors      []ProductError `json:"errors"`
-	ProductType *ProductType   `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
 }
 
 type ProductTypeDelete struct {
-	Errors      []ProductError `json:"errors"`
-	ProductType *ProductType   `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
 }
 
 type ProductTypeFilterInput struct {
@@ -2902,8 +2868,8 @@ type ProductTypeInput struct {
 }
 
 type ProductTypeReorderAttributes struct {
-	ProductType *ProductType   `json:"productType"`
-	Errors      []ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
 }
 
 type ProductTypeSortingInput struct {
@@ -2912,58 +2878,58 @@ type ProductTypeSortingInput struct {
 }
 
 type ProductTypeUpdate struct {
-	Errors      []ProductError `json:"errors"`
-	ProductType *ProductType   `json:"productType"`
+	Errors      []*ProductError `json:"errors"`
+	ProductType *ProductType    `json:"productType"`
 }
 
 type ProductUpdate struct {
-	Errors  []ProductError `json:"errors"`
-	Product *Product       `json:"product"`
+	Errors  []*ProductError `json:"errors"`
+	Product *Product        `json:"product"`
 }
 
 type ProductVariant struct {
-	ID                string                         `json:"id"`
-	Name              string                         `json:"name"`
-	Sku               string                         `json:"sku"`
-	Product           *Product                       `json:"product"`
-	TrackInventory    bool                           `json:"trackInventory"`
-	Weight            *Weight                        `json:"weight"`
-	PrivateMetadata   []*MetadataItem                `json:"privateMetadata"`
-	Metadata          []*MetadataItem                `json:"metadata"`
-	ChannelListings   []ProductVariantChannelListing `json:"channelListings"`
-	Pricing           *VariantPricingInfo            `json:"pricing"`
-	Attributes        []SelectedAttribute            `json:"attributes"`
-	Margin            *int                           `json:"margin"`
-	QuantityOrdered   *int                           `json:"quantityOrdered"`
-	Revenue           *TaxedMoney                    `json:"revenue"`
-	Media             []ProductMedia                 `json:"media"`
-	Translation       *ProductVariantTranslation     `json:"translation"`
-	DigitalContent    *DigitalContent                `json:"digitalContent"`
-	Stocks            []*Stock                       `json:"stocks"`
-	QuantityAvailable int                            `json:"quantityAvailable"`
+	ID                string                          `json:"id"`
+	Name              string                          `json:"name"`
+	Sku               string                          `json:"sku"`
+	Product           *Product                        `json:"product"`
+	TrackInventory    bool                            `json:"trackInventory"`
+	Weight            *Weight                         `json:"weight"`
+	PrivateMetadata   []*MetadataItem                 `json:"privateMetadata"`
+	Metadata          []*MetadataItem                 `json:"metadata"`
+	ChannelListings   []*ProductVariantChannelListing `json:"channelListings"`
+	Pricing           *VariantPricingInfo             `json:"pricing"`
+	Attributes        []*SelectedAttribute            `json:"attributes"`
+	Margin            *int                            `json:"margin"`
+	QuantityOrdered   *int                            `json:"quantityOrdered"`
+	Revenue           *TaxedMoney                     `json:"revenue"`
+	Media             []*ProductMedia                 `json:"media"`
+	Translation       *ProductVariantTranslation      `json:"translation"`
+	DigitalContent    *DigitalContent                 `json:"digitalContent"`
+	Stocks            []*Stock                        `json:"stocks"`
+	QuantityAvailable int                             `json:"quantityAvailable"`
 }
 
 func (ProductVariant) IsNode()               {}
 func (ProductVariant) IsObjectWithMetadata() {}
 
 type ProductVariantBulkCreate struct {
-	Count           int                `json:"count"`
-	ProductVariants []ProductVariant   `json:"productVariants"`
-	Errors          []BulkProductError `json:"errors"`
+	Count           int                 `json:"count"`
+	ProductVariants []*ProductVariant   `json:"productVariants"`
+	Errors          []*BulkProductError `json:"errors"`
 }
 
 type ProductVariantBulkCreateInput struct {
-	Attributes      []BulkAttributeValueInput              `json:"attributes"`
-	Sku             string                                 `json:"sku"`
-	TrackInventory  *bool                                  `json:"trackInventory"`
-	Weight          *measurement.Weight                    `json:"weight"`
-	Stocks          []StockInput                           `json:"stocks"`
-	ChannelListings []ProductVariantChannelListingAddInput `json:"channelListings"`
+	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
+	Sku             string                                  `json:"sku"`
+	TrackInventory  *bool                                   `json:"trackInventory"`
+	Weight          *measurement.Weight                     `json:"weight"`
+	Stocks          []*StockInput                           `json:"stocks"`
+	ChannelListings []*ProductVariantChannelListingAddInput `json:"channelListings"`
 }
 
 type ProductVariantBulkDelete struct {
-	Count  int            `json:"count"`
-	Errors []ProductError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*ProductError `json:"errors"`
 }
 
 type ProductVariantChannelListing struct {
@@ -2983,14 +2949,14 @@ type ProductVariantChannelListingAddInput struct {
 }
 
 type ProductVariantChannelListingUpdate struct {
-	Variant *ProductVariant              `json:"variant"`
-	Errors  []ProductChannelListingError `json:"errors"`
+	Variant *ProductVariant               `json:"variant"`
+	Errors  []*ProductChannelListingError `json:"errors"`
 }
 
 type ProductVariantCountableConnection struct {
-	PageInfo   *PageInfo                     `json:"pageInfo"`
-	Edges      []ProductVariantCountableEdge `json:"edges"`
-	TotalCount *int                          `json:"totalCount"`
+	PageInfo   *PageInfo                      `json:"pageInfo"`
+	Edges      []*ProductVariantCountableEdge `json:"edges"`
+	TotalCount *int                           `json:"totalCount"`
 }
 
 type ProductVariantCountableEdge struct {
@@ -2999,21 +2965,21 @@ type ProductVariantCountableEdge struct {
 }
 
 type ProductVariantCreate struct {
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
 type ProductVariantCreateInput struct {
-	Attributes     []AttributeValueInput `json:"attributes"`
-	Sku            *string               `json:"sku"`
-	TrackInventory *bool                 `json:"trackInventory"`
-	Weight         *measurement.Weight   `json:"weight"`
-	Product        string                `json:"product"`
-	Stocks         []StockInput          `json:"stocks"`
+	Attributes     []*AttributeValueInput `json:"attributes"`
+	Sku            *string                `json:"sku"`
+	TrackInventory *bool                  `json:"trackInventory"`
+	Weight         *measurement.Weight    `json:"weight"`
+	Product        string                 `json:"product"`
+	Stocks         []*StockInput          `json:"stocks"`
 }
 
 type ProductVariantDelete struct {
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
@@ -3024,40 +2990,40 @@ type ProductVariantFilterInput struct {
 }
 
 type ProductVariantInput struct {
-	Attributes     []AttributeValueInput `json:"attributes"`
-	Sku            *string               `json:"sku"`
-	TrackInventory *bool                 `json:"trackInventory"`
-	Weight         *measurement.Weight   `json:"weight"`
+	Attributes     []*AttributeValueInput `json:"attributes"`
+	Sku            *string                `json:"sku"`
+	TrackInventory *bool                  `json:"trackInventory"`
+	Weight         *measurement.Weight    `json:"weight"`
 }
 
 type ProductVariantReorder struct {
-	Product *Product       `json:"product"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductVariantReorderAttributeValues struct {
 	ProductVariant *ProductVariant `json:"productVariant"`
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type ProductVariantSetDefault struct {
-	Product *Product       `json:"product"`
-	Errors  []ProductError `json:"errors"`
+	Product *Product        `json:"product"`
+	Errors  []*ProductError `json:"errors"`
 }
 
 type ProductVariantStocksCreate struct {
-	ProductVariant *ProductVariant  `json:"productVariant"`
-	Errors         []BulkStockError `json:"errors"`
+	ProductVariant *ProductVariant   `json:"productVariant"`
+	Errors         []*BulkStockError `json:"errors"`
 }
 
 type ProductVariantStocksDelete struct {
 	ProductVariant *ProductVariant `json:"productVariant"`
-	Errors         []StockError    `json:"errors"`
+	Errors         []*StockError   `json:"errors"`
 }
 
 type ProductVariantStocksUpdate struct {
-	ProductVariant *ProductVariant  `json:"productVariant"`
-	Errors         []BulkStockError `json:"errors"`
+	ProductVariant *ProductVariant   `json:"productVariant"`
+	Errors         []*BulkStockError `json:"errors"`
 }
 
 type ProductVariantTranslatableContent struct {
@@ -3070,8 +3036,8 @@ func (ProductVariantTranslatableContent) IsTranslatableItem() {}
 func (ProductVariantTranslatableContent) IsNode()             {}
 
 type ProductVariantTranslate struct {
-	Errors         []TranslationError `json:"errors"`
-	ProductVariant *ProductVariant    `json:"productVariant"`
+	Errors         []*TranslationError `json:"errors"`
+	ProductVariant *ProductVariant     `json:"productVariant"`
 }
 
 type ProductVariantTranslation struct {
@@ -3083,7 +3049,7 @@ type ProductVariantTranslation struct {
 func (ProductVariantTranslation) IsNode() {}
 
 type ProductVariantUpdate struct {
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 	ProductVariant *ProductVariant `json:"productVariant"`
 }
 
@@ -3126,7 +3092,7 @@ type Sale struct {
 	Collections     *CollectionCountableConnection `json:"collections"`
 	Products        *ProductCountableConnection    `json:"products"`
 	Translation     *SaleTranslation               `json:"translation"`
-	ChannelListings []SaleChannelListing           `json:"channelListings"`
+	ChannelListings []*SaleChannelListing          `json:"channelListings"`
 	DiscountValue   *float64                       `json:"discountValue"`
 	Currency        *string                        `json:"currency"`
 }
@@ -3134,13 +3100,13 @@ type Sale struct {
 func (Sale) IsNode() {}
 
 type SaleAddCatalogues struct {
-	Sale   *Sale           `json:"sale"`
-	Errors []DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
 }
 
 type SaleBulkDelete struct {
-	Count  int             `json:"count"`
-	Errors []DiscountError `json:"errors"`
+	Count  int              `json:"count"`
+	Errors []*DiscountError `json:"errors"`
 }
 
 type SaleChannelListing struct {
@@ -3158,19 +3124,19 @@ type SaleChannelListingAddInput struct {
 }
 
 type SaleChannelListingInput struct {
-	AddChannels    []SaleChannelListingAddInput `json:"addChannels"`
-	RemoveChannels []string                     `json:"removeChannels"`
+	AddChannels    []*SaleChannelListingAddInput `json:"addChannels"`
+	RemoveChannels []string                      `json:"removeChannels"`
 }
 
 type SaleChannelListingUpdate struct {
-	Sale   *Sale           `json:"sale"`
-	Errors []DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
 }
 
 type SaleCountableConnection struct {
-	PageInfo   *PageInfo           `json:"pageInfo"`
-	Edges      []SaleCountableEdge `json:"edges"`
-	TotalCount *int                `json:"totalCount"`
+	PageInfo   *PageInfo            `json:"pageInfo"`
+	Edges      []*SaleCountableEdge `json:"edges"`
+	TotalCount *int                 `json:"totalCount"`
 }
 
 type SaleCountableEdge struct {
@@ -3179,13 +3145,13 @@ type SaleCountableEdge struct {
 }
 
 type SaleCreate struct {
-	Errors []DiscountError `json:"errors"`
-	Sale   *Sale           `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
 }
 
 type SaleDelete struct {
-	Errors []DiscountError `json:"errors"`
-	Sale   *Sale           `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
 }
 
 type SaleFilterInput struct {
@@ -3207,8 +3173,8 @@ type SaleInput struct {
 }
 
 type SaleRemoveCatalogues struct {
-	Sale   *Sale           `json:"sale"`
-	Errors []DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
 }
 
 type SaleSortingInput struct {
@@ -3227,8 +3193,8 @@ func (SaleTranslatableContent) IsTranslatableItem() {}
 func (SaleTranslatableContent) IsNode()             {}
 
 type SaleTranslate struct {
-	Errors []TranslationError `json:"errors"`
-	Sale   *Sale              `json:"sale"`
+	Errors []*TranslationError `json:"errors"`
+	Sale   *Sale               `json:"sale"`
 }
 
 type SaleTranslation struct {
@@ -3240,8 +3206,8 @@ type SaleTranslation struct {
 func (SaleTranslation) IsNode() {}
 
 type SaleUpdate struct {
-	Errors []DiscountError `json:"errors"`
-	Sale   *Sale           `json:"sale"`
+	Errors []*DiscountError `json:"errors"`
+	Sale   *Sale            `json:"sale"`
 }
 
 type SelectedAttribute struct {
@@ -3281,7 +3247,7 @@ type ShippingMethod struct {
 	Metadata            []*MetadataItem                 `json:"metadata"`
 	Type                *ShippingMethodTypeEnum         `json:"type"`
 	Translation         *ShippingMethodTranslation      `json:"translation"`
-	ChannelListings     []ShippingMethodChannelListing  `json:"channelListings"`
+	ChannelListings     []*ShippingMethodChannelListing `json:"channelListings"`
 	Price               *Money                          `json:"price"`
 	MaximumOrderPrice   *Money                          `json:"maximumOrderPrice"`
 	MinimumOrderPrice   *Money                          `json:"minimumOrderPrice"`
@@ -3310,13 +3276,13 @@ type ShippingMethodChannelListingAddInput struct {
 }
 
 type ShippingMethodChannelListingInput struct {
-	AddChannels    []ShippingMethodChannelListingAddInput `json:"addChannels"`
-	RemoveChannels []string                               `json:"removeChannels"`
+	AddChannels    []*ShippingMethodChannelListingAddInput `json:"addChannels"`
+	RemoveChannels []string                                `json:"removeChannels"`
 }
 
 type ShippingMethodChannelListingUpdate struct {
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingMethodPostalCodeRule struct {
@@ -3353,25 +3319,25 @@ type ShippingPostalCodeRulesCreateInputRange struct {
 }
 
 type ShippingPriceBulkDelete struct {
-	Count  int             `json:"count"`
-	Errors []ShippingError `json:"errors"`
+	Count  int              `json:"count"`
+	Errors []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceCreate struct {
-	ShippingZone   *ShippingZone   `json:"shippingZone"`
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingZone   *ShippingZone    `json:"shippingZone"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceDelete struct {
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	ShippingZone   *ShippingZone   `json:"shippingZone"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	ShippingZone   *ShippingZone    `json:"shippingZone"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceExcludeProducts struct {
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceExcludeProductsInput struct {
@@ -3379,27 +3345,27 @@ type ShippingPriceExcludeProductsInput struct {
 }
 
 type ShippingPriceInput struct {
-	Name                  *string                                   `json:"name"`
-	Description           *string                                   `json:"description"`
-	MinimumOrderWeight    *measurement.Weight                       `json:"minimumOrderWeight"`
-	MaximumOrderWeight    *measurement.Weight                       `json:"maximumOrderWeight"`
-	MaximumDeliveryDays   *int                                      `json:"maximumDeliveryDays"`
-	MinimumDeliveryDays   *int                                      `json:"minimumDeliveryDays"`
-	Type                  *ShippingMethodTypeEnum                   `json:"type"`
-	ShippingZone          *string                                   `json:"shippingZone"`
-	AddPostalCodeRules    []ShippingPostalCodeRulesCreateInputRange `json:"addPostalCodeRules"`
-	DeletePostalCodeRules []string                                  `json:"deletePostalCodeRules"`
-	InclusionType         *PostalCodeRuleInclusionTypeEnum          `json:"inclusionType"`
+	Name                  *string                                    `json:"name"`
+	Description           *string                                    `json:"description"`
+	MinimumOrderWeight    *measurement.Weight                        `json:"minimumOrderWeight"`
+	MaximumOrderWeight    *measurement.Weight                        `json:"maximumOrderWeight"`
+	MaximumDeliveryDays   *int                                       `json:"maximumDeliveryDays"`
+	MinimumDeliveryDays   *int                                       `json:"minimumDeliveryDays"`
+	Type                  *ShippingMethodTypeEnum                    `json:"type"`
+	ShippingZone          *string                                    `json:"shippingZone"`
+	AddPostalCodeRules    []*ShippingPostalCodeRulesCreateInputRange `json:"addPostalCodeRules"`
+	DeletePostalCodeRules []string                                   `json:"deletePostalCodeRules"`
+	InclusionType         *PostalCodeRuleInclusionTypeEnum           `json:"inclusionType"`
 }
 
 type ShippingPriceRemoveProductFromExclude struct {
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingPriceTranslate struct {
-	Errors         []TranslationError `json:"errors"`
-	ShippingMethod *ShippingMethod    `json:"shippingMethod"`
+	Errors         []*TranslationError `json:"errors"`
+	ShippingMethod *ShippingMethod     `json:"shippingMethod"`
 }
 
 type ShippingPriceTranslationInput struct {
@@ -3408,9 +3374,9 @@ type ShippingPriceTranslationInput struct {
 }
 
 type ShippingPriceUpdate struct {
-	ShippingZone   *ShippingZone   `json:"shippingZone"`
-	ShippingMethod *ShippingMethod `json:"shippingMethod"`
-	Errors         []ShippingError `json:"errors"`
+	ShippingZone   *ShippingZone    `json:"shippingZone"`
+	ShippingMethod *ShippingMethod  `json:"shippingMethod"`
+	Errors         []*ShippingError `json:"errors"`
 }
 
 type ShippingZone struct {
@@ -3422,8 +3388,8 @@ type ShippingZone struct {
 	PriceRange      *MoneyRange       `json:"priceRange"`
 	Countries       []*CountryDisplay `json:"countries"`
 	ShippingMethods []*ShippingMethod `json:"shippingMethods"`
-	Warehouses      []Warehouse       `json:"warehouses"`
-	Channels        []Channel         `json:"channels"`
+	Warehouses      []*Warehouse      `json:"warehouses"`
+	Channels        []*Channel        `json:"channels"`
 	Description     *string           `json:"description"`
 }
 
@@ -3431,14 +3397,14 @@ func (ShippingZone) IsNode()               {}
 func (ShippingZone) IsObjectWithMetadata() {}
 
 type ShippingZoneBulkDelete struct {
-	Count  int             `json:"count"`
-	Errors []ShippingError `json:"errors"`
+	Count  int              `json:"count"`
+	Errors []*ShippingError `json:"errors"`
 }
 
 type ShippingZoneCountableConnection struct {
-	PageInfo   *PageInfo                   `json:"pageInfo"`
-	Edges      []ShippingZoneCountableEdge `json:"edges"`
-	TotalCount *int                        `json:"totalCount"`
+	PageInfo   *PageInfo                    `json:"pageInfo"`
+	Edges      []*ShippingZoneCountableEdge `json:"edges"`
+	TotalCount *int                         `json:"totalCount"`
 }
 
 type ShippingZoneCountableEdge struct {
@@ -3447,8 +3413,8 @@ type ShippingZoneCountableEdge struct {
 }
 
 type ShippingZoneCreate struct {
-	Errors       []ShippingError `json:"errors"`
-	ShippingZone *ShippingZone   `json:"shippingZone"`
+	Errors       []*ShippingError `json:"errors"`
+	ShippingZone *ShippingZone    `json:"shippingZone"`
 }
 
 type ShippingZoneCreateInput struct {
@@ -3461,8 +3427,8 @@ type ShippingZoneCreateInput struct {
 }
 
 type ShippingZoneDelete struct {
-	Errors       []ShippingError `json:"errors"`
-	ShippingZone *ShippingZone   `json:"shippingZone"`
+	Errors       []*ShippingError `json:"errors"`
+	ShippingZone *ShippingZone    `json:"shippingZone"`
 }
 
 type ShippingZoneFilterInput struct {
@@ -3471,8 +3437,8 @@ type ShippingZoneFilterInput struct {
 }
 
 type ShippingZoneUpdate struct {
-	Errors       []ShippingError `json:"errors"`
-	ShippingZone *ShippingZone   `json:"shippingZone"`
+	Errors       []*ShippingError `json:"errors"`
+	ShippingZone *ShippingZone    `json:"shippingZone"`
 }
 
 type ShippingZoneUpdateInput struct {
@@ -3487,13 +3453,13 @@ type ShippingZoneUpdateInput struct {
 }
 
 type ShopAddressUpdate struct {
-	Shop   *Shop       `json:"shop"`
-	Errors []ShopError `json:"errors"`
+	Shop   *Shop        `json:"shop"`
+	Errors []*ShopError `json:"errors"`
 }
 
 type ShopDomainUpdate struct {
-	Shop   *Shop       `json:"shop"`
-	Errors []ShopError `json:"errors"`
+	Shop   *Shop        `json:"shop"`
+	Errors []*ShopError `json:"errors"`
 }
 
 type ShopError struct {
@@ -3503,8 +3469,8 @@ type ShopError struct {
 }
 
 type ShopFetchTaxRates struct {
-	Shop   *Shop       `json:"shop"`
-	Errors []ShopError `json:"errors"`
+	Shop   *Shop        `json:"shop"`
+	Errors []*ShopError `json:"errors"`
 }
 
 type ShopSettingsInput struct {
@@ -3524,8 +3490,8 @@ type ShopSettingsInput struct {
 }
 
 type ShopSettingsTranslate struct {
-	Shop   *Shop              `json:"shop"`
-	Errors []TranslationError `json:"errors"`
+	Shop   *Shop               `json:"shop"`
+	Errors []*TranslationError `json:"errors"`
 }
 
 type ShopSettingsTranslationInput struct {
@@ -3534,8 +3500,8 @@ type ShopSettingsTranslationInput struct {
 }
 
 type ShopSettingsUpdate struct {
-	Shop   *Shop       `json:"shop"`
-	Errors []ShopError `json:"errors"`
+	Shop   *Shop        `json:"shop"`
+	Errors []*ShopError `json:"errors"`
 }
 
 type ShopTranslation struct {
@@ -3553,13 +3519,13 @@ type SiteDomainInput struct {
 }
 
 type StaffBulkDelete struct {
-	Count  int          `json:"count"`
-	Errors []StaffError `json:"errors"`
+	Count  int           `json:"count"`
+	Errors []*StaffError `json:"errors"`
 }
 
 type StaffCreate struct {
-	Errors []StaffError `json:"errors"`
-	User   *User        `json:"user"`
+	Errors []*StaffError `json:"errors"`
+	User   *User         `json:"user"`
 }
 
 type StaffCreateInput struct {
@@ -3573,8 +3539,8 @@ type StaffCreateInput struct {
 }
 
 type StaffDelete struct {
-	Errors []StaffError `json:"errors"`
-	User   *User        `json:"user"`
+	Errors []*StaffError `json:"errors"`
+	User   *User         `json:"user"`
 }
 
 type StaffError struct {
@@ -3597,12 +3563,12 @@ type StaffNotificationRecipient struct {
 func (StaffNotificationRecipient) IsNode() {}
 
 type StaffNotificationRecipientCreate struct {
-	Errors                     []ShopError                 `json:"errors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
 type StaffNotificationRecipientDelete struct {
-	Errors                     []ShopError                 `json:"errors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
@@ -3613,13 +3579,13 @@ type StaffNotificationRecipientInput struct {
 }
 
 type StaffNotificationRecipientUpdate struct {
-	Errors                     []ShopError                 `json:"errors"`
+	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`
 }
 
 type StaffUpdate struct {
-	Errors []StaffError `json:"errors"`
-	User   *User        `json:"user"`
+	Errors []*StaffError `json:"errors"`
+	User   *User         `json:"user"`
 }
 
 type StaffUpdateInput struct {
@@ -3648,9 +3614,9 @@ type Stock struct {
 func (Stock) IsNode() {}
 
 type StockCountableConnection struct {
-	PageInfo   *PageInfo            `json:"pageInfo"`
-	Edges      []StockCountableEdge `json:"edges"`
-	TotalCount *int                 `json:"totalCount"`
+	PageInfo   *PageInfo             `json:"pageInfo"`
+	Edges      []*StockCountableEdge `json:"edges"`
+	TotalCount *int                  `json:"totalCount"`
 }
 
 type StockCountableEdge struct {
@@ -3715,9 +3681,9 @@ type Transaction struct {
 func (Transaction) IsNode() {}
 
 type TranslatableItemConnection struct {
-	PageInfo   *PageInfo              `json:"pageInfo"`
-	Edges      []TranslatableItemEdge `json:"edges"`
-	TotalCount *int                   `json:"totalCount"`
+	PageInfo   *PageInfo               `json:"pageInfo"`
+	Edges      []*TranslatableItemEdge `json:"edges"`
+	TotalCount *int                    `json:"totalCount"`
 }
 
 type TranslatableItemEdge struct {
@@ -3744,12 +3710,12 @@ type UpdateInvoiceInput struct {
 }
 
 type UpdateMetadata struct {
-	Errors []MetadataError    `json:"errors"`
+	Errors []*MetadataError   `json:"errors"`
 	Item   ObjectWithMetadata `json:"item"`
 }
 
 type UpdatePrivateMetadata struct {
-	Errors []MetadataError    `json:"errors"`
+	Errors []*MetadataError   `json:"errors"`
 	Item   ObjectWithMetadata `json:"item"`
 }
 
@@ -3760,24 +3726,24 @@ type UploadError struct {
 }
 
 type UserAvatarDelete struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User   *User           `json:"user"`
+	Errors []*AccountError `json:"errors"`
 }
 
 type UserAvatarUpdate struct {
-	User   *User          `json:"user"`
-	Errors []AccountError `json:"errors"`
+	User   *User           `json:"user"`
+	Errors []*AccountError `json:"errors"`
 }
 
 type UserBulkSetActive struct {
-	Count  int            `json:"count"`
-	Errors []AccountError `json:"errors"`
+	Count  int             `json:"count"`
+	Errors []*AccountError `json:"errors"`
 }
 
 type UserCountableConnection struct {
-	PageInfo   *PageInfo           `json:"pageInfo"`
-	Edges      []UserCountableEdge `json:"edges"`
-	TotalCount *int                `json:"totalCount"`
+	PageInfo   *PageInfo            `json:"pageInfo"`
+	Edges      []*UserCountableEdge `json:"edges"`
+	TotalCount *int                 `json:"totalCount"`
 }
 
 type UserCountableEdge struct {
@@ -3801,7 +3767,7 @@ type UserCreateInput struct {
 type UserPermission struct {
 	Code                   PermissionEnum `json:"code"`
 	Name                   string         `json:"name"`
-	SourcePermissionGroups []Group        `json:"sourcePermissionGroups"`
+	SourcePermissionGroups []*Group       `json:"sourcePermissionGroups"`
 }
 
 type UserSortingInput struct {
@@ -3818,13 +3784,13 @@ type Vat struct {
 type VariantMediaAssign struct {
 	ProductVariant *ProductVariant `json:"productVariant"`
 	Media          *ProductMedia   `json:"media"`
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type VariantMediaUnassign struct {
 	ProductVariant *ProductVariant `json:"productVariant"`
 	Media          *ProductMedia   `json:"media"`
-	Errors         []ProductError  `json:"errors"`
+	Errors         []*ProductError `json:"errors"`
 }
 
 type VariantPricingInfo struct {
@@ -3863,19 +3829,19 @@ type Voucher struct {
 	DiscountValue            *float64                       `json:"discountValue"`
 	Currency                 *string                        `json:"currency"`
 	MinSpent                 *Money                         `json:"minSpent"`
-	ChannelListings          []VoucherChannelListing        `json:"channelListings"`
+	ChannelListings          []*VoucherChannelListing       `json:"channelListings"`
 }
 
 func (Voucher) IsNode() {}
 
 type VoucherAddCatalogues struct {
-	Voucher *Voucher        `json:"voucher"`
-	Errors  []DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
 }
 
 type VoucherBulkDelete struct {
-	Count  int             `json:"count"`
-	Errors []DiscountError `json:"errors"`
+	Count  int              `json:"count"`
+	Errors []*DiscountError `json:"errors"`
 }
 
 type VoucherChannelListing struct {
@@ -3895,19 +3861,19 @@ type VoucherChannelListingAddInput struct {
 }
 
 type VoucherChannelListingInput struct {
-	AddChannels    []VoucherChannelListingAddInput `json:"addChannels"`
-	RemoveChannels []string                        `json:"removeChannels"`
+	AddChannels    []*VoucherChannelListingAddInput `json:"addChannels"`
+	RemoveChannels []string                         `json:"removeChannels"`
 }
 
 type VoucherChannelListingUpdate struct {
-	Voucher *Voucher        `json:"voucher"`
-	Errors  []DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
 }
 
 type VoucherCountableConnection struct {
-	PageInfo   *PageInfo              `json:"pageInfo"`
-	Edges      []VoucherCountableEdge `json:"edges"`
-	TotalCount *int                   `json:"totalCount"`
+	PageInfo   *PageInfo               `json:"pageInfo"`
+	Edges      []*VoucherCountableEdge `json:"edges"`
+	TotalCount *int                    `json:"totalCount"`
 }
 
 type VoucherCountableEdge struct {
@@ -3916,13 +3882,13 @@ type VoucherCountableEdge struct {
 }
 
 type VoucherCreate struct {
-	Errors  []DiscountError `json:"errors"`
-	Voucher *Voucher        `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
 }
 
 type VoucherDelete struct {
-	Errors  []DiscountError `json:"errors"`
-	Voucher *Voucher        `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
 }
 
 type VoucherFilterInput struct {
@@ -3951,8 +3917,8 @@ type VoucherInput struct {
 }
 
 type VoucherRemoveCatalogues struct {
-	Voucher *Voucher        `json:"voucher"`
-	Errors  []DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
 }
 
 type VoucherSortingInput struct {
@@ -3971,8 +3937,8 @@ func (VoucherTranslatableContent) IsTranslatableItem() {}
 func (VoucherTranslatableContent) IsNode()             {}
 
 type VoucherTranslate struct {
-	Errors  []TranslationError `json:"errors"`
-	Voucher *Voucher           `json:"voucher"`
+	Errors  []*TranslationError `json:"errors"`
+	Voucher *Voucher            `json:"voucher"`
 }
 
 type VoucherTranslation struct {
@@ -3984,14 +3950,14 @@ type VoucherTranslation struct {
 func (VoucherTranslation) IsNode() {}
 
 type VoucherUpdate struct {
-	Errors  []DiscountError `json:"errors"`
-	Voucher *Voucher        `json:"voucher"`
+	Errors  []*DiscountError `json:"errors"`
+	Voucher *Voucher         `json:"voucher"`
 }
 
 type WarehouseCountableConnection struct {
-	PageInfo   *PageInfo                `json:"pageInfo"`
-	Edges      []WarehouseCountableEdge `json:"edges"`
-	TotalCount *int                     `json:"totalCount"`
+	PageInfo   *PageInfo                 `json:"pageInfo"`
+	Edges      []*WarehouseCountableEdge `json:"edges"`
+	TotalCount *int                      `json:"totalCount"`
 }
 
 type WarehouseCountableEdge struct {
@@ -4000,8 +3966,8 @@ type WarehouseCountableEdge struct {
 }
 
 type WarehouseCreate struct {
-	Errors    []WarehouseError `json:"errors"`
-	Warehouse *Warehouse       `json:"warehouse"`
+	Errors    []*WarehouseError `json:"errors"`
+	Warehouse *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseCreateInput struct {
@@ -4014,8 +3980,8 @@ type WarehouseCreateInput struct {
 }
 
 type WarehouseDelete struct {
-	Errors    []WarehouseError `json:"errors"`
-	Warehouse *Warehouse       `json:"warehouse"`
+	Errors    []*WarehouseError `json:"errors"`
+	Warehouse *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseError struct {
@@ -4030,13 +3996,13 @@ type WarehouseFilterInput struct {
 }
 
 type WarehouseShippingZoneAssign struct {
-	Errors    []WarehouseError `json:"errors"`
-	Warehouse *Warehouse       `json:"warehouse"`
+	Errors    []*WarehouseError `json:"errors"`
+	Warehouse *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseShippingZoneUnassign struct {
-	Errors    []WarehouseError `json:"errors"`
-	Warehouse *Warehouse       `json:"warehouse"`
+	Errors    []*WarehouseError `json:"errors"`
+	Warehouse *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseSortingInput struct {
@@ -4045,8 +4011,8 @@ type WarehouseSortingInput struct {
 }
 
 type WarehouseUpdate struct {
-	Errors    []WarehouseError `json:"errors"`
-	Warehouse *Warehouse       `json:"warehouse"`
+	Errors    []*WarehouseError `json:"errors"`
+	Warehouse *Warehouse        `json:"warehouse"`
 }
 
 type WarehouseUpdateInput struct {
@@ -4057,20 +4023,20 @@ type WarehouseUpdateInput struct {
 }
 
 type Webhook struct {
-	Name      string         `json:"name"`
-	TargetURL string         `json:"targetUrl"`
-	IsActive  bool           `json:"isActive"`
-	SecretKey *string        `json:"secretKey"`
-	ID        string         `json:"id"`
-	Events    []WebhookEvent `json:"events"`
-	App       *App           `json:"app"`
+	Name      string          `json:"name"`
+	TargetURL string          `json:"targetUrl"`
+	IsActive  bool            `json:"isActive"`
+	SecretKey *string         `json:"secretKey"`
+	ID        string          `json:"id"`
+	Events    []*WebhookEvent `json:"events"`
+	App       *App            `json:"app"`
 }
 
 func (Webhook) IsNode() {}
 
 type WebhookCreate struct {
-	Errors  []WebhookError `json:"errors"`
-	Webhook *Webhook       `json:"webhook"`
+	Errors  []*WebhookError `json:"errors"`
+	Webhook *Webhook        `json:"webhook"`
 }
 
 type WebhookCreateInput struct {
@@ -4083,8 +4049,8 @@ type WebhookCreateInput struct {
 }
 
 type WebhookDelete struct {
-	Errors  []WebhookError `json:"errors"`
-	Webhook *Webhook       `json:"webhook"`
+	Errors  []*WebhookError `json:"errors"`
+	Webhook *Webhook        `json:"webhook"`
 }
 
 type WebhookError struct {
@@ -4099,8 +4065,8 @@ type WebhookEvent struct {
 }
 
 type WebhookUpdate struct {
-	Errors  []WebhookError `json:"errors"`
-	Webhook *Webhook       `json:"webhook"`
+	Errors  []*WebhookError `json:"errors"`
+	Webhook *Webhook        `json:"webhook"`
 }
 
 type WebhookUpdateInput struct {
@@ -5883,51 +5849,6 @@ func (e *DistanceUnitsEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e DistanceUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type ExportErrorCode string
-
-const (
-	ExportErrorCodeGraphqlError ExportErrorCode = "GRAPHQL_ERROR"
-	ExportErrorCodeInvalid      ExportErrorCode = "INVALID"
-	ExportErrorCodeNotFound     ExportErrorCode = "NOT_FOUND"
-	ExportErrorCodeRequired     ExportErrorCode = "REQUIRED"
-)
-
-var AllExportErrorCode = []ExportErrorCode{
-	ExportErrorCodeGraphqlError,
-	ExportErrorCodeInvalid,
-	ExportErrorCodeNotFound,
-	ExportErrorCodeRequired,
-}
-
-func (e ExportErrorCode) IsValid() bool {
-	switch e {
-	case ExportErrorCodeGraphqlError, ExportErrorCodeInvalid, ExportErrorCodeNotFound, ExportErrorCodeRequired:
-		return true
-	}
-	return false
-}
-
-func (e ExportErrorCode) String() string {
-	return string(e)
-}
-
-func (e *ExportErrorCode) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ExportErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ExportErrorCode", str)
-	}
-	return nil
-}
-
-func (e ExportErrorCode) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
