@@ -15,6 +15,10 @@ import (
 	"github.com/sitename/sitename/web/graphql/scalars"
 )
 
+func (r *addressResolver) Country(ctx context.Context, obj *gqlmodel.Address) (*gqlmodel.CountryDisplay, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	// onyl authenticated users can check their default addresses
 	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {

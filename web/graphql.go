@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/web/graphql"
 	"github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
-	"github.com/sitename/sitename/web/graphql/scalars"
 	"github.com/sitename/sitename/web/shared"
 )
 
@@ -30,7 +29,7 @@ func (web *Web) InitGraphql() {
 	}
 
 	// Authenticated directive makes sure requesting user is authenticated before letting him/her proceed
-	config.Directives.Authenticated = func(ctx context.Context, obj interface{}, next gqlgenGraphql.Resolver, _ scalars.PlaceHolder) (res interface{}, err error) {
+	config.Directives.Authenticated = func(ctx context.Context, obj interface{}, next gqlgenGraphql.Resolver, _ bool) (res interface{}, err error) {
 		embededContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 		if session := embededContext.AppContext.Session(); session == nil {
 			return nil, model.NewAppError("Directives.Authenticated", userUnauthenticatedId, nil, "", http.StatusForbidden)

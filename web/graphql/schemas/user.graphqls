@@ -96,7 +96,7 @@ type CustomerEvent implements Node {
   id: ID!
   date: DateTime
   type: CustomerEventsEnum
-  user: User
+  user: User @authenticated(hi: true)
   message: String
   count: Int
   order: Order

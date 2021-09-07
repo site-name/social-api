@@ -2,5 +2,4 @@
 directive @hasPermissions(permissions: [PermissionEnum!]!) on FIELD_DEFINITION
 
 # authenticated checks if user is authenticated
-directive @authenticated(_: PlaceHolder!) on FIELD_DEFINITION
-
+directive @authenticated(hi: Boolean!) on FIELD_DEFINITION

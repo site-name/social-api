@@ -187,7 +187,8 @@ type AccountService interface {
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	ReturnSessionToPool(session *model.Session)
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
-	SessionHasPermissionToAll(session *model.Session, permissions []*model.Permission) bool // SessionHasPermissionToAll checks if given session has all given permissions
+	SessionHasPermissionToAny(session *model.Session, permissions ...*model.Permission) bool // SessionHasPermissionToAny checks if current user has atleast one of given permissions
+	SessionHasPermissionToAll(session *model.Session, permissions ...*model.Permission) bool // SessionHasPermissionToAll checks if given session has all given permissions
 	MakePermissionError(s *model.Session, permissions ...*model.Permission) *model.AppError
 	ExtendSessionExpiryIfNeeded(session *model.Session) bool
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)

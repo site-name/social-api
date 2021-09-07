@@ -27,7 +27,7 @@ func (a *ServiceAccount) SessionHasPermissionTo(session *model.Session, permissi
 }
 
 // SessionHasPermissionToAny checks if current user has atleast one of given permissions
-func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permissions []*model.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permissions ...*model.Permission) bool {
 	for _, perm := range permissions {
 		if a.SessionHasPermissionTo(session, perm) {
 			return true
@@ -37,7 +37,7 @@ func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permi
 }
 
 // SessionHasPermissionToAll checks if given session has all given permissions
-func (a *ServiceAccount) SessionHasPermissionToAll(session *model.Session, permissions []*model.Permission) bool {
+func (a *ServiceAccount) SessionHasPermissionToAll(session *model.Session, permissions ...*model.Permission) bool {
 	for _, perm := range permissions {
 		if !a.SessionHasPermissionTo(session, perm) {
 			return false

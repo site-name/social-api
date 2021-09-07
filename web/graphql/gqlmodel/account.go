@@ -23,75 +23,76 @@ type CustomerEvent struct {
 func (CustomerEvent) IsNode() {}
 
 type Address struct {
-	ID                       string          `json:"id"`
-	FirstName                string          `json:"firstName"`
-	LastName                 string          `json:"lastName"`
-	CompanyName              string          `json:"companyName"`
-	StreetAddress1           string          `json:"streetAddress1"`
-	StreetAddress2           string          `json:"streetAddress2"`
-	City                     string          `json:"city"`
-	CityArea                 string          `json:"cityArea"`
-	PostalCode               string          `json:"postalCode"`
-	Country                  *CountryDisplay `json:"country"`
-	CountryArea              string          `json:"countryArea"`
-	Phone                    *string         `json:"phone"`
-	IsDefaultShippingAddress func() *bool    `json:"isDefaultShippingAddress"` // *bool
-	IsDefaultBillingAddress  func() *bool    `json:"isDefaultBillingAddress"`  // *bool
+	ID                       string                 `json:"id"`
+	FirstName                string                 `json:"firstName"`
+	LastName                 string                 `json:"lastName"`
+	CompanyName              string                 `json:"companyName"`
+	StreetAddress1           string                 `json:"streetAddress1"`
+	StreetAddress2           string                 `json:"streetAddress2"`
+	City                     string                 `json:"city"`
+	CityArea                 string                 `json:"cityArea"`
+	PostalCode               string                 `json:"postalCode"`
+	CountryArea              string                 `json:"countryArea"`
+	Phone                    *string                `json:"phone"`
+	CountryCode              string                 `json:"-"`
+	Country                  func() *CountryDisplay `json:"country"`                  // *CountryDisplay
+	IsDefaultShippingAddress func() *bool           `json:"isDefaultShippingAddress"` // *bool
+	IsDefaultBillingAddress  func() *bool           `json:"isDefaultBillingAddress"`  // *bool
 }
 
 func (Address) IsNode() {}
 
-// DatabaseCustomerEventsToGraphqlCustomerEvents converts slice of db customer events to graphql slice of customer events
-func DatabaseCustomerEventsToGraphqlCustomerEvents(events []*account.CustomerEvent) []*CustomerEvent {
-	res := make([]*CustomerEvent, len(events))
-	for _, event := range events {
-		res = append(res, DatabaseCustomerEventToGraphqlCustomerEvent(event))
-	}
-
-	return res
-}
-
 // DatabaseAddressesToGraphqlAddresses convert a slice of database addresses to graphql addresses
-func DatabaseAddressesToGraphqlAddresses(adds []*account.Address) []*Address {
-	res := make([]*Address, len(adds))
-	for _, ad := range adds {
-		res = append(res, DatabaseAddressToGraphqlAddress(ad))
+func DatabaseAddressesToGraphqlAddresses(addresses []*account.Address) []*Address {
+	res := []*Address{}
+	for _, address := range addresses {
+		if address == nil {
+			continue
+		}
+		res = append(res, DatabaseAddressToGraphqlAddress(address))
 	}
 
 	return res
 }
 
 // DatabaseAddressToGraphqlAddress convert single database address to single graphql address
-func DatabaseAddressToGraphqlAddress(ad *account.Address) *Address {
-
-	// TODO: update VAT returns
+func DatabaseAddressToGraphqlAddress(address *account.Address) *Address {
 	return &Address{
-		ID:             ad.Id,
-		FirstName:      ad.FirstName,
-		LastName:       ad.LastName,
-		CompanyName:    ad.CompanyName,
-		StreetAddress1: ad.StreetAddress1,
-		StreetAddress2: ad.StreetAddress2,
-		City:           ad.City,
-		CityArea:       ad.CityArea,
-		PostalCode:     ad.PostalCode,
-		CountryArea:    ad.CountryArea,
-		Phone:          &ad.Phone,
-		Country: &CountryDisplay{
-			Code:    ad.Country,
-			Country: model.Countries[strings.ToUpper(ad.Country)],
-			// Vat: &Vat{
-			// 	CountryCode: ad.Country,
-			// },
-		},
+		ID:             address.Id,
+		FirstName:      address.FirstName,
+		LastName:       address.LastName,
+		CompanyName:    address.CompanyName,
+		StreetAddress1: address.StreetAddress1,
+		StreetAddress2: address.StreetAddress2,
+		City:           address.City,
+		CityArea:       address.CityArea,
+		PostalCode:     address.PostalCode,
+		CountryArea:    address.CountryArea,
+		CountryCode:    address.Country,
+		Phone:          &address.Phone,
 	}
+}
+
+// DatabaseCustomerEventsToGraphqlCustomerEvents converts slice of db customer events to graphql slice of customer events
+func DatabaseCustomerEventsToGraphqlCustomerEvents(events []*account.CustomerEvent) []*CustomerEvent {
+	res := []*CustomerEvent{}
+	for _, event := range events {
+		if event == nil {
+			continue
+		}
+		res = append(res, DatabaseCustomerEventToGraphqlCustomerEvent(event))
+	}
+
+	return res
 }
 
 // DatabaseCustomerEventToGraphqlCustomerEvent converts 1 db customer event to 1 graphql customer event.
 func DatabaseCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *CustomerEvent {
-	var message *string
-	var count *int
-	var orderLinePk *string
+	var (
+		message     *string
+		count       *int
+		orderLinePk *string
+	)
 
 	// parse message
 	if msg, ok := event.Parameters["message"]; ok {

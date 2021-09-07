@@ -110,24 +110,6 @@ func (r *mutationResolver) AccountUpdate(ctx context.Context, input gqlmodel.Acc
 }
 
 func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *string, redirectURL string) (*gqlmodel.AccountRequestDeletion, error) {
-	// if _, appErr := checkUserAuthenticated("AccountRequestDeletion", ctx); appErr != nil {
-	// 	return nil, appErr
-	// } else {
-	// 	appErr := validateStoreFrontUrl(r.Config(), &redirectURL)
-	// 	if appErr != nil {
-	// 		return nil, appErr
-	// 	}
-
-	// 	chn, appErr := r.ChannelService().CleanChannel(channel)
-	// 	if appErr != nil {
-	// 		return nil, appErr
-	// 	}
-	// 	channelSlug := chn.Slug
-
-	// 	return &gqlmodel.AccountRequestDeletion{
-	// 		Ok: true,
-	// 	}, nil
-	// }
 	panic("not implemented")
 }
 

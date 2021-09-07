@@ -16,92 +16,59 @@ import (
 	graphql1 "github.com/sitename/sitename/web/graphql/generated"
 	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/graphql/scalars"
+	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
-	if session, appErr := checkUserAuthenticated("User", ctx); appErr != nil {
-		return nil, appErr
-	} else {
-		/*
-			TODO: fixme
-				if requesting user satisfies either:
-					1) requesting user's id == customer event's user id
-					2) requesting user has permission of managing users
-					3) requesting user has permission of managing staffs
-		*/
-		if obj.UserID != nil && *obj.UserID == session.UserId {
-			// TODO, there are two more conditions need implemented
-			user, appErr := r.Srv().AccountService().UserById(ctx, *obj.UserID)
-			if appErr != nil {
-				return nil, appErr
-			}
-			return gqlmodel.DatabaseUserToGraphqlUser(user), nil
-		}
-		return nil, permissionDenied("User")
+	session := ctx.Value(shared.APIContextKey).(*shared.Context).AppContext.Session()
+
+	if obj.UserID == nil {
+		return nil, nil
 	}
+
+	if session.UserId == *obj.UserID ||
+		r.Srv().
+			AccountService().
+			SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
+
+		user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+	}
+
+	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	if session, appErr := checkUserAuthenticated("Order", ctx); appErr != nil {
-		return nil, appErr
-	} else {
-		// check if current user relates to this customer event
-		if obj.UserID == nil || session.UserId != *obj.UserID {
-			return nil, permissionDenied("Order")
-		}
-		if obj.OrderID != nil || !model.IsValidId(*obj.OrderID) {
-			return nil, nil
-		}
-
-		order, appErr := r.Srv().OrderService().OrderById(*obj.OrderID)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return gqlmodel.DatabaseOrderToGraphqlOrder(order), nil
+	if obj.OrderID == nil {
+		return nil, nil
 	}
+
+	order, appErr := r.Srv().OrderService().OrderById(*obj.OrderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.DatabaseOrderToGraphqlOrder(order), nil
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	if session, appErr := checkUserAuthenticated("OrderLine", ctx); appErr != nil {
-		return nil, appErr
-	} else {
-		// check if current user relates to this customer event
-		if obj.UserID == nil || session.UserId != *obj.UserID {
-			return nil, permissionDenied("OrderLine")
-		}
-		if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
-			return nil, nil
-		}
-		orderLine, appErr := r.Srv().OrderService().OrderLineById(*obj.OrderLineID)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
+	if obj.OrderLineID == nil {
+		return nil, nil
 	}
+
+	orderLine, appErr := r.Srv().OrderService().OrderLineById(*obj.OrderLineID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.DatabaseOrderLineToGraphqlOrderLine(orderLine), nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input gqlmodel.LoginInput) (*gqlmodel.LoginResponse, error) {
-	// NOTE: this mutation is borrowed from mattermost
-	// embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
-
-	// if *r.Config().ExperimentalSettings.ClientSideCertEnable {
-	// 	certPem, certSubject, certEmail := r.Srv().AccountService().CheckForClientSideCert(embedCtx.GetRequest())
-	// 	slog.Debug("Client Cert", slog.String("cert_subject", certSubject), slog.String("cert_email", certEmail))
-
-	// 	if certPem == "" || certEmail == "" {
-	// 		return nil, model.NewAppError("Login", "graphql.account.login.client_side_cert.app_error", nil, "", http.StatusBadRequest)
-	// 	}
-
-	// 	if *r.Config().ExperimentalSettings.ClientSideCertCheck == model.CLIENT_SIDE_CERT_CHECK_PRIMARY_AUTH {
-	// 		input.LoginID = certEmail
-	// 		input.Password = "certificate"
-	// 	}
-
-	// 	user, err := r.Srv().AccountService().AuthenticateUserForLogin(embedCtx.AppContext, input.ID, input.LoginID, input.Password, input.MfaToken, "", input.LdapOnly)
-
-	// }
 	panic("not implt")
 }
 
