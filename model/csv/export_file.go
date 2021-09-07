@@ -2,7 +2,6 @@ package csv
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 )
 
 const (
@@ -10,11 +9,11 @@ const (
 )
 
 type ExportFile struct {
-	Id          string                `json:"id"`
-	UserID      *string               `json:"user_id"`
-	ContentFile *string               `json:"content_file"`
-	Data        model.StringInterface `json:"data"`
-	User        *account.User         `json:"-" db:"-"`
+	Id          string  `json:"id"`
+	UserID      *string `json:"user_id"`
+	ContentFile *string `json:"content_file"`
+	CreateAt    int64   `json:"create_at"`
+	UpdateAt    int64   `json:"update_at"`
 }
 
 func (e *ExportFile) ToJson() string {
@@ -34,6 +33,12 @@ func (e *ExportFile) IsValid() *model.AppError {
 	if e.UserID != nil && !model.IsValidId(*e.UserID) {
 		return outer("user_id", &e.Id)
 	}
+	if e.CreateAt == 0 {
+		return outer("create_at", &e.Id)
+	}
+	if e.UpdateAt == 0 {
+		return outer("update_at", &e.Id)
+	}
 
 	return nil
 }
@@ -42,4 +47,10 @@ func (e *ExportFile) PreSave() {
 	if e.Id == "" {
 		e.Id = model.NewId()
 	}
+	e.CreateAt = model.GetMillis()
+	e.UpdateAt = e.CreateAt
+}
+
+func (e *ExportFile) PreUpdate() {
+	e.UpdateAt = model.GetMillis()
 }

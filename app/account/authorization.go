@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError {
+func (a *ServiceAccount) MakePermissionError(s *model.Session, permissions ...*model.Permission) *model.AppError {
 	permissionsStr := "permission="
 	for _, permission := range permissions {
 		permissionsStr += permission.Id
@@ -34,6 +34,17 @@ func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permi
 		}
 	}
 	return false
+}
+
+// SessionHasPermissionToAll checks if given session has all given permissions
+func (a *ServiceAccount) SessionHasPermissionToAll(session *model.Session, permissions []*model.Permission) bool {
+	for _, perm := range permissions {
+		if !a.SessionHasPermissionTo(session, perm) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID

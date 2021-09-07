@@ -92,7 +92,7 @@ func (c *Context) LogAuditWithUserId(userId, extraInfo string) {
 // set session missing error for c
 func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens &&
-		c.AppContext.Session().Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN /*&& c.AppContext.Session().Props[model.SESSION_PROP_IS_BOT] != model.SESSION_PROP_IS_BOT_VALUE*/ {
+		c.AppContext.Session().Props[model.SESSION_PROP_TYPE] == model.SESSION_TYPE_USER_ACCESS_TOKEN {
 
 		c.Err = model.NewAppError("", "api.context.session_expired.app_error", nil, "UserAccessToken", http.StatusUnauthorized)
 		return
@@ -264,7 +264,7 @@ func NewJSONEncodingError() *model.AppError {
 }
 
 func (c *Context) SetPermissionError(permissions ...*model.Permission) {
-	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions)
+	c.Err = c.App.Srv().AccountService().MakePermissionError(c.AppContext.Session(), permissions...)
 }
 
 func (c *Context) SetSiteURLHeader(url string) {

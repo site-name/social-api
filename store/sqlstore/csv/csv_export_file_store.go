@@ -28,6 +28,7 @@ func (cs *SqlCsvExportFileStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CsvExportFileTablename, "UserID", store.UserTableName, "Id", true)
 }
 
+// Save inserts given csv export file into database then returns it
 func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
 	file.PreSave()
 	if err := file.IsValid(); err != nil {
@@ -35,11 +36,12 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 	}
 
 	if err := cs.GetMaster().Insert(file); err != nil {
-		return nil, errors.Wrapf(err, "failed to save ExportFile with ExportFileId=", file.Id)
+		return nil, errors.Wrapf(err, "failed to save ExportFile with Id=", file.Id)
 	}
 	return file, nil
 }
 
+// Get finds and returns an export file with given id
 func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 	var res csv.ExportFile
 	err := cs.GetMaster().SelectOne(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = :ID", map[string]interface{}{"ID": id})

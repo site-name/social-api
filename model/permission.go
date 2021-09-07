@@ -17,23 +17,24 @@ type Permission struct {
 
 // All permissions from saleor
 var (
-	PERMISSION_MANAGE_USERS                        *Permission
-	PERMISSION_MANAGE_STAFF                        *Permission
-	PERMISSION_MANAGE_APPS                         *Permission
-	PERMISSION_MANAGE_CHANNELS                     *Permission
-	PERMISSION_MANAGE_DISCOUNTS                    *Permission
-	PERMISSION_MANAGE_PLUGINS                      *Permission
-	PERMISSION_MANAGE_GIFT_CARD                    *Permission
-	PERMISSION_MANAGE_MENUS                        *Permission
-	PERMISSION_MANAGE_CHECKOUTS                    *Permission
-	PERMISSION_MANAGE_ORDERS                       *Permission
-	PERMISSION_MANAGE_PAGES                        *Permission
-	PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES    *Permission
-	PERMISSION_MANAGE_PRODUCTS                     *Permission
-	PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES *Permission
-	PERMISSION_MANAGE_SHIPPING                     *Permission
-	PERMISSION_MANAGE_SETTINGS                     *Permission
-	PERMISSION_MANAGE_TRANSLATIONS                 *Permission
+	PermissionManageUsers                     *Permission
+	PermissionManageStaff                     *Permission
+	PermissionManageApps                      *Permission
+	PermissionManageChannels                  *Permission
+	PermissionManageDiscounts                 *Permission
+	PermissionManagePlugins                   *Permission
+	PermissionManageGiftcard                  *Permission
+	PermissionManageMenus                     *Permission
+	PermissionManageCheckouts                 *Permission
+	PermissionManageOrders                    *Permission
+	PermissionManagePages                     *Permission
+	PermissionManagePageTypesAndAttributes    *Permission
+	PermissionManageProducts                  *Permission
+	PermissionManageProductTypesAndAttributes *Permission
+	PermissionManageShipping                  *Permission
+	PermissionManageSettings                  *Permission
+	PermissionManageTranslations              *Permission
+	PermissionHandlePayments                  *Permission
 
 	SaleorPermissionEnumList []*Permission
 	// SaleorPermissionEnumMap has keys of permission ids,
@@ -43,42 +44,43 @@ var (
 
 // init all saleor's permissions
 func initializeSaleorPermission() {
-	PERMISSION_MANAGE_USERS = &Permission{"manage_users", "account.manage_users.name", "account.manage_users.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_STAFF = &Permission{"manage_staff", "account.manage_staff.name", "account.manage_staff.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_APPS = &Permission{"manage_apps", "app.manage_apps.name", "app.manage_apps.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_CHANNELS = &Permission{"manage_channels", "channel.manage_channels.name", "channel.manage_channels.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_DISCOUNTS = &Permission{"manage_discounts", "discount.manage_discounts.name", "discount.manage_discounts.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_PLUGINS = &Permission{"manage_plugins", "plugins.manage_plugins.name", "plugins.manage_plugins.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_GIFT_CARD = &Permission{"manage_gift_card", "giftcard.manage_gift_card.name", "giftcard.manage_gift_card.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_MENUS = &Permission{"manage_menus", "menu.manage_menus.name", "menu.manage_menus.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_CHECKOUTS = &Permission{"manage_checkouts", "checkout.manage_checkouts.name", "checkout.manage_checkouts.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_ORDERS = &Permission{"manage_orders", "orders.manage_orders.name", "orders.manage_orders.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_PAGES = &Permission{"manage_pages", "page.manage_pages.name", "page.manage_pages.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES = &Permission{"manage_page_types_and_attributes", "page.manage_page_types_and_attributes.name", "page.manage_page_types_and_attributes.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_PRODUCTS = &Permission{"manage_products", "product.manage_products.name", "product.manage_products.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES = &Permission{"manage_product_types_and_attributes", "product.manage_product_types_and_attributes.name", "product.manage_product_types_and_attributes.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_SHIPPING = &Permission{"manage_shipping", "shipping.manage_shipping.name", "shipping.manage_shipping.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_SETTINGS = &Permission{"manage_settings", "site.manage_settings.name", "site.manage_settings.description", PermissionScopeSystem}
-	PERMISSION_MANAGE_TRANSLATIONS = &Permission{"manage_translations", "site.manage_translations.name", "site.manage_translations.description", PermissionScopeSystem}
+	PermissionManageUsers = &Permission{"manage_users", "account.manage_users.name", "account.manage_users.description", PermissionScopeSystem}
+	PermissionManageStaff = &Permission{"manage_staff", "account.manage_staff.name", "account.manage_staff.description", PermissionScopeSystem}
+	PermissionManageApps = &Permission{"manage_apps", "app.manage_apps.name", "app.manage_apps.description", PermissionScopeSystem}
+	PermissionManageChannels = &Permission{"manage_channels", "channel.manage_channels.name", "channel.manage_channels.description", PermissionScopeSystem}
+	PermissionManageDiscounts = &Permission{"manage_discounts", "discount.manage_discounts.name", "discount.manage_discounts.description", PermissionScopeSystem}
+	PermissionManagePlugins = &Permission{"manage_plugins", "plugins.manage_plugins.name", "plugins.manage_plugins.description", PermissionScopeSystem}
+	PermissionManageGiftcard = &Permission{"manage_gift_card", "giftcard.manage_gift_card.name", "giftcard.manage_gift_card.description", PermissionScopeSystem}
+	PermissionManageMenus = &Permission{"manage_menus", "menu.manage_menus.name", "menu.manage_menus.description", PermissionScopeSystem}
+	PermissionManageCheckouts = &Permission{"manage_checkouts", "checkout.manage_checkouts.name", "checkout.manage_checkouts.description", PermissionScopeSystem}
+	PermissionManageOrders = &Permission{"manage_orders", "orders.manage_orders.name", "orders.manage_orders.description", PermissionScopeSystem}
+	PermissionManagePages = &Permission{"manage_pages", "page.manage_pages.name", "page.manage_pages.description", PermissionScopeSystem}
+	PermissionManagePageTypesAndAttributes = &Permission{"manage_page_types_and_attributes", "page.manage_page_types_and_attributes.name", "page.manage_page_types_and_attributes.description", PermissionScopeSystem}
+	PermissionManageProducts = &Permission{"manage_products", "product.manage_products.name", "product.manage_products.description", PermissionScopeSystem}
+	PermissionManageProductTypesAndAttributes = &Permission{"manage_product_types_and_attributes", "product.manage_product_types_and_attributes.name", "product.manage_product_types_and_attributes.description", PermissionScopeSystem}
+	PermissionManageShipping = &Permission{"manage_shipping", "shipping.manage_shipping.name", "shipping.manage_shipping.description", PermissionScopeSystem}
+	PermissionManageSettings = &Permission{"manage_settings", "site.manage_settings.name", "site.manage_settings.description", PermissionScopeSystem}
+	PermissionManageTranslations = &Permission{"manage_translations", "site.manage_translations.name", "site.manage_translations.description", PermissionScopeSystem}
+	PermissionHandlePayments = &Permission{"handle_payments", "payment.handle_payments.name", "payment.handle_payments.description", PermissionScopeSystem}
 
 	SaleorPermissionEnumList = []*Permission{
-		PERMISSION_MANAGE_USERS,
-		PERMISSION_MANAGE_STAFF,
-		PERMISSION_MANAGE_APPS,
-		PERMISSION_MANAGE_CHANNELS,
-		PERMISSION_MANAGE_DISCOUNTS,
-		PERMISSION_MANAGE_PLUGINS,
-		PERMISSION_MANAGE_GIFT_CARD,
-		PERMISSION_MANAGE_MENUS,
-		PERMISSION_MANAGE_CHECKOUTS,
-		PERMISSION_MANAGE_ORDERS,
-		PERMISSION_MANAGE_PAGES,
-		PERMISSION_MANAGE_PAGE_TYPES_AND_ATTRIBUTES,
-		PERMISSION_MANAGE_PRODUCTS,
-		PERMISSION_MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES,
-		PERMISSION_MANAGE_SHIPPING,
-		PERMISSION_MANAGE_SETTINGS,
-		PERMISSION_MANAGE_TRANSLATIONS,
+		PermissionManageUsers,
+		PermissionManageStaff,
+		PermissionManageApps,
+		PermissionManageChannels,
+		PermissionManageDiscounts,
+		PermissionManagePlugins,
+		PermissionManageGiftcard,
+		PermissionManageMenus,
+		PermissionManageCheckouts,
+		PermissionManageOrders,
+		PermissionManagePages,
+		PermissionManagePageTypesAndAttributes,
+		PermissionManageProducts,
+		PermissionManageProductTypesAndAttributes,
+		PermissionManageShipping,
+		PermissionManageSettings,
+		PermissionManageTranslations,
 	}
 
 	SaleorPermissionEnumMap = make(map[string]string)
@@ -1676,6 +1678,7 @@ func initializePermissions() {
 	AllPermissions = append(AllPermissions, ChannelScopedPermissions...)
 	AllPermissions = append(AllPermissions, SysconsoleReadPermissions...)
 	AllPermissions = append(AllPermissions, SysconsoleWritePermissions...)
+	AllPermissions = append(AllPermissions, SaleorPermissionEnumList...) // append saleor permissions
 }
 
 func init() {

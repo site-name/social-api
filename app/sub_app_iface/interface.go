@@ -17,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/menu"
@@ -185,7 +186,8 @@ type AccountService interface {
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	ReturnSessionToPool(session *model.Session)
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
-	MakePermissionError(s *model.Session, permissions []*model.Permission) *model.AppError
+	SessionHasPermissionToAll(session *model.Session, permissions []*model.Permission) bool // SessionHasPermissionToAll checks if given session has all given permissions
+	MakePermissionError(s *model.Session, permissions ...*model.Permission) *model.AppError
 	ExtendSessionExpiryIfNeeded(session *model.Session) bool
 	AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request)
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
@@ -393,6 +395,9 @@ type AppApp interface {
 }
 
 type CsvService interface {
+	CreateExportFile(file *csv.ExportFile) (*csv.ExportFile, *model.AppError)                 // CreateExportFile inserts given export file into database then returns it
+	ExportFileById(id string) (*csv.ExportFile, *model.AppError)                              // ExportFileById returns an export file found by given id
+	CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv.ExportEvent, *model.AppError) // CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
 }
 
 type ShopService interface {
