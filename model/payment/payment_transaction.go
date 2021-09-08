@@ -133,9 +133,6 @@ func (p *PaymentTransaction) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
-	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
-		p.Amount = &decimal.Zero
-	}
 	p.CreateAt = model.GetMillis()
 
 	if p.ActionRequiredData == nil {
@@ -144,12 +141,23 @@ func (p *PaymentTransaction) PreSave() {
 	if p.Error != nil {
 		*p.Error = model.SanitizeUnicode(*p.Error)
 	}
+	p.commonPre()
 }
 
-func (p *PaymentTransaction) PreUpdate() {
+func (p *PaymentTransaction) commonPre() {
 	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
 		p.Amount = &decimal.Zero
 	}
+	if p.ActionRequiredData == nil {
+		p.ActionRequiredData = make(model.StringMap)
+	}
+	if p.GatewayResponse == nil {
+		p.GatewayResponse = make(model.StringMap)
+	}
+}
+
+func (p *PaymentTransaction) PreUpdate() {
+	p.commonPre()
 }
 
 func (p *PaymentTransaction) ToJson() string {

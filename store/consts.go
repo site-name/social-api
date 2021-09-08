@@ -83,6 +83,7 @@ func init() {
 		StatusTableName:                     "",               //
 
 		GiftcardTableName:         "Code ASC", // giftcard
+		GiftcardEventTableName:    "Date ASC", //
 		OrderGiftCardTableName:    "",         //
 		GiftcardCheckoutTableName: "",         //
 
@@ -232,6 +233,7 @@ const (
 // giftcard-related table names
 const (
 	GiftcardTableName         = "GiftCards"         //
+	GiftcardEventTableName    = "GiftcardEvents"    //
 	OrderGiftCardTableName    = "OrderGiftCards"    //
 	GiftcardCheckoutTableName = "GiftcardCheckouts" //
 )

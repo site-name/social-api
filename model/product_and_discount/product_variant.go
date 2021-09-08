@@ -99,6 +99,7 @@ func (p *ProductVariant) IsValid() *model.AppError {
 	return nil
 }
 
+// String returns exact product variant name or Sku depends on their truth value
 func (p *ProductVariant) String() string {
 	if p.Name != "" {
 		return p.Name

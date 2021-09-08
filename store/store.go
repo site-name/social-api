@@ -100,6 +100,7 @@ type Store interface {
 	SaleProductRelation() SaleProductRelationStore                     //
 	SaleCollectionRelation() SaleCollectionRelationStore               //
 	GiftCard() GiftCardStore                                           // giftcard
+	GiftcardEvent() GiftcardEventStore                                 //
 	GiftCardOrder() GiftCardOrderStore                                 //
 	GiftCardCheckout() GiftCardCheckoutStore                           //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
@@ -666,9 +667,12 @@ type (
 		CreateIndexesIfNotExists()
 		Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error)                     // Upsert depends on given giftcard's Id property then perform according operation
 		GetById(id string) (*giftcard.GiftCard, error)                                      // GetById returns a giftcard instance that has id of given id
-		GetAllByUserId(userID string) ([]*giftcard.GiftCard, error)                         // GetAllByUserId returns a slice aff giftcards that belong to given user
-		GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error)                   // GetAllByCheckout returns all giftcards belong to given checkout
 		FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
+	}
+	GiftcardEventStore interface {
+		CreateIndexesIfNotExists()
+		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) // Save insdert given giftcard event into database then returns it
+		Get(id string) (*giftcard.GiftCardEvent, error)                      // Get finds and returns a giftcard event found by given id
 	}
 	GiftCardOrderStore interface {
 		CreateIndexesIfNotExists()

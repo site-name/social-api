@@ -79,4 +79,7 @@ func (i *InvoiceEvent) PreSave() {
 		i.Id = model.NewId()
 	}
 	i.CreateAt = model.GetMillis()
+	if i.Parameters == nil {
+		i.Parameters = make(model.StringMap)
+	}
 }

@@ -30,6 +30,19 @@ const (
 	CLIENT_DIR                 = "client"
 )
 
+// time period types
+const (
+	Day   = "day"
+	Month = "month"
+	Year  = "year"
+)
+
+var TimePeriodMap = map[string]string{
+	Day:   "Day",
+	Month: "Month",
+	Year:  "Year",
+}
+
 // some default values for model fields
 const (
 	TimeZone                       = "UTC"

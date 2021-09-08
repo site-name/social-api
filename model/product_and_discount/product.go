@@ -130,6 +130,7 @@ func (p *Product) commonPre() {
 	}
 }
 
+// String returns exact product's name
 func (p *Product) String() string {
 	return p.Name
 }

@@ -85,6 +85,7 @@ type TimerLayer struct {
 	GiftCardStore                      store.GiftCardStore
 	GiftCardCheckoutStore              store.GiftCardCheckoutStore
 	GiftCardOrderStore                 store.GiftCardOrderStore
+	GiftcardEventStore                 store.GiftcardEventStore
 	InvoiceStore                       store.InvoiceStore
 	InvoiceEventStore                  store.InvoiceEventStore
 	JobStore                           store.JobStore
@@ -330,6 +331,10 @@ func (s *TimerLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
 
 func (s *TimerLayer) GiftCardOrder() store.GiftCardOrderStore {
 	return s.GiftCardOrderStore
+}
+
+func (s *TimerLayer) GiftcardEvent() store.GiftcardEventStore {
+	return s.GiftcardEventStore
 }
 
 func (s *TimerLayer) Invoice() store.InvoiceStore {
@@ -814,6 +819,11 @@ type TimerLayerGiftCardCheckoutStore struct {
 
 type TimerLayerGiftCardOrderStore struct {
 	store.GiftCardOrderStore
+	Root *TimerLayer
+}
+
+type TimerLayerGiftcardEventStore struct {
+	store.GiftcardEventStore
 	Root *TimerLayer
 }
 
@@ -3399,38 +3409,6 @@ func (s *TimerLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilter
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardStore.GetAllByCheckout(checkoutID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByCheckout", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardStore.GetAllByUserId(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetAllByUserId", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
@@ -3539,6 +3517,38 @@ func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftcardEventStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftcardEventStore.Save(event)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -8033,6 +8043,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.GiftCardStore = &TimerLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
 	newStore.GiftCardCheckoutStore = &TimerLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
 	newStore.GiftCardOrderStore = &TimerLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
+	newStore.GiftcardEventStore = &TimerLayerGiftcardEventStore{GiftcardEventStore: childStore.GiftcardEvent(), Root: &newStore}
 	newStore.InvoiceStore = &TimerLayerInvoiceStore{InvoiceStore: childStore.Invoice(), Root: &newStore}
 	newStore.InvoiceEventStore = &TimerLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}
 	newStore.JobStore = &TimerLayerJobStore{JobStore: childStore.Job(), Root: &newStore}

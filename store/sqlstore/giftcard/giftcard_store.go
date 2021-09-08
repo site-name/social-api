@@ -20,8 +20,15 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(giftcard.GiftCard{}, store.GiftcardTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Code").SetMaxSize(giftcard.GIFT_CARD_CODE_MAX_LENGTH).SetUnique(true)
+		table.ColMap("CreatedByID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("UsedByID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("CreatedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
+		table.ColMap("UsedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
+		table.ColMap("ExpiryType").SetMaxSize(giftcard.GiftcardExpiryTypeMaxLength)
+		table.ColMap("ExpiryPeriodType").SetMaxSize(giftcard.GiftcardExpiryPeriodTypeMaxLength)
+		table.ColMap("Tag").SetMaxSize(giftcard.GiftcardTagMaxLength)
+		table.ColMap("Code").SetMaxSize(giftcard.GiftcardCodeMaxLength).SetUnique(true)
 		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 	}
 
@@ -29,8 +36,13 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 }
 
 func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
+	gcs.CommonMetaDataIndex(store.GiftcardTableName)
+
+	gcs.CreateIndexIfNotExists("idx_giftcards_tag", store.GiftcardTableName, "Tag")
 	gcs.CreateIndexIfNotExists("idx_giftcards_code", store.GiftcardTableName, "Code")
-	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UserID", store.UserTableName, "Id", false)
+	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "CreatedByID", store.UserTableName, "Id", false)
+	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UsedByID", store.UserTableName, "Id", false)
+	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "ProductID", store.ProductTableName, "Id", false)
 }
 
 // Upsert depends on given giftcard's Id property then perform according operation
@@ -92,71 +104,38 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 	}
 }
 
-func (gcs *SqlGiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
-	var giftcards []*giftcard.GiftCard
-	_, err := gcs.GetReplica().Select(
-		&giftcards,
-		"SELECT * FROM "+store.GiftcardTableName+" WHERE UserID = :userID",
-		map[string]interface{}{"userID": userID},
-	)
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find giftcards with userID=%s", userID)
-	}
-
-	return giftcards, nil
-}
-
-func (gs *SqlGiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
-
-	var giftcards []*giftcard.GiftCard
-	_, err := gs.GetReplica().Select(
-		&giftcards,
-		`SELECT * FROM `+store.GiftcardTableName+`
-		WHERE GiftCards.Id IN (
-			SELECT 
-				GiftcardCheckouts.GiftcardID 
-			FROM `+store.GiftcardCheckoutTableName+`
-		)
-		WHERE
-			GiftcardCheckouts.CheckoutID = :CheckoutID
-		ORDER BY :OrderBy`,
-		map[string]interface{}{
-			"CheckoutID": checkoutID,
-			"OrderBy":    store.TableOrderingMap[store.GiftcardTableName],
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find giftcards belong to checkout with id=%s", checkoutID)
-	}
-
-	return giftcards, nil
-}
-
 // FilterByOption finds giftcards wth option
 func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
-
 	query := gs.
 		GetQueryBuilder().
-		Select(store.GiftcardTableName).
-		OrderBy("CreateAt ASC")
+		Select("*").
+		From(store.GiftcardTableName).
+		OrderBy(store.TableOrderingMap[store.GiftcardTableName])
 
 	// check code
+	if option.Distinct {
+		query = query.Distinct()
+	}
+	if option.CreatedByID != nil {
+		query = query.Where(option.CreatedByID.ToSquirrel("CreatedByID"))
+	}
 	if option.Code != nil {
 		query = query.Where(option.Code.ToSquirrel("Code"))
 	}
-
-	// check end date
-	if option.EndDate != nil {
-		query = query.Where(option.EndDate.ToSquirrel("EndDate"))
+	if option.ExpiryDate != nil {
+		query = query.Where(option.ExpiryDate.ToSquirrel("ExpiryDate"))
 	}
-
-	// check start date
 	if option.StartDate != nil {
 		query = query.Where(option.StartDate.ToSquirrel("StartDate"))
 	}
+	if option.CheckoutToken != nil {
+		subSelect := gs.GetQueryBuilder().
+			Select("GiftcardID").
+			From(store.GiftcardCheckoutTableName).
+			Where(option.CheckoutToken.ToSquirrel("GiftcardCheckouts.CheckoutID"))
 
-	// check is active
+		query = query.Where(squirrel.Expr("Id IN ?", subSelect))
+	}
 	if option.IsActive != nil {
 		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
 	}

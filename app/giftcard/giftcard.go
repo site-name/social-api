@@ -6,6 +6,7 @@ package giftcard
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -36,16 +37,13 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.App
 }
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError) {
-	// validate given checkout token is valid uuid
-	if !model.IsValidId(checkoutToken) {
-		return nil, model.NewAppError("GiftcardsByCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutToken"}, "", http.StatusBadRequest)
-	}
-
-	giftcardsOfCheckout, err := a.srv.Store.GiftCard().GetAllByCheckout(checkoutToken)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GiftcardsByCheckout", "app.giftcard.giftcards_by_checkout_missing.app_error", err)
-	}
-	return giftcardsOfCheckout, nil
+	return a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
+		CheckoutToken: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkoutToken,
+			},
+		},
+	})
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
@@ -83,4 +81,18 @@ func (a *ServiceGiftcard) UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard
 	}
 
 	return giftcard, nil
+}
+
+// ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
+func (s *ServiceGiftcard) ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError) {
+	return s.GiftcardsByOption(&giftcard.GiftCardFilterOption{
+		ExpiryDate: &model.TimeFilter{
+			Or: &model.TimeOption{
+				GtE:               date,
+				NULL:              model.NewBool(true),
+				CompareStartOfDay: true,
+			},
+		},
+		IsActive: model.NewBool(true),
+	})
 }

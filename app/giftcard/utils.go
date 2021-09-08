@@ -20,7 +20,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, pr
 				Eq: promoCode,
 			},
 		},
-		EndDate: &model.TimeFilter{
+		ExpiryDate: &model.TimeFilter{
 			Or: &model.TimeOption{
 				NULL: model.NewBool(true),
 				GtE:  now,

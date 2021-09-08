@@ -172,6 +172,6 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defau
 }
 
 // ChangeUserDefaultAddress set default address for given user
-func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, addressString string, addressType string, manager interface{}) *model.AppError }{
+func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, addressString string, addressType string, manager interface{}) *model.AppError {
 	panic("not implemented")
 }

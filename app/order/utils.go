@@ -723,7 +723,7 @@ func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.G
 		}
 
 		// update giftcard
-		giftCard.LastUsedOn = model.GetMillis()
+		giftCard.LastUsedOn = model.NewInt64(model.GetMillis())
 		_, appErr = a.srv.GiftcardService().UpsertGiftcard(giftCard)
 		if appErr != nil {
 			return nil, appErr

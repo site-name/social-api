@@ -42,29 +42,6 @@ func (_m *GiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) (
 	return r0, r1
 }
 
-// GetAllByCheckout provides a mock function with given fields: checkoutID
-func (_m *GiftCardStore) GetAllByCheckout(checkoutID string) ([]*giftcard.GiftCard, error) {
-	ret := _m.Called(checkoutID)
-
-	var r0 []*giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(string) []*giftcard.GiftCard); ok {
-		r0 = rf(checkoutID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*giftcard.GiftCard)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(checkoutID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetAllByUserId provides a mock function with given fields: userID
 func (_m *GiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
 	ret := _m.Called(userID)

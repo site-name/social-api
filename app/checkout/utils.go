@@ -337,7 +337,7 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(ckout *checkout.Checkou
 
 	if changed {
 		if remove {
-			appErr = a.srv.AccountService().DeleteAddresses([]string{*ckout.BillingAddressID})
+			appErr = a.srv.AccountService().DeleteAddresses(*ckout.BillingAddressID)
 			if appErr != nil {
 				return appErr
 			}

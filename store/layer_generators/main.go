@@ -127,7 +127,7 @@ func buildStoreImplement() error {
 				"VoucherCollection", "VoucherCategory", "VoucherProduct", "VoucherCustomer", "SaleCategoryRelation",
 				"SaleProductRelation", "SaleCollectionRelation":
 				return "discount"
-			case "GiftCard", "GiftCardOrder", "GiftCardCheckout":
+			case "GiftCard", "GiftCardOrder", "GiftCardCheckout", "GiftcardEvent":
 				return "giftcard"
 			case "InvoiceEvent", "Invoice":
 				return "invoice"

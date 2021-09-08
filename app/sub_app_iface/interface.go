@@ -46,6 +46,8 @@ type GiftcardService interface {
 	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
 	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
 	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                             // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
+	GiftcardsByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)              // GiftcardsByOption finds a list of giftcards with given option
+	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                      // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 }
 
 // PaymentService defines methods for payment sub app
