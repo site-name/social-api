@@ -1,8 +1,6 @@
 package account
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -39,10 +37,4 @@ func (ua *UserAddress) PreSave() {
 
 func (ua *UserAddress) ToJson() string {
 	return model.ModelToJson(ua)
-}
-
-func UserAddressFromJson(data io.Reader) *UserAddress {
-	var us *UserAddress
-	model.ModelFromJson(&us, data)
-	return us
 }

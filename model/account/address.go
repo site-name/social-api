@@ -56,6 +56,7 @@ type AddressFilterOrderOption struct {
 type AddressFilterOption struct {
 	Id      *model.StringFilter
 	OrderID *AddressFilterOrderOption
+	UserID  *model.StringFilter // SELECT * FROM Addresses WHERE Id IN (SELECT * FROM UserAddresses WHERE UserID ...)
 }
 
 func (add *Address) FullName() string {

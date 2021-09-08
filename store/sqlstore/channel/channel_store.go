@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
 )
@@ -21,6 +22,7 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(channel.CHANNEL_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH).SetUnique(true)
+		table.ColMap("DefaultCountry").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
 	}
 
 	return cs
@@ -33,6 +35,18 @@ func (cs *SqlChannelStore) ModelFields() []string {
 		"Channels.IsActive",
 		"Channels.Slug",
 		"Channels.Currency",
+		"Channels.DefaultCountry",
+	}
+}
+
+func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
+	return []interface{}{
+		&ch.Id,
+		&ch.Name,
+		&ch.IsActive,
+		&ch.Slug,
+		&ch.Currency,
+		&ch.DefaultCountry,
 	}
 }
 

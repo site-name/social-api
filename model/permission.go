@@ -35,6 +35,7 @@ var (
 	PermissionManageSettings                  *Permission
 	PermissionManageTranslations              *Permission
 	PermissionHandlePayments                  *Permission
+	PermissionImpersonateUser                 *Permission
 
 	SaleorPermissionEnumList []*Permission
 	// SaleorPermissionEnumMap has keys of permission ids,
@@ -62,6 +63,7 @@ func initializeSaleorPermission() {
 	PermissionManageSettings = &Permission{"manage_settings", "site.manage_settings.name", "site.manage_settings.description", PermissionScopeSystem}
 	PermissionManageTranslations = &Permission{"manage_translations", "site.manage_translations.name", "site.manage_translations.description", PermissionScopeSystem}
 	PermissionHandlePayments = &Permission{"handle_payments", "payment.handle_payments.name", "payment.handle_payments.description", PermissionScopeSystem}
+	PermissionImpersonateUser = &Permission{"impersonate_user", "account.impersonate_user.name", "account.impersonate_user.description", PermissionScopeSystem}
 
 	SaleorPermissionEnumList = []*Permission{
 		PermissionManageUsers,
@@ -81,6 +83,7 @@ func initializeSaleorPermission() {
 		PermissionManageShipping,
 		PermissionManageSettings,
 		PermissionManageTranslations,
+		PermissionImpersonateUser,
 	}
 
 	SaleorPermissionEnumMap = make(map[string]string)

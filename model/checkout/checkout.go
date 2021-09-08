@@ -32,6 +32,7 @@ type Checkout struct {
 	BillingAddressID       *string          `json:"billing_address_id,omitempty"`  // NO EDITABLE
 	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"` // NO EDITABLE
 	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
+	CollectionPointID      *string          `json:"collection_point_id"` // foreign key *Warehouse
 	Note                   string           `json:"note"`
 	Currency               string           `json:"currency"`        // default "USD"
 	Country                string           `json:"country"`         // one country only
@@ -67,6 +68,12 @@ func (c *Checkout) IsValid() *model.AppError {
 	}
 	if c.ShippingAddressID != nil && !model.IsValidId(*c.ShippingAddressID) {
 		return outer("shipping_address", &c.Token)
+	}
+	if c.ShippingMethodID != nil && !model.IsValidId(*c.ShippingMethodID) {
+		return outer("shipping_method", &c.Token)
+	}
+	if c.CollectionPointID != nil && !model.IsValidId(*c.CollectionPointID) {
+		return outer("collection_point_id", &c.Token)
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
 		return outer("currency", &c.Token)

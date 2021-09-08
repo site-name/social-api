@@ -28,6 +28,7 @@ type AttributeValue struct {
 	AttributeID string                 `json:"attribute_id"`
 	RichText    *model.StringInterface `json:"rich_text"`
 	Boolean     *bool                  `json:"boolean"`
+	Datetime    *int64                 `json:"date_time"`
 	model.Sortable
 }
 
@@ -73,6 +74,9 @@ func (a *AttributeValue) IsValid() *model.AppError {
 	}
 	if a.ContentType != nil && len(*a.ContentType) > ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH {
 		return outer("content_type", &a.Id)
+	}
+	if a.Datetime != nil && *a.Datetime == 0 {
+		return outer("date_time", &a.Id)
 	}
 
 	return nil

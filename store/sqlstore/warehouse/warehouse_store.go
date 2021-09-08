@@ -27,6 +27,7 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 		table.ColMap("Name").SetMaxSize(warehouse.WAREHOUSE_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(warehouse.WAREHOUSE_SLUG_MAX_LENGTH).SetUnique(true)
 		table.ColMap("Email").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
+		table.ColMap("ClickAndCollectOption").SetMaxSize(warehouse.WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH)
 	}
 	return ws
 }
@@ -38,8 +39,24 @@ func (ws *SqlWareHouseStore) ModelFields() []string {
 		"Warehouses.Slug",
 		"Warehouses.AddressID",
 		"Warehouses.Email",
+		"Warehouses.ClickAndCollectOption",
+		"Warehouses.IsPrivate",
 		"Warehouses.Metadata",
 		"Warehouses.PrivateMetadata",
+	}
+}
+
+func (ws *SqlWareHouseStore) ScanFields(wh warehouse.WareHouse) []interface{} {
+	return []interface{}{
+		&wh.Id,
+		&wh.Name,
+		&wh.Slug,
+		&wh.AddressID,
+		&wh.Email,
+		&wh.ClickAndCollectOption,
+		&wh.IsPrivate,
+		&wh.Metadata,
+		&wh.PrivateMetadata,
 	}
 }
 
@@ -137,35 +154,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 		warehousesMap    = map[string]*warehouse.WareHouse{} // keys are warehouse IDs
 		wareHouse        warehouse.WareHouse
 		address          account.Address
+		scanItems        = wh.ScanFields(wareHouse)
 	)
-	var scanItems []interface{} = []interface{}{
-		&wareHouse.Id,
-		&wareHouse.Name,
-		&wareHouse.Slug,
-		&wareHouse.AddressID,
-		&wareHouse.Email,
-		&wareHouse.Metadata,
-		&wareHouse.PrivateMetadata,
-	}
 	if option.SelectRelatedAddress {
-		scanItems = append(
-			scanItems,
-
-			&address.Id,
-			&address.FirstName,
-			&address.LastName,
-			&address.CompanyName,
-			&address.StreetAddress1,
-			&address.StreetAddress2,
-			&address.City,
-			&address.CityArea,
-			&address.PostalCode,
-			&address.Country,
-			&address.CountryArea,
-			&address.Phone,
-			&address.CreateAt,
-			&address.UpdateAt,
-		)
+		scanItems = append(scanItems, wh.Address().ScanFields(address)...)
 	}
 	for rows.Next() {
 		err = rows.Scan(scanItems...)

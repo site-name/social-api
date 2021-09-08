@@ -29,16 +29,8 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *product_and_discount.Vou
 	return appErr
 }
 
+// AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "AddVoucherUsageByCustomer"
-		}
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "AddVoucherUsageByCustomer"
-		}
-	}()
-
 	// validate email argument
 	if !model.IsValidEmail(customerEmail) {
 		appErr = model.NewAppError("AddVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)

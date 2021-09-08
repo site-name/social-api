@@ -3,6 +3,7 @@ package account
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/account"
@@ -41,6 +42,7 @@ func (as *SqlAddressStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_address_firstname", store.AddressTableName, "FirstName")
 	as.CreateIndexIfNotExists("idx_address_city", store.AddressTableName, "City")
 	as.CreateIndexIfNotExists("idx_address_country", store.AddressTableName, "Country")
+	as.CreateIndexIfNotExists("idx_address_phone", store.AddressTableName, "Phone")
 
 	as.CreateIndexIfNotExists("idx_address_firstname_lower_textpattern", store.AddressTableName, "lower(FirstName) text_pattern_ops")
 	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", store.AddressTableName, "lower(LastName) text_pattern_ops")
@@ -62,6 +64,25 @@ func (as *SqlAddressStore) ModelFields() []string {
 		"Addresses.Phone",
 		"Addresses.CreateAt",
 		"Addresses.UpdateAt",
+	}
+}
+
+func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
+	return []interface{}{
+		&addr.Id,
+		&addr.FirstName,
+		&addr.LastName,
+		&addr.CompanyName,
+		&addr.StreetAddress1,
+		&addr.StreetAddress2,
+		&addr.City,
+		&addr.CityArea,
+		&addr.PostalCode,
+		&addr.Country,
+		&addr.CountryArea,
+		&addr.Phone,
+		&addr.CreateAt,
+		&addr.UpdateAt,
 	}
 }
 
@@ -127,15 +148,22 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 
 	// parse query
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id.ToSquirrel("Addresses.Id"))
 	}
-	if option.OrderID != nil &&
-		option.OrderID.Id != nil &&
+	if option.OrderID != nil && option.OrderID.Id != nil &&
 		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
 
 		query = query.
-			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On). // tested
+			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
 			Where(option.OrderID.Id.ToSquirrel("Orders.Id"))
+	}
+	if option.UserID != nil {
+		addressIDSelect := as.GetQueryBuilder().
+			Select("AddressID").
+			From(store.UserAddressTableName).
+			Where(option.UserID.ToSquirrel("UserAddresses.UserID"))
+
+		query = query.Where(squirrel.Expr("Addresses.Id IN ?", addressIDSelect))
 	}
 
 	queryString, args, err := query.ToSql()
@@ -149,29 +177,6 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 	}
 
 	return res, nil
-}
-
-func (as *SqlAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-	var addresses []*account.Address
-	_, err := as.GetReplica().Select(
-		&addresses,
-		`SELECT * FROM `+store.AddressTableName+` AS a
-		WHERE a.Id IN (
-			SELECT
-				ua.AddressID
-			FROM `+store.UserAddressTableName+` AS ua
-			INNER JOIN `+store.UserTableName+` AS u ON (
-				u.Id = ua.UserID
-			)
-			WHERE u.Id = :userID
-		)`,
-		map[string]interface{}{"userID": userID},
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get addresses belong to user with userID=%s", userID)
-	}
-
-	return addresses, nil
 }
 
 func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {

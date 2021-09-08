@@ -43,6 +43,7 @@ func (as *SqlAttributeValueStore) ModelFields() []string {
 		"AttributeValues.AttributeID",
 		"AttributeValues.RichText",
 		"AttributeValues.Boolean",
+		"AttributeValues.Datetime",
 		"AttributeValues.SortOrder",
 	}
 }

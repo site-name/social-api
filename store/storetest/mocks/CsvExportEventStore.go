@@ -19,6 +19,29 @@ func (_m *CsvExportEventStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOption provides a mock function with given fields: options
+func (_m *CsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+	ret := _m.Called(options)
+
+	var r0 []*csv.ExportEvent
+	if rf, ok := ret.Get(0).(func(*csv.ExportEventFilterOption) []*csv.ExportEvent); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*csv.ExportEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*csv.ExportEventFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Save provides a mock function with given fields: event
 func (_m *CsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
 	ret := _m.Called(event)

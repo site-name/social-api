@@ -12,16 +12,32 @@ import (
 
 // max lengths for some warehouse's fields
 const (
-	WAREHOUSE_NAME_MAX_LENGTH = 250
-	WAREHOUSE_SLUG_MAX_LENGTH = 255
+	WAREHOUSE_NAME_MAX_LENGTH                     = 250
+	WAREHOUSE_SLUG_MAX_LENGTH                     = 255
+	WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH = 30
 )
 
+// default values for warehouse's click_and_collect_option field
+const (
+	DISABLED       = "disabled"
+	LOCAL_STOCK    = "local"
+	ALL_WAREHOUSES = "all"
+)
+
+var ValidWarehouseClickAndCollectOptionMap = map[string]string{
+	DISABLED:       "Disabled",
+	LOCAL_STOCK:    "Local stock only",
+	ALL_WAREHOUSES: "Al warehouses",
+}
+
 type WareHouse struct {
-	Id        string  `json:"id"`
-	Name      string  `json:"name"`       // unique
-	Slug      string  `json:"slug"`       // unique
-	AddressID *string `json:"address_id"` // nullable
-	Email     string  `json:"email"`
+	Id                    string  `json:"id"`
+	Name                  string  `json:"name"`                     // unique
+	Slug                  string  `json:"slug"`                     // unique
+	AddressID             *string `json:"address_id"`               // nullable
+	Email                 string  `json:"email"`                    //
+	ClickAndCollectOption string  `json:"click_and_collect_option"` // default to "disabled"
+	IsPrivate             *bool   `json:"is_private"`               // default *true
 	model.ModelMetadata
 
 	Address       *account.Address         `json:"-" db:"-"` // this field hold data from select related queries
@@ -45,16 +61,18 @@ type Warehouses []*WareHouse
 
 func (ws Warehouses) IDs() []string {
 	res := []string{}
-	meetMap := map[string]bool{}
 
 	for _, warehouse := range ws {
-		if warehouse != nil && !meetMap[warehouse.Id] {
+		if warehouse != nil {
 			res = append(res, warehouse.Id)
-			meetMap[warehouse.Id] = true
 		}
 	}
 
 	return nil
+}
+
+func (w *WareHouse) String() string {
+	return w.Name
 }
 
 func (w *WareHouse) IsValid() *model.AppError {
@@ -78,6 +96,13 @@ func (w *WareHouse) IsValid() *model.AppError {
 	if w.Email != "" && !model.IsValidEmail(w.Email) {
 		return outer("email", &w.Id)
 	}
+	if len(w.ClickAndCollectOption) > WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH ||
+		ValidWarehouseClickAndCollectOptionMap[w.ClickAndCollectOption] == "" {
+		return outer("click_and_collect_option", &w.Id)
+	}
+	if w.IsPrivate == nil { // this must be set to true if is left not set
+		return outer("is_private", &w.Id)
+	}
 
 	return nil
 }
@@ -86,15 +111,24 @@ func (w *WareHouse) PreSave() {
 	if w.Id == "" {
 		w.Id = model.NewId()
 	}
-	w.Name = model.SanitizeUnicode(w.Name)
 	w.Slug = slug.Make(w.Name)
 	w.ModelMetadata.PreSave()
+	w.commonPre()
+}
+
+func (w *WareHouse) commonPre() {
+	w.Name = model.SanitizeUnicode(w.Name)
+	if w.ClickAndCollectOption == "" {
+		w.ClickAndCollectOption = DISABLED
+	}
+	if w.IsPrivate == nil {
+		w.IsPrivate = model.NewBool(true)
+	}
 }
 
 func (w *WareHouse) PreUpdate() {
-	w.Name = model.SanitizeUnicode(w.Name)
-	w.Slug = slug.Make(w.Name)
 	w.ModelMetadata.PreUpdate()
+	w.commonPre()
 }
 
 func (w *WareHouse) ToJson() string {

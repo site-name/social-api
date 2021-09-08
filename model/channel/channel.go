@@ -16,11 +16,12 @@ const (
 )
 
 type Channel struct {
-	Id       string `json:"id"`
-	Name     string `json:"name"`
-	IsActive bool   `json:"is_active"`
-	Slug     string `json:"slug"` // unique
-	Currency string `json:"currency"`
+	Id             string `json:"id"`
+	Name           string `json:"name"`
+	IsActive       bool   `json:"is_active"`
+	Slug           string `json:"slug"` // unique
+	Currency       string `json:"currency"`
+	DefaultCountry string `json:"default_country"`
 }
 
 // ChannelFilterOption is used for building sql queries
@@ -53,6 +54,9 @@ func (c *Channel) IsValid() *model.AppError {
 	}
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
 		return outer("currency", &c.Id)
+	}
+	if c.DefaultCountry != "" && model.Countries[c.DefaultCountry] == "" {
+		return outer("default_country", &c.Id)
 	}
 
 	return nil

@@ -16,6 +16,14 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines interface{}) (*goprices.TaxedMoney, *model.AppError) {
+	panic("not implt")
+}
+
+func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines interface{}) (*goprices.TaxedMoney, *model.AppError) {
+	panic("not implt")
+}
+
 // BaseCalculationShippingPrice Return checkout shipping price.
 func (a *ServiceCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo) (*goprices.TaxedMoney, *model.AppError) {
 	var (

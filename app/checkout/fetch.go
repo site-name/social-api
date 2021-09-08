@@ -11,7 +11,42 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
+	"github.com/sitename/sitename/model/warehouse"
 )
+
+// GetDeliveryMethodInfo takes `deliveryMethod` as either *ShippingMethod or *Warehouse
+func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError) {
+	if deliveryMethod == nil {
+		return &checkout.DeliveryMethodBase{}, nil
+	}
+
+	switch t := deliveryMethod.(type) {
+	case *shipping.ShippingMethod:
+		return &checkout.ShippingMethodInfo{
+			DeliveryMethod:  *t,
+			ShippingAddress: address,
+		}, nil
+
+	case *warehouse.WareHouse:
+		var (
+			addr   = t.Address
+			appErr *model.AppError
+		)
+		if addr == nil && t.AddressID != nil {
+			addr, appErr = s.srv.AccountService().AddressById(*t.AddressID)
+			if appErr != nil {
+				return nil, appErr
+			}
+		}
+		return &checkout.CollectionPointInfo{
+			DeliveryMethod:  *t,
+			ShippingAddress: addr,
+		}, nil
+
+	default:
+		return nil, model.NewAppError("GetDeliveryMethodInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod0"}, "", http.StatusBadRequest)
+	}
+}
 
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
@@ -244,9 +279,9 @@ func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo
 	panic("not implt")
 }
 
-// UpdateCheckoutInfoShippingMethod set CheckoutInfo's ShippingMethod to given shippingMethod
+// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
-func (a *ServiceCheckout) UpdateCheckoutInfoShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
 	checkoutInfo.ShippingMethod = shippingMethod
 
 	checkoutInfo.ShippingMethodChannelListings = nil

@@ -212,12 +212,14 @@ type AccountService interface {
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError                                   // RevokeUserAccessToken
 	SetStatusOnline(userID string, manual bool)                                                             // SetStatusOnline sets given user's status to online
 	SetStatusOffline(userID string, manual bool)                                                            // SetStatusOffline sets user's status to offline
-	DeleteAddresses(addressIDs []string) *model.AppError                                                    // DeleteAddress deletes given address and returns an error
+	DeleteAddresses(addressIDs ...string) *model.AppError                                                   // DeleteAddress deletes given address and returns an error
 	UpsertAddress(transaction *gorp.Transaction, addr *account.Address) (*account.Address, *model.AppError) // UpsertAddress inserts or updates given address by checking its Id attribute
 	UserByOrderId(orderID string) (*account.User, *model.AppError)                                          // UserByOrderId returns an user who owns given order
 	InvalidateCacheForUser(userID string)                                                                   // InvalidateCacheForUser invalidates cache for given user
 	ClearAllUsersSessionCacheLocal()                                                                        // ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 	ClearUserSessionCacheLocal(userID string)
+	StoreUserAddress(user *account.User, address *account.Address, addressType string, manager interface{}) *model.AppError // StoreUserAddress Add address to user address book and set as default one.
+	CopyAddress(address *account.Address) (*account.Address, *model.AppError)                                               // CopyAddress inserts a new address with fields identical to given address except Id field.
 }
 
 type ProductService interface {
@@ -358,6 +360,8 @@ type DiscountService interface {
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)             // GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError                                                                                          // BulkDeleteOrderDiscounts performs bulk delete given order discounts
 	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                               // FetchActiveDiscounts returns discounts that are activated
+	IncreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError                                                                                  // IncreaseVoucherUsage increase voucher's uses by 1
+	AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)       // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 }
 
 type OrderService interface {

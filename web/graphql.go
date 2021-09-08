@@ -39,13 +39,15 @@ func (web *Web) InitGraphql() {
 	}
 	// HasPermissions directive makes sure requesting user is authenticated and has required permission(s) to proceed
 	config.Directives.HasPermissions = func(ctx context.Context, obj interface{}, next gqlgenGraphql.Resolver, permissions []gqlmodel.PermissionEnum) (res interface{}, err error) {
+		// 1) check if user is authenticated:
 		embededContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 		session := embededContext.AppContext.Session()
 		if session == nil {
 			return nil, model.NewAppError("Directives.HasPermissions", userUnauthenticatedId, nil, "", http.StatusForbidden)
 		}
 
-		if perms := gqlmodel.GraphqlPermissionsToSystemPermissions(permissions...); !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms) {
+		// 2) check if user has required permission(s) to proceed
+		if perms := gqlmodel.GraphqlPermissionsToSystemPermissions(permissions...); !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms...) {
 			return nil, web.app.Srv().AccountService().MakePermissionError(session, perms...)
 		}
 

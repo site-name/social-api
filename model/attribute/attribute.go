@@ -42,10 +42,17 @@ const (
 	NUMERIC     = "numeric"
 	RICH_TEXT   = "rich_text"
 	BOOLEAN     = "boolean"
+	DATE        = "date"
+	DATE_TIME   = "date-time"
 )
 
-var ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN}
-
+var (
+	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN}
+	// list of the input types that are unique per instances
+	TYPES_WITH_UNIQUE_VALUES = []string{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME}
+	// list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES = []string{RICH_TEXT}
+)
 var AttributeInputTypeStrings = map[string]string{
 	DROPDOWN:    "Dropdown",
 	MULTISELECT: "Multi Select",
@@ -54,6 +61,8 @@ var AttributeInputTypeStrings = map[string]string{
 	NUMERIC:     "Numeric",
 	RICH_TEXT:   "Rich Text",
 	BOOLEAN:     "Boolean",
+	DATE:        "Date",
+	DATE_TIME:   "Date Time",
 }
 
 var AttributeTypeStrings = map[string]string{

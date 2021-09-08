@@ -374,6 +374,7 @@ type (
 	WarehouseStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(wh warehouse.WareHouse) []interface{}
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -907,10 +908,10 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ModelFields() []string
+		ScanFields(addr account.Address) []interface{}
 		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
 		Get(addressID string) (*account.Address, error)                                           // Get returns an Address with given addressID is exist
-		GetAddressesByUserID(userID string) ([]*account.Address, error)                           // GetAddressesByUserID returns slice of addresses belong to given user
 		Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) // Update update given address and returns it
 		DeleteAddresses(addressIDs []string) error                                                // DeleteAddress deletes given address and returns an error
 		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error)           // FilterByOption finds and returns a list of address(es) filtered by given option

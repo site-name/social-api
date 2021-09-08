@@ -19,20 +19,18 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutI
 	}
 
 	if requireShipping {
-		if checkoutInfo.ShippingMethod == nil {
+		deliveruMethodInfo := checkoutInfo.DeliveryMethodInfo
+
+		if deliveruMethodInfo.DeliveryMethod == nil {
 			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
-		if checkoutInfo.ShippingAddress == nil {
+		if !deliveruMethodInfo.IsValidDeliveryMethod() {
 			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
-		isValidShippingMethod, appErr := a.IsValidShippingMethod(checkoutInfo)
-		if appErr != nil {
-			return appErr
-		}
-
-		if !isValidShippingMethod {
+		if !deliveruMethodInfo.IsMethodInValidMethods(checkoutInfo) {
+			a.ClearDeliveryMethod(checkoutInfo)
 			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_valid_for_shipping_address.app_error", nil, "", http.StatusNotImplemented)
 		}
 	}

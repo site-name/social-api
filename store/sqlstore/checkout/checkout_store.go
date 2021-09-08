@@ -27,6 +27,7 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("CollectionPointID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("DiscountName").SetMaxSize(checkout.CHECKOUT_DISCOUNT_NAME_MAX_LENGTH)
 		table.ColMap("TranslatedDiscountName").SetMaxSize(checkout.CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH)
 		table.ColMap("VoucherCode").SetMaxSize(checkout.CHECKOUT_VOUCHER_CODE_MAX_LENGTH)
@@ -50,6 +51,7 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "CollectionPointID", store.WarehouseTableName, "Id", false)
 }
 
 // Upsert depends on given checkout's Token property to decide to update or insert it

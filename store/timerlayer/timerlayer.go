@@ -1190,22 +1190,6 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.GetAddressesByUserID(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.GetAddressesByUserID", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
@@ -2626,6 +2610,22 @@ func (s *TimerLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ComplianceStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CsvExportEventStore.FilterByOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CsvExportEventStore.FilterByOption", success, elapsed)
 	}
 	return result, err
 }

@@ -619,18 +619,19 @@ func (a *ServiceCheckout) IsValidShippingMethod(checkoutInfo *checkout.CheckoutI
 	}
 
 	if len(validShippingMethodIDs) == 0 || !util.StringInSlice(checkoutInfo.ShippingMethod.Id, validShippingMethodIDs) {
-		appErr := a.ClearShippingMethod(checkoutInfo)
+		appErr := a.ClearDeliveryMethod(checkoutInfo)
 		return false, appErr
 	}
 
 	return true, nil
 }
 
-func (a *ServiceCheckout) ClearShippingMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
 	ckout := checkoutInfo.Checkout
+	ckout.CollectionPointID = nil
 	ckout.ShippingMethodID = nil
 
-	appErr := a.UpdateCheckoutInfoShippingMethod(checkoutInfo, nil)
+	appErr := a.UpdateCheckoutInfoDeliveryMethod(checkoutInfo, nil)
 	if appErr != nil {
 		return nil
 	}

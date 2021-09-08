@@ -1213,26 +1213,6 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
-func (s *RetryLayerAddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-
-	tries := 0
-	for {
-		result, err := s.AddressStore.GetAddressesByUserID(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 
 	tries := 0
@@ -2998,6 +2978,26 @@ func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 	tries := 0
 	for {
 		result, err := s.ComplianceStore.Update(compliance)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.CsvExportEventStore.FilterByOption(options)
 		if err == nil {
 			return result, nil
 		}

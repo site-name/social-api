@@ -151,3 +151,27 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 
 	return buf.Bytes(), nil
 }
+
+// StoreUserAddress Add address to user address book and set as default one.
+func (s *ServiceAccount) StoreUserAddress(user *account.User, address *account.Address, addressType string, manager interface{}) *model.AppError {
+	panic("not implemented")
+}
+
+// SetUserDefaultBillingAddress sets default billing address for given user
+func (s *ServiceAccount) SetUserDefaultBillingAddress(user *account.User, defaultBillingAddressID string) *model.AppError {
+	user.DefaultBillingAddressID = &defaultBillingAddressID
+	_, appErr := s.UpdateUser(user, false)
+	return appErr
+}
+
+// SetUserDefaultShippingAddress sets default shipping address for given user
+func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defaultShippingAddressID string) *model.AppError {
+	user.DefaultShippingAddressID = &defaultShippingAddressID
+	_, appErr := s.UpdateUser(user, false)
+	return appErr
+}
+
+// ChangeUserDefaultAddress set default address for given user
+func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, addressString string, addressType string, manager interface{}) *model.AppError }{
+	panic("not implemented")
+}

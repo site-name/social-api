@@ -105,6 +105,22 @@ func (_m *WarehouseStore) Save(_a0 *warehouse.WareHouse) (*warehouse.WareHouse, 
 	return r0, r1
 }
 
+// ScanFields provides a mock function with given fields: wh
+func (_m *WarehouseStore) ScanFields(wh warehouse.WareHouse) []interface{} {
+	ret := _m.Called(wh)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(warehouse.WareHouse) []interface{}); ok {
+		r0 = rf(wh)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // WarehouseByStockID provides a mock function with given fields: stockID
 func (_m *WarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
 	ret := _m.Called(stockID)

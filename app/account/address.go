@@ -9,14 +9,10 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	AddressNotFoundAppErrorID = "app.account.address_missing.app_error"
-)
-
 func (a *ServiceAccount) AddressById(id string) (*account.Address, *model.AppError) {
 	address, err := a.srv.Store.Address().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AddressById", AddressNotFoundAppErrorID, err)
+		return nil, store.AppErrorFromDatabaseLookupError("AddressById", "app.account.address_missing.app_error", err)
 	}
 
 	return address, nil
@@ -65,12 +61,13 @@ func (a *ServiceAccount) UpsertAddress(transaction *gorp.Transaction, address *a
 }
 
 func (a *ServiceAccount) AddressesByUserId(userID string) ([]*account.Address, *model.AppError) {
-	addresses, err := a.srv.Store.Address().GetAddressesByUserID(userID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AddressesByUserId", "app.account.missing_user_addresses.app_error", err)
-	}
-
-	return addresses, nil
+	return a.AddressesByOption(&account.AddressFilterOption{
+		UserID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: userID,
+			},
+		},
+	})
 }
 
 // AddressDeleteForUser just remove the relationship between user and address. Address still exist
@@ -83,11 +80,20 @@ func (a *ServiceAccount) AddressDeleteForUser(userID, addressID string) *model.A
 	return nil
 }
 
-func (a *ServiceAccount) DeleteAddresses(addressIDs []string) *model.AppError {
+func (a *ServiceAccount) DeleteAddresses(addressIDs ...string) *model.AppError {
 	err := a.srv.Store.Address().DeleteAddresses(addressIDs)
 	if err != nil {
 		return model.NewAppError("DeleteAddresses", "app.account.error_deleting_addresses", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
+}
+
+// CopyAddress inserts a new address with fields identical to given address except Id field.
+func (a *ServiceAccount) CopyAddress(address *account.Address) (*account.Address, *model.AppError) {
+	var copyAddress account.Address = *address
+
+	copyAddress.Id = ""
+	res, appErr := a.UpsertAddress(nil, &copyAddress)
+	return res, appErr
 }

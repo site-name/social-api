@@ -81,29 +81,6 @@ func (_m *AddressStore) Get(addressID string) (*account.Address, error) {
 	return r0, r1
 }
 
-// GetAddressesByUserID provides a mock function with given fields: userID
-func (_m *AddressStore) GetAddressesByUserID(userID string) ([]*account.Address, error) {
-	ret := _m.Called(userID)
-
-	var r0 []*account.Address
-	if rf, ok := ret.Get(0).(func(string) []*account.Address); ok {
-		r0 = rf(userID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*account.Address)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ModelFields provides a mock function with given fields:
 func (_m *AddressStore) ModelFields() []string {
 	ret := _m.Called()
@@ -141,6 +118,22 @@ func (_m *AddressStore) Save(transaction *gorp.Transaction, address *account.Add
 	}
 
 	return r0, r1
+}
+
+// ScanFields provides a mock function with given fields: addr
+func (_m *AddressStore) ScanFields(addr account.Address) []interface{} {
+	ret := _m.Called(addr)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(account.Address) []interface{}); ok {
+		r0 = rf(addr)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
 }
 
 // Update provides a mock function with given fields: transaction, address
