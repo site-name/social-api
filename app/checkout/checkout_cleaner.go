@@ -21,7 +21,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutI
 	if requireShipping {
 		deliveruMethodInfo := checkoutInfo.DeliveryMethodInfo
 
-		if deliveruMethodInfo.DeliveryMethod == nil {
+		if deliveruMethodInfo.GetDeliveryMethod() == nil {
 			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_method_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 

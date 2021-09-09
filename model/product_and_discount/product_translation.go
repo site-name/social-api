@@ -18,6 +18,14 @@ type ProductTranslation struct {
 	seo.SeoTranslation
 }
 
+// ProductTranslationFilterOption is used to build squirrel sql queries
+type ProductTranslationFilterOption struct {
+	Id           *model.StringFilter
+	LanguageCode *model.StringFilter
+	ProductID    *model.StringFilter
+	Name         *model.StringFilter
+}
+
 func (p *ProductTranslation) String() string {
 	return p.Name
 }

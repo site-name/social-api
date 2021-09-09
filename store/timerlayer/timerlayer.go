@@ -4916,6 +4916,54 @@ func (s *TimerLayerProductMediaStore) Upsert(media *product_and_discount.Product
 	return result, err
 }
 
+func (s *TimerLayerProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTranslationStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTranslationStore.Get(translationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTranslationStore.Upsert(translation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTranslationStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
@@ -5120,6 +5168,54 @@ func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantTranslationStore) FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantTranslationStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantTranslationStore.Get(translationID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantTranslationStore) Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantTranslationStore.Upsert(translation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantTranslationStore.Upsert", success, elapsed)
 	}
 	return result, err
 }

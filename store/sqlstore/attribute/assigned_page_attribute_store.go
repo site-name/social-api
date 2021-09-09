@@ -2,7 +2,6 @@ package attribute
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/attribute"
@@ -41,7 +40,7 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAt
 	}
 
 	if err := as.GetMaster().Insert(pageAttr); err != nil {
-		if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", strings.ToLower(store.AssignedPageAttributeTableName) + "_pageid_assignmentid_key"}) {
+		if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", "assignedpageattributes_pageid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AssignedPageAttributeTableName, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned page attribute with id=%s", pageAttr.Id)

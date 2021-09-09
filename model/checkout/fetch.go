@@ -1,6 +1,8 @@
 package checkout
 
 import (
+	"errors"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -26,7 +28,7 @@ type CheckoutInfo struct {
 	Channel                       channel.Channel
 	BillingAddress                *account.Address
 	ShippingAddress               *account.Address
-	DeliveryMethodInfo            DeliveryMethodBase
+	DeliveryMethodInfo            DeliveryMethodBaseInterface
 	ShippingMethod                *shipping.ShippingMethod
 	ValidShippingMethods          []*shipping.ShippingMethod
 	ValidPickupPoints             []*warehouse.WareHouse
@@ -65,6 +67,7 @@ func (c *CheckoutInfo) GetCountry() string {
 	return addr.Country
 }
 
+// GetCustomerEmail returns either current checkout info's user's email or checkout's email
 func (c *CheckoutInfo) GetCustomerEmail() string {
 	if c.User != nil {
 		return c.User.Email
@@ -73,9 +76,17 @@ func (c *CheckoutInfo) GetCustomerEmail() string {
 }
 
 type DeliveryMethodBaseInterface interface {
-	DeliveryMethodName() map[string]*string
+	WarehousePK() string
+	IsLocalCollectionPoint() bool
+	DeliveryMethodName() model.StringMap
+	GetWarehouseFilterLookup() model.StringInterface // the returning map contains nothing or {"warehouse_id": <an UUID>}
 	IsValidDeliveryMethod() bool
 	IsMethodInValidMethods(checkoutInfo *CheckoutInfo) bool
+	UpdateChannelListings(checkoutInfo *CheckoutInfo) error
+
+	GetDeliveryMethod() interface{} // GetDeliveryMethod returns an interface{}, can be either *ShippingMethod or *Warehouse.
+	GetShippingAddress() *account.Address
+	GetOrderKey() string
 }
 
 // checking if some struct types satisfy DeliveryMethodBaseInterface
@@ -98,12 +109,12 @@ func (d *DeliveryMethodBase) IsLocalCollectionPoint() bool {
 	return false
 }
 
-func (d *DeliveryMethodBase) DeliveryMethodName() map[string]*string {
-	return map[string]*string{"shipping_method_name": nil}
+func (d *DeliveryMethodBase) DeliveryMethodName() model.StringMap {
+	return model.StringMap{"shipping_method_name": ""}
 }
 
-func (d *DeliveryMethodBase) GetWarehouseFilterLookup() map[string]interface{} {
-	return map[string]interface{}{}
+func (d *DeliveryMethodBase) GetWarehouseFilterLookup() model.StringInterface {
+	return model.StringInterface{}
 }
 
 func (d *DeliveryMethodBase) IsValidDeliveryMethod() bool {
@@ -114,22 +125,31 @@ func (d *DeliveryMethodBase) IsMethodInValidMethods(checkoutInfo *CheckoutInfo) 
 	return false
 }
 
-func (d *DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) {
+func (d *DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) error {
 	checkoutInfo.ShippingMethodChannelListings = nil
+	return nil
+}
+
+func (d *DeliveryMethodBase) GetDeliveryMethod() interface{} {
+	return d.DeliveryMethod
+}
+func (d *DeliveryMethodBase) GetShippingAddress() *account.Address {
+	return d.ShippingAddress
+}
+func (d *DeliveryMethodBase) GetOrderKey() string {
+	return d.OrderKey
 }
 
 // ShippingMethodInfo should not be modified after initializing
 type ShippingMethodInfo struct {
-	// DeliveryMethodBase
+	DeliveryMethodBase
 	DeliveryMethod  shipping.ShippingMethod
 	ShippingAddress *account.Address // can be nil
 	OrderKey        string           // default to "shipping_method"
 }
 
-func (s *ShippingMethodInfo) DeliveryMethodName() map[string]*string {
-	return map[string]*string{
-		"shipping_method_name": model.NewString(s.DeliveryMethod.String()),
-	}
+func (s *ShippingMethodInfo) DeliveryMethodName() model.StringMap {
+	return model.StringMap{"shipping_method_name": s.DeliveryMethod.String()}
 }
 
 func (s *ShippingMethodInfo) IsValidDeliveryMethod() bool {
@@ -151,8 +171,15 @@ func (s *ShippingMethodInfo) IsMethodInValidMethods(checkoutInfo *CheckoutInfo) 
 	return false
 }
 
+var ErrorNotUsable = errors.New("this method is not usable, please use a method with same name and is a instance method of service checkout")
+
+func (d *ShippingMethodInfo) UpdateChannelListings(_ *CheckoutInfo) error {
+	return ErrorNotUsable
+}
+
 // CollectionPointInfo should not be modified after initializing
 type CollectionPointInfo struct {
+	DeliveryMethodBase
 	DeliveryMethod  warehouse.WareHouse
 	ShippingAddress *account.Address
 	OrderKey        string // default to "collection_point"
@@ -166,15 +193,15 @@ func (c *CollectionPointInfo) IsLocalCollectionPoint() bool {
 	return c.DeliveryMethod.ClickAndCollectOption == warehouse.LOCAL_STOCK
 }
 
-func (c *CollectionPointInfo) DeliveryMethodName() map[string]*string {
-	return map[string]*string{"collection_point_name": model.NewString(c.DeliveryMethod.String())}
+func (c *CollectionPointInfo) DeliveryMethodName() model.StringMap {
+	return model.StringMap{"collection_point_name": c.DeliveryMethod.String()}
 }
 
-func (c *CollectionPointInfo) GetWarehouseFilterLookup() map[string]interface{} {
+func (c *CollectionPointInfo) GetWarehouseFilterLookup() model.StringInterface {
 	if c.IsLocalCollectionPoint() {
-		return map[string]interface{}{"warehouse_id": c.DeliveryMethod.Id}
+		return model.StringInterface{"warehouse_id": c.DeliveryMethod.Id}
 	}
-	return make(map[string]interface{})
+	return make(model.StringInterface)
 }
 
 func (c *CollectionPointInfo) IsValidDeliveryMethod() bool {

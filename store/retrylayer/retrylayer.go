@@ -5828,6 +5828,66 @@ func (s *RetryLayerProductMediaStore) Upsert(media *product_and_discount.Product
 
 }
 
+func (s *RetryLayerProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTranslationStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTranslationStore.Get(translationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTranslationStore.Upsert(translation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 
 	tries := 0
@@ -6073,6 +6133,66 @@ func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing
 	tries := 0
 	for {
 		result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantTranslationStore) FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantTranslationStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantTranslationStore.Get(translationID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantTranslationStore) Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantTranslationStore.Upsert(translation)
 		if err == nil {
 			return result, nil
 		}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
@@ -91,8 +92,20 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 // Validate if there is stock available for given variants in given country.
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
-func (a *ServiceWarehouse) CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
-	allVariantStocks, appErr := a.FilterStocksForCountryAndChannel(nil, &warehouse.StockFilterForCountryAndChannel{
+func (a *ServiceWarehouse) CheckStockQuantityBulk(
+	variants product_and_discount.ProductVariants,
+	countryCode string,
+	quantities []int,
+	channelSlug string,
+	additionalFilterLookup model.StringInterface, // can be nil, if non-nil then it must be map[string]interface{}{"warehouse_id": <an UUID string>}
+	existingLines []*checkout.CheckoutLineInfo, // can be nil
+
+) (*warehouse.InsufficientStock, *model.AppError) {
+
+	variants = variants.FilterNils()
+
+	// build a filter option
+	allVariantStockFilterOption := &warehouse.StockFilterForCountryAndChannel{
 		CountryCode: countryCode,
 		ChannelSlug: channelSlug,
 
@@ -102,22 +115,50 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(variants product_and_discount.
 			},
 		},
 		AnnotateAvailabeQuantity: true,
-	})
+	}
+
+	// check if `additionalFilterLookup` is not nil:
+	if additionalFilterLookup != nil && additionalFilterLookup["warehouse_id"] != nil {
+		allVariantStockFilterOption.WarehouseID = additionalFilterLookup["warehouse_id"].(string)
+	}
+
+	allVariantStocks, appErr := a.FilterStocksForCountryAndChannel(nil, allVariantStockFilterOption)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
-		allVariantStocks = []*warehouse.Stock{} // just in case allVariantStocks is nil
+		// ignore not found error
+		allVariantStocks = []*warehouse.Stock{}
 	}
 
 	variantStocks := map[string][]*warehouse.Stock{}
 	for _, stock := range allVariantStocks {
-		variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
+		if stock != nil {
+			variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
+		}
 	}
 
-	insufficientStocks := []*warehouse.InsufficientStockData{}
+	var (
+		// keys are product variant ids, values are order line quantities
+		variantsQuantities = map[string]int{}
+		insufficientStocks = []*warehouse.InsufficientStockData{}
+	)
+
+	if existingLines != nil && len(existingLines) > 0 {
+		for _, lineInfo := range existingLines {
+			if lineInfo != nil && lineInfo.Variant != nil {
+				variantsQuantities[lineInfo.Variant.Id] = lineInfo.Line.Quantity
+			}
+		}
+	}
+
 	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
-		stocks, exists := variantStocks[variants[i].Id]
+		quantity := quantities[i]
+		variant := variants[i]
+
+		quantity += variantsQuantities[variant.Id]
+
+		stocks, exists := variantStocks[variant.Id]
 		if !exists || stocks == nil {
 			stocks = []*warehouse.Stock{}
 		}
@@ -129,13 +170,13 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(variants product_and_discount.
 
 		if len(stocks) == 0 {
 			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
-				Variant:           *variants[i],
+				Variant:           *variant,
 				AvailableQuantity: &availableQuantity,
 			})
-		} else if *variants[i].TrackInventory {
+		} else if *variant.TrackInventory {
 			if quantities[i] > availableQuantity {
 				insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
-					Variant:           *variants[i],
+					Variant:           *variant,
 					AvailableQuantity: &availableQuantity,
 				})
 			}
@@ -149,26 +190,4 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(variants product_and_discount.
 	}
 
 	return nil, nil
-}
-
-// Check if there is any variant of given product available in given country
-func (a *ServiceWarehouse) IsProductInStock(productID string, countryCode string, channelSlug string) (bool, *model.AppError) {
-	stocks, appErr := a.GetProductStocksForCountryAndChannel(nil, &warehouse.StockFilterForCountryAndChannel{
-		CountryCode:              countryCode,
-		ChannelSlug:              channelSlug,
-		ProductID:                productID,
-		AnnotateAvailabeQuantity: true,
-	})
-	if appErr != nil {
-		return false, appErr
-	}
-
-	// check at least 1 item in slice > 0
-	for _, stocks := range stocks {
-		if stocks.AvailableQuantity > 0 {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }

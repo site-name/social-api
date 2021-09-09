@@ -89,16 +89,37 @@ func (ps *SqlProductTranslationStore) Get(translationID string) (*product_and_di
 	return &res, nil
 }
 
-// GetByProductID finds and returns product translation by given product
-// func (ps *SqlProductTranslationStore) GetByProductID(productID string, languageCode string) (*product_and_discount.ProductTranslation, error) {
-// 	var res product_and_discount.ProductTranslation
-// 	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductTranslationTableName+" WHERE ProductID = :ID", map[string]interface{}{"ID": productID})
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return nil, store.NewErrNotFound(store.ProductTranslationTableName, "productID="+productID)
-// 		}
-// 		return nil, errors.Wrapf(err, "failed to find product translation belong to  with id=%s", productID)
-// 	}
+// FilterByOption finds and returns product translations filtered using given options
+func (ps *SqlProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+	query := ps.GetQueryBuilder().
+		Select("*").
+		From(store.ProductTranslationTableName).
+		OrderBy(store.TableOrderingMap[store.ProductTranslationTableName])
 
-// 	return &res, nil
-// }
+	// parse options
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.LanguageCode != nil {
+		query = query.Where(option.LanguageCode.ToSquirrel("LanguageCode"))
+	}
+	if option.ProductID != nil {
+		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+	}
+	if option.Name != nil {
+		query = query.Where(option.Name.ToSquirrel("Name"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*product_and_discount.ProductTranslation
+	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product translations with given options")
+	}
+
+	return res, nil
+}

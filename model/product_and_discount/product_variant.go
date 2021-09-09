@@ -48,6 +48,18 @@ type ProductVariantFilterOption struct {
 
 type ProductVariants []*ProductVariant
 
+// FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants
+func (p ProductVariants) FilterNils() ProductVariants {
+	var res ProductVariants
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item)
+		}
+	}
+
+	return res
+}
+
 func (p ProductVariants) IDs() []string {
 	res := []string{}
 	for _, item := range p {
@@ -140,12 +152,35 @@ type ProductVariantTranslation struct {
 	Name             string `json:"name"`
 }
 
+// ProductVariantTranslationFilterOption is used to build squirrel sql queries
+type ProductVariantTranslationFilterOption struct {
+	Id               *model.StringFilter
+	LanguageCode     *model.StringFilter
+	ProductVariantID *model.StringFilter
+	Name             *model.StringFilter
+}
+
 func (p *ProductVariantTranslation) String() string {
 	if p.Name != "" {
 		return p.Name
 	}
 
 	return p.ProductVariantID
+}
+
+func (p *ProductVariantTranslation) PreSave() {
+	if !model.IsValidId(p.Id) {
+		p.Id = model.NewId()
+	}
+	p.commonPre()
+}
+
+func (p *ProductVariantTranslation) commonPre() {
+	p.Name = model.SanitizeUnicode(p.Name)
+}
+
+func (p *ProductVariantTranslation) PreUpdate() {
+	p.commonPre()
 }
 
 func (p *ProductVariantTranslation) IsValid() *model.AppError {

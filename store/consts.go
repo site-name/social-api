@@ -56,7 +56,7 @@ func init() {
 		ProductVariantChannelListingTableName:    "CreateAt ASC",                //
 		ProductVariantMediaTableName:             "",                            //
 		ProductVariantTableName:                  "SortOrder ASC, Sku ASC",      //
-		ProductVariantTranslactionTableName:      "",                            //
+		ProductVariantTranslationTableName:       "",                            //
 
 		CheckoutLineTableName: "CreatAt ASC",                // checkout
 		CheckoutTableName:     "CreatAt ASC, UpdateAt DESC", //
@@ -179,7 +179,7 @@ const (
 	ProductVariantChannelListingTableName    = "ProductVariantChannelListings" //
 	ProductVariantMediaTableName             = "VariantMedias"                 //
 	ProductVariantTableName                  = "ProductVariants"               //
-	ProductVariantTranslactionTableName      = "ProductVariantTranslations"    //
+	ProductVariantTranslationTableName       = "ProductVariantTranslations"    //
 )
 
 // wishlist-related table names

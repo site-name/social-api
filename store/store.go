@@ -492,6 +492,9 @@ type (
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
+		Get(translationID string) (*product_and_discount.ProductVariantTranslation, error)                                                            // Get finds and returns 1 product variant translation with given id
+		FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
 		CreateIndexesIfNotExists()
@@ -511,6 +514,9 @@ type (
 	}
 	ProductTranslationStore interface {
 		CreateIndexesIfNotExists()
+		Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error)                  // Upsert inserts or update given translation
+		Get(translationID string) (*product_and_discount.ProductTranslation, error)                                                     // Get finds and returns a product translation by given id
+		FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
 	}
 	ProductTypeStore interface {
 		CreateIndexesIfNotExists()
