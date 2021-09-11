@@ -92,7 +92,6 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 		},
 	})
 	if appErr != nil {
-		appErr.Where = "OrderShippingIsRequired"
 		return false, appErr
 	}
 
@@ -127,13 +126,9 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError {
-	order, appErr := a.OrderById(orderID)
-	if appErr != nil {
-		return appErr
-	}
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orDer *order.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
-		OrderID: orderID,
+		OrderID: orDer.Id,
 	})
 	if appErr != nil {
 		return appErr
@@ -146,9 +141,9 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, order
 		}
 	}
 
-	order.TotalPaidAmount = &total
+	orDer.TotalPaidAmount = &total
 
-	_, appErr = a.UpsertOrder(transaction, order)
+	_, appErr = a.UpsertOrder(transaction, orDer)
 	if appErr != nil {
 		return appErr
 	}

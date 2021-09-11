@@ -232,7 +232,7 @@ func (a *ServicePayment) CreatePayment(
 		payment.OrderID = &ord.Id
 	}
 
-	payment, appErr = a.srv.PaymentService().CreateOrUpdatePayment(payment)
+	payment, appErr = a.srv.PaymentService().UpsertPayment(payment)
 	return payment, nil, appErr
 }
 
@@ -380,16 +380,12 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 	defer a.srv.Store.FinalizeTransaction(tx)
 
-	if paymentTransaction == nil || payMent == nil {
-		return model.NewAppError("GatewayPostProcess", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "paymentTransaction/payMent"}, "", http.StatusBadRequest)
-	}
-
 	changedFields := []string{}
 	var appErr *model.AppError
 
 	if !paymentTransaction.IsSuccess || paymentTransaction.AlreadyProcessed {
 		if len(changedFields) > 0 {
-			if _, appErr = a.CreateOrUpdatePayment(payMent); appErr != nil {
+			if _, appErr = a.UpsertPayment(payMent); appErr != nil {
 				return appErr
 			}
 		}
@@ -399,7 +395,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	if paymentTransaction.ActionRequired {
 		payMent.ToConfirm = true
 		changedFields = append(changedFields, "to_confirm")
-		if _, appErr = a.CreateOrUpdatePayment(payMent); appErr != nil {
+		if _, appErr = a.UpsertPayment(payMent); appErr != nil {
 			return appErr
 		}
 	}
@@ -453,7 +449,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 
 	if len(changedFields) > 0 {
-		if _, appErr := a.CreateOrUpdatePayment(payMent); appErr != nil {
+		if _, appErr := a.UpsertPayment(payMent); appErr != nil {
 			return appErr
 		}
 	}
@@ -570,7 +566,7 @@ func (a *ServicePayment) UpdatePayment(pm *payment.Payment, gatewayResponse *pay
 	}
 
 	if changed {
-		_, appErr = a.CreateOrUpdatePayment(pm)
+		_, appErr = a.UpsertPayment(pm)
 	}
 
 	return appErr

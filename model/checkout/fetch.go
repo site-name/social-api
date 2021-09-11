@@ -21,6 +21,19 @@ type CheckoutLineInfo struct {
 	Collections    []*product_and_discount.Collection
 }
 
+type CheckoutLineInfos []*CheckoutLineInfo
+
+func (c CheckoutLineInfos) FilterNils() CheckoutLineInfos {
+	res := CheckoutLineInfos{}
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item)
+		}
+	}
+
+	return res
+}
+
 // CheckoutInfo contains information of a checkout
 type CheckoutInfo struct {
 	Checkout                      Checkout

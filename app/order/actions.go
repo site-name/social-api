@@ -18,9 +18,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-// OrderCreated
-//
-// fromDraft is default to false
+// OrderCreated. `fromDraft` is default to false
 func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, manager interface{}, fromDraft bool) *model.AppError {
 	panic("not implemented")
 }
@@ -252,7 +250,7 @@ func (a *ServiceOrder) CleanMarkOrderAsPaid(ord *order.Order) (*payment.PaymentE
 }
 
 // FulfillOrderLines Fulfill order line with given quantity
-func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("AutomaticallyFulfillDigitalLines", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -261,7 +259,7 @@ func (a *ServiceOrder) FulfillOrderLines(orderLineInfos []*order.OrderLineData) 
 
 	orderLineInfosToDecreaseStock := a.srv.WarehouseService().GetOrderLinesWithTrackInventory(orderLineInfos)
 	if len(orderLineInfosToDecreaseStock) > 0 {
-		insufficientErr, appErr := a.srv.WarehouseService().DecreaseStock(orderLineInfosToDecreaseStock, true)
+		insufficientErr, appErr := a.srv.WarehouseService().DecreaseStock(orderLineInfosToDecreaseStock, manager, true)
 		if appErr != nil || insufficientErr != nil {
 			return insufficientErr, appErr
 		}
@@ -421,7 +419,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manage
 //
 //     Raise:
 //         InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelSlug string) ([]*order.FulfillmentLine, *warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelSlug string, manager interface{}, decreaseStock bool) ([]*order.FulfillmentLine, *warehouse.InsufficientStock, *model.AppError) {
 
 	var (
 		variantIDs          = lineDatas.OrderLines().ProductVariantIDs()
@@ -572,7 +570,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, wa
 	}
 
 	if len(linesInfo) > 0 {
-		insufficientStockErr, appErr := a.FulfillOrderLines(linesInfo)
+		insufficientStockErr, appErr := a.FulfillOrderLines(linesInfo, manager)
 		if insufficientStockErr != nil || appErr != nil {
 			return nil, insufficientStockErr, appErr
 		}
@@ -611,7 +609,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, wa
 //
 //     Raise:
 //         InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) CreateFulfillments(requester *account.User, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interface{}, notifyCustomer bool) ([]*order.Fulfillment, *warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) CreateFulfillments(requester *account.User, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interface{}, notifyCustomer bool, approved bool) ([]*order.Fulfillment, *warehouse.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, nil, model.NewAppError("CreateFulfillments", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -649,6 +647,8 @@ func (a *ServiceOrder) CreateFulfillments(requester *account.User, orDer *order.
 			warehouseID,
 			quantityOrderLine,
 			channel.Slug,
+			manager,
+			approved,
 		)
 		if insufficientStockErr != nil || appErr != nil {
 			return nil, insufficientStockErr, appErr

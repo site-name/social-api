@@ -23,6 +23,7 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 		table := db.AddTableWithName(checkout.Checkout{}, store.CheckoutTableName).SetKeys(false, "Token")
 		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -46,6 +47,7 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", store.CheckoutTableName, "ShippingAddressID")
 	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", store.CheckoutTableName, "ShippingMethodID")
 
+	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShopID", store.ShopTableName, "Id", true)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", store.UserTableName, "Id", true)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", store.ChannelTableName, "Id", false)
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)

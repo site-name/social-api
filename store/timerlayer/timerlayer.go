@@ -1264,6 +1264,22 @@ func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, al
 	return result, err
 }
 
+func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+	start := timemodule.Now()
+
+	result, err := s.AllocationStore.CountAvailableQuantityForStock(stock)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.CountAvailableQuantityForStock", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	start := timemodule.Now()
 
@@ -3393,10 +3409,10 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.FilterByOption(option)
+	result, err := s.GiftCardStore.FilterByOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

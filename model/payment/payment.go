@@ -103,6 +103,13 @@ type PaymentFilterOption struct {
 	TransactionsIsSuccess      *bool               // for filtering payment's transactions's `IsSuccess`
 }
 
+// PaymentPatch is used to update payments
+type PaymentPatch struct {
+	CheckoutID   string
+	OrderID      string
+	BillingEmail string
+}
+
 // Retrieve the maximum capture possible.
 func (p *Payment) GetChargeAmount() decimal.Decimal {
 	if p.Total == nil || p.CapturedAmount == nil {

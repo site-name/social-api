@@ -1279,6 +1279,24 @@ func (s *OpenTracingLayerAllocationStore) BulkUpsert(transaction *gorp.Transacti
 	return result, err
 }
 
+func (s *OpenTracingLayerAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.CountAvailableQuantityForStock")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AllocationStore.CountAvailableQuantityForStock(stock)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.FilterByOption")
@@ -3666,7 +3684,7 @@ func (s *OpenTracingLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfi
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3675,7 +3693,7 @@ func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *giftcard.GiftCard
 	}()
 
 	defer span.Finish()
-	result, err := s.GiftCardStore.FilterByOption(option)
+	result, err := s.GiftCardStore.FilterByOption(transaction, option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

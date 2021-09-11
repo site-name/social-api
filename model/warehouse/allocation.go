@@ -14,8 +14,9 @@ type Allocation struct {
 	StockID           string `json:"stock_id"`           // NOT NULL
 	QuantityAllocated int    `json:"quantity_allocated"` // default 0
 
-	Stock     *Stock           `json:"-" db:"-"` // this field is populated with related stock
-	OrderLine *order.OrderLine `json:"-" db:"-"`
+	StockAvailableQuantity int              `json:"-" db:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
+	Stock                  *Stock           `json:"-" db:"-"` // this field is populated with related stock
+	OrderLine              *order.OrderLine `json:"-" db:"-"`
 }
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
@@ -31,6 +32,8 @@ type AllocationFilterOption struct {
 
 	SelectedRelatedStock   bool
 	SelectRelatedOrderLine bool
+
+	AnnotateStockAvailableQuantity bool
 }
 
 type Allocations []*Allocation
@@ -40,6 +43,17 @@ func (a Allocations) IDs() []string {
 	for _, item := range a {
 		if item != nil {
 			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
+func (a Allocations) StockIDs() []string {
+	res := []string{}
+	for _, item := range a {
+		if item != nil {
+			res = append(res, item.StockID)
 		}
 	}
 

@@ -690,9 +690,7 @@ func (a *ServiceOrder) AddVariantToOrder(ord *order.Order, variant *product_and_
 	panic("not implemented")
 }
 
-// Add gift card to order.
-//
-// Return a total price left after applying the gift cards.
+// Add AddGiftCardToOrder Return a total price left after applying the gift cards.
 func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
 	// validate given arguments's currencies are valid
 	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)

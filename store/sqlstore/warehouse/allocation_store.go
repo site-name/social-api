@@ -3,6 +3,7 @@ package warehouse
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
@@ -40,6 +41,16 @@ func (ws *SqlAllocationStore) ModelFields() []string {
 		"Allocations.OrderLineID",
 		"Allocations.StockID",
 		"Allocations.QuantityAllocated",
+	}
+}
+
+func (ws *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []interface{} {
+	return []interface{}{
+		&allocation.Id,
+		&allocation.CreateAt,
+		&allocation.OrderLineID,
+		&allocation.StockID,
+		&allocation.QuantityAllocated,
 	}
 }
 
@@ -112,6 +123,29 @@ func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
 	return &res, nil
 }
 
+/*
+  // Sample pure SQL query when the option AnnotateStockAvailableQuantity is set to true
+
+SELECT
+  "warehouse_allocation"."id",
+  "warehouse_allocation"."order_line_id",
+  "warehouse_allocation"."stock_id",
+  "warehouse_allocation"."quantity_allocated",
+  (
+    "warehouse_stock"."quantity" - COALESCE(SUM(T3."quantity_allocated"), 0)
+  ) AS "stock_available_quantity"
+FROM
+  "warehouse_allocation"
+  INNER JOIN "warehouse_stock" ON (
+    "warehouse_allocation"."stock_id" = "warehouse_stock"."id"
+  )
+  LEFT OUTER JOIN "warehouse_allocation" T3 ON ("warehouse_stock"."id" = T3."stock_id")
+WHERE
+  "warehouse_allocation"."id" > 1
+GROUP BY
+  "warehouse_allocation"."id",
+  "warehouse_stock"."quantity";
+*/
 // FilterByOption finds and returns a list of allocation based on given option
 func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	// define fields to select:
@@ -128,10 +162,17 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		From(store.AllocationTableName).
 		OrderBy(store.TableOrderingMap[store.AllocationTableName])
 
-	var (
-		joined_OrderLines_tableName bool
-	)
 	// parse option
+	if option.AnnotateStockAvailableQuantity {
+		query.
+			Column(`Stocks.Quantity - COALESCE( SUM( T3.QuantityAllocated ), 0 ) AS StockAvailableQuantity`). // NOTE: `T3` alias of `Allocations`
+			InnerJoin(store.StockTableName+" ON (Stocks.Id = Allocations.StockID)").
+			LeftJoin(store.AllocationTableName+" AS T3 ON (T3.StockID = Stocks.Id)").
+			GroupBy("Allocations.Id", "Stocks.Quantity")
+	}
+
+	var joined_OrderLines_tableName bool
+
 	if option.SelectRelatedOrderLine {
 		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
 		joined_OrderLines_tableName = true // indicate for later check
@@ -169,71 +210,35 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var rows *sql.Rows
-	if transaction == nil {
-		rows, err = as.GetReplica().Query(queryString, args...)
-	} else {
-		rows, err = transaction.Query(queryString, args...)
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find allocations with given option")
-	}
-
 	var (
-		returnAllocations []*warehouse.Allocation
-		allocation        warehouse.Allocation
-		orderLine         order.OrderLine
-		stock             warehouse.Stock
+		returnAllocations      []*warehouse.Allocation
+		allocation             warehouse.Allocation
+		orderLine              order.OrderLine
+		stock                  warehouse.Stock
+		stockAvailableQuantity int
+		queryer                squirrel.Queryer = as.GetReplica()
+		scanFields             []interface{}    = as.ScanFields(allocation)
 	)
-	var scanFields []interface{} = []interface{}{
-		&allocation.Id,
-		&allocation.CreateAt,
-		&allocation.OrderLineID,
-		&allocation.StockID,
-		&allocation.QuantityAllocated,
-	}
-	if option.SelectRelatedOrderLine {
-		scanFields = append(
-			scanFields,
 
-			&orderLine.Id,
-			&orderLine.CreateAt,
-			&orderLine.OrderID,
-			&orderLine.VariantID,
-			&orderLine.ProductName,
-			&orderLine.VariantName,
-			&orderLine.TranslatedProductName,
-			&orderLine.TranslatedVariantName,
-			&orderLine.ProductSku,
-			&orderLine.IsShippingRequired,
-			&orderLine.Quantity,
-			&orderLine.QuantityFulfilled,
-			&orderLine.Currency,
-			&orderLine.UnitDiscountAmount,
-			&orderLine.UnitDiscountType,
-			&orderLine.UnitDiscountReason,
-			&orderLine.UnitPriceNetAmount,
-			&orderLine.UnitDiscountValue,
-			&orderLine.UnitPriceGrossAmount,
-			&orderLine.TotalPriceNetAmount,
-			&orderLine.TotalPriceGrossAmount,
-			&orderLine.UnDiscountedUnitPriceGrossAmount,
-			&orderLine.UnDiscountedUnitPriceNetAmount,
-			&orderLine.UnDiscountedTotalPriceGrossAmount,
-			&orderLine.UnDiscountedTotalPriceNetAmount,
-			&orderLine.TaxRate,
-		)
+	// check if transaction is non-nil to promote it to be actual queryer:
+	if transaction != nil {
+		queryer = transaction
+	}
+
+	// check if we need to modify scan list:
+	if option.SelectRelatedOrderLine {
+		scanFields = append(scanFields, as.OrderLine().ScanFields(orderLine)...)
 	}
 	if option.SelectedRelatedStock {
-		scanFields = append(
-			scanFields,
+		scanFields = append(scanFields, as.Stock().ScanFields(stock)...)
+	}
+	if option.AnnotateStockAvailableQuantity {
+		scanFields = append(scanFields, &stockAvailableQuantity)
+	}
 
-			&stock.Id,
-			&stock.CreateAt,
-			&stock.WarehouseID,
-			&stock.ProductVariantID,
-			&stock.Quantity,
-		)
+	rows, err := queryer.Query(queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
 
 	for rows.Next() {
@@ -247,6 +252,9 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		}
 		if option.SelectedRelatedStock {
 			allocation.Stock = &stock
+		}
+		if option.AnnotateStockAvailableQuantity {
+			allocation.StockAvailableQuantity = stockAvailableQuantity
 		}
 		returnAllocations = append(returnAllocations, &allocation)
 	}
@@ -281,4 +289,27 @@ func (as *SqlAllocationStore) BulkDelete(transaction *gorp.Transaction, allocati
 	}
 
 	return nil
+}
+
+// CountAvailableQuantityForStock counts and returns available quantity of given stock
+func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+	allocatedQuantity, err := as.GetReplica().SelectInt(
+		`SELECT COALESCE(
+			SUM (
+				Allocations.QuantityAllocated
+			), 0
+		)
+		FROM 
+			Allocations 
+		WHERE StockID = :StockID`,
+		map[string]interface{}{"StockID": stock.Id},
+	)
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to count allocated quantity of stock with id=%s", stock.Id)
+	}
+
+	if sub := stock.Quantity - int(allocatedQuantity); sub > 0 {
+		return sub, nil
+	}
+	return 0, nil
 }

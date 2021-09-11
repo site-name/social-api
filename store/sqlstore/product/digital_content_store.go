@@ -48,6 +48,22 @@ func (ds *SqlDigitalContentStore) ModelFields() []string {
 	}
 }
 
+func (ds *SqlDigitalContentStore) ScanFields(content product_and_discount.DigitalContent) []interface{} {
+	return []interface{}{
+		&content.Id,
+		&content.ShopID,
+		&content.UseDefaultSettings,
+		&content.AutomaticFulfillment,
+		&content.ContentType,
+		&content.ProductVariantID,
+		&content.ContentFile,
+		&content.MaxDownloads,
+		&content.UrlValidDays,
+		&content.Metadata,
+		&content.PrivateMetadata,
+	}
+}
+
 // Save inserts given digital content into database then returns it
 func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 	content.PreSave()

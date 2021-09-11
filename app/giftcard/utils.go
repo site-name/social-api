@@ -14,7 +14,7 @@ import (
 func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError {
 	now := model.NewTime(time.Now().UTC())
 
-	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: promoCode,
@@ -47,7 +47,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, pr
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError {
-	giftcards, appErr := a.GiftcardsByOption(&giftcard.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: giftcardCode,

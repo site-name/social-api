@@ -47,6 +47,21 @@ func (ps *SqlProductVariantStore) ModelFields() []string {
 	}
 }
 
+func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.ProductVariant) []interface{} {
+	return []interface{}{
+		&variant.Id,
+		&variant.Name,
+		&variant.ProductID,
+		&variant.Sku,
+		&variant.Weight,
+		&variant.WeightUnit,
+		&variant.TrackInventory,
+		&variant.SortOrder,
+		&variant.Metadata,
+		&variant.PrivateMetadata,
+	}
+}
+
 func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	variant.PreSave()
 	if err := variant.IsValid(); err != nil {
@@ -228,35 +243,10 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 		variant        product_and_discount.ProductVariant
 		digitalContent product_and_discount.DigitalContent
 
-		scanFields []interface{} = []interface{}{
-			&variant.Id,
-			&variant.Name,
-			&variant.ProductID,
-			&variant.Sku,
-			&variant.Weight,
-			&variant.WeightUnit,
-			&variant.TrackInventory,
-			&variant.SortOrder,
-			&variant.Metadata,
-			&variant.PrivateMetadata,
-		}
+		scanFields = vs.ScanFields(variant)
 	)
 	if option.SelectRelatedDigitalContent {
-		scanFields = append(
-			scanFields,
-
-			&digitalContent.Id,
-			&digitalContent.ShopID,
-			&digitalContent.UseDefaultSettings,
-			&digitalContent.AutomaticFulfillment,
-			&digitalContent.ContentType,
-			&digitalContent.ProductVariantID,
-			&digitalContent.ContentFile,
-			&digitalContent.MaxDownloads,
-			&digitalContent.UrlValidDays,
-			&digitalContent.Metadata,
-			&digitalContent.PrivateMetadata,
-		)
+		scanFields = append(scanFields, vs.DigitalContent().ScanFields(digitalContent)...)
 	}
 
 	for rows.Next() {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -252,4 +253,29 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 	}
 
 	return payments, nil
+}
+
+// UpdatePaymentsOfCheckout updates payments of given checkout
+func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+	var executor squirrel.BaseRunner = ps.GetMaster()
+	if transaction != nil {
+		executor = transaction
+	}
+
+	query := ps.GetQueryBuilder().Update(store.PaymentTableName).Where(squirrel.Expr("CheckoutID = ?", checkoutToken))
+
+	// parse option
+	if model.IsValidEmail(option.BillingEmail) {
+		query = query.Set("BillingEmail", option.BillingEmail)
+	}
+	if model.IsValidId(option.OrderID) {
+		query = query.Set("OrderID", option.OrderID)
+	}
+
+	_, err := query.RunWith(executor).Exec()
+	if err != nil {
+		return errors.Wrap(err, "failed to update payments of given checkout and options")
+	}
+
+	return nil
 }

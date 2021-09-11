@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
@@ -105,7 +106,12 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 }
 
 // FilterByOption finds giftcards wth option
-func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+	var selector store.Selector = gs.GetReplica()
+	if transaction != nil {
+		selector = transaction
+	}
+
 	query := gs.
 		GetQueryBuilder().
 		Select("*").
@@ -139,6 +145,9 @@ func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption
 	if option.IsActive != nil {
 		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
 	}
+	if option.SelectForUpdate {
+		query = query.Suffix("FOR UPDATE")
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -146,7 +155,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption
 	}
 
 	var giftcards []*giftcard.GiftCard
-	_, err = gs.GetReplica().Select(&giftcards, queryString, args...)
+	_, err = selector.Select(&giftcards, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}

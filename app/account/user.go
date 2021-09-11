@@ -710,7 +710,6 @@ func (a *ServiceAccount) UpdateHashedPassword(user *account.User, newHashedPassw
 }
 
 func (a *ServiceAccount) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
-
 	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
 		return nil, err
 	}

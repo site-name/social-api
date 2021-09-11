@@ -182,7 +182,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, varian
 		return nil, nil, appErr
 	}
 	if !skipStockCheck {
-		insfStock, appErr := a.srv.WarehouseService().CheckStockQuantityBulk(variants, countryCode, quantities, channelSlug)
+		insfStock, appErr := a.srv.WarehouseService().CheckStockQuantityBulk(variants, countryCode, quantities, channelSlug, nil, nil)
 		if appErr != nil {
 			return nil, nil, appErr
 		}

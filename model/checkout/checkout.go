@@ -26,6 +26,7 @@ type Checkout struct {
 	CreateAt               int64            `json:"create_at"`
 	UpdateAt               int64            `json:"update_at"`
 	UserID                 *string          `json:"user_id"`
+	ShopID                 string           `json:"shop_id"` // shop in which this checkout is placed
 	Email                  string           `json:"email"`
 	Quantity               uint             `json:"quantity"`
 	ChannelID              string           `json:"channel_id"`
@@ -62,6 +63,9 @@ func (c *Checkout) IsValid() *model.AppError {
 	)
 	if c.UserID != nil && !model.IsValidId(*c.UserID) {
 		return outer("user_id", &c.Token)
+	}
+	if !model.IsValidId(c.ShopID) {
+		return outer("shop_id", &c.Token)
 	}
 	if c.BillingAddressID != nil && !model.IsValidId(*c.BillingAddressID) {
 		return outer("billing_address", &c.Token)
@@ -113,7 +117,9 @@ func (c *Checkout) IsValid() *model.AppError {
 }
 
 func (c *Checkout) PopulateNonDbFields() {
-	c.Discount, _ = goprices.NewMoney(c.DiscountAmount, c.Currency)
+	if c.DiscountAmount != nil {
+		c.Discount, _ = goprices.NewMoney(c.DiscountAmount, c.Currency)
+	}
 }
 
 func (c *Checkout) PreSave() {

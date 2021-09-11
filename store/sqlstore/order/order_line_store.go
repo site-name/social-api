@@ -79,6 +79,37 @@ func (ols *SqlOrderLineStore) ModelFields() []string {
 	}
 }
 
+func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
+	return []interface{}{
+		&orderLine.Id,
+		&orderLine.CreateAt,
+		&orderLine.OrderID,
+		&orderLine.VariantID,
+		&orderLine.ProductName,
+		&orderLine.VariantName,
+		&orderLine.TranslatedProductName,
+		&orderLine.TranslatedVariantName,
+		&orderLine.ProductSku,
+		&orderLine.IsShippingRequired,
+		&orderLine.Quantity,
+		&orderLine.QuantityFulfilled,
+		&orderLine.Currency,
+		&orderLine.UnitDiscountAmount,
+		&orderLine.UnitDiscountType,
+		&orderLine.UnitDiscountReason,
+		&orderLine.UnitPriceNetAmount,
+		&orderLine.UnitDiscountValue,
+		&orderLine.UnitPriceGrossAmount,
+		&orderLine.TotalPriceNetAmount,
+		&orderLine.TotalPriceGrossAmount,
+		&orderLine.UnDiscountedUnitPriceGrossAmount,
+		&orderLine.UnDiscountedUnitPriceNetAmount,
+		&orderLine.UnDiscountedTotalPriceGrossAmount,
+		&orderLine.UnDiscountedTotalPriceNetAmount,
+		&orderLine.TaxRate,
+	}
+}
+
 // Upsert depends on given orderLine's Id to decide to update or save it
 func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	var isSaving bool

@@ -1303,6 +1303,26 @@ func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, al
 
 }
 
+func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+
+	tries := 0
+	for {
+		result, err := s.AllocationStore.CountAvailableQuantityForStock(stock)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 
 	tries := 0
@@ -3938,11 +3958,11 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 
 	tries := 0
 	for {
-		result, err := s.GiftCardStore.FilterByOption(option)
+		result, err := s.GiftCardStore.FilterByOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}

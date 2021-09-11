@@ -40,6 +40,8 @@ type Shop struct {
 	DefaultMailSenderAddress            string  `json:"default_mail_sender_address"`
 	CustomerSetPasswordUrl              *string `json:"customer_set_password_url"`
 	AutomaticallyConfirmAllNewOrders    *bool   `json:"automatically_confirm_all_new_orders"` // default true
+	FulfillmentAutoApprove              *bool   `json:"fulfillment_auto_approve"`             // default *true
+	FulfillmentAllowUnPaid              *bool   `json:"fulfillment_allow_unpaid"`             // default *true
 }
 
 type ShopDefaultDigitalContentSettings struct {
@@ -106,6 +108,12 @@ func (s *Shop) IsValid() *model.AppError {
 	if utf8.RuneCountInString(s.DefaultMailSenderName) > SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH {
 		return outer("default_mail_sender_name", &s.Id)
 	}
+	if s.FulfillmentAutoApprove == nil {
+		return outer("fulfillment_auto_approve", &s.Id)
+	}
+	if s.FulfillmentAllowUnPaid == nil {
+		return outer("fulfillment_allow_unpaid", &s.Id)
+	}
 
 	return nil
 }
@@ -138,6 +146,12 @@ func (s *Shop) commonPre() {
 	}
 	if s.AutomaticallyConfirmAllNewOrders == nil {
 		s.AutomaticallyConfirmAllNewOrders = model.NewBool(true)
+	}
+	if s.FulfillmentAllowUnPaid == nil {
+		s.FulfillmentAllowUnPaid = model.NewBool(true)
+	}
+	if s.FulfillmentAutoApprove == nil {
+		s.FulfillmentAutoApprove = model.NewBool(true)
 	}
 }
 

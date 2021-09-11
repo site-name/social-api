@@ -383,6 +383,7 @@ type (
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()
+		ScanFields(stock warehouse.Stock) []interface{}
 		ModelFields() []string
 		Get(stockID string) (*warehouse.Stock, error)                                                                                                          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
@@ -399,6 +400,7 @@ type (
 		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
 		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
 		BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error                                                  // BulkDelete perform bulk deletes given allocations.
+		CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error)                                                      // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
@@ -480,6 +482,7 @@ type (
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(content product_and_discount.DigitalContent) []interface{}
 		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                    // Save inserts given digital content into database then returns it
 		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
 	}
@@ -499,6 +502,7 @@ type (
 	ProductVariantStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(variant product_and_discount.ProductVariant) []interface{}
 		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)                        // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                                            // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                                                         // GetWeight returns weight of given product variant
@@ -559,11 +563,12 @@ type (
 type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
-		Save(payment *payment.Payment) (*payment.Payment, error)                        // Save save payment instance into database
-		Get(id string, lockForUpdate bool) (*payment.Payment, error)                    // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
-		Update(payment *payment.Payment) (*payment.Payment, error)                      // Update updates given payment and returns new updated payment
-		CancelActivePaymentsOfCheckout(checkoutToken string) error                      // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
-		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) // FilterByOption finds and returns a list of payments that satisfy given option
+		Save(payment *payment.Payment) (*payment.Payment, error)                                                          // Save save payment instance into database
+		Get(id string, lockForUpdate bool) (*payment.Payment, error)                                                      // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
+		Update(payment *payment.Payment) (*payment.Payment, error)                                                        // Update updates given payment and returns new updated payment
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
+		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                   // FilterByOption finds and returns a list of payments that satisfy given option
+		UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
@@ -591,6 +596,7 @@ type (
 type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
+		ScanFields(orderLine order.OrderLine) []interface{}
 		ModelFields() []string
 		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error)                                         // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id
@@ -671,9 +677,9 @@ type (
 type (
 	GiftCardStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error)                     // Upsert depends on given giftcard's Id property then perform according operation
-		GetById(id string) (*giftcard.GiftCard, error)                                      // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
+		Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error)                                                    // Upsert depends on given giftcard's Id property then perform according operation
+		GetById(id string) (*giftcard.GiftCard, error)                                                                     // GetById returns a giftcard instance that has id of given id
+		FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
 	}
 	GiftcardEventStore interface {
 		CreateIndexesIfNotExists()

@@ -38,16 +38,16 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardService interface {
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                  // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                             // GiftcardsByCheckout returns all giftcards belong to given checkout
-	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                      // PromoCodeIsGiftCard checks whether there is giftcard with given code
-	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                             // ToggleGiftcardStatus set status of given giftcard to inactive/active
-	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
-	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                             // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
-	GiftcardsByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)              // GiftcardsByOption finds a list of giftcards with given option
-	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                      // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                                    // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                                               // GiftcardsByCheckout returns all giftcards belong to given checkout
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                        // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                               // ToggleGiftcardStatus set status of given giftcard to inactive/active
+	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                   // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                                           // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError)                   // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
+	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                                               // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
+	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsByOption finds a list of giftcards with given option
+	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                                        // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 }
 
 // PaymentService defines methods for payment sub app
@@ -67,7 +67,7 @@ type PaymentService interface {
 	GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError)                                                                                                                                                           // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
 	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError                                                                                                                                                // GatewayPostProcess
 	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                            // UpdateTransaction updates given transaction and returns updated on
-	CreateOrUpdatePayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                                       // CreateOrUpdatePayment depends on whether given payment's Id is set or not to decide to update/save payment
+	UpsertPayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                                               // UpsertPayment depends on whether given payment's Id is set or not to decide to update/save payment
 	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError                                                                                                                                                         // UpdatePayment updates given payment based on given `gatewayResponse`
 	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError                                                                                                                                                                    // StoreCustomerId process
 	GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)                                                                                                                                          // GetSubTotal adds up all Total prices of given order lines
@@ -80,10 +80,11 @@ type PaymentService interface {
 	//
 	// `extraData`, `ckout`, `ord` can be nil
 	CreatePayment(gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, ckout *checkout.Checkout, ord *order.Order, returnUrl string, externalReference string) (*payment.Payment, *payment.PaymentError, *model.AppError)
-	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                   // CleanAuthorize Check if payment can be authorized
-	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError  // CleanCapture Check if payment can be captured.
-	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)    // FetchCustomerId Retrieve users customer_id stored for desired gateway.
-	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
+	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                              // CleanAuthorize Check if payment can be authorized
+	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                             // CleanCapture Check if payment can be captured.
+	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                               // FetchCustomerId Retrieve users customer_id stored for desired gateway.
+	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError                                            // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
+	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
 }
 
 // CheckoutService
@@ -296,7 +297,7 @@ type WarehouseService interface {
 	CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError)                                                                                                    // Validate if there is stock available for given variant in given country. If so - returns None. If there is less stock then required raise InsufficientStock exception.
 	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*checkout.CheckoutLineInfo) (*warehouse.InsufficientStock, *model.AppError) // Validate if there is stock available for given variants in given country. It raises InsufficientStock: when there is not enough items in stock for a variant
 	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData                                                                                                                                                                             // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-	DecreaseAllocations(lineInfos []*order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError)                                                                                                                                                                     // DecreaseAllocations Decreate allocations for provided order lines.
+	DecreaseAllocations(lineInfos []*order.OrderLineData, manager interface{}) (*warehouse.InsufficientStock, *model.AppError)                                                                                                                                                // DecreaseAllocations Decreate allocations for provided order lines.
 	WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError)                                                                                                                                                                     // WarehouseByOption returns a list of warehouses based on given option
 	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)                                                                                                                                   // AllocationsByOption returns all warehouse allocations filtered based on given option
 	WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError)                                                                                                                                                                                                // WarehouseByStockID returns a warehouse that owns the given stock
@@ -319,7 +320,7 @@ type WarehouseService interface {
 	// as needed of available in stock for order line, until deallocated all required
 	// quantity for the order line. If there is less quantity in stocks then
 	// raise an exception.
-	DeallocateStock(orderLineDatas []*order.OrderLineData) (*warehouse.AllocationError, *model.AppError)
+	DeallocateStock(orderLineDatas []*order.OrderLineData, manager interface{}) (*warehouse.AllocationError, *model.AppError)
 	// Decrease stocks quantities for given `order_lines` in given warehouses.
 	//
 	// Function deallocate as many quantities as requested if order_line has less quantity
@@ -331,10 +332,19 @@ type WarehouseService interface {
 	// will stay unmodified (case of unconfirmed order editing).
 	//
 	// updateStocks default to true
-	DecreaseStock(orderLineInfos []*order.OrderLineData, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError)
-	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                          // GetStockById takes options for filtering 1 stock
-	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)               // FilterStocksForChannel returns a slice of stocks that filtered using given options
+	DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError)
+	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
+	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                                               // GetStockById takes options for filtering 1 stock
+	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)                                    // FilterStocksForChannel returns a slice of stocks that filtered using given options
+	// Allocate stocks for given `order_lines` in given country.
+	//
+	// Function lock for update all stocks and allocations for variants in
+	// given country and order by pk. Next, generate the dictionary
+	// ({"stock_pk": "quantity_allocated"}) with actual allocated quantity for stocks.
+	// Iterate by stocks and allocate as many items as needed or available in stock
+	// for order line, until allocated all required quantity for the order line.
+	// If there is less quantity in stocks then rise InsufficientStock exception.
+	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalLookUp model.StringInterface) (*warehouse.InsufficientStock, *model.AppError)
 }
 
 type DiscountService interface {
@@ -374,24 +384,29 @@ type OrderService interface {
 	//
 	// 2) iterates over resulting slice to check if at least one order line requires shipping
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
-	OrderTotalQuantity(orderID string) (int, *model.AppError)                                                      // OrderTotalQuantity return total quantity of given order
-	UpdateOrderTotalPaid(transaction *gorp.Transaction, orderID string) *model.AppError                            // UpdateOrderTotalPaid update given order's total paid amount
-	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                                   // OrderIsPreAuthorized checks if order is pre-authorized
-	OrderIsCaptured(orderID string) (bool, *model.AppError)                                                        // OrderIsCaptured checks if given order is captured
-	OrderSubTotal(order *order.Order) (*goprices.TaxedMoney, *model.AppError)                                      // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                                       // OrderCanCalcel checks if given order can be canceled
-	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                            // OrderCanCapture checks if given order can capture.
-	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                               // OrderCanVoid checks if given order can void
-	OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                             // OrderCanRefund checks if order can refund
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)                      // CanMarkOrderAsPaid checks if given order can be marked as paid.
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                                      // OrderTotalAuthorized returns order's total authorized amount
-	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                                                // GetOrderCountryCode is helper function, returns contry code of given order
-	OrderLineById(id string) (*order.OrderLine, *model.AppError)                                                   // OrderLineById returns order line with id of given id
-	OrderById(id string) (*order.Order, *model.AppError)                                                           // OrderById returns order with id of given id
-	CustomerEmail(ord *order.Order) (string, *model.AppError)                                                      // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
-	OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError)                  // OrderLinesByOption returns a list of order lines by given option
-	AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) // AnAddressOfOrder returns shipping address of given order if presents
-	OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError)                                         // OrderLineIsDigital Check if a variant is digital and contains digital content.
+	OrderTotalQuantity(orderID string) (int, *model.AppError)                                                                            // OrderTotalQuantity return total quantity of given order
+	UpdateOrderTotalPaid(transaction *gorp.Transaction, order *order.Order) *model.AppError                                              // UpdateOrderTotalPaid update given order's total paid amount
+	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)                                                                         // OrderIsPreAuthorized checks if order is pre-authorized
+	OrderIsCaptured(orderID string) (bool, *model.AppError)                                                                              // OrderIsCaptured checks if given order is captured
+	OrderSubTotal(order *order.Order) (*goprices.TaxedMoney, *model.AppError)                                                            // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
+	OrderCanCancel(ord *order.Order) (bool, *model.AppError)                                                                             // OrderCanCalcel checks if given order can be canceled
+	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                                                  // OrderCanCapture checks if given order can capture.
+	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                                                     // OrderCanVoid checks if given order can void
+	OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)                                                   // OrderCanRefund checks if order can refund
+	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)                                            // CanMarkOrderAsPaid checks if given order can be marked as paid.
+	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)                                                            // OrderTotalAuthorized returns order's total authorized amount
+	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)                                                                      // GetOrderCountryCode is helper function, returns contry code of given order
+	OrderLineById(id string) (*order.OrderLine, *model.AppError)                                                                         // OrderLineById returns order line with id of given id
+	OrderById(id string) (*order.Order, *model.AppError)                                                                                 // OrderById returns order with id of given id
+	CustomerEmail(ord *order.Order) (string, *model.AppError)                                                                            // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
+	OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError)                                        // OrderLinesByOption returns a list of order lines by given option
+	AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError)                       // AnAddressOfOrder returns shipping address of given order if presents
+	OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError)                                                               // OrderLineIsDigital Check if a variant is digital and contains digital content.
+	FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError)                                             // FilterOrdersByOptions is common method for filtering orders by given option
+	UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError)                                         // UpsertOrder depends on given order's Id property to decide update/save it
+	BulkUpsertOrderLines(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError)             // BulkUpsertOrderLines perform bulk upsert given order lines
+	AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) // Add AddGiftCardToOrder Return a total price left after applying the gift cards.
+	OrderCreated(ord *order.Order, user *account.User, manager interface{}, fromDraft bool) *model.AppError                              // OrderCreated. `fromDraft` is default to false
 }
 
 type MenuService interface {

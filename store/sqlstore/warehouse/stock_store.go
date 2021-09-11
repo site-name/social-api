@@ -40,6 +40,15 @@ func (ss *SqlStockStore) ModelFields() []string {
 		"Stocks.Quantity",
 	}
 }
+func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
+	return []interface{}{
+		&stock.Id,
+		&stock.CreateAt,
+		&stock.WarehouseID,
+		&stock.ProductVariantID,
+		&stock.Quantity,
+	}
+}
 
 func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
@@ -184,29 +193,10 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		returningStocks []*warehouse.Stock
 		stock           warehouse.Stock
 		productVariant  product_and_discount.ProductVariant
-		scanFields      []interface{} = []interface{}{
-			&stock.Id,
-			&stock.CreateAt,
-			&stock.WarehouseID,
-			&stock.ProductVariantID,
-			&stock.Quantity,
-		}
+		scanFields      = ss.ScanFields(stock)
 	)
 	if options.SelectRelatedProductVariant {
-		scanFields = append(
-			scanFields,
-
-			&productVariant.Id,
-			&productVariant.Name,
-			&productVariant.ProductID,
-			&productVariant.Sku,
-			&productVariant.Weight,
-			&productVariant.WeightUnit,
-			&productVariant.TrackInventory,
-			&productVariant.SortOrder,
-			&productVariant.Metadata,
-			&productVariant.PrivateMetadata,
-		)
+		scanFields = append(scanFields, ss.ProductVariant().ScanFields(productVariant)...)
 	}
 
 	for rows.Next() {
@@ -277,24 +267,18 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 	}
 
 	var (
-		returningStocks []*warehouse.Stock
-
+		returningStocks   []*warehouse.Stock
 		stock             warehouse.Stock
 		variant           product_and_discount.ProductVariant
 		wareHouse         warehouse.WareHouse
 		selectFunc        func(query string, args ...interface{}) (*sql.Rows, error) = ss.GetReplica().Query
 		availableQuantity int
+		scanFields        = ss.ScanFields(stock)
 	)
 	if transaction != nil {
 		selectFunc = transaction.Query
 	}
-	var scanFields []interface{} = []interface{}{
-		&stock.Id,
-		&stock.CreateAt,
-		&stock.WarehouseID,
-		&stock.ProductVariantID,
-		&stock.Quantity,
-	}
+
 	if options.SelectRelatedWarehouse {
 		scanFields = append(
 			scanFields,
@@ -309,20 +293,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		)
 	}
 	if options.SelectRelatedProductVariant {
-		scanFields = append(
-			scanFields,
-
-			&variant.Id,
-			&variant.Name,
-			&variant.ProductID,
-			&variant.Sku,
-			&variant.Weight,
-			&variant.WeightUnit,
-			&variant.TrackInventory,
-			&variant.SortOrder,
-			&variant.Metadata,
-			&variant.PrivateMetadata,
-		)
+		scanFields = append(scanFields, ss.ProductVariant().ScanFields(variant)...)
 	}
 	if options.AnnotateAvailabeQuantity {
 		scanFields = append(scanFields, &availableQuantity)
@@ -412,50 +383,27 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transactio
 	}
 
 	var (
-		returningStocks []*warehouse.Stock
-
+		returningStocks   []*warehouse.Stock
 		stock             warehouse.Stock
 		wareHouse         warehouse.WareHouse
 		productVariant    product_and_discount.ProductVariant
-		queryFunc         func(query string, args ...interface{}) (*sql.Rows, error) = ss.GetReplica().Query
+		queryer           squirrel.Queryer = ss.GetReplica()
 		availableQuantity int
+		scanFields        = ss.ScanFields(stock)
 	)
+	// add some more fields to scan
+	scanFields = append(scanFields, ss.Warehouse().ScanFields(wareHouse)...)
+	scanFields = append(scanFields, ss.ProductVariant().ScanFields(productVariant)...)
+	// decide which query to use
 	if transaction != nil {
-		queryFunc = transaction.Query
+		queryer = transaction
 	}
 
-	// decide fields for scan,
-	var scanFields []interface{} = []interface{}{
-		&stock.Id,
-		&stock.CreateAt,
-		&stock.WarehouseID,
-		&stock.ProductVariantID,
-		&stock.Quantity,
-
-		&wareHouse.Id,
-		&wareHouse.Name,
-		&wareHouse.Slug,
-		&wareHouse.AddressID,
-		&wareHouse.Email,
-		&wareHouse.Metadata,
-		&wareHouse.PrivateMetadata,
-
-		&productVariant.Id,
-		&productVariant.Name,
-		&productVariant.ProductID,
-		&productVariant.Sku,
-		&productVariant.Weight,
-		&productVariant.WeightUnit,
-		&productVariant.TrackInventory,
-		&productVariant.SortOrder,
-		&productVariant.Metadata,
-		&productVariant.PrivateMetadata,
-	}
 	if options.AnnotateAvailabeQuantity {
 		scanFields = append(scanFields, &availableQuantity)
 	}
 
-	rows, err := queryFunc(queryString, args...)
+	rows, err := queryer.Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}

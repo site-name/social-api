@@ -7,6 +7,7 @@ package payment
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -137,14 +138,13 @@ func (a *ServicePayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.
 	return *payMent.IsActive && payMent.IsNotCharged() && authorized, nil
 }
 
-func (a *ServicePayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
-	var (
-		err error
-	)
+// UpsertPayment updates or insert given payment, depends on the validity of its Id
+func (a *ServicePayment) UpsertPayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+	var err error
 
-	if payMent.Id == "" { // id not set mean creating new payment
+	if !model.IsValidId(payMent.Id) {
 		payMent, err = a.srv.Store.Payment().Save(payMent)
-	} else { // otherwise update
+	} else {
 		payMent, err = a.srv.Store.Payment().Update(payMent)
 	}
 	if err != nil {
@@ -152,15 +152,16 @@ func (a *ServicePayment) CreateOrUpdatePayment(payMent *payment.Payment) (*payme
 			return nil, appErr
 		}
 		var statusCode = http.StatusInternalServerError
-		if _, ok := err.(*model.AppError); ok {
+		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("CreateOrUpdatePayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("UpsertPayment", "app.payment.error_upserting_payment.app_error", nil, err.Error(), statusCode)
 	}
 
 	return payMent, nil
 }
 
+// GetAllPaymentsByCheckout returns all payments that belong to given checkout
 func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError) {
 	payments, appErr := a.PaymentsByOption(&payment.PaymentFilterOption{
 		CheckoutToken: checkoutToken,
@@ -169,4 +170,14 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*paym
 		return nil, appErr
 	}
 	return payments, nil
+}
+
+// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError {
+	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+	if err != nil {
+		return model.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

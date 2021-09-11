@@ -66,6 +66,8 @@ type GiftCardFilterOption struct {
 	CheckoutToken *model.StringFilter // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'CheckoutID' ...)
 	IsActive      *bool
 	Distinct      bool // if true, SELECT DISTINCT
+
+	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries
 }
 
 func (gc *GiftCard) DisplayCode() string {
