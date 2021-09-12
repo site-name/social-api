@@ -400,8 +400,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 				if productType != nil && collections != nil {
 					checkoutLineInfos = append(checkoutLineInfos, &checkout.CheckoutLineInfo{
 						Line:           *checkoutLine,
-						Variant:        productVariant,
-						ChannelListing: variantChannelListing,
+						Variant:        *productVariant,
+						ChannelListing: *variantChannelListing,
 						Product:        *product,
 						ProductType:    *productType,
 						Collections:    collections,

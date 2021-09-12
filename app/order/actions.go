@@ -721,7 +721,7 @@ func (a *ServiceOrder) getFulfillmentLine(targetFulfillment *order.Fulfillment, 
 }
 
 // moveOrderLinesToTargetFulfillment Move order lines with given quantity to the target fulfillment
-func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
+func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*order.OrderLineData, targetFulfillment *order.Fulfillment, manager interface{}) (fulfillmentLineToCreate []*order.FulfillmentLine, appErr *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("moveOrderLinesToTargetFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -769,7 +769,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*ord
 	}
 
 	if len(orderLineDatasToDeAlocate) > 0 {
-		allocationErr, appErr := a.srv.WarehouseService().DeallocateStock(orderLineDatasToDeAlocate)
+		allocationErr, appErr := a.srv.WarehouseService().DeallocateStock(orderLineDatasToDeAlocate, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -1088,6 +1088,7 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 	ord *order.Order,
 	totalRefundAmount *decimal.Decimal,
 	shippingRefundAmount *decimal.Decimal,
+	manager interface{},
 
 ) (*order.Fulfillment, *model.AppError) {
 
@@ -1101,7 +1102,7 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 		return nil, appErr
 	}
 
-	LinesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLineDatas, targetFulfillment)
+	LinesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLineDatas, targetFulfillment, manager)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1175,6 +1176,7 @@ func (a *ServiceOrder) moveLinesToReplaceFulfillment(
 	orderLinesToReplace []*order.OrderLineData,
 	fulfillmentLinesToReplace []*order.FulfillmentLineData,
 	ord *order.Order,
+	manager interface{},
 
 ) (*order.Fulfillment, *model.AppError) {
 
@@ -1186,7 +1188,7 @@ func (a *ServiceOrder) moveLinesToReplaceFulfillment(
 		return nil, appErr
 	}
 
-	linesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLinesToReplace, targetFulfillment)
+	linesInTargetFulfillment, appErr := a.moveOrderLinesToTargetFulfillment(orderLinesToReplace, targetFulfillment, manager)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1207,6 +1209,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 	fulfillmentLineDatas []*order.FulfillmentLineData,
 	totalRefundAmount *decimal.Decimal, // can be nil
 	shippingRefundAmount *decimal.Decimal, // can be nil
+	manager interface{},
 
 ) (*order.Fulfillment, *model.AppError) {
 
@@ -1229,6 +1232,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 		ord,
 		totalRefundAmount,
 		shippingRefundAmount,
+		manager,
 	)
 	if appErr != nil {
 		return nil, appErr
@@ -1310,6 +1314,7 @@ func (a *ServiceOrder) ProcessReplace(
 	ord *order.Order,
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
+	manager interface{},
 
 ) (*order.Fulfillment, *order.Order, *model.AppError) {
 
@@ -1319,7 +1324,7 @@ func (a *ServiceOrder) ProcessReplace(
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	replaceFulfillment, appErr := a.moveLinesToReplaceFulfillment(orderLineDatas, fulfillmentLineDatas, ord)
+	replaceFulfillment, appErr := a.moveLinesToReplaceFulfillment(orderLineDatas, fulfillmentLineDatas, ord, manager)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -1482,6 +1487,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 			ord,
 			replaceOrderLines,
 			replaceFulfillmentLines,
+			manager,
 		)
 		if appErr != nil {
 			return nil, nil, nil, appErr
@@ -1495,6 +1501,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 		returnFulfillmentLines,
 		totalRefundAmount,
 		shippingRefundAmount,
+		manager,
 	)
 	if appErr != nil {
 		return nil, nil, nil, appErr

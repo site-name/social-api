@@ -731,7 +731,7 @@ func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.G
 	return totalPriceLeft, nil
 }
 
-func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
 	}
@@ -743,17 +743,17 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, o
 
 	if oldQuantity < newQuantity {
 		lineInfo.Quantity = newQuantity - oldQuantity
-		return a.srv.WarehouseService().IncreaseAllocations([]*order.OrderLineData{lineInfo}, channelSlug)
+		return a.srv.WarehouseService().IncreaseAllocations([]*order.OrderLineData{lineInfo}, channelSlug, manager)
 	} else {
 		lineInfo.Quantity = oldQuantity - newQuantity
-		return a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo})
+		return a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo}, manager)
 	}
 }
 
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -765,7 +765,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, us
 		}
 
 		if order.IsUnconfirmed() {
-			insufficientStock, appErr := a.updateAllocationsForLine(lineInfo, oldQuantity, newQuantity, channelSlug)
+			insufficientStock, appErr := a.updateAllocationsForLine(lineInfo, oldQuantity, newQuantity, channelSlug, manager)
 			if appErr != nil || insufficientStock != nil {
 				return insufficientStock, appErr
 			}
@@ -788,7 +788,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, us
 			return nil, appErr
 		}
 	} else {
-		insufficientErr, appErr := a.DeleteOrderLine(lineInfo)
+		insufficientErr, appErr := a.DeleteOrderLine(lineInfo, manager)
 		if appErr != nil || insufficientErr != nil {
 			return insufficientErr, appErr
 		}
@@ -848,14 +848,14 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 }
 
 // Delete an order line from an order.
-func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	if ord.IsUnconfirmed() {
-		insufficientErr, appErr := a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo})
+		insufficientErr, appErr := a.srv.WarehouseService().DecreaseAllocations([]*order.OrderLineData{lineInfo}, manager)
 		if appErr != nil || insufficientErr != nil {
 			return insufficientErr, appErr
 		}
@@ -865,7 +865,7 @@ func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData) (*warehous
 }
 
 // RestockOrderLines Return ordered products to corresponding stocks
-func (a *ServiceOrder) RestockOrderLines(ord *order.Order) *model.AppError {
+func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) *model.AppError {
 	countryCode, appError := a.GetOrderCountry(ord)
 	if appError != nil {
 		return appError
@@ -977,7 +977,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order) *model.AppError {
 	}
 
 	if len(dellocatingStockLines) > 0 {
-		_, appError = a.srv.WarehouseService().DeallocateStock(dellocatingStockLines)
+		_, appError = a.srv.WarehouseService().DeallocateStock(dellocatingStockLines, manager)
 	}
 
 	return appError

@@ -211,3 +211,19 @@ func (_m *StockStore) ModelFields() []string {
 
 	return r0
 }
+
+// ScanFields provides a mock function with given fields: stock
+func (_m *StockStore) ScanFields(stock warehouse.Stock) []interface{} {
+	ret := _m.Called(stock)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(warehouse.Stock) []interface{}); ok {
+		r0 = rf(stock)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}

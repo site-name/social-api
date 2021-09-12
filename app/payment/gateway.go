@@ -215,9 +215,25 @@ func (a *ServicePayment) validateRefundAmount(payMent *payment.Payment, amount *
 	return nil
 }
 
-func (a *ServicePayment) PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) *model.AppError {
+// PaymentRefundOrVoid
+func (a *ServicePayment) PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentError, *model.AppError) {
 	if payMent == nil {
-		return nil
+		return nil, nil
 	}
-	panic("not implemented")
+
+	paymentCanVoid, appErr := a.srv.PaymentService().PaymentCanVoid(payMent)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var paymentErr *payment.PaymentError
+
+	if payMent.CanRefund() {
+		_, paymentErr, appErr = a.Refund(payMent, manager, channelSlug, nil)
+	} else if paymentCanVoid {
+		_, paymentErr, appErr = a.Void(payMent, manager, channelSlug)
+	}
+
+	return paymentErr, appErr
+
 }

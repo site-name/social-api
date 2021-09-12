@@ -4728,6 +4728,24 @@ func (s *OpenTracingLayerPaymentStore) Update(payment *payment.Payment) (*paymen
 	return result, err
 }
 
+func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.UpdatePaymentsOfCheckout")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.FilterByOption")

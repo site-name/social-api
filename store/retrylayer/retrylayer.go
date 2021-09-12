@@ -5118,6 +5118,26 @@ func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Paym
 
 }
 
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+
+	tries := 0
+	for {
+		err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 
 	tries := 0

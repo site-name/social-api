@@ -53,6 +53,27 @@ func (_m *AllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations
 	return r0, r1
 }
 
+// CountAvailableQuantityForStock provides a mock function with given fields: stock
+func (_m *AllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+	ret := _m.Called(stock)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*warehouse.Stock) int); ok {
+		r0 = rf(stock)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.Stock) error); ok {
+		r1 = rf(stock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *AllocationStore) CreateIndexesIfNotExists() {
 	_m.Called()

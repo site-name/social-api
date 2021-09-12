@@ -60,10 +60,6 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 		appErr              *model.AppError
 	)
 
-	deliveryMethodDict := map[string]interface{}{
-		deliveryMethodInfo.GetOrderKey(): deliveryMethodInfo.GetDeliveryMethod(),
-	}
-
 	if checkoutInfo.User != nil && shippingAddress != nil {
 		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, shippingAddress, account.ADDRESS_TYPE_SHIPPING, manager)
 		if appErr != nil {
@@ -82,8 +78,10 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 				},
 			},
 		})
-		if appErr != nil && appErr.StatusCode != http.StatusNotFound {
-			return nil, appErr
+		if appErr != nil {
+			if appErr.StatusCode != http.StatusNotFound {
+				return nil, appErr
+			}
 		}
 
 		if len(billingAddressOfUser) > 0 {
@@ -99,16 +97,24 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 		return nil, appErr
 	}
 
-	if copyShippingAddress != nil {
-		deliveryMethodDict["shipping_address"] = copyShippingAddress
-	} else {
-		deliveryMethodDict["shipping_address"] = shippingAddress
+	result := map[string]interface{}{
+		deliveryMethodInfo.GetOrderKey(): deliveryMethodInfo.GetDeliveryMethod(),
 	}
 
-	deliveryMethodDict["shipping_price"] = shippingPrice
-	deliveryMethodDict["weight"] = checkoutTotalWeight
+	if copyShippingAddress != nil {
+		result["shipping_address"] = copyShippingAddress
+	} else {
+		result["shipping_address"] = shippingAddress
+	}
 
-	return deliveryMethodDict, nil
+	result["shipping_price"] = shippingPrice
+	result["weight"] = checkoutTotalWeight
+
+	for key, value := range deliveryMethodInfo.DeliveryMethodName() {
+		result[key] = value
+	}
+
+	return result, nil
 }
 
 // processUserDataForOrder Fetch, process and return shipping data from checkout.
@@ -166,8 +172,8 @@ func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*model
 	startOfToday := util.StartOfDay(time.Now().UTC())
 
 	var (
-		TotalGiftcardsOfCheckout       int
-		TotalActiveGiftcardsOfCheckout int
+		totalGiftcardsOfCheckout       int
+		totalActiveGiftcardsOfCheckout int
 	)
 
 	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
@@ -186,19 +192,20 @@ func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*model
 	}
 
 	if allGiftcards != nil {
-		TotalGiftcardsOfCheckout = len(allGiftcards)
+		totalGiftcardsOfCheckout = len(allGiftcards)
 	}
 
 	// find active giftcards
 	// NOTE: active giftcards are active and has (ExpiryDate == NULL || ExpiryDate >= beginning of Today)
-	for _, item := range allGiftcards {
-		expiryDateOfItem := item.ExpiryDate
-		if (expiryDateOfItem == nil || util.StartOfDay(*expiryDateOfItem).Equal(startOfToday) || util.StartOfDay(*expiryDateOfItem).After(startOfToday)) && *item.IsActive {
-			TotalActiveGiftcardsOfCheckout++
+	var expiryDateOfGiftcard *time.Time
+	for _, giftcard := range allGiftcards {
+		expiryDateOfGiftcard = giftcard.ExpiryDate
+		if (expiryDateOfGiftcard == nil || util.StartOfDay(*expiryDateOfGiftcard).Equal(startOfToday) || util.StartOfDay(*expiryDateOfGiftcard).After(startOfToday)) && *giftcard.IsActive {
+			totalActiveGiftcardsOfCheckout++
 		}
 	}
 
-	if TotalActiveGiftcardsOfCheckout != TotalGiftcardsOfCheckout {
+	if totalActiveGiftcardsOfCheckout != totalGiftcardsOfCheckout {
 		return model.NewNotApplicable("validateGiftcards", "Gift card has expired. Order placement cancelled.", nil, 0), nil
 	}
 
@@ -220,7 +227,7 @@ func (s *ServiceCheckout) createLineForOrder(
 
 	var (
 		checkoutLine          = checkoutLineInfo.Line
-		_                     = checkoutLine.Quantity
+		quantity              = checkoutLine.Quantity
 		variant               = checkoutLineInfo.Variant
 		product               = checkoutLineInfo.Product
 		address               = checkoutInfo.ShippingAddress
@@ -239,7 +246,34 @@ func (s *ServiceCheckout) createLineForOrder(
 		translatedVariantName = ""
 	}
 
+	// TODO: fixme. This part requires a few works with `manager`
 	panic("not implemented")
+
+	productVariantRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping([]string{variant.ProductID})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderLine := &order.OrderLine{
+		ProductName:           productName,
+		VariantName:           variantName,
+		TranslatedProductName: translatedProductName,
+		TranslatedVariantName: translatedVariantName,
+		ProductSku:            variant.Sku,
+		IsShippingRequired:    productVariantRequireShipping,
+		Quantity:              quantity,
+		VariantID:             &variant.Id,
+		UnitPrice:             nil,
+		TotalPrice:            nil,
+		TaxRate:               nil,
+	}
+
+	return &order.OrderLineData{
+		Line:        *orderLine,
+		Quantity:    quantity,
+		Variant:     &variant,
+		WarehouseID: model.NewString(checkoutInfo.DeliveryMethodInfo.WarehousePK()),
+	}, nil
 }
 
 // createLinesForOrder Create a lines for the given order.
@@ -258,9 +292,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	lines = lines.FilterNils()
 
 	for _, lineInfo := range lines {
-		if lineInfo.Variant != nil {
-			variants = append(variants, lineInfo.Variant)
-		}
+		variants = append(variants, &lineInfo.Variant)
 		quantities = append(quantities, lineInfo.Line.Quantity)
 		products = append(products, &lineInfo.Product)
 	}
@@ -568,4 +600,26 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 	panic("not implemented")
 
 	return createdNewOrder, nil, nil
+}
+
+// prepareCheckout Prepare checkout object to complete the checkout process.
+func (s *ServiceCheckout) prepareCheckout(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo, trackingCode string, redirectURL string, payMent *payment.Payment) (*payment.PaymentError, *model.AppError) {
+	checkOut := checkoutInfo.Checkout
+
+	appErr := s.CleanCheckoutShipping(checkoutInfo, lines)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	paymentErr, appErr := s.CleanCheckoutPayment(manager, checkoutInfo, lines, discoutns, payMent)
+	if paymentErr != nil || appErr != nil {
+		return paymentErr, appErr
+	}
+
+	if !checkoutInfo.Channel.IsActive {
+		return nil, model.NewAppError("prepareCheckout", "app.checkout.channel_inactive.app_error", nil, "", http.StatusNotAcceptable)
+	}
+	if redirectURL != "" {
+
+	}
 }

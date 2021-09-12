@@ -74,11 +74,6 @@ func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*meas
 //
 // `translated` default to false
 func (a *ServiceProduct) DisplayProduct(productVariant *product_and_discount.ProductVariant, translated bool) (stringm *model.AppError) {
-	// if translated {
-
-	// } else {
-
-	// }
 	panic("not implt")
 }
 
@@ -98,7 +93,6 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 	})
 
 	if appErr != nil {
-		appErr.Where = "ProductVariantsAvailableInChannel"
 		return nil, appErr
 	}
 

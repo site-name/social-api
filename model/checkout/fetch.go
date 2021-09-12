@@ -14,14 +14,23 @@ import (
 // CheckoutLineInfo contains information of a checkout line
 type CheckoutLineInfo struct {
 	Line           CheckoutLine
-	Variant        *product_and_discount.ProductVariant
-	ChannelListing *product_and_discount.ProductVariantChannelListing
+	Variant        product_and_discount.ProductVariant
+	ChannelListing product_and_discount.ProductVariantChannelListing
 	Product        product_and_discount.Product
 	ProductType    product_and_discount.ProductType
 	Collections    []*product_and_discount.Collection
 }
 
 type CheckoutLineInfos []*CheckoutLineInfo
+
+func (c CheckoutLineInfos) Products() product_and_discount.Products {
+	res := product_and_discount.Products{}
+	for _, item := range c {
+		res = append(res, &item.Product)
+	}
+
+	return res
+}
 
 func (c CheckoutLineInfos) FilterNils() CheckoutLineInfos {
 	res := CheckoutLineInfos{}
@@ -42,7 +51,6 @@ type CheckoutInfo struct {
 	BillingAddress                *account.Address
 	ShippingAddress               *account.Address
 	DeliveryMethodInfo            DeliveryMethodBaseInterface
-	ShippingMethod                *shipping.ShippingMethod
 	ValidShippingMethods          []*shipping.ShippingMethod
 	ValidPickupPoints             []*warehouse.WareHouse
 	ShippingMethodChannelListings *shipping.ShippingMethodChannelListing
@@ -100,6 +108,9 @@ type DeliveryMethodBaseInterface interface {
 	GetDeliveryMethod() interface{} // GetDeliveryMethod returns an interface{}, can be either *ShippingMethod or *Warehouse.
 	GetShippingAddress() *account.Address
 	GetOrderKey() string
+
+	String() string
+	Self() interface{}
 }
 
 // checking if some struct types satisfy DeliveryMethodBaseInterface
@@ -114,6 +125,14 @@ type DeliveryMethodBase struct {
 	DeliveryMethod  interface{}      // either *ShippingMethod or *Warehouse. Can be nil
 	ShippingAddress *account.Address // can be nil
 	OrderKey        string           // default to "shipping_method"
+}
+
+func (d *DeliveryMethodBase) Self() interface{} {
+	return d
+}
+
+func (d *DeliveryMethodBase) String() string {
+	return "DeliveryMethodBase"
 }
 
 func (d *DeliveryMethodBase) WarehousePK() string
@@ -161,6 +180,14 @@ type ShippingMethodInfo struct {
 	OrderKey        string           // default to "shipping_method"
 }
 
+func (d *ShippingMethodInfo) Self() interface{} {
+	return d
+}
+
+func (d *ShippingMethodInfo) String() string {
+	return "ShippingMethodInfo"
+}
+
 func (s *ShippingMethodInfo) DeliveryMethodName() model.StringMap {
 	return model.StringMap{"shipping_method_name": s.DeliveryMethod.String()}
 }
@@ -196,6 +223,14 @@ type CollectionPointInfo struct {
 	DeliveryMethod  warehouse.WareHouse
 	ShippingAddress *account.Address
 	OrderKey        string // default to "collection_point"
+}
+
+func (d *CollectionPointInfo) Self() interface{} {
+	return d
+}
+
+func (d *CollectionPointInfo) String() string {
+	return "CollectionPointInfo"
 }
 
 func (c *CollectionPointInfo) WarehousePK() string {

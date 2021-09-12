@@ -14,7 +14,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 )
 
-// GetDeliveryMethodInfo takes `deliveryMethod` as either *ShippingMethod or *Warehouse
+// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethod or *Warehouse
 func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError) {
 	if deliveryMethod == nil {
 		return &checkout.DeliveryMethodBase{}, nil
@@ -242,7 +242,6 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 		Channel:                       *resultChannel,
 		BillingAddress:                resultBillingAddress,
 		ShippingAddress:               resultShippingAddress,
-		ShippingMethod:                resultShippingMethod,
 		ShippingMethodChannelListings: shippingMethodChannelListing,
 		ValidShippingMethods:          []*shipping.ShippingMethod{}, // empty
 	}
@@ -281,28 +280,55 @@ func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo
 
 // UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
-func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethod *shipping.ShippingMethod) *model.AppError {
-	checkoutInfo.ShippingMethod = shippingMethod
+// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
+func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError {
+	// validate `deliveryMethod` is valid:
+	if deliveryMethod != nil {
+		switch deliveryMethod.(type) {
+		case *warehouse.WareHouse, *shipping.ShippingMethod:
+		default:
+			return model.NewAppError("UpdateCheckoutInfoDeliveryMethod", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
+		}
+	}
 
-	checkoutInfo.ShippingMethodChannelListings = nil
-	if shippingMethod != nil {
-		listings, appErr := a.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-			ShippingMethodID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: shippingMethod.Id,
-				},
-			},
-			ChannelID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkoutInfo.Channel.Id,
-				},
-			},
-		})
+	deliveryMethodIface, appErr := a.GetDeliveryMethodInfo(deliveryMethod, checkoutInfo.ShippingAddress)
+	if appErr != nil {
+		return appErr
+	}
 
+	checkoutInfo.DeliveryMethodInfo = deliveryMethodIface
+
+	err := checkoutInfo.DeliveryMethodInfo.UpdateChannelListings(checkoutInfo)
+	// if error is non-nil, this means we need another method that can access database Store
+	if err != nil && err == checkout.ErrorNotUsable {
+		appErr = a.updateChannelListings(checkoutInfo.DeliveryMethodInfo, checkoutInfo)
 		if appErr != nil {
 			return appErr
 		}
-		checkoutInfo.ShippingMethodChannelListings = listings[0]
+	}
+
+	return nil
+}
+
+func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
+		ShippingMethodID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id,
+			},
+		},
+		ChannelID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkoutInfo.Channel.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	if len(shippingMethodChannelListings) > 0 {
+		checkoutInfo.ShippingMethodChannelListings = shippingMethodChannelListings[0]
 	}
 
 	return nil

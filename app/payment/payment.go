@@ -129,6 +129,7 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*gopri
 	return authorizedMoney, nil
 }
 
+// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 func (a *ServicePayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError) {
 	authorized, err := a.PaymentIsAuthorized(payMent.Id)
 	if err != nil {

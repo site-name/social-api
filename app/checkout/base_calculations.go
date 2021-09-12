@@ -17,7 +17,13 @@ import (
 )
 
 func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines interface{}) (*goprices.TaxedMoney, *model.AppError) {
-	panic("not implt")
+	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
+	if shippingMethodInfo, ok := deliveryMethodInfo.(*checkout.ShippingMethodInfo); ok {
+		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
+	}
+
+	zeroTaxed, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
+	return zeroTaxed, nil
 }
 
 func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines interface{}) (*goprices.TaxedMoney, *model.AppError) {

@@ -80,3 +80,19 @@ func (_m *DigitalContentStore) Save(content *product_and_discount.DigitalContent
 
 	return r0, r1
 }
+
+// ScanFields provides a mock function with given fields: content
+func (_m *DigitalContentStore) ScanFields(content product_and_discount.DigitalContent) []interface{} {
+	ret := _m.Called(content)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(product_and_discount.DigitalContent) []interface{}); ok {
+		r0 = rf(content)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}

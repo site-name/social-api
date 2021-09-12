@@ -120,6 +120,22 @@ func (_m *OrderLineStore) ModelFields() []string {
 	return r0
 }
 
+// ScanFields provides a mock function with given fields: orderLine
+func (_m *OrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
+	ret := _m.Called(orderLine)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(order.OrderLine) []interface{}); ok {
+		r0 = rf(orderLine)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: orderLine
 func (_m *OrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
 	ret := _m.Called(orderLine)

@@ -80,11 +80,12 @@ type PaymentService interface {
 	//
 	// `extraData`, `ckout`, `ord` can be nil
 	CreatePayment(gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, ckout *checkout.Checkout, ord *order.Order, returnUrl string, externalReference string) (*payment.Payment, *payment.PaymentError, *model.AppError)
-	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                              // CleanAuthorize Check if payment can be authorized
-	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                             // CleanCapture Check if payment can be captured.
-	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                               // FetchCustomerId Retrieve users customer_id stored for desired gateway.
-	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError                                            // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
+	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                                  // CleanAuthorize Check if payment can be authorized
+	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                                 // CleanCapture Check if payment can be captured.
+	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                                   // FetchCustomerId Retrieve users customer_id stored for desired gateway.
+	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError                                                // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
+	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError     // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
+	PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentError, *model.AppError) // PaymentRefundOrVoid
 }
 
 // CheckoutService

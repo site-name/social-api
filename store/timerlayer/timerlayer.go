@@ -4337,6 +4337,22 @@ func (s *TimerLayerPaymentStore) Update(payment *payment.Payment) (*payment.Paym
 	return result, err
 }
 
+func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+	start := timemodule.Now()
+
+	err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.UpdatePaymentsOfCheckout", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 	start := timemodule.Now()
 

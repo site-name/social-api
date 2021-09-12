@@ -223,6 +223,12 @@ func (o *OrderLine) commonPre() {
 		o.UnitDiscountAmount = &decimal.Zero
 	}
 
+	if o.UnitPrice != nil {
+		o.UnitPriceNet = o.UnitPrice.Net
+		o.UnitPriceGross = o.UnitPrice.Gross
+		o.Currency = o.UnitPrice.Currency
+	}
+
 	if o.UnDiscountedUnitPrice != nil {
 		o.UnDiscountedUnitPriceNetAmount = o.UnDiscountedUnitPrice.Net.Amount
 		o.UnDiscountedUnitPriceGrossAmount = o.UnDiscountedUnitPrice.Gross.Amount

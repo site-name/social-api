@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
@@ -416,7 +417,6 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 	a.wg.Done()
 
 	if appError != nil {
-		appError.Where = "GetDiscountedLines"
 		return nil, appError
 	}
 
@@ -458,9 +458,9 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 				}
 			}
 
-			if lineInfo.Variant != nil && (util.StringInSlice(lineInfo.Product.Id, discountedProductIDs) ||
+			if util.StringInSlice(lineInfo.Product.Id, discountedProductIDs) ||
 				(lineInfo.Product.CategoryID != nil && util.StringInSlice(*lineInfo.Product.CategoryID, discountedCategoryIDs)) ||
-				lineInfoCollections_have_common_with_discountedCollections) {
+				lineInfoCollections_have_common_with_discountedCollections {
 				discountedLines = append(discountedLines, lineInfo)
 			}
 		}
@@ -511,7 +511,6 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 		})
 
 		if appErr != nil || len(activeInChannelVouchers) == 0 {
-			appErr.Where = "GetVoucherForCheckout"
 			return nil, appErr
 		}
 
@@ -605,27 +604,6 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *check
 	)
 }
 
-// IsValidShippingMethod Check if shipping method is valid and remove (if not).
-func (a *ServiceCheckout) IsValidShippingMethod(checkoutInfo *checkout.CheckoutInfo) (bool, *model.AppError) {
-	if checkoutInfo.ShippingMethod == nil || checkoutInfo.ShippingAddress == nil {
-		return false, nil
-	}
-
-	var validShippingMethodIDs []string
-	if len(checkoutInfo.ValidShippingMethods) != 0 {
-		for _, method := range checkoutInfo.ValidShippingMethods {
-			validShippingMethodIDs = append(validShippingMethodIDs, method.Id)
-		}
-	}
-
-	if len(validShippingMethodIDs) == 0 || !util.StringInSlice(checkoutInfo.ShippingMethod.Id, validShippingMethodIDs) {
-		appErr := a.ClearDeliveryMethod(checkoutInfo)
-		return false, appErr
-	}
-
-	return true, nil
-}
-
 func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
 	ckout := checkoutInfo.Checkout
 	ckout.CollectionPointID = nil
@@ -640,6 +618,50 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo *checkout.CheckoutInf
 	return appErr
 }
 
+// IsFullyPaid Check if provided payment methods cover the checkout's total amount.
+// Note that these payments may not be captured or charged at all.
+func (s *ServiceCheckout) IsFullyPaid(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (bool, *model.AppError) {
+	checkOut := checkoutInfo.Checkout
+	payments, appErr := s.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+		CheckoutToken: checkOut.Token,
+		IsActive:      model.NewBool(true),
+	})
+	if appErr != nil {
+		return false, appErr
+	}
+
+	var totalPaid *decimal.Decimal = &decimal.Zero
+	for _, payMent := range payments {
+		totalPaid = model.NewDecimal(totalPaid.Add(*payMent.Total))
+	}
+	address := checkoutInfo.ShippingAddress
+	if address == nil {
+		address = checkoutInfo.BillingAddress
+	}
+
+	checkoutTotal, appErr := s.CheckoutTotal(manager, checkoutInfo, lines, address, discounts)
+	if appErr != nil {
+		return false, appErr
+	}
+	checkoutTotalGiftcardBalance, appErr := s.CheckoutTotalGiftCardsBalance(&checkOut)
+	if appErr != nil {
+		return false, appErr
+	}
+
+	sub, err := checkoutTotal.Sub(checkoutTotalGiftcardBalance)
+	if err != nil {
+		return false, model.NewAppError("IsFullyPaid", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	checkoutTotal = sub
+
+	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkOut.Currency)
+	if less, err := checkoutTotal.LessThan(zeroTaxedMoney); less && err == nil {
+		checkoutTotal = zeroTaxedMoney
+	}
+
+	return checkoutTotal.Gross.Amount.LessThan(*totalPaid), nil
+}
+
 // CancelActivePayments set all active payments belong to given checkout
 func (a *ServiceCheckout) CancelActivePayments(ckout *checkout.Checkout) *model.AppError {
 	err := a.srv.Store.Payment().CancelActivePaymentsOfCheckout(ckout.Token)
@@ -651,17 +673,17 @@ func (a *ServiceCheckout) CancelActivePayments(ckout *checkout.Checkout) *model.
 }
 
 func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*checkout.CheckoutLineInfo) *model.AppError {
-
-	var notAvailableVariants []string
+	var notAvailableVariantIDs []string
 	for _, line := range lines {
-		if line.ChannelListing == nil || line.ChannelListing.Price == nil {
-			notAvailableVariants = append(notAvailableVariants, line.Variant.Id)
+		if line.ChannelListing.Price == nil {
+			notAvailableVariantIDs = append(notAvailableVariantIDs, line.Variant.Id)
 		}
 	}
 
-	if len(notAvailableVariants) > 0 {
+	if len(notAvailableVariantIDs) > 0 {
+		notAvailableVariantIDs = util.RemoveDuplicatesFromStringArray(notAvailableVariantIDs)
 		// return error indicate there are some product variants that have no channel listing or channel listing price is null
-		return model.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variantIDs": strings.Join(notAvailableVariants, ", ")}, "", http.StatusNotAcceptable)
+		return model.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variants": strings.Join(notAvailableVariantIDs, ", ")}, "", http.StatusNotAcceptable)
 	}
 
 	return nil

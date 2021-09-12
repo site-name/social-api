@@ -151,3 +151,19 @@ func (_m *ProductVariantStore) Save(variant *product_and_discount.ProductVariant
 
 	return r0, r1
 }
+
+// ScanFields provides a mock function with given fields: variant
+func (_m *ProductVariantStore) ScanFields(variant product_and_discount.ProductVariant) []interface{} {
+	ret := _m.Called(variant)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(product_and_discount.ProductVariant) []interface{}); ok {
+		r0 = rf(variant)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}

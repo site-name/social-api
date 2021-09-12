@@ -5,7 +5,9 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	giftcard "github.com/sitename/sitename/model/giftcard"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -19,13 +21,13 @@ func (_m *GiftCardStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterByOption provides a mock function with given fields: option
-func (_m *GiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
-	ret := _m.Called(option)
+// FilterByOption provides a mock function with given fields: transaction, option
+func (_m *GiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+	ret := _m.Called(transaction, option)
 
 	var r0 []*giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(*giftcard.GiftCardFilterOption) []*giftcard.GiftCard); ok {
-		r0 = rf(option)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *giftcard.GiftCardFilterOption) []*giftcard.GiftCard); ok {
+		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*giftcard.GiftCard)
@@ -33,31 +35,8 @@ func (_m *GiftCardStore) FilterByOption(option *giftcard.GiftCardFilterOption) (
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*giftcard.GiftCardFilterOption) error); ok {
-		r1 = rf(option)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAllByUserId provides a mock function with given fields: userID
-func (_m *GiftCardStore) GetAllByUserId(userID string) ([]*giftcard.GiftCard, error) {
-	ret := _m.Called(userID)
-
-	var r0 []*giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(string) []*giftcard.GiftCard); ok {
-		r0 = rf(userID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*giftcard.GiftCard)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(userID)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *giftcard.GiftCardFilterOption) error); ok {
+		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
 	}
