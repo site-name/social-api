@@ -129,9 +129,9 @@ type PaymentData struct {
 	Token             *string // can be nil
 	CustomerID        *string // can be nil
 	ReuseSource       bool
-	Data              model.StringMap // can be nil
-	GraphqlPaymentID  string          // default to payment's Token
-	GraphqlCustomerID *string         // can be nil
+	Data              model.StringInterface // can be nil
+	GraphqlPaymentID  string                // default to payment's Token
+	GraphqlCustomerID *string               // can be nil
 }
 
 // Dataclass for payment gateway token fetching customization.

@@ -21,7 +21,7 @@ import (
 //
 // Returns information required to process payment and additional
 // billing/shipping addresses for optional fraud-prevention mechanisms.
-func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError) {
+func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentData, *model.AppError) {
 
 	var (
 		billingAddressID  string
@@ -131,7 +131,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 		amount = payMent.Total
 	}
 	if additionalData == nil {
-		additionalData = make(map[string]string)
+		additionalData = make(map[string]interface{})
 	}
 
 	return &payment.PaymentData{

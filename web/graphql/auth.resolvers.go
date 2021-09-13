@@ -97,7 +97,7 @@ func (r *mutationResolver) ExternalVerify(ctx context.Context, input string, plu
 }
 
 func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *string, email string, redirectURL string) (*gqlmodel.RequestPasswordReset, error) {
-	appErr := validateStoreFrontUrl(r.Config(), redirectURL)
+	appErr := model.ValidateStoreFrontUrl(r.Config(), redirectURL)
 	if appErr != nil {
 		return nil, appErr
 	}

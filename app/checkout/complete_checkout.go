@@ -394,7 +394,7 @@ type OrderData struct {
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (interface{}, *model.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *model.AppError) {
 	var (
 		checkOut = checkoutInfo.Checkout
 		// orderData = OrderData{}
@@ -437,6 +437,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 	}
 
 	panic("not implemented")
+
 }
 
 // createOrder Create an order from the checkout.
@@ -620,6 +621,58 @@ func (s *ServiceCheckout) prepareCheckout(manager interface{}, checkoutInfo *che
 		return nil, model.NewAppError("prepareCheckout", "app.checkout.channel_inactive.app_error", nil, "", http.StatusNotAcceptable)
 	}
 	if redirectURL != "" {
-
+		appErr = model.ValidateStoreFrontUrl(s.srv.Config(), redirectURL)
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
+
+	var needUpdate bool
+	if redirectURL != "" && (checkOut.RedirectURL == nil || *checkOut.RedirectURL != redirectURL) {
+		checkOut.RedirectURL = &redirectURL
+		needUpdate = true
+	}
+	if trackingCode != "" && (checkOut.TrackingCode == nil || *checkOut.TrackingCode != trackingCode) {
+		checkOut.TrackingCode = &trackingCode
+		needUpdate = true
+	}
+
+	if needUpdate {
+		_, appErr = s.UpsertCheckout(&checkOut)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return nil, nil
+}
+
+// ReleaseVoucherUsage
+func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) *model.AppError {
+	if iface, ok := orderData["voucher"]; ok && iface != nil {
+		voucher := iface.(*product_and_discount.Voucher)
+
+		appErr := s.srv.DiscountService().DecreaseVoucherUsage(voucher)
+		if appErr != nil {
+			return appErr
+		}
+
+		if userEmail, ok := orderData["user_email"]; ok {
+			appErr = s.srv.DiscountService().RemoveVoucherUsageByCustomer(voucher, userEmail.(string))
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (interface{}, *model.AppError) {
+	orderData, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return orderData, nil
 }

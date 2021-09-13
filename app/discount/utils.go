@@ -46,6 +46,7 @@ func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discoun
 	return
 }
 
+// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
 	// validate email argument
 	if !model.IsValidEmail(customerEmail) {

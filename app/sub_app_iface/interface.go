@@ -59,7 +59,7 @@ type PaymentService interface {
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)                                                                                                                                                                                        // PaymentIsAuthorized checks if given payment is authorized
 	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)                                                                                                                                                                   // PaymentGetAuthorizedAmount calculates authorized amount
 	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                                                                                                                                                                          // PaymentCanVoid check if payment can void
-	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]string) (*payment.PaymentData, *model.AppError)                                    // Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
+	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentData, *model.AppError)                               // Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError)                                                                                                            // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
 	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                              // SaveTransaction save new payment transaction into database
 	CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)             // CreatePaymentTransaction save new payment transaction into database and returns it
@@ -80,12 +80,23 @@ type PaymentService interface {
 	//
 	// `extraData`, `ckout`, `ord` can be nil
 	CreatePayment(gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, ckout *checkout.Checkout, ord *order.Order, returnUrl string, externalReference string) (*payment.Payment, *payment.PaymentError, *model.AppError)
-	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                                  // CleanAuthorize Check if payment can be authorized
-	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                                 // CleanCapture Check if payment can be captured.
-	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                                   // FetchCustomerId Retrieve users customer_id stored for desired gateway.
-	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError                                                // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError     // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentError, *model.AppError) // PaymentRefundOrVoid
+	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                                                                                                            // CleanAuthorize Check if payment can be authorized
+	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                                                                                                           // CleanCapture Check if payment can be captured.
+	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                                                                                                             // FetchCustomerId Retrieve users customer_id stored for desired gateway.
+	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError                                                                                                                          // ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
+	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError                                                                               // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
+	PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentError, *model.AppError)                                                                           // PaymentRefundOrVoid
+	Confirm(payMent *payment.Payment, manager interface{}, channelSlug string, additionalData map[string]interface{} /* can be none */) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) // Confirm confirms payment
+	ProcessPayment(
+		payMent *payment.Payment,
+		token string,
+		manager interface{},
+		channelSlug string,
+		customerID *string, // can be empty
+		storeSource bool, // default to false
+		additionalData map[string]interface{}, // can be nil
+	) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) // PaymentByID returns a payment with given id
 }
 
 // CheckoutService
@@ -376,6 +387,8 @@ type DiscountService interface {
 	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)                                                                               // FetchActiveDiscounts returns discounts that are activated
 	IncreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError                                                                                  // IncreaseVoucherUsage increase voucher's uses by 1
 	AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)       // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
+	DecreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError                                                                                  // DecreaseVoucherUsage decreases voucher's uses by 1
+	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError                                                    // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 }
 
 type OrderService interface {

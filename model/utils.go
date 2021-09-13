@@ -719,3 +719,19 @@ func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) str
 
 	return res
 }
+
+// ValidateStoreFrontUrl is common function for validating urls in user's inputs
+func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
+	// try check if provided redirect url is valid
+	parsedRedirectUrl, err := url.Parse(urlValue)
+	if err != nil {
+		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
+	}
+	parsedSitenameUrl, _ := url.Parse(*config.ServiceSettings.SiteURL)
+
+	if parsedRedirectUrl.Hostname() != parsedSitenameUrl.Hostname() {
+		return NewAppError("ValidateStoreFrontUrl", "app.provided_url_invalid.app_error", map[string]interface{}{"Value": urlValue}, "", http.StatusBadRequest)
+	}
+
+	return nil
+}

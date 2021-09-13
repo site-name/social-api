@@ -53,7 +53,7 @@ func (a *ServicePayment) ProcessPayment(
 	channelSlug string,
 	customerID *string, // can be empty
 	storeSource bool, // default to false
-	additionalData map[string]string, // can be nil
+	additionalData map[string]interface{}, // can be nil
 
 ) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
 
@@ -145,11 +145,12 @@ func (a *ServicePayment) Void(payMent *payment.Payment, manager interface{}, cha
 	panic("not implt")
 }
 
+// Confirm confirms payment
 func (a *ServicePayment) Confirm(
 	payMent *payment.Payment,
 	manager interface{},
 	channelSlug string,
-	additionalData map[string]string, // can be none
+	additionalData map[string]interface{}, // can be none
 
 ) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
 	panic("not implt")

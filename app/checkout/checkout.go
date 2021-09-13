@@ -201,6 +201,7 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, p
 	return nil, nil
 }
 
+// CheckoutLastActivePayment returns the most recent payment made for given checkout
 func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		CheckoutToken: checkout.Token,

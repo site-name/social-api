@@ -28,3 +28,12 @@ func NewNotApplicable(where, message string, minSpent *decimal.Decimal, minCheck
 		MinCheckoutItemsQuantity: minCheckoutItemsQuantity,
 	}
 }
+
+type TaxError struct {
+	Where   string
+	Message string
+}
+
+func (t *TaxError) Error() string {
+	return t.Where + ": " + t.Message
+}

@@ -13,7 +13,7 @@ func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegister
 	}
 
 	// clean redirect url
-	appErr := validateStoreFrontUrl(r.Config(), *data.RedirectURL)
+	appErr := model.ValidateStoreFrontUrl(r.Config(), *data.RedirectURL)
 	if appErr != nil {
 		return nil, appErr
 	}
