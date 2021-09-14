@@ -21,7 +21,7 @@ import (
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
 // Careful! It should be called inside a transaction.
 // :raises NotApplicable: When the voucher is not applicable in the current checkout.
-func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.CheckoutInfo) (interface{}, *model.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.CheckoutInfo) (map[string]*product_and_discount.Voucher, *model.NotApplicable, *model.AppError) {
 	checkOut := checkoutInfo.Checkout
 	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, true)
 	if appErr != nil {
@@ -66,7 +66,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 			return nil, appErr
 		}
 
-		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
+		anAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: shippingAddress.Id,
@@ -84,7 +84,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 			}
 		}
 
-		if len(billingAddressOfUser) > 0 {
+		if len(anAddressOfUser) > 0 {
 			copyShippingAddress, appErr = s.srv.AccountService().CopyAddress(shippingAddress)
 			if appErr != nil {
 				return nil, appErr
@@ -169,11 +169,11 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo *checkout.Checkou
 
 // validateGiftcards Check if all gift cards assigned to checkout are available.
 func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*model.NotApplicable, *model.AppError) {
-	startOfToday := util.StartOfDay(time.Now().UTC())
 
 	var (
 		totalGiftcardsOfCheckout       int
 		totalActiveGiftcardsOfCheckout int
+		startOfToday                   = util.StartOfDay(time.Now().UTC())
 	)
 
 	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
@@ -254,7 +254,7 @@ func (s *ServiceCheckout) createLineForOrder(
 		return nil, appErr
 	}
 
-	orderLine := &order.OrderLine{
+	orderLine := order.OrderLine{
 		ProductName:           productName,
 		VariantName:           variantName,
 		TranslatedProductName: translatedProductName,
@@ -263,13 +263,13 @@ func (s *ServiceCheckout) createLineForOrder(
 		IsShippingRequired:    productVariantRequireShipping,
 		Quantity:              quantity,
 		VariantID:             &variant.Id,
-		UnitPrice:             nil,
-		TotalPrice:            nil,
-		TaxRate:               nil,
+		UnitPrice:             nil, // TODO: add me
+		TotalPrice:            nil, // TODO: add me
+		TaxRate:               nil, // TODO: add me
 	}
 
 	return &order.OrderLineData{
-		Line:        *orderLine,
+		Line:        orderLine,
 		Quantity:    quantity,
 		Variant:     &variant,
 		WarehouseID: model.NewString(checkoutInfo.DeliveryMethodInfo.WarehousePK()),
@@ -282,9 +282,9 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	var (
 		translationLanguageCode = checkoutInfo.Checkout.LanguageCode
 		countryCode             = checkoutInfo.GetCountry()
-		variants                = product_and_discount.ProductVariants{}
-		quantities              = []int{}
-		products                = product_and_discount.Products{}
+		variants                product_and_discount.ProductVariants
+		quantities              []int
+		products                product_and_discount.Products
 		wg                      sync.WaitGroup
 		mutex                   sync.Mutex
 	)
@@ -311,9 +311,11 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
+		// ignore not found error here
 	}
 
-	productTranslationMap := map[string]string{}
+	// productTranslationMap has keys are product ids, values are translated product name
+	var productTranslationMap = map[string]string{}
 	if len(productTranslations) > 0 {
 		for _, item := range productTranslations {
 			productTranslationMap[item.ProductID] = item.Name
@@ -334,9 +336,11 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
+		// ignore not found error here
 	}
 
-	productVariantTranslationMap := map[string]string{}
+	// productVariantTranslationMap has keys are product variant ids, values are translated product variant names
+	var productVariantTranslationMap = map[string]string{}
 	if len(variantTranslations) > 0 {
 		for _, item := range variantTranslations {
 			productVariantTranslationMap[item.ProductVariantID] = item.Name
@@ -344,7 +348,14 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	}
 
 	additionalWarehouseLookup := checkoutInfo.DeliveryMethodInfo.GetWarehouseFilterLookup()
-	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockQuantityBulk(variants, countryCode, quantities, checkoutInfo.Channel.Slug, additionalWarehouseLookup, nil)
+	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockQuantityBulk(
+		variants,
+		countryCode,
+		quantities,
+		checkoutInfo.Channel.Slug,
+		additionalWarehouseLookup,
+		nil,
+	)
 	if insufficientStockErr != nil || appErr != nil {
 		return nil, insufficientStockErr, appErr
 	}
@@ -394,7 +405,7 @@ type OrderData struct {
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *model.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *warehouse.InsufficientStock, *model.NotApplicable, *model.TaxError, *model.AppError) {
 	var (
 		checkOut = checkoutInfo.Checkout
 		// orderData = OrderData{}
@@ -408,12 +419,12 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 
 	taxedTotal, appErr := s.CheckoutTotal(manager, checkoutInfo, lines, address, discounts)
 	if appErr != nil {
-		return nil, appErr
+		return nil, nil, nil, nil, appErr
 	}
 
 	cardsTotal, appErr := s.CheckoutTotalGiftCardsBalance(&checkOut)
 	if appErr != nil {
-		return nil, appErr
+		return nil, nil, nil, nil, appErr
 	}
 
 	newTaxedTotalGross, err1 := taxedTotal.Gross.Sub(cardsTotal)
@@ -425,7 +436,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 		} else {
 			errMsg = err2.Error()
 		}
-		return nil, model.NewAppError("prepareOrderData", app.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
+		return nil, nil, nil, nil, model.NewAppError("prepareOrderData", app.ErrorCalculatingMoneyErrorID, nil, errMsg, http.StatusInternalServerError)
 	}
 
 	taxedTotal.Gross = newTaxedTotalGross
@@ -436,8 +447,8 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 		taxedTotal = zeroTaxedMoney
 	}
 
+	// TODO: implement a few works with plugin manager here.
 	panic("not implemented")
-
 }
 
 // createOrder Create an order from the checkout.
@@ -456,7 +467,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	checkOut := checkoutInfo.Checkout
-	checkOut.PopulateNonDbFields() // this call is important
+	// checkOut.PopulateNonDbFields() // this call is important
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&order.OrderFilterOption{
 		CheckoutToken: &model.StringFilter{
@@ -669,10 +680,109 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 }
 
 func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (interface{}, *model.AppError) {
-	orderData, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
+	orderData, insufficientStockErr, notApplicableErr, taxError, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
 	if appErr != nil {
 		return nil, appErr
 	}
-
+	
+	if insufficientStockErr != nil {
+		return nil, model.NewAppError("getOrderData", "app.checkout.insufficient_stock_checkout.app_error", map[string]interface{}{"code": insufficientStockErr.})
+	}
 	return orderData, nil
+}
+
+// processPayment Process the payment assigned to checkout
+func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *string, storeSource bool, paymentData map[string]interface{}, orderData map[string]interface{}, manager interface{}, channelSlug string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
+	var (
+		transaction *payment.PaymentTransaction
+		paymentErr  *payment.PaymentError
+		appErr      *model.AppError
+	)
+
+	if payMent.ToConfirm {
+		transaction, paymentErr, appErr = s.srv.PaymentService().Confirm(
+			payMent,
+			manager,
+			channelSlug,
+			paymentData,
+		)
+	} else {
+		transaction, paymentErr, appErr = s.srv.PaymentService().ProcessPayment(
+			payMent,
+			payMent.Token,
+			manager,
+			channelSlug,
+			customerID,
+			storeSource,
+			paymentData,
+		)
+	}
+
+	// catch errors
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+	if paymentErr != nil {
+		appErr = s.ReleaseVoucherUsage(orderData)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		return nil, nil, model.NewAppError("processPayment", "app.checkout.payment_error.app_error", nil, paymentErr.Error(), 0)
+	}
+
+	// re fetching payment from db since the payment may was modified in two calls above
+	payMent, appErr = s.srv.PaymentService().PaymentByID(payMent.Id, false)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	if !transaction.IsSuccess {
+		var paymentErrorMessage string
+		if transaction.Error != nil {
+			paymentErrorMessage = *transaction.Error
+		}
+		return nil, &payment.PaymentError{
+			Where:   "processPayment",
+			Message: paymentErrorMessage,
+		}, nil
+	}
+
+	return transaction, nil, nil
+}
+
+// Logic required to finalize the checkout and convert it to order.
+// Should be used with transaction_with_commit_on_errors, as there is a possibility
+// for thread race.
+// :raises ValidationError
+func (s *ServiceCheckout) CompleteCheckout(
+	manager interface{},
+	checkoutInfo *checkout.CheckoutInfo,
+	lines []*checkout.CheckoutLineInfo,
+	paymentData map[string]interface{},
+	storeSource bool,
+	discounts []*product_and_discount.DiscountInfo,
+	user *account.User,
+	_ interface{},
+	siteSettings interface{},
+	trackingCode string,
+	redirectURL string,
+
+) (*order.Order, bool, map[string]interface{}, *payment.PaymentError, *model.AppError) {
+
+	var (
+		checkOut    = checkoutInfo.Checkout
+		channelSlug = checkoutInfo.Channel.Slug
+	)
+
+	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(&checkOut)
+	if appErr != nil {
+		return nil, false, nil,nil, appErr
+	}
+
+	paymentErr, appErr := s.prepareCheckout(manager, checkoutInfo, lines, discounts, trackingCode, redirectURL, lastActivePaymentOfCheckout)
+	if paymentErr != nil || appErr != nil {
+		return nil, false, nil, paymentErr, appErr
+	}
+
+	s.getOrderData(manager, checkoutInfo, lines, discounts)
 }

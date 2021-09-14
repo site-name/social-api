@@ -1,10 +1,7 @@
 package warehouse
 
 import (
-	"strings"
-
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
@@ -138,35 +135,4 @@ func (s *Stock) commonPre() {
 
 func (s *Stock) PreUpdate() {
 	s.commonPre()
-}
-
-// InsufficientStockData is an error type
-type InsufficientStockData struct {
-	Variant           product_and_discount.ProductVariant // Product variant
-	OrderLine         *order.OrderLine                    // can be nil
-	WarehouseID       *string                             // can be nil
-	AvailableQuantity *int                                // can be nil
-}
-
-// InsufficientStock is an error indicating stock is insufficient
-type InsufficientStock struct {
-	Items []*InsufficientStockData
-}
-
-func (i *InsufficientStock) Error() string {
-	var builder strings.Builder
-
-	builder.WriteString("Insufficient stock for ")
-	for idx, item := range i.Items {
-		builder.WriteString(item.Variant.String())
-		if idx == 0 {
-			continue
-		}
-		if idx == len(i.Items)-1 {
-			break
-		}
-		builder.WriteString(", ")
-	}
-
-	return builder.String()
 }
