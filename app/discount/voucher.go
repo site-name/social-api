@@ -139,7 +139,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 }
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
-func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "ValidateMinSpent"
@@ -176,7 +176,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 	}
 
 	if len(voucherChannelListings) == 0 {
-		notApplicableErr = &model.NotApplicable{
+		notApplicableErr = &product_and_discount.NotApplicable{
 			Message: "This voucher is not assigned to this channel",
 		}
 		return
@@ -187,7 +187,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 
 	if voucherChannelListing.MinSpent != nil {
 		if less, err := money.LessThan(voucherChannelListing.MinSpent); less && err == nil {
-			notApplicableErr = &model.NotApplicable{
+			notApplicableErr = &product_and_discount.NotApplicable{
 				Message: "This offer is only valid for orders over " + voucherChannelListing.MinSpent.Amount.String(),
 			}
 			return
@@ -198,7 +198,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 }
 
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
-func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "ValidateOncePerCustomer"
@@ -215,7 +215,7 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.
 		}
 	}
 	if len(voucherCustomers) >= 1 {
-		return &model.NotApplicable{
+		return &product_and_discount.NotApplicable{
 			Message: "This offer is valid only once per customer.",
 		}, nil
 	}
@@ -224,7 +224,7 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.
 }
 
 // ValidateVoucherOnlyForStaff validate if voucher is only for staff
-func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if notApplicableErr != nil {
 			notApplicableErr.Where = "ValidateVoucherOnlyForStaff"
@@ -248,7 +248,7 @@ func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_disco
 	relation, appErr := a.srv.ShopService().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customerID)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound || relation == nil {
-			notApplicableErr = &model.NotApplicable{
+			notApplicableErr = &product_and_discount.NotApplicable{
 				Message: "This offer is valid only for staff customers",
 			}
 			return

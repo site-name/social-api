@@ -7,6 +7,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
@@ -14,14 +15,13 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
 // Careful! It should be called inside a transaction.
 // :raises NotApplicable: When the voucher is not applicable in the current checkout.
-func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.CheckoutInfo) (map[string]*product_and_discount.Voucher, *model.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.CheckoutInfo) (map[string]*product_and_discount.Voucher, *product_and_discount.NotApplicable, *model.AppError) {
 	checkOut := checkoutInfo.Checkout
 	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, true)
 	if appErr != nil {
@@ -29,7 +29,7 @@ func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.Checkout
 	}
 
 	if checkOut.VoucherCode != nil && voucher == nil {
-		return nil, model.NewNotApplicable("getVoucherDataForOrder", "Voucher expired in meantime. Order placement aborted", nil, 0), nil
+		return nil, product_and_discount.NewNotApplicable("getVoucherDataForOrder", "Voucher expired in meantime. Order placement aborted", nil, 0), nil
 	}
 
 	if voucher == nil {
@@ -168,7 +168,7 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo *checkout.Checkou
 }
 
 // validateGiftcards Check if all gift cards assigned to checkout are available.
-func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*model.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*product_and_discount.NotApplicable, *model.AppError) {
 
 	var (
 		totalGiftcardsOfCheckout       int
@@ -206,7 +206,7 @@ func (s *ServiceCheckout) validateGiftcards(checkOut *checkout.Checkout) (*model
 	}
 
 	if totalActiveGiftcardsOfCheckout != totalGiftcardsOfCheckout {
-		return model.NewNotApplicable("validateGiftcards", "Gift card has expired. Order placement cancelled.", nil, 0), nil
+		return product_and_discount.NewNotApplicable("validateGiftcards", "Gift card has expired. Order placement cancelled.", nil, 0), nil
 	}
 
 	return nil, nil
@@ -278,7 +278,7 @@ func (s *ServiceCheckout) createLineForOrder(
 
 // createLinesForOrder Create a lines for the given order.
 // :raises InsufficientStock: when there is not enough items in stock for this variant.
-func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) ([]*order.OrderLineData, *warehouse.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) ([]*order.OrderLineData, *exception.InsufficientStock, *model.AppError) {
 	var (
 		translationLanguageCode = checkoutInfo.Checkout.LanguageCode
 		countryCode             = checkoutInfo.GetCountry()
@@ -405,7 +405,7 @@ type OrderData struct {
 
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
-func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *warehouse.InsufficientStock, *model.NotApplicable, *model.TaxError, *model.AppError) {
+func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *exception.InsufficientStock, *product_and_discount.NotApplicable, *exception.TaxError, *model.AppError) {
 	var (
 		checkOut = checkoutInfo.Checkout
 		// orderData = OrderData{}
@@ -458,7 +458,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 // will also get saved to that user's address book.
 // Current user's language is saved in the order so we can later determine
 // which language to use when sending email.
-func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData OrderData, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *warehouse.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData OrderData, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *exception.InsufficientStock, *model.AppError) {
 	// create transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -679,14 +679,22 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 	return nil
 }
 
+const CheckoutGetOrderDataAppErrorID = "app.checkout.get_order_data.app_error"
+
 func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (interface{}, *model.AppError) {
 	orderData, insufficientStockErr, notApplicableErr, taxError, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
 	if appErr != nil {
 		return nil, appErr
 	}
-	
+
 	if insufficientStockErr != nil {
-		return nil, model.NewAppError("getOrderData", "app.checkout.insufficient_stock_checkout.app_error", map[string]interface{}{"code": insufficientStockErr.})
+		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": insufficientStockErr.Code}, insufficientStockErr.Error(), 0)
+	}
+	if notApplicableErr != nil {
+		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": exception.VOUCHER_NOT_APPLICABLE}, notApplicableErr.Error(), 0)
+	}
+	if taxError != nil {
+		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": exception.TAX_ERROR}, taxError.Message, 0)
 	}
 	return orderData, nil
 }
@@ -776,7 +784,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(&checkOut)
 	if appErr != nil {
-		return nil, false, nil,nil, appErr
+		return nil, false, nil, nil, appErr
 	}
 
 	paymentErr, appErr := s.prepareCheckout(manager, checkoutInfo, lines, discounts, trackingCode, redirectURL, lastActivePaymentOfCheckout)

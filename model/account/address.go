@@ -8,7 +8,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/slog"
 )
 
 // length limits for address fields
@@ -214,7 +213,6 @@ func CleanNamePart(s string, nameType model.NamePart) string {
 	name = strings.Trim(name, "-")
 
 	if !IsValidNamePart(name, nameType) {
-		slog.Info("generating new", slog.String("name type", string(nameType)))
 		name = "a" + strings.ReplaceAll(model.NewRandomString(8), "-", "")
 	}
 

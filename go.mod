@@ -4,12 +4,12 @@ go 1.17
 
 require (
 	code.sajari.com/docconv v1.2.0
-	github.com/99designs/gqlgen v0.13.0
+	github.com/99designs/gqlgen v0.14.0
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/advancedlogic/GoOse v0.0.0-20210820140952-9d5822d4a625 // indirect
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.40.36
+	github.com/aws/aws-sdk-go v1.40.43
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.2
@@ -32,12 +32,12 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-hclog v0.16.2
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/hashicorp/go-plugin v1.4.2
+	github.com/hashicorp/go-plugin v1.4.3
 	github.com/hashicorp/memberlist v0.2.4
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/jonboulle/clockwork v0.2.2 // indirect
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.12
 	github.com/ledongthuc/pdf v0.0.0-20210621053716-e28cb8259002
 	github.com/lib/pq v1.10.3
 	github.com/mattermost/go-i18n v1.11.0
@@ -48,7 +48,7 @@ require (
 	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.0
-	github.com/minio/minio-go/v7 v7.0.13
+	github.com/minio/minio-go/v7 v7.0.14
 	github.com/nyaruka/phonenumbers v1.0.71
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/olivere/elastic v6.2.37+incompatible // indirect
@@ -57,7 +57,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/cors v1.8.0
-	github.com/russellhaering/goxmldsig v1.1.0 // indirect
+	github.com/russellhaering/goxmldsig v1.1.1 // indirect
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
@@ -71,12 +71,12 @@ require (
 	github.com/tylerb/graceful v1.2.15
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.4
 	github.com/wiggin77/merror v1.0.3
 	github.com/wiggin77/srslog v1.0.1
 	go.uber.org/zap v1.19.0
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.5
@@ -93,7 +93,7 @@ require (
 	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/RoaringBitmap/roaring v0.4.23 // indirect
-	github.com/agnivade/levenshtein v1.0.3 // indirect
+	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.0 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1 // indirect
@@ -153,11 +153,10 @@ require (
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/muesli/smartcrop v0.2.1-0.20181030220600-548bbf0c0965 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/otiai10/gosseract/v2 v2.2.4 // indirect
@@ -195,7 +194,6 @@ require (
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.38.0 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	willnorris.com/go/gifresize v1.0.0 // indirect

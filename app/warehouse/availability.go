@@ -3,6 +3,7 @@ package warehouse
 import (
 	"net/http"
 
+	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -55,7 +56,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 //
 // If so - returns None. If there is less stock then required raise InsufficientStock
 // exception.
-func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*exception.InsufficientStock, *model.AppError) {
 	if *variant.TrackInventory {
 		stocks, appErr := a.GetVariantStocksForCountry(nil, countryCode, channelSlug, variant.Id)
 		if appErr != nil {
@@ -66,8 +67,8 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 		}
 
 		if len(stocks) == 0 {
-			return &warehouse.InsufficientStock{
-				Items: []*warehouse.InsufficientStockData{
+			return &exception.InsufficientStock{
+				Items: []*exception.InsufficientStockData{
 					{Variant: *variant},
 				},
 			}, nil
@@ -78,8 +79,8 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 			return nil, appErr
 		}
 		if quantity > availableQuantity {
-			return &warehouse.InsufficientStock{
-				Items: []*warehouse.InsufficientStockData{
+			return &exception.InsufficientStock{
+				Items: []*exception.InsufficientStockData{
 					{Variant: *variant},
 				},
 			}, nil
@@ -100,7 +101,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	additionalFilterLookup model.StringInterface, // can be nil, if non-nil then it must be map[string]interface{}{"warehouse_id": <an UUID string>}
 	existingLines []*checkout.CheckoutLineInfo, // can be nil
 
-) (*warehouse.InsufficientStock, *model.AppError) {
+) (*exception.InsufficientStock, *model.AppError) {
 
 	variants = variants.FilterNils()
 
@@ -141,7 +142,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	var (
 		// keys are product variant ids, values are order line quantities
 		variantsQuantities = map[string]int{}
-		insufficientStocks = []*warehouse.InsufficientStockData{}
+		insufficientStocks = []*exception.InsufficientStockData{}
 	)
 
 	if existingLines != nil && len(existingLines) > 0 {
@@ -169,13 +170,13 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		}
 
 		if len(stocks) == 0 {
-			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
 				Variant:           *variant,
 				AvailableQuantity: &availableQuantity,
 			})
 		} else if *variant.TrackInventory {
 			if quantities[i] > availableQuantity {
-				insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: &availableQuantity,
 				})
@@ -184,7 +185,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	}
 
 	if len(insufficientStocks) > 0 {
-		return &warehouse.InsufficientStock{
+		return &exception.InsufficientStock{
 			Items: insufficientStocks,
 		}, nil
 	}

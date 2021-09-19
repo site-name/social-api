@@ -6,6 +6,7 @@ import (
 
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
@@ -26,7 +27,7 @@ type StockData struct {
 // Iterate by stocks and allocate as many items as needed or available in stock
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
-func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalFilterLookup model.StringInterface) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -107,7 +108,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	}
 
 	var (
-		insufficientStock []*warehouse.InsufficientStockData
+		insufficientStock []*exception.InsufficientStockData
 		allocations       warehouse.Allocations
 		allocationItems   []*warehouse.Allocation
 	)
@@ -124,7 +125,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	}
 
 	if len(insufficientStock) > 0 {
-		return &warehouse.InsufficientStock{Items: insufficientStock}, nil
+		return &exception.InsufficientStock{Items: insufficientStock}, nil
 	}
 
 	// outOfStocks is a list of stocks that are have no item left
@@ -196,7 +197,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	return nil, nil
 }
 
-func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*warehouse.InsufficientStockData) ([]*warehouse.InsufficientStockData, []*warehouse.Allocation) {
+func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*exception.InsufficientStockData) ([]*exception.InsufficientStockData, []*warehouse.Allocation) {
 	quantity := lineInfo.Quantity
 	quantityAllocated := 0
 	allocations := []*warehouse.Allocation{}
@@ -225,7 +226,7 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stoc
 	}
 
 	if quantityAllocated != quantity {
-		insufficientStock = append(insufficientStock, &warehouse.InsufficientStockData{
+		insufficientStock = append(insufficientStock, &exception.InsufficientStockData{
 			Variant:   *lineInfo.Variant,
 			OrderLine: &lineInfo.Line,
 		})
@@ -458,7 +459,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 }
 
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	// validate lineInfos is not nil nor empty
 	if lineInfos == nil || len(lineInfos) == 0 {
 		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
@@ -530,7 +531,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData,
 }
 
 // DecreaseAllocations Decreate allocations for provided order lines.
-func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	trackedOrderLines := a.GetOrderLinesWithTrackInventory(lineInfos)
 	if len(trackedOrderLines) == 0 {
 		return nil, nil
@@ -550,7 +551,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData,
 // will stay unmodified (case of unconfirmed order editing).
 //
 // updateStocks default to true
-func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*exception.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if orderLineInfos == nil || len(orderLineInfos) == 0 {
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
@@ -687,10 +688,10 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, 
 }
 
 // decreaseStocksQuantity
-func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*exception.InsufficientStock, *model.AppError) {
 
 	var (
-		insufficientStocks []*warehouse.InsufficientStockData
+		insufficientStocks []*exception.InsufficientStockData
 		stocksToUpdate     []*warehouse.Stock
 	)
 
@@ -709,7 +710,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction,
 		}
 
 		if stock == nil {
-			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
 				Variant:     *variant, // variant nil case is checked
 				OrderLine:   &lineInfo.Line,
 				WarehouseID: lineInfo.WarehouseID,
@@ -719,7 +720,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction,
 
 		quantityAllocated := quantityAllocationForStocks[stock.Id] // stock == nil already continued the loop
 		if (stock.Quantity - quantityAllocated) < lineInfo.Quantity {
-			insufficientStocks = append(insufficientStocks, &warehouse.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
 				Variant:     *variant, // nil case checked
 				OrderLine:   &lineInfo.Line,
 				WarehouseID: lineInfo.WarehouseID,
@@ -732,7 +733,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction,
 	}
 
 	if len(insufficientStocks) > 0 {
-		return &warehouse.InsufficientStock{
+		return &exception.InsufficientStock{
 			Items: insufficientStocks,
 		}, nil
 	}

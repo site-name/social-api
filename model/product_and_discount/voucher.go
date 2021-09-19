@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sitename/sitename/app/exception"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -69,9 +68,9 @@ type VoucherFilterOption struct {
 }
 
 // ValidateMinCheckoutItemsQuantity validates the quantity >= minimum requirement
-func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *exception.NotApplicable {
+func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *NotApplicable {
 	if voucher.MinCheckoutItemsQuantity > quantity {
-		return &exception.NotApplicable{
+		return &NotApplicable{
 			Where:                    "ValidateMinCheckoutItemsQuantity",
 			Message:                  fmt.Sprintf("This offer is onlyvalid for orders with a minimum of %d in quantity", voucher.MinCheckoutItemsQuantity),
 			MinCheckoutItemsQuantity: voucher.MinCheckoutItemsQuantity,

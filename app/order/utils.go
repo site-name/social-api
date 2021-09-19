@@ -10,6 +10,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
+	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
@@ -505,12 +506,7 @@ func (a *ServiceOrder) GetPricesOfDiscountedSpecificProduct(orderLines []*order.
 // Calculate discount value depending on voucher and discount types.
 //
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "GetVoucherDiscountForOrder"
-		}
-	}()
+func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 
 	ord.PopulateNonDbFields() // NOTE: must call this method before performing money, weight calculations
 
@@ -731,7 +727,7 @@ func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.G
 	return totalPriceLeft, nil
 }
 
-func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
 	}
@@ -753,7 +749,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -848,7 +844,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 }
 
 // Delete an order line from an order.
-func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr

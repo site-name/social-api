@@ -1,9 +1,8 @@
-package app
+package exception
 
 import (
 	"strings"
 
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
@@ -37,33 +36,6 @@ const (
 	CHANNEL_INACTIVE                 CheckoutErrorCode = "channel_inactive"
 	UNAVAILABLE_VARIANT_IN_CHANNEL   CheckoutErrorCode = "unavailable_variant_in_channel"
 )
-
-// Exception raised when a discount is not applicable to a checkout.
-//
-// The error is raised if the order value is below the minimum required
-// price or the order quantity is below the minimum quantity of items.
-// Minimum price will be available as the `min_spent` attribute.
-// Minimum quantity will be available as the `min_checkout_items_quantity` attribute.
-type NotApplicable struct {
-	Where                    string
-	Message                  string
-	MinSpent                 *decimal.Decimal
-	MinCheckoutItemsQuantity int
-}
-
-func (a *NotApplicable) Error() string {
-	return a.Where + " " + a.Message
-}
-
-// NewNotApplicable
-func NewNotApplicable(where, message string, minSpent *decimal.Decimal, minCheckoutItemsQuantity int) *NotApplicable {
-	return &NotApplicable{
-		Where:                    where,
-		Message:                  message,
-		MinSpent:                 minSpent,
-		MinCheckoutItemsQuantity: minCheckoutItemsQuantity,
-	}
-}
 
 type TaxError struct {
 	Where   string

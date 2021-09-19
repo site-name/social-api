@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -47,7 +48,7 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) Rec
 
 		var (
 			discount          interface{}
-			notApplicableErr  *model.NotApplicable
+			notApplicableErr  *product_and_discount.NotApplicable
 			appErr            *model.AppError
 			calculateDiscount bool
 		)

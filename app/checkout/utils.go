@@ -13,13 +13,13 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -164,7 +164,7 @@ func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.Checko
 // If quantity is set to 0, checkout line will be deleted.
 // Otherwise, quantity will be added or replaced (if replace argument is True).
 //  skipStockCheck and replace are default to false
-func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *warehouse.InsufficientStock, *model.AppError) {
+func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError) {
 	// validate input arguments:
 	var invlArgs string
 	if ckout == nil {

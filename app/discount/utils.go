@@ -30,7 +30,7 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *product_and_discount.Vou
 }
 
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
-func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	// validate email argument
 	if !model.IsValidEmail(customerEmail) {
 		appErr = model.NewAppError("AddVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)
@@ -166,7 +166,7 @@ func (a *ServiceDiscount) ValidateVoucherForCheckout() {
 	panic("not implemented")
 }
 
-func (a *ServiceDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if notApplicableErr != nil {
 			notApplicableErr.Where = "ValidateVoucherInOrder"
@@ -207,7 +207,7 @@ func (a *ServiceDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicabl
 	return a.ValidateVoucher(voucher, orderSubTotal, orderTotalQuantity, orderCustomerEmail, ord.ChannelID, orderOwnerId)
 }
 
-func (a *ServiceDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	defer func() {
 		if appErr != nil {
 			appErr.Where = "ValidateVoucher"
