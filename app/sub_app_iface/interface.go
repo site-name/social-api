@@ -80,7 +80,21 @@ type PaymentService interface {
 	// NOTE: `customerIpAddress`, `paymentToken`, `returnUrl` and `externalReference` can be empty
 	//
 	// `extraData`, `ckout`, `ord` can be nil
-	CreatePayment(gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, ckout *checkout.Checkout, ord *order.Order, returnUrl string, externalReference string) (*payment.Payment, *payment.PaymentError, *model.AppError)
+	CreatePayment(
+		gateway string,
+		total *decimal.Decimal,
+		currency string,
+		email string,
+		customerIpAddress string,
+		paymentToken string,
+		extraData map[string]string,
+		ckout *checkout.Checkout,
+		ord *order.Order,
+		returnUrl string,
+		externalReference string,
+		storePaymentMethod payment.StorePaymentMethod,
+		metadata model.StringMap,
+	) (*payment.Payment, *payment.PaymentError, *model.AppError)
 	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError                                                                                                                                            // CleanAuthorize Check if payment can be authorized
 	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError                                                                                                                           // CleanCapture Check if payment can be captured.
 	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)                                                                                                                             // FetchCustomerId Retrieve users customer_id stored for desired gateway.

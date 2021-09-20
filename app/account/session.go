@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -533,14 +532,14 @@ func (a *ServiceAccount) ExtendSessionExpiryIfNeeded(session *model.Session) boo
 		return false
 	}
 
-	auditRec := a.MakeAuditRecord("extendSessionExpiry", audit.Fail)
-	defer a.LogAuditRec(auditRec, nil)
-	auditRec.AddMeta("session", session)
+	// auditRec := a.MakeAuditRecord("extendSessionExpiry", audit.Fail)
+	// defer a.LogAuditRec(auditRec, nil)
+	// auditRec.AddMeta("session", session)
 
 	newExpiry := now + sessionLength
 	if err := a.srv.Store.Session().UpdateExpiresAt(session.Id, newExpiry); err != nil {
 		slog.Error("Failed to update ExpiresAt", slog.String("user_id", session.UserId), slog.String("session_id", session.Id), slog.Err(err))
-		auditRec.AddMeta("err", err.Error())
+		// auditRec.AddMeta("err", err.Error())
 		return false
 	}
 
@@ -550,11 +549,16 @@ func (a *ServiceAccount) ExtendSessionExpiryIfNeeded(session *model.Session) boo
 	session.ExpiresAt = newExpiry
 	a.AddSessionToCache(session)
 
-	slog.Debug("Session extended", slog.String("user_id", session.UserId), slog.String("session_id", session.Id),
-		slog.Int64("newExpiry", newExpiry), slog.Int64("session_length", sessionLength))
+	slog.Debug(
+		"Session extended",
+		slog.String("user_id", session.UserId),
+		slog.String("session_id", session.Id),
+		slog.Int64("newExpiry", newExpiry),
+		slog.Int64("session_length", sessionLength),
+	)
 
-	auditRec.Success()
-	auditRec.AddMeta("extended_session", session)
+	// auditRec.Success()
+	// auditRec.AddMeta("extended_session", session)
 	return true
 }
 

@@ -46,11 +46,14 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 		table.ColMap("CustomerIpAddress").SetMaxSize(model.IP_ADDRESS_MAX_LENGTH)
 		table.ColMap("ReturnUrl").SetMaxSize(model.URL_LINK_MAX_LENGTH)
 		table.ColMap("PspReference").SetMaxSize(payment.PAYMENT_PSP_REFERENCE_MAX_LENGTH)
+		table.ColMap("StorePaymentMethod").SetMaxSize(payment.PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH)
 	}
 	return ps
 }
 
 func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
+	ps.CommonMetaDataIndex(store.PaymentTableName)
+
 	ps.CreateIndexIfNotExists("idx_payments_order_id", store.PaymentTableName, "OrderID")
 	ps.CreateIndexIfNotExists("idx_payments_is_active", store.PaymentTableName, "IsActive")
 	ps.CreateIndexIfNotExists("idx_payments_charge_status", store.PaymentTableName, "ChargeStatus")
@@ -96,6 +99,51 @@ func (ps *SqlPaymentStore) ModelFields() []string {
 		"Payments.ExtraData",
 		"Payments.ReturnUrl",
 		"Payments.PspReference",
+		"Payments.StorePaymentMethod",
+		"Payments.Metadata",
+		"Payments.PrivateMetadata",
+	}
+}
+
+func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
+	return []interface{}{
+		&payMent.Id,
+		&payMent.GateWay,
+		&payMent.IsActive,
+		&payMent.ToConfirm,
+		&payMent.CreateAt,
+		&payMent.UpdateAt,
+		&payMent.ChargeStatus,
+		&payMent.Token,
+		&payMent.Total,
+		&payMent.CapturedAmount,
+		&payMent.Currency,
+		&payMent.CheckoutID,
+		&payMent.OrderID,
+		&payMent.BillingEmail,
+		&payMent.BillingFirstName,
+		&payMent.BillingLastName,
+		&payMent.BillingCompanyName,
+		&payMent.BillingAddress1,
+		&payMent.BillingAddress2,
+		&payMent.BillingCity,
+		&payMent.BillingCityArea,
+		&payMent.BillingPostalCode,
+		&payMent.BillingCountryCode,
+		&payMent.BillingCountryArea,
+		&payMent.CcFirstDigits,
+		&payMent.CcLastDigits,
+		&payMent.CcBrand,
+		&payMent.CcExpMonth,
+		&payMent.CcExpYear,
+		&payMent.PaymentMethodType,
+		&payMent.CustomerIpAddress,
+		&payMent.ExtraData,
+		&payMent.ReturnUrl,
+		&payMent.PspReference,
+		&payMent.StorePaymentMethod,
+		&payMent.Metadata,
+		&payMent.PrivateMetadata,
 	}
 }
 
@@ -215,28 +263,24 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		query = query.Where(squirrel.Eq{"Payments.IsActive": *option.IsActive})
 	}
 
-	var joinedTransactionTable bool //
+	var joinedTransactionTable bool
 
 	if option.TransactionsKind != nil {
 		query = query.
 			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
 			Where(option.TransactionsKind.ToSquirrel("Transactions.Kind"))
 
-		joinedTransactionTable = true // indicate that joined transaction table
+		joinedTransactionTable = true // indicate that we have joined transaction table
 	}
 	if option.TransactionsActionRequired != nil {
-		// check if already joined table transactions
 		if !joinedTransactionTable {
-			query = query.
-				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+			query = query.InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.ActionRequired": *option.TransactionsActionRequired})
 	}
 	if option.TransactionsIsSuccess != nil {
-		// check if already joined table transactions
 		if !joinedTransactionTable {
-			query = query.
-				InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+			query = query.InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.IsSuccess": *option.TransactionsIsSuccess})
 	}

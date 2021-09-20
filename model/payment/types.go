@@ -117,21 +117,23 @@ func AddressDataFromAddress(a *account.Address) *AddressData {
 // Used for unifying the representation of data.
 // It is required to communicate between Saleor and given payment gateway.
 type PaymentData struct {
-	Gateway           string
-	Amount            decimal.Decimal
-	Currency          string
-	Billing           *AddressData // can be bil
-	Shipping          *AddressData // can be nil
-	PaymentID         string       // payment's Token property
-	OrderID           *string      // can be nil
-	CustomerIpAddress *string      // can be nil
-	CustomerEmail     string
-	Token             *string // can be nil
-	CustomerID        *string // can be nil
-	ReuseSource       bool
-	Data              model.StringInterface // can be nil
-	GraphqlPaymentID  string                // default to payment's Token
-	GraphqlCustomerID *string               // can be nil
+	Gateway            string
+	Amount             decimal.Decimal
+	Currency           string
+	Billing            *AddressData // can be bil
+	Shipping           *AddressData // can be nil
+	PaymentID          string       // payment's Token property
+	OrderID            *string      // can be nil
+	CustomerIpAddress  *string      // can be nil
+	CustomerEmail      string
+	Token              *string // can be nil
+	CustomerID         *string // can be nil
+	ReuseSource        bool
+	Data               model.StringInterface  // can be nil
+	GraphqlPaymentID   string                 // default to payment's Token
+	GraphqlCustomerID  *string                // can be nil
+	StorePaymentMethod StorePaymentMethodEnum // default to StorePaymentMethodEnum_NONE ("none")
+	PaymentMetadata    model.StringMap
 }
 
 // Dataclass for payment gateway token fetching customization.
@@ -183,4 +185,46 @@ type PaymentInterface interface {
 	ProcessPayment(gateway string, paymentInformation *PaymentData, channelSlug *string) *GatewayResponse
 	GetClientToken(gateway string, tokenConfig *TokenConfig, channelSlug *string) string
 	ListPaymentSources(gateway string, customerId string, channelSlug *string) []*CustomerSource
+}
+
+// Represents if and how a payment should be stored in a payment gateway.
+// The following store types are possible:
+// - ON_SESSION - the payment is stored only to be reused when
+// the customer is present in the checkout flow
+// - OFF_SESSION - the payment is stored to be reused even if
+// the customer is absent
+// - NONE - the payment is not stored.
+type StorePaymentMethod string
+
+const (
+	ON_SESSION  StorePaymentMethod = "on_session"
+	OFF_SESSION StorePaymentMethod = "off_session"
+	NONE        StorePaymentMethod = "none"
+)
+
+var StorePaymentMethodStringValues = map[StorePaymentMethod]string{
+	ON_SESSION:  "On session",
+	OFF_SESSION: "Of session",
+	NONE:        "none",
+}
+
+type StorePaymentMethodEnum string
+
+const (
+	StorePaymentMethodEnum_NONE        StorePaymentMethodEnum = "NONE"
+	StorePaymentMethodEnum_ON_SESSION  StorePaymentMethodEnum = "ON SESSION"
+	StorePaymentMethodEnum_OFF_SESSION StorePaymentMethodEnum = "OFF_SESSION"
+)
+
+func (mt StorePaymentMethod) ToEnum() StorePaymentMethodEnum {
+	switch mt {
+	case ON_SESSION:
+		return StorePaymentMethodEnum_ON_SESSION
+	case NONE:
+		return StorePaymentMethodEnum_NONE
+	case OFF_SESSION:
+		return StorePaymentMethodEnum_OFF_SESSION
+	default:
+		return StorePaymentMethodEnum("")
+	}
 }

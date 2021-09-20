@@ -563,6 +563,7 @@ type (
 type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
+		ScanFields(payMent payment.Payment) []interface{}
 		Save(payment *payment.Payment) (*payment.Payment, error)                                                          // Save save payment instance into database
 		Get(id string, lockForUpdate bool) (*payment.Payment, error)                                                      // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
 		Update(payment *payment.Payment) (*payment.Payment, error)                                                        // Update updates given payment and returns new updated payment

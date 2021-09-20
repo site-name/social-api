@@ -135,21 +135,23 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 	}
 
 	return &payment.PaymentData{
-		Gateway:           payMent.GateWay,
-		Token:             paymentToken,
-		Amount:            *amount,
-		Currency:          payMent.Currency,
-		Billing:           billingAddressData,
-		Shipping:          shippingAddressData,
-		OrderID:           orderID,
-		PaymentID:         payMent.Token,
-		GraphqlPaymentID:  payMent.Token,
-		CustomerIpAddress: payMent.CustomerIpAddress,
-		CustomerID:        customerId,
-		CustomerEmail:     email,
-		ReuseSource:       storeSource,
-		Data:              additionalData,
-		GraphqlCustomerID: userID,
+		Gateway:            payMent.GateWay,
+		Token:              paymentToken,
+		Amount:             *amount,
+		Currency:           payMent.Currency,
+		Billing:            billingAddressData,
+		Shipping:           shippingAddressData,
+		OrderID:            orderID,
+		PaymentID:          payMent.Token,
+		GraphqlPaymentID:   payMent.Token,
+		CustomerIpAddress:  payMent.CustomerIpAddress,
+		CustomerID:         customerId,
+		CustomerEmail:      email,
+		ReuseSource:        storeSource,
+		Data:               additionalData,
+		GraphqlCustomerID:  userID,
+		StorePaymentMethod: payMent.StorePaymentMethod.ToEnum(),
+		PaymentMetadata:    payMent.Metadata,
 	}, nil
 }
 
@@ -161,6 +163,8 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 // NOTE: `customerIpAddress`, `paymentToken`, `returnUrl` and `externalReference` can be empty
 //
 // `extraData`, `ckout`, `ord` can be nil
+//
+// `storePaymentMethod` default to payment.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
 	gateway string,
 	total *decimal.Decimal,
@@ -170,13 +174,15 @@ func (a *ServicePayment) CreatePayment(
 	paymentToken string,
 	extraData map[string]string,
 	ckout *checkout.Checkout,
-	ord *order.Order,
+	orDer *order.Order,
 	returnUrl string,
 	externalReference string,
+	storePaymentMethod payment.StorePaymentMethod,
+	metadata model.StringMap, // can be nil
 
 ) (*payment.Payment, *payment.PaymentError, *model.AppError) {
 	// must at least provide either checkout or order, both is best :))
-	if ckout == nil && ord == nil {
+	if ckout == nil && orDer == nil {
 		return nil, nil, model.NewAppError("CreatePayment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "", http.StatusBadRequest)
 	}
 
@@ -191,8 +197,8 @@ func (a *ServicePayment) CreatePayment(
 
 	if ckout != nil && ckout.BillingAddressID != nil {
 		billingAddressID = *ckout.BillingAddressID
-	} else if ord != nil && ord.BillingAddressID != nil {
-		billingAddressID = *ord.BillingAddressID
+	} else if orDer != nil && orDer.BillingAddressID != nil {
+		billingAddressID = *orDer.BillingAddressID
 	}
 
 	billingAddress, appErr := a.srv.AccountService().AddressById(billingAddressID)
@@ -204,6 +210,9 @@ func (a *ServicePayment) CreatePayment(
 		return nil, payment.NewPaymentError("CreatePayment", "Order does not have a billing address.", payment.BILLING_ADDRESS_NOT_SET), nil
 	}
 
+	if metadata == nil {
+		metadata = make(model.StringMap)
+	}
 	payment := &payment.Payment{
 		BillingEmail:       email,
 		BillingFirstName:   billingAddress.FirstName,
@@ -224,12 +233,16 @@ func (a *ServicePayment) CreatePayment(
 		CustomerIpAddress:  &customerIpAddress,
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
+		StorePaymentMethod: storePaymentMethod,
+		ModelMetadata: model.ModelMetadata{
+			Metadata: metadata,
+		},
 	}
 	if ckout != nil {
 		payment.CheckoutID = &ckout.Token
 	}
-	if ord != nil {
-		payment.OrderID = &ord.Id
+	if orDer != nil {
+		payment.OrderID = &orDer.Id
 	}
 
 	payment, appErr = a.srv.PaymentService().UpsertPayment(payment)
@@ -374,14 +387,17 @@ func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayRespon
 
 // GatewayPostProcess
 func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
-	tx, err := a.srv.Store.GetMaster().Begin()
+	// create transaction
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.srv.Store.FinalizeTransaction(tx)
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	changedFields := []string{}
-	var appErr *model.AppError
+	var (
+		changedFields []string
+		appErr        *model.AppError
+	)
 
 	if !paymentTransaction.IsSuccess || paymentTransaction.AlreadyProcessed {
 		if len(changedFields) > 0 {
@@ -398,12 +414,14 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 		if _, appErr = a.UpsertPayment(payMent); appErr != nil {
 			return appErr
 		}
+
+		return nil
 	}
 
 	// to_confirm is defined by the paymentTransaction.action_required. Payment doesn't
 	// require confirmation when we got action_required == False
 	if payMent.ToConfirm {
-		payMent.ToConfirm = true
+		payMent.ToConfirm = false
 		changedFields = append(changedFields, "to_confirm")
 	}
 
@@ -418,9 +436,11 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 			payMent.ChargeStatus = payment.FULLY_CHARGED
 		}
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
+
 	case payment.VOID:
 		payMent.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "is_active", "update_at")
+
 	case payment.REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
 		payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
@@ -430,13 +450,16 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 			payMent.ChargeStatus = payment.FULLY_REFUNDED
 			payMent.IsActive = model.NewBool(false)
 		}
+
 	case payment.PENDING:
 		payMent.ChargeStatus = payment.PENDING
 		changedFields = append(changedFields, "charge_status")
+
 	case payment.CANCEL:
 		payMent.ChargeStatus = payment.CANCELLED
 		payMent.IsActive = model.NewBool(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
+
 	case payment.CAPTURE_FAILED:
 		if payMent.ChargeStatus == payment.PARTIALLY_CHARGED || payMent.ChargeStatus == payment.FULLY_CHARGED {
 			payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
@@ -460,12 +483,17 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 
 	if util.StringInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
-		if appErr = a.srv.OrderService().UpdateOrderTotalPaid(tx, *payMent.OrderID); appErr != nil {
+		orDer, appErr := a.srv.OrderService().OrderById(*payMent.OrderID)
+		if appErr != nil {
+			return appErr
+		}
+		if appErr = a.srv.OrderService().UpdateOrderTotalPaid(transaction, orDer); appErr != nil {
 			return appErr
 		}
 	}
 
-	if err = tx.Commit(); err != nil {
+	// commit transaction
+	if err = transaction.Commit(); err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -532,68 +560,54 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 	return strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 }
 
+// UpdatePayment
 func (a *ServicePayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
-
-	var changed bool
-	var appErr *model.AppError
+	var (
+		changedFields []string
+		appErr        *model.AppError
+	)
 
 	if gatewayResponse.PspReference != "" {
 		pm.PspReference = &gatewayResponse.PspReference
-		changed = true
+		changedFields = append(changedFields, "psp_reference")
 	}
 
 	if gatewayResponse.PaymentMethodInfo != nil {
-		if brand := gatewayResponse.PaymentMethodInfo.Brand; brand != "" {
-			pm.CcBrand = brand
-			changed = true
-		}
-		if last4 := gatewayResponse.PaymentMethodInfo.Last4; last4 != "" {
-			pm.CcLastDigits = last4
-			changed = true
-		}
-		if expYear := gatewayResponse.PaymentMethodInfo.ExpYear; expYear > 0 {
-			pm.CcExpYear = &expYear
-			changed = true
-		}
-		if expMonth := gatewayResponse.PaymentMethodInfo.ExpMonth; expMonth > 0 {
-			pm.CcExpMonth = &expMonth
-			changed = true
-		}
-		if type_ := gatewayResponse.PaymentMethodInfo.Type; type_ != "" {
-			pm.PaymentMethodType = type_
-			changed = true
-		}
+		a.UpdatePaymentMethodDetails(pm, gatewayResponse.PaymentMethodInfo, changedFields)
 	}
 
-	if changed {
+	if len(changedFields) > 0 {
 		_, appErr = a.UpsertPayment(pm)
+		if appErr != nil {
+			return appErr
+		}
 	}
 
-	return appErr
+	return nil
 }
 
-func (a *ServicePayment) updatePaymentMethodDetails(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse, changedFields []string) {
+func (a *ServicePayment) UpdatePaymentMethodDetails(payMent *payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string) {
 	if changedFields == nil {
 		changedFields = []string{}
 	}
 
-	if gatewayResponse.PaymentMethodInfo == nil {
+	if paymentMethodInfo == nil {
 		return
 	}
 
-	if brand := gatewayResponse.PaymentMethodInfo.Brand; brand != "" {
+	if brand := paymentMethodInfo.Brand; brand != "" {
 		payMent.CcBrand = brand
 	}
-	if last4 := gatewayResponse.PaymentMethodInfo.Last4; last4 != "" {
+	if last4 := paymentMethodInfo.Last4; last4 != "" {
 		payMent.CcLastDigits = last4
 	}
-	if exprYear := gatewayResponse.PaymentMethodInfo.ExpYear; exprYear != 0 {
+	if exprYear := paymentMethodInfo.ExpYear; exprYear != 0 {
 		payMent.CcExpYear = &exprYear
 	}
-	if exprMonth := gatewayResponse.PaymentMethodInfo.ExpMonth; exprMonth != 0 {
+	if exprMonth := paymentMethodInfo.ExpMonth; exprMonth != 0 {
 		payMent.CcExpMonth = &exprMonth
 	}
-	if type_ := gatewayResponse.PaymentMethodInfo.Type; type_ != "" {
+	if type_ := paymentMethodInfo.Type; type_ != "" {
 		payMent.PaymentMethodType = type_
 	}
 }
@@ -666,3 +680,13 @@ func PriceToMinorUnit(value *decimal.Decimal, currency string) (string, error) {
 		).
 		String(), nil
 }
+
+// PaymentOwnedByUser checks if given user is authenticated and owns given payment
+//
+// NOTE: if the `user` is unauthenticated, don't call me, just returns false
+// func (s *ServicePayment) PaymentOwnedByUser(paymentID string, user *account.User) (bool, *model.AppError) {
+// 	if user == nil || !model.IsValidId(user.Id) {
+// 		return false, nil
+// 	}
+
+// }

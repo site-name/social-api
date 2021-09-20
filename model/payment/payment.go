@@ -15,17 +15,18 @@ import (
 
 // Max lengths for some payment's fields
 const (
-	MAX_LENGTH_PAYMENT_GATEWAY       = 255
-	MAX_LENGTH_PAYMENT_CHARGE_STATUS = 20
-	MAX_LENGTH_PAYMENT_TOKEN         = 512
-	PAYMENT_PSP_REFERENCE_MAX_LENGTH = 512
-	MAX_LENGTH_CC_FIRST_DIGITS       = 6
-	MAX_LENGTH_CC_LAST_DIGITS        = 4
-	MAX_LENGTH_CC_BRAND              = 40
-	MIN_CC_EXP_MONTH                 = 1
-	MAX_CC_EXP_MONTH                 = 12
-	MIN_CC_EXP_YEAR                  = 1000
-	MAX_LENGTH_PAYMENT_COMMON_256    = 256
+	MAX_LENGTH_PAYMENT_GATEWAY              = 255
+	MAX_LENGTH_PAYMENT_CHARGE_STATUS        = 20
+	MAX_LENGTH_PAYMENT_TOKEN                = 512
+	PAYMENT_PSP_REFERENCE_MAX_LENGTH        = 512
+	MAX_LENGTH_CC_FIRST_DIGITS              = 6
+	MAX_LENGTH_CC_LAST_DIGITS               = 4
+	MAX_LENGTH_CC_BRAND                     = 40
+	MIN_CC_EXP_MONTH                        = 1
+	MAX_CC_EXP_MONTH                        = 12
+	MIN_CC_EXP_YEAR                         = 1000
+	MAX_LENGTH_PAYMENT_COMMON_256           = 256
+	PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH = 11
 
 	// Payment Gateways
 	GATE_WAY_MANUAL = "manual"
@@ -56,40 +57,42 @@ var ChargeStatuString = map[string]string{
 
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string           `json:"id"`
-	GateWay            string           `json:"gate_way"`
-	IsActive           *bool            `json:"is_active"` // default true
-	ToConfirm          bool             `json:"to_confirm"`
-	CreateAt           int64            `json:"create_at"`
-	UpdateAt           int64            `json:"update_at"`
-	ChargeStatus       string           `json:"charge_status"`
-	Token              string           `json:"token"`
-	Total              *decimal.Decimal `json:"total"`           // DEFAULT decimal(0)
-	CapturedAmount     *decimal.Decimal `json:"captured_amount"` // DEFAULT decimal(0)
-	Currency           string           `json:"currency"`        // default 'USD'
-	CheckoutID         *string          `json:"checkout_id"`
-	OrderID            *string          `json:"order_id"`
-	BillingEmail       string           `json:"billing_email"`
-	BillingFirstName   string           `json:"billing_first_name"`
-	BillingLastName    string           `json:"billing_last_name"`
-	BillingCompanyName string           `json:"billing_company_name"`
-	BillingAddress1    string           `json:"billing_address_1"`
-	BillingAddress2    string           `json:"billing_address_2"`
-	BillingCity        string           `json:"billing_city"`
-	BillingCityArea    string           `json:"billing_city_area"`
-	BillingPostalCode  string           `json:"billing_postal_code"`
-	BillingCountryCode string           `json:"billing_country_code"`
-	BillingCountryArea string           `json:"billing_country_area"`
-	CcFirstDigits      string           `json:"cc_first_digits"`
-	CcLastDigits       string           `json:"cc_last_digits"`
-	CcBrand            string           `json:"cc_brand"`
-	CcExpMonth         *uint8           `json:"cc_exp_month"`
-	CcExpYear          *uint16          `json:"cc_exp_year"`
-	PaymentMethodType  string           `json:"payment_method_type"`
-	CustomerIpAddress  *string          `json:"customer_ip_address"`
-	ExtraData          string           `json:"extra_data"`
-	ReturnUrl          *string          `json:"return_url_url"`
-	PspReference       *string          `json:"psp_reference"` // db index
+	Id                 string             `json:"id"`
+	GateWay            string             `json:"gate_way"`
+	IsActive           *bool              `json:"is_active"` // default true
+	ToConfirm          bool               `json:"to_confirm"`
+	CreateAt           int64              `json:"create_at"`
+	UpdateAt           int64              `json:"update_at"`
+	ChargeStatus       string             `json:"charge_status"`
+	Token              string             `json:"token"`
+	Total              *decimal.Decimal   `json:"total"`           // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal   `json:"captured_amount"` // DEFAULT decimal(0)
+	Currency           string             `json:"currency"`        // default 'USD'
+	CheckoutID         *string            `json:"checkout_id"`
+	OrderID            *string            `json:"order_id"`
+	BillingEmail       string             `json:"billing_email"`
+	BillingFirstName   string             `json:"billing_first_name"`
+	BillingLastName    string             `json:"billing_last_name"`
+	BillingCompanyName string             `json:"billing_company_name"`
+	BillingAddress1    string             `json:"billing_address_1"`
+	BillingAddress2    string             `json:"billing_address_2"`
+	BillingCity        string             `json:"billing_city"`
+	BillingCityArea    string             `json:"billing_city_area"`
+	BillingPostalCode  string             `json:"billing_postal_code"`
+	BillingCountryCode string             `json:"billing_country_code"`
+	BillingCountryArea string             `json:"billing_country_area"`
+	CcFirstDigits      string             `json:"cc_first_digits"`
+	CcLastDigits       string             `json:"cc_last_digits"`
+	CcBrand            string             `json:"cc_brand"`
+	CcExpMonth         *uint8             `json:"cc_exp_month"`
+	CcExpYear          *uint16            `json:"cc_exp_year"`
+	PaymentMethodType  string             `json:"payment_method_type"`
+	CustomerIpAddress  *string            `json:"customer_ip_address"`
+	ExtraData          string             `json:"extra_data"`
+	ReturnUrl          *string            `json:"return_url_url"`
+	PspReference       *string            `json:"psp_reference"`        // db index
+	StorePaymentMethod StorePaymentMethod `json:"store_payment_method"` // default to "none"
+	model.ModelMetadata
 }
 
 // PaymentFilterOption is used to build sql queries
@@ -282,6 +285,9 @@ func (p *Payment) IsValid() *model.AppError {
 	if p.PspReference != nil && len(*p.PspReference) > PAYMENT_PSP_REFERENCE_MAX_LENGTH {
 		return outer("psp_reference", &p.Id)
 	}
+	if len(p.StorePaymentMethod) > PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH || StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
+		return outer("store_payment_method", &p.Id)
+	}
 
 	return nil
 }
@@ -314,6 +320,9 @@ func (p *Payment) commonPre() {
 	}
 	if p.Currency == "" {
 		p.Currency = model.DEFAULT_CURRENCY
+	}
+	if StorePaymentMethodStringValues[p.StorePaymentMethod] == "" {
+		p.StorePaymentMethod = NONE
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// valid values for payment transaction's kind
 const (
 	EXTERNAL          string = "external"
 	AUTH              string = "auth"
