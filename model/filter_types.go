@@ -6,10 +6,11 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
+// compile time checks
 var (
-	_ Squirrelable = &StringFilter{}
-	_ Squirrelable = &TimeFilter{}
-	_ Squirrelable = &NumberFilter{}
+	_ Squirrelable = (*StringFilter)(nil)
+	_ Squirrelable = (*TimeFilter)(nil)
+	_ Squirrelable = (*NumberFilter)(nil)
 )
 
 // StringOption is used for filtering string-related types
@@ -27,34 +28,28 @@ type StringOption struct {
 }
 
 func (st *StringOption) WithFilter(filter func(s string) bool) *StringOption {
-	st.filter = filter
+	res := *st
+	res.filter = filter
 
-	return st
-}
-
-func defaultStringFilter(string) bool {
-	return true
+	return &res
 }
 
 func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
-	if st.filter == nil {
-		st.filter = defaultStringFilter
-	}
 	var res []squirrel.Sqlizer
 
 	if st.Eq != "" {
-		if st.filter(st.Eq) {
+		if st.filter != nil && st.filter(st.Eq) {
 			res = append(res, squirrel.Eq{key: st.Eq})
 		}
 	}
 	if st.NotEq != "" {
-		if st.filter(st.Eq) {
+		if st.filter != nil && st.filter(st.Eq) {
 			res = append(res, squirrel.NotEq{key: st.NotEq})
 		}
 	}
 	if len(st.In) != 0 {
 		for i, in := range st.In {
-			if !st.filter(in) {
+			if st.filter != nil && !st.filter(in) {
 				st.In = append(st.In[:i], st.In[i+1:]...)
 			}
 		}
@@ -62,7 +57,7 @@ func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
 	}
 	if len(st.NotIn) > 0 {
 		for i, notIn := range st.NotIn {
-			if !st.filter(notIn) {
+			if st.filter != nil && !st.filter(notIn) {
 				st.NotIn = append(st.NotIn[:i], st.NotIn[i+1:]...)
 			}
 		}
@@ -81,53 +76,27 @@ func (st *StringOption) Parse(key string) []squirrel.Sqlizer {
 		}
 		res = append(res, compareToNull)
 	}
-	if len(st.ExtraExpr) > 0 {
-		res = append(res, st.ExtraExpr...)
-	}
+	res = append(res, st.ExtraExpr...)
 
 	return res
 }
 
 type StringFilter struct {
-	And *StringOption
-	Or  *StringOption
+	And *StringOption // Must provide at least 2 options
+	Or  *StringOption // Must provide at least 2 options
 	*StringOption
 }
 
 func (sf *StringFilter) ToSquirrel(key string) squirrel.Sqlizer {
-	var (
-		compareMultiple bool = true
-		option          *StringOption
-	)
-
 	if sf.And != nil {
-		option = sf.And
+		return squirrel.And(sf.And.Parse(key))
 	} else if sf.Or != nil {
-		option = sf.Or
+		return squirrel.Or(sf.Or.Parse(key))
 	} else if sf.StringOption != nil {
-		option = sf.StringOption
-		compareMultiple = false
+		return sf.StringOption.Parse(key)[0]
 	} else {
-		panic("you must provide 1 option")
+		return nil
 	}
-
-	parsedResult := option.Parse(key)
-
-	if compareMultiple {
-		if len(parsedResult) < 2 {
-			panic("you must provide at least 2 comparison conditions")
-		}
-		if sf.And != nil {
-			return squirrel.And(parsedResult)
-		}
-		return squirrel.Or(parsedResult)
-	}
-
-	if len(parsedResult) != 1 {
-		panic("you must provide exactly 1 comparison condition")
-	}
-
-	return parsedResult[0]
 }
 
 // StartOfDay return the beginning of the given time:
@@ -151,7 +120,7 @@ type TimeOption struct {
 	GtE               *time.Time // >=
 	LtE               *time.Time // <=
 	NULL              *bool      // compare to null
-	CompareStartOfDay bool       // if true: compare year, month, date only. If false: compare timestamp
+	CompareStartOfDay bool       // if true: compare year, month, date only. If false: compare every time components
 }
 
 func (to *TimeOption) parse(t *time.Time) *time.Time {
@@ -199,9 +168,9 @@ func (to *TimeOption) Parse(key string) []squirrel.Sqlizer {
 }
 
 type TimeFilter struct {
-	And         *TimeOption // query with AND condition
-	Or          *TimeOption // query with OR condition
-	*TimeOption             // just 1 comparison
+	And *TimeOption // Most provide at least 2 options
+	Or  *TimeOption // Most provide at least 2 options
+	*TimeOption
 }
 
 // ToSquirrel:
@@ -209,37 +178,16 @@ type TimeFilter struct {
 // key works like:
 //  key := "FirstName" => squirrel.Eq{key: "Minh"}
 func (tf *TimeFilter) ToSquirrel(key string) squirrel.Sqlizer {
-	var (
-		compareMultiple bool = true
-		timeOption      *TimeOption
-	)
 
 	if tf.And != nil {
-		timeOption = tf.And
+		return squirrel.And(tf.And.Parse(key))
 	} else if tf.Or != nil {
-		timeOption = tf.Or
+		return squirrel.Or(tf.Or.Parse(key))
 	} else if tf.TimeOption != nil {
-		timeOption = tf.TimeOption
-		compareMultiple = false
+		return tf.TimeOption.Parse(key)[0]
 	} else {
-		panic("you must provide 1 option")
+		return nil
 	}
-	parsedResult := timeOption.Parse(key)
-
-	if compareMultiple {
-		if len(parsedResult) < 2 {
-			panic("you must provide at least 2 comparison conditions")
-		}
-		if tf.And != nil {
-			return squirrel.And(parsedResult)
-		}
-		return squirrel.Or(parsedResult)
-	}
-
-	if len(parsedResult) != 1 {
-		panic("you must provide 1 comparison condition")
-	}
-	return parsedResult[0]
 }
 
 type NumberOption struct {
@@ -285,47 +233,25 @@ func (no *NumberOption) Parse(key string) []squirrel.Sqlizer {
 }
 
 type NumberFilter struct {
-	And           *NumberOption // must provide at least 2 considions
-	Or            *NumberOption // must provide at least 2 conditions
-	*NumberOption               // provide at most 1 condition
+	And *NumberOption // must provide at least 2 conditions
+	Or  *NumberOption // must provide at least 2 conditions
+	*NumberOption
 }
 
 // ToSquirrel:
 //
 // key works like:
 //  key := "FirstName" => squirrel.Eq{key: "Minh"}
-func (tf *NumberFilter) ToSquirrel(key string) squirrel.Sqlizer {
-	var (
-		compareMultiple bool = true
-		numberOption    *NumberOption
-	)
-
-	if tf.And != nil {
-		numberOption = tf.And
-	} else if tf.Or != nil {
-		numberOption = tf.Or
-	} else if tf.NumberOption != nil {
-		numberOption = tf.NumberOption
-		compareMultiple = false
+func (nf *NumberFilter) ToSquirrel(key string) squirrel.Sqlizer {
+	if nf.And != nil {
+		return squirrel.And(nf.And.Parse(key))
+	} else if nf.Or != nil {
+		return squirrel.Or(nf.Or.Parse(key))
+	} else if nf.NumberOption != nil {
+		return nf.NumberOption.Parse(key)[0]
 	} else {
-		panic("you must provide 1 option")
+		return nil
 	}
-	parsedResult := numberOption.Parse(key)
-
-	if compareMultiple {
-		if len(parsedResult) < 2 {
-			panic("you must provide at least 2 comparison conditions")
-		}
-		if tf.And != nil {
-			return squirrel.And(parsedResult)
-		}
-		return squirrel.Or(parsedResult)
-	}
-
-	if len(parsedResult) != 1 {
-		panic("you must provide 1 comparison condition")
-	}
-	return parsedResult[0]
 }
 
 type Squirrelable interface {

@@ -2192,6 +2192,22 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.DeleteCheckoutsByOption", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
 	start := timemodule.Now()
 

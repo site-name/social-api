@@ -236,5 +236,4 @@ func (a *ServicePayment) PaymentRefundOrVoid(payMent *payment.Payment, manager i
 	}
 
 	return paymentErr, appErr
-
 }

@@ -67,6 +67,15 @@ func NewInsufficientStock(items []*InsufficientStockData) *InsufficientStock {
 	}
 }
 
+func (i *InsufficientStock) VariantIDs() []string {
+	res := []string{}
+	for _, item := range i.Items {
+		res = append(res, item.Variant.Id)
+	}
+
+	return res
+}
+
 func (i *InsufficientStock) Error() string {
 	var builder strings.Builder
 

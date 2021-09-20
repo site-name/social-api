@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -214,14 +215,14 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout)
 	}
 
 	// find latest payment by comparing their creation time
-	var latestPayment *payment.Payment
-	for _, payment := range payments {
-		if *payment.IsActive && (latestPayment == nil || latestPayment.CreateAt < payment.CreateAt) {
-			latestPayment = payment
+	var latestPayment payment.Payment
+	for _, payMent := range payments {
+		if *payMent.IsActive && (latestPayment.Id == "" || latestPayment.CreateAt < payMent.CreateAt) {
+			latestPayment = *payMent
 		}
 	}
 
-	return latestPayment, nil
+	return &latestPayment, nil
 }
 
 // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
@@ -243,4 +244,14 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.Chec
 	}
 
 	return totalWeight, nil
+}
+
+// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) *model.AppError {
+	err := s.srv.SqlStore.Checkout().DeleteCheckoutsByOption(transaction, option)
+	if err != nil {
+		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

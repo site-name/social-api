@@ -458,6 +458,8 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 // will also get saved to that user's address book.
 // Current user's language is saved in the order so we can later determine
 // which language to use when sending email.
+//
+// NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
 func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData OrderData, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *exception.InsufficientStock, *model.AppError) {
 	// create transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
@@ -681,20 +683,20 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 
 const CheckoutGetOrderDataAppErrorID = "app.checkout.get_order_data.app_error"
 
-func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (interface{}, *model.AppError) {
+func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (map[string]interface{}, *model.AppError) {
 	orderData, insufficientStockErr, notApplicableErr, taxError, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	if insufficientStockErr != nil {
-		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": insufficientStockErr.Code}, insufficientStockErr.Error(), 0)
+		return nil, checkout.PrepareInsufficientStockCheckoutValidationAppError("getOrderData", insufficientStockErr)
 	}
 	if notApplicableErr != nil {
-		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": exception.VOUCHER_NOT_APPLICABLE}, notApplicableErr.Error(), 0)
+		return nil, model.NewAppError("getOrderData", "app.checkout.voucher_not_applicable.app_error", map[string]interface{}{"code": exception.VOUCHER_NOT_APPLICABLE}, notApplicableErr.Error(), 0)
 	}
 	if taxError != nil {
-		return nil, model.NewAppError("getOrderData", CheckoutGetOrderDataAppErrorID, map[string]interface{}{"code": exception.TAX_ERROR}, taxError.Message, 0)
+		return nil, model.NewAppError("getOrderData", "app.checkout.unable_to_calculate_taxes", map[string]interface{}{"code": exception.TAX_ERROR}, taxError.Message, 0)
 	}
 	return orderData, nil
 }
@@ -705,6 +707,7 @@ func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *s
 		transaction *payment.PaymentTransaction
 		paymentErr  *payment.PaymentError
 		appErr      *model.AppError
+		paymentID   string = payMent.Id
 	)
 
 	if payMent.ToConfirm {
@@ -739,7 +742,7 @@ func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *s
 	}
 
 	// re fetching payment from db since the payment may was modified in two calls above
-	payMent, appErr = s.srv.PaymentService().PaymentByID(payMent.Id, false)
+	payMent, appErr = s.srv.PaymentService().PaymentByID(paymentID, false)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -762,6 +765,8 @@ func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *s
 // Should be used with transaction_with_commit_on_errors, as there is a possibility
 // for thread race.
 // :raises ValidationError
+//
+// NOTE: Make sure user is authenticated before calling this method.
 func (s *ServiceCheckout) CompleteCheckout(
 	manager interface{},
 	checkoutInfo *checkout.CheckoutInfo,
@@ -769,28 +774,119 @@ func (s *ServiceCheckout) CompleteCheckout(
 	paymentData map[string]interface{},
 	storeSource bool,
 	discounts []*product_and_discount.DiscountInfo,
-	user *account.User,
-	_ interface{},
+	user *account.User, // must be authenticated before this
+	_ interface{}, // this param originally is `app`, but we not gonna integrate app feature in the early versions
 	siteSettings interface{},
 	trackingCode string,
 	redirectURL string,
 
-) (*order.Order, bool, map[string]interface{}, *payment.PaymentError, *model.AppError) {
+) (*order.Order, bool, model.StringMap, *payment.PaymentError, *model.AppError) {
 
 	var (
 		checkOut    = checkoutInfo.Checkout
 		channelSlug = checkoutInfo.Channel.Slug
 	)
 
-	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(&checkOut)
+	lastActivePaymentOfCheckout, appErr := s.CheckoutLastActivePayment(&checkOut) // NOTE: returned payment still can be nil even when appErr is nil
 	if appErr != nil {
 		return nil, false, nil, nil, appErr
 	}
 
-	paymentErr, appErr := s.prepareCheckout(manager, checkoutInfo, lines, discounts, trackingCode, redirectURL, lastActivePaymentOfCheckout)
+	paymentErr, appErr := s.prepareCheckout(
+		manager,
+		checkoutInfo,
+		lines,
+		discounts,
+		trackingCode,
+		redirectURL,
+		lastActivePaymentOfCheckout,
+	)
 	if paymentErr != nil || appErr != nil {
 		return nil, false, nil, paymentErr, appErr
 	}
 
-	s.getOrderData(manager, checkoutInfo, lines, discounts)
+	orderData, appErr := s.getOrderData(manager, checkoutInfo, lines, discounts)
+	if appErr != nil {
+		paymentErr, apErr := s.srv.PaymentService().PaymentRefundOrVoid(lastActivePaymentOfCheckout, manager, channelSlug)
+		if paymentErr != nil || apErr != nil {
+			return nil, false, nil, paymentErr, apErr
+		}
+
+		return nil, false, nil, nil, appErr
+	}
+
+	var customerID *string
+	if lastActivePaymentOfCheckout != nil && user != nil { // NOTE: user must be authenticated before calling this method.
+		uuid, appErr := s.srv.PaymentService().FetchCustomerId(user, lastActivePaymentOfCheckout.GateWay)
+		if appErr != nil {
+			return nil, false, nil, nil, appErr
+		}
+		if model.IsValidId(uuid) {
+			customerID = &uuid
+		}
+	}
+
+	transaction, paymentErr, appErr := s.processPayment(
+		lastActivePaymentOfCheckout,
+		customerID,
+		storeSource,
+		paymentData,
+		orderData,
+		manager,
+		channelSlug,
+	)
+	if paymentErr != nil || appErr != nil {
+		return nil, false, nil, paymentErr, appErr
+	}
+
+	if transaction.CustomerID != nil && user != nil && model.IsValidId(user.Id) {
+		appErr = s.srv.PaymentService().StoreCustomerId(user.Id, lastActivePaymentOfCheckout.GateWay, *transaction.CustomerID)
+		if appErr != nil {
+			return nil, false, nil, nil, appErr
+		}
+	}
+
+	actionData := transaction.ActionRequiredData
+	if !transaction.ActionRequired {
+		actionData = make(model.StringMap)
+	}
+
+	var (
+		orDer                *order.Order
+		insufficientStockErr *exception.InsufficientStock
+	)
+	if !transaction.ActionRequired {
+		orDer, insufficientStockErr, appErr = s.createOrder(checkoutInfo, orderData, user, nil, manager, siteSettings)
+		if appErr != nil {
+			return nil, false, nil, nil, appErr
+		}
+
+		if insufficientStockErr != nil {
+			appErr = s.ReleaseVoucherUsage(orderData)
+			if appErr != nil {
+				return nil, false, nil, nil, appErr
+			}
+
+			paymentErr, appErr = s.srv.PaymentService().PaymentRefundOrVoid(lastActivePaymentOfCheckout, manager, channelSlug)
+			if appErr != nil || paymentErr != nil {
+				return nil, false, nil, paymentErr, appErr
+			}
+
+			return nil, false, nil, nil, checkout.PrepareInsufficientStockCheckoutValidationAppError("", insufficientStockErr)
+		}
+
+		// if not appError nor insufficient stock error, remove checkout after order is successfully created:
+		appErr = s.DeleteCheckoutsByOption(nil, &checkout.CheckoutFilterOption{
+			Token: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkOut.Token,
+				},
+			},
+		})
+		if appErr != nil {
+			return nil, false, nil, nil, appErr
+		}
+	}
+
+	return orDer, transaction.ActionRequired, actionData, nil, nil
 }

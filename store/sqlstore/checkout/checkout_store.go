@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -124,24 +125,36 @@ func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 	return ckout, nil
 }
 
-// GetByOption finds and returns 1 checkout based on given option
-func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
-	query := cs.GetQueryBuilder().
-		Select("*").
-		From(store.CheckoutTableName)
+type checkoutStatement string
 
+const (
+	delete checkoutStatement = "delete"
+	slect  checkoutStatement = "select"
+)
+
+// commonFilterQueryBuilder is common function, used to build checkout(s) filter queries.
+func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFilterOption, statementType checkoutStatement) interface{} {
+	andCondition := squirrel.And{}
 	// parse option
 	if option.Token != nil {
-		query = query.Where(option.Token.ToSquirrel("Token"))
+		andCondition = append(andCondition, option.Token.ToSquirrel("Token"))
 	}
 	if option.UserID != nil {
-		query = query.Where(option.UserID.ToSquirrel("UserID"))
+		andCondition = append(andCondition, option.UserID.ToSquirrel("UserID"))
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
+		andCondition = append(andCondition, option.ChannelID.ToSquirrel("ChannelID"))
 	}
 
-	queryString, args, err := query.ToSql()
+	if statementType == slect {
+		return cs.GetQueryBuilder().Select("*").From(store.CheckoutTableName).Where(andCondition)
+	}
+	return cs.GetQueryBuilder().Delete(store.CheckoutTableName).Where(andCondition)
+}
+
+// GetByOption finds and returns 1 checkout based on given option
+func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+	queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
@@ -160,22 +173,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (
 
 // FilterByOption finds and returns a list of checkout based on given option
 func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
-	query := cs.GetQueryBuilder().
-		Select("*").
-		From(store.CheckoutTableName)
-
-	// parse option
-	if option.Token != nil {
-		query = query.Where(option.Token.ToSquirrel("Token"))
-	}
-	if option.UserID != nil {
-		query = query.Where(option.UserID.ToSquirrel("UserID"))
-	}
-	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
-	}
-
-	queryString, args, err := query.ToSql()
+	queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
@@ -412,4 +410,19 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	}
 
 	return checkoutLineInfos, nil
+}
+
+// DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
+// It returns an error indicating if the operation was performed successfully.
+func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+	var runner squirrel.BaseRunner = cs.GetMaster()
+	if transaction != nil {
+		runner = transaction
+	}
+	_, err := cs.commonFilterQueryBuilder(option, delete).(squirrel.DeleteBuilder).RunWith(runner).Exec()
+	if err != nil {
+		return errors.Wrap(err, "failed to delete checkout(s) by given options")
+	}
+
+	return nil
 }

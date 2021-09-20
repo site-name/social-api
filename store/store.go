@@ -828,6 +828,7 @@ type (
 		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
 		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                            // GetByOption finds and returns 1 checkout based on given option
 		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                       // FilterByOption finds and returns a list of checkout based on given option
+		DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error       // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 	}
 )
 
