@@ -31,8 +31,8 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
-	payMent, err := a.srv.Store.Payment().Get(paymentID, lockForUpdate)
+func (a *ServicePayment) PaymentByID(transaction *gorp.Transaction, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
+	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", err)
 	}

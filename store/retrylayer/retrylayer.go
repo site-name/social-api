@@ -5078,11 +5078,11 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 
 }
 
-func (s *RetryLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Get(id, lockForUpdate)
+		result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
 		if err == nil {
 			return result, nil
 		}

@@ -4692,7 +4692,7 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *payment.PaymentFil
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -4701,7 +4701,7 @@ func (s *OpenTracingLayerPaymentStore) Get(id string, lockForUpdate bool) (*paym
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentStore.Get(id, lockForUpdate)
+	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -111,7 +111,7 @@ type PaymentService interface {
 		storeSource bool, // default to false
 		additionalData map[string]interface{}, // can be nil
 	) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
-	PaymentByID(paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) // PaymentByID returns a payment with given id
+	PaymentByID(transaction *gorp.Transaction, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) // PaymentByID returns a payment with given id
 }
 
 // CheckoutService

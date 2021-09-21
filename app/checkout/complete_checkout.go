@@ -742,7 +742,7 @@ func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *s
 	}
 
 	// re fetching payment from db since the payment may was modified in two calls above
-	payMent, appErr = s.srv.PaymentService().PaymentByID(paymentID, false)
+	payMent, appErr = s.srv.PaymentService().PaymentByID(nil, paymentID, false)
 	if appErr != nil {
 		return nil, nil, appErr
 	}

@@ -104,6 +104,22 @@ func (_m *PaymentStore) Save(_a0 *payment.Payment) (*payment.Payment, error) {
 	return r0, r1
 }
 
+// ScanFields provides a mock function with given fields: payMent
+func (_m *PaymentStore) ScanFields(payMent payment.Payment) []interface{} {
+	ret := _m.Called(payMent)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(payment.Payment) []interface{}); ok {
+		r0 = rf(payMent)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: _a0
 func (_m *PaymentStore) Update(_a0 *payment.Payment) (*payment.Payment, error) {
 	ret := _m.Called(_a0)

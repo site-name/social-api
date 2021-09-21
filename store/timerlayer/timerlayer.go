@@ -4305,10 +4305,10 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Get(id, lockForUpdate)
+	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

@@ -1,10 +1,17 @@
+/*
+	Since Go does not support @decorator like in python and generic,
+	Then you are about to find this code file not elegant at all.
+	But that is fine.
+*/
 package payment
 
 import (
 	"fmt"
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 )
@@ -14,6 +21,7 @@ const (
 	GENERIC_TRANSACTION_ERROR = "Transaction was unsuccessful."
 )
 
+// raisePaymentError must be called right before function returns
 func (a *ServicePayment) raisePaymentError(where string, transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *payment.PaymentError) {
 	if !transaction.IsSuccess {
 		msg := GENERIC_TRANSACTION_ERROR
@@ -26,14 +34,16 @@ func (a *ServicePayment) raisePaymentError(where string, transaction *payment.Pa
 	return transaction, nil
 }
 
+// paymentPostProcess must be called right before function returns
 func (a *ServicePayment) paymentPostProcess(transaction *payment.PaymentTransaction) *model.AppError {
-	payMent, appErr := a.PaymentByID(transaction.PaymentID, false)
+	payMent, appErr := a.PaymentByID(nil, transaction.PaymentID, false)
 	if appErr != nil {
 		return appErr
 	}
 	return a.GatewayPostProcess(transaction, payMent)
 }
 
+// requireActivePayment must be called in the beginning of the function body
 func (a *ServicePayment) requireActivePayment(where string, payMent *payment.Payment) (*payment.Payment, *payment.PaymentError) {
 	if !*payMent.IsActive {
 		return nil, payment.NewPaymentError(where, "This payment is no longer active", payment.INVALID)
@@ -42,8 +52,19 @@ func (a *ServicePayment) requireActivePayment(where string, payMent *payment.Pay
 }
 
 // withLockedPayment Lock payment to protect from asynchronous modification.
-func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
-	return a.PaymentByID(payMent.Id, true)
+func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *gorp.Transaction, *model.AppError) {
+	transaction, err := a.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return nil, nil, model.NewAppError(where, app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	paymentToOperateOn, appErr := a.srv.PaymentService().PaymentByID(transaction, payMent.Id, true)
+	if appErr != nil {
+		a.srv.Store.FinalizeTransaction(transaction)
+		return nil, nil, appErr
+	}
+
+	return paymentToOperateOn, transaction, nil
 }
 
 func (a *ServicePayment) ProcessPayment(
@@ -62,10 +83,11 @@ func (a *ServicePayment) ProcessPayment(
 		return nil, paymentErr, nil
 	}
 
-	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	_, appErr = a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, additionalData)
 	if appErr != nil {
@@ -90,10 +112,11 @@ func (a *ServicePayment) Authorize(
 		return nil, paymentErr, nil
 	}
 
-	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	paymentErr = a.CleanAuthorize(payMent)
 	if paymentErr != nil {
@@ -123,10 +146,11 @@ func (a *ServicePayment) Capture(
 		return nil, paymentErr, nil
 	}
 
-	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	panic("not implemented")
 }

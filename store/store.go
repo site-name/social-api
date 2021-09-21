@@ -565,7 +565,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(payMent payment.Payment) []interface{}
 		Save(payment *payment.Payment) (*payment.Payment, error)                                                          // Save save payment instance into database
-		Get(id string, lockForUpdate bool) (*payment.Payment, error)                                                      // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
+		Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
 		Update(payment *payment.Payment) (*payment.Payment, error)                                                        // Update updates given payment and returns new updated payment
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                   // FilterByOption finds and returns a list of payments that satisfy given option
