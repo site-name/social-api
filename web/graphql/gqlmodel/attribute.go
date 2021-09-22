@@ -61,7 +61,7 @@ func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
 		return nil
 	}
 
-	inputType := AttributeInputTypeEnum(strings.ToUpper(a.InputType))
+	inputType := AttributeInputTypeEnum(strings.ToUpper(string(a.InputType)))
 	attrType := AttributeTypeEnum(strings.ToUpper(a.Type))
 
 	var unit *MeasurementUnitsEnum = nil

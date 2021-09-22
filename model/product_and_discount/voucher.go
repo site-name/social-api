@@ -131,33 +131,29 @@ func (v *Voucher) PreSave() {
 	v.CreateAt = model.GetMillis()
 
 	v.UpdateAt = v.CreateAt
-	if v.Type == "" {
-		v.Type = ENTIRE_ORDER
-	}
 	if v.StartDate == 0 {
 		v.StartDate = model.GetMillis()
 	}
-	if v.DiscountValueType == "" {
-		v.DiscountValueType = FIXED
-	}
+	v.commonPre()
+}
+
+func (v *Voucher) commonPre() {
 	if v.OnlyForStaff == nil {
 		v.OnlyForStaff = model.NewBool(false)
 	}
 	v.Name = model.SanitizeUnicode(v.Name)
-}
-
-func (v *Voucher) PreUpdate() {
+	if v.DiscountValueType == "" {
+		v.DiscountValueType = FIXED
+	}
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
 	}
-	if v.DiscountValueType == "" {
-		v.DiscountValueType = FIXED
-	}
-	if v.OnlyForStaff == nil {
-		v.OnlyForStaff = model.NewBool(false)
-	}
-	v.Name = model.SanitizeUnicode(v.Name)
+	v.Countries = strings.ToUpper(v.Countries)
+}
+
+func (v *Voucher) PreUpdate() {
 	v.UpdateAt = model.GetMillis()
+	v.commonPre()
 }
 
 // VoucherTranslation represents translation for a voucher

@@ -35,23 +35,24 @@ const (
 
 // choices for attribute's input type
 const (
-	DROPDOWN    = "dropdown"
-	MULTISELECT = "multiselect"
-	FILE        = "file"
-	REFERENCE   = "reference"
-	NUMERIC     = "numeric"
-	RICH_TEXT   = "rich_text"
-	BOOLEAN     = "boolean"
-	DATE        = "date"
-	DATE_TIME   = "date-time"
+	DROPDOWN    string = "dropdown"
+	MULTISELECT string = "multiselect"
+	FILE        string = "file"
+	REFERENCE   string = "reference"
+	NUMERIC     string = "numeric"
+	RICH_TEXT   string = "rich_text"
+	SWATCH      string = "swatch"
+	BOOLEAN     string = "boolean"
+	DATE        string = "date"
+	DATE_TIME   string = "date-time"
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN}
+	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN, SWATCH}
+	TYPES_WITH_CHOICES           = []string{DROPDOWN, MULTISELECT, SWATCH}
 	// list of the input types that are unique per instances
-	TYPES_WITH_UNIQUE_VALUES = []string{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME}
-	// list of the translatable attributes, excluding attributes with choices.
-	TRANSLATABLE_ATTRIBUTES = []string{RICH_TEXT}
+	TYPES_WITH_UNIQUE_VALUES = []string{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES  = []string{RICH_TEXT}
 )
 var AttributeInputTypeStrings = map[string]string{
 	DROPDOWN:    "Dropdown",
@@ -119,7 +120,7 @@ func (a *Attribute) IsValid() *model.AppError {
 	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeTypeStrings[a.Type] == "" {
 		return outer("type", &a.Id)
 	}
-	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeInputTypeStrings[strings.ToLower(a.InputType)] == "" {
+	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeInputTypeStrings[a.InputType] == "" {
 		return outer("input_type", &a.Id)
 	}
 	if (a.EntityType != nil && len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH) ||

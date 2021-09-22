@@ -57,6 +57,29 @@ func (ps *SqlProductStore) ModelFields() []string {
 	}
 }
 
+func (ps *SqlProductStore) ScanFields(prd product_and_discount.Product) []interface{} {
+	return []interface{}{
+		&prd.Id,
+		&prd.ProductTypeID,
+		&prd.Name,
+		&prd.Slug,
+		&prd.Description,
+		&prd.DescriptionPlainText,
+		&prd.CategoryID,
+		&prd.CreateAt,
+		&prd.UpdateAt,
+		&prd.ChargeTaxes,
+		&prd.Weight,
+		&prd.WeightUnit,
+		&prd.DefaultVariantID,
+		&prd.Rating,
+		&prd.Metadata,
+		&prd.PrivateMetadata,
+		&prd.SeoTitle,
+		&prd.SeoDescription,
+	}
+}
+
 func (ps *SqlProductStore) CreateIndexesIfNotExists() {
 	ps.CreateIndexIfNotExists("idx_products_name", store.ProductTableName, "Name")
 	ps.CreateIndexIfNotExists("idx_products_slug", store.ProductTableName, "Slug")

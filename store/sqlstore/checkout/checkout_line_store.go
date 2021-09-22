@@ -2,6 +2,7 @@ package checkout
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -32,6 +33,16 @@ func (cls *SqlCheckoutLineStore) ModelFields() []string {
 		"CheckoutLines.CheckoutID",
 		"CheckoutLines.VariantID",
 		"CheckoutLines.Quantity",
+	}
+}
+
+func (cls *SqlCheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interface{} {
+	return []interface{}{
+		&line.Id,
+		&line.CreateAt,
+		&line.CheckoutID,
+		&line.VariantID,
+		&line.Quantity,
 	}
 }
 
@@ -100,15 +111,13 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 	return res, nil
 }
 
-func (cls *SqlCheckoutLineStore) DeleteLines(ids []string) error {
-
-	tx, err := cls.GetMaster().Begin()
-	if err != nil {
-		return errors.Wrap(err, "begin_transaction")
+func (cls *SqlCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, ids []string) error {
+	var executor squirrel.Execer = cls.GetMaster()
+	if transaction != nil {
+		executor = transaction
 	}
-	defer store.FinalizeTransaction(tx)
 
-	result, err := tx.Exec("DELETE FROM "+store.CheckoutLineTableName+" WHERE Id IN :IDs", map[string]interface{}{"IDs": ids})
+	result, err := executor.Exec("DELETE FROM "+store.CheckoutLineTableName+" WHERE Id IN :IDs", map[string]interface{}{"IDs": ids})
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout lines")
 	}
@@ -116,10 +125,6 @@ func (cls *SqlCheckoutLineStore) DeleteLines(ids []string) error {
 		return errors.Wrap(err, "failed to count number of checkout lines deleted")
 	} else if rows != int64(len(ids)) {
 		return errors.Errorf("expect %d checkout lines to be deleted but got %d", len(ids), rows)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "commit_transaction")
 	}
 
 	return nil
@@ -224,49 +229,15 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		line    checkout.CheckoutLine
 		variant product_and_discount.ProductVariant
 		product product_and_discount.Product
+
+		scanFields = append(
+			cls.ScanFields(line),
+			append(cls.ProductVariant().ScanFields(variant), cls.Product().ScanFields(product)...),
+		)
 	)
 
 	for rows.Next() {
-		err = rows.Scan(
-			// scan checkout line
-			&line.Id,
-			&line.CreatAt,
-			&line.CheckoutID,
-			&line.VariantID,
-			&line.Quantity,
-
-			// scan product variant
-			&variant.Id,
-			&variant.Name,
-			&variant.ProductID,
-			&variant.Sku,
-			&variant.Weight,
-			&variant.WeightUnit,
-			&variant.TrackInventory,
-			&variant.SortOrder,
-			&variant.Metadata,
-			&variant.PrivateMetadata,
-
-			// scan product
-			&product.Id,
-			&product.ProductTypeID,
-			&product.Name,
-			&product.Slug,
-			&product.Description,
-			&product.DescriptionPlainText,
-			&product.CategoryID,
-			&product.CreateAt,
-			&product.UpdateAt,
-			&product.ChargeTaxes,
-			&product.Weight,
-			&product.WeightUnit,
-			&product.DefaultVariantID,
-			&product.Rating,
-			&product.Metadata,
-			&product.PrivateMetadata,
-			&product.SeoTitle,
-			&product.SeoDescription,
-		)
+		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, nil, nil, errors.Wrap(err, "failed to scan a row")
 		}
@@ -364,4 +335,36 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 	}
 
 	return totalWeight, nil
+}
+
+// CheckoutLinesByOption finds and returns checkout lines filtered using given option
+func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+	query := cls.GetQueryBuilder().
+		Select("*").
+		From(store.CheckoutLineTableName).
+		OrderBy(store.TableOrderingMap[store.CheckoutLineTableName])
+
+	// parse options
+	if option.Id != nil {
+		query = query.Where(option.Id.ToSquirrel("Id"))
+	}
+	if option.CheckoutID != nil {
+		query = query.Where(option.CheckoutID.ToSquirrel("CheckoutID"))
+	}
+	if option.VariantID != nil {
+		query = query.Where(option.VariantID.ToSquirrel("VariantID"))
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "CheckoutLinesByOption_ToSql")
+	}
+
+	var res []*checkout.CheckoutLine
+	_, err = cls.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find checkout lines by given options")
+	}
+
+	return res, nil
 }

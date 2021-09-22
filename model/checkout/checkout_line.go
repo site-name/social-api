@@ -15,12 +15,19 @@ const (
 // their `data` field is different.
 type CheckoutLine struct {
 	Id         string `json:"id"`
-	CreatAt    int64  `json:"create_at"`
+	CreateAt   int64  `json:"create_at"`
 	CheckoutID string `json:"checkout_id"`
 	VariantID  string `json:"variant_id"`
 	Quantity   int    `json:"quantity"`
 
 	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"`
+}
+
+// CheckoutLineFilterOption is used to build squirrel sql queries
+type CheckoutLineFilterOption struct {
+	Id         *model.StringFilter
+	CheckoutID *model.StringFilter
+	VariantID  *model.StringFilter
 }
 
 type CheckoutLines []*CheckoutLine
@@ -68,7 +75,7 @@ func (c *CheckoutLine) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
-	if c.CreatAt == 0 {
+	if c.CreateAt == 0 {
 		return outer("create_at", &c.Id)
 	}
 	if !model.IsValidId(c.CheckoutID) {
@@ -88,7 +95,7 @@ func (c *CheckoutLine) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
-	if c.CreatAt == 0 {
-		c.CreatAt = model.GetMillis()
+	if c.CreateAt == 0 {
+		c.CreateAt = model.GetMillis()
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
@@ -162,19 +163,25 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product *product_and_discount
 	return price, nil
 }
 
-func (a *ServiceDiscount) ValidateVoucherForCheckout() {
-	panic("not implemented")
+// ValidateVoucherForCheckout validates given voucher
+func (a *ServiceDiscount) ValidateVoucherForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError) {
+	quantity, appErr := a.srv.CheckoutService().CalculateCheckoutQuantity(lines)
+	if appErr != nil {
+		return nil, appErr
+	}
+	address := checkoutInfo.ShippingAddress
+	if address == nil {
+		address = checkoutInfo.BillingAddress
+	}
+	checkoutSubTotal, appErr := a.srv.CheckoutService().CheckoutSubTotal(manager, checkoutInfo, lines, address, discounts)
+	if appErr != nil {
+		return nil, appErr
+	}
+	customerEmail := checkoutInfo.GetCustomerEmail()
+	return a.ValidateVoucher(voucher, checkoutSubTotal, quantity, customerEmail, checkoutInfo.Channel.Id, checkoutInfo.User.Id)
 }
 
 func (a *ServiceDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "ValidateVoucherInOrder"
-		}
-		if appErr != nil {
-			appErr.Where = "ValidateVoucherInOrder"
-		}
-	}()
 
 	if ord.VoucherID == nil {
 		return // returns immediately if order has no voucher
@@ -208,14 +215,6 @@ func (a *ServiceDiscount) ValidateVoucherInOrder(ord *order.Order) (notApplicabl
 }
 
 func (a *ServiceDiscount) ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "ValidateVoucher"
-		}
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "ValidateVoucher"
-		}
-	}()
 
 	notApplicableErr, appErr = a.ValidateMinSpent(voucher, totalPrice, channelID)
 	if appErr != nil || notApplicableErr != nil {

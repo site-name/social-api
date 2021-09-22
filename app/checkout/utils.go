@@ -91,24 +91,24 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 		return nil, model.NewAppError("AddVariantToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
 	}
 
-	prdChannelListings, appErr := a.srv.ProductService().
-		ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-			ChannelID: &model.StringFilter{
-				StringOption: (&model.StringOption{
-					Eq: checkoutInfo.Checkout.ChannelID,
-				}).WithFilter(model.IsValidId),
-			},
-			ProductID: &model.StringFilter{
-				StringOption: (&model.StringOption{
-					Eq: variant.ProductID,
-				}).WithFilter(model.IsValidId),
-			},
-		})
+	checkOut := checkoutInfo.Checkout
+	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
+		ChannelID: &model.StringFilter{
+			StringOption: (&model.StringOption{
+				Eq: checkOut.ChannelID,
+			}),
+		},
+		ProductID: &model.StringFilter{
+			StringOption: (&model.StringOption{
+				Eq: variant.ProductID,
+			}),
+		},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if len(prdChannelListings) == 0 || !prdChannelListings[0].IsPublished {
+	if len(productChannelListings) == 0 || !productChannelListings[0].IsPublished {
 		return nil, model.NewAppError("AddVariantToCheckout", app.ProductNotPublishedAppErrID, nil, "Please publish the product first.", http.StatusNotAcceptable)
 	}
 
@@ -118,7 +118,18 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 	}
 
 	if line == nil {
-		checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(checkoutInfo.Checkout.Token)
+		checkoutLines, appErr := a.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
+			CheckoutID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: checkOut.Token,
+				},
+			},
+			VariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: variant.Id,
+				},
+			},
+		})
 		if appErr != nil && appErr.StatusCode != http.StatusNotFound { // ignore not found error
 			return nil, appErr
 		}
@@ -127,7 +138,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 
 	if newQuantity == 0 {
 		if line != nil {
-			if appErr = a.DeleteCheckoutLines([]string{line.Id}); appErr != nil {
+			if appErr = a.DeleteCheckoutLines(nil, []string{line.Id}); appErr != nil {
 				return nil, appErr
 			}
 		}
@@ -262,7 +273,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, varian
 	}
 
 	if len(toDeleteCheckoutLineIDs) > 0 {
-		appErr = a.DeleteCheckoutLines(toDeleteCheckoutLineIDs)
+		appErr = a.DeleteCheckoutLines(nil, toDeleteCheckoutLineIDs)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -356,8 +367,116 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(ckout *checkout.Checkou
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lineInfos []*checkout.CheckoutInfo) *model.AppError {
-	panic("not implemented")
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) *model.AppError {
+	checkOut := checkoutInfo.Checkout
+	changed, remove, appErr := a.checkNewCheckoutAddress(&checkOut, address, account.ADDRESS_TYPE_SHIPPING)
+	if appErr != nil {
+		return appErr
+	}
+
+	if changed {
+		if remove && checkOut.ShippingAddressID != nil {
+			appErr = a.srv.AccountService().DeleteAddresses(*checkOut.ShippingAddressID)
+			if appErr != nil {
+				return appErr
+			}
+		}
+
+		checkOut.ShippingAddressID = &address.Id
+		appErr = a.UpdateCheckoutInfoShippingAddress(checkoutInfo, address, lines, discounts, manager)
+		if appErr != nil {
+			return appErr
+		}
+		_, appErr = a.UpsertCheckout(&checkOut)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
+}
+
+// getShippingVoucherDiscountForCheckout Calculate discount value for a voucher of shipping type
+func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+	shippingRequired, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+	if !shippingRequired {
+		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Your order does not require shipping.", nil, 0), nil
+	}
+
+	shippingMethod := checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod()
+	if shippingMethod == nil {
+		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Please select a delivery method first.", nil, 0), nil
+	}
+
+	// check if voucher is limited to specified countries
+	if address != nil {
+		if voucher.Countries != "" && !strings.Contains(voucher.Countries, address.Country) {
+			return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "This offer is not valid in your country.", nil, 0), nil
+		}
+	}
+
+	checkoutShippingPrice, appErr := s.CheckoutShippingPrice(manager, checkoutInfo, lines, address, discounts)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	money, appErr := s.srv.DiscountService().GetDiscountAmountFor(voucher, checkoutShippingPrice.Gross, checkoutInfo.Channel.Id)
+	return money.(*goprices.Money), nil, appErr
+}
+
+// getProductsVoucherDiscount Calculate products discount value for a voucher, depending on its type
+func (s *ServiceCheckout) getProductsVoucherDiscount(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+	var prices []*goprices.Money
+
+	if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
+		moneys, appErr := s.GetPricesOfDiscountedSpecificProduct(manager, checkoutInfo, lines, voucher, discounts)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		prices = moneys
+	}
+
+	if prices == nil || len(prices) == 0 {
+		return nil, product_and_discount.NewNotApplicable("getProductsVoucherDiscount", "This offer is only valid for selected items.", nil, 0), nil
+	}
+
+	money, appErr := s.srv.DiscountService().GetProductsVoucherDiscount(voucher, prices, checkoutInfo.Channel.Id)
+	return money, nil, appErr
+}
+
+// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
+// Specific products are products, collections and categories.
+// Product must be assigned directly to the discounted category, assigning
+// product to child category won't work.
+func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) ([]*goprices.Money, *model.AppError) {
+	var linePrices []*goprices.Money
+
+	discountedLines, appErr := s.GetDiscountedLines(lines, voucher)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	addresses := checkoutInfo.ShippingAddress
+	if addresses == nil {
+		addresses = checkoutInfo.BillingAddress
+	}
+	if discounts == nil {
+		discounts = []*product_and_discount.DiscountInfo{}
+	}
+
+	for _, lineInfo := range discountedLines {
+		line := lineInfo.Line
+		lineTotal, appErr := s.CheckoutLineTotal(manager, checkoutInfo, lines, lineInfo, discounts)
+		if appErr != nil {
+			return nil, appErr
+		}
+		panic("not implemented")
+	}
+
+	return linePrices, nil
 }
 
 func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError) {

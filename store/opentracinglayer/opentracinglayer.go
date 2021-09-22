@@ -2503,7 +2503,25 @@ func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(
 	return result, resultVar1, resultVar2, err
 }
 
-func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
+func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.CheckoutLinesByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutLineStore.CheckoutLinesByOption(option)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.DeleteLines")
 	s.Root.Store.SetContext(newCtx)
@@ -2512,7 +2530,7 @@ func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string
 	}()
 
 	defer span.Finish()
-	err := s.CheckoutLineStore.DeleteLines(checkoutLineIDs)
+	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

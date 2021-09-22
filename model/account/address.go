@@ -95,26 +95,25 @@ func (add *Address) PreSave() {
 	if add.LastName == "" {
 		add.LastName = "last_name"
 	}
-	add.FirstName = model.SanitizeUnicode(CleanNamePart(add.FirstName, model.FirstName))
-	add.LastName = model.SanitizeUnicode(CleanNamePart(add.LastName, model.LastName))
+
 	add.CreateAt = model.GetMillis()
 	add.UpdateAt = add.CreateAt
-	if add.Country == "" {
-		add.Country = model.DEFAULT_COUNTRY
-	} else {
-		add.Country = strings.TrimSpace(strings.ToUpper(add.Country))
-	}
+	add.commonPre()
 }
 
-func (a *Address) PreUpdate() {
-	a.FirstName = model.SanitizeUnicode(a.FirstName)
-	a.LastName = model.SanitizeUnicode(a.LastName)
-	a.UpdateAt = model.GetMillis()
+func (a *Address) commonPre() {
+	a.FirstName = model.SanitizeUnicode(CleanNamePart(a.FirstName, model.FirstName))
+	a.LastName = model.SanitizeUnicode(CleanNamePart(a.LastName, model.LastName))
 	if a.Country == "" {
 		a.Country = model.DEFAULT_COUNTRY
 	} else {
 		a.Country = strings.TrimSpace(strings.ToUpper(a.Country))
 	}
+}
+
+func (a *Address) PreUpdate() {
+	a.UpdateAt = model.GetMillis()
+	a.commonPre()
 }
 
 // IsValid validates address and returns an error if data is not processed

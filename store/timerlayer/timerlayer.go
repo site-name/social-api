@@ -2352,10 +2352,26 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checko
 	return result, resultVar1, resultVar2, err
 }
 
-func (s *TimerLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
 	start := timemodule.Now()
 
-	err := s.CheckoutLineStore.DeleteLines(checkoutLineIDs)
+	result, err := s.CheckoutLineStore.CheckoutLinesByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+	start := timemodule.Now()
+
+	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

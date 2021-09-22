@@ -67,6 +67,13 @@ func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Paymen
 	return paymentToOperateOn, transaction, nil
 }
 
+// @requireActivePayment
+//
+// @withLockedPayment
+//
+// @raisePaymentError
+//
+// @paymentPostProcess
 func (a *ServicePayment) ProcessPayment(
 	payMent *payment.Payment,
 	token string,
@@ -89,10 +96,11 @@ func (a *ServicePayment) ProcessPayment(
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	_, appErr = a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, additionalData)
+	paymentData, appErr := a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, additionalData)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
+	a.fetchGatewayResponse()
 
 	panic("not implemented")
 }

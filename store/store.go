@@ -544,6 +544,7 @@ type (
 	ProductStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(prd product_and_discount.Product) []interface{}
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) // FilterByOption finds and returns all products that satisfy given option
@@ -808,10 +809,11 @@ type (
 	CheckoutLineStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(line checkout.CheckoutLine) []interface{}
 		Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)          // Upsert checks whether to update or insert given checkout line then performs according operation
 		Get(id string) (*checkout.CheckoutLine, error)                                       // Get returns a checkout line with given id
 		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
-		DeleteLines(checkoutLineIDs []string) error                                          // DeleteLines deletes all checkout lines with given uuids
+		DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error           // DeleteLines deletes all checkout lines with given uuids
 		BulkUpdate(checkoutLines []*checkout.CheckoutLine) error                             // BulkUpdate receives a list of modified checkout lines, updates them in bulk.
 		BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) // BulkCreate takes a list of raw checkout lines, save them into database then returns them fully with an error
 		// CheckoutLinesByCheckoutWithPrefetch finds all checkout lines belong to given checkout
@@ -820,7 +822,8 @@ type (
 		//
 		// this borrows the idea from Django's prefetch_related() method
 		CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error)
-		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) // TotalWeightForCheckoutLines calculate total weight for given checkout lines
+		TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error)                 // TotalWeightForCheckoutLines calculate total weight for given checkout lines
+		CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 	}
 	CheckoutStore interface {
 		CreateIndexesIfNotExists()

@@ -2663,11 +2663,31 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checko
 
 }
 
-func (s *RetryLayerCheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
 
 	tries := 0
 	for {
-		err := s.CheckoutLineStore.DeleteLines(checkoutLineIDs)
+		result, err := s.CheckoutLineStore.CheckoutLinesByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+
+	tries := 0
+	for {
+		err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
 		if err == nil {
 			return nil
 		}

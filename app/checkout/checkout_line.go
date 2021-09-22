@@ -3,6 +3,7 @@ package checkout
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
@@ -18,7 +19,7 @@ func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]
 	return lines, nil
 }
 
-func (a *ServiceCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(transaction *gorp.Transaction, checkoutLineIDs []string) *model.AppError {
 	// validate id list
 	for _, id := range checkoutLineIDs {
 		if !model.IsValidId(id) {
@@ -26,7 +27,7 @@ func (a *ServiceCheckout) DeleteCheckoutLines(checkoutLineIDs []string) *model.A
 		}
 	}
 
-	err := a.srv.Store.CheckoutLine().DeleteLines(checkoutLineIDs)
+	err := a.srv.Store.CheckoutLine().DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -76,4 +77,25 @@ func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*checkout.Chec
 	}
 
 	return nil
+}
+
+// CheckoutLinesByOption returns a list of checkout lines filtered using given option
+func (s *ServiceCheckout) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, *model.AppError) {
+	checkoutLines, err := s.srv.Store.CheckoutLine().CheckoutLinesByOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(checkoutLines) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("CheckoutLinesByOption", "app.checkout.error_finding_checkout_lines_by_options.app_error", nil, errMessage, statusCode)
+	}
+
+	return checkoutLines, nil
 }

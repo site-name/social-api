@@ -31,6 +31,7 @@ const (
 	TAX_ERROR                        CheckoutErrorCode = "tax_error"
 	UNIQUE                           CheckoutErrorCode = "unique"
 	VOUCHER_NOT_APPLICABLE           CheckoutErrorCode = "voucher_not_applicable"
+	GIFT_CARD_NOT_APPLICABLE         CheckoutErrorCode = "gift_card_not_applicable"
 	ZERO_QUANTITY                    CheckoutErrorCode = "zero_quantity"
 	MISSING_CHANNEL_SLUG             CheckoutErrorCode = "missing_channel_slug"
 	CHANNEL_INACTIVE                 CheckoutErrorCode = "channel_inactive"
