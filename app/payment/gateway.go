@@ -100,7 +100,6 @@ func (a *ServicePayment) ProcessPayment(
 	if appErr != nil {
 		return nil, nil, appErr
 	}
-	a.fetchGatewayResponse()
 
 	panic("not implemented")
 }

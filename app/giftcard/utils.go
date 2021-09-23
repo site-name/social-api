@@ -2,6 +2,7 @@ package giftcard
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sitename/sitename/app"
@@ -11,13 +12,18 @@ import (
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError {
-	now := model.NewTime(time.Now().UTC())
+func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) *model.AppError {
+	now := model.NewTime(time.Now())
 
 	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
 		Code: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: promoCode,
+			},
+		},
+		Currency: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: strings.ToUpper(currency),
 			},
 		},
 		ExpiryDate: &model.TimeFilter{

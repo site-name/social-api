@@ -42,7 +42,7 @@ func (p *ProductTranslation) IsValid() *model.AppError {
 	if !model.IsValidId(p.ProductID) {
 		return outer("product_id", &p.Id)
 	}
-	if tag, err := language.Parse(p.LanguageCode); err != nil || tag.String() != p.LanguageCode {
+	if tag, err := language.Parse(p.LanguageCode); err != nil || !strings.EqualFold(tag.String(), p.LanguageCode) {
 		return outer("language_code", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_NAME_MAX_LENGTH {

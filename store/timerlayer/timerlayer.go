@@ -7856,6 +7856,70 @@ func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 	return result, err
 }
 
+func (s *TimerLayerVoucherTranslationStore) FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherTranslationStore) Get(id string) (*product_and_discount.VoucherTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherTranslationStore) GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherTranslationStore) Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherTranslationStore.Save(translation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherTranslationStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 

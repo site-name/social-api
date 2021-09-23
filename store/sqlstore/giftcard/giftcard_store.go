@@ -128,6 +128,9 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option
 	if option.Code != nil {
 		query = query.Where(option.Code.ToSquirrel("Code"))
 	}
+	if option.Currency != nil {
+		query = query.Where(option.Currency.ToSquirrel("Currency"))
+	}
 	if option.ExpiryDate != nil {
 		query = query.Where(option.ExpiryDate.ToSquirrel("ExpiryDate"))
 	}

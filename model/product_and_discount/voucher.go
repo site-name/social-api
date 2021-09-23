@@ -165,6 +165,13 @@ type VoucherTranslation struct {
 	CreateAt     int64  `json:"create_at"`
 }
 
+// VoucherTranslationFilterOption is used to build squirrel queries
+type VoucherTranslationFilterOption struct {
+	Id           *model.StringFilter
+	LanguageCode *model.StringFilter
+	VoucherID    *model.StringFilter
+}
+
 func (v *VoucherTranslation) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.voucher_translation.is_valid.%s.app_error",

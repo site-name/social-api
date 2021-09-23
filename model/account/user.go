@@ -361,29 +361,16 @@ func (u *User) PreSave() {
 	if u.Username == "" {
 		u.Username = model.NewId()
 	}
-	if u.AuthData != nil && *u.AuthData == "" {
-		u.AuthData = nil
-	}
-	u.Username = model.SanitizeUnicode(u.Username)
-	u.FirstName = model.SanitizeUnicode(u.FirstName)
-	u.LastName = model.SanitizeUnicode(u.LastName)
-	u.Nickname = model.SanitizeUnicode(u.Nickname)
-	u.Username = model.NormalizeUsername(u.Username)
-	u.Email = model.NormalizeEmail(u.Email)
+
 	u.CreateAt = model.GetMillis()
 	u.UpdateAt = u.CreateAt
 	u.LastPasswordUpdate = u.CreateAt
 	u.MfaActive = false
 
-	if u.Props == nil {
-		u.Props = make(map[string]string)
-	}
 	if u.NotifyProps == nil || len(u.NotifyProps) == 0 {
 		u.SetDefaultNotifications()
 	}
-	if u.Locale == "" {
-		u.Locale = model.DEFAULT_LOCALE
-	}
+
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()
 	}
@@ -392,19 +379,30 @@ func (u *User) PreSave() {
 	}
 }
 
-// PreUpdate should be run before updating the user in the db.
-func (u *User) PreUpdate() {
+func (u *User) commonPre() {
 	u.Username = model.SanitizeUnicode(u.Username)
 	u.FirstName = model.SanitizeUnicode(u.FirstName)
 	u.LastName = model.SanitizeUnicode(u.LastName)
 	u.Nickname = model.SanitizeUnicode(u.Nickname)
 	u.Username = model.NormalizeUsername(u.Username)
 	u.Email = model.NormalizeEmail(u.Email)
-	u.UpdateAt = model.GetMillis()
 
 	if u.AuthData != nil && *u.AuthData == "" {
 		u.AuthData = nil
 	}
+	if u.Props == nil {
+		u.Props = make(map[string]string)
+	}
+	if u.Locale == "" {
+		u.Locale = model.DEFAULT_LOCALE
+	} else {
+		u.Locale = strings.ToLower(u.Locale)
+	}
+}
+
+// PreUpdate should be run before updating the user in the db.
+func (u *User) PreUpdate() {
+	u.UpdateAt = model.GetMillis()
 
 	if u.NotifyProps == nil || len(u.NotifyProps) == 0 {
 		u.SetDefaultNotifications()

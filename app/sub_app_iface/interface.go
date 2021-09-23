@@ -44,7 +44,7 @@ type GiftcardService interface {
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                        // PromoCodeIsGiftCard checks whether there is giftcard with given code
 	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                               // ToggleGiftcardStatus set status of given giftcard to inactive/active
 	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                   // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, promoCode string) *model.AppError                                           // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) *model.AppError                          // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
 	CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError)                   // CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
 	UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError)                                               // UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
 	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsByOption finds a list of giftcards with given option
@@ -406,6 +406,7 @@ type DiscountService interface {
 	DecreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError                                                                                                                                                                                            // DecreaseVoucherUsage decreases voucher's uses by 1
 	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError                                                                                                                                                              // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 	ValidateVoucherForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError) // ValidateVoucherForCheckout validates given voucher
+	GetVoucherTranslationByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, *model.AppError)                                                                                                                 // GetVoucherTranslationByOption returns a voucher translation by given options
 }
 
 type OrderService interface {

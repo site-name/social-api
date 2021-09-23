@@ -140,14 +140,6 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
 func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "ValidateMinSpent"
-		}
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "ValidateMinSpent"
-		}
-	}()
 
 	ownerShopOfVoucher, appErr := a.srv.ShopService().ShopById(voucher.ShopID)
 	if appErr != nil {
@@ -199,14 +191,6 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if appErr != nil {
-			appErr.Where = "ValidateOncePerCustomer"
-		}
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "ValidateOncePerCustomer"
-		}
-	}()
 
 	voucherCustomers, appErr := a.VoucherCustomerByCustomerEmailAndVoucherID(voucher.Id, customerEmail)
 	if appErr != nil {
@@ -225,14 +209,6 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.
 
 // ValidateVoucherOnlyForStaff validate if voucher is only for staff
 func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	defer func() {
-		if notApplicableErr != nil {
-			notApplicableErr.Where = "ValidateVoucherOnlyForStaff"
-		}
-		if appErr != nil {
-			appErr.Where = "ValidateVoucherOnlyForStaff"
-		}
-	}()
 
 	if !*voucher.OnlyForStaff {
 		return

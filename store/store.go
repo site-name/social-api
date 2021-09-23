@@ -729,6 +729,10 @@ type (
 	}
 	VoucherTranslationStore interface {
 		CreateIndexesIfNotExists()
+		Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error)                    // Save inserts given translation into database and returns it
+		Get(id string) (*product_and_discount.VoucherTranslation, error)                                                                // Get finds and returns a voucher translation with given id
+		FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) // FilterByOption returns a list of voucher translations filtered using given options
+		GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error)      // GetByOption finds and returns 1 voucher translation by given options
 	}
 	DiscountSaleStore interface {
 		CreateIndexesIfNotExists()

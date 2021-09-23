@@ -62,6 +62,7 @@ type GiftCardFilterOption struct {
 	ExpiryDate    *model.TimeFilter
 	StartDate     *model.TimeFilter
 	Code          *model.StringFilter
+	Currency      *model.StringFilter
 	CreatedByID   *model.StringFilter
 	CheckoutToken *model.StringFilter // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'CheckoutID' ...)
 	IsActive      *bool

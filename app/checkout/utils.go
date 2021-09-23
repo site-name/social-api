@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -479,6 +480,35 @@ func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interface
 	return linePrices, nil
 }
 
+// GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
+// Raise NotApplicable if voucher of given type cannot be applied.
+func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+	notApplicable, appErr := s.srv.DiscountService().ValidateVoucherForCheckout(manager, voucher, checkoutInfo, lines, discounts)
+	if notApplicable != nil || appErr != nil {
+		return nil, notApplicable, appErr
+	}
+	if voucher.Type == product_and_discount.ENTIRE_ORDER {
+		checkoutSubTotal, appErr := s.CheckoutSubTotal(manager, checkoutInfo, lines, address, discounts)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		money, appErr := s.srv.DiscountService().GetDiscountAmountFor(voucher, checkoutSubTotal.Gross, checkoutInfo.Channel.Id)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		return money.(*goprices.Money), nil, nil
+	}
+	if voucher.Type == product_and_discount.SHIPPING {
+		return s.getShippingVoucherDiscountForCheckout(manager, voucher, checkoutInfo, lines, address, discounts)
+	}
+	if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
+		return s.getProductsVoucherDiscount(manager, checkoutInfo, lines, voucher, discounts)
+	}
+
+	s.srv.Log.Warn("Unknown discount type", slog.String("discount_type", voucher.Type))
+	return nil, nil, model.NewAppError("GetVoucherDiscountForCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
+}
+
 func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError) {
 	var (
 		discountedProducts    []*product_and_discount.Product
@@ -642,6 +672,49 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 	}
 
 	return nil, nil
+}
+
+// RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
+// Will clear both voucher and discount if the discount is no longer applicable.
+func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+	checkOut := checkoutInfo.Checkout
+	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, false)
+	if appErr != nil {
+		return appErr
+	}
+
+	if voucher != nil {
+		address := checkoutInfo.ShippingAddress
+		if address == nil {
+			address = checkoutInfo.BillingAddress
+		}
+
+		discount, notApplicable, appErr := s.GetVoucherDiscountForCheckout(manager, voucher, checkoutInfo, lines, address, discounts)
+		if appErr != nil {
+			return appErr
+		}
+		if notApplicable != nil {
+			appErr = s.RemoveVoucherFromCheckout(&checkOut)
+			if appErr != nil {
+				return appErr
+			}
+		}
+
+		checkoutSubTotal, appErr := s.CheckoutSubTotal(manager, checkoutInfo, lines, address, discounts)
+		if appErr != nil {
+			return appErr
+		}
+		if voucher.Type != product_and_discount.SHIPPING {
+			if less, err := checkoutSubTotal.Gross.LessThan(discount); less && err == nil {
+				checkOut.Discount = checkoutSubTotal.Gross
+			} else {
+				checkOut.Discount = discount
+			}
+		} else {
+			checkOut.Discount = discount
+		}
+		checkOut.DiscountName = &voucher.Name
+	}
 }
 
 // RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
