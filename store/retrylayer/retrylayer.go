@@ -3466,7 +3466,7 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *pro
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error) {
 
 	tries := 0
 	for {

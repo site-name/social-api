@@ -3226,7 +3226,7 @@ func (s *OpenTracingLayerDiscountSaleChannelListingStore) Save(saleChannelListin
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+func (s *OpenTracingLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountVoucherStore.ExpiredVouchers")
 	s.Root.Store.SetContext(newCtx)

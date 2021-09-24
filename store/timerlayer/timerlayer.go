@@ -2995,7 +2995,7 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *pro
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.ExpiredVouchers(date)
