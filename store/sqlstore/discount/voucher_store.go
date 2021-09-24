@@ -2,21 +2,19 @@ package discount
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 type SqlVoucherStore struct {
 	store.Store
 }
-
-var (
-	VoucherUniqueList = []string{"Code", "vouchers_code_key"}
-)
 
 func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
 	vs := &SqlVoucherStore{sqlStore}
@@ -59,6 +57,30 @@ func (vs *SqlVoucherStore) ModelFields() []string {
 	}
 }
 
+func (vs *SqlVoucherStore) ScanFields(voucher product_and_discount.Voucher) []interface{} {
+	return []interface{}{
+		&voucher.Id,
+		&voucher.ShopID,
+		&voucher.Type,
+		&voucher.Name,
+		&voucher.Code,
+		&voucher.UsageLimit,
+		&voucher.Used,
+		&voucher.StartDate,
+		&voucher.EndDate,
+		&voucher.ApplyOncePerOrder,
+		&voucher.ApplyOncePerCustomer,
+		&voucher.OnlyForStaff,
+		&voucher.DiscountValueType,
+		&voucher.Countries,
+		&voucher.MinCheckoutItemsQuantity,
+		&voucher.CreateAt,
+		&voucher.UpdateAt,
+		&voucher.Metadata,
+		&voucher.PrivateMetadata,
+	}
+}
+
 func (vs *SqlVoucherStore) CreateIndexesIfNotExists() {
 	vs.CreateIndexIfNotExists("idx_vouchers_code", store.VoucherTableName, "Code")
 	vs.CreateForeignKeyIfNotExists(store.VoucherTableName, "ShopID", store.ShopTableName, "Id", true)
@@ -97,7 +119,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 	}
 
 	if err != nil {
-		if vs.IsUniqueConstraintError(err, VoucherUniqueList) {
+		if vs.IsUniqueConstraintError(err, []string{"Code", "vouchers_code_key"}) {
 			return nil, store.NewErrInvalidInput(store.VoucherTableName, "code", voucher.Code)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher with id=%s", voucher.Id)
@@ -125,12 +147,6 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 
 // FilterVouchersByOption finds vouchers bases on given option.
 func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
-	transaction, err := vs.GetReplica().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	defer store.FinalizeTransaction(transaction)
-
 	query := vs.
 		GetQueryBuilder().
 		Select(vs.ModelFields()...).
@@ -163,25 +179,36 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 			query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingActive})
 		}
 	}
-
 	if option.WithLook {
 		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
 	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "sql_tosql")
+		return nil, errors.Wrap(err, "FilterVouchersByOption_tosql")
 	}
 
 	var vouchers []*product_and_discount.Voucher
-	_, err = transaction.Select(&vouchers, queryString, args...)
+	_, err = vs.GetReplica().Select(&vouchers, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
 	}
 
-	if err = transaction.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
+	return vouchers, nil
+}
+
+// ExpiredVouchers finds and returns vouchers that are expired before given date
+func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+	if date == nil {
+		date = model.NewTime(time.Now())
+	}
+	beginOfDate := util.StartOfDay(*date)
+
+	var res []*product_and_discount.Voucher
+	_, err := vs.GetReplica().Select(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")
 	}
 
-	return vouchers, nil
+	return res, nil
 }

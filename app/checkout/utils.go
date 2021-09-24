@@ -17,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
@@ -714,7 +715,132 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interface{}, check
 			checkOut.Discount = discount
 		}
 		checkOut.DiscountName = &voucher.Name
+
+		// check if the owner of this checkout has ther primary language:
+		if checkoutInfo.User != nil && model.Languages[checkoutInfo.User.Locale] != "" {
+			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
+				LanguageCode: &model.StringFilter{
+					StringOption: &model.StringOption{
+						Eq: checkoutInfo.User.Locale,
+					},
+				},
+				VoucherID: &model.StringFilter{
+					StringOption: &model.StringOption{
+						Eq: voucher.Id,
+					},
+				},
+			})
+			if appErr != nil {
+				if appErr.StatusCode == http.StatusInternalServerError {
+					return appErr
+				}
+				// ignore not found error
+			} else {
+				if voucherTranslation.Name != voucher.Name {
+					checkOut.TranslatedDiscountName = &voucherTranslation.Name
+				} else {
+					checkOut.TranslatedDiscountName = model.NewString("")
+				}
+			}
+		}
+		_, appErr = s.UpsertCheckout(&checkOut)
+		if appErr != nil {
+			return appErr
+		}
+
+		return nil
 	}
+
+	return s.RemoveVoucherFromCheckout(&checkOut)
+}
+
+// AddPromoCodeToCheckout Add gift card or voucher data to checkout.
+// Raise InvalidPromoCode if promo code does not match to any voucher or gift card.
+func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, promoCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError) {
+	codeIsVoucher, appErr := s.srv.DiscountService().PromoCodeIsVoucher(promoCode)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if codeIsVoucher {
+		return s.AddVoucherCodeToCheckout(manager, checkoutInfo, lines, promoCode, discounts)
+	}
+
+	codeIsGiftcard, appErr := s.srv.GiftcardService().PromoCodeIsGiftCard(promoCode)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if codeIsGiftcard {
+		return nil, s.srv.GiftcardService().AddGiftcardCodeToCheckout(&checkoutInfo.Checkout, checkoutInfo.GetCustomerEmail(), promoCode, checkoutInfo.Channel.Currency)
+	}
+
+	return giftcard.NewInvalidPromoCode("AddPromoCodeToCheckout", "Promo code is invalid"), nil
+}
+
+// AddVoucherCodeToCheckout Add voucher data to checkout by code.
+// Raise InvalidPromoCode() if voucher of given type cannot be applied.
+func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucherCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError) {
+	vouchers, appErr := s.srv.DiscountService().FilterActiveVouchers(model.NewTime(time.Now().UTC()), checkoutInfo.Channel.Slug)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return &giftcard.InvalidPromoCode{}, nil
+	}
+
+	for _, voucher := range vouchers {
+		if voucher.Code == voucherCode {
+			notAplicable, appErr := s.AddVoucherToCheckout(manager, checkoutInfo, lines, voucher, discounts)
+			if appErr != nil {
+				return nil, appErr
+			}
+			if notAplicable != nil {
+				return nil, model.NewAppError("AddVoucherCodeToCheckout", "app.checkout.voucher_not_applicabale_to_checkout.app_error", map[string]interface{}{"code": exception.VOUCHER_NOT_APPLICABLE}, "", http.StatusNotAcceptable)
+			}
+		}
+	}
+
+	return &giftcard.InvalidPromoCode{}, nil
+}
+
+// AddVoucherToCheckout Add voucher data to checkout.
+// Raise NotApplicable if voucher of given type cannot be applied.
+func (s *ServiceCheckout) AddVoucherToCheckout(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError) {
+	checkout := checkoutInfo.Checkout
+
+	address := checkoutInfo.ShippingAddress
+	if address == nil {
+		address = checkoutInfo.BillingAddress
+	}
+	discountMoney, notApplicable, appErr := s.GetVoucherDiscountForCheckout(manager, voucher, checkoutInfo, lines, address, discounts)
+	if appErr != nil || notApplicable != nil {
+		return notApplicable, appErr
+	}
+	checkout.VoucherCode = &voucher.Code
+	checkout.DiscountName = &voucher.Name
+
+	if user := checkoutInfo.User; user != nil && model.Languages[user.Locale] != "" {
+		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
+			LanguageCode: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: user.Locale,
+				},
+			},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+		if voucherTranslation.Name != voucher.Name {
+			checkout.TranslatedDiscountName = &voucherTranslation.Name
+		} else {
+			checkout.TranslatedDiscountName = model.NewString("")
+		}
+	}
+	checkout.Discount = discountMoney
+
+	_, appErr = s.UpsertCheckout(&checkout)
+	return nil, appErr
 }
 
 // RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.

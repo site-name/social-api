@@ -407,6 +407,10 @@ type DiscountService interface {
 	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError                                                                                                                                                              // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 	ValidateVoucherForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError) // ValidateVoucherForCheckout validates given voucher
 	GetVoucherTranslationByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, *model.AppError)                                                                                                                 // GetVoucherTranslationByOption returns a voucher translation by given options
+	// FilterActiveVouchers returns a list of vouchers that are active.
+	//
+	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
+	FilterActiveVouchers(date *time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError)
 }
 
 type OrderService interface {

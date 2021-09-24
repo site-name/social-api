@@ -239,7 +239,10 @@ func WebSocketEventFromJson(data io.Reader) *WebSocketEvent {
 		if err != nil {
 			return nil
 		}
-		o.Data["user"] = UserFromJson(bytes.NewReader(buf))
+		// NOTE: not sure this is properly handled yet.
+		var user interface{}
+		json.NewDecoder(bytes.NewReader(buf)).Decode(&user)
+		o.Data["user"] = user
 	}
 	ev.data = o.Data
 	ev.broadcast = o.Broadcast

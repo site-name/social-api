@@ -27,7 +27,7 @@ var SALE_TYPES = model.StringArray([]string{FIXED, PERCENTAGE})
 const (
 	VOUCHER_TYPE_MAX_LENGTH                = 20
 	VOUCHER_NAME_MAX_LENGTH                = 255
-	VOUCHER_CODE_MAX_LENGTH                = 12
+	VOUCHER_CODE_MAX_LENGTH                = 16
 	VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH = 10
 )
 

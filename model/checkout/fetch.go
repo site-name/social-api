@@ -135,7 +135,9 @@ func (d *DeliveryMethodBase) String() string {
 	return "DeliveryMethodBase"
 }
 
-func (d *DeliveryMethodBase) WarehousePK() string
+func (d *DeliveryMethodBase) WarehousePK() string {
+	return ""
+}
 
 func (d *DeliveryMethodBase) IsLocalCollectionPoint() bool {
 	return false

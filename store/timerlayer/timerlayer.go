@@ -2995,6 +2995,22 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *pro
 	return result, err
 }
 
+func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountVoucherStore.ExpiredVouchers(date)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.ExpiredVouchers", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
 	start := timemodule.Now()
 

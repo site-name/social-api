@@ -3,7 +3,9 @@ package discount
 import (
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -239,8 +241,19 @@ func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *product_and_disco
 // VouchersByOption finds all vouchers with given option then returns them
 func (a *ServiceDiscount) VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError) {
 	vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VouchersByOption", "app.discount.vouchers_by_option_error.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(vouchers) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, errMessage, statusCode)
 	}
 
 	return vouchers, nil
@@ -263,4 +276,65 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError
 	}
 
 	return len(vouchers) != 0, nil
+}
+
+// FilterActiveVouchers returns a list of vouchers that are active.
+//
+// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
+func (s *ServiceDiscount) FilterActiveVouchers(date *time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError) {
+	filterOptions := &product_and_discount.VoucherFilterOption{
+		UsageLimit: &model.NumberFilter{
+			Or: &model.NumberOption{
+				NULL: model.NewBool(true),
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
+				},
+			},
+		},
+		EndDate: &model.TimeFilter{
+			Or: &model.TimeOption{
+				NULL:              model.NewBool(true),
+				GtE:               date,
+				CompareStartOfDay: true,
+			},
+		},
+		StartDate: &model.TimeFilter{
+			TimeOption: &model.TimeOption{
+				LtE:               date,
+				CompareStartOfDay: true,
+			},
+		},
+	}
+
+	if channelSlug != "" {
+		filterOptions.ChannelListingSlug = &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: channelSlug,
+			},
+		}
+		filterOptions.ChannelListingActive = model.NewBool(true)
+	}
+
+	return s.VouchersByOption(filterOptions)
+}
+
+// ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
+func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, *model.AppError) {
+	expiredVouchers, err := s.srv.Store.DiscountVoucher().ExpiredVouchers(date)
+	var (
+		statusCode int
+		errMessage string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(expiredVouchers) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ExpiredVouchers", "app.discount.error_finding_expired_vouchers.app_error", nil, errMessage, statusCode)
+	}
+
+	return expiredVouchers, nil
 }

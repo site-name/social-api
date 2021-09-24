@@ -5,6 +5,7 @@ package store
 import (
 	"context"
 	"database/sql/driver"
+	"time"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
@@ -748,9 +749,12 @@ type (
 	}
 	DiscountVoucherStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(voucher product_and_discount.Voucher) []interface{}
 		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error)                              // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*product_and_discount.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
 		FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
+		ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error)                                         // ExpiredVouchers finds and returns vouchers that are expired before given date
 	}
 	VoucherCategoryStore interface {
 		CreateIndexesIfNotExists()
