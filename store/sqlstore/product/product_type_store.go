@@ -21,6 +21,7 @@ func NewSqlProductTypeStore(s store.Store) store.ProductTypeStore {
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_TYPE_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(product_and_discount.PRODUCT_TYPE_SLUG_MAX_LENGTH)
+		table.ColMap("Kind").SetMaxSize(product_and_discount.PRODUCT_TYPE_KIND_MAX_LENGTH)
 	}
 	return pts
 }
@@ -30,6 +31,7 @@ func (ps *SqlProductTypeStore) ModelFields() []string {
 		"ProductTypes.Id",
 		"ProductTypes.Name",
 		"ProductTypes.Slug",
+		"ProductTypes.Kind",
 		"ProductTypes.HasVariants",
 		"ProductTypes.IsShippingRequired",
 		"ProductTypes.IsDigital",
@@ -37,6 +39,22 @@ func (ps *SqlProductTypeStore) ModelFields() []string {
 		"ProductTypes.WeightUnit",
 		"ProductTypes.Metadata",
 		"ProductTypes.PrivateMetadata",
+	}
+}
+
+func (ps *SqlProductTypeStore) ScanFields(productType product_and_discount.ProductType) []interface{} {
+	return []interface{}{
+		&productType.Id,
+		&productType.Name,
+		&productType.Slug,
+		&productType.Kind,
+		&productType.HasVariants,
+		&productType.IsShippingRequired,
+		&productType.IsDigital,
+		&productType.Weight,
+		&productType.WeightUnit,
+		&productType.Metadata,
+		&productType.PrivateMetadata,
 	}
 }
 
@@ -96,25 +114,18 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 		return nil, errors.Wrapf(err, "failed to find product types belong to given checkout with id=%s", checkoutToken)
 	}
 
-	var productTypes []*product_and_discount.ProductType
+	var (
+		productTypes []*product_and_discount.ProductType
+		productType  product_and_discount.ProductType
+		scanFields   = ps.ScanFields(productType)
+	)
+
 	for rows.Next() {
-		var prdType product_and_discount.ProductType
-		err := rows.Scan(
-			&prdType.Id,
-			&prdType.Name,
-			&prdType.Slug,
-			&prdType.HasVariants,
-			&prdType.IsShippingRequired,
-			&prdType.IsDigital,
-			&prdType.Weight,
-			&prdType.WeightUnit,
-			&prdType.Metadata,
-			&prdType.PrivateMetadata,
-		)
+		err := rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse a row")
 		}
-		productTypes = append(productTypes, &prdType)
+		productTypes = append(productTypes, &productType)
 	}
 
 	if err = rows.Close(); err != nil {

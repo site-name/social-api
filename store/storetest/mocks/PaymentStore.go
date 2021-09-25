@@ -58,13 +58,13 @@ func (_m *PaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: id, lockForUpdate
-func (_m *PaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, error) {
-	ret := _m.Called(id, lockForUpdate)
+// Get provides a mock function with given fields: transaction, id, lockForUpdate
+func (_m *PaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
+	ret := _m.Called(transaction, id, lockForUpdate)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(string, bool) *payment.Payment); ok {
-		r0 = rf(id, lockForUpdate)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string, bool) *payment.Payment); ok {
+		r0 = rf(transaction, id, lockForUpdate)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*payment.Payment)
@@ -72,8 +72,8 @@ func (_m *PaymentStore) Get(id string, lockForUpdate bool) (*payment.Payment, er
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(id, lockForUpdate)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, string, bool) error); ok {
+		r1 = rf(transaction, id, lockForUpdate)
 	} else {
 		r1 = ret.Error(1)
 	}

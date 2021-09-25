@@ -191,6 +191,22 @@ func (_m *ProductStore) Save(prd *product_and_discount.Product) (*product_and_di
 	return r0, r1
 }
 
+// ScanFields provides a mock function with given fields: prd
+func (_m *ProductStore) ScanFields(prd product_and_discount.Product) []interface{} {
+	ret := _m.Called(prd)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(product_and_discount.Product) []interface{}); ok {
+		r0 = rf(prd)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // SelectForUpdateDiscountedPricesOfCatalogues provides a mock function with given fields: productIDs, categoryIDs, collectionIDs
 func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
 	ret := _m.Called(productIDs, categoryIDs, collectionIDs)

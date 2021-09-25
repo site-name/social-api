@@ -81,6 +81,22 @@ func (_m *ShippingZoneStore) ModelFields() []string {
 	return r0
 }
 
+// ScanFields provides a mock function with given fields: shippingZone
+func (_m *ShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []interface{} {
+	ret := _m.Called(shippingZone)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(shipping.ShippingZone) []interface{}); ok {
+		r0 = rf(shippingZone)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: shippingZone
 func (_m *ShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
 	ret := _m.Called(shippingZone)

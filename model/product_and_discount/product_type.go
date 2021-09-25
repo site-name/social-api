@@ -8,16 +8,31 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+type ProductTypeKind string
+
+// some valid value for product type kind
+const (
+	NORMAL    ProductTypeKind = "normal"
+	GIFT_CARD ProductTypeKind = "gift_card"
+)
+
+var ProductTypeKindStrings = map[ProductTypeKind]string{
+	NORMAL:    "A standard product type.",
+	GIFT_CARD: "A gift card product type.",
+}
+
 // max lengths for some product type's fields
 const (
 	PRODUCT_TYPE_NAME_MAX_LENGTH = 250
 	PRODUCT_TYPE_SLUG_MAX_LENGTH = 255
+	PRODUCT_TYPE_KIND_MAX_LENGTH = 32
 )
 
 type ProductType struct {
 	Id                 string                 `json:"id"`
 	Name               string                 `json:"name"`
 	Slug               string                 `json:"slug"`
+	Kind               ProductTypeKind        `json:"kind"`
 	HasVariants        *bool                  `json:"has_variants"`
 	IsShippingRequired *bool                  `json:"is_shipping_required"` // default true
 	IsDigital          *bool                  `json:"is_digital"`           // default false
@@ -44,6 +59,9 @@ func (p *ProductType) IsValid() *model.AppError {
 	}
 	if utf8.RuneCountInString(p.Slug) > PRODUCT_TYPE_SLUG_MAX_LENGTH {
 		return outer("slug", &p.Id)
+	}
+	if ProductTypeKindStrings[p.Kind] == "" || len(p.Kind) > PRODUCT_TYPE_KIND_MAX_LENGTH {
+		return outer("kind", &p.Id)
 	}
 	if p.Weight != nil && *p.Weight < 0 {
 		return outer("weight", &p.Id)

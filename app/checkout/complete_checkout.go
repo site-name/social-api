@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -396,23 +397,14 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	return orderLineDatas, nil, nil
 }
 
-type OrderData struct {
-	order.Order
-
-	TotalPriceLeft *goprices.Money
-	Lines          []*order.OrderLineData
-}
-
 // prepareOrderData Run checks and return all the data from a given checkout to create an order.
 // :raises NotApplicable InsufficientStock:
 func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, discounts []*product_and_discount.DiscountInfo) (map[string]interface{}, *exception.InsufficientStock, *product_and_discount.NotApplicable, *exception.TaxError, *model.AppError) {
-	var (
-		checkOut = checkoutInfo.Checkout
-		// orderData = OrderData{}
-		address = checkoutInfo.ShippingAddress
-	)
+	checkOut := checkoutInfo.Checkout
 	checkOut.PopulateNonDbFields() // this call is important
 
+	// orderData = OrderData{}
+	address := checkoutInfo.ShippingAddress
 	if address == nil {
 		address = checkoutInfo.BillingAddress
 	}
@@ -449,6 +441,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 
 	// TODO: implement a few works with plugin manager here.
 	panic("not implemented")
+
 }
 
 // createOrder Create an order from the checkout.
@@ -460,7 +453,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 // which language to use when sending email.
 //
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
-func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData OrderData, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *exception.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData map[string]interface{}, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *exception.InsufficientStock, *model.AppError) {
 	// create transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -486,8 +479,10 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return orders[0], nil, nil
 	}
 
-	totalPriceLeft := orderData.TotalPriceLeft
-	orderLinesInfo := orderData.Lines
+	totalPriceLeft := orderData["total_price_left"].(*goprices.Money)
+	delete(orderData, "total_price_left")
+	orderLinesInfo := orderData["lines"].([]*order.OrderLineData)
+	delete(orderData, "lines")
 
 	status := order.UNCONFIRMED
 	if siteSettings == nil {
@@ -500,7 +495,22 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		}
 	}
 
-	newOrder := orderData.Order
+	/*
+		NOTE: we can easily convert a map[string]interface{} to Order{} since:
+		the map's keys are exactly match json tags of order struct's fields
+	*/
+	serializedOrderData, err := json.JSON.Marshal(orderData)
+	if err != nil {
+		return nil, nil, model.NewAppError("createOrder", app.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// define new order to create
+	var newOrder order.Order
+	err = json.JSON.Unmarshal(serializedOrderData, &newOrder)
+	if err != nil {
+		return nil, nil, model.NewAppError("createOrder", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
 	newOrder.Id = ""
 	newOrder.CheckoutToken = checkOut.Token
 	newOrder.Status = status
@@ -680,8 +690,6 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 
 	return nil
 }
-
-const CheckoutGetOrderDataAppErrorID = "app.checkout.get_order_data.app_error"
 
 func (s *ServiceCheckout) getOrderData(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discoutns []*product_and_discount.DiscountInfo) (map[string]interface{}, *model.AppError) {
 	orderData, insufficientStockErr, notApplicableErr, taxError, appErr := s.prepareOrderData(manager, checkoutInfo, lines, discoutns)

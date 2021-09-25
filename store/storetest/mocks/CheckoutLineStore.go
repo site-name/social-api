@@ -5,7 +5,9 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	checkout "github.com/sitename/sitename/model/checkout"
+
 	measurement "github.com/sitename/sitename/modules/measurement"
 
 	mock "github.com/stretchr/testify/mock"
@@ -119,18 +121,41 @@ func (_m *CheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID stri
 	return r0, r1, r2, r3
 }
 
+// CheckoutLinesByOption provides a mock function with given fields: option
+func (_m *CheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+	ret := _m.Called(option)
+
+	var r0 []*checkout.CheckoutLine
+	if rf, ok := ret.Get(0).(func(*checkout.CheckoutLineFilterOption) []*checkout.CheckoutLine); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*checkout.CheckoutLine)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*checkout.CheckoutLineFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *CheckoutLineStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// DeleteLines provides a mock function with given fields: checkoutLineIDs
-func (_m *CheckoutLineStore) DeleteLines(checkoutLineIDs []string) error {
-	ret := _m.Called(checkoutLineIDs)
+// DeleteLines provides a mock function with given fields: transaction, checkoutLineIDs
+func (_m *CheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+	ret := _m.Called(transaction, checkoutLineIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]string) error); ok {
-		r0 = rf(checkoutLineIDs)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []string) error); ok {
+		r0 = rf(transaction, checkoutLineIDs)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -171,6 +196,22 @@ func (_m *CheckoutLineStore) ModelFields() []string {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
+// ScanFields provides a mock function with given fields: line
+func (_m *CheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interface{} {
+	ret := _m.Called(line)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(checkout.CheckoutLine) []interface{}); ok {
+		r0 = rf(line)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
 		}
 	}
 

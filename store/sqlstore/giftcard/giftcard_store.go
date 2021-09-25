@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -164,4 +166,101 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option
 	}
 
 	return giftcards, nil
+}
+
+// GetGiftcardLines returns a list of order lines
+func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.OrderLines, error) {
+	/*
+	   -- sample query for demonstration:
+
+	   SELECT
+	     "*"
+	   FROM
+	     "order_orderline"
+	   WHERE
+	     (
+	       "order_orderline"."id" IN (1, 2, 3)
+	       AND EXISTS(
+	         SELECT
+	           (1) AS "a"
+	         FROM
+	           "product_productvariant" W0
+	         WHERE
+	           (
+	             EXISTS(
+	               SELECT
+	                 (1) AS "a"
+	               FROM
+	                 "product_product" V0
+	               WHERE
+	                 (
+	                   EXISTS(
+	                     SELECT
+	                       (1) AS "a"
+	                     FROM
+	                       "product_producttype" U0
+	                     WHERE
+	                       (
+	                         U0."kind" = 'gift_card'
+	                         AND U0."id" = V0."product_type_id"
+	                       )
+	                     LIMIT
+	                       1
+	                   )
+	                   AND V0."id" = W0."product_id"
+	                 )
+	               LIMIT
+	                 1
+	             )
+	             AND W0."id" = "order_orderline"."variant_id"
+	           )
+	         LIMIT
+	           1
+	       )
+	     )
+	   ORDER BY
+	     "order_orderline"."id" ASC
+	*/
+
+	// select exists product type with kind == "gift_card":
+	productTypeQuery := gs.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		From(store.ProductTypeTableName+" U0").
+		Where("U0.Kind = ?", product_and_discount.GIFT_CARD).
+		Where("U0.Id = V0.ProductTypeID"). // NOTE: `V0` is Products table name
+		Limit(1)
+
+	productQuery := gs.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		From(store.ProductTableName + " V0").
+		Where(squirrel.Expr("EXISTS(?)", productTypeQuery)).
+		Where("V0.Id = W0.ProductID"). // NOTE: W0 is ProductVariants table name
+		Limit(1)
+
+	productVariantQuery := gs.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		From(store.ProductVariantTableName + " W0").
+		Where(squirrel.Expr("EXISTS(?)", productQuery)).
+		Where("W0.Id = OL.VariantID"). // NOTE: OL is OrderLines table name
+		Limit(1)
+
+	orderLineQuery := gs.GetQueryBuilder().
+		Select("*").
+		From(store.OrderLineTableName+" OL").
+		Where("OL.Id IN ?", orderLineIDs).
+		Where(squirrel.Expr("EXISTS(?)", productVariantQuery)).
+		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
+
+	queryString, args, err := orderLineQuery.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetGiftcardLines_ToSql")
+	}
+
+	var res []*order.OrderLine
+	_, err = gs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find order lines with given ids")
+	}
+
+	return res, nil
 }

@@ -772,7 +772,7 @@ func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interface{}, checkoutIn
 	}
 
 	if codeIsGiftcard {
-		return nil, s.srv.GiftcardService().AddGiftcardCodeToCheckout(&checkoutInfo.Checkout, checkoutInfo.GetCustomerEmail(), promoCode, checkoutInfo.Channel.Currency)
+		return s.srv.GiftcardService().AddGiftcardCodeToCheckout(&checkoutInfo.Checkout, checkoutInfo.GetCustomerEmail(), promoCode, checkoutInfo.Channel.Currency)
 	}
 
 	return giftcard.NewInvalidPromoCode("AddPromoCodeToCheckout", "Promo code is invalid"), nil
@@ -952,9 +952,8 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		checkoutLines = []*checkout.CheckoutLine{}
 	}
 
-	if quantityCheck {
-
-	}
+	// TODO: implement me.
+	panic("not implemented")
 }
 
 func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {

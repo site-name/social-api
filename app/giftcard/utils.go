@@ -5,14 +5,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/order"
 )
 
-// AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) *model.AppError {
+// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
+func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError) {
 	now := model.NewTime(time.Now())
 
 	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
@@ -42,13 +42,18 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, em
 
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound { // not found means promo code is invalid
-			return model.NewAppError("AddGiftcardCodeToCheckout", app.InvalidPromoCodeAppErrorID, map[string]interface{}{"PromoCode": promoCode}, "", http.StatusBadRequest)
+			return &giftcard.InvalidPromoCode{}, nil
 		}
-		return appErr // if this is system error
+		return nil, appErr // if this is system error
+	}
+
+	// giftcard can be used only by one user
+	if giftcards[0].UsedByEmail != nil || *giftcards[0].UsedByEmail != email {
+		return &giftcard.InvalidPromoCode{}, nil
 	}
 
 	_, appErr = a.CreateGiftCardCheckout(giftcards[0].Id, ckout.Token)
-	return appErr
+	return nil, appErr
 }
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
@@ -62,7 +67,10 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkou
 	})
 
 	if appErr != nil {
-		return appErr
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+		giftcards = []*giftcard.GiftCard{}
 	}
 
 	if len(giftcards) > 0 {
@@ -85,9 +93,16 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *mod
 
 	_, appErr := a.UpsertGiftcard(giftCard)
 	if appErr != nil {
-		appErr.Where = "ToggleGiftcardStatus" // this lets us know where does the error come from
 		return appErr
 	}
 
 	return nil
+}
+
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines) {
+
+}
+
+func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lineIDs []string) {
+
 }
