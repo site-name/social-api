@@ -53,7 +53,7 @@ type WarehouseFilterOption struct {
 	Email                  *model.StringFilter
 	ShippingZonesCountries *model.StringFilter // join shipping zone table
 
-	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property also also
+	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property to returning warehouse(s)
 	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also
 }
 
@@ -68,7 +68,7 @@ func (ws Warehouses) IDs() []string {
 		}
 	}
 
-	return nil
+	return res
 }
 
 func (w *WareHouse) String() string {

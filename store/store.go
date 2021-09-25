@@ -414,6 +414,7 @@ type (
 	ShippingZoneStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(shippingZone shipping.ShippingZone) []interface{}
 		Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error)                 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*shipping.ShippingZone, error)                                  // Get finds 1 shipping zone for given shippingZoneID
 		FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) // FilterByOption finds a list of shipping zones based on given option

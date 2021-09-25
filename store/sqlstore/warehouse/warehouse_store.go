@@ -146,15 +146,15 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 
 	rows, err := query.RunWith(wh.GetReplica()).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to query rows with given option")
+		return nil, errors.Wrap(err, "failed to find warehouses with given option")
 	}
 
 	var (
-		returnWarehouses []*warehouse.WareHouse
-		warehousesMap    = map[string]*warehouse.WareHouse{} // keys are warehouse IDs
-		wareHouse        warehouse.WareHouse
-		address          account.Address
-		scanItems        = wh.ScanFields(wareHouse)
+		returningWarehouses warehouse.Warehouses
+		warehousesMap       = map[string]*warehouse.WareHouse{} // keys are warehouse IDs
+		wareHouse           warehouse.WareHouse
+		address             account.Address
+		scanItems           = wh.ScanFields(wareHouse)
 	)
 	if option.SelectRelatedAddress {
 		scanItems = append(scanItems, wh.Address().ScanFields(address)...)
@@ -165,22 +165,25 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 			return nil, errors.Wrap(err, "failed to scan a row of warehouse and address")
 		}
 
-		wareHouse.Address = &address
-		returnWarehouses = append(returnWarehouses, &wareHouse)
-		warehousesMap[wareHouse.Id] = &wareHouse // set a key-value in the map
+		if option.SelectRelatedAddress {
+			wareHouse.Address = &address
+		}
+		returningWarehouses = append(returningWarehouses, &wareHouse)
+		warehousesMap[wareHouse.Id] = &wareHouse
 	}
+
 	if err = rows.Close(); err != nil {
 		return nil, errors.Wrap(err, "failed closing rows of warehouses and addresses")
 	}
 
-	// check if we need prefetch related data:
-	if option.PrefetchShippingZones && len(returnWarehouses) > 0 {
+	// check if we need prefetch related shipping zones:
+	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		rows, err = wh.GetQueryBuilder().
 			Select(wh.ShippingZone().ModelFields()...).
-			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")).
+			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")). // <- this column selection helps determine which shipping zone is related to which warehouse
 			From(store.ShippingZoneTableName).
 			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
-			Where("WarehouseShippingZones.WarehouseID IN ?", warehouse.Warehouses(returnWarehouses).IDs()).
+			Where("WarehouseShippingZones.WarehouseID IN ?", returningWarehouses.IDs()).
 			RunWith(wh.GetReplica()).Query()
 
 		if err != nil {
@@ -189,22 +192,13 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 		var (
 			shippingZone shipping.ShippingZone
 			WarehouseID  string
+			scanFields   = append(wh.ShippingZone().ScanFields(shippingZone), &WarehouseID)
 		)
 
 		for rows.Next() {
-			err = rows.Scan(
-				&shippingZone.Id,
-				&shippingZone.Name,
-				&shippingZone.Countries,
-				&shippingZone.Default,
-				&shippingZone.Description,
-				&shippingZone.Metadata,
-				&shippingZone.PrivateMetadata,
-
-				&WarehouseID,
-			)
+			err = rows.Scan(scanFields...)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to scan a row of shipping zone")
+				return nil, errors.Wrap(err, "failed to scan a row of shipping zone and warehouse id")
 			}
 
 			if warehousesMap[WarehouseID] != nil {
@@ -217,7 +211,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 		}
 	}
 
-	return returnWarehouses, nil
+	return returningWarehouses, nil
 }
 
 // WarehouseByStockID returns 1 warehouse by given stock id

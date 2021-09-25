@@ -280,17 +280,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 	}
 
 	if options.SelectRelatedWarehouse {
-		scanFields = append(
-			scanFields,
-
-			&wareHouse.Id,
-			&wareHouse.Name,
-			&wareHouse.Slug,
-			&wareHouse.AddressID,
-			&wareHouse.Email,
-			&wareHouse.Metadata,
-			&wareHouse.PrivateMetadata,
-		)
+		scanFields = append(scanFields, ss.Warehouse().ScanFields(wareHouse)...)
 	}
 	if options.SelectRelatedProductVariant {
 		scanFields = append(scanFields, ss.ProductVariant().ScanFields(variant)...)

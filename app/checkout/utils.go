@@ -21,6 +21,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -408,8 +409,7 @@ func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfac
 		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Your order does not require shipping.", nil, 0), nil
 	}
 
-	shippingMethod := checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod()
-	if shippingMethod == nil {
+	if checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod() == nil {
 		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Please select a delivery method first.", nil, 0), nil
 	}
 
@@ -920,6 +920,41 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *check
 		countryCode,
 		lineInfos,
 	)
+}
+
+// GetValidCollectionPointsForCheckout Return a collection of `Warehouse`s that can be used as a collection point.
+// Note that `quantity_check=False` should be used, when stocks quantity will
+// be validated in further steps (checkout completion) in order to raise
+// 'InsufficientProductStock' error instead of 'InvalidShippingError'.
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*warehouse.WareHouse, *model.AppError) {
+	linesRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
+	if appErr != nil {
+		return nil, appErr
+	}
+	if !linesRequireShipping {
+		return []*warehouse.WareHouse{}, nil
+	}
+
+	if countryCode == "" {
+		return []*warehouse.WareHouse{}, nil
+	}
+	checkoutLines, appErr := s.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: lines.CheckoutLines().IDs(),
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		checkoutLines = []*checkout.CheckoutLine{}
+	}
+
+	if quantityCheck {
+
+	}
 }
 
 func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo *checkout.CheckoutInfo) *model.AppError {

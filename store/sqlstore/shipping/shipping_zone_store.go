@@ -37,6 +37,18 @@ func (s *SqlShippingZoneStore) ModelFields() []string {
 	}
 }
 
+func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []interface{} {
+	return []interface{}{
+		&shippingZone.Id,
+		&shippingZone.Name,
+		&shippingZone.Countries,
+		&shippingZone.Default,
+		&shippingZone.Description,
+		&shippingZone.Metadata,
+		&shippingZone.PrivateMetadata,
+	}
+}
+
 func (s *SqlShippingZoneStore) CreateIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_shipping_zone_name", store.ShippingZoneTableName, "Name")
 	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", store.ShippingZoneTableName, "lower(Name) text_pattern_ops")
@@ -129,24 +141,14 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 		shippingZone           shipping.ShippingZone
 		returningShippingZones shipping.ShippingZones
 		// shippingZonesMap is a map with keys are shipping zones's ids
-		shippingZonesMap = map[string]*shipping.ShippingZone{}
-		warehouseID      string
-	)
-	var scanFields []interface{} = []interface{}{
-		&shippingZone.Id,
-		&shippingZone.Name,
-		&shippingZone.Countries,
-		&shippingZone.Default,
-		&shippingZone.Description,
-		&shippingZone.Metadata,
-		&shippingZone.PrivateMetadata,
-	}
-	if option.SelectRelatedThroughData {
-		scanFields = append(
-			scanFields,
+		warehouseID string
 
-			&warehouseID,
-		)
+		shippingZonesMap = map[string]*shipping.ShippingZone{}
+		scanFields       = s.ScanFields(shippingZone)
+	)
+
+	if option.SelectRelatedThroughData {
+		scanFields = append(scanFields, &warehouseID)
 	}
 
 	for rows.Next() {

@@ -23,6 +23,17 @@ type CheckoutLineInfo struct {
 
 type CheckoutLineInfos []*CheckoutLineInfo
 
+func (c CheckoutLineInfos) CheckoutLines() CheckoutLines {
+	var res CheckoutLines
+	for _, item := range c {
+		if item != nil {
+			res = append(res, &item.Line)
+		}
+	}
+
+	return res
+}
+
 func (c CheckoutLineInfos) Products() product_and_discount.Products {
 	res := product_and_discount.Products{}
 	for _, item := range c {
