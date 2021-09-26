@@ -373,6 +373,7 @@ type WarehouseService interface {
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
 	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalLookUp model.StringInterface) (*exception.InsufficientStock, *model.AppError)
+	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError // DeAllocateStockForOrder Remove all allocations for given order
 }
 
 type DiscountService interface {
@@ -442,7 +443,7 @@ type OrderService interface {
 	UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError)                                         // UpsertOrder depends on given order's Id property to decide update/save it
 	BulkUpsertOrderLines(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError)             // BulkUpsertOrderLines perform bulk upsert given order lines
 	AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) // Add AddGiftCardToOrder Return a total price left after applying the gift cards.
-	OrderCreated(ord *order.Order, user *account.User, manager interface{}, fromDraft bool) *model.AppError                              // OrderCreated. `fromDraft` is default to false
+	OrderCreated(ord *order.Order, user *account.User, _, manager interface{}, fromDraft bool) *model.AppError                           // OrderCreated. `fromDraft` is default to false
 }
 
 type MenuService interface {

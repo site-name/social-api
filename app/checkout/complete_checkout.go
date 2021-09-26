@@ -614,7 +614,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	appErr = s.srv.OrderService().OrderCreated(createdNewOrder, user, manager, false)
+	appErr = s.srv.OrderService().OrderCreated(createdNewOrder, user, nil, manager, false)
 	if appErr != nil {
 		return nil, nil, appErr
 	}

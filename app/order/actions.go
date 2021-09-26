@@ -20,49 +20,116 @@ import (
 )
 
 // OrderCreated. `fromDraft` is default to false
-func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, manager interface{}, fromDraft bool) *model.AppError {
+func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, _, manager interface{}, fromDraft bool) *model.AppError {
 	panic("not implemented")
 }
 
 // OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
-func (a *ServiceOrder) OrderConfirmed(ord *order.Order, user *account.User, manager interface{}, sendConfirmationEmail bool) *model.AppError {
+func (a *ServiceOrder) OrderConfirmed(ord *order.Order, user *account.User, _, manager interface{}, sendConfirmationEmail bool) *model.AppError {
 	panic("not implemented")
 }
 
 // HandleFullyPaidOrder
 //
 // user can be nil
-func (a *ServiceOrder) HandleFullyPaidOrder(manager interface{}, ord *order.Order, user *account.User) *model.AppError {
+func (a *ServiceOrder) HandleFullyPaidOrder(manager interface{}, ord *order.Order, user *account.User, _ interface{}) *model.AppError {
+	var userID *string = &user.Id
+	if user == nil || (user != nil && !model.IsValidId(user.Id)) {
+		userID = nil
+	}
+
+	_, appErr := a.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+		OrderID: ord.Id,
+		Type:    order.ORDER_EVENT_TYPE__ORDER_FULLY_PAID,
+		UserID:  userID,
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	customerEmail, appErr := a.srv.OrderService().CustomerEmail(ord)
+	if appErr != nil {
+		return appErr
+	}
+
+	if model.IsValidEmail(customerEmail) {
+		appErr = a.SendPaymentConfirmation(ord, manager)
+		if appErr != nil {
+			return appErr
+		}
+
+		orderNeedsAutoFulfillment, appErr := a.OrderNeedsAutomaticFulfillment(ord)
+		if appErr != nil {
+			return appErr
+		}
+		if orderNeedsAutoFulfillment {
+			appErr = a.AutomaticallyFulfillDigitalLines(ord, manager)
+			if appErr != nil {
+				return appErr
+			}
+		}
+	}
+
+	// TODO: implement me
 	panic("not implemented")
 }
 
 // CancelOrder Release allocation of unfulfilled order items.
-func (a *ServiceOrder) CancelOrder(ord *order.Order, user *account.User, manager interface{}) *model.AppError {
+func (a *ServiceOrder) CancelOrder(ord *order.Order, user *account.User, _, manager interface{}) *model.AppError {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
+	// determine user id
+	var userID *string = &user.Id
+	if user == nil || (user != nil && !model.IsValidId(user.Id)) {
+		userID = nil
+	}
+
+	_, appErr := a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID: ord.Id,
+		UserID:  userID,
+		Type:    order.ORDER_EVENT_TYPE__CANCELED,
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	appErr = a.srv.WarehouseService().DeAllocateStockForOrder(ord, manager)
+	if appErr != nil {
+		return appErr
+	}
+
+	ord.Status = order.CANCELED
+	_, appErr = a.UpsertOrder(transaction, ord)
+	if appErr != nil {
+		return appErr
+	}
+
 	if err = transaction.Commit(); err != nil {
 		return model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	// FIXME
+
+	// TODO: implementet me
 	panic("not implemented")
+
+	return a.SendOrderCancelledConfirmation(ord, user, nil, manager)
 }
 
 // OrderRefunded
-func (a *ServiceOrder) OrderRefunded(ord *order.Order, user *account.User, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
+func (a *ServiceOrder) OrderRefunded(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
 
 // OrderVoided
-func (a *ServiceOrder) OrderVoided(ord *order.Order, user *account.User, payMent *payment.Payment, manager interface{}) *model.AppError {
+func (a *ServiceOrder) OrderVoided(ord *order.Order, user *account.User, _ interface{}, payMent *payment.Payment, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
 
 // OrderReturned
-func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, returnedLines []*order.QuantityOrderLine) *model.AppError {
+func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, _ interface{}, returnedLines []*order.QuantityOrderLine) *model.AppError {
 	var userID *string
 	if user == nil {
 		userID = nil
@@ -1301,7 +1368,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 	}
 
 	// NOTE: this is called after transaction commit
-	appErr = a.OrderReturned(transaction, ord, requester, sliceOfQuantityOrderLine)
+	appErr = a.OrderReturned(transaction, ord, requester, nil, sliceOfQuantityOrderLine)
 
 	return returnFulfillment, appErr
 }
