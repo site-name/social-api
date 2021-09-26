@@ -55,6 +55,7 @@ type WarehouseFilterOption struct {
 
 	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property to returning warehouse(s)
 	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also
+	Distinct              bool // SELECT DISTINCT
 }
 
 type Warehouses []*WareHouse

@@ -1,16 +1,28 @@
 package shipping
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/store"
 )
 
 // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
 func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, *model.AppError) {
 	listings, err := a.srv.Store.ShippingMethodChannelListing().FilterByOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ShippingMethodChannelListingsByOption", "app.shipping.shipping_method_channel_listings_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(listings) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ShippingMethodChannelListingsByOption", "app.shipping.error_finding_shipping_method_channel_listings_by_option.app_error", nil, errMessage, statusCode)
 	}
 
 	return listings, nil

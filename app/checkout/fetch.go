@@ -44,7 +44,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	default:
-		return nil, model.NewAppError("GetDeliveryMethodInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod0"}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("GetDeliveryMethodInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 	}
 }
 
@@ -66,199 +66,88 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 		return nil, model.NewAppError("FetchCheckoutInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
 	}
 
-	var (
-		appError        *model.AppError
-		chanNel         = make(chan *channel.Channel)
-		shippingAddress = make(chan *account.Address)
-		shippingMethod  = make(chan *shipping.ShippingMethod)
-		checkoutUser    = make(chan *account.User)
-		billingAddress  = make(chan *account.Address)
-	)
+	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkOut.ChannelID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	syncSetAppError := func(err *model.AppError) {
-		a.mutex.Lock()
-		defer a.mutex.Unlock()
-
-		if err != nil && appError == nil {
-			appError = err
+	var shippingAddress *account.Address
+	if checkOut.ShippingAddressID != nil {
+		shippingAddress, appErr = a.srv.AccountService().AddressById(*checkOut.ShippingAddressID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+			// ignore not found error
 		}
 	}
 
-	defer func() {
-		close(chanNel)
-		close(shippingAddress)
-		close(shippingMethod)
-		close(checkoutUser)
-		close(billingAddress)
-	}()
-
-	go func() {
-		chNel, appErr := a.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+	var shippingMethod *shipping.ShippingMethod
+	if checkOut.ShippingMethodID != nil {
+		shippingMethod, appErr = a.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
-					Eq: checkOut.ChannelID,
+					Eq: *checkOut.ShippingMethodID,
 				},
 			},
 		})
 		if appErr != nil {
-			syncSetAppError(appErr)
+			return nil, appErr
 		}
-		chanNel <- chNel
-	}()
-
-	go func() {
-		if checkOut.ShippingAddressID != nil || checkOut.BillingAddressID != nil {
-
-			addressIDs := []string{}
-			if checkOut.ShippingAddressID != nil {
-				addressIDs = append(addressIDs, *checkOut.ShippingAddressID)
-			}
-			if checkOut.BillingAddressID != nil {
-				addressIDs = append(addressIDs, *checkOut.BillingAddressID)
-			}
-
-			addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-				Id: &model.StringFilter{
-					StringOption: &model.StringOption{
-						In: addressIDs,
-					},
-				},
-			})
-			if appErr != nil {
-				if appErr.StatusCode == http.StatusInternalServerError {
-					syncSetAppError(appErr)
-				}
-
-				// ignore other errors
-				shippingAddress <- nil
-				billingAddress <- nil
-
-			} else {
-				switch len(addresses) {
-				case 1:
-					if checkOut.ShippingAddressID != nil {
-						shippingAddress <- addresses[0]
-						billingAddress <- nil
-					} else if checkOut.BillingAddressID != nil {
-						billingAddress <- addresses[0]
-						shippingAddress <- nil
-					}
-				case 2:
-					if addresses[0].Id == *checkOut.ShippingAddressID {
-						shippingAddress <- addresses[0]
-						billingAddress <- addresses[1]
-					} else {
-						shippingAddress <- addresses[1]
-						billingAddress <- addresses[0]
-					}
-				}
-			}
-
-		} else {
-			shippingAddress <- nil
-			billingAddress <- nil
-		}
-	}()
-
-	go func() {
-		if checkOut.ShippingMethodID != nil {
-			shippingMt, appErr := a.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
-				Id: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: *checkOut.ShippingMethodID,
-					},
-				},
-			})
-			if appErr != nil {
-				syncSetAppError(appErr)
-			}
-			shippingMethod <- shippingMt
-
-		} else {
-			shippingMethod <- nil
-		}
-	}()
-
-	go func() {
-		if checkOut.UserID != nil {
-			user, appErr := a.srv.AccountService().UserById(context.Background(), *checkOut.UserID)
-			if appErr != nil {
-				if appErr.StatusCode == http.StatusInternalServerError {
-					syncSetAppError(appErr)
-				}
-				// ignore non-system-related errors
-				checkoutUser <- user
-			} else {
-				checkoutUser <- user
-			}
-
-		} else {
-			checkoutUser <- nil
-		}
-	}()
-
-	resultChannel := <-chanNel
-	resultShippingMethod := <-shippingMethod
-	resultShippingAddress := <-shippingAddress
-	resultBillingAddress := <-billingAddress
-	resultUser := <-checkoutUser
-
-	if appError != nil {
-		return nil, appError
 	}
-
-	// declare filter option for shipping method channel listings
+	// build shipping method channel listing filter option:
 	shippingMethodChannelListingFilterOption := new(shipping.ShippingMethodChannelListingFilterOption)
-
-	// add filter options
-	if resultShippingMethod != nil {
-		shippingMethodChannelListingFilterOption.ShippingMethodID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: resultShippingMethod.Id,
-			},
-		}
-	}
-	if resultChannel != nil {
+	if chanNel != nil {
 		shippingMethodChannelListingFilterOption.ChannelID = &model.StringFilter{
 			StringOption: &model.StringOption{
-				Eq: resultChannel.Id,
+				Eq: chanNel.Id,
 			},
 		}
 	}
-
-	// find the first shipping method channel listing
+	if shippingMethod != nil {
+		shippingMethodChannelListingFilterOption.ShippingMethodID = &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: shippingMethod.Id,
+			},
+		}
+	}
 	var shippingMethodChannelListing *shipping.ShippingMethodChannelListing
 	shippingMethodChannelListings, appErr := a.srv.ShippingService().ShippingMethodChannelListingsByOption(shippingMethodChannelListingFilterOption)
-	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
-		return nil, appErr
-	}
-	if shippingMethodChannelListings != nil && len(shippingMethodChannelListings) > 0 {
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+	} else {
 		shippingMethodChannelListing = shippingMethodChannelListings[0]
 	}
 
-	checkoutInfo := &checkout.CheckoutInfo{
-		Checkout:                      *checkOut,
-		User:                          resultUser,
-		Channel:                       *resultChannel,
-		BillingAddress:                resultBillingAddress,
-		ShippingAddress:               resultShippingAddress,
-		ShippingMethodChannelListings: shippingMethodChannelListing,
-		ValidShippingMethods:          []*shipping.ShippingMethod{}, // empty
+	var collectionPoint *warehouse.WareHouse
+	if checkOut.CollectionPointID != nil {
+		collectionPoint, appErr = a.srv.WarehouseService().WarehouseByOption(&warehouse.WarehouseFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: *checkOut.CollectionPointID,
+				},
+			},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+			// ignore not found error
+		}
 	}
 
-	validShippingMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(
-		checkoutInfo,
-		resultShippingAddress,
-		lines,
-		discounts,
-		manager,
-	)
-	if appErr != nil {
-		return nil, appErr
+	checkout.CheckoutInfo{
+		Checkout: *checkOut,
+		User: ,
 	}
-	checkoutInfo.ValidShippingMethods = validShippingMethods
-
-	return checkoutInfo, nil
 }
 
 // UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.

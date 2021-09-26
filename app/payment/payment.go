@@ -49,8 +49,7 @@ func (a *ServicePayment) PaymentsByOption(option *payment.PaymentFilterOption) (
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		errMessage = err.Error()
-
-	} else if len(payments) > 0 {
+	} else if len(payments) == 0 {
 		statusCode = http.StatusNotFound
 	}
 

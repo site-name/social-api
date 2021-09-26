@@ -979,10 +979,13 @@ func (s *ServiceCheckout) IsFullyPaid(manager interface{}, checkoutInfo *checkou
 		IsActive:      model.NewBool(true),
 	})
 	if appErr != nil {
-		return false, appErr
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return false, appErr
+		}
+		// ignore not found error
 	}
 
-	var totalPaid *decimal.Decimal = &decimal.Zero
+	totalPaid := &decimal.Zero
 	for _, payMent := range payments {
 		totalPaid = model.NewDecimal(totalPaid.Add(*payMent.Total))
 	}

@@ -9564,6 +9564,26 @@ func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 
 }
 
+func (s *RetryLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.GetByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 
 	tries := 0

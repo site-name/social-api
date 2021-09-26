@@ -373,7 +373,8 @@ type WarehouseService interface {
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
 	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalLookUp model.StringInterface) (*exception.InsufficientStock, *model.AppError)
-	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError // DeAllocateStockForOrder Remove all allocations for given order
+	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError                     // DeAllocateStockForOrder Remove all allocations for given order
+	WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError) // WarehouseByOption returns a warehouse filtered using given option
 }
 
 type DiscountService interface {

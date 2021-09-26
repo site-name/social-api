@@ -57,6 +57,64 @@ func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
 	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "CollectionPointID", store.WarehouseTableName, "Id", false)
 }
 
+func (cs *SqlCheckoutStore) ModelFields() []string {
+	return []string{
+		"Checkouts.Token",
+		"Checkouts.CreateAt",
+		"Checkouts.UpdateAt",
+		"Checkouts.UserID",
+		"Checkouts.ShopID",
+		"Checkouts.Email",
+		"Checkouts.Quantity",
+		"Checkouts.ChannelID",
+		"Checkouts.BillingAddressID",
+		"Checkouts.ShippingAddressID",
+		"Checkouts.ShippingMethodID",
+		"Checkouts.CollectionPointID",
+		"Checkouts.Note",
+		"Checkouts.Currency",
+		"Checkouts.Country",
+		"Checkouts.DiscountAmount",
+		"Checkouts.DiscountName",
+		"Checkouts.TranslatedDiscountName",
+		"Checkouts.VoucherCode",
+		"Checkouts.RedirectURL",
+		"Checkouts.TrackingCode",
+		"Checkouts.LanguageCode",
+		"Checkouts.Metadata",
+		"Checkouts.PrivateMetadata",
+	}
+}
+
+func (cs *SqlCheckoutStore) ScanFields(checkOut checkout.Checkout) []interface{} {
+	return []interface{}{
+		&checkOut.Token,
+		&checkOut.CreateAt,
+		&checkOut.UpdateAt,
+		&checkOut.UserID,
+		&checkOut.ShopID,
+		&checkOut.Email,
+		&checkOut.Quantity,
+		&checkOut.ChannelID,
+		&checkOut.BillingAddressID,
+		&checkOut.ShippingAddressID,
+		&checkOut.ShippingMethodID,
+		&checkOut.CollectionPointID,
+		&checkOut.Note,
+		&checkOut.Currency,
+		&checkOut.Country,
+		&checkOut.DiscountAmount,
+		&checkOut.DiscountName,
+		&checkOut.TranslatedDiscountName,
+		&checkOut.VoucherCode,
+		&checkOut.RedirectURL,
+		&checkOut.TrackingCode,
+		&checkOut.LanguageCode,
+		&checkOut.Metadata,
+		&checkOut.PrivateMetadata,
+	}
+}
+
 // Upsert depends on given checkout's Token property to decide to update or insert it
 func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
 	var isSaving bool
@@ -191,19 +249,12 @@ func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption
 func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
 	// please refer to file checkout_store_sql.md for details
 
-	// finds all checkout lines belong to given checkout:
-	tx, err := cs.GetReplica().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	defer store.FinalizeTransaction(tx)
-
 	// fetch checkout lines:
 	var (
 		checkoutLines     checkout.CheckoutLines
 		productVariantIDs []string
 	)
-	_, err = tx.Select(
+	_, err := cs.GetReplica().Select(
 		&checkoutLines,
 		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = :CheckoutID ORDER BY :OrderBy",
 		map[string]interface{}{
@@ -225,7 +276,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
-		_, err = tx.Select(
+		_, err = cs.GetReplica().Select(
 			&productVariants,
 			"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
 			map[string]interface{}{
@@ -251,7 +302,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productIDs) > 0 {
-		_, err = tx.Select(
+		_, err = cs.GetReplica().Select(
 			&products,
 			"SELECT * FROM "+store.ProductTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
 			map[string]interface{}{
@@ -281,16 +332,14 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if len(productIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().
 			Select(cs.Collection().ModelFields()...).
-			From(store.ProductCollectionTableName).
-			Column(squirrel.Alias(squirrel.Expr("ProductCollections.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
-			InnerJoin(store.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
-			Where(squirrel.Eq{
-				"ProductCollections.ProductID": productIDs,
-			}).
+			From(store.ProductCollectionTableName+" C").
+			Column(squirrel.Alias(squirrel.Expr("PC.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
+			InnerJoin(store.CollectionProductRelationTableName+" PC ON (PC.CollectionID = C.Id)").
+			Where("PC.ProductID IN ?", productIDs).
 			OrderBy(store.TableOrderingMap[store.ProductCollectionTableName]).
 			ToSql()
 
-		_, err = tx.Select(&collectionXs, query, args...)
+		_, err = cs.GetReplica().Select(&collectionXs, query, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections")
 		}
@@ -308,7 +357,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
-		_, err = tx.Select(
+		_, err = cs.GetReplica().Select(
 			&productVariantChannelListings,
 			"SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE VariantID IN :IDs ORDER BY :OrderBy",
 			map[string]interface{}{
@@ -329,7 +378,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	var channels []*channel.Channel
 	// check if we can proceed
 	if len(channelIDs) > 0 {
-		_, err = tx.Select(
+		_, err = cs.GetReplica().Select(
 			&channels,
 			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in :IDs ORDER BY :OrderBy",
 			map[string]interface{}{
@@ -350,7 +399,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed
 	if len(productTypeIDs) > 0 {
-		_, err = tx.Select(
+		_, err = cs.GetReplica().Select(
 			&productTypes,
 			"SELECT * FROM "+store.ProductTypeTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
 			map[string]interface{}{
@@ -364,11 +413,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 		for _, productType := range productTypes {
 			productTypeMap[productType.Id] = productType
 		}
-	}
-
-	// commit transaction
-	if err = tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
 	var checkoutLineInfos []*checkout.CheckoutLineInfo

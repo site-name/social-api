@@ -49,6 +49,16 @@ func (a *ServiceWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterO
 	return warehouses, nil
 }
 
+// WarehouseByOption returns a warehouse filtered using given option
+func (s *ServiceWarehouse) WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError) {
+	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
+	if err != nil {
+		return nil, store.AppErrorFromDatabaseLookupError("WarehouseByOption", "app.warehouse.error_finding_warehouse_by_option.app_error", err)
+	}
+
+	return warehouse, nil
+}
+
 // WarehouseByStockID returns a warehouse that owns the given stock
 func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)

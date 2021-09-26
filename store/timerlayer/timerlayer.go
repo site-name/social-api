@@ -7968,6 +7968,22 @@ func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 	return result, err
 }
 
+func (s *TimerLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.GetByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.GetByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
