@@ -205,8 +205,13 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 	}
 
 	if statementType == slect {
-		return cs.GetQueryBuilder().Select("*").From(store.CheckoutTableName).Where(andCondition)
+		return cs.GetQueryBuilder().
+			Select(cs.ModelFields()...).
+			From(store.CheckoutTableName).
+			Where(andCondition).
+			OrderBy(store.TableOrderingMap[store.CheckoutTableName])
 	}
+
 	return cs.GetQueryBuilder().Delete(store.CheckoutTableName).Where(andCondition)
 }
 
@@ -463,6 +468,7 @@ func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transactio
 	if transaction != nil {
 		runner = transaction
 	}
+
 	_, err := cs.commonFilterQueryBuilder(option, delete).(squirrel.DeleteBuilder).RunWith(runner).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout(s) by given options")

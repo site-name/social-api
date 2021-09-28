@@ -7,6 +7,9 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/shipping"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -46,6 +49,12 @@ type Checkout struct {
 	TrackingCode           *string          `json:"tracking_code"`
 	LanguageCode           string           `json:"language_code"`
 	model.ModelMetadata
+
+	ShippingAddress *account.Address         `json:"-" db:"-"` // this field get populated in some select related queries
+	Channel         *channel.Channel         `json:"-" db:"-"`
+	User            *account.User            `json:"-" db:"-"`
+	BillingAddress  *account.Address         `json:"-" db:"-"`
+	ShippingMethod  *shipping.ShippingMethod `json:"-" db:"-"`
 }
 
 // CheckoutFilterOption is used for bulding sql queries
@@ -53,6 +62,12 @@ type CheckoutFilterOption struct {
 	Token     *model.StringFilter
 	UserID    *model.StringFilter
 	ChannelID *model.StringFilter
+
+	SelectRelatedShippingAddress bool
+	SelectRelatedShippingMethod  bool
+	SelectRelatedChannel         bool
+	SelectRelatedUser            bool
+	SelectRelatedBillingAddress  bool
 }
 
 func (c *Checkout) IsValid() *model.AppError {

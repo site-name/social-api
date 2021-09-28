@@ -78,6 +78,76 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	return us
 }
 
+func (us *SqlUserStore) ModelFields() []string {
+	return []string{
+		"Users.Id",
+		"Users.Email",
+		"Users.Username",
+		"Users.FirstName",
+		"Users.LastName",
+		"Users.DefaultShippingAddressID",
+		"Users.DefaultBillingAddressID",
+		"Users.Password",
+		"Users.AuthData",
+		"Users.AuthService",
+		"Users.EmailVerified",
+		"Users.Nickname",
+		"Users.Roles",
+		"Users.Props",
+		"Users.NotifyProps",
+		"Users.LastPasswordUpdate",
+		"Users.LastPictureUpdate",
+		"Users.FailedAttempts",
+		"Users.Locale",
+		"Users.Timezone",
+		"Users.MfaActive",
+		"Users.MfaSecret",
+		"Users.CreateAt",
+		"Users.UpdateAt",
+		"Users.DeleteAt",
+		"Users.IsActive",
+		"Users.Note",
+		"Users.JwtTokenKey",
+		"Users.Metadata",
+		"Users.PrivateMetadata",
+	}
+}
+
+func (us *SqlUserStore) ScanFields(user account.User) []interface{} {
+	return []interface{}{
+		&user.Id,
+		&user.Email,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.DefaultShippingAddressID,
+		&user.DefaultBillingAddressID,
+		&user.Password,
+		&user.AuthData,
+		&user.AuthService,
+		&user.EmailVerified,
+		&user.Nickname,
+		&user.Roles,
+		&user.Props,
+		&user.NotifyProps,
+		&user.LastPasswordUpdate,
+		&user.LastPictureUpdate,
+		&user.FailedAttempts,
+		&user.Locale,
+		&user.Timezone,
+		&user.MfaActive,
+		&user.MfaSecret,
+		&user.CreateAt,
+		&user.UpdateAt,
+		&user.DeleteAt,
+		&user.IsActive,
+		&user.Note,
+		&user.JwtTokenKey,
+		&user.Metadata,
+		&user.PrivateMetadata,
+	}
+}
+
 // TODO: remove this
 func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 	panic("not implemented")

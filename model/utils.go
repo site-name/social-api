@@ -97,6 +97,16 @@ func (sa StringArray) Remove(input string) StringArray {
 	return sa
 }
 
+// Map takes a mapFunc, loops through current string slice and applies mapFunc for each item
+func (sa StringArray) Map(mapFunc func(index int, item string) string) StringArray {
+	res := StringArray{}
+	for idx, item := range sa {
+		res = append(res, mapFunc(idx, item))
+	}
+
+	return res
+}
+
 var translateFunc i18n.TranslateFunc
 var translateFuncOnce sync.Once
 

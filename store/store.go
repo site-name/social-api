@@ -937,7 +937,7 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ModelFields() []string
+		ModelFields() model.StringArray
 		ScanFields(addr account.Address) []interface{}
 		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
@@ -954,7 +954,8 @@ type (
 	}
 	UserStore interface {
 		ClearCaches()
-		CreateIndexesIfNotExists()                                                    //
+		CreateIndexesIfNotExists()
+		ModelFields() []string
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error

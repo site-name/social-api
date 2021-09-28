@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -48,8 +49,8 @@ func (as *SqlAddressStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", store.AddressTableName, "lower(LastName) text_pattern_ops")
 }
 
-func (as *SqlAddressStore) ModelFields() []string {
-	return []string{
+func (as *SqlAddressStore) ModelFields() model.StringArray {
+	return model.StringArray{
 		"Addresses.Id",
 		"Addresses.FirstName",
 		"Addresses.LastName",
