@@ -1152,7 +1152,7 @@ func (a *ServiceOrder) CreateReplaceOrder(requester *account.User, originalOrder
 func (a *ServiceOrder) moveLinesToReturnFulfillment(
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
-	fulfillmentStatus string,
+	fulfillmentStatus order.FulfillmentStatus,
 	ord *order.Order,
 	totalRefundAmount *decimal.Decimal,
 	shippingRefundAmount *decimal.Decimal,
@@ -1183,7 +1183,7 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 		},
 		FulfillmentStatus: &model.StringFilter{
 			StringOption: &model.StringOption{
-				Eq: order.FULFILLMENT_REFUNDED,
+				Eq: string(order.FULFILLMENT_REFUNDED),
 			},
 		},
 	})
@@ -1583,7 +1583,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 		},
 		Status: &model.StringFilter{
 			StringOption: &model.StringOption{
-				Eq: order.FULFILLMENT_FULFILLED,
+				Eq: string(order.FULFILLMENT_FULFILLED),
 			},
 		},
 		FulfillmentLineID: &model.StringFilter{

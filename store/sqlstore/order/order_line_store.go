@@ -60,6 +60,7 @@ func (ols *SqlOrderLineStore) ModelFields() []string {
 		"Orderlines.TranslatedVariantName",
 		"Orderlines.ProductSku",
 		"Orderlines.IsShippingRequired",
+		"Orderlines.IsGiftcard",
 		"Orderlines.Quantity",
 		"Orderlines.QuantityFulfilled",
 		"Orderlines.Currency",
@@ -91,6 +92,7 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{
 		&orderLine.TranslatedVariantName,
 		&orderLine.ProductSku,
 		&orderLine.IsShippingRequired,
+		&orderLine.IsGiftcard,
 		&orderLine.Quantity,
 		&orderLine.QuantityFulfilled,
 		&orderLine.Currency,
@@ -111,8 +113,14 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{
 }
 
 // Upsert depends on given orderLine's Id to decide to update or save it
-func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (ols *SqlOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
+	var upsertor store.Upsertor = ols.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
 	var isSaving bool
+
 	if orderLine.Id == "" {
 		orderLine.PreSave()
 		isSaving = true
@@ -130,7 +138,7 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 		oldOrderLine *order.OrderLine
 	)
 	if isSaving {
-		err = ols.GetMaster().Insert(orderLine)
+		err = upsertor.Insert(orderLine)
 	} else {
 		oldOrderLine, err = ols.Get(orderLine.Id)
 		if err != nil {
@@ -141,7 +149,7 @@ func (ols *SqlOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLi
 		orderLine.OrderID = oldOrderLine.OrderID
 		orderLine.CreateAt = oldOrderLine.CreateAt
 
-		numUpdated, err = ols.GetMaster().Update(orderLine)
+		numUpdated, err = upsertor.Update(orderLine)
 	}
 
 	if err != nil {
@@ -290,6 +298,9 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	if option.IsShippingRequired != nil {
 		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
 	}
+	if option.VariantID != nil {
+		query = query.Where(option.VariantID.ToSquirrel("Orderlines.VariantID"))
+	}
 
 	var joined_ProductVariantTableName bool
 
@@ -315,8 +326,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	var (
-		orderLines order.OrderLines
-
+		orderLines      order.OrderLines
 		productVariants product_and_discount.ProductVariants
 		digitalContents []*product_and_discount.DigitalContent
 

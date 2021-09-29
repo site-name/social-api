@@ -42,13 +42,13 @@ func (_m *ProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string)
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: productTypeID
-func (_m *ProductTypeStore) Get(productTypeID string) (*product_and_discount.ProductType, error) {
-	ret := _m.Called(productTypeID)
+// GetByOption provides a mock function with given fields: options
+func (_m *ProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
+	ret := _m.Called(options)
 
 	var r0 *product_and_discount.ProductType
-	if rf, ok := ret.Get(0).(func(string) *product_and_discount.ProductType); ok {
-		r0 = rf(productTypeID)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductTypeFilterOption) *product_and_discount.ProductType); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*product_and_discount.ProductType)
@@ -56,8 +56,8 @@ func (_m *ProductTypeStore) Get(productTypeID string) (*product_and_discount.Pro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(productTypeID)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductTypeFilterOption) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

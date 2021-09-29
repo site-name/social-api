@@ -4674,7 +4674,7 @@ func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *OpenTracingLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4683,7 +4683,7 @@ func (s *OpenTracingLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*or
 	}()
 
 	defer span.Finish()
-	result, err := s.OrderLineStore.Upsert(orderLine)
+	result, err := s.OrderLineStore.Upsert(transaction, orderLine)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5537,16 +5537,16 @@ func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutID(checko
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) Get(productTypeID string) (*product_and_discount.ProductType, error) {
+func (s *OpenTracingLayerProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.Get")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductTypeStore.Get(productTypeID)
+	result, err := s.ProductTypeStore.GetByOption(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -58,7 +58,7 @@ func (a *ServiceCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant 
 	if newQuantity < 0 {
 		return 0, nil, model.NewAppError(
 			"CheckVariantInStock",
-			"app.checkout.quantity_invalid",
+			"app.checkout.quantity_invalid.app_error",
 			map[string]interface{}{
 				"Quantity":    quantity,
 				"NewQuantity": newQuantity,

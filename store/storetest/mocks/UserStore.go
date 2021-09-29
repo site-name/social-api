@@ -656,6 +656,22 @@ func (_m *UserStore) InvalidateProfileCacheForUser(userID string) {
 	_m.Called(userID)
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *UserStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // PermanentDelete provides a mock function with given fields: userID
 func (_m *UserStore) PermanentDelete(userID string) error {
 	ret := _m.Called(userID)

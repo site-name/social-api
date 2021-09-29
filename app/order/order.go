@@ -219,11 +219,11 @@ func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) 
 		Status: &model.StringFilter{
 			StringOption: &model.StringOption{
 				NotIn: []string{
-					order.FULFILLMENT_CANCELED,
-					order.FULFILLMENT_REFUNDED,
-					order.FULFILLMENT_RETURNED,
-					order.FULFILLMENT_REFUNDED_AND_RETURNED,
-					order.FULFILLMENT_REPLACED,
+					string(order.FULFILLMENT_CANCELED),
+					string(order.FULFILLMENT_REFUNDED),
+					string(order.FULFILLMENT_RETURNED),
+					string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
+					string(order.FULFILLMENT_REPLACED),
 				},
 			},
 		},
@@ -234,7 +234,7 @@ func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) 
 		return false, model.NewAppError("OrderCanCancel", "app.order.fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return len(fulfillments) == 0 && ord.Status != order.CANCELED && ord.Status != order.DRAFT, nil
+	return len(fulfillments) == 0 && ord.Status != order.CANCELED && ord.Status != order.STATUS_DRAFT, nil
 }
 
 // OrderCanCapture
@@ -253,7 +253,7 @@ func (a *ServiceOrder) OrderCanCapture(ord *order.Order, payment *payment.Paymen
 	}
 
 	return payment.CanCapture() &&
-		ord.Status != order.DRAFT &&
+		ord.Status != order.STATUS_DRAFT &&
 		ord.Status != order.CANCELED, nil
 }
 

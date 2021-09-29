@@ -77,14 +77,46 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 		return nil, appErr
 	}
 
-	var shippingAddress *account.Address
+	var checkoutAddressIDs []string
 	if checkOut.ShippingAddressID != nil {
-		shippingAddress, appErr = a.srv.AccountService().AddressById(*checkOut.ShippingAddressID)
+		checkoutAddressIDs = append(checkoutAddressIDs, *checkOut.ShippingAddressID)
+	}
+	if checkOut.BillingAddressID != nil {
+		checkoutAddressIDs = append(checkoutAddressIDs, *checkOut.BillingAddressID)
+	}
+
+	var (
+		billingAddress  *account.Address
+		shippingAddress *account.Address
+	)
+	if len(checkoutAddressIDs) > 0 {
+		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: checkoutAddressIDs,
+				},
+			},
+		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, appErr
 			}
 			// ignore not found error
+		}
+		if len(addresses) == 1 {
+			if checkOut.ShippingAddressID != nil {
+				shippingAddress = addresses[0]
+			} else {
+				billingAddress = addresses[0]
+			}
+		} else if len(addresses) == 2 {
+			if *checkOut.ShippingAddressID == addresses[0].Id {
+				shippingAddress = addresses[0]
+				billingAddress = addresses[1]
+			} else {
+				shippingAddress = addresses[1]
+				billingAddress = addresses[0]
+			}
 		}
 	}
 
@@ -101,6 +133,7 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 			return nil, appErr
 		}
 	}
+
 	// build shipping method channel listing filter option:
 	shippingMethodChannelListingFilterOption := new(shipping.ShippingMethodChannelListingFilterOption)
 	if chanNel != nil {
@@ -135,6 +168,7 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 					Eq: *checkOut.CollectionPointID,
 				},
 			},
+			SelectRelatedAddress: true,
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -143,11 +177,49 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 			// ignore not found error
 		}
 	}
-
-	checkout.CheckoutInfo{
-		Checkout: *checkOut,
-		User: ,
+	var deliveryMethod interface{} = collectionPoint
+	if deliveryMethod == nil {
+		deliveryMethod = shippingMethod
 	}
+	deliveryMethodInfo, appErr := a.GetDeliveryMethodInfo(deliveryMethod, shippingAddress)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var user *account.User
+	if checkOut.UserID != nil {
+		user, appErr = a.srv.AccountService().UserById(context.Background(), *checkOut.UserID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+		}
+	}
+
+	checkoutInfo := checkout.CheckoutInfo{
+		Checkout:                      *checkOut,
+		User:                          user,
+		Channel:                       *chanNel,
+		BillingAddress:                billingAddress,
+		ShippingAddress:               shippingAddress,
+		DeliveryMethodInfo:            deliveryMethodInfo,
+		ShippingMethodChannelListings: shippingMethodChannelListing,
+	}
+
+	validShippingMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(&checkoutInfo, shippingAddress, lines, discounts, manager)
+	if appErr != nil {
+		return nil, appErr
+	}
+	validPickupPoints, appErr := a.GetValidCollectionPointsForCheckoutInfo(shippingAddress, lines, &checkoutInfo)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	checkoutInfo.ValidShippingMethods = validShippingMethods
+	checkoutInfo.ValidPickupPoints = validPickupPoints
+	checkoutInfo.DeliveryMethodInfo = deliveryMethodInfo
+
+	return &checkoutInfo, nil
 }
 
 // UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
@@ -160,11 +232,25 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checko
 	}
 
 	checkoutInfo.ValidShippingMethods = validMethods
-	return nil
+	deliveryMethod := checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod()
+	checkoutInfo.DeliveryMethodInfo, appErr = a.GetDeliveryMethodInfo(deliveryMethod, address)
+	return appErr
 }
 
 func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError) {
 	panic("not implt")
+}
+
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError) {
+	var countryCode string
+
+	if shippingAddress != nil {
+		countryCode = shippingAddress.Country
+	} else {
+		countryCode = checkoutInfo.Channel.DefaultCountry
+	}
+
+	return s.GetValidCollectionPointsForCheckout(lines, countryCode, false)
 }
 
 // UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod

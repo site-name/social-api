@@ -77,19 +77,6 @@ func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductTyp
 	return productType, nil
 }
 
-func (ps *SqlProductTypeStore) Get(id string) (*product_and_discount.ProductType, error) {
-	var res product_and_discount.ProductType
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductTypeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTypeTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find product type with id=%s", id)
-	}
-
-	return &res, nil
-}
-
 func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	/*
 					checkout
@@ -142,12 +129,11 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 	var productTypes []*product_and_discount.ProductType
 	_, err := pts.GetReplica().Select(
 		&productTypes,
-		`SELECT * FROM `+store.ProductTypeTableName+` AS PT 
-		INNER JOIN `+store.ProductTableName+` AS P ON (
+		`SELECT * FROM `+store.ProductTypeTableName+` PT 
+		INNER JOIN `+store.ProductTableName+` P ON (
 			PT.Id = P.ProductTypeID
-		) WHERE (
-			P.Id IN :IDs
-		)`,
+		) 
+		WHERE P.Id IN :IDs`,
 		map[string]interface{}{
 			"IDs": productIDs,
 		},
@@ -185,4 +171,56 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	}
 
 	return &res, nil
+}
+
+func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount.ProductTypeFilterOption) squirrel.SelectBuilder {
+	query := pts.GetQueryBuilder().
+		Select("*").
+		From(store.ProductTypeTableName).
+		OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("Id"))
+	}
+	if options.Name != nil {
+		query = query.Where(options.Name.ToSquirrel("Name"))
+	}
+
+	return query
+}
+
+// GetByOption finds and returns a product type with given options
+func (pts *SqlProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
+	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	var res product_and_discount.ProductType
+	err = pts.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductTypeTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed to find product type with given options")
+	}
+
+	return &res, nil
+}
+
+// FilterbyOption finds and returns a slice of product types filtered using given options
+func (pts *SqlProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	}
+
+	var res []*product_and_discount.ProductType
+	_, err = pts.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product types with given option")
+	}
+
+	return res, nil
 }

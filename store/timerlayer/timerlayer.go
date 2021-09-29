@@ -4289,10 +4289,10 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderLineStore.Upsert(orderLine)
+	result, err := s.OrderLineStore.Upsert(transaction, orderLine)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5060,10 +5060,10 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToke
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Get(productTypeID string) (*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductTypeStore.Get(productTypeID)
+	result, err := s.ProductTypeStore.GetByOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5071,7 +5071,7 @@ func (s *TimerLayerProductTypeStore) Get(productTypeID string) (*product_and_dis
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Get", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }

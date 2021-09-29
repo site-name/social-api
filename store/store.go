@@ -527,11 +527,11 @@ type (
 	ProductTypeStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)    // Save try inserting new product type into database then returns it
-		Get(productTypeID string) (*product_and_discount.ProductType, error)                              // Get try finding product type with given id and returns it
-		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
-		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)        // ProductTypesByProductIDs returns all product types belong to given products
-		ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error)        // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
+		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)                // Save try inserting new product type into database then returns it
+		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error)             // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
+		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)                    // ProductTypesByProductIDs returns all product types belong to given products
+		ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error)                    // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
+		GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) // GetByOption finds and returns a product type with given options
 	}
 	CategoryTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -602,7 +602,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(orderLine order.OrderLine) []interface{}
 		ModelFields() []string
-		Upsert(orderLine *order.OrderLine) (*order.OrderLine, error)                                         // Upsert depends on given orderLine's Id to decide to update or save it
+		Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id
 		BulkDelete(orderLineIDs []string) error                                                              // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error)                      // FilterbyOption finds and returns order lines by given option

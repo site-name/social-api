@@ -7,6 +7,7 @@ package invoice
 import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
+	"github.com/sitename/sitename/model/invoice"
 )
 
 type ServiceInvoice struct {
@@ -19,4 +20,13 @@ func init() {
 			srv: s,
 		}, nil
 	})
+}
+
+func (s *ServiceInvoice) UpdateInvoice(inVoice *invoice.Invoice, number *string, url *string) {
+	if number != nil {
+		inVoice.Number = *number
+	}
+	if url != nil {
+		inVoice.ExternalUrl = *url
+	}
 }

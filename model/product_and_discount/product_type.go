@@ -41,6 +41,12 @@ type ProductType struct {
 	model.ModelMetadata
 }
 
+// ProductTypeFilterOption is used to build squirrel sql queries
+type ProductTypeFilterOption struct {
+	Id   *model.StringFilter
+	Name *model.StringFilter
+}
+
 func (p *ProductType) String() string {
 	return p.Name
 }
@@ -111,4 +117,9 @@ func (p *ProductType) PreUpdate() {
 
 func (p *ProductType) ToJson() string {
 	return model.ModelToJson(p)
+}
+
+// IsGiftcard checks if current product type has kind of "gift_card"
+func (p *ProductType) IsGiftcard() bool {
+	return p.Kind == GIFT_CARD
 }

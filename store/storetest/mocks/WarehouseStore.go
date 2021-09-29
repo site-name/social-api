@@ -66,6 +66,29 @@ func (_m *WarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	return r0, r1
 }
 
+// GetByOption provides a mock function with given fields: option
+func (_m *WarehouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+	ret := _m.Called(option)
+
+	var r0 *warehouse.WareHouse
+	if rf, ok := ret.Get(0).(func(*warehouse.WarehouseFilterOption) *warehouse.WareHouse); ok {
+		r0 = rf(option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*warehouse.WareHouse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.WarehouseFilterOption) error); ok {
+		r1 = rf(option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ModelFields provides a mock function with given fields:
 func (_m *WarehouseStore) ModelFields() []string {
 	ret := _m.Called()

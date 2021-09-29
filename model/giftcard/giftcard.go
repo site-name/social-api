@@ -77,8 +77,12 @@ func (gc *GiftCard) DisplayCode() string {
 
 // PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
-	gc.InitialBalance, _ = goprices.NewMoney(gc.InitialBalanceAmount, gc.Currency)
-	gc.CurrentBalance, _ = goprices.NewMoney(gc.CurrentBalanceAmount, gc.Currency)
+	if gc.InitialBalanceAmount != nil {
+		gc.InitialBalance, _ = goprices.NewMoney(gc.InitialBalanceAmount, gc.Currency)
+	}
+	if gc.CurrentBalanceAmount != nil {
+		gc.CurrentBalance, _ = goprices.NewMoney(gc.CurrentBalanceAmount, gc.Currency)
+	}
 }
 
 func (gc *GiftCard) IsValid() *model.AppError {

@@ -42,6 +42,7 @@ type OrderLine struct {
 	TranslatedVariantName             string               `json:"translated_variant_name"`
 	ProductSku                        string               `json:"product_sku"`
 	IsShippingRequired                bool                 `json:"is_shipping_required"`
+	IsGiftcard                        bool                 `json:"is_gift_card"`
 	Quantity                          int                  `json:"quantity"`
 	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
 	Currency                          string               `json:"currency"`
@@ -82,6 +83,7 @@ type OrderLineFilterOption struct {
 	Id                 *model.StringFilter
 	OrderID            *model.StringFilter
 	IsShippingRequired *bool
+	VariantID          *model.StringFilter
 
 	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products
 	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN DigitalContents

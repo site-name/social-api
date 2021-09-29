@@ -136,13 +136,13 @@ func (_m *OrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
 	return r0
 }
 
-// Upsert provides a mock function with given fields: orderLine
-func (_m *OrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
-	ret := _m.Called(orderLine)
+// Upsert provides a mock function with given fields: transaction, orderLine
+func (_m *OrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
+	ret := _m.Called(transaction, orderLine)
 
 	var r0 *order.OrderLine
-	if rf, ok := ret.Get(0).(func(*order.OrderLine) *order.OrderLine); ok {
-		r0 = rf(orderLine)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.OrderLine) *order.OrderLine); ok {
+		r0 = rf(transaction, orderLine)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*order.OrderLine)
@@ -150,8 +150,8 @@ func (_m *OrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*order.OrderLine) error); ok {
-		r1 = rf(orderLine)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.OrderLine) error); ok {
+		r1 = rf(transaction, orderLine)
 	} else {
 		r1 = ret.Error(1)
 	}

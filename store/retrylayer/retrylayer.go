@@ -5058,11 +5058,11 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) Upsert(orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderLineStore.Upsert(orderLine)
+		result, err := s.OrderLineStore.Upsert(transaction, orderLine)
 		if err == nil {
 			return result, nil
 		}
@@ -6008,11 +6008,11 @@ func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToke
 
 }
 
-func (s *RetryLayerProductTypeStore) Get(productTypeID string) (*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductTypeStore.Get(productTypeID)
+		result, err := s.ProductTypeStore.GetByOption(options)
 		if err == nil {
 			return result, nil
 		}

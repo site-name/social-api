@@ -11,8 +11,8 @@ import (
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
-	orderLine, err := a.srv.Store.OrderLine().Upsert(orderLine)
+func (a *ServiceOrder) UpsertOrderLine(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
+	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok { // this not found error is caused by Get method

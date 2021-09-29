@@ -17,8 +17,7 @@ func (a *ServiceProduct) ProductVariantChannelListingsByOption(option *product_a
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		errorMessage = err.Error()
-	}
-	if len(listings) == 0 {
+	} else if len(listings) == 0 {
 		statusCode = http.StatusNotFound
 	}
 

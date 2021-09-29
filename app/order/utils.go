@@ -13,6 +13,8 @@ import (
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/channel"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -608,10 +610,10 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int,
 		fulfillmentMap         = map[string]*order.Fulfillment{}
 	)
 	for _, fulfillment := range fulfillmentsOfOrder {
-		if util.StringInSlice(fulfillment.Status, []string{
-			order.FULFILLMENT_RETURNED,
-			order.FULFILLMENT_REFUNDED_AND_RETURNED,
-			order.FULFILLMENT_REPLACED,
+		if util.StringInSlice(string(fulfillment.Status), []string{
+			string(order.FULFILLMENT_RETURNED),
+			string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
+			string(order.FULFILLMENT_REPLACED),
 		}) {
 			filteredFulfillmentIDs = append(filteredFulfillmentIDs, fulfillment.Id)
 			fulfillmentMap[fulfillment.Id] = fulfillment
@@ -653,7 +655,7 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 		return appErr
 	}
 
-	var status string
+	var status order.OrderStatus
 	if totalQuantity == 0 {
 		status = ord.Status
 	} else if quantityFulfilled <= 0 {
@@ -682,11 +684,207 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (a *ServiceOrder) AddVariantToOrder(ord *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, manager interface{}, discounts interface{}, allocateStock bool) {
-	panic("not implemented")
+func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
+	transaction, err := s.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(transaction)
+
+	// order line
+	var orderLine *order.OrderLine
+
+	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orDer.ChannelID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	orderLinesOfOrder, appErr := s.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orDer.Id,
+			},
+		},
+		VariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: variant.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, nil, appErr
+		}
+	}
+
+	if len(orderLinesOfOrder) > 0 {
+		orderLine = orderLinesOfOrder[0]
+		oldQuantity := orderLine.Quantity
+		newQuantity := oldQuantity + quantity
+
+		lineInfo := &order.OrderLineData{
+			Line:     *orderLine,
+			Quantity: oldQuantity,
+		}
+		insufficientStock, appErr := s.ChangeOrderLineQuantity(transaction, user.Id, nil, lineInfo, oldQuantity, newQuantity, chanNel.Slug, manager, false)
+		if insufficientStock != nil || appErr != nil {
+			return nil, insufficientStock, appErr
+		}
+	} else {
+		// in case no order line found
+		product, appErr := s.srv.ProductService().ProductById(variant.ProductID)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		collections, appErr := s.srv.ProductService().CollectionsByProductID(product.Id)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&product_and_discount.ProductVariantChannelListingFilterOption{
+			VariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: variant.Id,
+				},
+			},
+			ChannelID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: chanNel.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			return nil, nil, appErr // NOTE: does not care what type of error, just return
+		}
+
+		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(product, collections, chanNel, variantChannelListings[0], discounts)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		taxedUnitPrice := &goprices.TaxedMoney{
+			Net:      unitPrice,
+			Gross:    unitPrice,
+			Currency: unitPrice.Currency,
+		}
+
+		totalPrice, _ := taxedUnitPrice.Mul(quantity)
+		productName := product.String()
+		variantName := variant.String()
+
+		var translatedProductName string
+		productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&product_and_discount.ProductTranslationFilterOption{
+			LanguageCode: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: user.Locale,
+				},
+			},
+			ProductID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: product.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, nil, appErr
+			}
+		} else {
+			translatedProductName = productTranslations[0].Name
+		}
+
+		var translatedVariantName string
+		variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&product_and_discount.ProductVariantTranslationFilterOption{
+			LanguageCode: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: user.Locale,
+				},
+			},
+			ProductVariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: variant.Id,
+				},
+			},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, nil, appErr
+			}
+		} else {
+			translatedVariantName = variantTranslations[0].Name
+		}
+
+		if translatedProductName == productName {
+			translatedProductName = ""
+		}
+		if translatedVariantName == variantName {
+			translatedVariantName = ""
+		}
+
+		variantRequiresShipping, appErr := s.srv.ProductService().ProductsRequireShipping([]string{variant.ProductID})
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		productType, appErr := s.srv.ProductService().ProductTypeByOption(&product_and_discount.ProductTypeFilterOption{
+			Id: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: product.ProductTypeID,
+				},
+			},
+		})
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		orderLine, appErr = s.UpsertOrderLine(transaction, &order.OrderLine{
+			ProductName:           productName,
+			VariantName:           variantName,
+			TranslatedProductName: translatedProductName,
+			TranslatedVariantName: translatedVariantName,
+			ProductSku:            variant.Sku,
+			IsShippingRequired:    variantRequiresShipping,
+			IsGiftcard:            productType.IsGiftcard(),
+			Quantity:              quantity,
+			UnitPrice:             taxedUnitPrice,
+			TotalPrice:            totalPrice,
+			VariantID:             &variant.Id,
+		})
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+		// NOTE: this code requires manager
+		panic("not implemented")
+	}
+
+	if allocateStock {
+		insufficientStockErr, appErr := s.srv.WarehouseService().IncreaseAllocations(
+			[]*order.OrderLineData{
+				{
+					Line:        *orderLine,
+					Quantity:    quantity,
+					Variant:     variant,
+					WarehouseID: nil,
+				},
+			},
+			chanNel.Slug,
+			manager,
+		)
+		if insufficientStockErr != nil || appErr != nil {
+			return nil, insufficientStockErr, appErr
+		}
+	}
+
+	return orderLine, nil, nil
 }
 
-// Add AddGiftCardToOrder Return a total price left after applying the gift cards.
+// @DEPRECATED Do not use. AddGiftCardToOrder Return a total price left after applying the gift cards.
 func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
 	// validate given arguments's currencies are valid
 	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)
@@ -727,6 +925,59 @@ func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.G
 	return totalPriceLeft, nil
 }
 
+type balanceObject struct {
+	Giftcard giftcard.GiftCard
+	value    float64
+}
+
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo *checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
+	var (
+		balanceData    = []balanceObject{}
+		usedByUser     = checkoutInfo.User
+		usedByEmail    = checkoutInfo.GetCustomerEmail()
+		orderGiftcards = []*giftcard.GiftCard{}
+	)
+
+	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(transaction, &giftcard.GiftCardFilterOption{
+		SelectForUpdate: true,
+		CheckoutToken: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkoutInfo.Checkout.Token,
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+	}
+
+	// zeroMoney, _ := util.ZeroMoney(totalPriceLeft.Currency)
+	for _, giftcard := range giftcards {
+		if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
+			orderGiftcards = append(orderGiftcards, giftcard)
+			s.UpdateGiftcardBalance(giftcard, totalPriceLeft, balanceData)
+		}
+	}
+}
+
+func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money, balanceData []balanceObject) {
+	giftCard.PopulateNonDbFields() // NOTE: this call is important
+
+	previousBalance := giftCard.CurrentBalance
+	// if totalPriceLeft.LessThan()
+}
+
+// SetGiftcardUser Set user when the gift card is used for the first time.
+func (s *ServiceOrder) SetGiftcardUser(giftCard *giftcard.GiftCard, usedByUser *account.User, usedByEmail string) {
+	if giftCard.UsedByEmail == nil {
+		if usedByUser != nil {
+			giftCard.UsedByID = &usedByUser.Id
+		}
+		giftCard.UsedByEmail = &usedByEmail
+	}
+}
+
 func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
@@ -749,7 +1000,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -779,7 +1030,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, us
 		orderLine.UnDiscountedTotalPriceNetAmount = model.NewDecimal(unDiscountedTotalPriceNetAmount.Round(3))
 		orderLine.UnDiscountedTotalPriceGrossAmount = model.NewDecimal(unDiscountedTotalpriceGrossAmount.Round(3))
 
-		_, appErr = a.UpsertOrderLine(&orderLine)
+		_, appErr = a.UpsertOrderLine(nil, &orderLine)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -958,7 +1209,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 					if anOrderLine.QuantityFulfilled > 0 {
 						anOrderLine.QuantityFulfilled = 0
 
-						_, appErr = a.UpsertOrderLine(anOrderLine)
+						_, appErr = a.UpsertOrderLine(nil, anOrderLine)
 						setAppError(appErr)
 					}
 				}
@@ -1218,8 +1469,8 @@ func (a *ServiceOrder) MatchOrdersWithNewUser(user *account.User) *model.AppErro
 		Status: &model.StringFilter{
 			StringOption: &model.StringOption{
 				NotIn: []string{
-					order.DRAFT,
-					order.UNCONFIRMED,
+					string(order.STATUS_DRAFT),
+					string(order.UNCONFIRMED),
 				},
 			},
 		},
@@ -1401,7 +1652,7 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, or
 	}
 
 	// Save lines before calculating the taxes as some plugin can fetch all order data from db
-	_, appErr := a.UpsertOrderLine(orderLine)
+	_, appErr := a.UpsertOrderLine(nil, orderLine)
 	if appErr != nil {
 		return appErr
 	}
@@ -1411,7 +1662,7 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, or
 		return appErr
 	}
 
-	_, appErr = a.UpsertOrderLine(orderLine)
+	_, appErr = a.UpsertOrderLine(nil, orderLine)
 	return appErr
 }
 
@@ -1425,7 +1676,7 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, o
 	orderLine.UnitDiscountReason = model.NewString("")
 	orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
 
-	_, appErr := a.UpsertOrderLine(orderLine)
+	_, appErr := a.UpsertOrderLine(nil, orderLine)
 	if appErr != nil {
 		return appErr
 	}
@@ -1435,6 +1686,6 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, o
 		return appErr
 	}
 
-	_, appErr = a.UpsertOrderLine(orderLine)
+	_, appErr = a.UpsertOrderLine(nil, orderLine)
 	return appErr
 }

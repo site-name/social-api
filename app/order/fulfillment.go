@@ -91,7 +91,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorp.Transaction, opt
 			fulfillmentByOption.OrderID = option.OrderID.Eq
 		}
 		if option.Status != nil {
-			fulfillmentByOption.Status = option.Status.Eq
+			fulfillmentByOption.Status = order.FulfillmentStatus(option.Status.Eq)
 		}
 
 		fulfillmentByOption, appErr = a.UpsertFulfillment(transaction, fulfillmentByOption)

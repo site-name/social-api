@@ -22,26 +22,30 @@ const (
 	ORDER_CHECKOUT_TOKEN_MAX_LENGTH       = 36
 )
 
+type OrderOrigin string
+
 // order origin valid values
 const (
-	CHECKOUT = "checkout" // order created from checkout
-	DRAFT    = "draft"    // order created from draft order
-	REISSUE  = "reissue"  // order created from reissue existing one
+	CHECKOUT OrderOrigin = "checkout" // order created from checkout
+	DRAFT    OrderOrigin = "draft"    // order created from draft order
+	REISSUE  OrderOrigin = "reissue"  // order created from reissue existing one
 )
+
+type OrderStatus string
 
 // ORDER STATUS VALID VALUES
 const (
-	STATUS_DRAFT        = "draft"               // fully editable, not finalized order created by staff users
-	UNCONFIRMED         = "unconfirmed"         // order created by customers when confirmation is required
-	UNFULFILLED         = "unfulfilled"         // order with no items marked as fulfilled
-	PARTIALLY_FULFILLED = "partially_fulfilled" // order with some items marked as fulfilled
-	FULFILLED           = "fulfilled"           // order with all items marked as fulfilled
-	PARTIALLY_RETURNED  = "partially_returned"  // order with some items marked as returned
-	RETURNED            = "returned"            // order with all items marked as returned
-	CANCELED            = "canceled"            // permanently canceled order
+	STATUS_DRAFT        OrderStatus = "draft"               // fully editable, not finalized order created by staff users
+	UNCONFIRMED         OrderStatus = "unconfirmed"         // order created by customers when confirmation is required
+	UNFULFILLED         OrderStatus = "unfulfilled"         // order with no items marked as fulfilled
+	PARTIALLY_FULFILLED OrderStatus = "partially_fulfilled" // order with some items marked as fulfilled
+	FULFILLED           OrderStatus = "fulfilled"           // order with all items marked as fulfilled
+	PARTIALLY_RETURNED  OrderStatus = "partially_returned"  // order with some items marked as returned
+	RETURNED            OrderStatus = "returned"            // order with all items marked as returned
+	CANCELED            OrderStatus = "canceled"            // permanently canceled order
 )
 
-var OrderStatusStrings = map[string]string{
+var OrderStatusStrings = map[OrderStatus]string{
 	STATUS_DRAFT:        "Draft",
 	UNCONFIRMED:         "Unconfirmed",
 	UNFULFILLED:         "Unfulfilled",
@@ -52,7 +56,7 @@ var OrderStatusStrings = map[string]string{
 	CANCELED:            "Canceled",
 }
 
-var OrderOriginStrings = map[string]string{
+var OrderOriginStrings = map[OrderOrigin]string{
 	CHECKOUT: "Checkout",
 	DRAFT:    "Draft",
 	REISSUE:  "Reissue",
@@ -68,7 +72,7 @@ const (
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"` // NOT editable
-	Status                       string                 `json:"status"`    // default: UNFULFILLED
+	Status                       OrderStatus            `json:"status"`    // default: UNFULFILLED
 	UserID                       *string                `json:"user_id"`   //
 	ShopID                       string                 `json:"shop_id"`
 	LanguageCode                 string                 `json:"language_code"`       // default: "en"
@@ -77,7 +81,7 @@ type Order struct {
 	ShippingAddressID            *string                `json:"shipping_address_id"` // NOT editable
 	UserEmail                    string                 `json:"user_email"`          //
 	OriginalID                   *string                `json:"original_id"`         // original order id
-	Origin                       string                 `json:"origin"`
+	Origin                       OrderOrigin            `json:"origin"`
 	Currency                     string                 `json:"currency"`
 	ShippingMethodID             *string                `json:"shipping_method_id"`
 	ShippingMethodName           *string                `json:"shipping_method_name"`        // NOT editable
@@ -309,7 +313,7 @@ func (o *Order) IsPartlyPaid() bool {
 
 // IsDraft checks if current order's Status if "draft"
 func (o *Order) IsDraft() bool {
-	return o.Status == DRAFT
+	return o.Status == STATUS_DRAFT
 }
 
 // IsUnconfirmed checks if current order's Status is "unconfirmed"
@@ -319,7 +323,7 @@ func (o *Order) IsUnconfirmed() bool {
 
 // IsOpen checks if current order's Status if "draft" OR "partially_fulfilled"
 func (o *Order) IsOpen() bool {
-	return o.Status == DRAFT || o.Status == PARTIALLY_FULFILLED
+	return o.Status == STATUS_DRAFT || o.Status == PARTIALLY_FULFILLED
 }
 
 // TotalCaptured returns current order's TotalPaid money

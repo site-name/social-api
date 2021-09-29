@@ -3,7 +3,6 @@ package order
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
@@ -19,17 +18,19 @@ const (
 	FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH = 255
 )
 
+type FulfillmentStatus string
+
 // fulfillment statuses
 const (
-	FULFILLMENT_FULFILLED             = "fulfilled"             // group of products in an order marked as fulfilled
-	FULFILLMENT_REFUNDED              = "refunded"              // group of refunded products
-	FULFILLMENT_RETURNED              = "returned"              // group of returned products
-	FULFILLMENT_REFUNDED_AND_RETURNED = "refunded_and_returned" // group of returned and replaced products
-	FULFILLMENT_REPLACED              = "replaced"              // group of replaced products
-	FULFILLMENT_CANCELED              = "canceled"              // fulfilled group of products in an order marked as canceled
+	FULFILLMENT_FULFILLED             FulfillmentStatus = "fulfilled"             // group of products in an order marked as fulfilled
+	FULFILLMENT_REFUNDED              FulfillmentStatus = "refunded"              // group of refunded products
+	FULFILLMENT_RETURNED              FulfillmentStatus = "returned"              // group of returned products
+	FULFILLMENT_REFUNDED_AND_RETURNED FulfillmentStatus = "refunded_and_returned" // group of returned and replaced products
+	FULFILLMENT_REPLACED              FulfillmentStatus = "replaced"              // group of replaced products
+	FULFILLMENT_CANCELED              FulfillmentStatus = "canceled"              // fulfilled group of products in an order marked as canceled
 )
 
-var FulfillmentStrings = map[string]string{
+var FulfillmentStrings = map[FulfillmentStatus]string{
 	FULFILLMENT_FULFILLED:             "Fulfilled",
 	FULFILLMENT_REFUNDED:              "Refunded",
 	FULFILLMENT_RETURNED:              "Returned",
@@ -39,14 +40,14 @@ var FulfillmentStrings = map[string]string{
 }
 
 type Fulfillment struct {
-	Id                   string           `json:"id"`
-	FulfillmentOrder     uint             `json:"fulfillment_order"`
-	OrderID              string           `json:"order_id"` // not null nor editable
-	Status               string           `json:"status"`
-	TrackingNumber       string           `json:"tracking_numdber"`
-	CreateAt             int64            `json:"create_at"`
-	ShippingRefundAmount *decimal.Decimal `json:"shipping_refund_amount"`
-	TotalRefundAmount    *decimal.Decimal `json:"total_refund_amount"`
+	Id                   string            `json:"id"`
+	FulfillmentOrder     uint              `json:"fulfillment_order"`
+	OrderID              string            `json:"order_id"` // not null nor editable
+	Status               FulfillmentStatus `json:"status"`
+	TrackingNumber       string            `json:"tracking_numdber"`
+	CreateAt             int64             `json:"create_at"`
+	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount"`
+	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount"`
 	model.ModelMetadata
 
 	Order *Order `json:"-" db:"-"` // this field get populated in queries that require select related data
@@ -90,7 +91,7 @@ func (f *Fulfillment) IsValid() *model.AppError {
 	if f.CreateAt == 0 {
 		return outer("create_at", &f.Id)
 	}
-	if len(f.Status) > FULFILLMENT_STATUS_MAX_LENGTH || FulfillmentStrings[strings.ToLower(f.Status)] == "" {
+	if len(f.Status) > FULFILLMENT_STATUS_MAX_LENGTH || FulfillmentStrings[f.Status] == "" {
 		return outer("status", &f.Id)
 	}
 	if len(f.TrackingNumber) > FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH {
@@ -110,7 +111,7 @@ func (f *Fulfillment) PreSave() {
 	}
 	f.CreateAt = model.GetMillis()
 	if f.Status == "" {
-		f.Status = FULFILLED
+		f.Status = FULFILLMENT_FULFILLED
 	}
 }
 
@@ -120,7 +121,7 @@ func (f *Fulfillment) ComposedId() string {
 
 // CanEdit checks if current Fulfillment's Status is "canceled"
 func (f *Fulfillment) CanEdit() bool {
-	return f.Status != CANCELED
+	return f.Status != FULFILLMENT_FULFILLED
 }
 
 func (f *Fulfillment) IstrackingNumber() bool {
