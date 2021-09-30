@@ -30,17 +30,21 @@ const (
 	CLIENT_DIR                 = "client"
 )
 
+type TimePeriodType string
+
 // time period types
 const (
-	Day   = "day"
-	Month = "month"
-	Year  = "year"
+	DAY   TimePeriodType = "day"
+	WEEK  TimePeriodType = "week"
+	MONTH TimePeriodType = "month"
+	YEAR  TimePeriodType = "year"
 )
 
-var TimePeriodMap = map[string]string{
-	Day:   "Day",
-	Month: "Month",
-	Year:  "Year",
+var TimePeriodMap = map[TimePeriodType]string{
+	DAY:   "Day",
+	WEEK:  "Week",
+	MONTH: "Month",
+	YEAR:  "Year",
 }
 
 // some default values for model fields

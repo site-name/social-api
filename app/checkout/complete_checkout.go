@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -453,7 +454,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interface{}, checkoutInfo *ch
 // which language to use when sending email.
 //
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
-func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData map[string]interface{}, user *account.User, _ interface{}, manager interface{}, siteSettings interface{}) (*order.Order, *exception.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, orderData map[string]interface{}, user *account.User, _ interface{}, manager interface{}, siteSettings *shop.Shop) (*order.Order, *exception.InsufficientStock, *model.AppError) {
 	// create transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -488,11 +489,11 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 
 	status := order.UNCONFIRMED
 	if siteSettings == nil {
-		shop, appErr := s.srv.ShopService().ShopById(checkOut.ShopID)
+		siteSettings, appErr := s.srv.ShopService().ShopById(checkOut.ShopID)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
-		if *shop.AutomaticallyConfirmAllNewOrders {
+		if *siteSettings.AutomaticallyConfirmAllNewOrders {
 			status = order.UNFULFILLED
 		}
 	}
@@ -592,6 +593,13 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return nil, nil, appErr
 	}
 
+	if *siteSettings.AutomaticallyFulfillNonShippableGiftcard {
+		_, appErr = s.srv.GiftcardService().FulfillNonShippableGiftcards(createdNewOrder, orderLines, siteSettings, user, nil, manager)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+	}
+
 	// commit transaction
 	if err = transaction.Commit(); err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -603,8 +611,14 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 	}
 
 	// Send the order confirmation email
-	// TODO: fixme
-	panic("not implemented")
+	var redirectURL string
+	if checkOut.RedirectURL != nil {
+		redirectURL = *checkOut.RedirectURL
+	}
+	appErr = s.srv.OrderService().SendOrderConfirmation(createdNewOrder, redirectURL, manager)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
 
 	return createdNewOrder, nil, nil
 }
@@ -767,7 +781,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 	discounts []*product_and_discount.DiscountInfo,
 	user *account.User, // must be authenticated before this
 	_ interface{}, // this param originally is `app`, but we not gonna integrate app feature in the early versions
-	siteSettings interface{},
+	siteSettings *shop.Shop,
 	trackingCode string,
 	redirectURL string,
 

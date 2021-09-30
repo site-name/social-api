@@ -39,17 +39,18 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardService interface {
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                                                                                               // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                                                                                                          // GiftcardsByCheckout returns all giftcards belong to given checkout
-	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                                                                                   // PromoCodeIsGiftCard checks whether there is giftcard with given code
-	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                                                                                          // ToggleGiftcardStatus set status of given giftcard to inactive/active
-	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                                                                              // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)                                                       // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)                                        // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)                                                                    // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)                                                            // GiftcardsByOption finds a list of giftcards with given option
-	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                   // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) // GiftcardsUsedInOrderEvent bulk creates giftcard events
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                                                                                                           // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                      // GiftcardsByCheckout returns all giftcards belong to given checkout
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                                                                                               // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                                                                                                      // ToggleGiftcardStatus set status of given giftcard to inactive/active
+	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                                                                                          // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)                                                                   // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)                                                    // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
+	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)                                                                                // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
+	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)                                                                        // GiftcardsByOption finds a list of giftcards with given option
+	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                               // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
+	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)             // GiftcardsUsedInOrderEvent bulk creates giftcard events
+	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) // FulfillNonShippableGiftcards
 }
 
 // PaymentService defines methods for payment sub app
@@ -448,6 +449,7 @@ type OrderService interface {
 	BulkUpsertOrderLines(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError)                                                                       // BulkUpsertOrderLines perform bulk upsert given order lines
 	OrderCreated(ord *order.Order, user *account.User, _, manager interface{}, fromDraft bool) *model.AppError                                                                                     // OrderCreated. `fromDraft` is default to false
 	AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo *checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError // AddGiftcardsToOrder
+	SendOrderConfirmation(orDer *order.Order, redirectURL string, manager interface{}) *model.AppError                                                                                             // SendOrderConfirmation sends notification with order confirmation
 }
 
 type MenuService interface {

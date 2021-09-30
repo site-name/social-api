@@ -26,6 +26,8 @@ func NewSqlShopStore(s store.Store) store.ShopStore {
 		table.ColMap("Description").SetMaxSize(shop.SHOP_DESCRIPTION_MAX_LENGTH)
 		table.ColMap("DefaultWeightUnit").SetMaxSize(shop.SHOP_DEFAULT_WEIGHT_UNIT_MAX_LENGTH)
 		table.ColMap("DefaultMailSenderName").SetMaxSize(shop.SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH)
+		table.ColMap("GiftcardExpiryType").SetMaxSize(shop.SHOP_GIFTCARD_EXPIRY_TYPE_MAX_LENGTH)
+		table.ColMap("GiftcardExpiryPeriodType").SetMaxSize(shop.SHOP_GIFTCARD_EXPIRY_PERIOD_TYPE_MAX_LENGTH)
 	}
 	return ss
 }

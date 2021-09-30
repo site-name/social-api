@@ -42,9 +42,6 @@ type GiftCard struct {
 	CreateAt             int64            `json:"created_at"`
 	StartDate            *time.Time       `json:"start_date"`
 	ExpiryDate           *time.Time       `json:"expiry_date"`
-	ExpiryType           string           `json:"expiry_type"`
-	ExpiryPeriodType     *string          `json:"expiry_period_type"`
-	ExpiryPeriod         *int             `json:"expiry_period"`
 	Tag                  *string          `json:"tag"`
 	ProductID            *string          `json:"product_id"` // foreign key to Product
 	LastUsedOn           *int64           `json:"last_used_on"`
@@ -109,15 +106,6 @@ func (gc *GiftCard) IsValid() *model.AppError {
 	}
 	if gc.UsedByEmail != nil && len(*gc.UsedByEmail) > model.USER_EMAIL_MAX_LENGTH {
 		return outer("used_by_email", &gc.Id)
-	}
-	if len(gc.ExpiryType) > GiftcardExpiryTypeMaxLength || GiftcardExpiryTypeMap[gc.ExpiryType] == "" {
-		return outer("expiry_type", &gc.Id)
-	}
-	if gc.ExpiryPeriodType != nil && (len(*gc.ExpiryPeriodType) > GiftcardExpiryPeriodTypeMaxLength || model.TimePeriodMap[*gc.ExpiryPeriodType] == "") {
-		return outer("expiry_period_type", &gc.Id)
-	}
-	if gc.ExpiryPeriod != nil && *gc.ExpiryPeriod < 0 {
-		return outer("expiry_period", &gc.Id)
 	}
 	if gc.Tag != nil && len(*gc.Tag) > GiftcardTagMaxLength {
 		return outer("tag", &gc.Id)

@@ -14,12 +14,13 @@ import (
 
 // max lengths for some fields of order model
 const (
-	ORDER_STATUS_MAX_LENGTH               = 32
-	ORDER_TRACKING_CLIENT_ID_MAX_LENGTH   = 36
-	ORDER_ORIGIN_MAX_LENGTH               = 32
-	ORDER_SHIPPING_METHOD_NAME_MAX_LENGTH = 255
-	ORDER_TOKEN_MAX_LENGTH                = 36
-	ORDER_CHECKOUT_TOKEN_MAX_LENGTH       = 36
+	ORDER_STATUS_MAX_LENGTH                = 32
+	ORDER_TRACKING_CLIENT_ID_MAX_LENGTH    = 36
+	ORDER_ORIGIN_MAX_LENGTH                = 32
+	ORDER_SHIPPING_METHOD_NAME_MAX_LENGTH  = 255
+	ORDER_TOKEN_MAX_LENGTH                 = 36
+	ORDER_CHECKOUT_TOKEN_MAX_LENGTH        = 36
+	ORDER_COLLECTION_POINT_NAME_MAX_LENGTH = 255
 )
 
 type OrderOrigin string
@@ -84,7 +85,9 @@ type Order struct {
 	Origin                       OrderOrigin            `json:"origin"`
 	Currency                     string                 `json:"currency"`
 	ShippingMethodID             *string                `json:"shipping_method_id"`
-	ShippingMethodName           *string                `json:"shipping_method_name"`        // NOT editable
+	CollectionPointID            *string                `json:"collection_point_id"`         // foreign key warehosue
+	ShippingMethodName           *string                `json:"shipping_method_name"`        // NUL, NOT editable
+	CollectionPointName          *string                `json:"collection_point_name"`       // NUL, NOTE editable
 	ChannelID                    string                 `json:"channel_id"`                  //
 	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`   // NOT editable
 	ShippingPriceNet             *goprices.Money        `json:"shipping_price_net" db:"-"`   //
@@ -180,6 +183,12 @@ func (o *Order) IsValid() *model.AppError {
 	}
 	if o.ShippingMethodID != nil && !model.IsValidId(*o.ShippingMethodID) {
 		return outer("shipping_method_id", &o.Id)
+	}
+	if o.CollectionPointID != nil && !model.IsValidId(*o.CollectionPointID) {
+		return outer("collection_point_id", &o.Id)
+	}
+	if o.CollectionPointName != nil && utf8.RuneCountInString(*o.CollectionPointName) > ORDER_COLLECTION_POINT_NAME_MAX_LENGTH {
+		return outer("collection_point_name", &o.Id)
 	}
 	if !model.IsValidId(o.ChannelID) {
 		return outer("channel_id", &o.Id)
@@ -293,6 +302,9 @@ func (o *Order) commonPre() {
 		o.Currency = strings.ToUpper(o.Currency)
 	} else {
 		o.Currency = model.DEFAULT_CURRENCY
+	}
+	if o.CollectionPointName != nil {
+		o.CollectionPointName = model.NewString(model.SanitizeUnicode(*o.CollectionPointName))
 	}
 }
 

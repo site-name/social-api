@@ -27,6 +27,8 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OriginalID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("CollectionPointID").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("CollectionPointName").SetMaxSize(order.ORDER_COLLECTION_POINT_NAME_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Status").SetMaxSize(order.ORDER_STATUS_MAX_LENGTH)
@@ -55,6 +57,7 @@ func (os *SqlOrderStore) CreateIndexesIfNotExists() {
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ChannelID", store.ChannelTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "VoucherID", store.VoucherTableName, "Id", false)
 	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShopID", store.ShopTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(store.OrderTableName, "CollectionPointID", store.WarehouseTableName, "Id", false)
 }
 
 func (os *SqlOrderStore) ModelFields() []string {
@@ -73,7 +76,9 @@ func (os *SqlOrderStore) ModelFields() []string {
 		"Orders.Origin",
 		"Orders.Currency",
 		"Orders.ShippingMethodID",
+		"Orders.CollectionPointID",
 		"Orders.ShippingMethodName",
+		"Orders.CollectionPointName",
 		"Orders.ChannelID",
 		"Orders.ShippingPriceNetAmount",
 		"Orders.ShippingPriceGrossAmount",
@@ -113,7 +118,9 @@ func (os *SqlOrderStore) ScanFields(holder order.Order) []interface{} {
 		&holder.Origin,
 		&holder.Currency,
 		&holder.ShippingMethodID,
+		&holder.CollectionPointID,
 		&holder.ShippingMethodName,
+		&holder.CollectionPointName,
 		&holder.ChannelID,
 		&holder.ShippingPriceNetAmount,
 		&holder.ShippingPriceGrossAmount,
@@ -194,6 +201,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 			ord.TrackingClientID = oldOrder.TrackingClientID
 			ord.BillingAddressID = oldOrder.BillingAddressID
 			ord.ShippingAddressID = oldOrder.ShippingAddressID
+			ord.CollectionPointName = oldOrder.CollectionPointName
 			ord.ShippingMethodName = oldOrder.ShippingMethodName
 			ord.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
@@ -237,7 +245,6 @@ func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order)
 		}
 		break
 	}
-	order.PopulateNonDbFields()
 	return order, nil
 }
 
@@ -251,7 +258,6 @@ func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
-	order.PopulateNonDbFields()
 	return &order, nil
 }
 
@@ -278,6 +284,7 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 	newOrder.TrackingClientID = oldOrder.TrackingClientID
 	newOrder.BillingAddressID = oldOrder.BillingAddressID
 	newOrder.ShippingAddressID = oldOrder.ShippingAddressID
+	newOrder.CollectionPointName = oldOrder.CollectionPointName
 	newOrder.ShippingMethodName = oldOrder.ShippingMethodName
 	newOrder.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 	newOrder.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
@@ -295,7 +302,6 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, numberOfUpdatedOrder)
 	}
 
-	newOrder.PopulateNonDbFields()
 	return newOrder, nil
 }
 

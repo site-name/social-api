@@ -10,38 +10,57 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+type GiftCardSettingsExpiryType string
+
+// valid values for shop's giftcard expiry type
+const (
+	NEVER_EXPIRE  GiftCardSettingsExpiryType = "never_expire"
+	EXPIRY_PERIOD GiftCardSettingsExpiryType = "expiry_period"
+)
+
+var GiftCardSettingsExpiryTypeValues = map[GiftCardSettingsExpiryType]string{
+	NEVER_EXPIRE:  "Never expire",
+	EXPIRY_PERIOD: "Expiry period",
+}
+
 // max length values for some shop fields
 const (
-	SHOP_NAME_MAX_LENGTH                       = 100
-	SHOP_DESCRIPTION_MAX_LENGTH                = 200
-	SHOP_DEFAULT_WEIGHT_UNIT_MAX_LENGTH        = 10
-	SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH = 78
+	SHOP_NAME_MAX_LENGTH                        = 100
+	SHOP_DESCRIPTION_MAX_LENGTH                 = 200
+	SHOP_DEFAULT_WEIGHT_UNIT_MAX_LENGTH         = 10
+	SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH  = 78
+	SHOP_GIFTCARD_EXPIRY_TYPE_MAX_LENGTH        = 32
+	SHOP_GIFTCARD_EXPIRY_PERIOD_TYPE_MAX_LENGTH = 32
 )
 
 // Shop represents a selling unit
 type Shop struct {
-	Id                                  string  `json:"id"`
-	OwnerID                             string  `json:"owner_id"`
-	CreateAt                            int64   `json:"create_at"`
-	UpdateAt                            int64   `json:"update_at"`
-	Name                                string  `json:"name"`
-	Description                         string  `json:"description"`
-	TopMenuID                           string  `json:"top_menu_id"`
-	IncludeTaxesInPrice                 *bool   `json:"include_taxes_in_prices"`                // default true
-	DisplayGrossPrices                  *bool   `json:"display_gross_prices"`                   // default true
-	ChargeTaxesOnShipping               *bool   `json:"charge_taxes_on_shipping"`               // default true
-	TrackInventoryByDefault             *bool   `json:"track_inventory_by_default"`             // default true
-	DefaultWeightUnit                   string  `json:"default_weight_unit"`                    // default kg
-	AutomaticFulfillmentDigitalProducts *bool   `json:"automatic_fulfillment_digital_products"` // default true
-	DefaultDigitalMaxDownloads          *uint   `json:"default_digital_max_downloads"`
-	DefaultDigitalUrlValidDays          *uint   `json:"default_digital_url_valid_days"`
-	AddressID                           *string `json:"address_id"`
-	DefaultMailSenderName               string  `json:"default_mail_sender_name"`
-	DefaultMailSenderAddress            string  `json:"default_mail_sender_address"`
-	CustomerSetPasswordUrl              *string `json:"customer_set_password_url"`
-	AutomaticallyConfirmAllNewOrders    *bool   `json:"automatically_confirm_all_new_orders"` // default true
-	FulfillmentAutoApprove              *bool   `json:"fulfillment_auto_approve"`             // default *true
-	FulfillmentAllowUnPaid              *bool   `json:"fulfillment_allow_unpaid"`             // default *true
+	Id                                       string                     `json:"id"`
+	OwnerID                                  string                     `json:"owner_id"`
+	CreateAt                                 int64                      `json:"create_at"`
+	UpdateAt                                 int64                      `json:"update_at"`
+	Name                                     string                     `json:"name"`
+	Description                              string                     `json:"description"`
+	TopMenuID                                string                     `json:"top_menu_id"`
+	IncludeTaxesInPrice                      *bool                      `json:"include_taxes_in_prices"`                // default true
+	DisplayGrossPrices                       *bool                      `json:"display_gross_prices"`                   // default true
+	ChargeTaxesOnShipping                    *bool                      `json:"charge_taxes_on_shipping"`               // default true
+	TrackInventoryByDefault                  *bool                      `json:"track_inventory_by_default"`             // default true
+	DefaultWeightUnit                        string                     `json:"default_weight_unit"`                    // default kg
+	AutomaticFulfillmentDigitalProducts      *bool                      `json:"automatic_fulfillment_digital_products"` // default true
+	DefaultDigitalMaxDownloads               *uint                      `json:"default_digital_max_downloads"`
+	DefaultDigitalUrlValidDays               *uint                      `json:"default_digital_url_valid_days"`
+	AddressID                                *string                    `json:"address_id"`
+	DefaultMailSenderName                    string                     `json:"default_mail_sender_name"`
+	DefaultMailSenderAddress                 string                     `json:"default_mail_sender_address"`
+	CustomerSetPasswordUrl                   *string                    `json:"customer_set_password_url"`
+	AutomaticallyConfirmAllNewOrders         *bool                      `json:"automatically_confirm_all_new_orders"` // default true
+	FulfillmentAutoApprove                   *bool                      `json:"fulfillment_auto_approve"`             // default *true
+	FulfillmentAllowUnPaid                   *bool                      `json:"fulfillment_allow_unpaid"`             // default *true
+	GiftcardExpiryType                       GiftCardSettingsExpiryType `json:"gift_card_expiry_type"`                // default "never_expire"
+	GiftcardExpiryPeriodType                 model.TimePeriodType       `json:"gift_card_expiry_period_type"`
+	GiftcardExpiryPeriod                     *int64                     `json:"gift_card_expiry_period"`
+	AutomaticallyFulfillNonShippableGiftcard *bool                      `json:"automatically_fulfill_non_shippable_gift_card"` // default *true
 }
 
 type ShopDefaultDigitalContentSettings struct {
@@ -114,6 +133,15 @@ func (s *Shop) IsValid() *model.AppError {
 	if s.FulfillmentAllowUnPaid == nil {
 		return outer("fulfillment_allow_unpaid", &s.Id)
 	}
+	if len(s.GiftcardExpiryType) > SHOP_GIFTCARD_EXPIRY_TYPE_MAX_LENGTH || GiftCardSettingsExpiryTypeValues[s.GiftcardExpiryType] == "" {
+		return outer("gift_card_expiry_type", &s.Id)
+	}
+	if len(s.GiftcardExpiryPeriodType) > 0 && (len(s.GiftcardExpiryPeriodType) > SHOP_GIFTCARD_EXPIRY_PERIOD_TYPE_MAX_LENGTH || model.TimePeriodMap[s.GiftcardExpiryPeriodType] == "") {
+		return outer("gift_card_expiry_period_type", &s.Id)
+	}
+	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
+		return outer("automatically_fulfill_non_shippable_gift_card", &s.Id)
+	}
 
 	return nil
 }
@@ -152,6 +180,12 @@ func (s *Shop) commonPre() {
 	}
 	if s.FulfillmentAutoApprove == nil {
 		s.FulfillmentAutoApprove = model.NewBool(true)
+	}
+	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
+		s.AutomaticallyFulfillNonShippableGiftcard = model.NewBool(true)
+	}
+	if len(s.GiftcardExpiryType) == 0 {
+		s.GiftcardExpiryType = NEVER_EXPIRE
 	}
 }
 

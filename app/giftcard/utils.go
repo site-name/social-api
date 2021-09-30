@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/shop"
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
@@ -99,8 +101,9 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *mod
 	return nil
 }
 
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines) {
-
+// FulfillNonShippableGiftcards
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
+	panic("not implemented")
 }
 
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lineIDs []string) {

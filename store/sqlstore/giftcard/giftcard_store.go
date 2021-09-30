@@ -28,8 +28,6 @@ func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CreatedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
 		table.ColMap("UsedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("ExpiryType").SetMaxSize(giftcard.GiftcardExpiryTypeMaxLength)
-		table.ColMap("ExpiryPeriodType").SetMaxSize(giftcard.GiftcardExpiryPeriodTypeMaxLength)
 		table.ColMap("Tag").SetMaxSize(giftcard.GiftcardTagMaxLength)
 		table.ColMap("Code").SetMaxSize(giftcard.GiftcardCodeMaxLength).SetUnique(true)
 		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
