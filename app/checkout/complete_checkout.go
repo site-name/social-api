@@ -38,9 +38,11 @@ func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo *checkout.Checkout
 		return map[string]*product_and_discount.Voucher{}, nil, nil
 	}
 
-	appErr = s.srv.DiscountService().IncreaseVoucherUsage(voucher)
-	if appErr != nil {
-		return nil, nil, appErr
+	if voucher.UsageLimit != nil && *voucher.UsageLimit != 0 {
+		appErr = s.srv.DiscountService().IncreaseVoucherUsage(voucher)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
 	}
 
 	if voucher.ApplyOncePerCustomer {
@@ -68,7 +70,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 			return nil, appErr
 		}
 
-		anAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
+		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 			Id: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: shippingAddress.Id,
@@ -86,7 +88,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo *checkout.Che
 			}
 		}
 
-		if len(anAddressOfUser) > 0 {
+		if len(addressesOfUser) > 0 {
 			copyShippingAddress, appErr = s.srv.AccountService().CopyAddress(shippingAddress)
 			if appErr != nil {
 				return nil, appErr
@@ -672,15 +674,17 @@ func (s *ServiceCheckout) ReleaseVoucherUsage(orderData map[string]interface{}) 
 	if iface, ok := orderData["voucher"]; ok && iface != nil {
 		voucher := iface.(*product_and_discount.Voucher)
 
-		appErr := s.srv.DiscountService().DecreaseVoucherUsage(voucher)
-		if appErr != nil {
-			return appErr
-		}
-
-		if userEmail, ok := orderData["user_email"]; ok {
-			appErr = s.srv.DiscountService().RemoveVoucherUsageByCustomer(voucher, userEmail.(string))
+		if voucher.UsageLimit != nil && *voucher.UsageLimit != 0 {
+			appErr := s.srv.DiscountService().DecreaseVoucherUsage(voucher)
 			if appErr != nil {
 				return appErr
+			}
+
+			if userEmail, ok := orderData["user_email"]; ok {
+				appErr = s.srv.DiscountService().RemoveVoucherUsageByCustomer(voucher, userEmail.(string))
+				if appErr != nil {
+					return appErr
+				}
 			}
 		}
 	}

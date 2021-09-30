@@ -629,36 +629,37 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 
 	now := model.NewTime(time.Now()) // NOTE: not sure to use UTC or system time
 
+	voucherFilterOption := &product_and_discount.VoucherFilterOption{
+		UsageLimit: &model.NumberFilter{
+			Or: &model.NumberOption{
+				NULL: model.NewBool(true),
+				ExtraExpr: []squirrel.Sqlizer{
+					squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
+				},
+			},
+		},
+		EndDate: &model.TimeFilter{
+			Or: &model.TimeOption{
+				NULL: model.NewBool(true),
+				GtE:  now,
+			},
+		},
+		StartDate: &model.TimeFilter{
+			TimeOption: &model.TimeOption{
+				LtE: now,
+			},
+		},
+		ChannelListingSlug: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkoutInfo.Channel.Slug,
+			},
+		},
+		ChannelListingActive: model.NewBool(true),
+	}
+
 	if checkoutInfo.Checkout.VoucherCode != nil {
 		// finds vouchers that are active in a channel
-		activeInChannelVouchers, appErr := a.srv.DiscountService().VouchersByOption(&product_and_discount.VoucherFilterOption{
-			UsageLimit: &model.NumberFilter{
-				Or: &model.NumberOption{
-					NULL: model.NewBool(true),
-					ExtraExpr: []squirrel.Sqlizer{
-						squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
-					},
-				},
-			},
-			EndDate: &model.TimeFilter{
-				Or: &model.TimeOption{
-					NULL: model.NewBool(true),
-					GtE:  now,
-				},
-			},
-			StartDate: &model.TimeFilter{
-				TimeOption: &model.TimeOption{
-					LtE: now,
-				},
-			},
-			ChannelListingSlug: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkoutInfo.Channel.Slug,
-				},
-			},
-			ChannelListingActive: model.NewBool(true),
-			WithLook:             withLock, // this add `FOR UPDATE` to SQL query
-		})
+		activeInChannelVouchers, appErr := a.srv.DiscountService().VouchersByOption(voucherFilterOption)
 
 		if appErr != nil || len(activeInChannelVouchers) == 0 {
 			return nil, appErr
@@ -666,9 +667,15 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 
 		// find voucher with code
 		for _, voucher := range activeInChannelVouchers {
-			if voucher.Code == *checkoutInfo.Checkout.VoucherCode {
-				return voucher, nil
+			if voucher.Code == *checkoutInfo.Checkout.VoucherCode && voucher.UsageLimit != nil && withLock {
+
+				voucherFilterOption.WithLook = true // this tell database to append `FOR UPDATE` to the end of query
+				voucher, appErr = a.srv.DiscountService().VoucherByOption(voucherFilterOption)
+				if appErr != nil {
+					return nil, appErr
+				}
 			}
+			return voucher, nil
 		}
 	}
 
@@ -714,7 +721,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interface{}, check
 		} else {
 			checkOut.Discount = discount
 		}
-		checkOut.DiscountName = &voucher.Name
+		checkOut.DiscountName = voucher.Name
 
 		// check if the owner of this checkout has ther primary language:
 		if checkoutInfo.User != nil && model.Languages[checkoutInfo.User.Locale] != "" {
@@ -736,7 +743,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interface{}, check
 				}
 				// ignore not found error
 			} else {
-				if voucherTranslation.Name != voucher.Name {
+				if voucherTranslation.Name != *voucher.Name {
 					checkOut.TranslatedDiscountName = &voucherTranslation.Name
 				} else {
 					checkOut.TranslatedDiscountName = model.NewString("")
@@ -818,7 +825,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interface{}, checkoutInfo
 		return notApplicable, appErr
 	}
 	checkout.VoucherCode = &voucher.Code
-	checkout.DiscountName = &voucher.Name
+	checkout.DiscountName = voucher.Name
 
 	if user := checkoutInfo.User; user != nil && model.Languages[user.Locale] != "" {
 		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
@@ -831,7 +838,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interface{}, checkoutInfo
 		if appErr != nil {
 			return nil, appErr
 		}
-		if voucherTranslation.Name != voucher.Name {
+		if voucherTranslation.Name != *voucher.Name {
 			checkout.TranslatedDiscountName = &voucherTranslation.Name
 		} else {
 			checkout.TranslatedDiscountName = model.NewString("")

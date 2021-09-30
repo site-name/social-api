@@ -595,20 +595,20 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent *payment.Payment, pa
 		return
 	}
 
-	if brand := paymentMethodInfo.Brand; brand != "" {
-		payMent.CcBrand = brand
+	if brand := paymentMethodInfo.Brand; brand != nil {
+		payMent.CcBrand = *brand
 	}
-	if last4 := paymentMethodInfo.Last4; last4 != "" {
-		payMent.CcLastDigits = last4
+	if last4 := paymentMethodInfo.Last4; last4 != nil {
+		payMent.CcLastDigits = *last4
 	}
-	if exprYear := paymentMethodInfo.ExpYear; exprYear != 0 {
-		payMent.CcExpYear = &exprYear
+	if exprYear := paymentMethodInfo.ExpYear; exprYear != nil {
+		payMent.CcExpYear = exprYear
 	}
-	if exprMonth := paymentMethodInfo.ExpMonth; exprMonth != 0 {
-		payMent.CcExpMonth = &exprMonth
+	if exprMonth := paymentMethodInfo.ExpMonth; exprMonth != nil {
+		payMent.CcExpMonth = exprMonth
 	}
-	if type_ := paymentMethodInfo.Type; type_ != "" {
-		payMent.PaymentMethodType = type_
+	if type_ := paymentMethodInfo.Type; type_ != nil {
+		payMent.PaymentMethodType = *type_
 	}
 }
 

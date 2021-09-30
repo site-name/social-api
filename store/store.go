@@ -758,6 +758,7 @@ type (
 		Get(voucherID string) (*product_and_discount.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
 		FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
 		ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error)                                   // ExpiredVouchers finds and returns vouchers that are expired before given date
+		GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 	}
 	VoucherCategoryStore interface {
 		CreateIndexesIfNotExists()

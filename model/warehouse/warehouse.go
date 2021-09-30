@@ -17,27 +17,29 @@ const (
 	WAREHOUSE_CLICK_AND_COLLECT_OPTION_MAX_LENGTH = 30
 )
 
+type WarehouseClickAndCollectOption string
+
 // default values for warehouse's click_and_collect_option field
 const (
-	DISABLED       = "disabled"
-	LOCAL_STOCK    = "local"
-	ALL_WAREHOUSES = "all"
+	DISABLED       WarehouseClickAndCollectOption = "disabled"
+	LOCAL_STOCK    WarehouseClickAndCollectOption = "local"
+	ALL_WAREHOUSES WarehouseClickAndCollectOption = "all"
 )
 
-var ValidWarehouseClickAndCollectOptionMap = map[string]string{
+var ValidWarehouseClickAndCollectOptionMap = map[WarehouseClickAndCollectOption]string{
 	DISABLED:       "Disabled",
 	LOCAL_STOCK:    "Local stock only",
 	ALL_WAREHOUSES: "Al warehouses",
 }
 
 type WareHouse struct {
-	Id                    string  `json:"id"`
-	Name                  string  `json:"name"`                     // unique
-	Slug                  string  `json:"slug"`                     // unique
-	AddressID             *string `json:"address_id"`               // nullable
-	Email                 string  `json:"email"`                    //
-	ClickAndCollectOption string  `json:"click_and_collect_option"` // default to "disabled"
-	IsPrivate             *bool   `json:"is_private"`               // default *true
+	Id                    string                         `json:"id"`
+	Name                  string                         `json:"name"`                     // unique
+	Slug                  string                         `json:"slug"`                     // unique
+	AddressID             *string                        `json:"address_id"`               // nullable
+	Email                 string                         `json:"email"`                    //
+	ClickAndCollectOption WarehouseClickAndCollectOption `json:"click_and_collect_option"` // default to "disabled"
+	IsPrivate             *bool                          `json:"is_private"`               // default *true
 	model.ModelMetadata
 
 	Address       *account.Address         `json:"-" db:"-"` // this field hold data from select related queries

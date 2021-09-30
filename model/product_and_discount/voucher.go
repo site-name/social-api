@@ -36,23 +36,23 @@ var (
 )
 
 type Voucher struct {
-	Id                       string `json:"id"`
-	ShopID                   string `json:"shop_id"` // the shop which issued this voucher
-	Type                     string `json:"type"`
-	Name                     string `json:"name"`
-	Code                     string `json:"code"`
-	UsageLimit               int    `json:"usage_limit"`
-	Used                     int    `json:"used"` // not editable
-	StartDate                int64  `json:"start_date"`
-	EndDate                  *int64 `json:"end_date"`
-	ApplyOncePerOrder        bool   `json:"apply_once_per_order"`
-	ApplyOncePerCustomer     bool   `json:"apply_once_per_customer"`
-	OnlyForStaff             *bool  `json:"only_for_staff"` // default false
-	DiscountValueType        string `json:"discount_value_type"`
-	Countries                string `json:"countries"` // multiple. E.g: "Vietnam America China"
-	MinCheckoutItemsQuantity int    `json:"min_checkout_items_quantity"`
-	CreateAt                 int64  `json:"create_at"` // this field is for ordering
-	UpdateAt                 int64  `json:"update_at"`
+	Id                       string  `json:"id"`
+	ShopID                   string  `json:"shop_id"` // the shop which issued this voucher
+	Type                     string  `json:"type"`
+	Name                     *string `json:"name"`
+	Code                     string  `json:"code"` // UNIQUE
+	UsageLimit               *int    `json:"usage_limit"`
+	Used                     int     `json:"used"` // not editable
+	StartDate                int64   `json:"start_date"`
+	EndDate                  *int64  `json:"end_date"`
+	ApplyOncePerOrder        bool    `json:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool    `json:"apply_once_per_customer"`
+	OnlyForStaff             *bool   `json:"only_for_staff"` // default false
+	DiscountValueType        string  `json:"discount_value_type"`
+	Countries                string  `json:"countries"` // multiple. E.g: "Vietnam America China"
+	MinCheckoutItemsQuantity int     `json:"min_checkout_items_quantity"`
+	CreateAt                 int64   `json:"create_at"` // this field is for ordering
+	UpdateAt                 int64   `json:"update_at"`
 	model.ModelMetadata
 }
 
@@ -94,7 +94,7 @@ func (v *Voucher) IsValid() *model.AppError {
 	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !model.StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
 		return outer("type", &v.Id)
 	}
-	if len(v.Name) > VOUCHER_NAME_MAX_LENGTH {
+	if v.Name != nil && len(*v.Name) > VOUCHER_NAME_MAX_LENGTH {
 		return outer("name", &v.Id)
 	}
 	if len(v.Code) > VOUCHER_CODE_MAX_LENGTH {
@@ -141,7 +141,9 @@ func (v *Voucher) commonPre() {
 	if v.OnlyForStaff == nil {
 		v.OnlyForStaff = model.NewBool(false)
 	}
-	v.Name = model.SanitizeUnicode(v.Name)
+	if v.Name != nil {
+		v.Name = model.NewString(model.SanitizeUnicode(*v.Name))
+	}
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
 	}

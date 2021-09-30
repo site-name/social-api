@@ -145,8 +145,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 	return &res, nil
 }
 
-// FilterVouchersByOption finds vouchers bases on given option.
-func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.VoucherFilterOption) squirrel.SelectBuilder {
 	query := vs.
 		GetQueryBuilder().
 		Select(vs.ModelFields()...).
@@ -183,7 +182,12 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+// FilterVouchersByOption finds vouchers bases on given option.
+func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+	queryString, args, err := vs.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterVouchersByOption_tosql")
 	}
@@ -195,6 +199,25 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	}
 
 	return vouchers, nil
+}
+
+// GetByOptions finds and returns 1 voucher filtered using given options
+func (vs *SqlVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+	queryString, args, err := vs.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOptions_tosql")
+	}
+
+	var res product_and_discount.Voucher
+	err = vs.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.VoucherTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed voucher with given options")
+	}
+
+	return &res, nil
 }
 
 // ExpiredVouchers finds and returns vouchers that are expired before given date

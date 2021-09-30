@@ -152,7 +152,7 @@ func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
 	return &Order{
 		ID:                 o.Id,
 		Created:            util.TimeFromMillis(o.CreateAt),
-		Status:             OrderStatus(strings.ToUpper(o.Status)),
+		Status:             OrderStatus(strings.ToUpper(string(o.Status))),
 		TrackingClientID:   o.TrackingClientID,
 		ShippingMethodName: o.ShippingMethodName,
 		ShippingPrice:      NormalTaxedMoneyToGraphqlTaxedMoney(o.ShippingPrice),
@@ -174,7 +174,7 @@ func DatabaseOrderToGraphqlOrder(o *order.Order) *Order {
 		UndiscountedTotal:  NormalTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
 		Number:             &o.Id,
 		Original:           o.OriginalID,
-		Origin:             OrderOriginEnum(strings.ToUpper(o.Origin)),
+		Origin:             OrderOriginEnum(strings.ToUpper(string(o.Origin))),
 		IsPaid:             o.IsFullyPaid(),
 		TotalBalance:       NormalMoneyToGraphqlMoney(totalBalance),
 		UserEmail:          &o.UserEmail,

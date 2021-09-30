@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
+// CleanCheckoutShipping
 func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError {
 	productIDs := lines.Products().IDs()
 

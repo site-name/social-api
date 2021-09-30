@@ -54,12 +54,13 @@ func (g *GatewayError) Error() string {
 
 // Uniform way to represent payment method information.
 type PaymentMethodInfo struct {
-	Last4    string
-	ExpYear  uint16
-	ExpMonth uint8
-	Brand    string
-	Name     string
-	Type     string
+	First4   *string
+	Last4    *string
+	ExpYear  *uint16
+	ExpMonth *uint8
+	Brand    *string
+	Name     *string
+	Type     *string
 }
 
 // for storing gateway response.
@@ -158,6 +159,7 @@ type CustomerSource struct {
 	Id             string
 	Gateway        string
 	CreditCardInfo *PaymentMethodInfo
+	Metadata       model.StringMap
 }
 
 // Dataclass for storing information about a payment gateway.

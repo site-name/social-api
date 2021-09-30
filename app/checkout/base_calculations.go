@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+// BaseCheckoutShippingPrice
 func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines []checkout.DeliveryMethodBaseInterface) (*goprices.TaxedMoney, *model.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
 	if shippingMethodInfo, ok := deliveryMethodInfo.(*checkout.ShippingMethodInfo); ok {
