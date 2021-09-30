@@ -4018,6 +4018,26 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 
 }
 
+func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 
 	tries := 0
@@ -4043,26 +4063,6 @@ func (s *RetryLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error)
 	tries := 0
 	for {
 		result, err := s.GiftCardStore.GetById(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardStore.Upsert(giftCard)
 		if err == nil {
 			return result, nil
 		}
@@ -4138,6 +4138,26 @@ func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 
 }
 
+func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
 
 	tries := 0
@@ -4163,6 +4183,26 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 	tries := 0
 	for {
 		result, err := s.GiftCardOrderStore.Save(giftcardOrder)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
 		if err == nil {
 			return result, nil
 		}

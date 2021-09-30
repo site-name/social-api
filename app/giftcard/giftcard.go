@@ -85,14 +85,25 @@ func (a *ServiceGiftcard) GiftcardsByOption(transaction *gorp.Transaction, optio
 	return giftcards, nil
 }
 
-// UpsertGiftcard depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcard(giftcard *giftcard.GiftCard) (*giftcard.GiftCard, *model.AppError) {
-	giftcard, err := a.srv.Store.GiftCard().Upsert(giftcard)
+// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
+func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError) {
+	giftcards, err := a.srv.Store.GiftCard().BulkUpsert(transaction, giftcards...)
 	if err != nil {
-		return nil, model.NewAppError("UpsertGiftcard", "app.giftcard.error_updating_giftcard.app_error", nil, err.Error(), http.StatusExpectationFailed)
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+
+		statusCode := http.StatusInternalServerError
+
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusInternalServerError
+		} else if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("UpsertGiftcards", "app.giftcard.error_upserting_giftcards.app_error", nil, err.Error(), statusCode)
 	}
 
-	return giftcard, nil
+	return giftcards, nil
 }
 
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date

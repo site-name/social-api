@@ -3,21 +3,29 @@ package giftcard
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 )
 
-// CreateOrderGiftcardRelation takes an order-giftcard relation instance then save it
-func (a *ServiceGiftcard) CreateOrderGiftcardRelation(orderGiftCard *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, *model.AppError) {
-	orderGiftCard, err := a.srv.Store.GiftCardOrder().Save(orderGiftCard)
+// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
+func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError) {
+	orderGiftCards, err := a.srv.Store.GiftCardOrder().BulkUpsert(transaction, orderGiftCards...)
 	if err != nil {
-		if _, ok := err.(*store.ErrInvalidInput); ok {
-			return nil, model.NewAppError("CreateOrderGiftcardRelation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderGiftcard"}, err.Error(), http.StatusBadRequest)
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
 		}
-		return nil, model.NewAppError("CreateOrderGiftcardRelation", "app.giftcard.error_creating_order_giftcard_relation.app_error", nil, err.Error(), http.StatusInternalServerError)
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			return nil, model.NewAppError("UpsertOrderGiftcardRelations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderGiftcard"}, err.Error(), http.StatusBadRequest)
+		}
+		var statusCode int = http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UpsertOrderGiftcardRelations", "app.giftcard.error_upserting_order_giftcard_relations.app_error", nil, err.Error(), statusCode)
 	}
 
-	return orderGiftCard, nil
+	return orderGiftCards, nil
 }

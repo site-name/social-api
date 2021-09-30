@@ -681,19 +681,21 @@ type (
 type (
 	GiftCardStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error)                                                    // Upsert depends on given giftcard's Id property then perform according operation
+		BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*giftcard.GiftCard, error)                                                                     // GetById returns a giftcard instance that has id of given id
 		FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
 	}
 	GiftcardEventStore interface {
 		CreateIndexesIfNotExists()
-		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) // Save insdert given giftcard event into database then returns it
-		Get(id string) (*giftcard.GiftCardEvent, error)                      // Get finds and returns a giftcard event found by given id
+		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error)                                            // Save insdert given giftcard event into database then returns it
+		Get(id string) (*giftcard.GiftCardEvent, error)                                                                 // Get finds and returns a giftcard event found by given id
+		BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
 	}
 	GiftCardOrderStore interface {
 		CreateIndexesIfNotExists()
-		Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) // Save inserts new giftcard-order relation into database then returns it
-		Get(id string) (*giftcard.OrderGiftCard, error)                              // Get returns giftcard-order relation table with given id
+		Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error)                                            // Save inserts new giftcard-order relation into database then returns it
+		Get(id string) (*giftcard.OrderGiftCard, error)                                                                         // Get returns giftcard-order relation table with given id
+		BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
 	}
 	GiftCardCheckoutStore interface {
 		CreateIndexesIfNotExists()

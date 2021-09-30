@@ -48,51 +48,63 @@ func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
 	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "ProductID", store.ProductTableName, "Id", false)
 }
 
-// Upsert depends on given giftcard's Id property then perform according operation
-func (gcs *SqlGiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
+// BulkUpsert depends on given giftcards's Id properties then perform according operation
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 	var saving bool
-	if giftCard.Id == "" {
-		giftCard.PreSave()
-		saving = true
-	} else {
-		giftCard.PreUpdate()
+	var upsertSelector store.SelectUpsertor = gcs.GetMaster()
+	if transaction != nil {
+		upsertSelector = transaction
 	}
 
-	if err := giftCard.IsValid(); err != nil {
-		return nil, err
-	}
+	for _, giftCard := range giftCards {
+		saving = false
 
-	var (
-		err         error
-		oldGiftcard *giftcard.GiftCard
-		numUpdated  int64
-	)
-	if saving {
-		err = gcs.GetMaster().Insert(giftCard)
-	} else {
-		oldGiftcard, err = gcs.GetById(giftCard.Id)
-		if err != nil {
+		if giftCard.Id == "" {
+			giftCard.PreSave()
+			saving = true
+		} else {
+			giftCard.PreUpdate()
+		}
+
+		if err := giftCard.IsValid(); err != nil {
 			return nil, err
 		}
 
-		giftCard.CreateAt = oldGiftcard.CreateAt
-		giftCard.Code = oldGiftcard.Code
+		var (
+			err         error
+			oldGiftcard *giftcard.GiftCard
+			numUpdated  int64
+		)
+		if saving {
+			err = upsertSelector.Insert(giftCard)
+		} else {
+			err = upsertSelector.SelectOne(&oldGiftcard, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": giftCard.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, store.NewErrNotFound(store.GiftcardTableName, giftCard.Id)
+				}
+				return nil, err
+			}
 
-		numUpdated, err = gcs.GetMaster().Update(giftCard)
-	}
+			giftCard.CreateAt = oldGiftcard.CreateAt
+			giftCard.Code = oldGiftcard.Code
 
-	if err != nil {
-		if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
-			return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
+			numUpdated, err = upsertSelector.Update(giftCard)
 		}
-		return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
+
+		if err != nil {
+			if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
+				return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
+			}
+			return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
+		}
+
+		if numUpdated != 1 {
+			return nil, errors.Errorf("%d giftcard(s) were updated instead of 1", numUpdated)
+		}
 	}
 
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple giftcards were updated: %d instead of 1", numUpdated)
-	}
-
-	return giftCard, nil
+	return giftCards, nil
 }
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
@@ -171,7 +183,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option
 // GetGiftcardLines returns a list of order lines
 func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.OrderLines, error) {
 	/*
-	   -- sample query for demonstration:
+	   -- sample query for demonstration (Produced with django)
 
 	   SELECT
 	     "*"

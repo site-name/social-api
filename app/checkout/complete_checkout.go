@@ -472,7 +472,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		},
 	})
 	if appErr != nil {
-		return nil, nil, appErr
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, nil, appErr
+		}
 	}
 
 	if len(orders) > 0 {
@@ -564,29 +566,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return nil, insufficientStockErr, appErr
 	}
 
-	// add giftcards to other order
-	giftcardsOfCheckout, appErr := s.srv.GiftcardService().GiftcardsByOption(transaction, &giftcard.GiftCardFilterOption{
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkOut.Token,
-			},
-		},
-		SelectForUpdate: true,
-	})
+	appErr = s.srv.OrderService().AddGiftcardsToOrder(transaction, checkoutInfo, createdNewOrder, totalPriceLeft, user, nil)
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, nil, appErr
-		}
-		giftcardsOfCheckout = make([]*giftcard.GiftCard, 0)
-	}
-
-	var newTotalPriceLeft *goprices.Money
-	for _, giftcard := range giftcardsOfCheckout {
-		newTotalPriceLeft, appErr = s.srv.OrderService().AddGiftCardToOrder(createdNewOrder, giftcard, totalPriceLeft)
-		if appErr != nil {
-			return nil, nil, appErr
-		}
-		totalPriceLeft = newTotalPriceLeft
+		return nil, nil, appErr
 	}
 
 	// assign checkout payments to other order
@@ -610,6 +592,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return nil, nil, appErr
 	}
 
+	// commit transaction
 	if err = transaction.Commit(); err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

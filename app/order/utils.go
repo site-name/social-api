@@ -884,62 +884,18 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 	return orderLine, nil, nil
 }
 
-// @DEPRECATED Do not use. AddGiftCardToOrder Return a total price left after applying the gift cards.
-func (a *ServiceOrder) AddGiftCardToOrder(ord *order.Order, giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) (*goprices.Money, *model.AppError) {
-	// validate given arguments's currencies are valid
-	_, err := goprices.GetCurrencyPrecision(totalPriceLeft.Currency)
-	if err != nil || !strings.EqualFold(giftCard.Currency, totalPriceLeft.Currency) {
-		return nil, model.NewAppError("AddGiftCardToOrder", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "totalPriceLeft"}, err.Error(), http.StatusBadRequest)
-	}
-
-	// NOTE: must call this before performing any operations on giftcards
-	giftCard.PopulateNonDbFields()
-
-	// add new order-giftcard relationship
-	if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
-		// create new order-goftcard relation instance
-		_, appErr := a.srv.GiftcardService().CreateOrderGiftcardRelation(&giftcard.OrderGiftCard{
-			GiftCardID: giftCard.Id,
-			OrderID:    ord.Id,
-		})
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		if less, err := totalPriceLeft.LessThan(giftCard.CurrentBalance); less && err == nil {
-			giftCard.CurrentBalance, _ = giftCard.CurrentBalance.Sub(totalPriceLeft)
-			totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
-		} else {
-			totalPriceLeft, _ = totalPriceLeft.Sub(giftCard.CurrentBalance)
-			giftCard.CurrentBalanceAmount = &decimal.Zero
-		}
-
-		// update giftcard
-		giftCard.LastUsedOn = model.NewInt64(model.GetMillis())
-		_, appErr = a.srv.GiftcardService().UpsertGiftcard(giftCard)
-		if appErr != nil {
-			return nil, appErr
-		}
-	}
-
-	return totalPriceLeft, nil
-}
-
-type balanceObject struct {
-	Giftcard giftcard.GiftCard
-	value    float64
-}
-
+// AddGiftcardsToOrder
 func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo *checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
 	var (
-		balanceData    = []balanceObject{}
-		usedByUser     = checkoutInfo.User
-		usedByEmail    = checkoutInfo.GetCustomerEmail()
-		orderGiftcards = []*giftcard.GiftCard{}
+		balanceData       = giftcard.BalanceData{}
+		usedByUser        = checkoutInfo.User
+		usedByEmail       = checkoutInfo.GetCustomerEmail()
+		orderGiftcards    = []*giftcard.OrderGiftCard{}
+		giftcardsToUpdate = []*giftcard.GiftCard{}
 	)
 
 	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(transaction, &giftcard.GiftCardFilterOption{
-		SelectForUpdate: true,
+		SelectForUpdate: true, // SELECT ... FOR UPDATE
 		CheckoutToken: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: checkoutInfo.Checkout.Token,
@@ -953,19 +909,51 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checko
 	}
 
 	// zeroMoney, _ := util.ZeroMoney(totalPriceLeft.Currency)
-	for _, giftcard := range giftcards {
+	for _, giftCard := range giftcards {
 		if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
-			orderGiftcards = append(orderGiftcards, giftcard)
-			s.UpdateGiftcardBalance(giftcard, totalPriceLeft, balanceData)
+			orderGiftcards = append(orderGiftcards, &giftcard.OrderGiftCard{
+				OrderID:    orDer.Id,
+				GiftCardID: giftCard.Id,
+			})
+
+			balanceData = append(balanceData, s.UpdateGiftcardBalance(giftCard, totalPriceLeft))
+			s.SetGiftcardUser(giftCard, usedByUser, usedByEmail)
+
+			giftCard.LastUsedOn = model.NewInt64(model.GetMillis())
+			giftcardsToUpdate = append(giftcardsToUpdate, giftCard)
 		}
 	}
+
+	_, appErr = s.srv.GiftcardService().UpsertOrderGiftcardRelations(transaction, orderGiftcards...)
+	if appErr != nil {
+		return appErr
+	}
+
+	_, appErr = s.srv.GiftcardService().UpsertGiftcards(transaction, giftcardsToUpdate...)
+	if appErr != nil {
+		return appErr
+	}
+
+	_, appErr = s.srv.GiftcardService().GiftcardsUsedInOrderEvent(transaction, balanceData, orDer.Id, user, nil)
+	return appErr
 }
 
-func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money, balanceData []balanceObject) {
+func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) giftcard.BalanceObject {
 	giftCard.PopulateNonDbFields() // NOTE: this call is important
 
 	previousBalance := giftCard.CurrentBalance
-	// if totalPriceLeft.LessThan()
+	if less, err := totalPriceLeft.LessThan(giftCard.CurrentBalance); less && err == nil {
+		giftCard.CurrentBalance, _ = giftCard.CurrentBalance.Sub(totalPriceLeft)
+		totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
+	} else {
+		totalPriceLeft, _ = totalPriceLeft.Sub(giftCard.CurrentBalance)
+		giftCard.CurrentBalanceAmount = &decimal.Zero
+	}
+
+	return giftcard.BalanceObject{
+		Giftcard:        *giftCard,
+		PreviousBalance: previousBalance.Amount,
+	}
 }
 
 // SetGiftcardUser Set user when the gift card is used for the first time.

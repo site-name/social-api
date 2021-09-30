@@ -91,7 +91,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *mod
 		giftCard.IsActive = model.NewBool(true)
 	}
 
-	_, appErr := a.UpsertGiftcard(giftCard)
+	_, appErr := a.UpsertGiftcards(nil, giftCard)
 	if appErr != nil {
 		return appErr
 	}

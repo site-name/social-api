@@ -3,7 +3,9 @@ package giftcard
 import (
 	"database/sql"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 )
@@ -58,4 +60,57 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error)
 	}
 
 	return &res, nil
+}
+
+// BulkUpsert upserts given order-giftcard relations and returns it
+func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+	var upsertSelector store.SelectUpsertor = gs.GetMaster()
+	if transaction != nil {
+		upsertSelector = transaction
+	}
+
+	var isSaving bool
+	for _, relation := range orderGiftcards {
+		isSaving = false
+
+		if !model.IsValidId(relation.Id) {
+			relation.PreSave()
+			isSaving = true
+		}
+
+		if err := relation.IsValid(); err != nil {
+			return nil, err
+		}
+
+		var (
+			err        error
+			numUpdated int64
+		)
+		if isSaving {
+			err = upsertSelector.Insert(relation)
+		} else {
+			err = upsertSelector.SelectOne(&giftcard.OrderGiftCard{}, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": relation.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, store.NewErrNotFound(store.OrderGiftCardTableName, relation.Id)
+				}
+				return nil, errors.Wrapf(err, "failed to find an order-giftcard relation with Id=%s", relation.Id)
+			}
+
+			numUpdated, err = upsertSelector.Update(relation)
+		}
+
+		if err != nil {
+			if gs.IsUniqueConstraintError(err, []string{"GiftCardID", "OrderID", "ordergiftcards_giftcardid_orderid_key"}) {
+				return nil, store.NewErrInvalidInput(store.OrderGiftCardTableName, "GiftCardID/OrderID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert order-giftcard relation with id=%s", relation.Id)
+		}
+
+		if numUpdated != 1 {
+			return nil, errors.Errorf("%d relation(s) were updated, expected 1", numUpdated)
+		}
+	}
+
+	return orderGiftcards, nil
 }
