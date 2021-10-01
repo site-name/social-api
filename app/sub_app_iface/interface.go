@@ -417,8 +417,9 @@ type DiscountService interface {
 	//
 	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
 	FilterActiveVouchers(date *time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError)
-	// VoucherByOption returns 1 voucher filtered using given options
-	VoucherByOption(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, *model.AppError)
+	VoucherByOption(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, *model.AppError)                            // VoucherByOption returns 1 voucher filtered using given options
+	VoucherCustomersByOption(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, *model.AppError) // VoucherCustomersByOption returns a slice of voucher customers filtered using given options
+	VoucherCustomerByOptions(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, *model.AppError)   // VoucherCustomerByOptions finds a voucher customer relation and returns it with an error
 }
 
 type OrderService interface {

@@ -31,32 +31,53 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *product_and_discount.Vou
 }
 
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
-func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
-	// validate email argument
-	if !model.IsValidEmail(customerEmail) {
-		appErr = model.NewAppError("AddVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)
-		return
+func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*product_and_discount.NotApplicable, *model.AppError) {
+	_, appErr := a.VoucherCustomerByOptions(&product_and_discount.VoucherCustomerFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: voucher.Id,
+			},
+		},
+		CustomerEmail: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: customerEmail,
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+
+		// create new voucher customer
+		_, appErr = a.CreateNewVoucherCustomer(voucher.Id, customerEmail)
+		if appErr != nil {
+			return product_and_discount.NewNotApplicable("AddVoucherUsageByCustomer", "Offer only valid once per customer", nil, 0), nil
+		}
 	}
 
-	notApplicableErr, appErr = a.ValidateOncePerCustomer(voucher, customerEmail)
-	if appErr != nil || notApplicableErr != nil {
-		return
-	}
-
-	_, appErr = a.CreateNewVoucherCustomer(voucher.Id, customerEmail)
-	return
+	return nil, nil
 }
 
 // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
-	// validate email argument
-	if !model.IsValidEmail(customerEmail) {
-		return model.NewAppError("RemoveVoucherUsageByCustomer", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customer email"}, "", http.StatusBadRequest)
-	}
-
-	voucherCustomers, appErr := a.VoucherCustomerByCustomerEmailAndVoucherID(voucher.Id, customerEmail)
+	voucherCustomers, appErr := a.VoucherCustomersByOption(&product_and_discount.VoucherCustomerFilterOption{
+		VoucherID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: voucher.Id,
+			},
+		},
+		CustomerEmail: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: customerEmail,
+			},
+		},
+	})
 	if appErr != nil {
-		return appErr
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+		return nil
 	}
 
 	if len(voucherCustomers) > 0 {

@@ -11,6 +11,13 @@ type VoucherCustomer struct {
 	CustomerEmail string `json:"customer_email"`
 }
 
+// VoucherCustomerFilterOption is used to build squirrel sql queries
+type VoucherCustomerFilterOption struct {
+	Id            *model.StringFilter
+	VoucherID     *model.StringFilter
+	CustomerEmail *model.StringFilter
+}
+
 func (vc *VoucherCustomer) PreSave() {
 	if vc.Id == "" {
 		vc.Id = model.NewId()

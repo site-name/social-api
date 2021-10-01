@@ -3043,6 +3043,22 @@ func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*product_and_dis
 	return result, err
 }
 
+func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+	start := timemodule.Now()
+
+	result, err := s.DiscountVoucherStore.GetByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DiscountVoucherStore.GetByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
 	start := timemodule.Now()
 
@@ -7824,10 +7840,10 @@ func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_d
 	return err
 }
 
-func (s *TimerLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherCustomerStore.FilterByEmailAndCustomerEmail(voucherID, email)
+	result, err := s.VoucherCustomerStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7835,15 +7851,15 @@ func (s *TimerLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.FilterByEmailAndCustomerEmail", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
 	start := timemodule.Now()
 
-	result, err := s.VoucherCustomerStore.Get(id)
+	result, err := s.VoucherCustomerStore.GetByOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7851,7 +7867,7 @@ func (s *TimerLayerVoucherCustomerStore) Get(id string) (*product_and_discount.V
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.Get", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCustomerStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }

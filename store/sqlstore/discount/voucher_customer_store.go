@@ -3,6 +3,7 @@ package discount
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -49,47 +50,58 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.V
 	return voucherCustomer, nil
 }
 
-// Get finds a voucher customer with given id and returns it with an error
-func (vcs *SqlVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
+func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *product_and_discount.VoucherCustomerFilterOption) squirrel.SelectBuilder {
+	query := vcs.GetQueryBuilder().Select("*").
+		From(store.VoucherCustomerTableName).
+		OrderBy(store.TableOrderingMap[store.VoucherCustomerTableName])
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id.ToSquirrel("Id"))
+	}
+	if options.VoucherID != nil {
+		query = query.Where(options.VoucherID.ToSquirrel("VoucherID"))
+	}
+	if options.CustomerEmail != nil {
+		query = query.Where(options.CustomerEmail.ToSquirrel("CustomerEmail"))
+	}
+
+	return query
+}
+
+// GetByOption finds and returns a voucher customer with given options
+func (vcs *SqlVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
+	queryString, args, err := vcs.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
 	var res product_and_discount.VoucherCustomer
-	err := vcs.GetReplica().SelectOne(
-		&res,
-		"SELECT * FROM "+store.VoucherCustomerTableName+" WHERE Id = :ID",
-		map[string]interface{}{
-			"ID": id,
-		},
-	)
+	err = vcs.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, id)
+			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, "options")
 		}
-		return nil, errors.Wrapf(err, "failed to finds voucher-customer relation with is=%s", id)
+		return nil, errors.Wrap(err, "failed to finds voucher-customer relation with options")
 	}
 
 	return &res, nil
 }
 
-// FilterByEmailAndCustomerEmail finds voucher-customer relation instances with given voucherID and email
-func (vcs *SqlVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
-	var result []*product_and_discount.VoucherCustomer
-	_, err := vcs.GetReplica().Select(
-		&result,
-		`SELECT * FROM `+store.VoucherCustomerTableName+`
-		WHERE (
-			VoucherID = :VoucherID AND CustomerEmail = :CustomerEmail
-		)
-		ORDER BY :OrderBy`,
-		map[string]interface{}{
-			"VoucherID":     voucherID,
-			"CustomerEmail": email,
-			"OrderBy":       store.TableOrderingMap[store.VoucherCustomerTableName],
-		},
-	)
+// FilterByOptions finds and returns a slice of voucher customers by given options
+func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
+	queryString, args, err := vcs.commonQueryBuilder(options).ToSql()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to finds a voucher customer relation with VoucherID=%s, CustomerEmail=%s", voucherID, email)
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	return result, nil
+	var res []*product_and_discount.VoucherCustomer
+	_, err = vcs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find voucher customers by options")
+	}
+
+	return res, nil
 }
 
 // DeleteInBulk deletes given voucher-customers with given id

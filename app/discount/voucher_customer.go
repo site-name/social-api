@@ -8,10 +8,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	VoucherCustomerNotFoundErrId = "app.discount.voucher_customer_missing.app_error"
-)
-
+// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
 func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError) {
 	voucher, err := a.srv.Store.VoucherCustomer().Save(&product_and_discount.VoucherCustomer{
 		CustomerEmail: customerEmail,
@@ -27,22 +24,33 @@ func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEma
 	return voucher, nil
 }
 
-// VoucherCustomerById finds a voucher customer relation and returns it with an error
-func (a *ServiceDiscount) VoucherCustomerById(id string) (*product_and_discount.VoucherCustomer, *model.AppError) {
-	voucherCustomer, err := a.srv.Store.VoucherCustomer().Get(id)
+// VoucherCustomerByOptions finds a voucher customer relation and returns it with an error
+func (a *ServiceDiscount) VoucherCustomerByOptions(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, *model.AppError) {
+	voucherCustomer, err := a.srv.Store.VoucherCustomer().GetByOption(options)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerById", VoucherCustomerNotFoundErrId, err)
+		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerByOptions", "app.discount.voucher_customer_missing.app_error", err)
 	}
 
 	return voucherCustomer, nil
 }
 
-// VoucherCustomerByCustomerEmailAndVoucherID finds voucher customer with given voucherID and customerEmail
-func (a *ServiceDiscount) VoucherCustomerByCustomerEmailAndVoucherID(voucherID string, customerEmail string) ([]*product_and_discount.VoucherCustomer, *model.AppError) {
-	res, err := a.srv.Store.VoucherCustomer().FilterByEmailAndCustomerEmail(voucherID, customerEmail)
+// VoucherCustomersByOption returns a slice of voucher customers filtered using given options
+func (s *ServiceDiscount) VoucherCustomersByOption(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, *model.AppError) {
+	voucherCustomers, err := s.srv.Store.VoucherCustomer().FilterByOptions(options)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerByCustomerEmailAndVoucherID", VoucherCustomerNotFoundErrId, err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(voucherCustomers) == 0 {
+		statusCode = http.StatusNotFound
 	}
 
-	return res, nil
+	if statusCode != 0 {
+		return nil, model.NewAppError("VoucherCustomersByOption", "app.discount.error_finding_voucher_customers_by_options", nil, errMessage, statusCode)
+	}
+
+	return voucherCustomers, nil
 }

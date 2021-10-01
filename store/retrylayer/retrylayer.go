@@ -3526,6 +3526,26 @@ func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*product_and_dis
 
 }
 
+func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+
+	tries := 0
+	for {
+		result, err := s.DiscountVoucherStore.GetByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
 
 	tries := 0
@@ -9384,11 +9404,11 @@ func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_d
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherCustomerStore.FilterByEmailAndCustomerEmail(voucherID, email)
+		result, err := s.VoucherCustomerStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -9404,11 +9424,11 @@ func (s *RetryLayerVoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
 
 	tries := 0
 	for {
-		result, err := s.VoucherCustomerStore.Get(id)
+		result, err := s.VoucherCustomerStore.GetByOption(options)
 		if err == nil {
 			return result, nil
 		}
