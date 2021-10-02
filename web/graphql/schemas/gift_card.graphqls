@@ -18,7 +18,7 @@ extend type Query {
   giftCardCurrencies: [String!]!
 }
 
-type GiftCard implements Node {
+type GiftCard implements Node & ObjectWithMetadata {
   code: String!
   isActive: Boolean!
   expiryDate: Date
