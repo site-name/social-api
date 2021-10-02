@@ -97,6 +97,7 @@ type CustomerEvent implements Node {
   date: DateTime
   type: CustomerEventsEnum
   user: User @authenticated(hi: true)
+  app: App
   message: String
   count: Int
   order: Order
@@ -121,5 +122,7 @@ enum CustomerEventsEnum {
 
 type PaymentSource {
   gateway: String!
+  paymentMethodId: String
   creditCardInfo: CreditCard
+  metadata: [MetadataItem]!
 }

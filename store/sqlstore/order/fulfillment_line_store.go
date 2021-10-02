@@ -3,6 +3,7 @@ package order
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
@@ -40,6 +41,16 @@ func (fls *SqlFulfillmentLineStore) ModelFields() []string {
 		"FulfillmentLines.FulfillmentID",
 		"FulfillmentLines.Quantity",
 		"FulfillmentLines.StockID",
+	}
+}
+
+func (fls *SqlFulfillmentLineStore) ScanFields(line order.FulfillmentLine) []interface{} {
+	return []interface{}{
+		&line.Id,
+		&line.OrderLineID,
+		&line.FulfillmentID,
+		&line.Quantity,
+		&line.StockID,
 	}
 }
 
@@ -131,30 +142,43 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fu
 	return fulfillmentLines, nil
 }
 
-// FilterbyOption finds and returns a list of fulfillment lines by given option
-func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
-	query := fls.GetQueryBuilder().
-		Select(fls.ModelFields()...).
-		From(store.FulfillmentLineTableName)
+func (fls *SqlFulfillmentLineStore) commonConditions(option *order.FulfillmentLineFilterOption) squirrel.And {
+	res := squirrel.And{}
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.Id"))
+		res = append(res, option.Id.ToSquirrel("FulfillmentLines.Id"))
 	}
 	if option.FulfillmentID != nil {
-		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.FulfillmentID"))
+		res = append(res, option.FulfillmentID.ToSquirrel("FulfillmentLines.FulfillmentID"))
 	}
 	if option.OrderLineID != nil {
-		query = query.Where(option.Id.ToSquirrel("FulfillmentLines.OrderLineID"))
+		res = append(res, option.OrderLineID.ToSquirrel("FulfillmentLines.OrderLineID"))
 	}
+
+	return res
+}
+
+// FilterbyOption finds and returns a list of fulfillment lines by given option
+func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+	selectFields := fls.ModelFields()
+	if option.SelectRelatedOrderLine {
+		selectFields = append(selectFields, fls.OrderLine().ModelFields()...)
+	}
+
+	query := fls.GetQueryBuilder().
+		Select(selectFields...).
+		From(store.FulfillmentLineTableName).
+		Where(fls.commonConditions(option))
 
 	var joinedFulfillmentTable bool // this variable helps preventing joining to Fulfillments table multiple time
 
 	if option.FulfillmentOrderID != nil {
-		joinedFulfillmentTable = true
 		query = query.
 			InnerJoin(store.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
 			Where(option.FulfillmentOrderID.ToSquirrel("Fulfillments.OrderID"))
+
+		joinedFulfillmentTable = true
 	}
 	if option.FulfillmentStatus != nil {
 		if !joinedFulfillmentTable {
@@ -162,34 +186,49 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLine
 		}
 		query = query.Where(option.FulfillmentStatus.ToSquirrel("Fulfillments.Status"))
 	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
-	}
-	var res []*order.FulfillmentLine
-	_, err = fls.GetReplica().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find fulfillment lines by given option")
+	if option.SelectRelatedOrderLine {
+		query = query.InnerJoin(store.OrderLineTableName + " ON (Orderlines.Id = FulfillmentLines.OrderLineID)")
 	}
 
+	rows, err := query.RunWith(fls.GetReplica()).Query()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find fulfillment lines with given options")
+	}
+
+	var (
+		res             []*order.FulfillmentLine
+		fulfillmentLine order.FulfillmentLine
+		orderLine       order.OrderLine
+		scanFields      = fls.ScanFields(fulfillmentLine)
+	)
+	if option.SelectRelatedOrderLine {
+		scanFields = append(scanFields, fls.OrderLine().ScanFields(orderLine)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of fulfillment line")
+		}
+
+		if option.SelectRelatedOrderLine {
+			fulfillmentLine.OrderLine = &orderLine
+		}
+
+		res = append(res, &fulfillmentLine)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of fulfillment lines")
+	}
 	return res, nil
 }
 
 // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
-	query := fls.GetQueryBuilder().Delete(store.FulfillmentLineTableName)
-
-	// parse option
-	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
-	}
-	if option.OrderLineID != nil {
-		query = query.Where(option.OrderLineID.ToSquirrel("OrderLineID"))
-	}
-	if option.FulfillmentID != nil {
-		query = query.Where(option.FulfillmentID.ToSquirrel("FulfillmentID"))
-	}
+	query := fls.GetQueryBuilder().
+		Delete(store.FulfillmentLineTableName).
+		Where(fls.commonConditions(option))
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

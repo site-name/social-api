@@ -17,6 +17,8 @@ extend type Query {
   appsInstallations: [AppInstallation!]!
   apps(filter: AppFilterInput, sortBy: AppSortingInput, before: String, after: String, first: Int, last: Int): AppCountableConnection
   app(id: ID): App
+  appExtensions(filter: AppExtensionFilterInput, before: String, after: String, first: Int, last: Int): AppExtensionCountableConnection
+  appExtension(id: ID!): AppExtension
 }
 
 type App implements Node & ObjectWithMetadata {
@@ -39,6 +41,59 @@ type App implements Node & ObjectWithMetadata {
   appUrl: String
   version: String
   accessToken: String
+  extensions: [AppExtension!]!
+}
+
+type AppExtension implements Node {
+  id: ID!
+  app: App!
+  label: String!
+  url: String!
+  view: AppExtensionViewEnum!
+  type: AppExtensionTypeEnum!
+  target: AppExtensionTargetEnum!
+  permissions: [Permission!]!
+  accessToken: String
+}
+
+type AppExtensionCountableConnection {
+  pageInfo: PageInfo!
+  edges: [AppExtensionCountableEdge!]!
+  totalCount: Int
+}
+
+type AppExtensionCountableEdge {
+  node: AppExtension!
+  cursor: String!
+}
+
+input AppExtensionFilterInput {
+  view: AppExtensionViewEnum
+  type: AppExtensionTypeEnum
+  target: AppExtensionTargetEnum
+}
+
+enum AppExtensionTargetEnum {
+  MORE_ACTIONS
+  CREATE
+}
+
+enum AppExtensionTypeEnum {
+  OVERVIEW
+  DETAILS
+}
+
+enum AppExtensionViewEnum {
+  PRODUCT
+}
+
+type AppManifestExtension {
+  permissions: [Permission!]!
+  label: String!
+  url: String!
+  view: AppExtensionViewEnum!
+  type: AppExtensionTypeEnum!
+  target: AppExtensionTargetEnum!
 }
 
 input AppInput {
@@ -204,4 +259,5 @@ type Manifest {
   dataPrivacyUrl: String
   homepageUrl: String
   supportUrl: String
+  extensions: [AppManifestExtension!]!
 }

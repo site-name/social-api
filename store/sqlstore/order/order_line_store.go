@@ -343,7 +343,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		// prefetch product variants
 		_, err = ols.GetReplica().Select(
 			&productVariants,
-			`SELECT * FROM `+store.ProductVariantTableName+` WHERE ProductVariants.Id IN :IDs`,
+			`SELECT * FROM `+store.ProductVariantTableName+` WHERE Id IN :IDs`,
 			map[string]interface{}{
 				"IDs": orderLines.ProductVariantIDs(),
 			},
@@ -356,7 +356,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
 			_, err = ols.GetReplica().Select(
 				&digitalContents,
-				`SELECT * FROM `+store.ProductDigitalContentTableName+` WHERE DigitalContents.ProductVariantID IN :IDs`,
+				`SELECT * FROM `+store.ProductDigitalContentTableName+` WHERE ProductVariantID IN :IDs`,
 				map[string]interface{}{
 					"IDs": productVariants.IDs(),
 				},
@@ -369,7 +369,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		if option.PrefetchRelated.VariantProduct && len(productVariants) > 0 {
 			_, err = ols.GetReplica().Select(
 				&products,
-				`SELECT * FROM `+store.ProductTableName+` WHERE Products.Id IN :IDs`,
+				`SELECT * FROM `+store.ProductTableName+` WHERE Id IN :IDs`,
 				map[string]interface{}{
 					"IDs": productVariants.ProductIDs(),
 				},
@@ -383,7 +383,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	// joining prefetched data.
 	// if slice of productVariants is not empty, this means we have prefetch-related data
 	if len(productVariants) > 0 {
-		productVariantsMap := map[string]*product_and_discount.ProductVariant{}
+		// productVariantsMap has keys are product variant ids
+		var productVariantsMap = map[string]*product_and_discount.ProductVariant{}
 		for _, variant := range productVariants {
 			productVariantsMap[variant.Id] = variant
 		}
@@ -395,7 +396,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		if len(digitalContents) > 0 {
-			digitalContentsMap := map[string]*product_and_discount.DigitalContent{}
+			// digitalContentsMap has keys are product variant ids
+			var digitalContentsMap = map[string]*product_and_discount.DigitalContent{}
 			for _, digitalContent := range digitalContents {
 				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
 			}
@@ -408,7 +410,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		if len(products) > 0 {
-			productsMap := map[string]*product_and_discount.Product{}
+			// productsMap has keys are product ids
+			var productsMap = map[string]*product_and_discount.Product{}
 			for _, product := range products {
 				productsMap[product.Id] = product
 			}

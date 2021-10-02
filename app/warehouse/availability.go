@@ -129,10 +129,10 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 			return nil, appErr
 		}
 		// ignore not found error
-		allVariantStocks = []*warehouse.Stock{}
 	}
 
-	variantStocks := map[string][]*warehouse.Stock{}
+	// variantStocks has keys of product variant ids
+	var variantStocks = map[string][]*warehouse.Stock{}
 	for _, stock := range allVariantStocks {
 		if stock != nil {
 			variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
@@ -145,11 +145,9 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		insufficientStocks = []*exception.InsufficientStockData{}
 	)
 
-	if existingLines != nil && len(existingLines) > 0 {
-		for _, lineInfo := range existingLines {
-			if lineInfo != nil && model.IsValidId(lineInfo.Variant.Id) {
-				variantsQuantities[lineInfo.Variant.Id] = lineInfo.Line.Quantity
-			}
+	for _, lineInfo := range existingLines {
+		if lineInfo != nil && model.IsValidId(lineInfo.Variant.Id) {
+			variantsQuantities[lineInfo.Variant.Id] = lineInfo.Line.Quantity
 		}
 	}
 

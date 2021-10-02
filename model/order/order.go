@@ -354,3 +354,9 @@ func (o *Order) GetTotalWeight() *measurement.Weight {
 	o.PopulateNonDbFields()
 	return o.Weight
 }
+
+func (s *Order) DeepCopy() *Order {
+	order := *s
+
+	return &order
+}

@@ -461,7 +461,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	// validate lineInfos is not nil nor empty
-	if lineInfos == nil || len(lineInfos) == 0 {
+	if len(lineInfos) == 0 {
 		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
 	}
 
@@ -553,7 +553,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData,
 // updateStocks default to true
 func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*exception.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
-	if orderLineInfos == nil || len(orderLineInfos) == 0 {
+	if len(orderLineInfos) == 0 {
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
 	}
 

@@ -1,8 +1,6 @@
 package order
 
 import (
-	"io"
-
 	"github.com/sitename/sitename/model"
 )
 
@@ -12,6 +10,8 @@ type FulfillmentLine struct {
 	FulfillmentID string  `json:"fulfillment_id"`
 	Quantity      int     `json:"quantity"`
 	StockID       *string `json:"stock_id"`
+
+	OrderLine *OrderLine `json:"-" db:"-"`
 }
 
 // FulfillmentLineFilterOption is used to build sql queries
@@ -22,6 +22,8 @@ type FulfillmentLineFilterOption struct {
 
 	FulfillmentOrderID *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
 	FulfillmentStatus  *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
+
+	SelectRelatedOrderLine bool
 }
 
 type FulfillmentLines []*FulfillmentLine
@@ -36,9 +38,23 @@ func (f FulfillmentLines) IDs() []string {
 }
 
 func (f FulfillmentLines) OrderLineIDs() []string {
-	res := make([]string, len(f))
-	for i := range f {
-		res[i] = f[i].OrderLineID
+	res := []string{}
+	for _, item := range f {
+		if item != nil {
+			res = append(res, item.OrderLineID)
+		}
+	}
+
+	return res
+}
+
+// OrderLines returns a slice of order lines attached to every items in f.
+//
+// NOTE: Make sure the fields `OrderLine` are populated before calling this. If not, the returned slice contains only nil values
+func (f FulfillmentLines) OrderLines() OrderLines {
+	res := OrderLines{}
+	for _, item := range f {
+		res = append(res, item.OrderLine)
 	}
 
 	return res
@@ -68,12 +84,6 @@ func (f *FulfillmentLine) IsValid() *model.AppError {
 
 func (f *FulfillmentLine) ToJson() string {
 	return model.ModelToJson(f)
-}
-
-func FulfillmentLineFromJson(data io.Reader) *FulfillmentLine {
-	var f FulfillmentLine
-	model.ModelFromJson(&f, data)
-	return &f
 }
 
 func (f *FulfillmentLine) PreSave() {

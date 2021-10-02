@@ -6,14 +6,24 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/store"
 )
 
 // FulfillmentLinesByOption returns all fulfillment lines by option
-func (a *ServiceOrder) FulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, *model.AppError) {
+func (a *ServiceOrder) FulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) (order.FulfillmentLines, *model.AppError) {
 	fulfillmentLines, err := a.srv.Store.FulfillmentLine().FilterbyOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentLinesByOption", "app.order.error_finding_fulfillment_lines_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(fulfillmentLines) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("FulfillmentLinesByOption", "app.order.error_finding_fulfillment_lines_by_options.app_error", nil, errMessage, statusCode)
 	}
 
 	return fulfillmentLines, nil

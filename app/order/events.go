@@ -61,7 +61,7 @@ func linesPerQuantityToLineObjectList(quantitiesPerOrderLine []*order.QuantityOr
 	return res
 }
 
-func prepareDiscountObject(orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) *model.StringInterface {
+func prepareDiscountObject(orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) model.StringInterface {
 	discountParameters := model.StringInterface{
 		"value":        orderDiscount.Value,
 		"amount_value": orderDiscount.AmountValue,
@@ -75,7 +75,7 @@ func prepareDiscountObject(orderDiscount *product_and_discount.OrderDiscount, ol
 		discountParameters["old_amount_value"] = oldOrderDiscount.AmountValue
 	}
 
-	return &discountParameters
+	return discountParameters
 }
 
 func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError {
@@ -97,7 +97,7 @@ func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorp
 func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
 	return a.OrderDiscountEvent(
 		transaction,
-		order.ORDER_EVENT_TYPE__ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
+		order.ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
 		ord,
 		nil,
 		orderDiscount,
@@ -105,7 +105,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorp.
 	)
 }
 
-func (a *ServiceOrder) OrderDiscountEvent(transaction *gorp.Transaction, eventType string, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountEvent(transaction *gorp.Transaction, eventType order.OrderEvents, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -133,7 +133,7 @@ func getPaymentData(amount *decimal.Decimal, payMent *payment.Payment) map[strin
 	}
 }
 
-func (a *ServiceOrder) OrderLineDiscountEvent(eventType string, ord *order.Order, user *account.User, line *order.OrderLine, lineBeforeUpdate *order.OrderLine) (*order.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderLineDiscountEvent(eventType order.OrderEvents, ord *order.Order, user *account.User, line *order.OrderLine, lineBeforeUpdate *order.OrderLine) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -161,10 +161,45 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType string, ord *order.Order
 		OrderID: ord.Id,
 		Type:    eventType,
 		UserID:  userID,
-		Parameters: &model.StringInterface{
+		Parameters: model.StringInterface{
 			"lines": []map[string]interface{}{
 				lineData,
 			},
+		},
+	})
+}
+
+func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, fulfillment *order.Fulfillment) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil {
+		userID = &user.Id
+	}
+
+	params := model.StringInterface{}
+	if fulfillment != nil {
+		params["composed_id"] = fulfillment.ComposedId()
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID:    orDer.Id,
+		UserID:     userID,
+		Type:       order.FULFILLMENT_CANCELED_,
+		Parameters: params,
+	})
+}
+
+func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		UserID:  userID,
+		OrderID: orDer.Id,
+		Type:    order.FULFILLMENT_FULFILLED_ITEMS,
+		Parameters: model.StringInterface{
+			"fulfilled_items": fulfillmentLines.IDs(),
 		},
 	})
 }

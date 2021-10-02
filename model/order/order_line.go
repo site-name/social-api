@@ -74,7 +74,7 @@ type OrderLine struct {
 
 // OrderLinePrefetchRelated
 type OrderLinePrefetchRelated struct {
-	VariantProduct        bool
+	VariantProduct        bool // This tells store to prefetch related ProductVariant(s) and Product(s) as well
 	VariantDigitalContent bool
 }
 
@@ -104,7 +104,7 @@ type OrderLines []*OrderLine
 func (o OrderLines) ProductVariantIDs() []string {
 	res := []string{}
 	for _, orderLine := range o {
-		if orderLine.VariantID != nil {
+		if orderLine != nil && orderLine.VariantID != nil {
 			res = append(res, *orderLine.VariantID)
 		}
 	}

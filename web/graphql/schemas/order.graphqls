@@ -1,18 +1,20 @@
 extend type Mutation {
   orderSettingsUpdate(input: OrderSettingsUpdateInput!): OrderSettingsUpdate
+  giftCardSettingsUpdate(input: GiftCardSettingsUpdateInput!): GiftCardSettingsUpdate
   orderAddNote(order: ID!, input: OrderAddNoteInput!): OrderAddNote
   orderCancel(id: ID!): OrderCancel
   orderCapture(amount: PositiveDecimal!, id: ID!): OrderCapture
   orderConfirm(id: ID!): OrderConfirm
   orderFulfill(input: OrderFulfillInput!, order: ID): OrderFulfill
-  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput!): FulfillmentCancel
+  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput): FulfillmentCancel
+  orderFulfillmentApprove(allowStockToBeExceeded: Boolean = false, id: ID!, notifyCustomer: Boolean!): FulfillmentApprove
   orderFulfillmentUpdateTracking(id: ID!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
   orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: ID!): FulfillmentRefundProducts
   orderFulfillmentReturnProducts(input: OrderReturnProductsInput!, order: ID!): FulfillmentReturnProducts
   orderMarkAsPaid(id: ID!, transactionReference: String): OrderMarkAsPaid
   orderRefund(amount: PositiveDecimal!, id: ID!): OrderRefund
   orderUpdate(id: ID!, input: OrderUpdateInput!): OrderUpdate
-  orderUpdateShipping(order: ID!, input: OrderUpdateShippingInput): OrderUpdateShipping
+  orderUpdateShipping(order: ID!, input: OrderUpdateShippingInput!): OrderUpdateShipping
   orderVoid(id: ID!): OrderVoid
   orderBulkCancel(ids: [ID]!): OrderBulkCancel
 }
@@ -34,8 +36,9 @@ type Order implements Node & ObjectWithMetadata {
   trackingClientId: String!
   billingAddress: Address
   shippingAddress: Address
-  shippingMethod: ShippingMethod
+  # shippingMethod: ShippingMethod
   shippingMethodName: String
+  collectionPointName: String
   channel: Channel!
   shippingPrice: TaxedMoney!
   shippingTaxRate: Float!
@@ -52,6 +55,7 @@ type Order implements Node & ObjectWithMetadata {
   lines(_: PlaceHolder): [OrderLine]! # lines: [OrderLine]!
   actions(_: PlaceHolder): [OrderAction]! # actions: [OrderAction]!
   availableShippingMethods(_: PlaceHolder): [ShippingMethod] # availableShippingMethods: [ShippingMethod]
+  availableCollectionPoints: [Warehouse!]!
   invoices(_: PlaceHolder): [Invoice] # invoices: [Invoice]
   number: String
   original: ID
@@ -71,12 +75,14 @@ type Order implements Node & ObjectWithMetadata {
   totalBalance: Money!
   userEmail: String
   isShippingRequired(_: PlaceHolder): Boolean! # isShippingRequired: Boolean!
+  deliveryMethod: DeliveryMethod
   languageCodeEnum: LanguageCodeEnum!
   discounts(_: PlaceHolder): [OrderDiscount!] # discounts: [OrderDiscount!]
 }
 
 input OrderSettingsUpdateInput {
-  automaticallyConfirmAllNewOrders: Boolean!
+  automaticallyConfirmAllNewOrders: Boolean
+  automaticallyFulfillNonShippableGiftCard: Boolean
 }
 
 type OrderSettingsUpdate {
@@ -112,6 +118,7 @@ type OrderConfirm {
 input OrderFulfillInput {
   lines: [OrderFulfillLineInput!]!
   notifyCustomer: Boolean
+  allowStockToBeExceeded: Boolean = false
 }
 
 type OrderFulfill {
@@ -121,7 +128,7 @@ type OrderFulfill {
 }
 
 input FulfillmentCancelInput {
-  warehouseId: ID!
+  warehouseId: ID
 }
 
 type FulfillmentCancel {
@@ -201,6 +208,7 @@ type OrderBulkCancel {
 
 type OrderSettings {
   automaticallyConfirmAllNewOrders: Boolean!
+  automaticallyFulfillNonShippableGiftCard: Boolean!
 }
 
 input OrderSortingInput {
@@ -321,7 +329,9 @@ enum OrderErrorCode {
   CANNOT_DELETE
   CANNOT_DISCOUNT
   CANNOT_REFUND
+  CANNOT_FULFILL_UNPAID_ORDER
   CAPTURE_INACTIVE_PAYMENT
+  GIFT_CARD_LINE
   NOT_EDITABLE
   FULFILL_ORDER_LINE
   GRAPHQL_ERROR
@@ -443,6 +453,7 @@ enum OrderEventsEnum {
   FULFILLMENT_REFUNDED
   FULFILLMENT_RETURNED
   FULFILLMENT_REPLACED
+  FULFILLMENT_AWAITS_APPROVAL
   TRACKING_UPDATED
   NOTE_ADDED
   OTHER
@@ -490,6 +501,7 @@ enum FulfillmentStatus {
   REPLACED
   REFUNDED_AND_RETURNED
   CANCELED
+  WAITING_FOR_APPROVAL
 }
 
 type OrderDiscount implements Node {
@@ -517,4 +529,11 @@ input OrderUpdateInput {
   billingAddress: AddressInput
   userEmail: String
   shippingAddress: AddressInput
+}
+
+type FulfillmentApprove {
+  fulfillment: Fulfillment
+  order: Order
+  # orderErrors: [OrderError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [OrderError!]!
 }

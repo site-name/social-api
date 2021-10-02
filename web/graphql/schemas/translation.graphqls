@@ -70,6 +70,7 @@ type AttributeTranslatableContent implements Node {
 type AttributeValueTranslatableContent implements Node {
   id: ID!
   name: String!
+  richText: JSONString
   translation(languageCode: LanguageCodeEnum!): AttributeValueTranslation
   # attributeValue: AttributeValue
 }
@@ -79,6 +80,7 @@ type ProductVariantTranslatableContent implements Node {
   name: String!
   translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
   # productVariant: ProductVariant
+  attributeValues: [AttributeValueTranslatableContent!]!
 }
 
 type PageTranslatableContent implements Node {

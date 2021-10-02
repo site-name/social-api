@@ -1,6 +1,8 @@
 package product
 
 import (
+	"net/http"
+
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -53,8 +55,19 @@ func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*produ
 // ProductVariantsByOption returns a list of product variants satisfy given option
 func (a *ServiceProduct) ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
+	var (
+		statusCode int
+		errMessage string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(productVariants) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, errMessage, statusCode)
 	}
 
 	return productVariants, nil

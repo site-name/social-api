@@ -19,3 +19,7 @@ func (s *ServiceOrder) SendOrderCancelledConfirmation(orDer *order.Order, user *
 func (s *ServiceOrder) SendOrderConfirmation(orDer *order.Order, redirectURL string, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
+
+func (s *ServiceOrder) SendFulfillmentConfirmationToCustomer(orDer *order.Order, fulfillment *order.Fulfillment, user *account.User, _, manager interface{}) *model.AppError {
+	panic("not implemented")
+}

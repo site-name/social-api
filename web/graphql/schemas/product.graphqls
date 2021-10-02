@@ -57,6 +57,7 @@ type Product implements Node & ObjectWithMetadata {
   rating: Float
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
+  channel: String
   thumbnail(size: Int): Image
   pricing(address: AddressInput): ProductPricingInfo
   isAvailable(address: AddressInput): Boolean
@@ -198,6 +199,7 @@ input ProductFilterInput {
   price: PriceRangeInput
   minimalPrice: PriceRangeInput
   productTypes: [ID]
+  giftCard: Boolean
   ids: [ID]
   channel: String
 }
@@ -256,6 +258,11 @@ input SeoInput {
 input ProductStockFilterInput {
   warehouseIds: [ID!]
   quantity: IntRangeInput
+}
+
+input PriceInput {
+  currency: String!
+  amount: PositiveDecimal!
 }
 
 input PriceRangeInput {

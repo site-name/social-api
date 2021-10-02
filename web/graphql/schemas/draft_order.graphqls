@@ -3,7 +3,7 @@ extend type Mutation {
   draftOrderCreate(input: DraftOrderCreateInput!): DraftOrderCreate
   draftOrderDelete(id: ID!): DraftOrderDelete
   draftOrderBulkDelete(ids: [ID]!): DraftOrderBulkDelete
-  draftOrderLinesBulkDelete(ids: [ID]!): DraftOrderLinesBulkDelete
+  # draftOrderLinesBulkDelete(ids: [ID]!): DraftOrderLinesBulkDelete
   draftOrderUpdate(id: ID!, input: DraftOrderInput!): DraftOrderUpdate
 }
 

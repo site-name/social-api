@@ -21,6 +21,7 @@ type ProductType implements Node & ObjectWithMetadata {
   weight: Weight
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
+  kind: ProductTypeKindEnum!
   taxType: TaxType
   variantAttributes(variantSelection: VariantAttributeScope): [Attribute]
   productAttributes: [Attribute]
@@ -30,6 +31,7 @@ type ProductType implements Node & ObjectWithMetadata {
 input ProductTypeInput {
   name: String
   slug: String
+  kind: ProductTypeKindEnum
   hasVariants: Boolean
   productAttributes: [ID]
   variantAttributes: [ID]
@@ -37,6 +39,11 @@ input ProductTypeInput {
   isDigital: Boolean
   weight: WeightScalar
   taxCode: String
+}
+
+enum ProductTypeKindEnum {
+  NORMAL
+  GIFT_CARD
 }
 
 type ProductTypeCreate {
@@ -79,6 +86,7 @@ input ProductTypeFilterInput {
   configurable: ProductTypeConfigurable
   productType: ProductTypeEnum
   metadata: [MetadataInput]
+  kind: ProductTypeKindEnum
   ids: [ID]
 }
 
