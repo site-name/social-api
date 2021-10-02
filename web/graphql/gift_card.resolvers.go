@@ -18,6 +18,10 @@ func (r *mutationResolver) GiftCardCreate(ctx context.Context, input gqlmodel.Gi
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) GiftCardDelete(ctx context.Context, id string) (*gqlmodel.GiftCardDelete, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) GiftCardDeactivate(ctx context.Context, id string) (*gqlmodel.GiftCardDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -26,10 +30,38 @@ func (r *mutationResolver) GiftCardUpdate(ctx context.Context, id string, input 
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) GiftCardResend(ctx context.Context, input gqlmodel.GiftCardResendInput) (*gqlmodel.GiftCardResend, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) GiftCardAddNote(ctx context.Context, id string, input gqlmodel.GiftCardAddNoteInput) (*gqlmodel.GiftCardAddNote, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) GiftCardBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.GiftCardBulkDelete, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) GiftCardBulkActivate(ctx context.Context, ids []*string) (*gqlmodel.GiftCardBulkActivate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) GiftCardBulkDeactivate(ctx context.Context, ids []*string) (*gqlmodel.GiftCardBulkDeactivate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) GiftCard(ctx context.Context, id string) (*gqlmodel.GiftCard, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GiftCards(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.GiftCardCountableConnection, error) {
+func (r *queryResolver) GiftCardSettings(ctx context.Context) (*gqlmodel.GiftCardSettings, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GiftCards(ctx context.Context, sortBy *gqlmodel.GiftCardSortingInput, filter *gqlmodel.GiftCardFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.GiftCardCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GiftCardCurrencies(ctx context.Context) ([]string, error) {
 	panic(fmt.Errorf("not implemented"))
 }

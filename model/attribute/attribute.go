@@ -164,8 +164,7 @@ func AttributeFromJson(data io.Reader) *Attribute {
 	return &a
 }
 
-// -----------------
-
+// max lengths for attribute translation's fields
 const (
 	ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH = 100
 )

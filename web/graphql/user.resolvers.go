@@ -42,6 +42,10 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
 }
 
+func (r *customerEventResolver) App(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.App, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
 	if obj.OrderID == nil {
 		return nil, nil

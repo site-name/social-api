@@ -36,11 +36,19 @@ func (r *checkoutResolver) AvailableShippingMethods(ctx context.Context, obj *gq
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *checkoutResolver) AvailableCollectionPoints(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.Warehouse, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.PaymentGateway, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.CheckoutLine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *checkoutResolver) DeliveryMethod(ctx context.Context, obj *gqlmodel.Checkout) (gqlmodel.DeliveryMethod, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -60,7 +68,7 @@ func (r *mutationResolver) CheckoutCreate(ctx context.Context, input gqlmodel.Ch
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerAttach, error) {
+func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID *string, customerID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerAttach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -84,7 +92,7 @@ func (r *mutationResolver) CheckoutShippingAddressUpdate(ctx context.Context, ch
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string, token *uuid.UUID) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
+func (r *mutationResolver) CheckoutDeliveryMethodUpdate(ctx context.Context, deliveryMethodID *string, token *uuid.UUID) (*gqlmodel.CheckoutDeliveryMethodUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -104,3 +112,13 @@ func (r *queryResolver) Checkouts(ctx context.Context, channel *string, before *
 func (r *Resolver) Checkout() graphql1.CheckoutResolver { return &checkoutResolver{r} }
 
 type checkoutResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string, token *uuid.UUID) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}

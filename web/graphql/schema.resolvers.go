@@ -28,6 +28,10 @@ func (r *mutationResolver) FileUpload(ctx context.Context, file graphql.Upload) 
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) ExternalNotificationTrigger(ctx context.Context, channel string, input gqlmodel.ExternalNotificationTriggerInput, pluginID *string) (*gqlmodel.ExternalNotificationTrigger, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) ReportProductSales(ctx context.Context, period gqlmodel.ReportingPeriod, channel string, before *string, after *string, first *int, last *int) (*gqlmodel.ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

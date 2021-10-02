@@ -9,15 +9,33 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+// ----------------------- original implementation--------------------
+
+// type CustomerEvent struct {
+// 	ID        string              `json:"id"`
+// 	Date      *time.Time          `json:"date"`
+// 	Type      *CustomerEventsEnum `json:"type"`
+// 	User      *User               `json:"user"`
+// 	App       *App                `json:"app"`
+// 	Message   *string             `json:"message"`
+// 	Count     *int                `json:"count"`
+// 	Order     *Order              `json:"order"`
+// 	OrderLine *OrderLine          `json:"orderLine"`
+// }
+
+// func (CustomerEvent) IsNode() {}
+//----------------------------------------------------------------
+
 type CustomerEvent struct {
 	ID          string              `json:"id"`
 	Date        *time.Time          `json:"date"`
 	Type        *CustomerEventsEnum `json:"type"`
-	UserID      *string             `json:"user"`      // *User
-	Message     *string             `json:"message"`   //
-	Count       *int                `json:"count"`     //
-	OrderID     *string             `json:"order"`     // *Order
-	OrderLineID *string             `json:"orderLine"` // *OrderLine
+	UserID      *string             `json:"user"`
+	AppID       *string             `json:"app"`
+	Message     *string             `json:"message"`
+	Count       *int                `json:"count"`
+	OrderID     *string             `json:"order"`
+	OrderLineID *string             `json:"orderLine"`
 }
 
 func (CustomerEvent) IsNode() {}

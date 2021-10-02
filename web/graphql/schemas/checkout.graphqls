@@ -19,6 +19,11 @@ extend type Query {
   checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection
 }
 
+type CheckoutDeliveryMethodUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
 type Checkout implements Node & ObjectWithMetadata {
   created: DateTime!
   lastChange: DateTime!

@@ -14,6 +14,10 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+type DeliveryMethod interface {
+	IsDeliveryMethod()
+}
+
 type Job interface {
 	IsJob()
 }
@@ -68,6 +72,8 @@ type AccountRegister struct {
 }
 
 type AccountRegisterInput struct {
+	FirstName    *string           `json:"firstName"`
+	LastName     *string           `json:"lastName"`
 	Email        string            `json:"email"`
 	Password     string            `json:"password"`
 	RedirectURL  *string           `json:"redirectUrl"`
@@ -173,6 +179,7 @@ type App struct {
 	AppURL           *string         `json:"appUrl"`
 	Version          *string         `json:"version"`
 	AccessToken      *string         `json:"accessToken"`
+	Extensions       []*AppExtension `json:"extensions"`
 }
 
 func (App) IsNode()               {}
@@ -222,6 +229,37 @@ type AppError struct {
 	Permissions []PermissionEnum `json:"permissions"`
 }
 
+type AppExtension struct {
+	ID          string                 `json:"id"`
+	App         *App                   `json:"app"`
+	Label       string                 `json:"label"`
+	URL         string                 `json:"url"`
+	View        AppExtensionViewEnum   `json:"view"`
+	Type        AppExtensionTypeEnum   `json:"type"`
+	Target      AppExtensionTargetEnum `json:"target"`
+	Permissions []*Permission          `json:"permissions"`
+	AccessToken *string                `json:"accessToken"`
+}
+
+func (AppExtension) IsNode() {}
+
+type AppExtensionCountableConnection struct {
+	PageInfo   *PageInfo                    `json:"pageInfo"`
+	Edges      []*AppExtensionCountableEdge `json:"edges"`
+	TotalCount *int                         `json:"totalCount"`
+}
+
+type AppExtensionCountableEdge struct {
+	Node   *AppExtension `json:"node"`
+	Cursor string        `json:"cursor"`
+}
+
+type AppExtensionFilterInput struct {
+	View   *AppExtensionViewEnum   `json:"view"`
+	Type   *AppExtensionTypeEnum   `json:"type"`
+	Target *AppExtensionTargetEnum `json:"target"`
+}
+
 type AppFetchManifest struct {
 	Manifest *Manifest   `json:"manifest"`
 	Errors   []*AppError `json:"errors"`
@@ -262,6 +300,15 @@ type AppInstallation struct {
 
 func (AppInstallation) IsNode() {}
 func (AppInstallation) IsJob()  {}
+
+type AppManifestExtension struct {
+	Permissions []*Permission          `json:"permissions"`
+	Label       string                 `json:"label"`
+	URL         string                 `json:"url"`
+	View        AppExtensionViewEnum   `json:"view"`
+	Type        AppExtensionTypeEnum   `json:"type"`
+	Target      AppExtensionTargetEnum `json:"target"`
+}
 
 type AppRetryInstall struct {
 	Errors          []*AppError      `json:"errors"`
@@ -383,10 +430,12 @@ type AttributeFilterInput struct {
 }
 
 type AttributeInput struct {
-	Slug        string         `json:"slug"`
-	Values      []*string      `json:"values"`
-	ValuesRange *IntRangeInput `json:"valuesRange"`
-	Boolean     *bool          `json:"boolean"`
+	Slug        string              `json:"slug"`
+	Values      []*string           `json:"values"`
+	ValuesRange *IntRangeInput      `json:"valuesRange"`
+	DateTime    *DateTimeRangeInput `json:"dateTime"`
+	Date        *DateRangeInput     `json:"date"`
+	Boolean     *bool               `json:"boolean"`
 }
 
 type AttributeReorderValues struct {
@@ -431,7 +480,7 @@ type AttributeUpdateInput struct {
 	Slug                     *string                      `json:"slug"`
 	Unit                     *MeasurementUnitsEnum        `json:"unit"`
 	RemoveValues             []*string                    `json:"removeValues"`
-	AddValues                []*AttributeValueCreateInput `json:"addValues"`
+	AddValues                []*AttributeValueUpdateInput `json:"addValues"`
 	ValueRequired            *bool                        `json:"valueRequired"`
 	IsVariantOnly            *bool                        `json:"isVariantOnly"`
 	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
@@ -452,6 +501,8 @@ type AttributeValue struct {
 	File        *File                      `json:"file"`
 	RichText    *string                    `json:"richText"`
 	Boolean     *bool                      `json:"boolean"`
+	Date        *time.Time                 `json:"date"`
+	DateTime    *time.Time                 `json:"dateTime"`
 }
 
 func (AttributeValue) IsNode() {}
@@ -479,9 +530,11 @@ type AttributeValueCreate struct {
 }
 
 type AttributeValueCreateInput struct {
-	Name     string  `json:"name"`
-	Value    *string `json:"value"`
-	RichText *string `json:"richText"`
+	Name        string  `json:"name"`
+	Value       *string `json:"value"`
+	RichText    *string `json:"richText"`
+	FileURL     *string `json:"fileUrl"`
+	ContentType *string `json:"contentType"`
 }
 
 type AttributeValueDelete struct {
@@ -495,18 +548,21 @@ type AttributeValueFilterInput struct {
 }
 
 type AttributeValueInput struct {
-	ID          *string  `json:"id"`
-	Values      []string `json:"values"`
-	File        *string  `json:"file"`
-	ContentType *string  `json:"contentType"`
-	References  []string `json:"references"`
-	RichText    *string  `json:"richText"`
-	Boolean     *bool    `json:"boolean"`
+	ID          *string    `json:"id"`
+	Values      []string   `json:"values"`
+	File        *string    `json:"file"`
+	ContentType *string    `json:"contentType"`
+	References  []string   `json:"references"`
+	RichText    *string    `json:"richText"`
+	Boolean     *bool      `json:"boolean"`
+	Date        *time.Time `json:"date"`
+	DateTime    *time.Time `json:"dateTime"`
 }
 
 type AttributeValueTranslatableContent struct {
 	ID          string                     `json:"id"`
 	Name        string                     `json:"name"`
+	RichText    *string                    `json:"richText"`
 	Translation *AttributeValueTranslation `json:"translation"`
 }
 
@@ -538,9 +594,18 @@ type AttributeValueUpdate struct {
 	AttributeValue *AttributeValue   `json:"attributeValue"`
 }
 
+type AttributeValueUpdateInput struct {
+	Value       *string `json:"value"`
+	RichText    *string `json:"richText"`
+	FileURL     *string `json:"fileUrl"`
+	ContentType *string `json:"contentType"`
+	Name        *string `json:"name"`
+}
+
 type BulkAttributeValueInput struct {
-	ID     *string  `json:"id"`
-	Values []string `json:"values"`
+	ID      *string  `json:"id"`
+	Values  []string `json:"values"`
+	Boolean *bool    `json:"boolean"`
 }
 
 type BulkProductError struct {
@@ -650,12 +715,13 @@ type CategoryUpdate struct {
 }
 
 type Channel struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	IsActive     bool   `json:"isActive"`
-	Slug         string `json:"slug"`
-	CurrencyCode string `json:"currencyCode"`
-	HasOrders    bool   `json:"hasOrders"`
+	ID             string          `json:"id"`
+	Name           string          `json:"name"`
+	IsActive       bool            `json:"isActive"`
+	Slug           string          `json:"slug"`
+	CurrencyCode   string          `json:"currencyCode"`
+	HasOrders      bool            `json:"hasOrders"`
+	DefaultCountry *CountryDisplay `json:"defaultCountry"`
 }
 
 func (Channel) IsNode() {}
@@ -671,11 +737,12 @@ type ChannelCreate struct {
 }
 
 type ChannelCreateInput struct {
-	IsActive         *bool    `json:"isActive"`
-	Name             string   `json:"name"`
-	Slug             string   `json:"slug"`
-	CurrencyCode     string   `json:"currencyCode"`
-	AddShippingZones []string `json:"addShippingZones"`
+	IsActive         *bool       `json:"isActive"`
+	Name             string      `json:"name"`
+	Slug             string      `json:"slug"`
+	CurrencyCode     string      `json:"currencyCode"`
+	DefaultCountry   CountryCode `json:"defaultCountry"`
+	AddShippingZones []string    `json:"addShippingZones"`
 }
 
 type ChannelDeactivate struct {
@@ -705,11 +772,12 @@ type ChannelUpdate struct {
 }
 
 type ChannelUpdateInput struct {
-	IsActive            *bool    `json:"isActive"`
-	Name                *string  `json:"name"`
-	Slug                *string  `json:"slug"`
-	AddShippingZones    []string `json:"addShippingZones"`
-	RemoveShippingZones []string `json:"removeShippingZones"`
+	IsActive            *bool        `json:"isActive"`
+	Name                *string      `json:"name"`
+	Slug                *string      `json:"slug"`
+	DefaultCountry      *CountryCode `json:"defaultCountry"`
+	AddShippingZones    []string     `json:"addShippingZones"`
+	RemoveShippingZones []string     `json:"removeShippingZones"`
 }
 
 type CheckoutAddPromoCode struct {
@@ -741,7 +809,6 @@ type CheckoutCountableEdge struct {
 }
 
 type CheckoutCreate struct {
-	Created  *bool            `json:"created"`
 	Errors   []*CheckoutError `json:"errors"`
 	Checkout *Checkout        `json:"checkout"`
 }
@@ -761,6 +828,11 @@ type CheckoutCustomerAttach struct {
 }
 
 type CheckoutCustomerDetach struct {
+	Checkout *Checkout        `json:"checkout"`
+	Errors   []*CheckoutError `json:"errors"`
+}
+
+type CheckoutDeliveryMethodUpdate struct {
 	Checkout *Checkout        `json:"checkout"`
 	Errors   []*CheckoutError `json:"errors"`
 }
@@ -859,6 +931,7 @@ type Collection struct {
 	Slug            string                      `json:"slug"`
 	PrivateMetadata []*MetadataItem             `json:"privateMetadata"`
 	Metadata        []*MetadataItem             `json:"metadata"`
+	Channel         *string                     `json:"channel"`
 	Products        *ProductCountableConnection `json:"products"`
 	BackgroundImage *Image                      `json:"backgroundImage"`
 	Translation     *CollectionTranslation      `json:"translation"`
@@ -1324,6 +1397,22 @@ type ExternalLogout struct {
 	LogoutData *string `json:"logoutData"`
 }
 
+type ExternalNotificationError struct {
+	Field   *string                        `json:"field"`
+	Message *string                        `json:"message"`
+	Code    ExternalNotificationErrorCodes `json:"code"`
+}
+
+type ExternalNotificationTrigger struct {
+	Errors []*ExternalNotificationError `json:"errors"`
+}
+
+type ExternalNotificationTriggerInput struct {
+	Ids               []*string `json:"ids"`
+	ExtraPayload      *string   `json:"extraPayload"`
+	ExternalEventType string    `json:"externalEventType"`
+}
+
 type ExternalObtainAccessTokens struct {
 	Token        *string `json:"token"`
 	RefreshToken *string `json:"refreshToken"`
@@ -1370,6 +1459,12 @@ type Fulfillment struct {
 func (Fulfillment) IsNode()               {}
 func (Fulfillment) IsObjectWithMetadata() {}
 
+type FulfillmentApprove struct {
+	Fulfillment *Fulfillment  `json:"fulfillment"`
+	Order       *Order        `json:"order"`
+	Errors      []*OrderError `json:"errors"`
+}
+
 type FulfillmentCancel struct {
 	Fulfillment *Fulfillment  `json:"fulfillment"`
 	Order       *Order        `json:"order"`
@@ -1377,7 +1472,7 @@ type FulfillmentCancel struct {
 }
 
 type FulfillmentCancelInput struct {
-	WarehouseID string `json:"warehouseId"`
+	WarehouseID *string `json:"warehouseId"`
 }
 
 type FulfillmentLine struct {
@@ -1419,24 +1514,59 @@ type GatewayConfigLine struct {
 }
 
 type GiftCard struct {
-	Code           *string    `json:"code"`
-	User           *User      `json:"user"`
-	Created        time.Time  `json:"created"`
-	StartDate      time.Time  `json:"startDate"`
-	EndDate        *time.Time `json:"endDate"`
-	LastUsedOn     *time.Time `json:"lastUsedOn"`
-	IsActive       bool       `json:"isActive"`
-	InitialBalance *Money     `json:"initialBalance"`
-	CurrentBalance *Money     `json:"currentBalance"`
-	ID             string     `json:"id"`
-	DisplayCode    *string    `json:"displayCode"`
+	Code            string           `json:"code"`
+	IsActive        bool             `json:"isActive"`
+	ExpiryDate      *time.Time       `json:"expiryDate"`
+	Tag             *string          `json:"tag"`
+	Created         time.Time        `json:"created"`
+	LastUsedOn      *time.Time       `json:"lastUsedOn"`
+	InitialBalance  *Money           `json:"initialBalance"`
+	CurrentBalance  *Money           `json:"currentBalance"`
+	ID              string           `json:"id"`
+	PrivateMetadata []*MetadataItem  `json:"privateMetadata"`
+	Metadata        []*MetadataItem  `json:"metadata"`
+	DisplayCode     string           `json:"displayCode"`
+	CreatedBy       *User            `json:"createdBy"`
+	UsedBy          *User            `json:"usedBy"`
+	CreatedByEmail  *string          `json:"createdByEmail"`
+	UsedByEmail     *string          `json:"usedByEmail"`
+	App             *App             `json:"app"`
+	Product         *Product         `json:"product"`
+	Events          []*GiftCardEvent `json:"events"`
+	BoughtInChannel *string          `json:"boughtInChannel"`
 }
 
-func (GiftCard) IsNode() {}
+func (GiftCard) IsNode()               {}
+func (GiftCard) IsObjectWithMetadata() {}
 
 type GiftCardActivate struct {
 	GiftCard *GiftCard        `json:"giftCard"`
 	Errors   []*GiftCardError `json:"errors"`
+}
+
+type GiftCardAddNote struct {
+	GiftCard *GiftCard        `json:"giftCard"`
+	Event    *GiftCardEvent   `json:"event"`
+	Errors   []*GiftCardError `json:"errors"`
+}
+
+type GiftCardAddNoteInput struct {
+	Message string `json:"message"`
+}
+
+type GiftCardBulkActivate struct {
+	Count  int              `json:"count"`
+	Errors []*GiftCardError `json:"errors"`
+}
+
+type GiftCardBulkDeactivate struct {
+	Count  int              `json:"count"`
+	Errors []*GiftCardError `json:"errors"`
+}
+
+type GiftCardBulkDelete struct {
+	Count  int              `json:"count"`
+	Errors []*GiftCardError `json:"errors"`
 }
 
 type GiftCardCountableConnection struct {
@@ -1456,16 +1586,26 @@ type GiftCardCreate struct {
 }
 
 type GiftCardCreateInput struct {
-	StartDate *time.Time       `json:"startDate"`
-	EndDate   *time.Time       `json:"endDate"`
-	Balance   *decimal.Decimal `json:"balance"`
-	UserEmail *string          `json:"userEmail"`
-	Code      *string          `json:"code"`
+	Tag        *string     `json:"tag"`
+	ExpiryDate *time.Time  `json:"expiryDate"`
+	StartDate  *time.Time  `json:"startDate"`
+	EndDate    *time.Time  `json:"endDate"`
+	Balance    *PriceInput `json:"balance"`
+	UserEmail  *string     `json:"userEmail"`
+	Channel    *string     `json:"channel"`
+	IsActive   bool        `json:"isActive"`
+	Code       *string     `json:"code"`
+	Note       *string     `json:"note"`
 }
 
 type GiftCardDeactivate struct {
 	GiftCard *GiftCard        `json:"giftCard"`
 	Errors   []*GiftCardError `json:"errors"`
+}
+
+type GiftCardDelete struct {
+	Errors   []*GiftCardError `json:"errors"`
+	GiftCard *GiftCard        `json:"giftCard"`
 }
 
 type GiftCardError struct {
@@ -1474,16 +1614,91 @@ type GiftCardError struct {
 	Code    GiftCardErrorCode `json:"code"`
 }
 
+type GiftCardEvent struct {
+	ID            string                `json:"id"`
+	Date          *time.Time            `json:"date"`
+	Type          *GiftCardEventsEnum   `json:"type"`
+	User          *User                 `json:"user"`
+	App           *App                  `json:"app"`
+	Message       *string               `json:"message"`
+	Email         *string               `json:"email"`
+	OrderID       *string               `json:"orderId"`
+	OrderNumber   *string               `json:"orderNumber"`
+	Tag           *string               `json:"tag"`
+	OldTag        *string               `json:"oldTag"`
+	Balance       *GiftCardEventBalance `json:"balance"`
+	ExpiryDate    *time.Time            `json:"expiryDate"`
+	OldExpiryDate *time.Time            `json:"oldExpiryDate"`
+}
+
+func (GiftCardEvent) IsNode() {}
+
+type GiftCardEventBalance struct {
+	InitialBalance    *Money `json:"initialBalance"`
+	CurrentBalance    *Money `json:"currentBalance"`
+	OldInitialBalance *Money `json:"oldInitialBalance"`
+	OldCurrentBalance *Money `json:"oldCurrentBalance"`
+}
+
+type GiftCardFilterInput struct {
+	IsActive       *bool            `json:"isActive"`
+	Tag            *string          `json:"tag"`
+	Tags           []*string        `json:"tags"`
+	Products       []*string        `json:"products"`
+	UsedBy         []*string        `json:"usedBy"`
+	Currency       *string          `json:"currency"`
+	CurrentBalance *PriceRangeInput `json:"currentBalance"`
+	InitialBalance *PriceRangeInput `json:"initialBalance"`
+}
+
+type GiftCardResend struct {
+	GiftCard *GiftCard        `json:"giftCard"`
+	Errors   []*GiftCardError `json:"errors"`
+}
+
+type GiftCardResendInput struct {
+	ID      string  `json:"id"`
+	Email   *string `json:"email"`
+	Channel string  `json:"channel"`
+}
+
+type GiftCardSettings struct {
+	ExpiryType   GiftCardSettingsExpiryTypeEnum `json:"expiryType"`
+	ExpiryPeriod *TimePeriod                    `json:"expiryPeriod"`
+}
+
+type GiftCardSettingsError struct {
+	Field   *string                   `json:"field"`
+	Message *string                   `json:"message"`
+	Code    GiftCardSettingsErrorCode `json:"code"`
+}
+
+type GiftCardSettingsUpdate struct {
+	GiftCardSettings *GiftCardSettings        `json:"giftCardSettings"`
+	Errors           []*GiftCardSettingsError `json:"errors"`
+}
+
+type GiftCardSettingsUpdateInput struct {
+	ExpiryType   *GiftCardSettingsExpiryTypeEnum `json:"expiryType"`
+	ExpiryPeriod *TimePeriodInputType            `json:"expiryPeriod"`
+}
+
+type GiftCardSortingInput struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     GiftCardSortField `json:"field"`
+}
+
 type GiftCardUpdate struct {
 	Errors   []*GiftCardError `json:"errors"`
 	GiftCard *GiftCard        `json:"giftCard"`
 }
 
 type GiftCardUpdateInput struct {
-	StartDate *time.Time       `json:"startDate"`
-	EndDate   *time.Time       `json:"endDate"`
-	Balance   *decimal.Decimal `json:"balance"`
-	UserEmail *string          `json:"userEmail"`
+	Tag           *string          `json:"tag"`
+	ExpiryDate    *time.Time       `json:"expiryDate"`
+	StartDate     *time.Time       `json:"startDate"`
+	EndDate       *time.Time       `json:"endDate"`
+	BalanceAmount *decimal.Decimal `json:"balanceAmount"`
 }
 
 type GroupCountableConnection struct {
@@ -1605,18 +1820,19 @@ type LoginResponse struct {
 }
 
 type Manifest struct {
-	Identifier       string        `json:"identifier"`
-	Version          string        `json:"version"`
-	Name             string        `json:"name"`
-	About            *string       `json:"about"`
-	Permissions      []*Permission `json:"permissions"`
-	AppURL           *string       `json:"appUrl"`
-	ConfigurationURL *string       `json:"configurationUrl"`
-	TokenTargetURL   *string       `json:"tokenTargetUrl"`
-	DataPrivacy      *string       `json:"dataPrivacy"`
-	DataPrivacyURL   *string       `json:"dataPrivacyUrl"`
-	HomepageURL      *string       `json:"homepageUrl"`
-	SupportURL       *string       `json:"supportUrl"`
+	Identifier       string                  `json:"identifier"`
+	Version          string                  `json:"version"`
+	Name             string                  `json:"name"`
+	About            *string                 `json:"about"`
+	Permissions      []*Permission           `json:"permissions"`
+	AppURL           *string                 `json:"appUrl"`
+	ConfigurationURL *string                 `json:"configurationUrl"`
+	TokenTargetURL   *string                 `json:"tokenTargetUrl"`
+	DataPrivacy      *string                 `json:"dataPrivacy"`
+	DataPrivacyURL   *string                 `json:"dataPrivacyUrl"`
+	HomepageURL      *string                 `json:"homepageUrl"`
+	SupportURL       *string                 `json:"supportUrl"`
+	Extensions       []*AppManifestExtension `json:"extensions"`
 }
 
 type Margin struct {
@@ -1779,6 +1995,11 @@ type MetadataError struct {
 	Field   *string           `json:"field"`
 	Message *string           `json:"message"`
 	Code    MetadataErrorCode `json:"code"`
+}
+
+type MetadataFilter struct {
+	Key   string  `json:"key"`
+	Value *string `json:"value"`
 }
 
 type MetadataInput struct {
@@ -1975,8 +2196,9 @@ type OrderFulfill struct {
 }
 
 type OrderFulfillInput struct {
-	Lines          []*OrderFulfillLineInput `json:"lines"`
-	NotifyCustomer *bool                    `json:"notifyCustomer"`
+	Lines                  []*OrderFulfillLineInput `json:"lines"`
+	NotifyCustomer         *bool                    `json:"notifyCustomer"`
+	AllowStockToBeExceeded *bool                    `json:"allowStockToBeExceeded"`
 }
 
 type OrderFulfillLineInput struct {
@@ -2076,7 +2298,8 @@ type OrderReturnProductsInput struct {
 }
 
 type OrderSettings struct {
-	AutomaticallyConfirmAllNewOrders bool `json:"automaticallyConfirmAllNewOrders"`
+	AutomaticallyConfirmAllNewOrders         bool `json:"automaticallyConfirmAllNewOrders"`
+	AutomaticallyFulfillNonShippableGiftCard bool `json:"automaticallyFulfillNonShippableGiftCard"`
 }
 
 type OrderSettingsError struct {
@@ -2091,7 +2314,8 @@ type OrderSettingsUpdate struct {
 }
 
 type OrderSettingsUpdateInput struct {
-	AutomaticallyConfirmAllNewOrders bool `json:"automaticallyConfirmAllNewOrders"`
+	AutomaticallyConfirmAllNewOrders         *bool `json:"automaticallyConfirmAllNewOrders"`
+	AutomaticallyFulfillNonShippableGiftCard *bool `json:"automaticallyFulfillNonShippableGiftCard"`
 }
 
 type OrderSortingInput struct {
@@ -2364,6 +2588,8 @@ type Payment struct {
 	Order                  *Order                  `json:"order"`
 	PaymentMethodType      string                  `json:"paymentMethodType"`
 	CustomerIPAddress      *string                 `json:"customerIpAddress"`
+	PrivateMetadata        []*MetadataItem         `json:"privateMetadata"`
+	Metadata               []*MetadataItem         `json:"metadata"`
 	ChargeStatus           PaymentChargeStatusEnum `json:"chargeStatus"`
 	Actions                []*OrderAction          `json:"actions"`
 	Total                  *Money                  `json:"total"`
@@ -2374,7 +2600,8 @@ type Payment struct {
 	CreditCard             *CreditCard             `json:"creditCard"`
 }
 
-func (Payment) IsNode() {}
+func (Payment) IsNode()               {}
+func (Payment) IsObjectWithMetadata() {}
 
 type PaymentCapture struct {
 	Payment *Payment        `json:"payment"`
@@ -2421,10 +2648,12 @@ type PaymentInitialized struct {
 }
 
 type PaymentInput struct {
-	Gateway   string           `json:"gateway"`
-	Token     *string          `json:"token"`
-	Amount    *decimal.Decimal `json:"amount"`
-	ReturnURL *string          `json:"returnUrl"`
+	Gateway            string                  `json:"gateway"`
+	Token              *string                 `json:"token"`
+	Amount             *decimal.Decimal        `json:"amount"`
+	ReturnURL          *string                 `json:"returnUrl"`
+	StorePaymentMethod *StorePaymentMethodEnum `json:"storePaymentMethod"`
+	Metadata           []*MetadataInput        `json:"metadata"`
 }
 
 type PaymentRefund struct {
@@ -2433,8 +2662,10 @@ type PaymentRefund struct {
 }
 
 type PaymentSource struct {
-	Gateway        string      `json:"gateway"`
-	CreditCardInfo *CreditCard `json:"creditCardInfo"`
+	Gateway         string          `json:"gateway"`
+	PaymentMethodID *string         `json:"paymentMethodId"`
+	CreditCardInfo  *CreditCard     `json:"creditCardInfo"`
+	Metadata        []*MetadataItem `json:"metadata"`
 }
 
 type PaymentVoid struct {
@@ -2548,6 +2779,11 @@ type PluginUpdate struct {
 type PluginUpdateInput struct {
 	Active        *bool                     `json:"active"`
 	Configuration []*ConfigurationItemInput `json:"configuration"`
+}
+
+type PriceInput struct {
+	Currency string           `json:"currency"`
+	Amount   *decimal.Decimal `json:"amount"`
 }
 
 type PriceRangeInput struct {
@@ -2679,6 +2915,7 @@ type ProductFilterInput struct {
 	Price             *PriceRangeInput         `json:"price"`
 	MinimalPrice      *PriceRangeInput         `json:"minimalPrice"`
 	ProductTypes      []*string                `json:"productTypes"`
+	GiftCard          *bool                    `json:"giftCard"`
 	Ids               []*string                `json:"ids"`
 	Channel           *string                  `json:"channel"`
 }
@@ -2812,6 +3049,7 @@ type ProductType struct {
 	Weight              *Weight                       `json:"weight"`
 	PrivateMetadata     []*MetadataItem               `json:"privateMetadata"`
 	Metadata            []*MetadataItem               `json:"metadata"`
+	Kind                ProductTypeKindEnum           `json:"kind"`
 	TaxType             *TaxType                      `json:"taxType"`
 	VariantAttributes   []*Attribute                  `json:"variantAttributes"`
 	ProductAttributes   []*Attribute                  `json:"productAttributes"`
@@ -2852,19 +3090,21 @@ type ProductTypeFilterInput struct {
 	Configurable *ProductTypeConfigurable `json:"configurable"`
 	ProductType  *ProductTypeEnum         `json:"productType"`
 	Metadata     []*MetadataInput         `json:"metadata"`
+	Kind         *ProductTypeKindEnum     `json:"kind"`
 	Ids          []*string                `json:"ids"`
 }
 
 type ProductTypeInput struct {
-	Name               *string             `json:"name"`
-	Slug               *string             `json:"slug"`
-	HasVariants        *bool               `json:"hasVariants"`
-	ProductAttributes  []*string           `json:"productAttributes"`
-	VariantAttributes  []*string           `json:"variantAttributes"`
-	IsShippingRequired *bool               `json:"isShippingRequired"`
-	IsDigital          *bool               `json:"isDigital"`
-	Weight             *measurement.Weight `json:"weight"`
-	TaxCode            *string             `json:"taxCode"`
+	Name               *string              `json:"name"`
+	Slug               *string              `json:"slug"`
+	Kind               *ProductTypeKindEnum `json:"kind"`
+	HasVariants        *bool                `json:"hasVariants"`
+	ProductAttributes  []*string            `json:"productAttributes"`
+	VariantAttributes  []*string            `json:"variantAttributes"`
+	IsShippingRequired *bool                `json:"isShippingRequired"`
+	IsDigital          *bool                `json:"isDigital"`
+	Weight             *measurement.Weight  `json:"weight"`
+	TaxCode            *string              `json:"taxCode"`
 }
 
 type ProductTypeReorderAttributes struct {
@@ -2890,12 +3130,13 @@ type ProductUpdate struct {
 type ProductVariant struct {
 	ID                string                          `json:"id"`
 	Name              string                          `json:"name"`
-	Sku               string                          `json:"sku"`
+	Sku               *string                         `json:"sku"`
 	Product           *Product                        `json:"product"`
 	TrackInventory    bool                            `json:"trackInventory"`
 	Weight            *Weight                         `json:"weight"`
 	PrivateMetadata   []*MetadataItem                 `json:"privateMetadata"`
 	Metadata          []*MetadataItem                 `json:"metadata"`
+	Channel           *string                         `json:"channel"`
 	ChannelListings   []*ProductVariantChannelListing `json:"channelListings"`
 	Pricing           *VariantPricingInfo             `json:"pricing"`
 	Attributes        []*SelectedAttribute            `json:"attributes"`
@@ -2920,7 +3161,7 @@ type ProductVariantBulkCreate struct {
 
 type ProductVariantBulkCreateInput struct {
 	Attributes      []*BulkAttributeValueInput              `json:"attributes"`
-	Sku             string                                  `json:"sku"`
+	Sku             *string                                 `json:"sku"`
 	TrackInventory  *bool                                   `json:"trackInventory"`
 	Weight          *measurement.Weight                     `json:"weight"`
 	Stocks          []*StockInput                           `json:"stocks"`
@@ -3027,9 +3268,10 @@ type ProductVariantStocksUpdate struct {
 }
 
 type ProductVariantTranslatableContent struct {
-	ID          string                     `json:"id"`
-	Name        string                     `json:"name"`
-	Translation *ProductVariantTranslation `json:"translation"`
+	ID              string                               `json:"id"`
+	Name            string                               `json:"name"`
+	Translation     *ProductVariantTranslation           `json:"translation"`
+	AttributeValues []*AttributeValueTranslatableContent `json:"attributeValues"`
 }
 
 func (ProductVariantTranslatableContent) IsTranslatableItem() {}
@@ -3083,21 +3325,25 @@ type RequestPasswordReset struct {
 }
 
 type Sale struct {
-	ID              string                         `json:"id"`
-	Name            string                         `json:"name"`
-	Type            SaleType                       `json:"type"`
-	StartDate       time.Time                      `json:"startDate"`
-	EndDate         *time.Time                     `json:"endDate"`
-	Categories      *CategoryCountableConnection   `json:"categories"`
-	Collections     *CollectionCountableConnection `json:"collections"`
-	Products        *ProductCountableConnection    `json:"products"`
-	Translation     *SaleTranslation               `json:"translation"`
-	ChannelListings []*SaleChannelListing          `json:"channelListings"`
-	DiscountValue   *float64                       `json:"discountValue"`
-	Currency        *string                        `json:"currency"`
+	ID              string                             `json:"id"`
+	Name            string                             `json:"name"`
+	Type            SaleType                           `json:"type"`
+	StartDate       time.Time                          `json:"startDate"`
+	EndDate         *time.Time                         `json:"endDate"`
+	PrivateMetadata []*MetadataItem                    `json:"privateMetadata"`
+	Metadata        []*MetadataItem                    `json:"metadata"`
+	Categories      *CategoryCountableConnection       `json:"categories"`
+	Collections     *CollectionCountableConnection     `json:"collections"`
+	Products        *ProductCountableConnection        `json:"products"`
+	Variants        *ProductVariantCountableConnection `json:"variants"`
+	Translation     *SaleTranslation                   `json:"translation"`
+	ChannelListings []*SaleChannelListing              `json:"channelListings"`
+	DiscountValue   *float64                           `json:"discountValue"`
+	Currency        *string                            `json:"currency"`
 }
 
-func (Sale) IsNode() {}
+func (Sale) IsNode()               {}
+func (Sale) IsObjectWithMetadata() {}
 
 type SaleAddCatalogues struct {
 	Sale   *Sale            `json:"sale"`
@@ -3159,6 +3405,7 @@ type SaleFilterInput struct {
 	SaleType *DiscountValueTypeEnum `json:"saleType"`
 	Started  *DateTimeRangeInput    `json:"started"`
 	Search   *string                `json:"search"`
+	Metadata []*MetadataFilter      `json:"metadata"`
 }
 
 type SaleInput struct {
@@ -3166,6 +3413,7 @@ type SaleInput struct {
 	Type        *DiscountValueTypeEnum `json:"type"`
 	Value       *decimal.Decimal       `json:"value"`
 	Products    []*string              `json:"products"`
+	Variants    []*string              `json:"variants"`
 	Categories  []*string              `json:"categories"`
 	Collections []*string              `json:"collections"`
 	StartDate   *time.Time             `json:"startDate"`
@@ -3255,6 +3503,7 @@ type ShippingMethod struct {
 	ExcludedProducts    *ProductCountableConnection     `json:"excludedProducts"`
 }
 
+func (ShippingMethod) IsDeliveryMethod()     {}
 func (ShippingMethod) IsNode()               {}
 func (ShippingMethod) IsObjectWithMetadata() {}
 
@@ -3482,6 +3731,8 @@ type ShopSettingsInput struct {
 	TrackInventoryByDefault             *bool            `json:"trackInventoryByDefault"`
 	DefaultWeightUnit                   *WeightUnitsEnum `json:"defaultWeightUnit"`
 	AutomaticFulfillmentDigitalProducts *bool            `json:"automaticFulfillmentDigitalProducts"`
+	FulfillmentAutoApprove              *bool            `json:"fulfillmentAutoApprove"`
+	FulfillmentAllowUnpaid              *bool            `json:"fulfillmentAllowUnpaid"`
 	DefaultDigitalMaxDownloads          *int             `json:"defaultDigitalMaxDownloads"`
 	DefaultDigitalURLValidDays          *int             `json:"defaultDigitalUrlValidDays"`
 	DefaultMailSenderName               *string          `json:"defaultMailSenderName"`
@@ -3657,6 +3908,16 @@ type TaxedMoneyRange struct {
 	Stop  *TaxedMoney `json:"stop"`
 }
 
+type TimePeriod struct {
+	Amount int                `json:"amount"`
+	Type   TimePeriodTypeEnum `json:"type"`
+}
+
+type TimePeriodInputType struct {
+	Amount int                `json:"amount"`
+	Type   TimePeriodTypeEnum `json:"type"`
+}
+
 type TokenCreateInput struct {
 	ID       string `json:"id"`
 	LoginID  string `json:"loginId"`
@@ -3809,30 +4070,34 @@ type VerifyToken struct {
 }
 
 type Voucher struct {
-	ID                       string                         `json:"id"`
-	Name                     *string                        `json:"name"`
-	Type                     VoucherTypeEnum                `json:"type"`
-	Code                     string                         `json:"code"`
-	UsageLimit               *int                           `json:"usageLimit"`
-	Used                     int                            `json:"used"`
-	StartDate                time.Time                      `json:"startDate"`
-	EndDate                  *time.Time                     `json:"endDate"`
-	ApplyOncePerOrder        bool                           `json:"applyOncePerOrder"`
-	ApplyOncePerCustomer     bool                           `json:"applyOncePerCustomer"`
-	DiscountValueType        DiscountValueTypeEnum          `json:"discountValueType"`
-	MinCheckoutItemsQuantity *int                           `json:"minCheckoutItemsQuantity"`
-	Categories               *CategoryCountableConnection   `json:"categories"`
-	Collections              *CollectionCountableConnection `json:"collections"`
-	Products                 *ProductCountableConnection    `json:"products"`
-	Countries                []*CountryDisplay              `json:"countries"`
-	Translation              *VoucherTranslation            `json:"translation"`
-	DiscountValue            *float64                       `json:"discountValue"`
-	Currency                 *string                        `json:"currency"`
-	MinSpent                 *Money                         `json:"minSpent"`
-	ChannelListings          []*VoucherChannelListing       `json:"channelListings"`
+	ID                       string                             `json:"id"`
+	Name                     *string                            `json:"name"`
+	Type                     VoucherTypeEnum                    `json:"type"`
+	Code                     string                             `json:"code"`
+	UsageLimit               *int                               `json:"usageLimit"`
+	Used                     int                                `json:"used"`
+	StartDate                time.Time                          `json:"startDate"`
+	EndDate                  *time.Time                         `json:"endDate"`
+	ApplyOncePerOrder        bool                               `json:"applyOncePerOrder"`
+	ApplyOncePerCustomer     bool                               `json:"applyOncePerCustomer"`
+	DiscountValueType        DiscountValueTypeEnum              `json:"discountValueType"`
+	MinCheckoutItemsQuantity *int                               `json:"minCheckoutItemsQuantity"`
+	PrivateMetadata          []*MetadataItem                    `json:"privateMetadata"`
+	Metadata                 []*MetadataItem                    `json:"metadata"`
+	Categories               *CategoryCountableConnection       `json:"categories"`
+	Collections              *CollectionCountableConnection     `json:"collections"`
+	Products                 *ProductCountableConnection        `json:"products"`
+	Variants                 *ProductVariantCountableConnection `json:"variants"`
+	Countries                []*CountryDisplay                  `json:"countries"`
+	Translation              *VoucherTranslation                `json:"translation"`
+	DiscountValue            *float64                           `json:"discountValue"`
+	Currency                 *string                            `json:"currency"`
+	MinSpent                 *Money                             `json:"minSpent"`
+	ChannelListings          []*VoucherChannelListing           `json:"channelListings"`
 }
 
-func (Voucher) IsNode() {}
+func (Voucher) IsNode()               {}
+func (Voucher) IsObjectWithMetadata() {}
 
 type VoucherAddCatalogues struct {
 	Voucher *Voucher         `json:"voucher"`
@@ -3897,6 +4162,7 @@ type VoucherFilterInput struct {
 	DiscountType []*VoucherDiscountType `json:"discountType"`
 	Started      *DateTimeRangeInput    `json:"started"`
 	Search       *string                `json:"search"`
+	Metadata     []*MetadataFilter      `json:"metadata"`
 }
 
 type VoucherInput struct {
@@ -3907,6 +4173,7 @@ type VoucherInput struct {
 	EndDate                  *time.Time             `json:"endDate"`
 	DiscountValueType        *DiscountValueTypeEnum `json:"discountValueType"`
 	Products                 []*string              `json:"products"`
+	Variants                 []*string              `json:"variants"`
 	Collections              []*string              `json:"collections"`
 	Categories               []*string              `json:"categories"`
 	MinCheckoutItemsQuantity *int                   `json:"minCheckoutItemsQuantity"`
@@ -3991,8 +4258,10 @@ type WarehouseError struct {
 }
 
 type WarehouseFilterInput struct {
-	Search *string   `json:"search"`
-	Ids    []*string `json:"ids"`
+	ClickAndCollectOption *WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
+	Search                *string                             `json:"search"`
+	Ids                   []*string                           `json:"ids"`
+	IsPrivate             *bool                               `json:"isPrivate"`
 }
 
 type WarehouseShippingZoneAssign struct {
@@ -4016,10 +4285,12 @@ type WarehouseUpdate struct {
 }
 
 type WarehouseUpdateInput struct {
-	Slug    *string       `json:"slug"`
-	Email   *string       `json:"email"`
-	Name    *string       `json:"name"`
-	Address *AddressInput `json:"address"`
+	Slug                  *string                             `json:"slug"`
+	Email                 *string                             `json:"email"`
+	Name                  *string                             `json:"name"`
+	Address               *AddressInput                       `json:"address"`
+	ClickAndCollectOption *WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
+	IsPrivate             *bool                               `json:"isPrivate"`
 }
 
 type Webhook struct {
@@ -4285,6 +4556,127 @@ func (e *AppErrorCode) UnmarshalGQL(v interface{}) error {
 }
 
 func (e AppErrorCode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type AppExtensionTargetEnum string
+
+const (
+	AppExtensionTargetEnumMoreActions AppExtensionTargetEnum = "MORE_ACTIONS"
+	AppExtensionTargetEnumCreate      AppExtensionTargetEnum = "CREATE"
+)
+
+var AllAppExtensionTargetEnum = []AppExtensionTargetEnum{
+	AppExtensionTargetEnumMoreActions,
+	AppExtensionTargetEnumCreate,
+}
+
+func (e AppExtensionTargetEnum) IsValid() bool {
+	switch e {
+	case AppExtensionTargetEnumMoreActions, AppExtensionTargetEnumCreate:
+		return true
+	}
+	return false
+}
+
+func (e AppExtensionTargetEnum) String() string {
+	return string(e)
+}
+
+func (e *AppExtensionTargetEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AppExtensionTargetEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AppExtensionTargetEnum", str)
+	}
+	return nil
+}
+
+func (e AppExtensionTargetEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type AppExtensionTypeEnum string
+
+const (
+	AppExtensionTypeEnumOverview AppExtensionTypeEnum = "OVERVIEW"
+	AppExtensionTypeEnumDetails  AppExtensionTypeEnum = "DETAILS"
+)
+
+var AllAppExtensionTypeEnum = []AppExtensionTypeEnum{
+	AppExtensionTypeEnumOverview,
+	AppExtensionTypeEnumDetails,
+}
+
+func (e AppExtensionTypeEnum) IsValid() bool {
+	switch e {
+	case AppExtensionTypeEnumOverview, AppExtensionTypeEnumDetails:
+		return true
+	}
+	return false
+}
+
+func (e AppExtensionTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *AppExtensionTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AppExtensionTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AppExtensionTypeEnum", str)
+	}
+	return nil
+}
+
+func (e AppExtensionTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type AppExtensionViewEnum string
+
+const (
+	AppExtensionViewEnumProduct AppExtensionViewEnum = "PRODUCT"
+)
+
+var AllAppExtensionViewEnum = []AppExtensionViewEnum{
+	AppExtensionViewEnumProduct,
+}
+
+func (e AppExtensionViewEnum) IsValid() bool {
+	switch e {
+	case AppExtensionViewEnumProduct:
+		return true
+	}
+	return false
+}
+
+func (e AppExtensionViewEnum) String() string {
+	return string(e)
+}
+
+func (e *AppExtensionViewEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AppExtensionViewEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AppExtensionViewEnum", str)
+	}
+	return nil
+}
+
+func (e AppExtensionViewEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -4559,7 +4951,10 @@ const (
 	AttributeInputTypeEnumReference   AttributeInputTypeEnum = "REFERENCE"
 	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = "NUMERIC"
 	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = "RICH_TEXT"
+	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = "SWATCH"
 	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = "BOOLEAN"
+	AttributeInputTypeEnumDate        AttributeInputTypeEnum = "DATE"
+	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = "DATE_TIME"
 )
 
 var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
@@ -4569,12 +4964,15 @@ var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
 	AttributeInputTypeEnumReference,
 	AttributeInputTypeEnumNumeric,
 	AttributeInputTypeEnumRichText,
+	AttributeInputTypeEnumSwatch,
 	AttributeInputTypeEnumBoolean,
+	AttributeInputTypeEnumDate,
+	AttributeInputTypeEnumDateTime,
 }
 
 func (e AttributeInputTypeEnum) IsValid() bool {
 	switch e {
-	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText, AttributeInputTypeEnumBoolean:
+	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText, AttributeInputTypeEnumSwatch, AttributeInputTypeEnumBoolean, AttributeInputTypeEnumDate, AttributeInputTypeEnumDateTime:
 		return true
 	}
 	return false
@@ -4812,11 +5210,13 @@ const (
 	CheckoutErrorCodeRequired                      CheckoutErrorCode = "REQUIRED"
 	CheckoutErrorCodeShippingAddressNotSet         CheckoutErrorCode = "SHIPPING_ADDRESS_NOT_SET"
 	CheckoutErrorCodeShippingMethodNotApplicable   CheckoutErrorCode = "SHIPPING_METHOD_NOT_APPLICABLE"
+	CheckoutErrorCodeDeliveryMethodNotApplicable   CheckoutErrorCode = "DELIVERY_METHOD_NOT_APPLICABLE"
 	CheckoutErrorCodeShippingMethodNotSet          CheckoutErrorCode = "SHIPPING_METHOD_NOT_SET"
 	CheckoutErrorCodeShippingNotRequired           CheckoutErrorCode = "SHIPPING_NOT_REQUIRED"
 	CheckoutErrorCodeTaxError                      CheckoutErrorCode = "TAX_ERROR"
 	CheckoutErrorCodeUnique                        CheckoutErrorCode = "UNIQUE"
 	CheckoutErrorCodeVoucherNotApplicable          CheckoutErrorCode = "VOUCHER_NOT_APPLICABLE"
+	CheckoutErrorCodeGiftCardNotApplicable         CheckoutErrorCode = "GIFT_CARD_NOT_APPLICABLE"
 	CheckoutErrorCodeZeroQuantity                  CheckoutErrorCode = "ZERO_QUANTITY"
 	CheckoutErrorCodeMissingChannelSlug            CheckoutErrorCode = "MISSING_CHANNEL_SLUG"
 	CheckoutErrorCodeChannelInactive               CheckoutErrorCode = "CHANNEL_INACTIVE"
@@ -4838,11 +5238,13 @@ var AllCheckoutErrorCode = []CheckoutErrorCode{
 	CheckoutErrorCodeRequired,
 	CheckoutErrorCodeShippingAddressNotSet,
 	CheckoutErrorCodeShippingMethodNotApplicable,
+	CheckoutErrorCodeDeliveryMethodNotApplicable,
 	CheckoutErrorCodeShippingMethodNotSet,
 	CheckoutErrorCodeShippingNotRequired,
 	CheckoutErrorCodeTaxError,
 	CheckoutErrorCodeUnique,
 	CheckoutErrorCodeVoucherNotApplicable,
+	CheckoutErrorCodeGiftCardNotApplicable,
 	CheckoutErrorCodeZeroQuantity,
 	CheckoutErrorCodeMissingChannelSlug,
 	CheckoutErrorCodeChannelInactive,
@@ -4851,7 +5253,7 @@ var AllCheckoutErrorCode = []CheckoutErrorCode{
 
 func (e CheckoutErrorCode) IsValid() bool {
 	switch e {
-	case CheckoutErrorCodeBillingAddressNotSet, CheckoutErrorCodeCheckoutNotFullyPaid, CheckoutErrorCodeGraphqlError, CheckoutErrorCodeProductNotPublished, CheckoutErrorCodeProductUnavailableForPurchase, CheckoutErrorCodeInsufficientStock, CheckoutErrorCodeInvalid, CheckoutErrorCodeInvalidShippingMethod, CheckoutErrorCodeNotFound, CheckoutErrorCodePaymentError, CheckoutErrorCodeQuantityGreaterThanLimit, CheckoutErrorCodeRequired, CheckoutErrorCodeShippingAddressNotSet, CheckoutErrorCodeShippingMethodNotApplicable, CheckoutErrorCodeShippingMethodNotSet, CheckoutErrorCodeShippingNotRequired, CheckoutErrorCodeTaxError, CheckoutErrorCodeUnique, CheckoutErrorCodeVoucherNotApplicable, CheckoutErrorCodeZeroQuantity, CheckoutErrorCodeMissingChannelSlug, CheckoutErrorCodeChannelInactive, CheckoutErrorCodeUnavailableVariantInChannel:
+	case CheckoutErrorCodeBillingAddressNotSet, CheckoutErrorCodeCheckoutNotFullyPaid, CheckoutErrorCodeGraphqlError, CheckoutErrorCodeProductNotPublished, CheckoutErrorCodeProductUnavailableForPurchase, CheckoutErrorCodeInsufficientStock, CheckoutErrorCodeInvalid, CheckoutErrorCodeInvalidShippingMethod, CheckoutErrorCodeNotFound, CheckoutErrorCodePaymentError, CheckoutErrorCodeQuantityGreaterThanLimit, CheckoutErrorCodeRequired, CheckoutErrorCodeShippingAddressNotSet, CheckoutErrorCodeShippingMethodNotApplicable, CheckoutErrorCodeDeliveryMethodNotApplicable, CheckoutErrorCodeShippingMethodNotSet, CheckoutErrorCodeShippingNotRequired, CheckoutErrorCodeTaxError, CheckoutErrorCodeUnique, CheckoutErrorCodeVoucherNotApplicable, CheckoutErrorCodeGiftCardNotApplicable, CheckoutErrorCodeZeroQuantity, CheckoutErrorCodeMissingChannelSlug, CheckoutErrorCodeChannelInactive, CheckoutErrorCodeUnavailableVariantInChannel:
 		return true
 	}
 	return false
@@ -5987,6 +6389,51 @@ func (e ExportScope) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type ExternalNotificationErrorCodes string
+
+const (
+	ExternalNotificationErrorCodesRequired         ExternalNotificationErrorCodes = "REQUIRED"
+	ExternalNotificationErrorCodesInvalidModelType ExternalNotificationErrorCodes = "INVALID_MODEL_TYPE"
+	ExternalNotificationErrorCodesNotFound         ExternalNotificationErrorCodes = "NOT_FOUND"
+	ExternalNotificationErrorCodesChannelInactive  ExternalNotificationErrorCodes = "CHANNEL_INACTIVE"
+)
+
+var AllExternalNotificationErrorCodes = []ExternalNotificationErrorCodes{
+	ExternalNotificationErrorCodesRequired,
+	ExternalNotificationErrorCodesInvalidModelType,
+	ExternalNotificationErrorCodesNotFound,
+	ExternalNotificationErrorCodesChannelInactive,
+}
+
+func (e ExternalNotificationErrorCodes) IsValid() bool {
+	switch e {
+	case ExternalNotificationErrorCodesRequired, ExternalNotificationErrorCodesInvalidModelType, ExternalNotificationErrorCodesNotFound, ExternalNotificationErrorCodesChannelInactive:
+		return true
+	}
+	return false
+}
+
+func (e ExternalNotificationErrorCodes) String() string {
+	return string(e)
+}
+
+func (e *ExternalNotificationErrorCodes) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ExternalNotificationErrorCodes(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ExternalNotificationErrorCodes", str)
+	}
+	return nil
+}
+
+func (e ExternalNotificationErrorCodes) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type FileTypesEnum string
 
 const (
@@ -6037,6 +6484,7 @@ const (
 	FulfillmentStatusReplaced            FulfillmentStatus = "REPLACED"
 	FulfillmentStatusRefundedAndReturned FulfillmentStatus = "REFUNDED_AND_RETURNED"
 	FulfillmentStatusCanceled            FulfillmentStatus = "CANCELED"
+	FulfillmentStatusWaitingForApproval  FulfillmentStatus = "WAITING_FOR_APPROVAL"
 )
 
 var AllFulfillmentStatus = []FulfillmentStatus{
@@ -6046,11 +6494,12 @@ var AllFulfillmentStatus = []FulfillmentStatus{
 	FulfillmentStatusReplaced,
 	FulfillmentStatusRefundedAndReturned,
 	FulfillmentStatusCanceled,
+	FulfillmentStatusWaitingForApproval,
 }
 
 func (e FulfillmentStatus) IsValid() bool {
 	switch e {
-	case FulfillmentStatusFulfilled, FulfillmentStatusRefunded, FulfillmentStatusReturned, FulfillmentStatusReplaced, FulfillmentStatusRefundedAndReturned, FulfillmentStatusCanceled:
+	case FulfillmentStatusFulfilled, FulfillmentStatusRefunded, FulfillmentStatusReturned, FulfillmentStatusReplaced, FulfillmentStatusRefundedAndReturned, FulfillmentStatusCanceled, FulfillmentStatusWaitingForApproval:
 		return true
 	}
 	return false
@@ -6123,6 +6572,196 @@ func (e *GiftCardErrorCode) UnmarshalGQL(v interface{}) error {
 }
 
 func (e GiftCardErrorCode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type GiftCardEventsEnum string
+
+const (
+	GiftCardEventsEnumIssued            GiftCardEventsEnum = "ISSUED"
+	GiftCardEventsEnumBought            GiftCardEventsEnum = "BOUGHT"
+	GiftCardEventsEnumUpdated           GiftCardEventsEnum = "UPDATED"
+	GiftCardEventsEnumActivated         GiftCardEventsEnum = "ACTIVATED"
+	GiftCardEventsEnumDeactivated       GiftCardEventsEnum = "DEACTIVATED"
+	GiftCardEventsEnumBalanceReset      GiftCardEventsEnum = "BALANCE_RESET"
+	GiftCardEventsEnumExpiryDateUpdated GiftCardEventsEnum = "EXPIRY_DATE_UPDATED"
+	GiftCardEventsEnumTagUpdated        GiftCardEventsEnum = "TAG_UPDATED"
+	GiftCardEventsEnumSentToCustomer    GiftCardEventsEnum = "SENT_TO_CUSTOMER"
+	GiftCardEventsEnumResent            GiftCardEventsEnum = "RESENT"
+	GiftCardEventsEnumNoteAdded         GiftCardEventsEnum = "NOTE_ADDED"
+	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = "USED_IN_ORDER"
+)
+
+var AllGiftCardEventsEnum = []GiftCardEventsEnum{
+	GiftCardEventsEnumIssued,
+	GiftCardEventsEnumBought,
+	GiftCardEventsEnumUpdated,
+	GiftCardEventsEnumActivated,
+	GiftCardEventsEnumDeactivated,
+	GiftCardEventsEnumBalanceReset,
+	GiftCardEventsEnumExpiryDateUpdated,
+	GiftCardEventsEnumTagUpdated,
+	GiftCardEventsEnumSentToCustomer,
+	GiftCardEventsEnumResent,
+	GiftCardEventsEnumNoteAdded,
+	GiftCardEventsEnumUsedInOrder,
+}
+
+func (e GiftCardEventsEnum) IsValid() bool {
+	switch e {
+	case GiftCardEventsEnumIssued, GiftCardEventsEnumBought, GiftCardEventsEnumUpdated, GiftCardEventsEnumActivated, GiftCardEventsEnumDeactivated, GiftCardEventsEnumBalanceReset, GiftCardEventsEnumExpiryDateUpdated, GiftCardEventsEnumTagUpdated, GiftCardEventsEnumSentToCustomer, GiftCardEventsEnumResent, GiftCardEventsEnumNoteAdded, GiftCardEventsEnumUsedInOrder:
+		return true
+	}
+	return false
+}
+
+func (e GiftCardEventsEnum) String() string {
+	return string(e)
+}
+
+func (e *GiftCardEventsEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GiftCardEventsEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GiftCardEventsEnum", str)
+	}
+	return nil
+}
+
+func (e GiftCardEventsEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type GiftCardSettingsErrorCode string
+
+const (
+	GiftCardSettingsErrorCodeInvalid      GiftCardSettingsErrorCode = "INVALID"
+	GiftCardSettingsErrorCodeRequired     GiftCardSettingsErrorCode = "REQUIRED"
+	GiftCardSettingsErrorCodeGraphqlError GiftCardSettingsErrorCode = "GRAPHQL_ERROR"
+)
+
+var AllGiftCardSettingsErrorCode = []GiftCardSettingsErrorCode{
+	GiftCardSettingsErrorCodeInvalid,
+	GiftCardSettingsErrorCodeRequired,
+	GiftCardSettingsErrorCodeGraphqlError,
+}
+
+func (e GiftCardSettingsErrorCode) IsValid() bool {
+	switch e {
+	case GiftCardSettingsErrorCodeInvalid, GiftCardSettingsErrorCodeRequired, GiftCardSettingsErrorCodeGraphqlError:
+		return true
+	}
+	return false
+}
+
+func (e GiftCardSettingsErrorCode) String() string {
+	return string(e)
+}
+
+func (e *GiftCardSettingsErrorCode) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GiftCardSettingsErrorCode(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GiftCardSettingsErrorCode", str)
+	}
+	return nil
+}
+
+func (e GiftCardSettingsErrorCode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type GiftCardSettingsExpiryTypeEnum string
+
+const (
+	GiftCardSettingsExpiryTypeEnumNeverExpire  GiftCardSettingsExpiryTypeEnum = "NEVER_EXPIRE"
+	GiftCardSettingsExpiryTypeEnumExpiryPeriod GiftCardSettingsExpiryTypeEnum = "EXPIRY_PERIOD"
+)
+
+var AllGiftCardSettingsExpiryTypeEnum = []GiftCardSettingsExpiryTypeEnum{
+	GiftCardSettingsExpiryTypeEnumNeverExpire,
+	GiftCardSettingsExpiryTypeEnumExpiryPeriod,
+}
+
+func (e GiftCardSettingsExpiryTypeEnum) IsValid() bool {
+	switch e {
+	case GiftCardSettingsExpiryTypeEnumNeverExpire, GiftCardSettingsExpiryTypeEnumExpiryPeriod:
+		return true
+	}
+	return false
+}
+
+func (e GiftCardSettingsExpiryTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *GiftCardSettingsExpiryTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GiftCardSettingsExpiryTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GiftCardSettingsExpiryTypeEnum", str)
+	}
+	return nil
+}
+
+func (e GiftCardSettingsExpiryTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type GiftCardSortField string
+
+const (
+	GiftCardSortFieldTag            GiftCardSortField = "TAG"
+	GiftCardSortFieldProduct        GiftCardSortField = "PRODUCT"
+	GiftCardSortFieldUsedBy         GiftCardSortField = "USED_BY"
+	GiftCardSortFieldCurrentBalance GiftCardSortField = "CURRENT_BALANCE"
+)
+
+var AllGiftCardSortField = []GiftCardSortField{
+	GiftCardSortFieldTag,
+	GiftCardSortFieldProduct,
+	GiftCardSortFieldUsedBy,
+	GiftCardSortFieldCurrentBalance,
+}
+
+func (e GiftCardSortField) IsValid() bool {
+	switch e {
+	case GiftCardSortFieldTag, GiftCardSortFieldProduct, GiftCardSortFieldUsedBy, GiftCardSortFieldCurrentBalance:
+		return true
+	}
+	return false
+}
+
+func (e GiftCardSortField) String() string {
+	return string(e)
+}
+
+func (e *GiftCardSortField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GiftCardSortField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GiftCardSortField", str)
+	}
+	return nil
+}
+
+func (e GiftCardSortField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -6225,112 +6864,1572 @@ func (e JobStatusEnum) MarshalGQL(w io.Writer) {
 type LanguageCodeEnum string
 
 const (
-	LanguageCodeEnumAr     LanguageCodeEnum = "AR"
-	LanguageCodeEnumAz     LanguageCodeEnum = "AZ"
-	LanguageCodeEnumBg     LanguageCodeEnum = "BG"
-	LanguageCodeEnumBn     LanguageCodeEnum = "BN"
-	LanguageCodeEnumCa     LanguageCodeEnum = "CA"
-	LanguageCodeEnumCs     LanguageCodeEnum = "CS"
-	LanguageCodeEnumDa     LanguageCodeEnum = "DA"
-	LanguageCodeEnumDe     LanguageCodeEnum = "DE"
-	LanguageCodeEnumEl     LanguageCodeEnum = "EL"
-	LanguageCodeEnumEn     LanguageCodeEnum = "EN"
-	LanguageCodeEnumEs     LanguageCodeEnum = "ES"
-	LanguageCodeEnumEsCo   LanguageCodeEnum = "ES_CO"
-	LanguageCodeEnumEt     LanguageCodeEnum = "ET"
-	LanguageCodeEnumFa     LanguageCodeEnum = "FA"
-	LanguageCodeEnumFi     LanguageCodeEnum = "FI"
-	LanguageCodeEnumFr     LanguageCodeEnum = "FR"
-	LanguageCodeEnumHi     LanguageCodeEnum = "HI"
-	LanguageCodeEnumHu     LanguageCodeEnum = "HU"
-	LanguageCodeEnumHy     LanguageCodeEnum = "HY"
-	LanguageCodeEnumID     LanguageCodeEnum = "ID"
-	LanguageCodeEnumIs     LanguageCodeEnum = "IS"
-	LanguageCodeEnumIt     LanguageCodeEnum = "IT"
-	LanguageCodeEnumJa     LanguageCodeEnum = "JA"
-	LanguageCodeEnumKa     LanguageCodeEnum = "KA"
-	LanguageCodeEnumKm     LanguageCodeEnum = "KM"
-	LanguageCodeEnumKo     LanguageCodeEnum = "KO"
-	LanguageCodeEnumLt     LanguageCodeEnum = "LT"
-	LanguageCodeEnumMn     LanguageCodeEnum = "MN"
-	LanguageCodeEnumMy     LanguageCodeEnum = "MY"
-	LanguageCodeEnumNb     LanguageCodeEnum = "NB"
-	LanguageCodeEnumNl     LanguageCodeEnum = "NL"
-	LanguageCodeEnumPl     LanguageCodeEnum = "PL"
-	LanguageCodeEnumPt     LanguageCodeEnum = "PT"
-	LanguageCodeEnumPtBr   LanguageCodeEnum = "PT_BR"
-	LanguageCodeEnumRo     LanguageCodeEnum = "RO"
-	LanguageCodeEnumRu     LanguageCodeEnum = "RU"
-	LanguageCodeEnumSk     LanguageCodeEnum = "SK"
-	LanguageCodeEnumSl     LanguageCodeEnum = "SL"
-	LanguageCodeEnumSq     LanguageCodeEnum = "SQ"
-	LanguageCodeEnumSr     LanguageCodeEnum = "SR"
-	LanguageCodeEnumSv     LanguageCodeEnum = "SV"
-	LanguageCodeEnumSw     LanguageCodeEnum = "SW"
-	LanguageCodeEnumTa     LanguageCodeEnum = "TA"
-	LanguageCodeEnumTh     LanguageCodeEnum = "TH"
-	LanguageCodeEnumTr     LanguageCodeEnum = "TR"
-	LanguageCodeEnumUk     LanguageCodeEnum = "UK"
-	LanguageCodeEnumVi     LanguageCodeEnum = "VI"
-	LanguageCodeEnumZhHans LanguageCodeEnum = "ZH_HANS"
-	LanguageCodeEnumZhHant LanguageCodeEnum = "ZH_HANT"
+	LanguageCodeEnumAf           LanguageCodeEnum = "AF"
+	LanguageCodeEnumAfNa         LanguageCodeEnum = "AF_NA"
+	LanguageCodeEnumAfZa         LanguageCodeEnum = "AF_ZA"
+	LanguageCodeEnumAgq          LanguageCodeEnum = "AGQ"
+	LanguageCodeEnumAgqCm        LanguageCodeEnum = "AGQ_CM"
+	LanguageCodeEnumAk           LanguageCodeEnum = "AK"
+	LanguageCodeEnumAkGh         LanguageCodeEnum = "AK_GH"
+	LanguageCodeEnumAm           LanguageCodeEnum = "AM"
+	LanguageCodeEnumAmEt         LanguageCodeEnum = "AM_ET"
+	LanguageCodeEnumAr           LanguageCodeEnum = "AR"
+	LanguageCodeEnumArAe         LanguageCodeEnum = "AR_AE"
+	LanguageCodeEnumArBh         LanguageCodeEnum = "AR_BH"
+	LanguageCodeEnumArDj         LanguageCodeEnum = "AR_DJ"
+	LanguageCodeEnumArDz         LanguageCodeEnum = "AR_DZ"
+	LanguageCodeEnumArEg         LanguageCodeEnum = "AR_EG"
+	LanguageCodeEnumArEh         LanguageCodeEnum = "AR_EH"
+	LanguageCodeEnumArEr         LanguageCodeEnum = "AR_ER"
+	LanguageCodeEnumArIl         LanguageCodeEnum = "AR_IL"
+	LanguageCodeEnumArIq         LanguageCodeEnum = "AR_IQ"
+	LanguageCodeEnumArJo         LanguageCodeEnum = "AR_JO"
+	LanguageCodeEnumArKm         LanguageCodeEnum = "AR_KM"
+	LanguageCodeEnumArKw         LanguageCodeEnum = "AR_KW"
+	LanguageCodeEnumArLb         LanguageCodeEnum = "AR_LB"
+	LanguageCodeEnumArLy         LanguageCodeEnum = "AR_LY"
+	LanguageCodeEnumArMa         LanguageCodeEnum = "AR_MA"
+	LanguageCodeEnumArMr         LanguageCodeEnum = "AR_MR"
+	LanguageCodeEnumArOm         LanguageCodeEnum = "AR_OM"
+	LanguageCodeEnumArPs         LanguageCodeEnum = "AR_PS"
+	LanguageCodeEnumArQa         LanguageCodeEnum = "AR_QA"
+	LanguageCodeEnumArSa         LanguageCodeEnum = "AR_SA"
+	LanguageCodeEnumArSd         LanguageCodeEnum = "AR_SD"
+	LanguageCodeEnumArSo         LanguageCodeEnum = "AR_SO"
+	LanguageCodeEnumArSs         LanguageCodeEnum = "AR_SS"
+	LanguageCodeEnumArSy         LanguageCodeEnum = "AR_SY"
+	LanguageCodeEnumArTd         LanguageCodeEnum = "AR_TD"
+	LanguageCodeEnumArTn         LanguageCodeEnum = "AR_TN"
+	LanguageCodeEnumArYe         LanguageCodeEnum = "AR_YE"
+	LanguageCodeEnumAs           LanguageCodeEnum = "AS"
+	LanguageCodeEnumAsIn         LanguageCodeEnum = "AS_IN"
+	LanguageCodeEnumAsa          LanguageCodeEnum = "ASA"
+	LanguageCodeEnumAsaTz        LanguageCodeEnum = "ASA_TZ"
+	LanguageCodeEnumAst          LanguageCodeEnum = "AST"
+	LanguageCodeEnumAstEs        LanguageCodeEnum = "AST_ES"
+	LanguageCodeEnumAz           LanguageCodeEnum = "AZ"
+	LanguageCodeEnumAzCyrl       LanguageCodeEnum = "AZ_CYRL"
+	LanguageCodeEnumAzCyrlAz     LanguageCodeEnum = "AZ_CYRL_AZ"
+	LanguageCodeEnumAzLatn       LanguageCodeEnum = "AZ_LATN"
+	LanguageCodeEnumAzLatnAz     LanguageCodeEnum = "AZ_LATN_AZ"
+	LanguageCodeEnumBas          LanguageCodeEnum = "BAS"
+	LanguageCodeEnumBasCm        LanguageCodeEnum = "BAS_CM"
+	LanguageCodeEnumBe           LanguageCodeEnum = "BE"
+	LanguageCodeEnumBeBy         LanguageCodeEnum = "BE_BY"
+	LanguageCodeEnumBem          LanguageCodeEnum = "BEM"
+	LanguageCodeEnumBemZm        LanguageCodeEnum = "BEM_ZM"
+	LanguageCodeEnumBez          LanguageCodeEnum = "BEZ"
+	LanguageCodeEnumBezTz        LanguageCodeEnum = "BEZ_TZ"
+	LanguageCodeEnumBg           LanguageCodeEnum = "BG"
+	LanguageCodeEnumBgBg         LanguageCodeEnum = "BG_BG"
+	LanguageCodeEnumBm           LanguageCodeEnum = "BM"
+	LanguageCodeEnumBmMl         LanguageCodeEnum = "BM_ML"
+	LanguageCodeEnumBn           LanguageCodeEnum = "BN"
+	LanguageCodeEnumBnBd         LanguageCodeEnum = "BN_BD"
+	LanguageCodeEnumBnIn         LanguageCodeEnum = "BN_IN"
+	LanguageCodeEnumBo           LanguageCodeEnum = "BO"
+	LanguageCodeEnumBoCn         LanguageCodeEnum = "BO_CN"
+	LanguageCodeEnumBoIn         LanguageCodeEnum = "BO_IN"
+	LanguageCodeEnumBr           LanguageCodeEnum = "BR"
+	LanguageCodeEnumBrFr         LanguageCodeEnum = "BR_FR"
+	LanguageCodeEnumBrx          LanguageCodeEnum = "BRX"
+	LanguageCodeEnumBrxIn        LanguageCodeEnum = "BRX_IN"
+	LanguageCodeEnumBs           LanguageCodeEnum = "BS"
+	LanguageCodeEnumBsCyrl       LanguageCodeEnum = "BS_CYRL"
+	LanguageCodeEnumBsCyrlBa     LanguageCodeEnum = "BS_CYRL_BA"
+	LanguageCodeEnumBsLatn       LanguageCodeEnum = "BS_LATN"
+	LanguageCodeEnumBsLatnBa     LanguageCodeEnum = "BS_LATN_BA"
+	LanguageCodeEnumCa           LanguageCodeEnum = "CA"
+	LanguageCodeEnumCaAd         LanguageCodeEnum = "CA_AD"
+	LanguageCodeEnumCaEs         LanguageCodeEnum = "CA_ES"
+	LanguageCodeEnumCaEsValencia LanguageCodeEnum = "CA_ES_VALENCIA"
+	LanguageCodeEnumCaFr         LanguageCodeEnum = "CA_FR"
+	LanguageCodeEnumCaIt         LanguageCodeEnum = "CA_IT"
+	LanguageCodeEnumCcp          LanguageCodeEnum = "CCP"
+	LanguageCodeEnumCcpBd        LanguageCodeEnum = "CCP_BD"
+	LanguageCodeEnumCcpIn        LanguageCodeEnum = "CCP_IN"
+	LanguageCodeEnumCe           LanguageCodeEnum = "CE"
+	LanguageCodeEnumCeRu         LanguageCodeEnum = "CE_RU"
+	LanguageCodeEnumCeb          LanguageCodeEnum = "CEB"
+	LanguageCodeEnumCebPh        LanguageCodeEnum = "CEB_PH"
+	LanguageCodeEnumCgg          LanguageCodeEnum = "CGG"
+	LanguageCodeEnumCggUg        LanguageCodeEnum = "CGG_UG"
+	LanguageCodeEnumChr          LanguageCodeEnum = "CHR"
+	LanguageCodeEnumChrUs        LanguageCodeEnum = "CHR_US"
+	LanguageCodeEnumCkb          LanguageCodeEnum = "CKB"
+	LanguageCodeEnumCkbIq        LanguageCodeEnum = "CKB_IQ"
+	LanguageCodeEnumCkbIr        LanguageCodeEnum = "CKB_IR"
+	LanguageCodeEnumCs           LanguageCodeEnum = "CS"
+	LanguageCodeEnumCsCz         LanguageCodeEnum = "CS_CZ"
+	LanguageCodeEnumCu           LanguageCodeEnum = "CU"
+	LanguageCodeEnumCuRu         LanguageCodeEnum = "CU_RU"
+	LanguageCodeEnumCy           LanguageCodeEnum = "CY"
+	LanguageCodeEnumCyGb         LanguageCodeEnum = "CY_GB"
+	LanguageCodeEnumDa           LanguageCodeEnum = "DA"
+	LanguageCodeEnumDaDk         LanguageCodeEnum = "DA_DK"
+	LanguageCodeEnumDaGl         LanguageCodeEnum = "DA_GL"
+	LanguageCodeEnumDav          LanguageCodeEnum = "DAV"
+	LanguageCodeEnumDavKe        LanguageCodeEnum = "DAV_KE"
+	LanguageCodeEnumDe           LanguageCodeEnum = "DE"
+	LanguageCodeEnumDeAt         LanguageCodeEnum = "DE_AT"
+	LanguageCodeEnumDeBe         LanguageCodeEnum = "DE_BE"
+	LanguageCodeEnumDeCh         LanguageCodeEnum = "DE_CH"
+	LanguageCodeEnumDeDe         LanguageCodeEnum = "DE_DE"
+	LanguageCodeEnumDeIt         LanguageCodeEnum = "DE_IT"
+	LanguageCodeEnumDeLi         LanguageCodeEnum = "DE_LI"
+	LanguageCodeEnumDeLu         LanguageCodeEnum = "DE_LU"
+	LanguageCodeEnumDje          LanguageCodeEnum = "DJE"
+	LanguageCodeEnumDjeNe        LanguageCodeEnum = "DJE_NE"
+	LanguageCodeEnumDsb          LanguageCodeEnum = "DSB"
+	LanguageCodeEnumDsbDe        LanguageCodeEnum = "DSB_DE"
+	LanguageCodeEnumDua          LanguageCodeEnum = "DUA"
+	LanguageCodeEnumDuaCm        LanguageCodeEnum = "DUA_CM"
+	LanguageCodeEnumDyo          LanguageCodeEnum = "DYO"
+	LanguageCodeEnumDyoSn        LanguageCodeEnum = "DYO_SN"
+	LanguageCodeEnumDz           LanguageCodeEnum = "DZ"
+	LanguageCodeEnumDzBt         LanguageCodeEnum = "DZ_BT"
+	LanguageCodeEnumEbu          LanguageCodeEnum = "EBU"
+	LanguageCodeEnumEbuKe        LanguageCodeEnum = "EBU_KE"
+	LanguageCodeEnumEe           LanguageCodeEnum = "EE"
+	LanguageCodeEnumEeGh         LanguageCodeEnum = "EE_GH"
+	LanguageCodeEnumEeTg         LanguageCodeEnum = "EE_TG"
+	LanguageCodeEnumEl           LanguageCodeEnum = "EL"
+	LanguageCodeEnumElCy         LanguageCodeEnum = "EL_CY"
+	LanguageCodeEnumElGr         LanguageCodeEnum = "EL_GR"
+	LanguageCodeEnumEn           LanguageCodeEnum = "EN"
+	LanguageCodeEnumEnAe         LanguageCodeEnum = "EN_AE"
+	LanguageCodeEnumEnAg         LanguageCodeEnum = "EN_AG"
+	LanguageCodeEnumEnAi         LanguageCodeEnum = "EN_AI"
+	LanguageCodeEnumEnAs         LanguageCodeEnum = "EN_AS"
+	LanguageCodeEnumEnAt         LanguageCodeEnum = "EN_AT"
+	LanguageCodeEnumEnAu         LanguageCodeEnum = "EN_AU"
+	LanguageCodeEnumEnBb         LanguageCodeEnum = "EN_BB"
+	LanguageCodeEnumEnBe         LanguageCodeEnum = "EN_BE"
+	LanguageCodeEnumEnBi         LanguageCodeEnum = "EN_BI"
+	LanguageCodeEnumEnBm         LanguageCodeEnum = "EN_BM"
+	LanguageCodeEnumEnBs         LanguageCodeEnum = "EN_BS"
+	LanguageCodeEnumEnBw         LanguageCodeEnum = "EN_BW"
+	LanguageCodeEnumEnBz         LanguageCodeEnum = "EN_BZ"
+	LanguageCodeEnumEnCa         LanguageCodeEnum = "EN_CA"
+	LanguageCodeEnumEnCc         LanguageCodeEnum = "EN_CC"
+	LanguageCodeEnumEnCh         LanguageCodeEnum = "EN_CH"
+	LanguageCodeEnumEnCk         LanguageCodeEnum = "EN_CK"
+	LanguageCodeEnumEnCm         LanguageCodeEnum = "EN_CM"
+	LanguageCodeEnumEnCx         LanguageCodeEnum = "EN_CX"
+	LanguageCodeEnumEnCy         LanguageCodeEnum = "EN_CY"
+	LanguageCodeEnumEnDe         LanguageCodeEnum = "EN_DE"
+	LanguageCodeEnumEnDg         LanguageCodeEnum = "EN_DG"
+	LanguageCodeEnumEnDk         LanguageCodeEnum = "EN_DK"
+	LanguageCodeEnumEnDm         LanguageCodeEnum = "EN_DM"
+	LanguageCodeEnumEnEr         LanguageCodeEnum = "EN_ER"
+	LanguageCodeEnumEnFi         LanguageCodeEnum = "EN_FI"
+	LanguageCodeEnumEnFj         LanguageCodeEnum = "EN_FJ"
+	LanguageCodeEnumEnFk         LanguageCodeEnum = "EN_FK"
+	LanguageCodeEnumEnFm         LanguageCodeEnum = "EN_FM"
+	LanguageCodeEnumEnGb         LanguageCodeEnum = "EN_GB"
+	LanguageCodeEnumEnGd         LanguageCodeEnum = "EN_GD"
+	LanguageCodeEnumEnGg         LanguageCodeEnum = "EN_GG"
+	LanguageCodeEnumEnGh         LanguageCodeEnum = "EN_GH"
+	LanguageCodeEnumEnGi         LanguageCodeEnum = "EN_GI"
+	LanguageCodeEnumEnGm         LanguageCodeEnum = "EN_GM"
+	LanguageCodeEnumEnGu         LanguageCodeEnum = "EN_GU"
+	LanguageCodeEnumEnGy         LanguageCodeEnum = "EN_GY"
+	LanguageCodeEnumEnHk         LanguageCodeEnum = "EN_HK"
+	LanguageCodeEnumEnIe         LanguageCodeEnum = "EN_IE"
+	LanguageCodeEnumEnIl         LanguageCodeEnum = "EN_IL"
+	LanguageCodeEnumEnIm         LanguageCodeEnum = "EN_IM"
+	LanguageCodeEnumEnIn         LanguageCodeEnum = "EN_IN"
+	LanguageCodeEnumEnIo         LanguageCodeEnum = "EN_IO"
+	LanguageCodeEnumEnJe         LanguageCodeEnum = "EN_JE"
+	LanguageCodeEnumEnJm         LanguageCodeEnum = "EN_JM"
+	LanguageCodeEnumEnKe         LanguageCodeEnum = "EN_KE"
+	LanguageCodeEnumEnKi         LanguageCodeEnum = "EN_KI"
+	LanguageCodeEnumEnKn         LanguageCodeEnum = "EN_KN"
+	LanguageCodeEnumEnKy         LanguageCodeEnum = "EN_KY"
+	LanguageCodeEnumEnLc         LanguageCodeEnum = "EN_LC"
+	LanguageCodeEnumEnLr         LanguageCodeEnum = "EN_LR"
+	LanguageCodeEnumEnLs         LanguageCodeEnum = "EN_LS"
+	LanguageCodeEnumEnMg         LanguageCodeEnum = "EN_MG"
+	LanguageCodeEnumEnMh         LanguageCodeEnum = "EN_MH"
+	LanguageCodeEnumEnMo         LanguageCodeEnum = "EN_MO"
+	LanguageCodeEnumEnMp         LanguageCodeEnum = "EN_MP"
+	LanguageCodeEnumEnMs         LanguageCodeEnum = "EN_MS"
+	LanguageCodeEnumEnMt         LanguageCodeEnum = "EN_MT"
+	LanguageCodeEnumEnMu         LanguageCodeEnum = "EN_MU"
+	LanguageCodeEnumEnMw         LanguageCodeEnum = "EN_MW"
+	LanguageCodeEnumEnMy         LanguageCodeEnum = "EN_MY"
+	LanguageCodeEnumEnNa         LanguageCodeEnum = "EN_NA"
+	LanguageCodeEnumEnNf         LanguageCodeEnum = "EN_NF"
+	LanguageCodeEnumEnNg         LanguageCodeEnum = "EN_NG"
+	LanguageCodeEnumEnNl         LanguageCodeEnum = "EN_NL"
+	LanguageCodeEnumEnNr         LanguageCodeEnum = "EN_NR"
+	LanguageCodeEnumEnNu         LanguageCodeEnum = "EN_NU"
+	LanguageCodeEnumEnNz         LanguageCodeEnum = "EN_NZ"
+	LanguageCodeEnumEnPg         LanguageCodeEnum = "EN_PG"
+	LanguageCodeEnumEnPh         LanguageCodeEnum = "EN_PH"
+	LanguageCodeEnumEnPk         LanguageCodeEnum = "EN_PK"
+	LanguageCodeEnumEnPn         LanguageCodeEnum = "EN_PN"
+	LanguageCodeEnumEnPr         LanguageCodeEnum = "EN_PR"
+	LanguageCodeEnumEnPw         LanguageCodeEnum = "EN_PW"
+	LanguageCodeEnumEnRw         LanguageCodeEnum = "EN_RW"
+	LanguageCodeEnumEnSb         LanguageCodeEnum = "EN_SB"
+	LanguageCodeEnumEnSc         LanguageCodeEnum = "EN_SC"
+	LanguageCodeEnumEnSd         LanguageCodeEnum = "EN_SD"
+	LanguageCodeEnumEnSe         LanguageCodeEnum = "EN_SE"
+	LanguageCodeEnumEnSg         LanguageCodeEnum = "EN_SG"
+	LanguageCodeEnumEnSh         LanguageCodeEnum = "EN_SH"
+	LanguageCodeEnumEnSi         LanguageCodeEnum = "EN_SI"
+	LanguageCodeEnumEnSl         LanguageCodeEnum = "EN_SL"
+	LanguageCodeEnumEnSs         LanguageCodeEnum = "EN_SS"
+	LanguageCodeEnumEnSx         LanguageCodeEnum = "EN_SX"
+	LanguageCodeEnumEnSz         LanguageCodeEnum = "EN_SZ"
+	LanguageCodeEnumEnTc         LanguageCodeEnum = "EN_TC"
+	LanguageCodeEnumEnTk         LanguageCodeEnum = "EN_TK"
+	LanguageCodeEnumEnTo         LanguageCodeEnum = "EN_TO"
+	LanguageCodeEnumEnTt         LanguageCodeEnum = "EN_TT"
+	LanguageCodeEnumEnTv         LanguageCodeEnum = "EN_TV"
+	LanguageCodeEnumEnTz         LanguageCodeEnum = "EN_TZ"
+	LanguageCodeEnumEnUg         LanguageCodeEnum = "EN_UG"
+	LanguageCodeEnumEnUm         LanguageCodeEnum = "EN_UM"
+	LanguageCodeEnumEnUs         LanguageCodeEnum = "EN_US"
+	LanguageCodeEnumEnVc         LanguageCodeEnum = "EN_VC"
+	LanguageCodeEnumEnVg         LanguageCodeEnum = "EN_VG"
+	LanguageCodeEnumEnVi         LanguageCodeEnum = "EN_VI"
+	LanguageCodeEnumEnVu         LanguageCodeEnum = "EN_VU"
+	LanguageCodeEnumEnWs         LanguageCodeEnum = "EN_WS"
+	LanguageCodeEnumEnZa         LanguageCodeEnum = "EN_ZA"
+	LanguageCodeEnumEnZm         LanguageCodeEnum = "EN_ZM"
+	LanguageCodeEnumEnZw         LanguageCodeEnum = "EN_ZW"
+	LanguageCodeEnumEo           LanguageCodeEnum = "EO"
+	LanguageCodeEnumEs           LanguageCodeEnum = "ES"
+	LanguageCodeEnumEsAr         LanguageCodeEnum = "ES_AR"
+	LanguageCodeEnumEsBo         LanguageCodeEnum = "ES_BO"
+	LanguageCodeEnumEsBr         LanguageCodeEnum = "ES_BR"
+	LanguageCodeEnumEsBz         LanguageCodeEnum = "ES_BZ"
+	LanguageCodeEnumEsCl         LanguageCodeEnum = "ES_CL"
+	LanguageCodeEnumEsCo         LanguageCodeEnum = "ES_CO"
+	LanguageCodeEnumEsCr         LanguageCodeEnum = "ES_CR"
+	LanguageCodeEnumEsCu         LanguageCodeEnum = "ES_CU"
+	LanguageCodeEnumEsDo         LanguageCodeEnum = "ES_DO"
+	LanguageCodeEnumEsEa         LanguageCodeEnum = "ES_EA"
+	LanguageCodeEnumEsEc         LanguageCodeEnum = "ES_EC"
+	LanguageCodeEnumEsEs         LanguageCodeEnum = "ES_ES"
+	LanguageCodeEnumEsGq         LanguageCodeEnum = "ES_GQ"
+	LanguageCodeEnumEsGt         LanguageCodeEnum = "ES_GT"
+	LanguageCodeEnumEsHn         LanguageCodeEnum = "ES_HN"
+	LanguageCodeEnumEsIc         LanguageCodeEnum = "ES_IC"
+	LanguageCodeEnumEsMx         LanguageCodeEnum = "ES_MX"
+	LanguageCodeEnumEsNi         LanguageCodeEnum = "ES_NI"
+	LanguageCodeEnumEsPa         LanguageCodeEnum = "ES_PA"
+	LanguageCodeEnumEsPe         LanguageCodeEnum = "ES_PE"
+	LanguageCodeEnumEsPh         LanguageCodeEnum = "ES_PH"
+	LanguageCodeEnumEsPr         LanguageCodeEnum = "ES_PR"
+	LanguageCodeEnumEsPy         LanguageCodeEnum = "ES_PY"
+	LanguageCodeEnumEsSv         LanguageCodeEnum = "ES_SV"
+	LanguageCodeEnumEsUs         LanguageCodeEnum = "ES_US"
+	LanguageCodeEnumEsUy         LanguageCodeEnum = "ES_UY"
+	LanguageCodeEnumEsVe         LanguageCodeEnum = "ES_VE"
+	LanguageCodeEnumEt           LanguageCodeEnum = "ET"
+	LanguageCodeEnumEtEe         LanguageCodeEnum = "ET_EE"
+	LanguageCodeEnumEu           LanguageCodeEnum = "EU"
+	LanguageCodeEnumEuEs         LanguageCodeEnum = "EU_ES"
+	LanguageCodeEnumEwo          LanguageCodeEnum = "EWO"
+	LanguageCodeEnumEwoCm        LanguageCodeEnum = "EWO_CM"
+	LanguageCodeEnumFa           LanguageCodeEnum = "FA"
+	LanguageCodeEnumFaAf         LanguageCodeEnum = "FA_AF"
+	LanguageCodeEnumFaIr         LanguageCodeEnum = "FA_IR"
+	LanguageCodeEnumFf           LanguageCodeEnum = "FF"
+	LanguageCodeEnumFfAdlm       LanguageCodeEnum = "FF_ADLM"
+	LanguageCodeEnumFfAdlmBf     LanguageCodeEnum = "FF_ADLM_BF"
+	LanguageCodeEnumFfAdlmCm     LanguageCodeEnum = "FF_ADLM_CM"
+	LanguageCodeEnumFfAdlmGh     LanguageCodeEnum = "FF_ADLM_GH"
+	LanguageCodeEnumFfAdlmGm     LanguageCodeEnum = "FF_ADLM_GM"
+	LanguageCodeEnumFfAdlmGn     LanguageCodeEnum = "FF_ADLM_GN"
+	LanguageCodeEnumFfAdlmGw     LanguageCodeEnum = "FF_ADLM_GW"
+	LanguageCodeEnumFfAdlmLr     LanguageCodeEnum = "FF_ADLM_LR"
+	LanguageCodeEnumFfAdlmMr     LanguageCodeEnum = "FF_ADLM_MR"
+	LanguageCodeEnumFfAdlmNe     LanguageCodeEnum = "FF_ADLM_NE"
+	LanguageCodeEnumFfAdlmNg     LanguageCodeEnum = "FF_ADLM_NG"
+	LanguageCodeEnumFfAdlmSl     LanguageCodeEnum = "FF_ADLM_SL"
+	LanguageCodeEnumFfAdlmSn     LanguageCodeEnum = "FF_ADLM_SN"
+	LanguageCodeEnumFfLatn       LanguageCodeEnum = "FF_LATN"
+	LanguageCodeEnumFfLatnBf     LanguageCodeEnum = "FF_LATN_BF"
+	LanguageCodeEnumFfLatnCm     LanguageCodeEnum = "FF_LATN_CM"
+	LanguageCodeEnumFfLatnGh     LanguageCodeEnum = "FF_LATN_GH"
+	LanguageCodeEnumFfLatnGm     LanguageCodeEnum = "FF_LATN_GM"
+	LanguageCodeEnumFfLatnGn     LanguageCodeEnum = "FF_LATN_GN"
+	LanguageCodeEnumFfLatnGw     LanguageCodeEnum = "FF_LATN_GW"
+	LanguageCodeEnumFfLatnLr     LanguageCodeEnum = "FF_LATN_LR"
+	LanguageCodeEnumFfLatnMr     LanguageCodeEnum = "FF_LATN_MR"
+	LanguageCodeEnumFfLatnNe     LanguageCodeEnum = "FF_LATN_NE"
+	LanguageCodeEnumFfLatnNg     LanguageCodeEnum = "FF_LATN_NG"
+	LanguageCodeEnumFfLatnSl     LanguageCodeEnum = "FF_LATN_SL"
+	LanguageCodeEnumFfLatnSn     LanguageCodeEnum = "FF_LATN_SN"
+	LanguageCodeEnumFi           LanguageCodeEnum = "FI"
+	LanguageCodeEnumFiFi         LanguageCodeEnum = "FI_FI"
+	LanguageCodeEnumFil          LanguageCodeEnum = "FIL"
+	LanguageCodeEnumFilPh        LanguageCodeEnum = "FIL_PH"
+	LanguageCodeEnumFo           LanguageCodeEnum = "FO"
+	LanguageCodeEnumFoDk         LanguageCodeEnum = "FO_DK"
+	LanguageCodeEnumFoFo         LanguageCodeEnum = "FO_FO"
+	LanguageCodeEnumFr           LanguageCodeEnum = "FR"
+	LanguageCodeEnumFrBe         LanguageCodeEnum = "FR_BE"
+	LanguageCodeEnumFrBf         LanguageCodeEnum = "FR_BF"
+	LanguageCodeEnumFrBi         LanguageCodeEnum = "FR_BI"
+	LanguageCodeEnumFrBj         LanguageCodeEnum = "FR_BJ"
+	LanguageCodeEnumFrBl         LanguageCodeEnum = "FR_BL"
+	LanguageCodeEnumFrCa         LanguageCodeEnum = "FR_CA"
+	LanguageCodeEnumFrCd         LanguageCodeEnum = "FR_CD"
+	LanguageCodeEnumFrCf         LanguageCodeEnum = "FR_CF"
+	LanguageCodeEnumFrCg         LanguageCodeEnum = "FR_CG"
+	LanguageCodeEnumFrCh         LanguageCodeEnum = "FR_CH"
+	LanguageCodeEnumFrCi         LanguageCodeEnum = "FR_CI"
+	LanguageCodeEnumFrCm         LanguageCodeEnum = "FR_CM"
+	LanguageCodeEnumFrDj         LanguageCodeEnum = "FR_DJ"
+	LanguageCodeEnumFrDz         LanguageCodeEnum = "FR_DZ"
+	LanguageCodeEnumFrFr         LanguageCodeEnum = "FR_FR"
+	LanguageCodeEnumFrGa         LanguageCodeEnum = "FR_GA"
+	LanguageCodeEnumFrGf         LanguageCodeEnum = "FR_GF"
+	LanguageCodeEnumFrGn         LanguageCodeEnum = "FR_GN"
+	LanguageCodeEnumFrGp         LanguageCodeEnum = "FR_GP"
+	LanguageCodeEnumFrGq         LanguageCodeEnum = "FR_GQ"
+	LanguageCodeEnumFrHt         LanguageCodeEnum = "FR_HT"
+	LanguageCodeEnumFrKm         LanguageCodeEnum = "FR_KM"
+	LanguageCodeEnumFrLu         LanguageCodeEnum = "FR_LU"
+	LanguageCodeEnumFrMa         LanguageCodeEnum = "FR_MA"
+	LanguageCodeEnumFrMc         LanguageCodeEnum = "FR_MC"
+	LanguageCodeEnumFrMf         LanguageCodeEnum = "FR_MF"
+	LanguageCodeEnumFrMg         LanguageCodeEnum = "FR_MG"
+	LanguageCodeEnumFrMl         LanguageCodeEnum = "FR_ML"
+	LanguageCodeEnumFrMq         LanguageCodeEnum = "FR_MQ"
+	LanguageCodeEnumFrMr         LanguageCodeEnum = "FR_MR"
+	LanguageCodeEnumFrMu         LanguageCodeEnum = "FR_MU"
+	LanguageCodeEnumFrNc         LanguageCodeEnum = "FR_NC"
+	LanguageCodeEnumFrNe         LanguageCodeEnum = "FR_NE"
+	LanguageCodeEnumFrPf         LanguageCodeEnum = "FR_PF"
+	LanguageCodeEnumFrPm         LanguageCodeEnum = "FR_PM"
+	LanguageCodeEnumFrRe         LanguageCodeEnum = "FR_RE"
+	LanguageCodeEnumFrRw         LanguageCodeEnum = "FR_RW"
+	LanguageCodeEnumFrSc         LanguageCodeEnum = "FR_SC"
+	LanguageCodeEnumFrSn         LanguageCodeEnum = "FR_SN"
+	LanguageCodeEnumFrSy         LanguageCodeEnum = "FR_SY"
+	LanguageCodeEnumFrTd         LanguageCodeEnum = "FR_TD"
+	LanguageCodeEnumFrTg         LanguageCodeEnum = "FR_TG"
+	LanguageCodeEnumFrTn         LanguageCodeEnum = "FR_TN"
+	LanguageCodeEnumFrVu         LanguageCodeEnum = "FR_VU"
+	LanguageCodeEnumFrWf         LanguageCodeEnum = "FR_WF"
+	LanguageCodeEnumFrYt         LanguageCodeEnum = "FR_YT"
+	LanguageCodeEnumFur          LanguageCodeEnum = "FUR"
+	LanguageCodeEnumFurIt        LanguageCodeEnum = "FUR_IT"
+	LanguageCodeEnumFy           LanguageCodeEnum = "FY"
+	LanguageCodeEnumFyNl         LanguageCodeEnum = "FY_NL"
+	LanguageCodeEnumGa           LanguageCodeEnum = "GA"
+	LanguageCodeEnumGaGb         LanguageCodeEnum = "GA_GB"
+	LanguageCodeEnumGaIe         LanguageCodeEnum = "GA_IE"
+	LanguageCodeEnumGd           LanguageCodeEnum = "GD"
+	LanguageCodeEnumGdGb         LanguageCodeEnum = "GD_GB"
+	LanguageCodeEnumGl           LanguageCodeEnum = "GL"
+	LanguageCodeEnumGlEs         LanguageCodeEnum = "GL_ES"
+	LanguageCodeEnumGsw          LanguageCodeEnum = "GSW"
+	LanguageCodeEnumGswCh        LanguageCodeEnum = "GSW_CH"
+	LanguageCodeEnumGswFr        LanguageCodeEnum = "GSW_FR"
+	LanguageCodeEnumGswLi        LanguageCodeEnum = "GSW_LI"
+	LanguageCodeEnumGu           LanguageCodeEnum = "GU"
+	LanguageCodeEnumGuIn         LanguageCodeEnum = "GU_IN"
+	LanguageCodeEnumGuz          LanguageCodeEnum = "GUZ"
+	LanguageCodeEnumGuzKe        LanguageCodeEnum = "GUZ_KE"
+	LanguageCodeEnumGv           LanguageCodeEnum = "GV"
+	LanguageCodeEnumGvIm         LanguageCodeEnum = "GV_IM"
+	LanguageCodeEnumHa           LanguageCodeEnum = "HA"
+	LanguageCodeEnumHaGh         LanguageCodeEnum = "HA_GH"
+	LanguageCodeEnumHaNe         LanguageCodeEnum = "HA_NE"
+	LanguageCodeEnumHaNg         LanguageCodeEnum = "HA_NG"
+	LanguageCodeEnumHaw          LanguageCodeEnum = "HAW"
+	LanguageCodeEnumHawUs        LanguageCodeEnum = "HAW_US"
+	LanguageCodeEnumHe           LanguageCodeEnum = "HE"
+	LanguageCodeEnumHeIl         LanguageCodeEnum = "HE_IL"
+	LanguageCodeEnumHi           LanguageCodeEnum = "HI"
+	LanguageCodeEnumHiIn         LanguageCodeEnum = "HI_IN"
+	LanguageCodeEnumHr           LanguageCodeEnum = "HR"
+	LanguageCodeEnumHrBa         LanguageCodeEnum = "HR_BA"
+	LanguageCodeEnumHrHr         LanguageCodeEnum = "HR_HR"
+	LanguageCodeEnumHsb          LanguageCodeEnum = "HSB"
+	LanguageCodeEnumHsbDe        LanguageCodeEnum = "HSB_DE"
+	LanguageCodeEnumHu           LanguageCodeEnum = "HU"
+	LanguageCodeEnumHuHu         LanguageCodeEnum = "HU_HU"
+	LanguageCodeEnumHy           LanguageCodeEnum = "HY"
+	LanguageCodeEnumHyAm         LanguageCodeEnum = "HY_AM"
+	LanguageCodeEnumIa           LanguageCodeEnum = "IA"
+	LanguageCodeEnumID           LanguageCodeEnum = "ID"
+	LanguageCodeEnumIDID         LanguageCodeEnum = "ID_ID"
+	LanguageCodeEnumIg           LanguageCodeEnum = "IG"
+	LanguageCodeEnumIgNg         LanguageCodeEnum = "IG_NG"
+	LanguageCodeEnumIi           LanguageCodeEnum = "II"
+	LanguageCodeEnumIiCn         LanguageCodeEnum = "II_CN"
+	LanguageCodeEnumIs           LanguageCodeEnum = "IS"
+	LanguageCodeEnumIsIs         LanguageCodeEnum = "IS_IS"
+	LanguageCodeEnumIt           LanguageCodeEnum = "IT"
+	LanguageCodeEnumItCh         LanguageCodeEnum = "IT_CH"
+	LanguageCodeEnumItIt         LanguageCodeEnum = "IT_IT"
+	LanguageCodeEnumItSm         LanguageCodeEnum = "IT_SM"
+	LanguageCodeEnumItVa         LanguageCodeEnum = "IT_VA"
+	LanguageCodeEnumJa           LanguageCodeEnum = "JA"
+	LanguageCodeEnumJaJp         LanguageCodeEnum = "JA_JP"
+	LanguageCodeEnumJgo          LanguageCodeEnum = "JGO"
+	LanguageCodeEnumJgoCm        LanguageCodeEnum = "JGO_CM"
+	LanguageCodeEnumJmc          LanguageCodeEnum = "JMC"
+	LanguageCodeEnumJmcTz        LanguageCodeEnum = "JMC_TZ"
+	LanguageCodeEnumJv           LanguageCodeEnum = "JV"
+	LanguageCodeEnumJvID         LanguageCodeEnum = "JV_ID"
+	LanguageCodeEnumKa           LanguageCodeEnum = "KA"
+	LanguageCodeEnumKaGe         LanguageCodeEnum = "KA_GE"
+	LanguageCodeEnumKab          LanguageCodeEnum = "KAB"
+	LanguageCodeEnumKabDz        LanguageCodeEnum = "KAB_DZ"
+	LanguageCodeEnumKam          LanguageCodeEnum = "KAM"
+	LanguageCodeEnumKamKe        LanguageCodeEnum = "KAM_KE"
+	LanguageCodeEnumKde          LanguageCodeEnum = "KDE"
+	LanguageCodeEnumKdeTz        LanguageCodeEnum = "KDE_TZ"
+	LanguageCodeEnumKea          LanguageCodeEnum = "KEA"
+	LanguageCodeEnumKeaCv        LanguageCodeEnum = "KEA_CV"
+	LanguageCodeEnumKhq          LanguageCodeEnum = "KHQ"
+	LanguageCodeEnumKhqMl        LanguageCodeEnum = "KHQ_ML"
+	LanguageCodeEnumKi           LanguageCodeEnum = "KI"
+	LanguageCodeEnumKiKe         LanguageCodeEnum = "KI_KE"
+	LanguageCodeEnumKk           LanguageCodeEnum = "KK"
+	LanguageCodeEnumKkKz         LanguageCodeEnum = "KK_KZ"
+	LanguageCodeEnumKkj          LanguageCodeEnum = "KKJ"
+	LanguageCodeEnumKkjCm        LanguageCodeEnum = "KKJ_CM"
+	LanguageCodeEnumKl           LanguageCodeEnum = "KL"
+	LanguageCodeEnumKlGl         LanguageCodeEnum = "KL_GL"
+	LanguageCodeEnumKln          LanguageCodeEnum = "KLN"
+	LanguageCodeEnumKlnKe        LanguageCodeEnum = "KLN_KE"
+	LanguageCodeEnumKm           LanguageCodeEnum = "KM"
+	LanguageCodeEnumKmKh         LanguageCodeEnum = "KM_KH"
+	LanguageCodeEnumKn           LanguageCodeEnum = "KN"
+	LanguageCodeEnumKnIn         LanguageCodeEnum = "KN_IN"
+	LanguageCodeEnumKo           LanguageCodeEnum = "KO"
+	LanguageCodeEnumKoKp         LanguageCodeEnum = "KO_KP"
+	LanguageCodeEnumKoKr         LanguageCodeEnum = "KO_KR"
+	LanguageCodeEnumKok          LanguageCodeEnum = "KOK"
+	LanguageCodeEnumKokIn        LanguageCodeEnum = "KOK_IN"
+	LanguageCodeEnumKs           LanguageCodeEnum = "KS"
+	LanguageCodeEnumKsArab       LanguageCodeEnum = "KS_ARAB"
+	LanguageCodeEnumKsArabIn     LanguageCodeEnum = "KS_ARAB_IN"
+	LanguageCodeEnumKsb          LanguageCodeEnum = "KSB"
+	LanguageCodeEnumKsbTz        LanguageCodeEnum = "KSB_TZ"
+	LanguageCodeEnumKsf          LanguageCodeEnum = "KSF"
+	LanguageCodeEnumKsfCm        LanguageCodeEnum = "KSF_CM"
+	LanguageCodeEnumKsh          LanguageCodeEnum = "KSH"
+	LanguageCodeEnumKshDe        LanguageCodeEnum = "KSH_DE"
+	LanguageCodeEnumKu           LanguageCodeEnum = "KU"
+	LanguageCodeEnumKuTr         LanguageCodeEnum = "KU_TR"
+	LanguageCodeEnumKw           LanguageCodeEnum = "KW"
+	LanguageCodeEnumKwGb         LanguageCodeEnum = "KW_GB"
+	LanguageCodeEnumKy           LanguageCodeEnum = "KY"
+	LanguageCodeEnumKyKg         LanguageCodeEnum = "KY_KG"
+	LanguageCodeEnumLag          LanguageCodeEnum = "LAG"
+	LanguageCodeEnumLagTz        LanguageCodeEnum = "LAG_TZ"
+	LanguageCodeEnumLb           LanguageCodeEnum = "LB"
+	LanguageCodeEnumLbLu         LanguageCodeEnum = "LB_LU"
+	LanguageCodeEnumLg           LanguageCodeEnum = "LG"
+	LanguageCodeEnumLgUg         LanguageCodeEnum = "LG_UG"
+	LanguageCodeEnumLkt          LanguageCodeEnum = "LKT"
+	LanguageCodeEnumLktUs        LanguageCodeEnum = "LKT_US"
+	LanguageCodeEnumLn           LanguageCodeEnum = "LN"
+	LanguageCodeEnumLnAo         LanguageCodeEnum = "LN_AO"
+	LanguageCodeEnumLnCd         LanguageCodeEnum = "LN_CD"
+	LanguageCodeEnumLnCf         LanguageCodeEnum = "LN_CF"
+	LanguageCodeEnumLnCg         LanguageCodeEnum = "LN_CG"
+	LanguageCodeEnumLo           LanguageCodeEnum = "LO"
+	LanguageCodeEnumLoLa         LanguageCodeEnum = "LO_LA"
+	LanguageCodeEnumLrc          LanguageCodeEnum = "LRC"
+	LanguageCodeEnumLrcIq        LanguageCodeEnum = "LRC_IQ"
+	LanguageCodeEnumLrcIr        LanguageCodeEnum = "LRC_IR"
+	LanguageCodeEnumLt           LanguageCodeEnum = "LT"
+	LanguageCodeEnumLtLt         LanguageCodeEnum = "LT_LT"
+	LanguageCodeEnumLu           LanguageCodeEnum = "LU"
+	LanguageCodeEnumLuCd         LanguageCodeEnum = "LU_CD"
+	LanguageCodeEnumLuo          LanguageCodeEnum = "LUO"
+	LanguageCodeEnumLuoKe        LanguageCodeEnum = "LUO_KE"
+	LanguageCodeEnumLuy          LanguageCodeEnum = "LUY"
+	LanguageCodeEnumLuyKe        LanguageCodeEnum = "LUY_KE"
+	LanguageCodeEnumLv           LanguageCodeEnum = "LV"
+	LanguageCodeEnumLvLv         LanguageCodeEnum = "LV_LV"
+	LanguageCodeEnumMai          LanguageCodeEnum = "MAI"
+	LanguageCodeEnumMaiIn        LanguageCodeEnum = "MAI_IN"
+	LanguageCodeEnumMas          LanguageCodeEnum = "MAS"
+	LanguageCodeEnumMasKe        LanguageCodeEnum = "MAS_KE"
+	LanguageCodeEnumMasTz        LanguageCodeEnum = "MAS_TZ"
+	LanguageCodeEnumMer          LanguageCodeEnum = "MER"
+	LanguageCodeEnumMerKe        LanguageCodeEnum = "MER_KE"
+	LanguageCodeEnumMfe          LanguageCodeEnum = "MFE"
+	LanguageCodeEnumMfeMu        LanguageCodeEnum = "MFE_MU"
+	LanguageCodeEnumMg           LanguageCodeEnum = "MG"
+	LanguageCodeEnumMgMg         LanguageCodeEnum = "MG_MG"
+	LanguageCodeEnumMgh          LanguageCodeEnum = "MGH"
+	LanguageCodeEnumMghMz        LanguageCodeEnum = "MGH_MZ"
+	LanguageCodeEnumMgo          LanguageCodeEnum = "MGO"
+	LanguageCodeEnumMgoCm        LanguageCodeEnum = "MGO_CM"
+	LanguageCodeEnumMi           LanguageCodeEnum = "MI"
+	LanguageCodeEnumMiNz         LanguageCodeEnum = "MI_NZ"
+	LanguageCodeEnumMk           LanguageCodeEnum = "MK"
+	LanguageCodeEnumMkMk         LanguageCodeEnum = "MK_MK"
+	LanguageCodeEnumMl           LanguageCodeEnum = "ML"
+	LanguageCodeEnumMlIn         LanguageCodeEnum = "ML_IN"
+	LanguageCodeEnumMn           LanguageCodeEnum = "MN"
+	LanguageCodeEnumMnMn         LanguageCodeEnum = "MN_MN"
+	LanguageCodeEnumMni          LanguageCodeEnum = "MNI"
+	LanguageCodeEnumMniBeng      LanguageCodeEnum = "MNI_BENG"
+	LanguageCodeEnumMniBengIn    LanguageCodeEnum = "MNI_BENG_IN"
+	LanguageCodeEnumMr           LanguageCodeEnum = "MR"
+	LanguageCodeEnumMrIn         LanguageCodeEnum = "MR_IN"
+	LanguageCodeEnumMs           LanguageCodeEnum = "MS"
+	LanguageCodeEnumMsBn         LanguageCodeEnum = "MS_BN"
+	LanguageCodeEnumMsID         LanguageCodeEnum = "MS_ID"
+	LanguageCodeEnumMsMy         LanguageCodeEnum = "MS_MY"
+	LanguageCodeEnumMsSg         LanguageCodeEnum = "MS_SG"
+	LanguageCodeEnumMt           LanguageCodeEnum = "MT"
+	LanguageCodeEnumMtMt         LanguageCodeEnum = "MT_MT"
+	LanguageCodeEnumMua          LanguageCodeEnum = "MUA"
+	LanguageCodeEnumMuaCm        LanguageCodeEnum = "MUA_CM"
+	LanguageCodeEnumMy           LanguageCodeEnum = "MY"
+	LanguageCodeEnumMyMm         LanguageCodeEnum = "MY_MM"
+	LanguageCodeEnumMzn          LanguageCodeEnum = "MZN"
+	LanguageCodeEnumMznIr        LanguageCodeEnum = "MZN_IR"
+	LanguageCodeEnumNaq          LanguageCodeEnum = "NAQ"
+	LanguageCodeEnumNaqNa        LanguageCodeEnum = "NAQ_NA"
+	LanguageCodeEnumNb           LanguageCodeEnum = "NB"
+	LanguageCodeEnumNbNo         LanguageCodeEnum = "NB_NO"
+	LanguageCodeEnumNbSj         LanguageCodeEnum = "NB_SJ"
+	LanguageCodeEnumNd           LanguageCodeEnum = "ND"
+	LanguageCodeEnumNdZw         LanguageCodeEnum = "ND_ZW"
+	LanguageCodeEnumNds          LanguageCodeEnum = "NDS"
+	LanguageCodeEnumNdsDe        LanguageCodeEnum = "NDS_DE"
+	LanguageCodeEnumNdsNl        LanguageCodeEnum = "NDS_NL"
+	LanguageCodeEnumNe           LanguageCodeEnum = "NE"
+	LanguageCodeEnumNeIn         LanguageCodeEnum = "NE_IN"
+	LanguageCodeEnumNeNp         LanguageCodeEnum = "NE_NP"
+	LanguageCodeEnumNl           LanguageCodeEnum = "NL"
+	LanguageCodeEnumNlAw         LanguageCodeEnum = "NL_AW"
+	LanguageCodeEnumNlBe         LanguageCodeEnum = "NL_BE"
+	LanguageCodeEnumNlBq         LanguageCodeEnum = "NL_BQ"
+	LanguageCodeEnumNlCw         LanguageCodeEnum = "NL_CW"
+	LanguageCodeEnumNlNl         LanguageCodeEnum = "NL_NL"
+	LanguageCodeEnumNlSr         LanguageCodeEnum = "NL_SR"
+	LanguageCodeEnumNlSx         LanguageCodeEnum = "NL_SX"
+	LanguageCodeEnumNmg          LanguageCodeEnum = "NMG"
+	LanguageCodeEnumNmgCm        LanguageCodeEnum = "NMG_CM"
+	LanguageCodeEnumNn           LanguageCodeEnum = "NN"
+	LanguageCodeEnumNnNo         LanguageCodeEnum = "NN_NO"
+	LanguageCodeEnumNnh          LanguageCodeEnum = "NNH"
+	LanguageCodeEnumNnhCm        LanguageCodeEnum = "NNH_CM"
+	LanguageCodeEnumNus          LanguageCodeEnum = "NUS"
+	LanguageCodeEnumNusSs        LanguageCodeEnum = "NUS_SS"
+	LanguageCodeEnumNyn          LanguageCodeEnum = "NYN"
+	LanguageCodeEnumNynUg        LanguageCodeEnum = "NYN_UG"
+	LanguageCodeEnumOm           LanguageCodeEnum = "OM"
+	LanguageCodeEnumOmEt         LanguageCodeEnum = "OM_ET"
+	LanguageCodeEnumOmKe         LanguageCodeEnum = "OM_KE"
+	LanguageCodeEnumOr           LanguageCodeEnum = "OR"
+	LanguageCodeEnumOrIn         LanguageCodeEnum = "OR_IN"
+	LanguageCodeEnumOs           LanguageCodeEnum = "OS"
+	LanguageCodeEnumOsGe         LanguageCodeEnum = "OS_GE"
+	LanguageCodeEnumOsRu         LanguageCodeEnum = "OS_RU"
+	LanguageCodeEnumPa           LanguageCodeEnum = "PA"
+	LanguageCodeEnumPaArab       LanguageCodeEnum = "PA_ARAB"
+	LanguageCodeEnumPaArabPk     LanguageCodeEnum = "PA_ARAB_PK"
+	LanguageCodeEnumPaGuru       LanguageCodeEnum = "PA_GURU"
+	LanguageCodeEnumPaGuruIn     LanguageCodeEnum = "PA_GURU_IN"
+	LanguageCodeEnumPcm          LanguageCodeEnum = "PCM"
+	LanguageCodeEnumPcmNg        LanguageCodeEnum = "PCM_NG"
+	LanguageCodeEnumPl           LanguageCodeEnum = "PL"
+	LanguageCodeEnumPlPl         LanguageCodeEnum = "PL_PL"
+	LanguageCodeEnumPrg          LanguageCodeEnum = "PRG"
+	LanguageCodeEnumPs           LanguageCodeEnum = "PS"
+	LanguageCodeEnumPsAf         LanguageCodeEnum = "PS_AF"
+	LanguageCodeEnumPsPk         LanguageCodeEnum = "PS_PK"
+	LanguageCodeEnumPt           LanguageCodeEnum = "PT"
+	LanguageCodeEnumPtAo         LanguageCodeEnum = "PT_AO"
+	LanguageCodeEnumPtBr         LanguageCodeEnum = "PT_BR"
+	LanguageCodeEnumPtCh         LanguageCodeEnum = "PT_CH"
+	LanguageCodeEnumPtCv         LanguageCodeEnum = "PT_CV"
+	LanguageCodeEnumPtGq         LanguageCodeEnum = "PT_GQ"
+	LanguageCodeEnumPtGw         LanguageCodeEnum = "PT_GW"
+	LanguageCodeEnumPtLu         LanguageCodeEnum = "PT_LU"
+	LanguageCodeEnumPtMo         LanguageCodeEnum = "PT_MO"
+	LanguageCodeEnumPtMz         LanguageCodeEnum = "PT_MZ"
+	LanguageCodeEnumPtPt         LanguageCodeEnum = "PT_PT"
+	LanguageCodeEnumPtSt         LanguageCodeEnum = "PT_ST"
+	LanguageCodeEnumPtTl         LanguageCodeEnum = "PT_TL"
+	LanguageCodeEnumQu           LanguageCodeEnum = "QU"
+	LanguageCodeEnumQuBo         LanguageCodeEnum = "QU_BO"
+	LanguageCodeEnumQuEc         LanguageCodeEnum = "QU_EC"
+	LanguageCodeEnumQuPe         LanguageCodeEnum = "QU_PE"
+	LanguageCodeEnumRm           LanguageCodeEnum = "RM"
+	LanguageCodeEnumRmCh         LanguageCodeEnum = "RM_CH"
+	LanguageCodeEnumRn           LanguageCodeEnum = "RN"
+	LanguageCodeEnumRnBi         LanguageCodeEnum = "RN_BI"
+	LanguageCodeEnumRo           LanguageCodeEnum = "RO"
+	LanguageCodeEnumRoMd         LanguageCodeEnum = "RO_MD"
+	LanguageCodeEnumRoRo         LanguageCodeEnum = "RO_RO"
+	LanguageCodeEnumRof          LanguageCodeEnum = "ROF"
+	LanguageCodeEnumRofTz        LanguageCodeEnum = "ROF_TZ"
+	LanguageCodeEnumRu           LanguageCodeEnum = "RU"
+	LanguageCodeEnumRuBy         LanguageCodeEnum = "RU_BY"
+	LanguageCodeEnumRuKg         LanguageCodeEnum = "RU_KG"
+	LanguageCodeEnumRuKz         LanguageCodeEnum = "RU_KZ"
+	LanguageCodeEnumRuMd         LanguageCodeEnum = "RU_MD"
+	LanguageCodeEnumRuRu         LanguageCodeEnum = "RU_RU"
+	LanguageCodeEnumRuUa         LanguageCodeEnum = "RU_UA"
+	LanguageCodeEnumRw           LanguageCodeEnum = "RW"
+	LanguageCodeEnumRwRw         LanguageCodeEnum = "RW_RW"
+	LanguageCodeEnumRwk          LanguageCodeEnum = "RWK"
+	LanguageCodeEnumRwkTz        LanguageCodeEnum = "RWK_TZ"
+	LanguageCodeEnumSah          LanguageCodeEnum = "SAH"
+	LanguageCodeEnumSahRu        LanguageCodeEnum = "SAH_RU"
+	LanguageCodeEnumSaq          LanguageCodeEnum = "SAQ"
+	LanguageCodeEnumSaqKe        LanguageCodeEnum = "SAQ_KE"
+	LanguageCodeEnumSat          LanguageCodeEnum = "SAT"
+	LanguageCodeEnumSatOlck      LanguageCodeEnum = "SAT_OLCK"
+	LanguageCodeEnumSatOlckIn    LanguageCodeEnum = "SAT_OLCK_IN"
+	LanguageCodeEnumSbp          LanguageCodeEnum = "SBP"
+	LanguageCodeEnumSbpTz        LanguageCodeEnum = "SBP_TZ"
+	LanguageCodeEnumSd           LanguageCodeEnum = "SD"
+	LanguageCodeEnumSdArab       LanguageCodeEnum = "SD_ARAB"
+	LanguageCodeEnumSdArabPk     LanguageCodeEnum = "SD_ARAB_PK"
+	LanguageCodeEnumSdDeva       LanguageCodeEnum = "SD_DEVA"
+	LanguageCodeEnumSdDevaIn     LanguageCodeEnum = "SD_DEVA_IN"
+	LanguageCodeEnumSe           LanguageCodeEnum = "SE"
+	LanguageCodeEnumSeFi         LanguageCodeEnum = "SE_FI"
+	LanguageCodeEnumSeNo         LanguageCodeEnum = "SE_NO"
+	LanguageCodeEnumSeSe         LanguageCodeEnum = "SE_SE"
+	LanguageCodeEnumSeh          LanguageCodeEnum = "SEH"
+	LanguageCodeEnumSehMz        LanguageCodeEnum = "SEH_MZ"
+	LanguageCodeEnumSes          LanguageCodeEnum = "SES"
+	LanguageCodeEnumSesMl        LanguageCodeEnum = "SES_ML"
+	LanguageCodeEnumSg           LanguageCodeEnum = "SG"
+	LanguageCodeEnumSgCf         LanguageCodeEnum = "SG_CF"
+	LanguageCodeEnumShi          LanguageCodeEnum = "SHI"
+	LanguageCodeEnumShiLatn      LanguageCodeEnum = "SHI_LATN"
+	LanguageCodeEnumShiLatnMa    LanguageCodeEnum = "SHI_LATN_MA"
+	LanguageCodeEnumShiTfng      LanguageCodeEnum = "SHI_TFNG"
+	LanguageCodeEnumShiTfngMa    LanguageCodeEnum = "SHI_TFNG_MA"
+	LanguageCodeEnumSi           LanguageCodeEnum = "SI"
+	LanguageCodeEnumSiLk         LanguageCodeEnum = "SI_LK"
+	LanguageCodeEnumSk           LanguageCodeEnum = "SK"
+	LanguageCodeEnumSkSk         LanguageCodeEnum = "SK_SK"
+	LanguageCodeEnumSl           LanguageCodeEnum = "SL"
+	LanguageCodeEnumSlSi         LanguageCodeEnum = "SL_SI"
+	LanguageCodeEnumSmn          LanguageCodeEnum = "SMN"
+	LanguageCodeEnumSmnFi        LanguageCodeEnum = "SMN_FI"
+	LanguageCodeEnumSn           LanguageCodeEnum = "SN"
+	LanguageCodeEnumSnZw         LanguageCodeEnum = "SN_ZW"
+	LanguageCodeEnumSo           LanguageCodeEnum = "SO"
+	LanguageCodeEnumSoDj         LanguageCodeEnum = "SO_DJ"
+	LanguageCodeEnumSoEt         LanguageCodeEnum = "SO_ET"
+	LanguageCodeEnumSoKe         LanguageCodeEnum = "SO_KE"
+	LanguageCodeEnumSoSo         LanguageCodeEnum = "SO_SO"
+	LanguageCodeEnumSq           LanguageCodeEnum = "SQ"
+	LanguageCodeEnumSqAl         LanguageCodeEnum = "SQ_AL"
+	LanguageCodeEnumSqMk         LanguageCodeEnum = "SQ_MK"
+	LanguageCodeEnumSqXk         LanguageCodeEnum = "SQ_XK"
+	LanguageCodeEnumSr           LanguageCodeEnum = "SR"
+	LanguageCodeEnumSrCyrl       LanguageCodeEnum = "SR_CYRL"
+	LanguageCodeEnumSrCyrlBa     LanguageCodeEnum = "SR_CYRL_BA"
+	LanguageCodeEnumSrCyrlMe     LanguageCodeEnum = "SR_CYRL_ME"
+	LanguageCodeEnumSrCyrlRs     LanguageCodeEnum = "SR_CYRL_RS"
+	LanguageCodeEnumSrCyrlXk     LanguageCodeEnum = "SR_CYRL_XK"
+	LanguageCodeEnumSrLatn       LanguageCodeEnum = "SR_LATN"
+	LanguageCodeEnumSrLatnBa     LanguageCodeEnum = "SR_LATN_BA"
+	LanguageCodeEnumSrLatnMe     LanguageCodeEnum = "SR_LATN_ME"
+	LanguageCodeEnumSrLatnRs     LanguageCodeEnum = "SR_LATN_RS"
+	LanguageCodeEnumSrLatnXk     LanguageCodeEnum = "SR_LATN_XK"
+	LanguageCodeEnumSu           LanguageCodeEnum = "SU"
+	LanguageCodeEnumSuLatn       LanguageCodeEnum = "SU_LATN"
+	LanguageCodeEnumSuLatnID     LanguageCodeEnum = "SU_LATN_ID"
+	LanguageCodeEnumSv           LanguageCodeEnum = "SV"
+	LanguageCodeEnumSvAx         LanguageCodeEnum = "SV_AX"
+	LanguageCodeEnumSvFi         LanguageCodeEnum = "SV_FI"
+	LanguageCodeEnumSvSe         LanguageCodeEnum = "SV_SE"
+	LanguageCodeEnumSw           LanguageCodeEnum = "SW"
+	LanguageCodeEnumSwCd         LanguageCodeEnum = "SW_CD"
+	LanguageCodeEnumSwKe         LanguageCodeEnum = "SW_KE"
+	LanguageCodeEnumSwTz         LanguageCodeEnum = "SW_TZ"
+	LanguageCodeEnumSwUg         LanguageCodeEnum = "SW_UG"
+	LanguageCodeEnumTa           LanguageCodeEnum = "TA"
+	LanguageCodeEnumTaIn         LanguageCodeEnum = "TA_IN"
+	LanguageCodeEnumTaLk         LanguageCodeEnum = "TA_LK"
+	LanguageCodeEnumTaMy         LanguageCodeEnum = "TA_MY"
+	LanguageCodeEnumTaSg         LanguageCodeEnum = "TA_SG"
+	LanguageCodeEnumTe           LanguageCodeEnum = "TE"
+	LanguageCodeEnumTeIn         LanguageCodeEnum = "TE_IN"
+	LanguageCodeEnumTeo          LanguageCodeEnum = "TEO"
+	LanguageCodeEnumTeoKe        LanguageCodeEnum = "TEO_KE"
+	LanguageCodeEnumTeoUg        LanguageCodeEnum = "TEO_UG"
+	LanguageCodeEnumTg           LanguageCodeEnum = "TG"
+	LanguageCodeEnumTgTj         LanguageCodeEnum = "TG_TJ"
+	LanguageCodeEnumTh           LanguageCodeEnum = "TH"
+	LanguageCodeEnumThTh         LanguageCodeEnum = "TH_TH"
+	LanguageCodeEnumTi           LanguageCodeEnum = "TI"
+	LanguageCodeEnumTiEr         LanguageCodeEnum = "TI_ER"
+	LanguageCodeEnumTiEt         LanguageCodeEnum = "TI_ET"
+	LanguageCodeEnumTk           LanguageCodeEnum = "TK"
+	LanguageCodeEnumTkTm         LanguageCodeEnum = "TK_TM"
+	LanguageCodeEnumTo           LanguageCodeEnum = "TO"
+	LanguageCodeEnumToTo         LanguageCodeEnum = "TO_TO"
+	LanguageCodeEnumTr           LanguageCodeEnum = "TR"
+	LanguageCodeEnumTrCy         LanguageCodeEnum = "TR_CY"
+	LanguageCodeEnumTrTr         LanguageCodeEnum = "TR_TR"
+	LanguageCodeEnumTt           LanguageCodeEnum = "TT"
+	LanguageCodeEnumTtRu         LanguageCodeEnum = "TT_RU"
+	LanguageCodeEnumTwq          LanguageCodeEnum = "TWQ"
+	LanguageCodeEnumTwqNe        LanguageCodeEnum = "TWQ_NE"
+	LanguageCodeEnumTzm          LanguageCodeEnum = "TZM"
+	LanguageCodeEnumTzmMa        LanguageCodeEnum = "TZM_MA"
+	LanguageCodeEnumUg           LanguageCodeEnum = "UG"
+	LanguageCodeEnumUgCn         LanguageCodeEnum = "UG_CN"
+	LanguageCodeEnumUk           LanguageCodeEnum = "UK"
+	LanguageCodeEnumUkUa         LanguageCodeEnum = "UK_UA"
+	LanguageCodeEnumUr           LanguageCodeEnum = "UR"
+	LanguageCodeEnumUrIn         LanguageCodeEnum = "UR_IN"
+	LanguageCodeEnumUrPk         LanguageCodeEnum = "UR_PK"
+	LanguageCodeEnumUz           LanguageCodeEnum = "UZ"
+	LanguageCodeEnumUzArab       LanguageCodeEnum = "UZ_ARAB"
+	LanguageCodeEnumUzArabAf     LanguageCodeEnum = "UZ_ARAB_AF"
+	LanguageCodeEnumUzCyrl       LanguageCodeEnum = "UZ_CYRL"
+	LanguageCodeEnumUzCyrlUz     LanguageCodeEnum = "UZ_CYRL_UZ"
+	LanguageCodeEnumUzLatn       LanguageCodeEnum = "UZ_LATN"
+	LanguageCodeEnumUzLatnUz     LanguageCodeEnum = "UZ_LATN_UZ"
+	LanguageCodeEnumVai          LanguageCodeEnum = "VAI"
+	LanguageCodeEnumVaiLatn      LanguageCodeEnum = "VAI_LATN"
+	LanguageCodeEnumVaiLatnLr    LanguageCodeEnum = "VAI_LATN_LR"
+	LanguageCodeEnumVaiVaii      LanguageCodeEnum = "VAI_VAII"
+	LanguageCodeEnumVaiVaiiLr    LanguageCodeEnum = "VAI_VAII_LR"
+	LanguageCodeEnumVi           LanguageCodeEnum = "VI"
+	LanguageCodeEnumViVn         LanguageCodeEnum = "VI_VN"
+	LanguageCodeEnumVo           LanguageCodeEnum = "VO"
+	LanguageCodeEnumVun          LanguageCodeEnum = "VUN"
+	LanguageCodeEnumVunTz        LanguageCodeEnum = "VUN_TZ"
+	LanguageCodeEnumWae          LanguageCodeEnum = "WAE"
+	LanguageCodeEnumWaeCh        LanguageCodeEnum = "WAE_CH"
+	LanguageCodeEnumWo           LanguageCodeEnum = "WO"
+	LanguageCodeEnumWoSn         LanguageCodeEnum = "WO_SN"
+	LanguageCodeEnumXh           LanguageCodeEnum = "XH"
+	LanguageCodeEnumXhZa         LanguageCodeEnum = "XH_ZA"
+	LanguageCodeEnumXog          LanguageCodeEnum = "XOG"
+	LanguageCodeEnumXogUg        LanguageCodeEnum = "XOG_UG"
+	LanguageCodeEnumYav          LanguageCodeEnum = "YAV"
+	LanguageCodeEnumYavCm        LanguageCodeEnum = "YAV_CM"
+	LanguageCodeEnumYi           LanguageCodeEnum = "YI"
+	LanguageCodeEnumYo           LanguageCodeEnum = "YO"
+	LanguageCodeEnumYoBj         LanguageCodeEnum = "YO_BJ"
+	LanguageCodeEnumYoNg         LanguageCodeEnum = "YO_NG"
+	LanguageCodeEnumYue          LanguageCodeEnum = "YUE"
+	LanguageCodeEnumYueHans      LanguageCodeEnum = "YUE_HANS"
+	LanguageCodeEnumYueHansCn    LanguageCodeEnum = "YUE_HANS_CN"
+	LanguageCodeEnumYueHant      LanguageCodeEnum = "YUE_HANT"
+	LanguageCodeEnumYueHantHk    LanguageCodeEnum = "YUE_HANT_HK"
+	LanguageCodeEnumZgh          LanguageCodeEnum = "ZGH"
+	LanguageCodeEnumZghMa        LanguageCodeEnum = "ZGH_MA"
+	LanguageCodeEnumZh           LanguageCodeEnum = "ZH"
+	LanguageCodeEnumZhHans       LanguageCodeEnum = "ZH_HANS"
+	LanguageCodeEnumZhHansCn     LanguageCodeEnum = "ZH_HANS_CN"
+	LanguageCodeEnumZhHansHk     LanguageCodeEnum = "ZH_HANS_HK"
+	LanguageCodeEnumZhHansMo     LanguageCodeEnum = "ZH_HANS_MO"
+	LanguageCodeEnumZhHansSg     LanguageCodeEnum = "ZH_HANS_SG"
+	LanguageCodeEnumZhHant       LanguageCodeEnum = "ZH_HANT"
+	LanguageCodeEnumZhHantHk     LanguageCodeEnum = "ZH_HANT_HK"
+	LanguageCodeEnumZhHantMo     LanguageCodeEnum = "ZH_HANT_MO"
+	LanguageCodeEnumZhHantTw     LanguageCodeEnum = "ZH_HANT_TW"
+	LanguageCodeEnumZu           LanguageCodeEnum = "ZU"
+	LanguageCodeEnumZuZa         LanguageCodeEnum = "ZU_ZA"
 )
 
 var AllLanguageCodeEnum = []LanguageCodeEnum{
+	LanguageCodeEnumAf,
+	LanguageCodeEnumAfNa,
+	LanguageCodeEnumAfZa,
+	LanguageCodeEnumAgq,
+	LanguageCodeEnumAgqCm,
+	LanguageCodeEnumAk,
+	LanguageCodeEnumAkGh,
+	LanguageCodeEnumAm,
+	LanguageCodeEnumAmEt,
 	LanguageCodeEnumAr,
+	LanguageCodeEnumArAe,
+	LanguageCodeEnumArBh,
+	LanguageCodeEnumArDj,
+	LanguageCodeEnumArDz,
+	LanguageCodeEnumArEg,
+	LanguageCodeEnumArEh,
+	LanguageCodeEnumArEr,
+	LanguageCodeEnumArIl,
+	LanguageCodeEnumArIq,
+	LanguageCodeEnumArJo,
+	LanguageCodeEnumArKm,
+	LanguageCodeEnumArKw,
+	LanguageCodeEnumArLb,
+	LanguageCodeEnumArLy,
+	LanguageCodeEnumArMa,
+	LanguageCodeEnumArMr,
+	LanguageCodeEnumArOm,
+	LanguageCodeEnumArPs,
+	LanguageCodeEnumArQa,
+	LanguageCodeEnumArSa,
+	LanguageCodeEnumArSd,
+	LanguageCodeEnumArSo,
+	LanguageCodeEnumArSs,
+	LanguageCodeEnumArSy,
+	LanguageCodeEnumArTd,
+	LanguageCodeEnumArTn,
+	LanguageCodeEnumArYe,
+	LanguageCodeEnumAs,
+	LanguageCodeEnumAsIn,
+	LanguageCodeEnumAsa,
+	LanguageCodeEnumAsaTz,
+	LanguageCodeEnumAst,
+	LanguageCodeEnumAstEs,
 	LanguageCodeEnumAz,
+	LanguageCodeEnumAzCyrl,
+	LanguageCodeEnumAzCyrlAz,
+	LanguageCodeEnumAzLatn,
+	LanguageCodeEnumAzLatnAz,
+	LanguageCodeEnumBas,
+	LanguageCodeEnumBasCm,
+	LanguageCodeEnumBe,
+	LanguageCodeEnumBeBy,
+	LanguageCodeEnumBem,
+	LanguageCodeEnumBemZm,
+	LanguageCodeEnumBez,
+	LanguageCodeEnumBezTz,
 	LanguageCodeEnumBg,
+	LanguageCodeEnumBgBg,
+	LanguageCodeEnumBm,
+	LanguageCodeEnumBmMl,
 	LanguageCodeEnumBn,
+	LanguageCodeEnumBnBd,
+	LanguageCodeEnumBnIn,
+	LanguageCodeEnumBo,
+	LanguageCodeEnumBoCn,
+	LanguageCodeEnumBoIn,
+	LanguageCodeEnumBr,
+	LanguageCodeEnumBrFr,
+	LanguageCodeEnumBrx,
+	LanguageCodeEnumBrxIn,
+	LanguageCodeEnumBs,
+	LanguageCodeEnumBsCyrl,
+	LanguageCodeEnumBsCyrlBa,
+	LanguageCodeEnumBsLatn,
+	LanguageCodeEnumBsLatnBa,
 	LanguageCodeEnumCa,
+	LanguageCodeEnumCaAd,
+	LanguageCodeEnumCaEs,
+	LanguageCodeEnumCaEsValencia,
+	LanguageCodeEnumCaFr,
+	LanguageCodeEnumCaIt,
+	LanguageCodeEnumCcp,
+	LanguageCodeEnumCcpBd,
+	LanguageCodeEnumCcpIn,
+	LanguageCodeEnumCe,
+	LanguageCodeEnumCeRu,
+	LanguageCodeEnumCeb,
+	LanguageCodeEnumCebPh,
+	LanguageCodeEnumCgg,
+	LanguageCodeEnumCggUg,
+	LanguageCodeEnumChr,
+	LanguageCodeEnumChrUs,
+	LanguageCodeEnumCkb,
+	LanguageCodeEnumCkbIq,
+	LanguageCodeEnumCkbIr,
 	LanguageCodeEnumCs,
+	LanguageCodeEnumCsCz,
+	LanguageCodeEnumCu,
+	LanguageCodeEnumCuRu,
+	LanguageCodeEnumCy,
+	LanguageCodeEnumCyGb,
 	LanguageCodeEnumDa,
+	LanguageCodeEnumDaDk,
+	LanguageCodeEnumDaGl,
+	LanguageCodeEnumDav,
+	LanguageCodeEnumDavKe,
 	LanguageCodeEnumDe,
+	LanguageCodeEnumDeAt,
+	LanguageCodeEnumDeBe,
+	LanguageCodeEnumDeCh,
+	LanguageCodeEnumDeDe,
+	LanguageCodeEnumDeIt,
+	LanguageCodeEnumDeLi,
+	LanguageCodeEnumDeLu,
+	LanguageCodeEnumDje,
+	LanguageCodeEnumDjeNe,
+	LanguageCodeEnumDsb,
+	LanguageCodeEnumDsbDe,
+	LanguageCodeEnumDua,
+	LanguageCodeEnumDuaCm,
+	LanguageCodeEnumDyo,
+	LanguageCodeEnumDyoSn,
+	LanguageCodeEnumDz,
+	LanguageCodeEnumDzBt,
+	LanguageCodeEnumEbu,
+	LanguageCodeEnumEbuKe,
+	LanguageCodeEnumEe,
+	LanguageCodeEnumEeGh,
+	LanguageCodeEnumEeTg,
 	LanguageCodeEnumEl,
+	LanguageCodeEnumElCy,
+	LanguageCodeEnumElGr,
 	LanguageCodeEnumEn,
+	LanguageCodeEnumEnAe,
+	LanguageCodeEnumEnAg,
+	LanguageCodeEnumEnAi,
+	LanguageCodeEnumEnAs,
+	LanguageCodeEnumEnAt,
+	LanguageCodeEnumEnAu,
+	LanguageCodeEnumEnBb,
+	LanguageCodeEnumEnBe,
+	LanguageCodeEnumEnBi,
+	LanguageCodeEnumEnBm,
+	LanguageCodeEnumEnBs,
+	LanguageCodeEnumEnBw,
+	LanguageCodeEnumEnBz,
+	LanguageCodeEnumEnCa,
+	LanguageCodeEnumEnCc,
+	LanguageCodeEnumEnCh,
+	LanguageCodeEnumEnCk,
+	LanguageCodeEnumEnCm,
+	LanguageCodeEnumEnCx,
+	LanguageCodeEnumEnCy,
+	LanguageCodeEnumEnDe,
+	LanguageCodeEnumEnDg,
+	LanguageCodeEnumEnDk,
+	LanguageCodeEnumEnDm,
+	LanguageCodeEnumEnEr,
+	LanguageCodeEnumEnFi,
+	LanguageCodeEnumEnFj,
+	LanguageCodeEnumEnFk,
+	LanguageCodeEnumEnFm,
+	LanguageCodeEnumEnGb,
+	LanguageCodeEnumEnGd,
+	LanguageCodeEnumEnGg,
+	LanguageCodeEnumEnGh,
+	LanguageCodeEnumEnGi,
+	LanguageCodeEnumEnGm,
+	LanguageCodeEnumEnGu,
+	LanguageCodeEnumEnGy,
+	LanguageCodeEnumEnHk,
+	LanguageCodeEnumEnIe,
+	LanguageCodeEnumEnIl,
+	LanguageCodeEnumEnIm,
+	LanguageCodeEnumEnIn,
+	LanguageCodeEnumEnIo,
+	LanguageCodeEnumEnJe,
+	LanguageCodeEnumEnJm,
+	LanguageCodeEnumEnKe,
+	LanguageCodeEnumEnKi,
+	LanguageCodeEnumEnKn,
+	LanguageCodeEnumEnKy,
+	LanguageCodeEnumEnLc,
+	LanguageCodeEnumEnLr,
+	LanguageCodeEnumEnLs,
+	LanguageCodeEnumEnMg,
+	LanguageCodeEnumEnMh,
+	LanguageCodeEnumEnMo,
+	LanguageCodeEnumEnMp,
+	LanguageCodeEnumEnMs,
+	LanguageCodeEnumEnMt,
+	LanguageCodeEnumEnMu,
+	LanguageCodeEnumEnMw,
+	LanguageCodeEnumEnMy,
+	LanguageCodeEnumEnNa,
+	LanguageCodeEnumEnNf,
+	LanguageCodeEnumEnNg,
+	LanguageCodeEnumEnNl,
+	LanguageCodeEnumEnNr,
+	LanguageCodeEnumEnNu,
+	LanguageCodeEnumEnNz,
+	LanguageCodeEnumEnPg,
+	LanguageCodeEnumEnPh,
+	LanguageCodeEnumEnPk,
+	LanguageCodeEnumEnPn,
+	LanguageCodeEnumEnPr,
+	LanguageCodeEnumEnPw,
+	LanguageCodeEnumEnRw,
+	LanguageCodeEnumEnSb,
+	LanguageCodeEnumEnSc,
+	LanguageCodeEnumEnSd,
+	LanguageCodeEnumEnSe,
+	LanguageCodeEnumEnSg,
+	LanguageCodeEnumEnSh,
+	LanguageCodeEnumEnSi,
+	LanguageCodeEnumEnSl,
+	LanguageCodeEnumEnSs,
+	LanguageCodeEnumEnSx,
+	LanguageCodeEnumEnSz,
+	LanguageCodeEnumEnTc,
+	LanguageCodeEnumEnTk,
+	LanguageCodeEnumEnTo,
+	LanguageCodeEnumEnTt,
+	LanguageCodeEnumEnTv,
+	LanguageCodeEnumEnTz,
+	LanguageCodeEnumEnUg,
+	LanguageCodeEnumEnUm,
+	LanguageCodeEnumEnUs,
+	LanguageCodeEnumEnVc,
+	LanguageCodeEnumEnVg,
+	LanguageCodeEnumEnVi,
+	LanguageCodeEnumEnVu,
+	LanguageCodeEnumEnWs,
+	LanguageCodeEnumEnZa,
+	LanguageCodeEnumEnZm,
+	LanguageCodeEnumEnZw,
+	LanguageCodeEnumEo,
 	LanguageCodeEnumEs,
+	LanguageCodeEnumEsAr,
+	LanguageCodeEnumEsBo,
+	LanguageCodeEnumEsBr,
+	LanguageCodeEnumEsBz,
+	LanguageCodeEnumEsCl,
 	LanguageCodeEnumEsCo,
+	LanguageCodeEnumEsCr,
+	LanguageCodeEnumEsCu,
+	LanguageCodeEnumEsDo,
+	LanguageCodeEnumEsEa,
+	LanguageCodeEnumEsEc,
+	LanguageCodeEnumEsEs,
+	LanguageCodeEnumEsGq,
+	LanguageCodeEnumEsGt,
+	LanguageCodeEnumEsHn,
+	LanguageCodeEnumEsIc,
+	LanguageCodeEnumEsMx,
+	LanguageCodeEnumEsNi,
+	LanguageCodeEnumEsPa,
+	LanguageCodeEnumEsPe,
+	LanguageCodeEnumEsPh,
+	LanguageCodeEnumEsPr,
+	LanguageCodeEnumEsPy,
+	LanguageCodeEnumEsSv,
+	LanguageCodeEnumEsUs,
+	LanguageCodeEnumEsUy,
+	LanguageCodeEnumEsVe,
 	LanguageCodeEnumEt,
+	LanguageCodeEnumEtEe,
+	LanguageCodeEnumEu,
+	LanguageCodeEnumEuEs,
+	LanguageCodeEnumEwo,
+	LanguageCodeEnumEwoCm,
 	LanguageCodeEnumFa,
+	LanguageCodeEnumFaAf,
+	LanguageCodeEnumFaIr,
+	LanguageCodeEnumFf,
+	LanguageCodeEnumFfAdlm,
+	LanguageCodeEnumFfAdlmBf,
+	LanguageCodeEnumFfAdlmCm,
+	LanguageCodeEnumFfAdlmGh,
+	LanguageCodeEnumFfAdlmGm,
+	LanguageCodeEnumFfAdlmGn,
+	LanguageCodeEnumFfAdlmGw,
+	LanguageCodeEnumFfAdlmLr,
+	LanguageCodeEnumFfAdlmMr,
+	LanguageCodeEnumFfAdlmNe,
+	LanguageCodeEnumFfAdlmNg,
+	LanguageCodeEnumFfAdlmSl,
+	LanguageCodeEnumFfAdlmSn,
+	LanguageCodeEnumFfLatn,
+	LanguageCodeEnumFfLatnBf,
+	LanguageCodeEnumFfLatnCm,
+	LanguageCodeEnumFfLatnGh,
+	LanguageCodeEnumFfLatnGm,
+	LanguageCodeEnumFfLatnGn,
+	LanguageCodeEnumFfLatnGw,
+	LanguageCodeEnumFfLatnLr,
+	LanguageCodeEnumFfLatnMr,
+	LanguageCodeEnumFfLatnNe,
+	LanguageCodeEnumFfLatnNg,
+	LanguageCodeEnumFfLatnSl,
+	LanguageCodeEnumFfLatnSn,
 	LanguageCodeEnumFi,
+	LanguageCodeEnumFiFi,
+	LanguageCodeEnumFil,
+	LanguageCodeEnumFilPh,
+	LanguageCodeEnumFo,
+	LanguageCodeEnumFoDk,
+	LanguageCodeEnumFoFo,
 	LanguageCodeEnumFr,
+	LanguageCodeEnumFrBe,
+	LanguageCodeEnumFrBf,
+	LanguageCodeEnumFrBi,
+	LanguageCodeEnumFrBj,
+	LanguageCodeEnumFrBl,
+	LanguageCodeEnumFrCa,
+	LanguageCodeEnumFrCd,
+	LanguageCodeEnumFrCf,
+	LanguageCodeEnumFrCg,
+	LanguageCodeEnumFrCh,
+	LanguageCodeEnumFrCi,
+	LanguageCodeEnumFrCm,
+	LanguageCodeEnumFrDj,
+	LanguageCodeEnumFrDz,
+	LanguageCodeEnumFrFr,
+	LanguageCodeEnumFrGa,
+	LanguageCodeEnumFrGf,
+	LanguageCodeEnumFrGn,
+	LanguageCodeEnumFrGp,
+	LanguageCodeEnumFrGq,
+	LanguageCodeEnumFrHt,
+	LanguageCodeEnumFrKm,
+	LanguageCodeEnumFrLu,
+	LanguageCodeEnumFrMa,
+	LanguageCodeEnumFrMc,
+	LanguageCodeEnumFrMf,
+	LanguageCodeEnumFrMg,
+	LanguageCodeEnumFrMl,
+	LanguageCodeEnumFrMq,
+	LanguageCodeEnumFrMr,
+	LanguageCodeEnumFrMu,
+	LanguageCodeEnumFrNc,
+	LanguageCodeEnumFrNe,
+	LanguageCodeEnumFrPf,
+	LanguageCodeEnumFrPm,
+	LanguageCodeEnumFrRe,
+	LanguageCodeEnumFrRw,
+	LanguageCodeEnumFrSc,
+	LanguageCodeEnumFrSn,
+	LanguageCodeEnumFrSy,
+	LanguageCodeEnumFrTd,
+	LanguageCodeEnumFrTg,
+	LanguageCodeEnumFrTn,
+	LanguageCodeEnumFrVu,
+	LanguageCodeEnumFrWf,
+	LanguageCodeEnumFrYt,
+	LanguageCodeEnumFur,
+	LanguageCodeEnumFurIt,
+	LanguageCodeEnumFy,
+	LanguageCodeEnumFyNl,
+	LanguageCodeEnumGa,
+	LanguageCodeEnumGaGb,
+	LanguageCodeEnumGaIe,
+	LanguageCodeEnumGd,
+	LanguageCodeEnumGdGb,
+	LanguageCodeEnumGl,
+	LanguageCodeEnumGlEs,
+	LanguageCodeEnumGsw,
+	LanguageCodeEnumGswCh,
+	LanguageCodeEnumGswFr,
+	LanguageCodeEnumGswLi,
+	LanguageCodeEnumGu,
+	LanguageCodeEnumGuIn,
+	LanguageCodeEnumGuz,
+	LanguageCodeEnumGuzKe,
+	LanguageCodeEnumGv,
+	LanguageCodeEnumGvIm,
+	LanguageCodeEnumHa,
+	LanguageCodeEnumHaGh,
+	LanguageCodeEnumHaNe,
+	LanguageCodeEnumHaNg,
+	LanguageCodeEnumHaw,
+	LanguageCodeEnumHawUs,
+	LanguageCodeEnumHe,
+	LanguageCodeEnumHeIl,
 	LanguageCodeEnumHi,
+	LanguageCodeEnumHiIn,
+	LanguageCodeEnumHr,
+	LanguageCodeEnumHrBa,
+	LanguageCodeEnumHrHr,
+	LanguageCodeEnumHsb,
+	LanguageCodeEnumHsbDe,
 	LanguageCodeEnumHu,
+	LanguageCodeEnumHuHu,
 	LanguageCodeEnumHy,
+	LanguageCodeEnumHyAm,
+	LanguageCodeEnumIa,
 	LanguageCodeEnumID,
+	LanguageCodeEnumIDID,
+	LanguageCodeEnumIg,
+	LanguageCodeEnumIgNg,
+	LanguageCodeEnumIi,
+	LanguageCodeEnumIiCn,
 	LanguageCodeEnumIs,
+	LanguageCodeEnumIsIs,
 	LanguageCodeEnumIt,
+	LanguageCodeEnumItCh,
+	LanguageCodeEnumItIt,
+	LanguageCodeEnumItSm,
+	LanguageCodeEnumItVa,
 	LanguageCodeEnumJa,
+	LanguageCodeEnumJaJp,
+	LanguageCodeEnumJgo,
+	LanguageCodeEnumJgoCm,
+	LanguageCodeEnumJmc,
+	LanguageCodeEnumJmcTz,
+	LanguageCodeEnumJv,
+	LanguageCodeEnumJvID,
 	LanguageCodeEnumKa,
+	LanguageCodeEnumKaGe,
+	LanguageCodeEnumKab,
+	LanguageCodeEnumKabDz,
+	LanguageCodeEnumKam,
+	LanguageCodeEnumKamKe,
+	LanguageCodeEnumKde,
+	LanguageCodeEnumKdeTz,
+	LanguageCodeEnumKea,
+	LanguageCodeEnumKeaCv,
+	LanguageCodeEnumKhq,
+	LanguageCodeEnumKhqMl,
+	LanguageCodeEnumKi,
+	LanguageCodeEnumKiKe,
+	LanguageCodeEnumKk,
+	LanguageCodeEnumKkKz,
+	LanguageCodeEnumKkj,
+	LanguageCodeEnumKkjCm,
+	LanguageCodeEnumKl,
+	LanguageCodeEnumKlGl,
+	LanguageCodeEnumKln,
+	LanguageCodeEnumKlnKe,
 	LanguageCodeEnumKm,
+	LanguageCodeEnumKmKh,
+	LanguageCodeEnumKn,
+	LanguageCodeEnumKnIn,
 	LanguageCodeEnumKo,
+	LanguageCodeEnumKoKp,
+	LanguageCodeEnumKoKr,
+	LanguageCodeEnumKok,
+	LanguageCodeEnumKokIn,
+	LanguageCodeEnumKs,
+	LanguageCodeEnumKsArab,
+	LanguageCodeEnumKsArabIn,
+	LanguageCodeEnumKsb,
+	LanguageCodeEnumKsbTz,
+	LanguageCodeEnumKsf,
+	LanguageCodeEnumKsfCm,
+	LanguageCodeEnumKsh,
+	LanguageCodeEnumKshDe,
+	LanguageCodeEnumKu,
+	LanguageCodeEnumKuTr,
+	LanguageCodeEnumKw,
+	LanguageCodeEnumKwGb,
+	LanguageCodeEnumKy,
+	LanguageCodeEnumKyKg,
+	LanguageCodeEnumLag,
+	LanguageCodeEnumLagTz,
+	LanguageCodeEnumLb,
+	LanguageCodeEnumLbLu,
+	LanguageCodeEnumLg,
+	LanguageCodeEnumLgUg,
+	LanguageCodeEnumLkt,
+	LanguageCodeEnumLktUs,
+	LanguageCodeEnumLn,
+	LanguageCodeEnumLnAo,
+	LanguageCodeEnumLnCd,
+	LanguageCodeEnumLnCf,
+	LanguageCodeEnumLnCg,
+	LanguageCodeEnumLo,
+	LanguageCodeEnumLoLa,
+	LanguageCodeEnumLrc,
+	LanguageCodeEnumLrcIq,
+	LanguageCodeEnumLrcIr,
 	LanguageCodeEnumLt,
+	LanguageCodeEnumLtLt,
+	LanguageCodeEnumLu,
+	LanguageCodeEnumLuCd,
+	LanguageCodeEnumLuo,
+	LanguageCodeEnumLuoKe,
+	LanguageCodeEnumLuy,
+	LanguageCodeEnumLuyKe,
+	LanguageCodeEnumLv,
+	LanguageCodeEnumLvLv,
+	LanguageCodeEnumMai,
+	LanguageCodeEnumMaiIn,
+	LanguageCodeEnumMas,
+	LanguageCodeEnumMasKe,
+	LanguageCodeEnumMasTz,
+	LanguageCodeEnumMer,
+	LanguageCodeEnumMerKe,
+	LanguageCodeEnumMfe,
+	LanguageCodeEnumMfeMu,
+	LanguageCodeEnumMg,
+	LanguageCodeEnumMgMg,
+	LanguageCodeEnumMgh,
+	LanguageCodeEnumMghMz,
+	LanguageCodeEnumMgo,
+	LanguageCodeEnumMgoCm,
+	LanguageCodeEnumMi,
+	LanguageCodeEnumMiNz,
+	LanguageCodeEnumMk,
+	LanguageCodeEnumMkMk,
+	LanguageCodeEnumMl,
+	LanguageCodeEnumMlIn,
 	LanguageCodeEnumMn,
+	LanguageCodeEnumMnMn,
+	LanguageCodeEnumMni,
+	LanguageCodeEnumMniBeng,
+	LanguageCodeEnumMniBengIn,
+	LanguageCodeEnumMr,
+	LanguageCodeEnumMrIn,
+	LanguageCodeEnumMs,
+	LanguageCodeEnumMsBn,
+	LanguageCodeEnumMsID,
+	LanguageCodeEnumMsMy,
+	LanguageCodeEnumMsSg,
+	LanguageCodeEnumMt,
+	LanguageCodeEnumMtMt,
+	LanguageCodeEnumMua,
+	LanguageCodeEnumMuaCm,
 	LanguageCodeEnumMy,
+	LanguageCodeEnumMyMm,
+	LanguageCodeEnumMzn,
+	LanguageCodeEnumMznIr,
+	LanguageCodeEnumNaq,
+	LanguageCodeEnumNaqNa,
 	LanguageCodeEnumNb,
+	LanguageCodeEnumNbNo,
+	LanguageCodeEnumNbSj,
+	LanguageCodeEnumNd,
+	LanguageCodeEnumNdZw,
+	LanguageCodeEnumNds,
+	LanguageCodeEnumNdsDe,
+	LanguageCodeEnumNdsNl,
+	LanguageCodeEnumNe,
+	LanguageCodeEnumNeIn,
+	LanguageCodeEnumNeNp,
 	LanguageCodeEnumNl,
+	LanguageCodeEnumNlAw,
+	LanguageCodeEnumNlBe,
+	LanguageCodeEnumNlBq,
+	LanguageCodeEnumNlCw,
+	LanguageCodeEnumNlNl,
+	LanguageCodeEnumNlSr,
+	LanguageCodeEnumNlSx,
+	LanguageCodeEnumNmg,
+	LanguageCodeEnumNmgCm,
+	LanguageCodeEnumNn,
+	LanguageCodeEnumNnNo,
+	LanguageCodeEnumNnh,
+	LanguageCodeEnumNnhCm,
+	LanguageCodeEnumNus,
+	LanguageCodeEnumNusSs,
+	LanguageCodeEnumNyn,
+	LanguageCodeEnumNynUg,
+	LanguageCodeEnumOm,
+	LanguageCodeEnumOmEt,
+	LanguageCodeEnumOmKe,
+	LanguageCodeEnumOr,
+	LanguageCodeEnumOrIn,
+	LanguageCodeEnumOs,
+	LanguageCodeEnumOsGe,
+	LanguageCodeEnumOsRu,
+	LanguageCodeEnumPa,
+	LanguageCodeEnumPaArab,
+	LanguageCodeEnumPaArabPk,
+	LanguageCodeEnumPaGuru,
+	LanguageCodeEnumPaGuruIn,
+	LanguageCodeEnumPcm,
+	LanguageCodeEnumPcmNg,
 	LanguageCodeEnumPl,
+	LanguageCodeEnumPlPl,
+	LanguageCodeEnumPrg,
+	LanguageCodeEnumPs,
+	LanguageCodeEnumPsAf,
+	LanguageCodeEnumPsPk,
 	LanguageCodeEnumPt,
+	LanguageCodeEnumPtAo,
 	LanguageCodeEnumPtBr,
+	LanguageCodeEnumPtCh,
+	LanguageCodeEnumPtCv,
+	LanguageCodeEnumPtGq,
+	LanguageCodeEnumPtGw,
+	LanguageCodeEnumPtLu,
+	LanguageCodeEnumPtMo,
+	LanguageCodeEnumPtMz,
+	LanguageCodeEnumPtPt,
+	LanguageCodeEnumPtSt,
+	LanguageCodeEnumPtTl,
+	LanguageCodeEnumQu,
+	LanguageCodeEnumQuBo,
+	LanguageCodeEnumQuEc,
+	LanguageCodeEnumQuPe,
+	LanguageCodeEnumRm,
+	LanguageCodeEnumRmCh,
+	LanguageCodeEnumRn,
+	LanguageCodeEnumRnBi,
 	LanguageCodeEnumRo,
+	LanguageCodeEnumRoMd,
+	LanguageCodeEnumRoRo,
+	LanguageCodeEnumRof,
+	LanguageCodeEnumRofTz,
 	LanguageCodeEnumRu,
+	LanguageCodeEnumRuBy,
+	LanguageCodeEnumRuKg,
+	LanguageCodeEnumRuKz,
+	LanguageCodeEnumRuMd,
+	LanguageCodeEnumRuRu,
+	LanguageCodeEnumRuUa,
+	LanguageCodeEnumRw,
+	LanguageCodeEnumRwRw,
+	LanguageCodeEnumRwk,
+	LanguageCodeEnumRwkTz,
+	LanguageCodeEnumSah,
+	LanguageCodeEnumSahRu,
+	LanguageCodeEnumSaq,
+	LanguageCodeEnumSaqKe,
+	LanguageCodeEnumSat,
+	LanguageCodeEnumSatOlck,
+	LanguageCodeEnumSatOlckIn,
+	LanguageCodeEnumSbp,
+	LanguageCodeEnumSbpTz,
+	LanguageCodeEnumSd,
+	LanguageCodeEnumSdArab,
+	LanguageCodeEnumSdArabPk,
+	LanguageCodeEnumSdDeva,
+	LanguageCodeEnumSdDevaIn,
+	LanguageCodeEnumSe,
+	LanguageCodeEnumSeFi,
+	LanguageCodeEnumSeNo,
+	LanguageCodeEnumSeSe,
+	LanguageCodeEnumSeh,
+	LanguageCodeEnumSehMz,
+	LanguageCodeEnumSes,
+	LanguageCodeEnumSesMl,
+	LanguageCodeEnumSg,
+	LanguageCodeEnumSgCf,
+	LanguageCodeEnumShi,
+	LanguageCodeEnumShiLatn,
+	LanguageCodeEnumShiLatnMa,
+	LanguageCodeEnumShiTfng,
+	LanguageCodeEnumShiTfngMa,
+	LanguageCodeEnumSi,
+	LanguageCodeEnumSiLk,
 	LanguageCodeEnumSk,
+	LanguageCodeEnumSkSk,
 	LanguageCodeEnumSl,
+	LanguageCodeEnumSlSi,
+	LanguageCodeEnumSmn,
+	LanguageCodeEnumSmnFi,
+	LanguageCodeEnumSn,
+	LanguageCodeEnumSnZw,
+	LanguageCodeEnumSo,
+	LanguageCodeEnumSoDj,
+	LanguageCodeEnumSoEt,
+	LanguageCodeEnumSoKe,
+	LanguageCodeEnumSoSo,
 	LanguageCodeEnumSq,
+	LanguageCodeEnumSqAl,
+	LanguageCodeEnumSqMk,
+	LanguageCodeEnumSqXk,
 	LanguageCodeEnumSr,
+	LanguageCodeEnumSrCyrl,
+	LanguageCodeEnumSrCyrlBa,
+	LanguageCodeEnumSrCyrlMe,
+	LanguageCodeEnumSrCyrlRs,
+	LanguageCodeEnumSrCyrlXk,
+	LanguageCodeEnumSrLatn,
+	LanguageCodeEnumSrLatnBa,
+	LanguageCodeEnumSrLatnMe,
+	LanguageCodeEnumSrLatnRs,
+	LanguageCodeEnumSrLatnXk,
+	LanguageCodeEnumSu,
+	LanguageCodeEnumSuLatn,
+	LanguageCodeEnumSuLatnID,
 	LanguageCodeEnumSv,
+	LanguageCodeEnumSvAx,
+	LanguageCodeEnumSvFi,
+	LanguageCodeEnumSvSe,
 	LanguageCodeEnumSw,
+	LanguageCodeEnumSwCd,
+	LanguageCodeEnumSwKe,
+	LanguageCodeEnumSwTz,
+	LanguageCodeEnumSwUg,
 	LanguageCodeEnumTa,
+	LanguageCodeEnumTaIn,
+	LanguageCodeEnumTaLk,
+	LanguageCodeEnumTaMy,
+	LanguageCodeEnumTaSg,
+	LanguageCodeEnumTe,
+	LanguageCodeEnumTeIn,
+	LanguageCodeEnumTeo,
+	LanguageCodeEnumTeoKe,
+	LanguageCodeEnumTeoUg,
+	LanguageCodeEnumTg,
+	LanguageCodeEnumTgTj,
 	LanguageCodeEnumTh,
+	LanguageCodeEnumThTh,
+	LanguageCodeEnumTi,
+	LanguageCodeEnumTiEr,
+	LanguageCodeEnumTiEt,
+	LanguageCodeEnumTk,
+	LanguageCodeEnumTkTm,
+	LanguageCodeEnumTo,
+	LanguageCodeEnumToTo,
 	LanguageCodeEnumTr,
+	LanguageCodeEnumTrCy,
+	LanguageCodeEnumTrTr,
+	LanguageCodeEnumTt,
+	LanguageCodeEnumTtRu,
+	LanguageCodeEnumTwq,
+	LanguageCodeEnumTwqNe,
+	LanguageCodeEnumTzm,
+	LanguageCodeEnumTzmMa,
+	LanguageCodeEnumUg,
+	LanguageCodeEnumUgCn,
 	LanguageCodeEnumUk,
+	LanguageCodeEnumUkUa,
+	LanguageCodeEnumUr,
+	LanguageCodeEnumUrIn,
+	LanguageCodeEnumUrPk,
+	LanguageCodeEnumUz,
+	LanguageCodeEnumUzArab,
+	LanguageCodeEnumUzArabAf,
+	LanguageCodeEnumUzCyrl,
+	LanguageCodeEnumUzCyrlUz,
+	LanguageCodeEnumUzLatn,
+	LanguageCodeEnumUzLatnUz,
+	LanguageCodeEnumVai,
+	LanguageCodeEnumVaiLatn,
+	LanguageCodeEnumVaiLatnLr,
+	LanguageCodeEnumVaiVaii,
+	LanguageCodeEnumVaiVaiiLr,
 	LanguageCodeEnumVi,
+	LanguageCodeEnumViVn,
+	LanguageCodeEnumVo,
+	LanguageCodeEnumVun,
+	LanguageCodeEnumVunTz,
+	LanguageCodeEnumWae,
+	LanguageCodeEnumWaeCh,
+	LanguageCodeEnumWo,
+	LanguageCodeEnumWoSn,
+	LanguageCodeEnumXh,
+	LanguageCodeEnumXhZa,
+	LanguageCodeEnumXog,
+	LanguageCodeEnumXogUg,
+	LanguageCodeEnumYav,
+	LanguageCodeEnumYavCm,
+	LanguageCodeEnumYi,
+	LanguageCodeEnumYo,
+	LanguageCodeEnumYoBj,
+	LanguageCodeEnumYoNg,
+	LanguageCodeEnumYue,
+	LanguageCodeEnumYueHans,
+	LanguageCodeEnumYueHansCn,
+	LanguageCodeEnumYueHant,
+	LanguageCodeEnumYueHantHk,
+	LanguageCodeEnumZgh,
+	LanguageCodeEnumZghMa,
+	LanguageCodeEnumZh,
 	LanguageCodeEnumZhHans,
+	LanguageCodeEnumZhHansCn,
+	LanguageCodeEnumZhHansHk,
+	LanguageCodeEnumZhHansMo,
+	LanguageCodeEnumZhHansSg,
 	LanguageCodeEnumZhHant,
+	LanguageCodeEnumZhHantHk,
+	LanguageCodeEnumZhHantMo,
+	LanguageCodeEnumZhHantTw,
+	LanguageCodeEnumZu,
+	LanguageCodeEnumZuZa,
 }
 
 func (e LanguageCodeEnum) IsValid() bool {
 	switch e {
-	case LanguageCodeEnumAr, LanguageCodeEnumAz, LanguageCodeEnumBg, LanguageCodeEnumBn, LanguageCodeEnumCa, LanguageCodeEnumCs, LanguageCodeEnumDa, LanguageCodeEnumDe, LanguageCodeEnumEl, LanguageCodeEnumEn, LanguageCodeEnumEs, LanguageCodeEnumEsCo, LanguageCodeEnumEt, LanguageCodeEnumFa, LanguageCodeEnumFi, LanguageCodeEnumFr, LanguageCodeEnumHi, LanguageCodeEnumHu, LanguageCodeEnumHy, LanguageCodeEnumID, LanguageCodeEnumIs, LanguageCodeEnumIt, LanguageCodeEnumJa, LanguageCodeEnumKa, LanguageCodeEnumKm, LanguageCodeEnumKo, LanguageCodeEnumLt, LanguageCodeEnumMn, LanguageCodeEnumMy, LanguageCodeEnumNb, LanguageCodeEnumNl, LanguageCodeEnumPl, LanguageCodeEnumPt, LanguageCodeEnumPtBr, LanguageCodeEnumRo, LanguageCodeEnumRu, LanguageCodeEnumSk, LanguageCodeEnumSl, LanguageCodeEnumSq, LanguageCodeEnumSr, LanguageCodeEnumSv, LanguageCodeEnumSw, LanguageCodeEnumTa, LanguageCodeEnumTh, LanguageCodeEnumTr, LanguageCodeEnumUk, LanguageCodeEnumVi, LanguageCodeEnumZhHans, LanguageCodeEnumZhHant:
+	case LanguageCodeEnumAf, LanguageCodeEnumAfNa, LanguageCodeEnumAfZa, LanguageCodeEnumAgq, LanguageCodeEnumAgqCm, LanguageCodeEnumAk, LanguageCodeEnumAkGh, LanguageCodeEnumAm, LanguageCodeEnumAmEt, LanguageCodeEnumAr, LanguageCodeEnumArAe, LanguageCodeEnumArBh, LanguageCodeEnumArDj, LanguageCodeEnumArDz, LanguageCodeEnumArEg, LanguageCodeEnumArEh, LanguageCodeEnumArEr, LanguageCodeEnumArIl, LanguageCodeEnumArIq, LanguageCodeEnumArJo, LanguageCodeEnumArKm, LanguageCodeEnumArKw, LanguageCodeEnumArLb, LanguageCodeEnumArLy, LanguageCodeEnumArMa, LanguageCodeEnumArMr, LanguageCodeEnumArOm, LanguageCodeEnumArPs, LanguageCodeEnumArQa, LanguageCodeEnumArSa, LanguageCodeEnumArSd, LanguageCodeEnumArSo, LanguageCodeEnumArSs, LanguageCodeEnumArSy, LanguageCodeEnumArTd, LanguageCodeEnumArTn, LanguageCodeEnumArYe, LanguageCodeEnumAs, LanguageCodeEnumAsIn, LanguageCodeEnumAsa, LanguageCodeEnumAsaTz, LanguageCodeEnumAst, LanguageCodeEnumAstEs, LanguageCodeEnumAz, LanguageCodeEnumAzCyrl, LanguageCodeEnumAzCyrlAz, LanguageCodeEnumAzLatn, LanguageCodeEnumAzLatnAz, LanguageCodeEnumBas, LanguageCodeEnumBasCm, LanguageCodeEnumBe, LanguageCodeEnumBeBy, LanguageCodeEnumBem, LanguageCodeEnumBemZm, LanguageCodeEnumBez, LanguageCodeEnumBezTz, LanguageCodeEnumBg, LanguageCodeEnumBgBg, LanguageCodeEnumBm, LanguageCodeEnumBmMl, LanguageCodeEnumBn, LanguageCodeEnumBnBd, LanguageCodeEnumBnIn, LanguageCodeEnumBo, LanguageCodeEnumBoCn, LanguageCodeEnumBoIn, LanguageCodeEnumBr, LanguageCodeEnumBrFr, LanguageCodeEnumBrx, LanguageCodeEnumBrxIn, LanguageCodeEnumBs, LanguageCodeEnumBsCyrl, LanguageCodeEnumBsCyrlBa, LanguageCodeEnumBsLatn, LanguageCodeEnumBsLatnBa, LanguageCodeEnumCa, LanguageCodeEnumCaAd, LanguageCodeEnumCaEs, LanguageCodeEnumCaEsValencia, LanguageCodeEnumCaFr, LanguageCodeEnumCaIt, LanguageCodeEnumCcp, LanguageCodeEnumCcpBd, LanguageCodeEnumCcpIn, LanguageCodeEnumCe, LanguageCodeEnumCeRu, LanguageCodeEnumCeb, LanguageCodeEnumCebPh, LanguageCodeEnumCgg, LanguageCodeEnumCggUg, LanguageCodeEnumChr, LanguageCodeEnumChrUs, LanguageCodeEnumCkb, LanguageCodeEnumCkbIq, LanguageCodeEnumCkbIr, LanguageCodeEnumCs, LanguageCodeEnumCsCz, LanguageCodeEnumCu, LanguageCodeEnumCuRu, LanguageCodeEnumCy, LanguageCodeEnumCyGb, LanguageCodeEnumDa, LanguageCodeEnumDaDk, LanguageCodeEnumDaGl, LanguageCodeEnumDav, LanguageCodeEnumDavKe, LanguageCodeEnumDe, LanguageCodeEnumDeAt, LanguageCodeEnumDeBe, LanguageCodeEnumDeCh, LanguageCodeEnumDeDe, LanguageCodeEnumDeIt, LanguageCodeEnumDeLi, LanguageCodeEnumDeLu, LanguageCodeEnumDje, LanguageCodeEnumDjeNe, LanguageCodeEnumDsb, LanguageCodeEnumDsbDe, LanguageCodeEnumDua, LanguageCodeEnumDuaCm, LanguageCodeEnumDyo, LanguageCodeEnumDyoSn, LanguageCodeEnumDz, LanguageCodeEnumDzBt, LanguageCodeEnumEbu, LanguageCodeEnumEbuKe, LanguageCodeEnumEe, LanguageCodeEnumEeGh, LanguageCodeEnumEeTg, LanguageCodeEnumEl, LanguageCodeEnumElCy, LanguageCodeEnumElGr, LanguageCodeEnumEn, LanguageCodeEnumEnAe, LanguageCodeEnumEnAg, LanguageCodeEnumEnAi, LanguageCodeEnumEnAs, LanguageCodeEnumEnAt, LanguageCodeEnumEnAu, LanguageCodeEnumEnBb, LanguageCodeEnumEnBe, LanguageCodeEnumEnBi, LanguageCodeEnumEnBm, LanguageCodeEnumEnBs, LanguageCodeEnumEnBw, LanguageCodeEnumEnBz, LanguageCodeEnumEnCa, LanguageCodeEnumEnCc, LanguageCodeEnumEnCh, LanguageCodeEnumEnCk, LanguageCodeEnumEnCm, LanguageCodeEnumEnCx, LanguageCodeEnumEnCy, LanguageCodeEnumEnDe, LanguageCodeEnumEnDg, LanguageCodeEnumEnDk, LanguageCodeEnumEnDm, LanguageCodeEnumEnEr, LanguageCodeEnumEnFi, LanguageCodeEnumEnFj, LanguageCodeEnumEnFk, LanguageCodeEnumEnFm, LanguageCodeEnumEnGb, LanguageCodeEnumEnGd, LanguageCodeEnumEnGg, LanguageCodeEnumEnGh, LanguageCodeEnumEnGi, LanguageCodeEnumEnGm, LanguageCodeEnumEnGu, LanguageCodeEnumEnGy, LanguageCodeEnumEnHk, LanguageCodeEnumEnIe, LanguageCodeEnumEnIl, LanguageCodeEnumEnIm, LanguageCodeEnumEnIn, LanguageCodeEnumEnIo, LanguageCodeEnumEnJe, LanguageCodeEnumEnJm, LanguageCodeEnumEnKe, LanguageCodeEnumEnKi, LanguageCodeEnumEnKn, LanguageCodeEnumEnKy, LanguageCodeEnumEnLc, LanguageCodeEnumEnLr, LanguageCodeEnumEnLs, LanguageCodeEnumEnMg, LanguageCodeEnumEnMh, LanguageCodeEnumEnMo, LanguageCodeEnumEnMp, LanguageCodeEnumEnMs, LanguageCodeEnumEnMt, LanguageCodeEnumEnMu, LanguageCodeEnumEnMw, LanguageCodeEnumEnMy, LanguageCodeEnumEnNa, LanguageCodeEnumEnNf, LanguageCodeEnumEnNg, LanguageCodeEnumEnNl, LanguageCodeEnumEnNr, LanguageCodeEnumEnNu, LanguageCodeEnumEnNz, LanguageCodeEnumEnPg, LanguageCodeEnumEnPh, LanguageCodeEnumEnPk, LanguageCodeEnumEnPn, LanguageCodeEnumEnPr, LanguageCodeEnumEnPw, LanguageCodeEnumEnRw, LanguageCodeEnumEnSb, LanguageCodeEnumEnSc, LanguageCodeEnumEnSd, LanguageCodeEnumEnSe, LanguageCodeEnumEnSg, LanguageCodeEnumEnSh, LanguageCodeEnumEnSi, LanguageCodeEnumEnSl, LanguageCodeEnumEnSs, LanguageCodeEnumEnSx, LanguageCodeEnumEnSz, LanguageCodeEnumEnTc, LanguageCodeEnumEnTk, LanguageCodeEnumEnTo, LanguageCodeEnumEnTt, LanguageCodeEnumEnTv, LanguageCodeEnumEnTz, LanguageCodeEnumEnUg, LanguageCodeEnumEnUm, LanguageCodeEnumEnUs, LanguageCodeEnumEnVc, LanguageCodeEnumEnVg, LanguageCodeEnumEnVi, LanguageCodeEnumEnVu, LanguageCodeEnumEnWs, LanguageCodeEnumEnZa, LanguageCodeEnumEnZm, LanguageCodeEnumEnZw, LanguageCodeEnumEo, LanguageCodeEnumEs, LanguageCodeEnumEsAr, LanguageCodeEnumEsBo, LanguageCodeEnumEsBr, LanguageCodeEnumEsBz, LanguageCodeEnumEsCl, LanguageCodeEnumEsCo, LanguageCodeEnumEsCr, LanguageCodeEnumEsCu, LanguageCodeEnumEsDo, LanguageCodeEnumEsEa, LanguageCodeEnumEsEc, LanguageCodeEnumEsEs, LanguageCodeEnumEsGq, LanguageCodeEnumEsGt, LanguageCodeEnumEsHn, LanguageCodeEnumEsIc, LanguageCodeEnumEsMx, LanguageCodeEnumEsNi, LanguageCodeEnumEsPa, LanguageCodeEnumEsPe, LanguageCodeEnumEsPh, LanguageCodeEnumEsPr, LanguageCodeEnumEsPy, LanguageCodeEnumEsSv, LanguageCodeEnumEsUs, LanguageCodeEnumEsUy, LanguageCodeEnumEsVe, LanguageCodeEnumEt, LanguageCodeEnumEtEe, LanguageCodeEnumEu, LanguageCodeEnumEuEs, LanguageCodeEnumEwo, LanguageCodeEnumEwoCm, LanguageCodeEnumFa, LanguageCodeEnumFaAf, LanguageCodeEnumFaIr, LanguageCodeEnumFf, LanguageCodeEnumFfAdlm, LanguageCodeEnumFfAdlmBf, LanguageCodeEnumFfAdlmCm, LanguageCodeEnumFfAdlmGh, LanguageCodeEnumFfAdlmGm, LanguageCodeEnumFfAdlmGn, LanguageCodeEnumFfAdlmGw, LanguageCodeEnumFfAdlmLr, LanguageCodeEnumFfAdlmMr, LanguageCodeEnumFfAdlmNe, LanguageCodeEnumFfAdlmNg, LanguageCodeEnumFfAdlmSl, LanguageCodeEnumFfAdlmSn, LanguageCodeEnumFfLatn, LanguageCodeEnumFfLatnBf, LanguageCodeEnumFfLatnCm, LanguageCodeEnumFfLatnGh, LanguageCodeEnumFfLatnGm, LanguageCodeEnumFfLatnGn, LanguageCodeEnumFfLatnGw, LanguageCodeEnumFfLatnLr, LanguageCodeEnumFfLatnMr, LanguageCodeEnumFfLatnNe, LanguageCodeEnumFfLatnNg, LanguageCodeEnumFfLatnSl, LanguageCodeEnumFfLatnSn, LanguageCodeEnumFi, LanguageCodeEnumFiFi, LanguageCodeEnumFil, LanguageCodeEnumFilPh, LanguageCodeEnumFo, LanguageCodeEnumFoDk, LanguageCodeEnumFoFo, LanguageCodeEnumFr, LanguageCodeEnumFrBe, LanguageCodeEnumFrBf, LanguageCodeEnumFrBi, LanguageCodeEnumFrBj, LanguageCodeEnumFrBl, LanguageCodeEnumFrCa, LanguageCodeEnumFrCd, LanguageCodeEnumFrCf, LanguageCodeEnumFrCg, LanguageCodeEnumFrCh, LanguageCodeEnumFrCi, LanguageCodeEnumFrCm, LanguageCodeEnumFrDj, LanguageCodeEnumFrDz, LanguageCodeEnumFrFr, LanguageCodeEnumFrGa, LanguageCodeEnumFrGf, LanguageCodeEnumFrGn, LanguageCodeEnumFrGp, LanguageCodeEnumFrGq, LanguageCodeEnumFrHt, LanguageCodeEnumFrKm, LanguageCodeEnumFrLu, LanguageCodeEnumFrMa, LanguageCodeEnumFrMc, LanguageCodeEnumFrMf, LanguageCodeEnumFrMg, LanguageCodeEnumFrMl, LanguageCodeEnumFrMq, LanguageCodeEnumFrMr, LanguageCodeEnumFrMu, LanguageCodeEnumFrNc, LanguageCodeEnumFrNe, LanguageCodeEnumFrPf, LanguageCodeEnumFrPm, LanguageCodeEnumFrRe, LanguageCodeEnumFrRw, LanguageCodeEnumFrSc, LanguageCodeEnumFrSn, LanguageCodeEnumFrSy, LanguageCodeEnumFrTd, LanguageCodeEnumFrTg, LanguageCodeEnumFrTn, LanguageCodeEnumFrVu, LanguageCodeEnumFrWf, LanguageCodeEnumFrYt, LanguageCodeEnumFur, LanguageCodeEnumFurIt, LanguageCodeEnumFy, LanguageCodeEnumFyNl, LanguageCodeEnumGa, LanguageCodeEnumGaGb, LanguageCodeEnumGaIe, LanguageCodeEnumGd, LanguageCodeEnumGdGb, LanguageCodeEnumGl, LanguageCodeEnumGlEs, LanguageCodeEnumGsw, LanguageCodeEnumGswCh, LanguageCodeEnumGswFr, LanguageCodeEnumGswLi, LanguageCodeEnumGu, LanguageCodeEnumGuIn, LanguageCodeEnumGuz, LanguageCodeEnumGuzKe, LanguageCodeEnumGv, LanguageCodeEnumGvIm, LanguageCodeEnumHa, LanguageCodeEnumHaGh, LanguageCodeEnumHaNe, LanguageCodeEnumHaNg, LanguageCodeEnumHaw, LanguageCodeEnumHawUs, LanguageCodeEnumHe, LanguageCodeEnumHeIl, LanguageCodeEnumHi, LanguageCodeEnumHiIn, LanguageCodeEnumHr, LanguageCodeEnumHrBa, LanguageCodeEnumHrHr, LanguageCodeEnumHsb, LanguageCodeEnumHsbDe, LanguageCodeEnumHu, LanguageCodeEnumHuHu, LanguageCodeEnumHy, LanguageCodeEnumHyAm, LanguageCodeEnumIa, LanguageCodeEnumID, LanguageCodeEnumIDID, LanguageCodeEnumIg, LanguageCodeEnumIgNg, LanguageCodeEnumIi, LanguageCodeEnumIiCn, LanguageCodeEnumIs, LanguageCodeEnumIsIs, LanguageCodeEnumIt, LanguageCodeEnumItCh, LanguageCodeEnumItIt, LanguageCodeEnumItSm, LanguageCodeEnumItVa, LanguageCodeEnumJa, LanguageCodeEnumJaJp, LanguageCodeEnumJgo, LanguageCodeEnumJgoCm, LanguageCodeEnumJmc, LanguageCodeEnumJmcTz, LanguageCodeEnumJv, LanguageCodeEnumJvID, LanguageCodeEnumKa, LanguageCodeEnumKaGe, LanguageCodeEnumKab, LanguageCodeEnumKabDz, LanguageCodeEnumKam, LanguageCodeEnumKamKe, LanguageCodeEnumKde, LanguageCodeEnumKdeTz, LanguageCodeEnumKea, LanguageCodeEnumKeaCv, LanguageCodeEnumKhq, LanguageCodeEnumKhqMl, LanguageCodeEnumKi, LanguageCodeEnumKiKe, LanguageCodeEnumKk, LanguageCodeEnumKkKz, LanguageCodeEnumKkj, LanguageCodeEnumKkjCm, LanguageCodeEnumKl, LanguageCodeEnumKlGl, LanguageCodeEnumKln, LanguageCodeEnumKlnKe, LanguageCodeEnumKm, LanguageCodeEnumKmKh, LanguageCodeEnumKn, LanguageCodeEnumKnIn, LanguageCodeEnumKo, LanguageCodeEnumKoKp, LanguageCodeEnumKoKr, LanguageCodeEnumKok, LanguageCodeEnumKokIn, LanguageCodeEnumKs, LanguageCodeEnumKsArab, LanguageCodeEnumKsArabIn, LanguageCodeEnumKsb, LanguageCodeEnumKsbTz, LanguageCodeEnumKsf, LanguageCodeEnumKsfCm, LanguageCodeEnumKsh, LanguageCodeEnumKshDe, LanguageCodeEnumKu, LanguageCodeEnumKuTr, LanguageCodeEnumKw, LanguageCodeEnumKwGb, LanguageCodeEnumKy, LanguageCodeEnumKyKg, LanguageCodeEnumLag, LanguageCodeEnumLagTz, LanguageCodeEnumLb, LanguageCodeEnumLbLu, LanguageCodeEnumLg, LanguageCodeEnumLgUg, LanguageCodeEnumLkt, LanguageCodeEnumLktUs, LanguageCodeEnumLn, LanguageCodeEnumLnAo, LanguageCodeEnumLnCd, LanguageCodeEnumLnCf, LanguageCodeEnumLnCg, LanguageCodeEnumLo, LanguageCodeEnumLoLa, LanguageCodeEnumLrc, LanguageCodeEnumLrcIq, LanguageCodeEnumLrcIr, LanguageCodeEnumLt, LanguageCodeEnumLtLt, LanguageCodeEnumLu, LanguageCodeEnumLuCd, LanguageCodeEnumLuo, LanguageCodeEnumLuoKe, LanguageCodeEnumLuy, LanguageCodeEnumLuyKe, LanguageCodeEnumLv, LanguageCodeEnumLvLv, LanguageCodeEnumMai, LanguageCodeEnumMaiIn, LanguageCodeEnumMas, LanguageCodeEnumMasKe, LanguageCodeEnumMasTz, LanguageCodeEnumMer, LanguageCodeEnumMerKe, LanguageCodeEnumMfe, LanguageCodeEnumMfeMu, LanguageCodeEnumMg, LanguageCodeEnumMgMg, LanguageCodeEnumMgh, LanguageCodeEnumMghMz, LanguageCodeEnumMgo, LanguageCodeEnumMgoCm, LanguageCodeEnumMi, LanguageCodeEnumMiNz, LanguageCodeEnumMk, LanguageCodeEnumMkMk, LanguageCodeEnumMl, LanguageCodeEnumMlIn, LanguageCodeEnumMn, LanguageCodeEnumMnMn, LanguageCodeEnumMni, LanguageCodeEnumMniBeng, LanguageCodeEnumMniBengIn, LanguageCodeEnumMr, LanguageCodeEnumMrIn, LanguageCodeEnumMs, LanguageCodeEnumMsBn, LanguageCodeEnumMsID, LanguageCodeEnumMsMy, LanguageCodeEnumMsSg, LanguageCodeEnumMt, LanguageCodeEnumMtMt, LanguageCodeEnumMua, LanguageCodeEnumMuaCm, LanguageCodeEnumMy, LanguageCodeEnumMyMm, LanguageCodeEnumMzn, LanguageCodeEnumMznIr, LanguageCodeEnumNaq, LanguageCodeEnumNaqNa, LanguageCodeEnumNb, LanguageCodeEnumNbNo, LanguageCodeEnumNbSj, LanguageCodeEnumNd, LanguageCodeEnumNdZw, LanguageCodeEnumNds, LanguageCodeEnumNdsDe, LanguageCodeEnumNdsNl, LanguageCodeEnumNe, LanguageCodeEnumNeIn, LanguageCodeEnumNeNp, LanguageCodeEnumNl, LanguageCodeEnumNlAw, LanguageCodeEnumNlBe, LanguageCodeEnumNlBq, LanguageCodeEnumNlCw, LanguageCodeEnumNlNl, LanguageCodeEnumNlSr, LanguageCodeEnumNlSx, LanguageCodeEnumNmg, LanguageCodeEnumNmgCm, LanguageCodeEnumNn, LanguageCodeEnumNnNo, LanguageCodeEnumNnh, LanguageCodeEnumNnhCm, LanguageCodeEnumNus, LanguageCodeEnumNusSs, LanguageCodeEnumNyn, LanguageCodeEnumNynUg, LanguageCodeEnumOm, LanguageCodeEnumOmEt, LanguageCodeEnumOmKe, LanguageCodeEnumOr, LanguageCodeEnumOrIn, LanguageCodeEnumOs, LanguageCodeEnumOsGe, LanguageCodeEnumOsRu, LanguageCodeEnumPa, LanguageCodeEnumPaArab, LanguageCodeEnumPaArabPk, LanguageCodeEnumPaGuru, LanguageCodeEnumPaGuruIn, LanguageCodeEnumPcm, LanguageCodeEnumPcmNg, LanguageCodeEnumPl, LanguageCodeEnumPlPl, LanguageCodeEnumPrg, LanguageCodeEnumPs, LanguageCodeEnumPsAf, LanguageCodeEnumPsPk, LanguageCodeEnumPt, LanguageCodeEnumPtAo, LanguageCodeEnumPtBr, LanguageCodeEnumPtCh, LanguageCodeEnumPtCv, LanguageCodeEnumPtGq, LanguageCodeEnumPtGw, LanguageCodeEnumPtLu, LanguageCodeEnumPtMo, LanguageCodeEnumPtMz, LanguageCodeEnumPtPt, LanguageCodeEnumPtSt, LanguageCodeEnumPtTl, LanguageCodeEnumQu, LanguageCodeEnumQuBo, LanguageCodeEnumQuEc, LanguageCodeEnumQuPe, LanguageCodeEnumRm, LanguageCodeEnumRmCh, LanguageCodeEnumRn, LanguageCodeEnumRnBi, LanguageCodeEnumRo, LanguageCodeEnumRoMd, LanguageCodeEnumRoRo, LanguageCodeEnumRof, LanguageCodeEnumRofTz, LanguageCodeEnumRu, LanguageCodeEnumRuBy, LanguageCodeEnumRuKg, LanguageCodeEnumRuKz, LanguageCodeEnumRuMd, LanguageCodeEnumRuRu, LanguageCodeEnumRuUa, LanguageCodeEnumRw, LanguageCodeEnumRwRw, LanguageCodeEnumRwk, LanguageCodeEnumRwkTz, LanguageCodeEnumSah, LanguageCodeEnumSahRu, LanguageCodeEnumSaq, LanguageCodeEnumSaqKe, LanguageCodeEnumSat, LanguageCodeEnumSatOlck, LanguageCodeEnumSatOlckIn, LanguageCodeEnumSbp, LanguageCodeEnumSbpTz, LanguageCodeEnumSd, LanguageCodeEnumSdArab, LanguageCodeEnumSdArabPk, LanguageCodeEnumSdDeva, LanguageCodeEnumSdDevaIn, LanguageCodeEnumSe, LanguageCodeEnumSeFi, LanguageCodeEnumSeNo, LanguageCodeEnumSeSe, LanguageCodeEnumSeh, LanguageCodeEnumSehMz, LanguageCodeEnumSes, LanguageCodeEnumSesMl, LanguageCodeEnumSg, LanguageCodeEnumSgCf, LanguageCodeEnumShi, LanguageCodeEnumShiLatn, LanguageCodeEnumShiLatnMa, LanguageCodeEnumShiTfng, LanguageCodeEnumShiTfngMa, LanguageCodeEnumSi, LanguageCodeEnumSiLk, LanguageCodeEnumSk, LanguageCodeEnumSkSk, LanguageCodeEnumSl, LanguageCodeEnumSlSi, LanguageCodeEnumSmn, LanguageCodeEnumSmnFi, LanguageCodeEnumSn, LanguageCodeEnumSnZw, LanguageCodeEnumSo, LanguageCodeEnumSoDj, LanguageCodeEnumSoEt, LanguageCodeEnumSoKe, LanguageCodeEnumSoSo, LanguageCodeEnumSq, LanguageCodeEnumSqAl, LanguageCodeEnumSqMk, LanguageCodeEnumSqXk, LanguageCodeEnumSr, LanguageCodeEnumSrCyrl, LanguageCodeEnumSrCyrlBa, LanguageCodeEnumSrCyrlMe, LanguageCodeEnumSrCyrlRs, LanguageCodeEnumSrCyrlXk, LanguageCodeEnumSrLatn, LanguageCodeEnumSrLatnBa, LanguageCodeEnumSrLatnMe, LanguageCodeEnumSrLatnRs, LanguageCodeEnumSrLatnXk, LanguageCodeEnumSu, LanguageCodeEnumSuLatn, LanguageCodeEnumSuLatnID, LanguageCodeEnumSv, LanguageCodeEnumSvAx, LanguageCodeEnumSvFi, LanguageCodeEnumSvSe, LanguageCodeEnumSw, LanguageCodeEnumSwCd, LanguageCodeEnumSwKe, LanguageCodeEnumSwTz, LanguageCodeEnumSwUg, LanguageCodeEnumTa, LanguageCodeEnumTaIn, LanguageCodeEnumTaLk, LanguageCodeEnumTaMy, LanguageCodeEnumTaSg, LanguageCodeEnumTe, LanguageCodeEnumTeIn, LanguageCodeEnumTeo, LanguageCodeEnumTeoKe, LanguageCodeEnumTeoUg, LanguageCodeEnumTg, LanguageCodeEnumTgTj, LanguageCodeEnumTh, LanguageCodeEnumThTh, LanguageCodeEnumTi, LanguageCodeEnumTiEr, LanguageCodeEnumTiEt, LanguageCodeEnumTk, LanguageCodeEnumTkTm, LanguageCodeEnumTo, LanguageCodeEnumToTo, LanguageCodeEnumTr, LanguageCodeEnumTrCy, LanguageCodeEnumTrTr, LanguageCodeEnumTt, LanguageCodeEnumTtRu, LanguageCodeEnumTwq, LanguageCodeEnumTwqNe, LanguageCodeEnumTzm, LanguageCodeEnumTzmMa, LanguageCodeEnumUg, LanguageCodeEnumUgCn, LanguageCodeEnumUk, LanguageCodeEnumUkUa, LanguageCodeEnumUr, LanguageCodeEnumUrIn, LanguageCodeEnumUrPk, LanguageCodeEnumUz, LanguageCodeEnumUzArab, LanguageCodeEnumUzArabAf, LanguageCodeEnumUzCyrl, LanguageCodeEnumUzCyrlUz, LanguageCodeEnumUzLatn, LanguageCodeEnumUzLatnUz, LanguageCodeEnumVai, LanguageCodeEnumVaiLatn, LanguageCodeEnumVaiLatnLr, LanguageCodeEnumVaiVaii, LanguageCodeEnumVaiVaiiLr, LanguageCodeEnumVi, LanguageCodeEnumViVn, LanguageCodeEnumVo, LanguageCodeEnumVun, LanguageCodeEnumVunTz, LanguageCodeEnumWae, LanguageCodeEnumWaeCh, LanguageCodeEnumWo, LanguageCodeEnumWoSn, LanguageCodeEnumXh, LanguageCodeEnumXhZa, LanguageCodeEnumXog, LanguageCodeEnumXogUg, LanguageCodeEnumYav, LanguageCodeEnumYavCm, LanguageCodeEnumYi, LanguageCodeEnumYo, LanguageCodeEnumYoBj, LanguageCodeEnumYoNg, LanguageCodeEnumYue, LanguageCodeEnumYueHans, LanguageCodeEnumYueHansCn, LanguageCodeEnumYueHant, LanguageCodeEnumYueHantHk, LanguageCodeEnumZgh, LanguageCodeEnumZghMa, LanguageCodeEnumZh, LanguageCodeEnumZhHans, LanguageCodeEnumZhHansCn, LanguageCodeEnumZhHansHk, LanguageCodeEnumZhHansMo, LanguageCodeEnumZhHansSg, LanguageCodeEnumZhHant, LanguageCodeEnumZhHantHk, LanguageCodeEnumZhHantMo, LanguageCodeEnumZhHantTw, LanguageCodeEnumZu, LanguageCodeEnumZuZa:
 		return true
 	}
 	return false
@@ -6858,7 +8957,9 @@ const (
 	OrderErrorCodeCannotDelete                  OrderErrorCode = "CANNOT_DELETE"
 	OrderErrorCodeCannotDiscount                OrderErrorCode = "CANNOT_DISCOUNT"
 	OrderErrorCodeCannotRefund                  OrderErrorCode = "CANNOT_REFUND"
+	OrderErrorCodeCannotFulfillUnpaidOrder      OrderErrorCode = "CANNOT_FULFILL_UNPAID_ORDER"
 	OrderErrorCodeCaptureInactivePayment        OrderErrorCode = "CAPTURE_INACTIVE_PAYMENT"
+	OrderErrorCodeGiftCardLine                  OrderErrorCode = "GIFT_CARD_LINE"
 	OrderErrorCodeNotEditable                   OrderErrorCode = "NOT_EDITABLE"
 	OrderErrorCodeFulfillOrderLine              OrderErrorCode = "FULFILL_ORDER_LINE"
 	OrderErrorCodeGraphqlError                  OrderErrorCode = "GRAPHQL_ERROR"
@@ -6890,7 +8991,9 @@ var AllOrderErrorCode = []OrderErrorCode{
 	OrderErrorCodeCannotDelete,
 	OrderErrorCodeCannotDiscount,
 	OrderErrorCodeCannotRefund,
+	OrderErrorCodeCannotFulfillUnpaidOrder,
 	OrderErrorCodeCaptureInactivePayment,
+	OrderErrorCodeGiftCardLine,
 	OrderErrorCodeNotEditable,
 	OrderErrorCodeFulfillOrderLine,
 	OrderErrorCodeGraphqlError,
@@ -6917,7 +9020,7 @@ var AllOrderErrorCode = []OrderErrorCode{
 
 func (e OrderErrorCode) IsValid() bool {
 	switch e {
-	case OrderErrorCodeBillingAddressNotSet, OrderErrorCodeCannotCancelFulfillment, OrderErrorCodeCannotCancelOrder, OrderErrorCodeCannotDelete, OrderErrorCodeCannotDiscount, OrderErrorCodeCannotRefund, OrderErrorCodeCaptureInactivePayment, OrderErrorCodeNotEditable, OrderErrorCodeFulfillOrderLine, OrderErrorCodeGraphqlError, OrderErrorCodeInvalid, OrderErrorCodeProductNotPublished, OrderErrorCodeProductUnavailableForPurchase, OrderErrorCodeNotFound, OrderErrorCodeOrderNoShippingAddress, OrderErrorCodePaymentError, OrderErrorCodePaymentMissing, OrderErrorCodeRequired, OrderErrorCodeShippingMethodNotApplicable, OrderErrorCodeShippingMethodRequired, OrderErrorCodeTaxError, OrderErrorCodeUnique, OrderErrorCodeVoidInactivePayment, OrderErrorCodeZeroQuantity, OrderErrorCodeInvalidQuantity, OrderErrorCodeInsufficientStock, OrderErrorCodeDuplicatedInputItem, OrderErrorCodeNotAvailableInChannel, OrderErrorCodeChannelInactive:
+	case OrderErrorCodeBillingAddressNotSet, OrderErrorCodeCannotCancelFulfillment, OrderErrorCodeCannotCancelOrder, OrderErrorCodeCannotDelete, OrderErrorCodeCannotDiscount, OrderErrorCodeCannotRefund, OrderErrorCodeCannotFulfillUnpaidOrder, OrderErrorCodeCaptureInactivePayment, OrderErrorCodeGiftCardLine, OrderErrorCodeNotEditable, OrderErrorCodeFulfillOrderLine, OrderErrorCodeGraphqlError, OrderErrorCodeInvalid, OrderErrorCodeProductNotPublished, OrderErrorCodeProductUnavailableForPurchase, OrderErrorCodeNotFound, OrderErrorCodeOrderNoShippingAddress, OrderErrorCodePaymentError, OrderErrorCodePaymentMissing, OrderErrorCodeRequired, OrderErrorCodeShippingMethodNotApplicable, OrderErrorCodeShippingMethodRequired, OrderErrorCodeTaxError, OrderErrorCodeUnique, OrderErrorCodeVoidInactivePayment, OrderErrorCodeZeroQuantity, OrderErrorCodeInvalidQuantity, OrderErrorCodeInsufficientStock, OrderErrorCodeDuplicatedInputItem, OrderErrorCodeNotAvailableInChannel, OrderErrorCodeChannelInactive:
 		return true
 	}
 	return false
@@ -7038,6 +9141,7 @@ const (
 	OrderEventsEnumFulfillmentRefunded               OrderEventsEnum = "FULFILLMENT_REFUNDED"
 	OrderEventsEnumFulfillmentReturned               OrderEventsEnum = "FULFILLMENT_RETURNED"
 	OrderEventsEnumFulfillmentReplaced               OrderEventsEnum = "FULFILLMENT_REPLACED"
+	OrderEventsEnumFulfillmentAwaitsApproval         OrderEventsEnum = "FULFILLMENT_AWAITS_APPROVAL"
 	OrderEventsEnumTrackingUpdated                   OrderEventsEnum = "TRACKING_UPDATED"
 	OrderEventsEnumNoteAdded                         OrderEventsEnum = "NOTE_ADDED"
 	OrderEventsEnumOther                             OrderEventsEnum = "OTHER"
@@ -7080,6 +9184,7 @@ var AllOrderEventsEnum = []OrderEventsEnum{
 	OrderEventsEnumFulfillmentRefunded,
 	OrderEventsEnumFulfillmentReturned,
 	OrderEventsEnumFulfillmentReplaced,
+	OrderEventsEnumFulfillmentAwaitsApproval,
 	OrderEventsEnumTrackingUpdated,
 	OrderEventsEnumNoteAdded,
 	OrderEventsEnumOther,
@@ -7087,7 +9192,7 @@ var AllOrderEventsEnum = []OrderEventsEnum{
 
 func (e OrderEventsEnum) IsValid() bool {
 	switch e {
-	case OrderEventsEnumDraftCreated, OrderEventsEnumDraftCreatedFromReplace, OrderEventsEnumAddedProducts, OrderEventsEnumRemovedProducts, OrderEventsEnumPlaced, OrderEventsEnumPlacedFromDraft, OrderEventsEnumOversoldItems, OrderEventsEnumCanceled, OrderEventsEnumOrderMarkedAsPaid, OrderEventsEnumOrderFullyPaid, OrderEventsEnumOrderReplacementCreated, OrderEventsEnumOrderDiscountAdded, OrderEventsEnumOrderDiscountAutomaticallyUpdated, OrderEventsEnumOrderDiscountUpdated, OrderEventsEnumOrderDiscountDeleted, OrderEventsEnumOrderLineDiscountUpdated, OrderEventsEnumOrderLineDiscountRemoved, OrderEventsEnumUpdatedAddress, OrderEventsEnumEmailSent, OrderEventsEnumConfirmed, OrderEventsEnumPaymentAuthorized, OrderEventsEnumPaymentCaptured, OrderEventsEnumExternalServiceNotification, OrderEventsEnumPaymentRefunded, OrderEventsEnumPaymentVoided, OrderEventsEnumPaymentFailed, OrderEventsEnumInvoiceRequested, OrderEventsEnumInvoiceGenerated, OrderEventsEnumInvoiceUpdated, OrderEventsEnumInvoiceSent, OrderEventsEnumFulfillmentCanceled, OrderEventsEnumFulfillmentRestockedItems, OrderEventsEnumFulfillmentFulfilledItems, OrderEventsEnumFulfillmentRefunded, OrderEventsEnumFulfillmentReturned, OrderEventsEnumFulfillmentReplaced, OrderEventsEnumTrackingUpdated, OrderEventsEnumNoteAdded, OrderEventsEnumOther:
+	case OrderEventsEnumDraftCreated, OrderEventsEnumDraftCreatedFromReplace, OrderEventsEnumAddedProducts, OrderEventsEnumRemovedProducts, OrderEventsEnumPlaced, OrderEventsEnumPlacedFromDraft, OrderEventsEnumOversoldItems, OrderEventsEnumCanceled, OrderEventsEnumOrderMarkedAsPaid, OrderEventsEnumOrderFullyPaid, OrderEventsEnumOrderReplacementCreated, OrderEventsEnumOrderDiscountAdded, OrderEventsEnumOrderDiscountAutomaticallyUpdated, OrderEventsEnumOrderDiscountUpdated, OrderEventsEnumOrderDiscountDeleted, OrderEventsEnumOrderLineDiscountUpdated, OrderEventsEnumOrderLineDiscountRemoved, OrderEventsEnumUpdatedAddress, OrderEventsEnumEmailSent, OrderEventsEnumConfirmed, OrderEventsEnumPaymentAuthorized, OrderEventsEnumPaymentCaptured, OrderEventsEnumExternalServiceNotification, OrderEventsEnumPaymentRefunded, OrderEventsEnumPaymentVoided, OrderEventsEnumPaymentFailed, OrderEventsEnumInvoiceRequested, OrderEventsEnumInvoiceGenerated, OrderEventsEnumInvoiceUpdated, OrderEventsEnumInvoiceSent, OrderEventsEnumFulfillmentCanceled, OrderEventsEnumFulfillmentRestockedItems, OrderEventsEnumFulfillmentFulfilledItems, OrderEventsEnumFulfillmentRefunded, OrderEventsEnumFulfillmentReturned, OrderEventsEnumFulfillmentReplaced, OrderEventsEnumFulfillmentAwaitsApproval, OrderEventsEnumTrackingUpdated, OrderEventsEnumNoteAdded, OrderEventsEnumOther:
 		return true
 	}
 	return false
@@ -7607,6 +9712,7 @@ type PermissionEnum string
 const (
 	PermissionEnumManageUsers                     PermissionEnum = "MANAGE_USERS"
 	PermissionEnumManageStaff                     PermissionEnum = "MANAGE_STAFF"
+	PermissionEnumImpersonateUser                 PermissionEnum = "IMPERSONATE_USER"
 	PermissionEnumManageApps                      PermissionEnum = "MANAGE_APPS"
 	PermissionEnumManageChannels                  PermissionEnum = "MANAGE_CHANNELS"
 	PermissionEnumManageDiscounts                 PermissionEnum = "MANAGE_DISCOUNTS"
@@ -7628,6 +9734,7 @@ const (
 var AllPermissionEnum = []PermissionEnum{
 	PermissionEnumManageUsers,
 	PermissionEnumManageStaff,
+	PermissionEnumImpersonateUser,
 	PermissionEnumManageApps,
 	PermissionEnumManageChannels,
 	PermissionEnumManageDiscounts,
@@ -7648,7 +9755,7 @@ var AllPermissionEnum = []PermissionEnum{
 
 func (e PermissionEnum) IsValid() bool {
 	switch e {
-	case PermissionEnumManageUsers, PermissionEnumManageStaff, PermissionEnumManageApps, PermissionEnumManageChannels, PermissionEnumManageDiscounts, PermissionEnumManagePlugins, PermissionEnumManageGiftCard, PermissionEnumManageMenus, PermissionEnumManageOrders, PermissionEnumManagePages, PermissionEnumManagePageTypesAndAttributes, PermissionEnumHandlePayments, PermissionEnumManageProducts, PermissionEnumManageProductTypesAndAttributes, PermissionEnumManageShipping, PermissionEnumManageSettings, PermissionEnumManageTranslations, PermissionEnumManageCheckouts:
+	case PermissionEnumManageUsers, PermissionEnumManageStaff, PermissionEnumImpersonateUser, PermissionEnumManageApps, PermissionEnumManageChannels, PermissionEnumManageDiscounts, PermissionEnumManagePlugins, PermissionEnumManageGiftCard, PermissionEnumManageMenus, PermissionEnumManageOrders, PermissionEnumManagePages, PermissionEnumManagePageTypesAndAttributes, PermissionEnumHandlePayments, PermissionEnumManageProducts, PermissionEnumManageProductTypesAndAttributes, PermissionEnumManageShipping, PermissionEnumManageSettings, PermissionEnumManageTranslations, PermissionEnumManageCheckouts:
 		return true
 	}
 	return false
@@ -8062,6 +10169,7 @@ const (
 	ProductFieldEnumCollections   ProductFieldEnum = "COLLECTIONS"
 	ProductFieldEnumChargeTaxes   ProductFieldEnum = "CHARGE_TAXES"
 	ProductFieldEnumProductMedia  ProductFieldEnum = "PRODUCT_MEDIA"
+	ProductFieldEnumVariantID     ProductFieldEnum = "VARIANT_ID"
 	ProductFieldEnumVariantSku    ProductFieldEnum = "VARIANT_SKU"
 	ProductFieldEnumVariantWeight ProductFieldEnum = "VARIANT_WEIGHT"
 	ProductFieldEnumVariantMedia  ProductFieldEnum = "VARIANT_MEDIA"
@@ -8076,6 +10184,7 @@ var AllProductFieldEnum = []ProductFieldEnum{
 	ProductFieldEnumCollections,
 	ProductFieldEnumChargeTaxes,
 	ProductFieldEnumProductMedia,
+	ProductFieldEnumVariantID,
 	ProductFieldEnumVariantSku,
 	ProductFieldEnumVariantWeight,
 	ProductFieldEnumVariantMedia,
@@ -8083,7 +10192,7 @@ var AllProductFieldEnum = []ProductFieldEnum{
 
 func (e ProductFieldEnum) IsValid() bool {
 	switch e {
-	case ProductFieldEnumName, ProductFieldEnumDescription, ProductFieldEnumProductType, ProductFieldEnumCategory, ProductFieldEnumProductWeight, ProductFieldEnumCollections, ProductFieldEnumChargeTaxes, ProductFieldEnumProductMedia, ProductFieldEnumVariantSku, ProductFieldEnumVariantWeight, ProductFieldEnumVariantMedia:
+	case ProductFieldEnumName, ProductFieldEnumDescription, ProductFieldEnumProductType, ProductFieldEnumCategory, ProductFieldEnumProductWeight, ProductFieldEnumCollections, ProductFieldEnumChargeTaxes, ProductFieldEnumProductMedia, ProductFieldEnumVariantID, ProductFieldEnumVariantSku, ProductFieldEnumVariantWeight, ProductFieldEnumVariantMedia:
 		return true
 	}
 	return false
@@ -8287,6 +10396,47 @@ func (e *ProductTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e ProductTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ProductTypeKindEnum string
+
+const (
+	ProductTypeKindEnumNormal   ProductTypeKindEnum = "NORMAL"
+	ProductTypeKindEnumGiftCard ProductTypeKindEnum = "GIFT_CARD"
+)
+
+var AllProductTypeKindEnum = []ProductTypeKindEnum{
+	ProductTypeKindEnumNormal,
+	ProductTypeKindEnumGiftCard,
+}
+
+func (e ProductTypeKindEnum) IsValid() bool {
+	switch e {
+	case ProductTypeKindEnumNormal, ProductTypeKindEnumGiftCard:
+		return true
+	}
+	return false
+}
+
+func (e ProductTypeKindEnum) String() string {
+	return string(e)
+}
+
+func (e *ProductTypeKindEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProductTypeKindEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProductTypeKindEnum", str)
+	}
+	return nil
+}
+
+func (e ProductTypeKindEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -8735,6 +10885,94 @@ func (e *StockErrorCode) UnmarshalGQL(v interface{}) error {
 }
 
 func (e StockErrorCode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type StorePaymentMethodEnum string
+
+const (
+	StorePaymentMethodEnumOnSession  StorePaymentMethodEnum = "ON_SESSION"
+	StorePaymentMethodEnumOffSession StorePaymentMethodEnum = "OFF_SESSION"
+	StorePaymentMethodEnumNone       StorePaymentMethodEnum = "NONE"
+)
+
+var AllStorePaymentMethodEnum = []StorePaymentMethodEnum{
+	StorePaymentMethodEnumOnSession,
+	StorePaymentMethodEnumOffSession,
+	StorePaymentMethodEnumNone,
+}
+
+func (e StorePaymentMethodEnum) IsValid() bool {
+	switch e {
+	case StorePaymentMethodEnumOnSession, StorePaymentMethodEnumOffSession, StorePaymentMethodEnumNone:
+		return true
+	}
+	return false
+}
+
+func (e StorePaymentMethodEnum) String() string {
+	return string(e)
+}
+
+func (e *StorePaymentMethodEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = StorePaymentMethodEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid StorePaymentMethodEnum", str)
+	}
+	return nil
+}
+
+func (e StorePaymentMethodEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TimePeriodTypeEnum string
+
+const (
+	TimePeriodTypeEnumDay   TimePeriodTypeEnum = "DAY"
+	TimePeriodTypeEnumWeek  TimePeriodTypeEnum = "WEEK"
+	TimePeriodTypeEnumMonth TimePeriodTypeEnum = "MONTH"
+	TimePeriodTypeEnumYear  TimePeriodTypeEnum = "YEAR"
+)
+
+var AllTimePeriodTypeEnum = []TimePeriodTypeEnum{
+	TimePeriodTypeEnumDay,
+	TimePeriodTypeEnumWeek,
+	TimePeriodTypeEnumMonth,
+	TimePeriodTypeEnumYear,
+}
+
+func (e TimePeriodTypeEnum) IsValid() bool {
+	switch e {
+	case TimePeriodTypeEnumDay, TimePeriodTypeEnumWeek, TimePeriodTypeEnumMonth, TimePeriodTypeEnumYear:
+		return true
+	}
+	return false
+}
+
+func (e TimePeriodTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *TimePeriodTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TimePeriodTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TimePeriodTypeEnum", str)
+	}
+	return nil
+}
+
+func (e TimePeriodTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -9224,6 +11462,49 @@ func (e VoucherTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type WarehouseClickAndCollectOptionEnum string
+
+const (
+	WarehouseClickAndCollectOptionEnumDisabled WarehouseClickAndCollectOptionEnum = "DISABLED"
+	WarehouseClickAndCollectOptionEnumLocal    WarehouseClickAndCollectOptionEnum = "LOCAL"
+	WarehouseClickAndCollectOptionEnumAll      WarehouseClickAndCollectOptionEnum = "ALL"
+)
+
+var AllWarehouseClickAndCollectOptionEnum = []WarehouseClickAndCollectOptionEnum{
+	WarehouseClickAndCollectOptionEnumDisabled,
+	WarehouseClickAndCollectOptionEnumLocal,
+	WarehouseClickAndCollectOptionEnumAll,
+}
+
+func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
+	switch e {
+	case WarehouseClickAndCollectOptionEnumDisabled, WarehouseClickAndCollectOptionEnumLocal, WarehouseClickAndCollectOptionEnumAll:
+		return true
+	}
+	return false
+}
+
+func (e WarehouseClickAndCollectOptionEnum) String() string {
+	return string(e)
+}
+
+func (e *WarehouseClickAndCollectOptionEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = WarehouseClickAndCollectOptionEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid WarehouseClickAndCollectOptionEnum", str)
+	}
+	return nil
+}
+
+func (e WarehouseClickAndCollectOptionEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type WarehouseErrorCode string
 
 const (
@@ -9362,38 +11643,49 @@ func (e WebhookErrorCode) MarshalGQL(w io.Writer) {
 type WebhookEventTypeEnum string
 
 const (
-	WebhookEventTypeEnumAnyEvents             WebhookEventTypeEnum = "ANY_EVENTS"
-	WebhookEventTypeEnumOrderCreated          WebhookEventTypeEnum = "ORDER_CREATED"
-	WebhookEventTypeEnumOrderConfirmed        WebhookEventTypeEnum = "ORDER_CONFIRMED"
-	WebhookEventTypeEnumOrderFullyPaid        WebhookEventTypeEnum = "ORDER_FULLY_PAID"
-	WebhookEventTypeEnumOrderUpdated          WebhookEventTypeEnum = "ORDER_UPDATED"
-	WebhookEventTypeEnumOrderCancelled        WebhookEventTypeEnum = "ORDER_CANCELLED"
-	WebhookEventTypeEnumOrderFulfilled        WebhookEventTypeEnum = "ORDER_FULFILLED"
-	WebhookEventTypeEnumInvoiceRequested      WebhookEventTypeEnum = "INVOICE_REQUESTED"
-	WebhookEventTypeEnumInvoiceDeleted        WebhookEventTypeEnum = "INVOICE_DELETED"
-	WebhookEventTypeEnumInvoiceSent           WebhookEventTypeEnum = "INVOICE_SENT"
-	WebhookEventTypeEnumCustomerCreated       WebhookEventTypeEnum = "CUSTOMER_CREATED"
-	WebhookEventTypeEnumCustomerUpdated       WebhookEventTypeEnum = "CUSTOMER_UPDATED"
-	WebhookEventTypeEnumProductCreated        WebhookEventTypeEnum = "PRODUCT_CREATED"
-	WebhookEventTypeEnumProductUpdated        WebhookEventTypeEnum = "PRODUCT_UPDATED"
-	WebhookEventTypeEnumProductDeleted        WebhookEventTypeEnum = "PRODUCT_DELETED"
-	WebhookEventTypeEnumProductVariantCreated WebhookEventTypeEnum = "PRODUCT_VARIANT_CREATED"
-	WebhookEventTypeEnumProductVariantUpdated WebhookEventTypeEnum = "PRODUCT_VARIANT_UPDATED"
-	WebhookEventTypeEnumProductVariantDeleted WebhookEventTypeEnum = "PRODUCT_VARIANT_DELETED"
-	WebhookEventTypeEnumCheckoutCreated       WebhookEventTypeEnum = "CHECKOUT_CREATED"
-	WebhookEventTypeEnumCheckoutUpdated       WebhookEventTypeEnum = "CHECKOUT_UPDATED"
-	WebhookEventTypeEnumFulfillmentCreated    WebhookEventTypeEnum = "FULFILLMENT_CREATED"
-	WebhookEventTypeEnumNotifyUser            WebhookEventTypeEnum = "NOTIFY_USER"
-	WebhookEventTypeEnumPageCreated           WebhookEventTypeEnum = "PAGE_CREATED"
-	WebhookEventTypeEnumPageUpdated           WebhookEventTypeEnum = "PAGE_UPDATED"
-	WebhookEventTypeEnumPageDeleted           WebhookEventTypeEnum = "PAGE_DELETED"
-	WebhookEventTypeEnumPaymentAuthorize      WebhookEventTypeEnum = "PAYMENT_AUTHORIZE"
-	WebhookEventTypeEnumPaymentCapture        WebhookEventTypeEnum = "PAYMENT_CAPTURE"
-	WebhookEventTypeEnumPaymentConfirm        WebhookEventTypeEnum = "PAYMENT_CONFIRM"
-	WebhookEventTypeEnumPaymentListGateways   WebhookEventTypeEnum = "PAYMENT_LIST_GATEWAYS"
-	WebhookEventTypeEnumPaymentProcess        WebhookEventTypeEnum = "PAYMENT_PROCESS"
-	WebhookEventTypeEnumPaymentRefund         WebhookEventTypeEnum = "PAYMENT_REFUND"
-	WebhookEventTypeEnumPaymentVoid           WebhookEventTypeEnum = "PAYMENT_VOID"
+	WebhookEventTypeEnumAnyEvents                 WebhookEventTypeEnum = "ANY_EVENTS"
+	WebhookEventTypeEnumOrderCreated              WebhookEventTypeEnum = "ORDER_CREATED"
+	WebhookEventTypeEnumOrderConfirmed            WebhookEventTypeEnum = "ORDER_CONFIRMED"
+	WebhookEventTypeEnumOrderFullyPaid            WebhookEventTypeEnum = "ORDER_FULLY_PAID"
+	WebhookEventTypeEnumOrderUpdated              WebhookEventTypeEnum = "ORDER_UPDATED"
+	WebhookEventTypeEnumOrderCancelled            WebhookEventTypeEnum = "ORDER_CANCELLED"
+	WebhookEventTypeEnumOrderFulfilled            WebhookEventTypeEnum = "ORDER_FULFILLED"
+	WebhookEventTypeEnumDraftOrderCreated         WebhookEventTypeEnum = "DRAFT_ORDER_CREATED"
+	WebhookEventTypeEnumDraftOrderUpdated         WebhookEventTypeEnum = "DRAFT_ORDER_UPDATED"
+	WebhookEventTypeEnumDraftOrderDeleted         WebhookEventTypeEnum = "DRAFT_ORDER_DELETED"
+	WebhookEventTypeEnumSaleCreated               WebhookEventTypeEnum = "SALE_CREATED"
+	WebhookEventTypeEnumSaleUpdated               WebhookEventTypeEnum = "SALE_UPDATED"
+	WebhookEventTypeEnumSaleDeleted               WebhookEventTypeEnum = "SALE_DELETED"
+	WebhookEventTypeEnumInvoiceRequested          WebhookEventTypeEnum = "INVOICE_REQUESTED"
+	WebhookEventTypeEnumInvoiceDeleted            WebhookEventTypeEnum = "INVOICE_DELETED"
+	WebhookEventTypeEnumInvoiceSent               WebhookEventTypeEnum = "INVOICE_SENT"
+	WebhookEventTypeEnumCustomerCreated           WebhookEventTypeEnum = "CUSTOMER_CREATED"
+	WebhookEventTypeEnumCustomerUpdated           WebhookEventTypeEnum = "CUSTOMER_UPDATED"
+	WebhookEventTypeEnumProductCreated            WebhookEventTypeEnum = "PRODUCT_CREATED"
+	WebhookEventTypeEnumProductUpdated            WebhookEventTypeEnum = "PRODUCT_UPDATED"
+	WebhookEventTypeEnumProductDeleted            WebhookEventTypeEnum = "PRODUCT_DELETED"
+	WebhookEventTypeEnumProductVariantCreated     WebhookEventTypeEnum = "PRODUCT_VARIANT_CREATED"
+	WebhookEventTypeEnumProductVariantUpdated     WebhookEventTypeEnum = "PRODUCT_VARIANT_UPDATED"
+	WebhookEventTypeEnumProductVariantDeleted     WebhookEventTypeEnum = "PRODUCT_VARIANT_DELETED"
+	WebhookEventTypeEnumProductVariantOutOfStock  WebhookEventTypeEnum = "PRODUCT_VARIANT_OUT_OF_STOCK"
+	WebhookEventTypeEnumProductVariantBackInStock WebhookEventTypeEnum = "PRODUCT_VARIANT_BACK_IN_STOCK"
+	WebhookEventTypeEnumCheckoutCreated           WebhookEventTypeEnum = "CHECKOUT_CREATED"
+	WebhookEventTypeEnumCheckoutUpdated           WebhookEventTypeEnum = "CHECKOUT_UPDATED"
+	WebhookEventTypeEnumFulfillmentCreated        WebhookEventTypeEnum = "FULFILLMENT_CREATED"
+	WebhookEventTypeEnumFulfillmentCanceled       WebhookEventTypeEnum = "FULFILLMENT_CANCELED"
+	WebhookEventTypeEnumNotifyUser                WebhookEventTypeEnum = "NOTIFY_USER"
+	WebhookEventTypeEnumPageCreated               WebhookEventTypeEnum = "PAGE_CREATED"
+	WebhookEventTypeEnumPageUpdated               WebhookEventTypeEnum = "PAGE_UPDATED"
+	WebhookEventTypeEnumPageDeleted               WebhookEventTypeEnum = "PAGE_DELETED"
+	WebhookEventTypeEnumPaymentAuthorize          WebhookEventTypeEnum = "PAYMENT_AUTHORIZE"
+	WebhookEventTypeEnumPaymentCapture            WebhookEventTypeEnum = "PAYMENT_CAPTURE"
+	WebhookEventTypeEnumPaymentConfirm            WebhookEventTypeEnum = "PAYMENT_CONFIRM"
+	WebhookEventTypeEnumPaymentListGateways       WebhookEventTypeEnum = "PAYMENT_LIST_GATEWAYS"
+	WebhookEventTypeEnumPaymentProcess            WebhookEventTypeEnum = "PAYMENT_PROCESS"
+	WebhookEventTypeEnumPaymentRefund             WebhookEventTypeEnum = "PAYMENT_REFUND"
+	WebhookEventTypeEnumPaymentVoid               WebhookEventTypeEnum = "PAYMENT_VOID"
+	WebhookEventTypeEnumTranslationCreated        WebhookEventTypeEnum = "TRANSLATION_CREATED"
+	WebhookEventTypeEnumTranslationUpdated        WebhookEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
 var AllWebhookEventTypeEnum = []WebhookEventTypeEnum{
@@ -9404,6 +11696,12 @@ var AllWebhookEventTypeEnum = []WebhookEventTypeEnum{
 	WebhookEventTypeEnumOrderUpdated,
 	WebhookEventTypeEnumOrderCancelled,
 	WebhookEventTypeEnumOrderFulfilled,
+	WebhookEventTypeEnumDraftOrderCreated,
+	WebhookEventTypeEnumDraftOrderUpdated,
+	WebhookEventTypeEnumDraftOrderDeleted,
+	WebhookEventTypeEnumSaleCreated,
+	WebhookEventTypeEnumSaleUpdated,
+	WebhookEventTypeEnumSaleDeleted,
 	WebhookEventTypeEnumInvoiceRequested,
 	WebhookEventTypeEnumInvoiceDeleted,
 	WebhookEventTypeEnumInvoiceSent,
@@ -9415,9 +11713,12 @@ var AllWebhookEventTypeEnum = []WebhookEventTypeEnum{
 	WebhookEventTypeEnumProductVariantCreated,
 	WebhookEventTypeEnumProductVariantUpdated,
 	WebhookEventTypeEnumProductVariantDeleted,
+	WebhookEventTypeEnumProductVariantOutOfStock,
+	WebhookEventTypeEnumProductVariantBackInStock,
 	WebhookEventTypeEnumCheckoutCreated,
 	WebhookEventTypeEnumCheckoutUpdated,
 	WebhookEventTypeEnumFulfillmentCreated,
+	WebhookEventTypeEnumFulfillmentCanceled,
 	WebhookEventTypeEnumNotifyUser,
 	WebhookEventTypeEnumPageCreated,
 	WebhookEventTypeEnumPageUpdated,
@@ -9429,11 +11730,13 @@ var AllWebhookEventTypeEnum = []WebhookEventTypeEnum{
 	WebhookEventTypeEnumPaymentProcess,
 	WebhookEventTypeEnumPaymentRefund,
 	WebhookEventTypeEnumPaymentVoid,
+	WebhookEventTypeEnumTranslationCreated,
+	WebhookEventTypeEnumTranslationUpdated,
 }
 
 func (e WebhookEventTypeEnum) IsValid() bool {
 	switch e {
-	case WebhookEventTypeEnumAnyEvents, WebhookEventTypeEnumOrderCreated, WebhookEventTypeEnumOrderConfirmed, WebhookEventTypeEnumOrderFullyPaid, WebhookEventTypeEnumOrderUpdated, WebhookEventTypeEnumOrderCancelled, WebhookEventTypeEnumOrderFulfilled, WebhookEventTypeEnumInvoiceRequested, WebhookEventTypeEnumInvoiceDeleted, WebhookEventTypeEnumInvoiceSent, WebhookEventTypeEnumCustomerCreated, WebhookEventTypeEnumCustomerUpdated, WebhookEventTypeEnumProductCreated, WebhookEventTypeEnumProductUpdated, WebhookEventTypeEnumProductDeleted, WebhookEventTypeEnumProductVariantCreated, WebhookEventTypeEnumProductVariantUpdated, WebhookEventTypeEnumProductVariantDeleted, WebhookEventTypeEnumCheckoutCreated, WebhookEventTypeEnumCheckoutUpdated, WebhookEventTypeEnumFulfillmentCreated, WebhookEventTypeEnumNotifyUser, WebhookEventTypeEnumPageCreated, WebhookEventTypeEnumPageUpdated, WebhookEventTypeEnumPageDeleted, WebhookEventTypeEnumPaymentAuthorize, WebhookEventTypeEnumPaymentCapture, WebhookEventTypeEnumPaymentConfirm, WebhookEventTypeEnumPaymentListGateways, WebhookEventTypeEnumPaymentProcess, WebhookEventTypeEnumPaymentRefund, WebhookEventTypeEnumPaymentVoid:
+	case WebhookEventTypeEnumAnyEvents, WebhookEventTypeEnumOrderCreated, WebhookEventTypeEnumOrderConfirmed, WebhookEventTypeEnumOrderFullyPaid, WebhookEventTypeEnumOrderUpdated, WebhookEventTypeEnumOrderCancelled, WebhookEventTypeEnumOrderFulfilled, WebhookEventTypeEnumDraftOrderCreated, WebhookEventTypeEnumDraftOrderUpdated, WebhookEventTypeEnumDraftOrderDeleted, WebhookEventTypeEnumSaleCreated, WebhookEventTypeEnumSaleUpdated, WebhookEventTypeEnumSaleDeleted, WebhookEventTypeEnumInvoiceRequested, WebhookEventTypeEnumInvoiceDeleted, WebhookEventTypeEnumInvoiceSent, WebhookEventTypeEnumCustomerCreated, WebhookEventTypeEnumCustomerUpdated, WebhookEventTypeEnumProductCreated, WebhookEventTypeEnumProductUpdated, WebhookEventTypeEnumProductDeleted, WebhookEventTypeEnumProductVariantCreated, WebhookEventTypeEnumProductVariantUpdated, WebhookEventTypeEnumProductVariantDeleted, WebhookEventTypeEnumProductVariantOutOfStock, WebhookEventTypeEnumProductVariantBackInStock, WebhookEventTypeEnumCheckoutCreated, WebhookEventTypeEnumCheckoutUpdated, WebhookEventTypeEnumFulfillmentCreated, WebhookEventTypeEnumFulfillmentCanceled, WebhookEventTypeEnumNotifyUser, WebhookEventTypeEnumPageCreated, WebhookEventTypeEnumPageUpdated, WebhookEventTypeEnumPageDeleted, WebhookEventTypeEnumPaymentAuthorize, WebhookEventTypeEnumPaymentCapture, WebhookEventTypeEnumPaymentConfirm, WebhookEventTypeEnumPaymentListGateways, WebhookEventTypeEnumPaymentProcess, WebhookEventTypeEnumPaymentRefund, WebhookEventTypeEnumPaymentVoid, WebhookEventTypeEnumTranslationCreated, WebhookEventTypeEnumTranslationUpdated:
 		return true
 	}
 	return false
@@ -9463,37 +11766,48 @@ func (e WebhookEventTypeEnum) MarshalGQL(w io.Writer) {
 type WebhookSampleEventTypeEnum string
 
 const (
-	WebhookSampleEventTypeEnumOrderCreated          WebhookSampleEventTypeEnum = "ORDER_CREATED"
-	WebhookSampleEventTypeEnumOrderConfirmed        WebhookSampleEventTypeEnum = "ORDER_CONFIRMED"
-	WebhookSampleEventTypeEnumOrderFullyPaid        WebhookSampleEventTypeEnum = "ORDER_FULLY_PAID"
-	WebhookSampleEventTypeEnumOrderUpdated          WebhookSampleEventTypeEnum = "ORDER_UPDATED"
-	WebhookSampleEventTypeEnumOrderCancelled        WebhookSampleEventTypeEnum = "ORDER_CANCELLED"
-	WebhookSampleEventTypeEnumOrderFulfilled        WebhookSampleEventTypeEnum = "ORDER_FULFILLED"
-	WebhookSampleEventTypeEnumInvoiceRequested      WebhookSampleEventTypeEnum = "INVOICE_REQUESTED"
-	WebhookSampleEventTypeEnumInvoiceDeleted        WebhookSampleEventTypeEnum = "INVOICE_DELETED"
-	WebhookSampleEventTypeEnumInvoiceSent           WebhookSampleEventTypeEnum = "INVOICE_SENT"
-	WebhookSampleEventTypeEnumCustomerCreated       WebhookSampleEventTypeEnum = "CUSTOMER_CREATED"
-	WebhookSampleEventTypeEnumCustomerUpdated       WebhookSampleEventTypeEnum = "CUSTOMER_UPDATED"
-	WebhookSampleEventTypeEnumProductCreated        WebhookSampleEventTypeEnum = "PRODUCT_CREATED"
-	WebhookSampleEventTypeEnumProductUpdated        WebhookSampleEventTypeEnum = "PRODUCT_UPDATED"
-	WebhookSampleEventTypeEnumProductDeleted        WebhookSampleEventTypeEnum = "PRODUCT_DELETED"
-	WebhookSampleEventTypeEnumProductVariantCreated WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_CREATED"
-	WebhookSampleEventTypeEnumProductVariantUpdated WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_UPDATED"
-	WebhookSampleEventTypeEnumProductVariantDeleted WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_DELETED"
-	WebhookSampleEventTypeEnumCheckoutCreated       WebhookSampleEventTypeEnum = "CHECKOUT_CREATED"
-	WebhookSampleEventTypeEnumCheckoutUpdated       WebhookSampleEventTypeEnum = "CHECKOUT_UPDATED"
-	WebhookSampleEventTypeEnumFulfillmentCreated    WebhookSampleEventTypeEnum = "FULFILLMENT_CREATED"
-	WebhookSampleEventTypeEnumNotifyUser            WebhookSampleEventTypeEnum = "NOTIFY_USER"
-	WebhookSampleEventTypeEnumPageCreated           WebhookSampleEventTypeEnum = "PAGE_CREATED"
-	WebhookSampleEventTypeEnumPageUpdated           WebhookSampleEventTypeEnum = "PAGE_UPDATED"
-	WebhookSampleEventTypeEnumPageDeleted           WebhookSampleEventTypeEnum = "PAGE_DELETED"
-	WebhookSampleEventTypeEnumPaymentAuthorize      WebhookSampleEventTypeEnum = "PAYMENT_AUTHORIZE"
-	WebhookSampleEventTypeEnumPaymentCapture        WebhookSampleEventTypeEnum = "PAYMENT_CAPTURE"
-	WebhookSampleEventTypeEnumPaymentConfirm        WebhookSampleEventTypeEnum = "PAYMENT_CONFIRM"
-	WebhookSampleEventTypeEnumPaymentListGateways   WebhookSampleEventTypeEnum = "PAYMENT_LIST_GATEWAYS"
-	WebhookSampleEventTypeEnumPaymentProcess        WebhookSampleEventTypeEnum = "PAYMENT_PROCESS"
-	WebhookSampleEventTypeEnumPaymentRefund         WebhookSampleEventTypeEnum = "PAYMENT_REFUND"
-	WebhookSampleEventTypeEnumPaymentVoid           WebhookSampleEventTypeEnum = "PAYMENT_VOID"
+	WebhookSampleEventTypeEnumOrderCreated              WebhookSampleEventTypeEnum = "ORDER_CREATED"
+	WebhookSampleEventTypeEnumOrderConfirmed            WebhookSampleEventTypeEnum = "ORDER_CONFIRMED"
+	WebhookSampleEventTypeEnumOrderFullyPaid            WebhookSampleEventTypeEnum = "ORDER_FULLY_PAID"
+	WebhookSampleEventTypeEnumOrderUpdated              WebhookSampleEventTypeEnum = "ORDER_UPDATED"
+	WebhookSampleEventTypeEnumOrderCancelled            WebhookSampleEventTypeEnum = "ORDER_CANCELLED"
+	WebhookSampleEventTypeEnumOrderFulfilled            WebhookSampleEventTypeEnum = "ORDER_FULFILLED"
+	WebhookSampleEventTypeEnumDraftOrderCreated         WebhookSampleEventTypeEnum = "DRAFT_ORDER_CREATED"
+	WebhookSampleEventTypeEnumDraftOrderUpdated         WebhookSampleEventTypeEnum = "DRAFT_ORDER_UPDATED"
+	WebhookSampleEventTypeEnumDraftOrderDeleted         WebhookSampleEventTypeEnum = "DRAFT_ORDER_DELETED"
+	WebhookSampleEventTypeEnumSaleCreated               WebhookSampleEventTypeEnum = "SALE_CREATED"
+	WebhookSampleEventTypeEnumSaleUpdated               WebhookSampleEventTypeEnum = "SALE_UPDATED"
+	WebhookSampleEventTypeEnumSaleDeleted               WebhookSampleEventTypeEnum = "SALE_DELETED"
+	WebhookSampleEventTypeEnumInvoiceRequested          WebhookSampleEventTypeEnum = "INVOICE_REQUESTED"
+	WebhookSampleEventTypeEnumInvoiceDeleted            WebhookSampleEventTypeEnum = "INVOICE_DELETED"
+	WebhookSampleEventTypeEnumInvoiceSent               WebhookSampleEventTypeEnum = "INVOICE_SENT"
+	WebhookSampleEventTypeEnumCustomerCreated           WebhookSampleEventTypeEnum = "CUSTOMER_CREATED"
+	WebhookSampleEventTypeEnumCustomerUpdated           WebhookSampleEventTypeEnum = "CUSTOMER_UPDATED"
+	WebhookSampleEventTypeEnumProductCreated            WebhookSampleEventTypeEnum = "PRODUCT_CREATED"
+	WebhookSampleEventTypeEnumProductUpdated            WebhookSampleEventTypeEnum = "PRODUCT_UPDATED"
+	WebhookSampleEventTypeEnumProductDeleted            WebhookSampleEventTypeEnum = "PRODUCT_DELETED"
+	WebhookSampleEventTypeEnumProductVariantCreated     WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_CREATED"
+	WebhookSampleEventTypeEnumProductVariantUpdated     WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_UPDATED"
+	WebhookSampleEventTypeEnumProductVariantDeleted     WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_DELETED"
+	WebhookSampleEventTypeEnumProductVariantOutOfStock  WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_OUT_OF_STOCK"
+	WebhookSampleEventTypeEnumProductVariantBackInStock WebhookSampleEventTypeEnum = "PRODUCT_VARIANT_BACK_IN_STOCK"
+	WebhookSampleEventTypeEnumCheckoutCreated           WebhookSampleEventTypeEnum = "CHECKOUT_CREATED"
+	WebhookSampleEventTypeEnumCheckoutUpdated           WebhookSampleEventTypeEnum = "CHECKOUT_UPDATED"
+	WebhookSampleEventTypeEnumFulfillmentCreated        WebhookSampleEventTypeEnum = "FULFILLMENT_CREATED"
+	WebhookSampleEventTypeEnumFulfillmentCanceled       WebhookSampleEventTypeEnum = "FULFILLMENT_CANCELED"
+	WebhookSampleEventTypeEnumNotifyUser                WebhookSampleEventTypeEnum = "NOTIFY_USER"
+	WebhookSampleEventTypeEnumPageCreated               WebhookSampleEventTypeEnum = "PAGE_CREATED"
+	WebhookSampleEventTypeEnumPageUpdated               WebhookSampleEventTypeEnum = "PAGE_UPDATED"
+	WebhookSampleEventTypeEnumPageDeleted               WebhookSampleEventTypeEnum = "PAGE_DELETED"
+	WebhookSampleEventTypeEnumPaymentAuthorize          WebhookSampleEventTypeEnum = "PAYMENT_AUTHORIZE"
+	WebhookSampleEventTypeEnumPaymentCapture            WebhookSampleEventTypeEnum = "PAYMENT_CAPTURE"
+	WebhookSampleEventTypeEnumPaymentConfirm            WebhookSampleEventTypeEnum = "PAYMENT_CONFIRM"
+	WebhookSampleEventTypeEnumPaymentListGateways       WebhookSampleEventTypeEnum = "PAYMENT_LIST_GATEWAYS"
+	WebhookSampleEventTypeEnumPaymentProcess            WebhookSampleEventTypeEnum = "PAYMENT_PROCESS"
+	WebhookSampleEventTypeEnumPaymentRefund             WebhookSampleEventTypeEnum = "PAYMENT_REFUND"
+	WebhookSampleEventTypeEnumPaymentVoid               WebhookSampleEventTypeEnum = "PAYMENT_VOID"
+	WebhookSampleEventTypeEnumTranslationCreated        WebhookSampleEventTypeEnum = "TRANSLATION_CREATED"
+	WebhookSampleEventTypeEnumTranslationUpdated        WebhookSampleEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
 var AllWebhookSampleEventTypeEnum = []WebhookSampleEventTypeEnum{
@@ -9503,6 +11817,12 @@ var AllWebhookSampleEventTypeEnum = []WebhookSampleEventTypeEnum{
 	WebhookSampleEventTypeEnumOrderUpdated,
 	WebhookSampleEventTypeEnumOrderCancelled,
 	WebhookSampleEventTypeEnumOrderFulfilled,
+	WebhookSampleEventTypeEnumDraftOrderCreated,
+	WebhookSampleEventTypeEnumDraftOrderUpdated,
+	WebhookSampleEventTypeEnumDraftOrderDeleted,
+	WebhookSampleEventTypeEnumSaleCreated,
+	WebhookSampleEventTypeEnumSaleUpdated,
+	WebhookSampleEventTypeEnumSaleDeleted,
 	WebhookSampleEventTypeEnumInvoiceRequested,
 	WebhookSampleEventTypeEnumInvoiceDeleted,
 	WebhookSampleEventTypeEnumInvoiceSent,
@@ -9514,9 +11834,12 @@ var AllWebhookSampleEventTypeEnum = []WebhookSampleEventTypeEnum{
 	WebhookSampleEventTypeEnumProductVariantCreated,
 	WebhookSampleEventTypeEnumProductVariantUpdated,
 	WebhookSampleEventTypeEnumProductVariantDeleted,
+	WebhookSampleEventTypeEnumProductVariantOutOfStock,
+	WebhookSampleEventTypeEnumProductVariantBackInStock,
 	WebhookSampleEventTypeEnumCheckoutCreated,
 	WebhookSampleEventTypeEnumCheckoutUpdated,
 	WebhookSampleEventTypeEnumFulfillmentCreated,
+	WebhookSampleEventTypeEnumFulfillmentCanceled,
 	WebhookSampleEventTypeEnumNotifyUser,
 	WebhookSampleEventTypeEnumPageCreated,
 	WebhookSampleEventTypeEnumPageUpdated,
@@ -9528,11 +11851,13 @@ var AllWebhookSampleEventTypeEnum = []WebhookSampleEventTypeEnum{
 	WebhookSampleEventTypeEnumPaymentProcess,
 	WebhookSampleEventTypeEnumPaymentRefund,
 	WebhookSampleEventTypeEnumPaymentVoid,
+	WebhookSampleEventTypeEnumTranslationCreated,
+	WebhookSampleEventTypeEnumTranslationUpdated,
 }
 
 func (e WebhookSampleEventTypeEnum) IsValid() bool {
 	switch e {
-	case WebhookSampleEventTypeEnumOrderCreated, WebhookSampleEventTypeEnumOrderConfirmed, WebhookSampleEventTypeEnumOrderFullyPaid, WebhookSampleEventTypeEnumOrderUpdated, WebhookSampleEventTypeEnumOrderCancelled, WebhookSampleEventTypeEnumOrderFulfilled, WebhookSampleEventTypeEnumInvoiceRequested, WebhookSampleEventTypeEnumInvoiceDeleted, WebhookSampleEventTypeEnumInvoiceSent, WebhookSampleEventTypeEnumCustomerCreated, WebhookSampleEventTypeEnumCustomerUpdated, WebhookSampleEventTypeEnumProductCreated, WebhookSampleEventTypeEnumProductUpdated, WebhookSampleEventTypeEnumProductDeleted, WebhookSampleEventTypeEnumProductVariantCreated, WebhookSampleEventTypeEnumProductVariantUpdated, WebhookSampleEventTypeEnumProductVariantDeleted, WebhookSampleEventTypeEnumCheckoutCreated, WebhookSampleEventTypeEnumCheckoutUpdated, WebhookSampleEventTypeEnumFulfillmentCreated, WebhookSampleEventTypeEnumNotifyUser, WebhookSampleEventTypeEnumPageCreated, WebhookSampleEventTypeEnumPageUpdated, WebhookSampleEventTypeEnumPageDeleted, WebhookSampleEventTypeEnumPaymentAuthorize, WebhookSampleEventTypeEnumPaymentCapture, WebhookSampleEventTypeEnumPaymentConfirm, WebhookSampleEventTypeEnumPaymentListGateways, WebhookSampleEventTypeEnumPaymentProcess, WebhookSampleEventTypeEnumPaymentRefund, WebhookSampleEventTypeEnumPaymentVoid:
+	case WebhookSampleEventTypeEnumOrderCreated, WebhookSampleEventTypeEnumOrderConfirmed, WebhookSampleEventTypeEnumOrderFullyPaid, WebhookSampleEventTypeEnumOrderUpdated, WebhookSampleEventTypeEnumOrderCancelled, WebhookSampleEventTypeEnumOrderFulfilled, WebhookSampleEventTypeEnumDraftOrderCreated, WebhookSampleEventTypeEnumDraftOrderUpdated, WebhookSampleEventTypeEnumDraftOrderDeleted, WebhookSampleEventTypeEnumSaleCreated, WebhookSampleEventTypeEnumSaleUpdated, WebhookSampleEventTypeEnumSaleDeleted, WebhookSampleEventTypeEnumInvoiceRequested, WebhookSampleEventTypeEnumInvoiceDeleted, WebhookSampleEventTypeEnumInvoiceSent, WebhookSampleEventTypeEnumCustomerCreated, WebhookSampleEventTypeEnumCustomerUpdated, WebhookSampleEventTypeEnumProductCreated, WebhookSampleEventTypeEnumProductUpdated, WebhookSampleEventTypeEnumProductDeleted, WebhookSampleEventTypeEnumProductVariantCreated, WebhookSampleEventTypeEnumProductVariantUpdated, WebhookSampleEventTypeEnumProductVariantDeleted, WebhookSampleEventTypeEnumProductVariantOutOfStock, WebhookSampleEventTypeEnumProductVariantBackInStock, WebhookSampleEventTypeEnumCheckoutCreated, WebhookSampleEventTypeEnumCheckoutUpdated, WebhookSampleEventTypeEnumFulfillmentCreated, WebhookSampleEventTypeEnumFulfillmentCanceled, WebhookSampleEventTypeEnumNotifyUser, WebhookSampleEventTypeEnumPageCreated, WebhookSampleEventTypeEnumPageUpdated, WebhookSampleEventTypeEnumPageDeleted, WebhookSampleEventTypeEnumPaymentAuthorize, WebhookSampleEventTypeEnumPaymentCapture, WebhookSampleEventTypeEnumPaymentConfirm, WebhookSampleEventTypeEnumPaymentListGateways, WebhookSampleEventTypeEnumPaymentProcess, WebhookSampleEventTypeEnumPaymentRefund, WebhookSampleEventTypeEnumPaymentVoid, WebhookSampleEventTypeEnumTranslationCreated, WebhookSampleEventTypeEnumTranslationUpdated:
 		return true
 	}
 	return false

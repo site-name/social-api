@@ -64,6 +64,14 @@ func (r *warehouseResolver) Address(ctx context.Context, obj *gqlmodel.Warehouse
 	}, nil
 }
 
+func (r *warehouseResolver) IsPrivate(ctx context.Context, obj *gqlmodel.Warehouse) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *warehouseResolver) ClickAndCollectOption(ctx context.Context, obj *gqlmodel.Warehouse) (gqlmodel.WarehouseClickAndCollectOptionEnum, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Warehouse returns graphql1.WarehouseResolver implementation.
 func (r *Resolver) Warehouse() graphql1.WarehouseResolver { return &warehouseResolver{r} }
 

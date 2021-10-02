@@ -69,3 +69,11 @@ func (r *queryResolver) Apps(ctx context.Context, filter *gqlmodel.AppFilterInpu
 func (r *queryResolver) App(ctx context.Context, id *string) (*gqlmodel.App, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *queryResolver) AppExtensions(ctx context.Context, filter *gqlmodel.AppExtensionFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.AppExtensionCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) AppExtension(ctx context.Context, id string) (*gqlmodel.AppExtension, error) {
+	panic(fmt.Errorf("not implemented"))
+}

@@ -80,6 +80,8 @@ type Order implements Node & ObjectWithMetadata {
   discounts(_: PlaceHolder): [OrderDiscount!] # discounts: [OrderDiscount!]
 }
 
+union DeliveryMethod = Warehouse | ShippingMethod
+
 input OrderSettingsUpdateInput {
   automaticallyConfirmAllNewOrders: Boolean
   automaticallyFulfillNonShippableGiftCard: Boolean

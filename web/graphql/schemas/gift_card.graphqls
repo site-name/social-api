@@ -41,6 +41,11 @@ type GiftCard implements Node & ObjectWithMetadata {
   boughtInChannel: String
 }
 
+type GiftCardDelete {
+  errors: [GiftCardError!]!
+  giftCard: GiftCard
+}
+
 type GiftCardActivate {
   giftCard: GiftCard
   errors: [GiftCardError!]!

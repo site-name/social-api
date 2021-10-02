@@ -31,6 +31,10 @@ func (r *attributeResolver) Translation(ctx context.Context, obj *gqlmodel.Attri
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *attributeResolver) WithChoices(ctx context.Context, obj *gqlmodel.Attribute) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.AttributeCreateInput) (*gqlmodel.AttributeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -63,7 +67,7 @@ func (r *mutationResolver) AttributeValueDelete(ctx context.Context, id string) 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) AttributeValueUpdate(ctx context.Context, id string, input gqlmodel.AttributeValueCreateInput) (*gqlmodel.AttributeValueUpdate, error) {
+func (r *mutationResolver) AttributeValueUpdate(ctx context.Context, id string, input gqlmodel.AttributeValueUpdateInput) (*gqlmodel.AttributeValueUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

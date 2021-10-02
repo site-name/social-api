@@ -1366,3 +1366,8 @@ enum TimePeriodTypeEnum {
   MONTH
   YEAR
 }
+
+input MetadataFilter {
+  key: String!
+  value: String
+}

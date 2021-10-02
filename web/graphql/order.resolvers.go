@@ -18,6 +18,10 @@ func (r *mutationResolver) OrderSettingsUpdate(ctx context.Context, input gqlmod
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) GiftCardSettingsUpdate(ctx context.Context, input gqlmodel.GiftCardSettingsUpdateInput) (*gqlmodel.GiftCardSettingsUpdate, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) OrderAddNote(ctx context.Context, order string, input gqlmodel.OrderAddNoteInput) (*gqlmodel.OrderAddNote, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -38,7 +42,11 @@ func (r *mutationResolver) OrderFulfill(ctx context.Context, input gqlmodel.Orde
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderFulfillmentCancel(ctx context.Context, id string, input gqlmodel.FulfillmentCancelInput) (*gqlmodel.FulfillmentCancel, error) {
+func (r *mutationResolver) OrderFulfillmentCancel(ctx context.Context, id string, input *gqlmodel.FulfillmentCancelInput) (*gqlmodel.FulfillmentCancel, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) OrderFulfillmentApprove(ctx context.Context, allowStockToBeExceeded *bool, id string, notifyCustomer bool) (*gqlmodel.FulfillmentApprove, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -66,7 +74,7 @@ func (r *mutationResolver) OrderUpdate(ctx context.Context, id string, input gql
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) OrderUpdateShipping(ctx context.Context, order string, input *gqlmodel.OrderUpdateShippingInput) (*gqlmodel.OrderUpdateShipping, error) {
+func (r *mutationResolver) OrderUpdateShipping(ctx context.Context, order string, input gqlmodel.OrderUpdateShippingInput) (*gqlmodel.OrderUpdateShipping, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -90,7 +98,7 @@ func (r *orderResolver) ShippingAddress(ctx context.Context, obj *gqlmodel.Order
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *orderResolver) ShippingMethod(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.ShippingMethod, error) {
+func (r *orderResolver) CollectionPointName(ctx context.Context, obj *gqlmodel.Order) (*string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -119,6 +127,10 @@ func (r *orderResolver) Actions(ctx context.Context, obj *gqlmodel.Order, _ *sca
 }
 
 func (r *orderResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) ([]*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *orderResolver) AvailableCollectionPoints(ctx context.Context, obj *gqlmodel.Order) ([]*gqlmodel.Warehouse, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -166,6 +178,10 @@ func (r *orderResolver) IsShippingRequired(ctx context.Context, obj *gqlmodel.Or
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *orderResolver) DeliveryMethod(ctx context.Context, obj *gqlmodel.Order) (gqlmodel.DeliveryMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *orderResolver) Discounts(ctx context.Context, obj *gqlmodel.Order, _ *scalars.PlaceHolder) ([]*gqlmodel.OrderDiscount, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -198,3 +214,13 @@ func (r *queryResolver) OrderByToken(ctx context.Context, token uuid.UUID) (*gql
 func (r *Resolver) Order() graphql1.OrderResolver { return &orderResolver{r} }
 
 type orderResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *orderResolver) ShippingMethod(ctx context.Context, obj *gqlmodel.Order) (*gqlmodel.ShippingMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
