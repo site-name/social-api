@@ -37,7 +37,7 @@ func (c *Context) LogAuditRec(rec *audit.Record) {
 // LogAuditRec logs an audit record using specified Level.
 // If the context is flagged with a permissions error then `level`
 // is ignored and the audit record is emitted with `LevelPerms`.
-func (c *Context) LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel) {
+func (c *Context) LogAuditRecWithLevel(rec *audit.Record, level slog.Level) {
 	if rec == nil {
 		return
 	}

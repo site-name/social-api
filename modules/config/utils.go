@@ -2,16 +2,21 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
+
+// marshalConfig converts the given configuration into JSON bytes for persistence.
+func marshalConfig(cfg *model.Config) ([]byte, error) {
+	return json.MarshalIndent(cfg, "", "    ")
+}
 
 // desanitize replaces fake settings with their actual values.
 func desanitize(actual, target *model.Config) {
@@ -37,6 +42,10 @@ func desanitize(actual, target *model.Config) {
 	if target.GoogleSettings.Secret != nil && *target.GoogleSettings.Secret == model.FAKE_SETTING {
 		target.GoogleSettings.Secret = actual.GoogleSettings.Secret
 	}
+
+	// if target.Office365Settings.Secret != nil && *target.Office365Settings.Secret == model.FAKE_SETTING {
+	// 	target.Office365Settings.Secret = actual.Office365Settings.Secret
+	// }
 
 	if target.OpenIdSettings.Secret != nil && *target.OpenIdSettings.Secret == model.FAKE_SETTING {
 		target.OpenIdSettings.Secret = actual.OpenIdSettings.Secret
@@ -186,18 +195,9 @@ func stripPassword(dsn, schema string) string {
 	return prefix + dsn[:i+1] + dsn[j:]
 }
 
-func IsJsonMap(data string) bool {
+func isJSONMap(data string) bool {
 	var m map[string]interface{}
-	return json.JSON.Unmarshal([]byte(data), &m) == nil
-}
-
-func JSONToLogTargetCfg(data []byte) (slog.LogTargetCfg, error) {
-	cfg := make(slog.LogTargetCfg)
-	err := json.JSON.Unmarshal(data, &cfg)
-	if err != nil {
-		return nil, err
-	}
-	return cfg, nil
+	return json.Unmarshal([]byte(data), &m) == nil
 }
 
 func GetValueByPath(path []string, obj interface{}) (interface{}, bool) {
@@ -246,18 +246,13 @@ func GetValueByPath(path []string, obj interface{}) (interface{}, bool) {
 }
 
 func equal(oldCfg, newCfg *model.Config) (bool, error) {
-	oldCfgBytes, err := json.JSON.Marshal(oldCfg)
+	oldCfgBytes, err := json.Marshal(oldCfg)
 	if err != nil {
 		return false, fmt.Errorf("failed to marshal old config: %w", err)
 	}
-	newCfgBytes, err := json.JSON.Marshal(newCfg)
+	newCfgBytes, err := json.Marshal(newCfg)
 	if err != nil {
 		return false, fmt.Errorf("failed to marshal new config: %w", err)
 	}
 	return !bytes.Equal(oldCfgBytes, newCfgBytes), nil
-}
-
-func isJSONMap(data string) bool {
-	var m map[string]interface{}
-	return json.JSON.Unmarshal([]byte(data), &m) == nil
 }

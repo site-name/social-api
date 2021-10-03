@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
+	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -51,7 +52,7 @@ type AppIface interface {
 	// LogAuditRec logs an audit record using default LvlAuditCLI.
 	LogAuditRec(rec *audit.Record, err error)
 	// LogAuditRecWithLevel logs an audit record using specified Level.
-	LogAuditRecWithLevel(rec *audit.Record, level slog.LogLevel, err error)
+	LogAuditRecWithLevel(rec *audit.Record, level slog.Level, err error)
 	// MakeAuditRecord creates a audit record pre-populated with defaults.
 	MakeAuditRecord(event string, initialStatus string) *audit.Record
 	// NotificationsLog returns system notification log
@@ -89,6 +90,9 @@ type AppIface interface {
 	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetClusterId() string
+	GetClusterStatus() []*cluster.ClusterInfo
+	GetLogs(page, perPage int) ([]string, *model.AppError)
+	GetLogsSkipSend(page, perPage int) ([]string, *model.AppError)
 	GetSystemInstallDate() (int64, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)

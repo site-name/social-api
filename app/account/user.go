@@ -8,6 +8,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/sitename/sitename/app"
@@ -542,8 +543,7 @@ func (a *ServiceAccount) SetDefaultProfileImage(user *account.User) *model.AppEr
 		return appErr
 	}
 
-	path := "users/" + user.Id + "/profile.png"
-
+	path := getProfileImagePath(user.Id)
 	if _, err := a.srv.FileService().WriteFile(bytes.NewReader(img), path); err != nil {
 		return err
 	}
@@ -595,7 +595,7 @@ func (a *ServiceAccount) SetProfileImage(userID string, imageData *multipart.Fil
 }
 
 func (a *ServiceAccount) SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError {
-	if limitErr := fileApp.CheckImageLimits(f); limitErr != nil {
+	if limitErr := fileApp.CheckImageLimits(f, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
 		return model.NewAppError("SetProfileImage", "app.account.upload_profile_image.check_image_limits.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -630,7 +630,10 @@ func (a *ServiceAccount) SetProfileImageFromFile(userID string, file io.Reader) 
 		return err
 	}
 
-	path := "users/" + userID + "/profile.png"
+	path := getProfileImagePath(userID)
+	if storedData, err := a.srv.FileService().ReadFile(path); err == nil && bytes.Equal(storedData, buf.Bytes()) {
+		return nil
+	}
 
 	if _, err := a.srv.FileService().WriteFile(buf, path); err != nil {
 		return model.NewAppError("SetProfileImage", "api.user.upload_profile_user.upload_profile.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -752,13 +755,6 @@ func (a *ServiceAccount) UpdateUserRolesWithUser(user *account.User, newRoles st
 	a.InvalidateCacheForUser(user.Id)
 	a.ClearSessionCacheForUser(user.Id)
 
-	// if sendWebSocketEvent {
-	// 	message := model.NewWebSocketEvent(model.WEBSOCKET_EVENT_USER_ROLE_UPDATED, "", "", user.Id, nil)
-	// 	message.Add("user_id", user.Id)
-	// 	message.Add("roles", newRoles)
-	// 	a.Publish(message)
-	// }
-
 	return ruser, nil
 }
 
@@ -804,17 +800,17 @@ func (a *ServiceAccount) UpdateUser(user *account.User, sendNotifications bool) 
 	if err != nil {
 		var appErr *model.AppError
 		var invErr *store.ErrInvalidInput
-		// var conErr *store.ErrConflict
+		var conErr *store.ErrConflict
 		switch {
 		case errors.As(err, &appErr):
 			return nil, appErr
 		case errors.As(err, &invErr):
 			return nil, model.NewAppError("UpdateUser", "app.user.update.find.app_error", nil, invErr.Error(), http.StatusBadRequest)
-		// case errors.As(err, &conErr):
-		// 	if cErr, ok := err.(*store.ErrConflict); ok && cErr.Resource == "Username" {
-		// 		return nil, model.NewAppError("UpdateUser", "app.user.save.username_exists.app_error", nil, "", http.StatusBadRequest)
-		// 	}
-		// 	return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "", http.StatusBadRequest)
+		case errors.As(err, &conErr):
+			if cErr, ok := err.(*store.ErrConflict); ok && cErr.Resource == "Username" {
+				return nil, model.NewAppError("UpdateUser", "app.user.save.username_exists.app_error", nil, "", http.StatusBadRequest)
+			}
+			return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "", http.StatusBadRequest)
 		default:
 			return nil, model.NewAppError("UpdateUser", "app.user.update.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -1362,4 +1358,8 @@ func (us *ServiceAccount) InvalidateCacheForUser(userID string) {
 // ClearAllUsersSessionCacheLocal purges current `*ServiceAccount` sessionCache
 func (us *ServiceAccount) ClearAllUsersSessionCacheLocal() {
 	us.sessionCache.Purge()
+}
+
+func getProfileImagePath(userID string) string {
+	return filepath.Join("users", userID, "profile.png")
 }

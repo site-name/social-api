@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -125,13 +124,10 @@ type Server struct {
 	// loggerLicenseListenerId string
 	StatusCache             cache.Cache
 	configListenerId        string
-	logListenerId           string
 	clusterLeaderListenerId string
 	searchConfigListenerId  string
 	ConfigStore             *config.Store
 	postActionCookieSecret  []byte
-
-	advancedLogListenerCleanup func()
 
 	// pluginCommands     []*PluginCommand
 	// pluginCommandsLock sync.RWMutex
@@ -228,7 +224,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	if s.ConfigStore == nil {
-		innerStore, err := config.NewFileStore("config.json", true)
+		innerStore, err := config.NewFileStore("config.json")
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to load config")
 		}
@@ -375,19 +371,18 @@ func NewServer(options ...Option) (*Server, error) {
 
 	templatesDir, ok := templates.GetTemplateDirectory()
 	if !ok {
-		slog.Error("Failed find server templates", slog.String("directory", "templates"))
-	} else {
-		htmlTemplateWatcher, errorsChan, err2 := templates.NewWithWatcher(templatesDir)
-		if err2 != nil {
-			return nil, errors.Wrap(err2, "cannot initialize server templates")
-		}
-		s.Go(func() {
-			for err2 := range errorsChan {
-				slog.Warn("Server templates error", slog.Err(err2))
-			}
-		})
-		s.htmlTemplateWatcher = htmlTemplateWatcher
+		return nil, errors.New("Failed find server templates in \"templates\" directory or SN_SERVER_PATH")
 	}
+	htmlTemplateWatcher, errorsChan, err2 := templates.NewWithWatcher(templatesDir)
+	if err2 != nil {
+		return nil, errors.Wrap(err2, "cannot initialize server templates")
+	}
+	s.Go(func() {
+		for err2 := range errorsChan {
+			slog.Warn("Server templates error", slog.Err(err2))
+		}
+	})
+	s.htmlTemplateWatcher = htmlTemplateWatcher
 
 	s.Store, err = s.newStore()
 	if err != nil {
@@ -562,8 +557,7 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.runEssentialJobs {
 		// s.Go(func() {
 		// 	runCheckAdminSupportStatusJob(app, c)
-		// 	runCheckWarnMetricStatusJob(app, c)
-		// runDNDStatusExpireJob(app)
+		// 	runDNDStatusExpireJob(app)
 		// })
 		s.runJobs()
 	}
@@ -620,77 +614,71 @@ func (s *Server) initJobs() {
 
 // initLogging initializes and configures the logger. This may be called more than once.
 func (s *Server) initLogging() error {
+	var err error
 	if s.Log == nil {
-		s.Log = slog.NewLogger(util.MloggerConfigFromLoggerConfig(&s.Config().LogSettings, util.GetLogFileLocation))
+		s.Log, err = slog.NewLogger()
+		if err != nil {
+			return err
+		}
 	}
 
-	// Use this app logger as the global logger (eventually remove all instances of global logging).
-	// This is deferred because a copy is made of the logger and it must be fully configured before
-	// the copy is made.
-	defer slog.InitGlobalLogger(s.Log)
-
-	// Redirect default Go logger to this logger.
-	defer slog.RedirectStdLog(s.Log)
-
+	// create notification logger if needed
 	if s.NotificationsLog == nil {
-		notificationLogSettings := util.GetLogSettingsFromNotificationsLogSettings(&s.Config().NotificationLogSettings)
-		s.NotificationsLog = slog.NewLogger(util.MloggerConfigFromLoggerConfig(notificationLogSettings, util.GetNotificationsLogFileLocation)).
-			WithCallerSkip(1).With(slog.String("logSource", "notifications"))
+		l, err := slog.NewLogger()
+		if err != nil {
+			return err
+		}
+		s.NotificationsLog = l.With(slog.String("logSource", "notifications"))
 	}
 
-	if s.logListenerId != "" {
-		s.RemoveConfigListener(s.logListenerId)
+	if err := s.configureLogger("logging", s.Log, &s.Config().LogSettings, s.ConfigStore, config.GetLogFileLocation); err != nil {
+		// if the config is locked then a unit test has already configured and locked the logger; not an error.
+		if !errors.Is(err, slog.ErrConfigurationLock) {
+			// revert to default logger if the config is invalid
+			slog.InitGlobalLogger(nil)
+			return err
+		}
 	}
-	s.logListenerId = s.AddConfigListener(func(_, after *model.Config) {
-		s.Log.ChangeLevels(util.MloggerConfigFromLoggerConfig(&after.LogSettings, util.GetLogFileLocation))
 
-		notificationLogSettings := util.GetLogSettingsFromNotificationsLogSettings(&after.NotificationLogSettings)
-		s.NotificationsLog.ChangeLevels(util.MloggerConfigFromLoggerConfig(notificationLogSettings, util.GetNotificationsLogFileLocation))
-	})
+	// Redirect default Go logger to app logger.
+	s.Log.RedirectStdLog(slog.LvlStdLog)
 
-	// Configure advanced logging.
+	// Use the app logger as the global logger (eventually remove all instances of global logging).
+	slog.InitGlobalLogger(s.Log)
+
+	notificationLogSettings := config.GetLogSettingsFromNotificationsLogSettings(&s.Config().NotificationLogSettings)
+	if err := s.configureLogger("notification logging", s.NotificationsLog, notificationLogSettings, s.ConfigStore, config.GetNotificationsLogFileLocation); err != nil {
+		if !errors.Is(err, slog.ErrConfigurationLock) {
+			slog.Error("Error configuring notification logger", slog.Err(err))
+			return err
+		}
+	}
+	return nil
+}
+
+// configureLogger applies the specified configuration to a logger.
+func (s *Server) configureLogger(name string, logger *slog.Logger, logSettings *model.LogSettings, configStore *config.Store, getPath func(string) string) error {
 	// Advanced logging is E20 only, however logging must be initialized before the license
 	// file is loaded.  If no valid E20 license exists then advanced logging will be
 	// shutdown once license is loaded/checked.
-	if *s.Config().LogSettings.AdvancedLoggingConfig != "" {
-		dsn := *s.Config().LogSettings.AdvancedLoggingConfig
-		isJson := config.IsJsonMap(dsn)
-
-		// If this is a file based config we need the full path so it can be watched.
-		if !isJson && strings.HasPrefix(s.ConfigStore.String(), "file://") && !filepath.IsAbs(dsn) {
-			configPath := strings.TrimPrefix(s.ConfigStore.String(), "file://")
-			dsn = filepath.Join(filepath.Dir(configPath), dsn)
-		}
-
-		cfg, err := config.NewLogConfigSrc(dsn, isJson, s.ConfigStore)
+	var err error
+	dsn := *logSettings.AdvancedLoggingConfig
+	var logConfigSrc config.LogConfigSrc
+	if dsn != "" {
+		logConfigSrc, err = config.NewLogConfigSrc(dsn, configStore)
 		if err != nil {
-			return fmt.Errorf("invalid advanced logging config, %w", err)
+			return fmt.Errorf("invalid config source for %s, %w", name, err)
 		}
+		slog.Info("Loaded configuration for "+name, slog.String("source", dsn))
+	}
 
-		if err := s.Log.ConfigAdvancedLogging(cfg.Get()); err != nil {
-			return fmt.Errorf("error configuring advanced logging, %w", err)
-		}
+	cfg, err := config.MloggerConfigFromLoggerConfig(logSettings, logConfigSrc, getPath)
+	if err != nil {
+		return fmt.Errorf("invalid config source for %s, %w", name, err)
+	}
 
-		if !isJson {
-			slog.Info("Loaded advanced logging config", slog.String("source", dsn))
-		}
-
-		listenerId := cfg.AddListener(func(_, newCfg slog.LogTargetCfg) {
-			if err := s.Log.ConfigAdvancedLogging(newCfg); err != nil {
-				slog.Error("Error re-configuring advanced logging", slog.Err(err))
-			} else {
-				slog.Info("Re-configured advanced logging")
-			}
-		})
-
-		// In case initLogging is called more than once.
-		if s.advancedLogListenerCleanup != nil {
-			s.advancedLogListenerCleanup()
-		}
-
-		s.advancedLogListenerCleanup = func() {
-			cfg.RemoveListener(listenerId)
-		}
+	if err := logger.ConfigureTargets(cfg, nil); err != nil {
+		return fmt.Errorf("invalid config for %s, %w", name, err)
 	}
 	return nil
 }
@@ -935,19 +923,6 @@ func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
 	return value, nil
 }
 
-//nolint:golint,unused,deadcode
-func (s *Server) getLastWarnMetricTimestamp() (int64, *model.AppError) {
-	systemData, err := s.Store.System().GetByName(model.SYSTEM_WARN_METRIC_LAST_RUN_TIMESTAMP_KEY)
-	if err != nil {
-		return 0, model.NewAppError("getLastWarnMetricTimestamp", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	value, err := strconv.ParseInt(systemData.Value, 10, 64)
-	if err != nil {
-		return 0, model.NewAppError("getLastWarnMetricTimestamp", "app.system_install_date.parse_int.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return value, nil
-}
-
 func (s *Server) checkPushNotificationServerUrl() {
 	notificationServer := *s.Config().EmailSettings.PushNotificationServer
 	if strings.HasPrefix(notificationServer, "http://") {
@@ -960,11 +935,15 @@ func (s *Server) enableLoggingMetrics() {
 		return
 	}
 
-	if err := slog.EnableMetrics(s.Metrics.GetLoggerMetricsCollector()); err != nil {
-		slog.Error("Failed to enable advanced logging metrics", slog.Err(err))
-	} else {
-		slog.Debug("Advanced logging metrics enabled")
+	s.Log.SetMetricsCollector(s.Metrics.GetLoggerMetricsCollector(), slog.DefaultMetricsUpdateFreqMillis)
+
+	// logging config needs to be reloaded when metrics collector is added or changed.
+	if err := s.initLogging(); err != nil {
+		slog.Error("Error re-configuring logging for metrics")
+		return
 	}
+
+	slog.Debug("Logging metrics enabled")
 }
 
 func (s *Server) StopHTTPServer() {
@@ -1030,13 +1009,7 @@ func (s *Server) Shutdown() {
 
 	s.WaitForGoroutines()
 
-	if s.advancedLogListenerCleanup != nil {
-		s.advancedLogListenerCleanup()
-		s.advancedLogListenerCleanup = nil
-	}
-
 	s.RemoveConfigListener(s.configListenerId)
-	s.RemoveConfigListener(s.logListenerId)
 	s.stopSearchEngine()
 
 	s.Audit.Shutdown()
@@ -1073,19 +1046,17 @@ func (s *Server) Shutdown() {
 		}
 	}
 
-	timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second*15)
-	defer timeoutCancel()
-
-	if err := slog.Flush(timeoutCtx); err != nil {
-		slog.Warn("Error flushing logs", slog.Err(err))
-	}
-
 	slog.Info("Server stopped")
 
-	// this should just write the "server stopped" record, the rest are already flushed.
-	timeoutCtx2, timeoutCancel2 := context.WithTimeout(context.Background(), time.Second*5)
-	defer timeoutCancel2()
-	_ = slog.ShutdownAdvancedLogging(timeoutCtx2)
+	// shutdown main and notification loggers which will flush any remaining log records.
+	timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer timeoutCancel()
+	if err = s.NotificationsLog.ShutdownWithTimeout(timeoutCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error shutting down notification logger: %v", err)
+	}
+	if err = s.Log.ShutdownWithTimeout(timeoutCtx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error shutting down main logger: %v", err)
+	}
 }
 
 func (s *Server) Restart() error {
@@ -1164,7 +1135,7 @@ func (s *Server) Start() error {
 
 		// If we have debugging of CORS turned on then forward messages to logs
 		if debug {
-			corsWrapper.Log = s.Log.StdLog(slog.String("source", "cors"))
+			corsWrapper.Log = s.Log.With(slog.String("source", "cors")).StdLogger(slog.LvlDebug)
 		}
 
 		handler = corsWrapper.Handler(handler)
@@ -1184,17 +1155,13 @@ func (s *Server) Start() error {
 	s.Busy = NewBusy(s.Cluster)
 
 	// Creating a logger for logging errors from http.Server at error level
-	errStdLog, err := s.Log.StdLogAt(slog.LevelError, slog.String("source", "httpserver"))
-	if err != nil {
-		return err
-	}
 
 	s.Server = &http.Server{
 		Handler:      handler,
 		ReadTimeout:  time.Duration(*s.Config().ServiceSettings.ReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(*s.Config().ServiceSettings.WriteTimeout) * time.Second,
 		IdleTimeout:  time.Duration(*s.Config().ServiceSettings.IdleTimeout) * time.Second,
-		ErrorLog:     errStdLog,
+		ErrorLog:     s.Log.With(slog.String("source", "httpserver")).StdLogger(slog.LvlError),
 	}
 
 	addr := *s.Config().ServiceSettings.ListenAddress
@@ -1232,7 +1199,7 @@ func (s *Server) Start() error {
 				server := &http.Server{
 					Addr:     httpListenAddress,
 					Handler:  m.HTTPHandler(nil),
-					ErrorLog: s.Log.StdLog(slog.String("source", "le_forwarder_server")),
+					ErrorLog: s.Log.With(slog.String("source", "le_forwarder_server")).StdLogger(slog.LvlError),
 				}
 				go server.ListenAndServe()
 			} else {
@@ -1246,7 +1213,7 @@ func (s *Server) Start() error {
 
 					server := &http.Server{
 						Handler:  http.HandlerFunc(handleHTTPRedirect),
-						ErrorLog: s.Log.StdLog(slog.String("source", "forwarder_server")),
+						ErrorLog: s.Log.With(slog.String("source", "forwarder_server")).StdLogger(slog.LvlError),
 					}
 					server.Serve(redirectListener)
 				}()

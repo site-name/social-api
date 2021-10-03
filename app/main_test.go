@@ -4,7 +4,6 @@ import (
 	"flag"
 	"testing"
 
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/testlib"
 )
 
@@ -22,8 +21,6 @@ func TestMain(m *testing.M) {
 		EnableResources: true,
 		WithReadReplica: replicaFlag,
 	}
-
-	slog.DisableZap()
 
 	mainHelper = testlib.NewMainHelperWithOptions(&options)
 	defer mainHelper.Close()

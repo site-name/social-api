@@ -178,9 +178,15 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 
 	// image post-processing
 	if info.IsImage() {
-		if limitErr := checkImageResolutionLimit(info.Width, info.Height); limitErr != nil {
-			return nil, model.NewAppError("uploadData", "app.upload.upload_data.large_image.app_error",
-				map[string]interface{}{"Filename": us.FileName, "Width": info.Width, "Height": info.Height}, "", http.StatusBadRequest)
+		if limitErr := checkImageResolutionLimit(info.Width, info.Height, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
+			return nil, model.NewAppError(
+				"uploadData",
+				"app.upload.upload_data.large_image.app_error",
+				map[string]interface{}{
+					"Filename": us.FileName,
+					"Width":    info.Width,
+					"Height":   info.Height,
+				}, "", http.StatusBadRequest)
 		}
 
 		nameWithoutExtension := info.Name[:strings.LastIndex(info.Name, ".")]
