@@ -35,7 +35,7 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *m
 }
 
 // func (a *ServiceFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
-// 	if us.FileSize > *a.Config().FileSettings.MaxFileSize {
+// 	if us.FileSize > *a.srv.Config().FileSettings.MaxFileSize {
 // 		return nil, model.NewAppError(
 // 			"CreateUploadSession",
 // 			"app.upload.create.upload_too_large.app_error",
@@ -47,9 +47,9 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *m
 // 	now := time.Now()
 // 	us.CreateAt = model.GetMillisForTime(now)
 // 	if us.Type == file.UploadTypeAttachment {
-// 		us.Path = now.Format("20060102") + "/teams/noteam/channels/" + us.ChannelId + "/users/" + us.UserId + "/" + us.Id + "/" + filepath.Base(us.Filename)
+// 		us.Path = now.Format("20060102") + "/teams/noteam/channels/" + us.ChannelId + "/users/" + us.UserID + "/" + us.Id + "/" + filepath.Base(us.FileName)
 // 	} else if us.Type == file.UploadTypeImport {
-// 		us.Path = filepath.Clean(*a.Config().ImportSettings.Directory) + "/" + us.Id + "_" + filepath.Base(us.Filename)
+// 		us.Path = filepath.Clean(*a.srv.Config().ImportSettings.Directory) + "/" + us.Id + "_" + filepath.Base(us.FileName)
 // 	}
 // 	if err := us.IsValid(); err != nil {
 // 		return nil, err

@@ -548,11 +548,10 @@ func (a *ServiceFile) UploadFiles(c *request.Context, teamID string, channelID s
 }
 
 // UploadFile uploads a single file in form of a completely constructed byte array for a channel.
-func (a *ServiceFile) UploadFile(c *request.Context, data []byte, channelID string, filename string) (*model.FileInfo, *model.AppError) {
+func (a *ServiceFile) UploadFile(c *request.Context, data []byte, channelID string, filename string) (*file.FileInfo, *model.AppError) {
 	_, err := a.GetChannel(channelID)
 	if err != nil && channelID != "" {
-		return nil, model.NewAppError("UploadFile", "api.file.upload_file.incorrect_channelId.app_error",
-			map[string]interface{}{"channelId": channelID}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("UploadFile", "api.file.upload_file.incorrect_channelId.app_error", map[string]interface{}{"channelId": channelID}, "", http.StatusBadRequest)
 	}
 
 	info, _, appError := a.DoUploadFileExpectModification(c, time.Now(), "noteam", channelID, "nouser", filename, data)
@@ -684,6 +683,7 @@ func (a *ServiceFile) UploadFileX(c *request.Context, channelID, name string, in
 		Name:        filepath.Base(name),
 		Input:       input,
 		maxFileSize: *a.srv.Config().FileSettings.MaxFileSize,
+		maxImageRes: *a.srv.Config().FileSettings.MaxImageResolution,
 	}
 	for _, o := range opts {
 		o(t)
@@ -885,8 +885,7 @@ func (t *UploadFileTask) postprocessImage(file io.Reader) {
 	go func() {
 		defer wg.Done()
 		if t.fileinfo.MiniPreview == nil {
-			if miniPreview, err := imaging.GenerateMiniPreviewImage(decoded,
-				miniPreviewImageWidth, miniPreviewImageHeight, jpegEncQuality); err != nil {
+			if miniPreview, err := imaging.GenerateMiniPreviewImage(decoded, miniPreviewImageWidth, miniPreviewImageHeight, jpegEncQuality); err != nil {
 				slog.Info("Unable to generate mini preview image", slog.Err(err))
 			} else {
 				t.fileinfo.MiniPreview = &miniPreview
@@ -906,13 +905,13 @@ func (t *UploadFileTask) pathPrefix() string {
 
 func (t *UploadFileTask) newAppError(id string, httpStatus int, extra ...interface{}) *model.AppError {
 	params := map[string]interface{}{
-		"Name":     t.Name,
-		"Filename": t.Name,
-		// "ChannelId":     t.ChannelId,
-		// "TeamId":        t.TeamId,
+		"Name":          t.Name,
+		"Filename":      t.Name,
 		"UserId":        t.UserId,
 		"ContentLength": t.ContentLength,
 		"ClientId":      t.ClientId,
+		// "ChannelId":     t.ChannelId,
+		// "TeamId":        t.TeamId,
 	}
 	if t.fileinfo != nil {
 		params["Width"] = t.fileinfo.Width
@@ -1016,7 +1015,7 @@ func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now tim
 }
 
 func (a *ServiceFile) HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte) {
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
 
 	for i := range fileData {
 		img, release, err := prepareImage(a.srv.ImgDecoder, bytes.NewReader(fileData[i]))
