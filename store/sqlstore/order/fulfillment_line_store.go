@@ -7,6 +7,7 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -80,22 +81,9 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, erro
 
 // BulkUpsert upsert given fulfillment lines
 func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
-	var (
-		err error
-		// if the provided transaction argument is nil, this function has to create a new one
-		// In that case: we have to manually defer rollback and commit in this scope
-		providedTransactionIsNil bool
-	)
-	if transaction == nil {
-		transaction, err = fls.GetMaster().Begin()
-		providedTransactionIsNil = true
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	// defer rollback
-	if providedTransactionIsNil {
-		defer store.FinalizeTransaction(transaction)
+	var selectUpsertor store.SelectUpsertor = fls.GetMaster()
+	if transaction != nil {
+		selectUpsertor = transaction
 	}
 
 	var isSaving bool
@@ -111,9 +99,9 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fu
 			numUpdated int64
 		)
 		if isSaving {
-			err = transaction.Insert(line)
+			err = selectUpsertor.Insert(line)
 		} else {
-			err = transaction.SelectOne(&order.FulfillmentLine{}, "SELECT * FROM "+store.FulfillmentLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": line.Id})
+			err = selectUpsertor.SelectOne(&order.FulfillmentLine{}, "SELECT * FROM "+store.FulfillmentLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": line.Id})
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, store.NewErrNotFound(store.FulfillmentLineTableName, line.Id)
@@ -121,7 +109,7 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fu
 				return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", line.Id)
 			}
 
-			numUpdated, err = transaction.Update(line)
+			numUpdated, err = selectUpsertor.Update(line)
 		}
 
 		if err != nil {
@@ -132,17 +120,11 @@ func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fu
 		}
 	}
 
-	// commit
-	if providedTransactionIsNil {
-		if err = transaction.Commit(); err != nil {
-			return nil, errors.Wrap(err, "transaction_commit")
-		}
-	}
-
 	return fulfillmentLines, nil
 }
 
-func (fls *SqlFulfillmentLineStore) commonConditions(option *order.FulfillmentLineFilterOption) squirrel.And {
+// commonQueryBuilder build an AND condition based on a few sub options provided in given option.
+func (fls *SqlFulfillmentLineStore) commonQueryBuilder(option *order.FulfillmentLineFilterOption) squirrel.And {
 	res := squirrel.And{}
 
 	// parse option
@@ -161,17 +143,14 @@ func (fls *SqlFulfillmentLineStore) commonConditions(option *order.FulfillmentLi
 
 // FilterbyOption finds and returns a list of fulfillment lines by given option
 func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
-	selectFields := fls.ModelFields()
-	if option.SelectRelatedOrderLine {
-		selectFields = append(selectFields, fls.OrderLine().ModelFields()...)
-	}
 
 	query := fls.GetQueryBuilder().
-		Select(selectFields...).
+		Select(fls.ModelFields()...).
 		From(store.FulfillmentLineTableName).
-		Where(fls.commonConditions(option))
+		Where(fls.commonQueryBuilder(option))
 
-	var joinedFulfillmentTable bool // this variable helps preventing joining to Fulfillments table multiple time
+	// this variable helps preventing the query from joining `Fulfillments` table multiple times.
+	var joinedFulfillmentTable bool
 
 	if option.FulfillmentOrderID != nil {
 		query = query.
@@ -186,69 +165,85 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLine
 		}
 		query = query.Where(option.FulfillmentStatus.ToSquirrel("Fulfillments.Status"))
 	}
-	if option.SelectRelatedOrderLine {
-		query = query.InnerJoin(store.OrderLineTableName + " ON (Orderlines.Id = FulfillmentLines.OrderLineID)")
-	}
 
-	rows, err := query.RunWith(fls.GetReplica()).Query()
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find fulfillment lines with given options")
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var (
-		res             []*order.FulfillmentLine
-		fulfillmentLine order.FulfillmentLine
-		orderLine       order.OrderLine
-		scanFields      = fls.ScanFields(fulfillmentLine)
-	)
-	if option.SelectRelatedOrderLine {
-		scanFields = append(scanFields, fls.OrderLine().ScanFields(orderLine)...)
+	var fulfillmentLines order.FulfillmentLines
+	_, err = fls.GetReplica().Select(&fulfillmentLines, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find fulfillment lines by given options")
 	}
 
-	for rows.Next() {
-		err = rows.Scan(scanFields...)
+	// check if we need to prefetch related order lines.
+	if orderLineIDs := fulfillmentLines.OrderLineIDs(); option.PrefetchRelatedOrderLine && len(orderLineIDs) > 0 {
+		var orderLines order.OrderLines
+		_, err = fls.GetReplica().Select(&orderLines, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id IN : IDs", map[string]interface{}{"IDs": orderLineIDs})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of fulfillment line")
+			return nil, errors.Wrap(err, "failed to prefetch related order lines of fulfillment lines")
 		}
 
-		if option.SelectRelatedOrderLine {
-			fulfillmentLine.OrderLine = &orderLine
+		// orderLinesMap has keys are order line ids
+		var orderLinesMap = map[string]*order.OrderLine{}
+		for _, line := range orderLines {
+			orderLinesMap[line.Id] = line
 		}
 
-		res = append(res, &fulfillmentLine)
+		// Check if we need to prefetch related product variants of related order lines of returning fulfillment lines.
+		// This code goes inside related order lines prefetch block, since this prefetching is possible IF and ONLY IF related order lines prefetching is required.
+		if productVariantIDs := orderLines.ProductVariantIDs(); option.PrefetchRelatedOrderLine_ProductVariant && len(productVariantIDs) > 0 {
+			var productVariants product_and_discount.ProductVariants
+			_, err = fls.GetReplica().Select(&productVariants, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN IDs", map[string]interface{}{"IDs": productVariantIDs})
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to prefetch related product variants of related order lines of fulfillment lines")
+			}
+
+			// productVariantsMap has keys are product variants ids
+			var productVariantsMap = map[string]*product_and_discount.ProductVariant{}
+			for _, variant := range productVariants {
+				productVariantsMap[variant.Id] = variant
+			}
+
+			// join related product variants to order lines
+			for _, orderLine := range orderLines {
+				if variantID := orderLine.VariantID; variantID != nil && productVariantsMap[*variantID] != nil {
+					orderLine.ProductVariant = productVariantsMap[*variantID]
+				}
+			}
+		}
+
+		// Join related order lines to fulfillment lines
+		for _, fulfillmentLine := range fulfillmentLines {
+			if orderLine := orderLinesMap[fulfillmentLine.OrderLineID]; orderLine != nil {
+				fulfillmentLine.OrderLine = orderLine
+			}
+		}
 	}
 
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of fulfillment lines")
-	}
-	return res, nil
+	return fulfillmentLines, nil
 }
 
 // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
-	query := fls.GetQueryBuilder().
-		Delete(store.FulfillmentLineTableName).
-		Where(fls.commonConditions(option))
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return errors.Wrap(err, "DeleteFulfillmentLinesByOption_ToSql")
-	}
-
-	var (
-		execFunc func(query string, args ...interface{}) (sql.Result, error) = fls.GetMaster().Exec
-	)
+	var executor squirrel.BaseRunner = fls.GetMaster()
 	if transaction != nil {
-		execFunc = transaction.Exec
+		executor = transaction
 	}
 
-	result, err := execFunc(queryString, args...)
+	result, err := fls.GetQueryBuilder().
+		Delete(store.FulfillmentLineTableName).
+		Where(fls.commonQueryBuilder(option)).
+		RunWith(executor).
+		Exec()
+
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillment lines by given option")
 	}
 	_, err = result.RowsAffected()
 	if err != nil {
-		return errors.Wrap(err, "failed to count number of deleted fulfillment lines by given option")
+		return errors.Wrap(err, "failed to count number of fulfillment lines deleted")
 	}
 
 	return nil

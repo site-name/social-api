@@ -5198,11 +5198,11 @@ func (s *RetryLayerPaymentStore) Get(transaction *gorp.Transaction, id string, l
 
 }
 
-func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Save(payment)
+		result, err := s.PaymentStore.Save(transaction, payment)
 		if err == nil {
 			return result, nil
 		}
@@ -5218,11 +5218,11 @@ func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 
 }
 
-func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Update(payment)
+		result, err := s.PaymentStore.Update(transaction, payment)
 		if err == nil {
 			return result, nil
 		}
@@ -5298,11 +5298,11 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.Save(transaction)
+		result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
 		if err == nil {
 			return result, nil
 		}

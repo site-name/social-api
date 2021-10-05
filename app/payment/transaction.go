@@ -3,6 +3,7 @@ package payment
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 )
@@ -62,8 +63,8 @@ func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*payment.P
 	return lastTran, nil
 }
 
-func (a *ServicePayment) SaveTransaction(tran *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
-	tran, err := a.srv.Store.PaymentTransaction().Save(tran)
+func (a *ServicePayment) SaveTransaction(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
+	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -71,11 +72,11 @@ func (a *ServicePayment) SaveTransaction(tran *payment.PaymentTransaction) (*pay
 		return nil, model.NewAppError("SaveTransaction", "app.payment.save_transaction_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return tran, nil
+	return paymentTransaction, nil
 }
 
 func (a *ServicePayment) UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
-	tran, err := a.srv.Store.PaymentTransaction().Update(transaction)
+	paymentTransaction, err := a.srv.Store.PaymentTransaction().Update(transaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -83,5 +84,5 @@ func (a *ServicePayment) UpdateTransaction(transaction *payment.PaymentTransacti
 		return nil, model.NewAppError("UpdateTransaction", "app.payment.error_updating.transaction.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return tran, nil
+	return paymentTransaction, nil
 }

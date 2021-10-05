@@ -567,19 +567,19 @@ type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
 		ScanFields(payMent payment.Payment) []interface{}
-		Save(payment *payment.Payment) (*payment.Payment, error)                                                          // Save save payment instance into database
+		Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                           // Save save payment instance into database
 		Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
-		Update(payment *payment.Payment) (*payment.Payment, error)                                                        // Update updates given payment and returns new updated payment
+		Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                         // Update updates given payment and returns new updated payment
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                   // FilterByOption finds and returns a list of payments that satisfy given option
 		UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
-		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                  // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                                                 // Get returns a payment transaction with given id
-		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                // Update updates given transaction and returns updated one
-		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) // FilterByOption finds and returns a list of transactions with given option
+		Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                                                      // Get returns a payment transaction with given id
+		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                     // Update updates given transaction and returns updated one
+		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error)                      // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 

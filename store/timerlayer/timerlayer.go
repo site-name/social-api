@@ -4401,10 +4401,10 @@ func (s *TimerLayerPaymentStore) Get(transaction *gorp.Transaction, id string, l
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Save(payment)
+	result, err := s.PaymentStore.Save(transaction, payment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4417,10 +4417,10 @@ func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Update(payment)
+	result, err := s.PaymentStore.Update(transaction, payment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4481,10 +4481,10 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentTransactionStore.Save(transaction)
+	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

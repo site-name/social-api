@@ -537,7 +537,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData,
 		return nil, nil
 	}
 
-	return a.DecreaseStock(lineInfos, manager, false)
+	return a.DecreaseStock(lineInfos, manager, false, false)
 }
 
 // Decrease stocks quantities for given `order_lines` in given warehouses.
@@ -549,9 +549,10 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData,
 // function decrease it by given value.
 // If update_stocks is False, allocations will decrease but stocks quantities
 // will stay unmodified (case of unconfirmed order editing).
+// If allow_stock_to_be_exceeded flag is True then quantity could be < 0.
 //
 // updateStocks default to true
-func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if len(orderLineInfos) == 0 {
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
@@ -745,13 +746,15 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction,
 
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData {
-	for i, lineInfo := range orderLineInfos {
+	var res []*order.OrderLineData
+
+	for _, lineInfo := range orderLineInfos {
 		if lineInfo.Variant == nil || !*lineInfo.Variant.TrackInventory {
-			orderLineInfos = append(orderLineInfos[:i], orderLineInfos[i:]...)
+			res = append(res, lineInfo)
 		}
 	}
 
-	return orderLineInfos
+	return res
 }
 
 // DeAllocateStockForOrder Remove all allocations for given order

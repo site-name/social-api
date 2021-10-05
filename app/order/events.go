@@ -203,3 +203,109 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorp.Transact
 		},
 	})
 }
+
+func (s *ServiceOrder) OrderCreatedEvent(orDer *order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError) {
+	var (
+		eventType = order.PLACED_FROM_DRAFT
+		userID    *string
+	)
+	if !fromDraft {
+		eventType = order.PLACED
+		_, appErr := s.srv.AccountService().CustomerPlacedOrderEvent(user, orDer)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+		OrderID: orDer.Id,
+		UserID:  userID,
+		Type:    eventType,
+	})
+}
+
+func (s *ServiceOrder) OrderConfirmedEvent(orDer *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+		UserID:  userID,
+		OrderID: orDer.Id,
+		Type:    order.CONFIRMED,
+	})
+}
+
+func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID: orDer.Id,
+		UserID:  userID,
+		Type:    order.FULFILLMENT_AWAITS_APPROVAL,
+		Parameters: model.StringInterface{
+			"awaiting_fulfillments": fulfillmentLines.IDs(),
+		},
+	})
+}
+
+func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *order.Order, user *account.User, _ interface{}, trackingNumber string, fulfillment *order.Fulfillment) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+		OrderID: orDer.Id,
+		UserID:  userID,
+		Type:    order.TRACKING_UPDATED,
+		Parameters: model.StringInterface{
+			"tracking_number": trackingNumber,
+			"fulfillment":     fulfillment.ComposedId(),
+		},
+	})
+}
+
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError) {
+	var (
+		userID     *string
+		parameters = model.StringInterface{}
+	)
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+	if transactionReference != "" {
+		parameters["transaction_reference"] = transactionReference
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID:    orDer.Id,
+		UserID:     userID,
+		Type:       order.ORDER_MARKED_AS_PAID,
+		Parameters: parameters,
+	})
+}
+
+func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorp.Transaction, draftOrder *order.Order, originalOrder *order.Order, user *account.User, _ interface{}, lines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID: draftOrder.Id,
+		Type:    order.DRAFT_CREATED_FROM_REPLACE,
+		UserID:  userID,
+		Parameters: model.StringInterface{
+			"related_order_pk": originalOrder.Id,
+			"lines":            linesPerQuantityToLineObjectList(lines),
+		},
+	})
+}

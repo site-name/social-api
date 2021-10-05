@@ -650,6 +650,11 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int,
 
 // UpdateOrderStatus Update order status depending on fulfillments
 func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
+	// validate order is valid:
+	if ord == nil || !model.IsValidId(ord.Id) {
+		return model.NewAppError("UpdateOrderStatus", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, "", http.StatusBadRequest)
+	}
+
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
 		return appErr

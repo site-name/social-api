@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io"
 	"sync"
 )
 
@@ -16,18 +15,7 @@ type ModelMetadata struct {
 	PrivateMetadata StringMap `json:"private_metadata"`
 }
 
-// PreSave must be called in objects's PreSave() calls
-func (m *ModelMetadata) PreSave() {
-	if m.PrivateMetadata == nil {
-		m.PrivateMetadata = make(map[string]string)
-	}
-	if m.Metadata == nil {
-		m.Metadata = make(map[string]string)
-	}
-}
-
-// PreUpdate should be called in objects's PreUpdate() calls
-func (m *ModelMetadata) PreUpdate() {
+func (m *ModelMetadata) PopulateFields() {
 	if m.PrivateMetadata == nil {
 		m.PrivateMetadata = make(map[string]string)
 	}
@@ -38,12 +26,6 @@ func (m *ModelMetadata) PreUpdate() {
 
 func (p *ModelMetadata) ToJson() string {
 	return ModelToJson(p)
-}
-
-func ModelMetadataFromJson(data io.Reader) *ModelMetadata {
-	var mdt ModelMetadata
-	ModelFromJson(&mdt, data)
-	return &mdt
 }
 
 type WhichMeta string

@@ -1,7 +1,6 @@
 package warehouse
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/gosimple/slug"
@@ -115,7 +114,7 @@ func (w *WareHouse) PreSave() {
 		w.Id = model.NewId()
 	}
 	w.Slug = slug.Make(w.Name)
-	w.ModelMetadata.PreSave()
+	w.ModelMetadata.PopulateFields()
 	w.commonPre()
 }
 
@@ -130,16 +129,10 @@ func (w *WareHouse) commonPre() {
 }
 
 func (w *WareHouse) PreUpdate() {
-	w.ModelMetadata.PreUpdate()
+	w.ModelMetadata.PopulateFields()
 	w.commonPre()
 }
 
 func (w *WareHouse) ToJson() string {
 	return model.ModelToJson(w)
-}
-
-func WareHouseFromJson(data io.Reader) *WareHouse {
-	var w WareHouse
-	model.ModelFromJson(&w, data)
-	return &w
 }

@@ -4800,7 +4800,7 @@ func (s *OpenTracingLayerPaymentStore) Get(transaction *gorp.Transaction, id str
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4809,7 +4809,7 @@ func (s *OpenTracingLayerPaymentStore) Save(payment *payment.Payment) (*payment.
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentStore.Save(payment)
+	result, err := s.PaymentStore.Save(transaction, payment)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4818,7 +4818,7 @@ func (s *OpenTracingLayerPaymentStore) Save(payment *payment.Payment) (*payment.
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Update")
 	s.Root.Store.SetContext(newCtx)
@@ -4827,7 +4827,7 @@ func (s *OpenTracingLayerPaymentStore) Update(payment *payment.Payment) (*paymen
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentStore.Update(payment)
+	result, err := s.PaymentStore.Update(transaction, payment)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4890,7 +4890,7 @@ func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*payment.Payme
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4899,7 +4899,7 @@ func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *payment.Paym
 	}()
 
 	defer span.Finish()
-	result, err := s.PaymentTransactionStore.Save(transaction)
+	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

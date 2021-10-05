@@ -127,6 +127,11 @@ func (p *ProductVariant) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+	p.commonPre()
+	p.ModelMetadata.PopulateFields()
+}
+
+func (p *ProductVariant) commonPre() {
 	p.Name = model.SanitizeUnicode(p.Name)
 	if p.TrackInventory == nil {
 		p.TrackInventory = model.NewBool(true)
@@ -134,15 +139,11 @@ func (p *ProductVariant) PreSave() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
-	p.ModelMetadata.PreSave()
 }
 
 func (p *ProductVariant) PreUpdate() {
-	p.Name = model.SanitizeUnicode(p.Name)
-	if p.Weight != nil && p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
-	}
-	p.ModelMetadata.PreUpdate()
+	p.commonPre()
+	p.ModelMetadata.PopulateFields()
 }
 
 type ProductVariantTranslation struct {

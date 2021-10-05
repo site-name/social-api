@@ -39,18 +39,19 @@ import (
 
 // GiftCardApp defines methods for giftcard app
 type GiftcardService interface {
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                                                                                                           // GetGiftCard returns a giftcard with given id
-	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                      // GiftcardsByCheckout returns all giftcards belong to given checkout
-	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                                                                                               // PromoCodeIsGiftCard checks whether there is giftcard with given code
-	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                                                                                                      // ToggleGiftcardStatus set status of given giftcard to inactive/active
-	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                                                                                          // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)                                                                   // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
-	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)                                                    // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)                                                                                // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)                                                                        // GiftcardsByOption finds a list of giftcards with given option
-	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                               // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)             // GiftcardsUsedInOrderEvent bulk creates giftcard events
-	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) // FulfillNonShippableGiftcards
+	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)                                                                                                                                                                 // GetGiftCard returns a giftcard with given id
+	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                                            // GiftcardsByCheckout returns all giftcards belong to given checkout
+	PromoCodeIsGiftCard(code string) (bool, *model.AppError)                                                                                                                                                                     // PromoCodeIsGiftCard checks whether there is giftcard with given code
+	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError                                                                                                                                                            // ToggleGiftcardStatus set status of given giftcard to inactive/active
+	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError                                                                                                                                // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
+	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)                                                                                         // AddGiftcardCodeToCheckout adds giftcard data to checkout by code.
+	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)                                                                          // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
+	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)                                                                                                      // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
+	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)                                                                                              // GiftcardsByOption finds a list of giftcards with given option
+	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)                                                                                                                                                     // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
+	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)                                   // GiftcardsUsedInOrderEvent bulk creates giftcard events
+	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError)                       // FulfillNonShippableGiftcards
+	GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) // GiftcardsCreate creates purchased gift cards
 }
 
 // PaymentService defines methods for payment sub app
@@ -64,13 +65,13 @@ type PaymentService interface {
 	PaymentCanVoid(pm *payment.Payment) (bool, *model.AppError)                                                                                                                                                                                          // PaymentCanVoid check if payment can void
 	CreatePaymentInformation(payment *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentData, *model.AppError)                               // Extract order information along with payment details. Returns information required to process payment and additional billing/shipping addresses for optional fraud-prevention mechanisms.
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError)                                                                                                            // GetAlreadyProcessedTransaction returns most recent processed transaction made for given payment
-	SaveTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                              // SaveTransaction save new payment transaction into database
+	SaveTransaction(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                        // SaveTransaction save new payment transaction into database
 	CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)             // CreatePaymentTransaction save new payment transaction into database and returns it
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) // GetAlreadyProcessedTransactionOrCreateNewTransaction either create new transaction or get already processed transaction
 	GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError)                                                                                                                                                           // get first transaction that belongs to given payment and has kind of "auth", IsSuccess is true
 	GatewayPostProcess(transaction *payment.PaymentTransaction, payment *payment.Payment) *model.AppError                                                                                                                                                // GatewayPostProcess
 	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)                                                                                                                                            // UpdateTransaction updates given transaction and returns updated on
-	UpsertPayment(pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                                               // UpsertPayment depends on whether given payment's Id is set or not to decide to update/save payment
+	UpsertPayment(transaction *gorp.Transaction, pm *payment.Payment) (*payment.Payment, *model.AppError)                                                                                                                                                // UpsertPayment depends on whether given payment's Id is set or not to decide to update/save payment
 	UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError                                                                                                                                                         // UpdatePayment updates given payment based on given `gatewayResponse`
 	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError                                                                                                                                                                    // StoreCustomerId process
 	GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)                                                                                                                                          // GetSubTotal adds up all Total prices of given order lines
@@ -83,6 +84,7 @@ type PaymentService interface {
 	//
 	// `extraData`, `ckout`, `ord` can be nil
 	CreatePayment(
+		transaction *gorp.Transaction,
 		gateway string,
 		total *decimal.Decimal,
 		currency string,
@@ -253,6 +255,7 @@ type AccountService interface {
 	ClearUserSessionCacheLocal(userID string)
 	StoreUserAddress(user *account.User, address *account.Address, addressType string, manager interface{}) *model.AppError // StoreUserAddress Add address to user address book and set as default one.
 	CopyAddress(address *account.Address) (*account.Address, *model.AppError)                                               // CopyAddress inserts a new address with fields identical to given address except Id field.
+	CustomerPlacedOrderEvent(user *account.User, orDer *order.Order) (*account.CustomerEvent, *model.AppError)              // CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 }
 
 type ProductService interface {
@@ -364,7 +367,7 @@ type WarehouseService interface {
 	// will stay unmodified (case of unconfirmed order editing).
 	//
 	// updateStocks default to true
-	DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool) (*exception.InsufficientStock, *model.AppError)
+	DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
 	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)                                                                               // GetStockById takes options for filtering 1 stock
 	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)                                    // FilterStocksForChannel returns a slice of stocks that filtered using given options
@@ -377,8 +380,9 @@ type WarehouseService interface {
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
 	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalLookUp model.StringInterface) (*exception.InsufficientStock, *model.AppError)
-	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError                     // DeAllocateStockForOrder Remove all allocations for given order
-	WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError) // WarehouseByOption returns a warehouse filtered using given option
+	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError                                           // DeAllocateStockForOrder Remove all allocations for given order
+	WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError)                       // WarehouseByOption returns a warehouse filtered using given option
+	StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError) // StocksByOption returns a list of stocks filtered using given options
 }
 
 type DiscountService interface {

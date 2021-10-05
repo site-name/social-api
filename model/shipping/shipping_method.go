@@ -95,6 +95,13 @@ func (s *ShippingMethod) getWeightTypeDisplay() string {
 	return fmt.Sprintf("%s to %s", s.MinOrderWeight.String(), s.MaxOrderWeight.String())
 }
 
+func (s *ShippingMethod) PreSave() {
+	if s.Id == "" {
+		s.Id = model.NewId()
+	}
+	s.Name = model.SanitizeUnicode(s.Name)
+}
+
 func (s *ShippingMethod) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.shipping_method.is_valid.%s.app_error",
