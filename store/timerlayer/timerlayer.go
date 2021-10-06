@@ -105,6 +105,7 @@ type TimerLayer struct {
 	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
+	PreorderAllocationStore            store.PreorderAllocationStore
 	ProductStore                       store.ProductStore
 	ProductChannelListingStore         store.ProductChannelListingStore
 	ProductMediaStore                  store.ProductMediaStore
@@ -411,6 +412,10 @@ func (s *TimerLayer) PluginConfiguration() store.PluginConfigurationStore {
 
 func (s *TimerLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *TimerLayer) PreorderAllocation() store.PreorderAllocationStore {
+	return s.PreorderAllocationStore
 }
 
 func (s *TimerLayer) Product() store.ProductStore {
@@ -919,6 +924,11 @@ type TimerLayerPluginConfigurationStore struct {
 
 type TimerLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *TimerLayer
+}
+
+type TimerLayerPreorderAllocationStore struct {
+	store.PreorderAllocationStore
 	Root *TimerLayer
 }
 
@@ -5252,10 +5262,10 @@ func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.Produ
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8367,6 +8377,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.PluginStore = &TimerLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &TimerLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.PreorderAllocationStore = &TimerLayerPreorderAllocationStore{PreorderAllocationStore: childStore.PreorderAllocation(), Root: &newStore}
 	newStore.ProductStore = &TimerLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
 	newStore.ProductChannelListingStore = &TimerLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
 	newStore.ProductMediaStore = &TimerLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}

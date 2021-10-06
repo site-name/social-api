@@ -309,3 +309,37 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorp.Trans
 		},
 	})
 }
+
+func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, replacedLines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID: orDer.Id,
+		UserID:  userID,
+		Type:    order.FULFILLMENT_REPLACED_,
+		Parameters: model.StringInterface{
+			"lines": linesPerQuantityToLineObjectList(replacedLines),
+		},
+	})
+}
+
+func (s *ServiceOrder) OrderReplacementCreated(transaction *gorp.Transaction, originalOrder *order.Order, replaceOrder *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
+	var userID *string
+
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	return s.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
+		OrderID: originalOrder.Id,
+		UserID:  userID,
+		Type:    order.ORDER_REPLACEMENT_CREATED,
+		Parameters: model.StringInterface{
+			"related_order_pk": replaceOrder.Id,
+		},
+	})
+}

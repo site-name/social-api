@@ -17,6 +17,7 @@ const (
 	ORDER_LINE_PRODUCT_NAME_MAX_LENGTH       = 386
 	ORDER_LINE_VARIANT_NAME_MAX_LENGTH       = 255
 	ORDER_LINE_PRODUCT_SKU_MAX_LENGTH        = 255
+	ORDER_LINE_PRODUCT_VARIANT_ID_MAX_LENGTH = 255
 	ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH = 10
 )
 
@@ -40,7 +41,8 @@ type OrderLine struct {
 	VariantName                       string               `json:"variant_name"`
 	TranslatedProductName             string               `json:"translated_product_name"`
 	TranslatedVariantName             string               `json:"translated_variant_name"`
-	ProductSku                        string               `json:"product_sku"`
+	ProductSku                        *string              `json:"product_sku"`
+	ProductVariantID                  *string              `json:"product_variant_id"` // GraphQL ID used as fallback when product SKU is not available
 	IsShippingRequired                bool                 `json:"is_shipping_required"`
 	IsGiftcard                        bool                 `json:"is_gift_card"`
 	Quantity                          int                  `json:"quantity"`
@@ -153,8 +155,11 @@ func (o *OrderLine) IsValid() *model.AppError {
 	if utf8.RuneCountInString(o.TranslatedVariantName) > ORDER_LINE_VARIANT_NAME_MAX_LENGTH {
 		return outer("translated_variant_name", &o.Id)
 	}
-	if len(o.ProductSku) > ORDER_LINE_PRODUCT_SKU_MAX_LENGTH {
+	if o.ProductSku != nil && len(*o.ProductSku) > ORDER_LINE_PRODUCT_SKU_MAX_LENGTH {
 		return outer("product_sku", &o.Id)
+	}
+	if o.ProductVariantID != nil && len(*o.ProductVariantID) > ORDER_LINE_PRODUCT_VARIANT_ID_MAX_LENGTH {
+		return outer("product_variant_id", &o.Id)
 	}
 	if len(o.UnitDiscountType) > ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH {
 		return outer("unit_discount_type", &o.Id)

@@ -3,8 +3,11 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -45,6 +48,18 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields() []string {
 	}
 }
 
+func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{} {
+	return []interface{}{
+		&listing.Id,
+		&listing.VariantID,
+		&listing.ChannelID,
+		&listing.Currency,
+		&listing.PriceAmount,
+		&listing.CostPriceAmount,
+		&listing.CreateAt,
+	}
+}
+
 // Save insert given value into database then returns it with an error
 func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
 	variantChannelListing.PreSave()
@@ -78,13 +93,30 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 }
 
 // FilterbyOption finds and returns all product variant channel listings filterd using given option
-func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	var runner squirrel.BaseRunner = ps.GetReplica()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	selectFields := ps.ModelFields()
+	if option.SelectRelatedChannel {
+		selectFields = append(selectFields, ps.Channel().ModelFields()...)
+	}
+
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(selectFields...).
 		From(store.ProductVariantChannelListingTableName).
 		OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName])
 
 	// parse option
+	if option.SelectForUpdate {
+		var forUpdateOf string
+		if option.SelectForUpdateOf != "" {
+			forUpdateOf = " OF " + option.SelectForUpdateOf
+		}
+		query = query.Suffix("FOR UPDATE" + forUpdateOf)
+	}
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("ProductVariantChannelListings.Id"))
 	}
@@ -103,16 +135,36 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *product_a
 			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)").
 			Where(option.VariantProductID.ToSquirrel("ProductVariants.ProductID"))
 	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	if option.SelectRelatedChannel {
+		query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariants.ChannelID)")
 	}
 
-	var res []*product_and_discount.ProductVariantChannelListing
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(runner).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variant channel listings by given option")
+		return nil, errors.Wrap(err, "failed to find product variant channel listings")
+	}
+
+	var (
+		res                   []*product_and_discount.ProductVariantChannelListing
+		chanNel               channel.Channel
+		variantChannelListing product_and_discount.ProductVariantChannelListing
+		scanFields            = ps.ScanFields(variantChannelListing)
+	)
+	if option.SelectRelatedChannel {
+		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel))
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of product variant channel listing")
+		}
+
+		if option.SelectRelatedChannel {
+			variantChannelListing.Channel = &chanNel
+		}
+
+		res = append(res, &variantChannelListing)
 	}
 
 	return res, nil

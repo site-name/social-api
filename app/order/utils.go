@@ -689,15 +689,12 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
-
-	// order line
-	var orderLine *order.OrderLine
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
 		Id: &model.StringFilter{
@@ -728,6 +725,9 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 		}
 	}
 
+	// order line
+	var orderLine *order.OrderLine
+
 	if len(orderLinesOfOrder) > 0 {
 		orderLine = orderLinesOfOrder[0]
 		oldQuantity := orderLine.Quantity
@@ -753,7 +753,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 			return nil, nil, appErr
 		}
 
-		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&product_and_discount.ProductVariantChannelListingFilterOption{
+		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
 			VariantID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: variant.Id,

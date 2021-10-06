@@ -3,13 +3,14 @@ package product
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *ServiceProduct) ProductVariantChannelListingsByOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
-	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(option)
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
+	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(transaction, option)
 	var (
 		statusCode   int
 		errorMessage string

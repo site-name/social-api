@@ -106,6 +106,7 @@ type OpenTracingLayer struct {
 	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
+	PreorderAllocationStore            store.PreorderAllocationStore
 	ProductStore                       store.ProductStore
 	ProductChannelListingStore         store.ProductChannelListingStore
 	ProductMediaStore                  store.ProductMediaStore
@@ -412,6 +413,10 @@ func (s *OpenTracingLayer) PluginConfiguration() store.PluginConfigurationStore 
 
 func (s *OpenTracingLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *OpenTracingLayer) PreorderAllocation() store.PreorderAllocationStore {
+	return s.PreorderAllocationStore
 }
 
 func (s *OpenTracingLayer) Product() store.ProductStore {
@@ -920,6 +925,11 @@ type OpenTracingLayerPluginConfigurationStore struct {
 
 type OpenTracingLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerPreorderAllocationStore struct {
+	store.PreorderAllocationStore
 	Root *OpenTracingLayer
 }
 
@@ -5753,7 +5763,7 @@ func (s *OpenTracingLayerProductVariantStore) Save(variant *product_and_discount
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -5762,7 +5772,7 @@ func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(optio
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9219,6 +9229,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.PluginStore = &OpenTracingLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &OpenTracingLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &OpenTracingLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.PreorderAllocationStore = &OpenTracingLayerPreorderAllocationStore{PreorderAllocationStore: childStore.PreorderAllocation(), Root: &newStore}
 	newStore.ProductStore = &OpenTracingLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
 	newStore.ProductChannelListingStore = &OpenTracingLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
 	newStore.ProductMediaStore = &OpenTracingLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}

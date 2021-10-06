@@ -146,6 +146,7 @@ type Store interface {
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
 	WarehouseShippingZone() WarehouseShippingZoneStore                 //
+	PreorderAllocation() PreorderAllocationStore
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
 	WishlistItemProductVariant() WishlistItemProductVariantStore       //
@@ -408,6 +409,11 @@ type (
 		ModelFields() []string
 		Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) // Save inserts given warehouse-shipping zone relation into database
 	}
+	PreorderAllocationStore interface {
+		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
+	}
 )
 
 // shipping
@@ -491,9 +497,10 @@ type (
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)          // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                     // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                         // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                    // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) // FilterbyOption finds and returns all product variant channel listings filterd using given option
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -852,6 +859,7 @@ type (
 type ChannelStore interface {
 	CreateIndexesIfNotExists()
 	ModelFields() []string
+	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
 	GetRandomActiveChannel() (*channel.Channel, error)                              // GetRandomActiveChannel get an abitrary channel that is active

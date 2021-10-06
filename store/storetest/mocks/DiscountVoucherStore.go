@@ -90,6 +90,29 @@ func (_m *DiscountVoucherStore) Get(voucherID string) (*product_and_discount.Vou
 	return r0, r1
 }
 
+// GetByOptions provides a mock function with given fields: options
+func (_m *DiscountVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+	ret := _m.Called(options)
+
+	var r0 *product_and_discount.Voucher
+	if rf, ok := ret.Get(0).(func(*product_and_discount.VoucherFilterOption) *product_and_discount.Voucher); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*product_and_discount.Voucher)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.VoucherFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ModelFields provides a mock function with given fields:
 func (_m *DiscountVoucherStore) ModelFields() []string {
 	ret := _m.Called()

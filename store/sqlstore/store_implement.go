@@ -103,6 +103,7 @@ type SqlStoreStores struct {
 	plugin                        store.PluginStore
 	pluginConfiguration           store.PluginConfigurationStore
 	preference                    store.PreferenceStore
+	preorderAllocation            store.PreorderAllocationStore
 	product                       store.ProductStore
 	productChannelListing         store.ProductChannelListingStore
 	productMedia                  store.ProductMediaStore
@@ -219,6 +220,7 @@ func (store *SqlStore) setupTables() {
 		plugin:                        plugin.NewSqlPluginStore(store),
 		pluginConfiguration:           plugin.NewSqlPluginConfigurationStore(store),
 		preference:                    preference.NewSqlPreferenceStore(store),
+		preorderAllocation:            warehouse.NewSqlPreorderAllocationStore(store),
 		product:                       product.NewSqlProductStore(store),
 		productChannelListing:         product.NewSqlProductChannelListingStore(store),
 		productMedia:                  product.NewSqlProductMediaStore(store),
@@ -336,6 +338,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.pluginConfiguration.CreateIndexesIfNotExists()
 	store.stores.preference.CreateIndexesIfNotExists()
 	store.stores.preference.DeleteUnusedFeatures()
+	store.stores.preorderAllocation.CreateIndexesIfNotExists()
 	store.stores.product.CreateIndexesIfNotExists()
 	store.stores.productChannelListing.CreateIndexesIfNotExists()
 	store.stores.productMedia.CreateIndexesIfNotExists()
@@ -643,6 +646,10 @@ func (ss *SqlStore) PluginConfiguration() store.PluginConfigurationStore {
 
 func (ss *SqlStore) Preference() store.PreferenceStore {
 	return ss.stores.preference
+}
+
+func (ss *SqlStore) PreorderAllocation() store.PreorderAllocationStore {
+	return ss.stores.preorderAllocation
 }
 
 func (ss *SqlStore) Product() store.ProductStore {

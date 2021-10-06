@@ -81,13 +81,13 @@ func (_m *PaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpd
 	return r0, r1
 }
 
-// Save provides a mock function with given fields: _a0
-func (_m *PaymentStore) Save(_a0 *payment.Payment) (*payment.Payment, error) {
-	ret := _m.Called(_a0)
+// Save provides a mock function with given fields: transaction, _a1
+func (_m *PaymentStore) Save(transaction *gorp.Transaction, _a1 *payment.Payment) (*payment.Payment, error) {
+	ret := _m.Called(transaction, _a1)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(*payment.Payment) *payment.Payment); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *payment.Payment) *payment.Payment); ok {
+		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*payment.Payment)
@@ -95,8 +95,8 @@ func (_m *PaymentStore) Save(_a0 *payment.Payment) (*payment.Payment, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*payment.Payment) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *payment.Payment) error); ok {
+		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -120,13 +120,13 @@ func (_m *PaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 	return r0
 }
 
-// Update provides a mock function with given fields: _a0
-func (_m *PaymentStore) Update(_a0 *payment.Payment) (*payment.Payment, error) {
-	ret := _m.Called(_a0)
+// Update provides a mock function with given fields: transaction, _a1
+func (_m *PaymentStore) Update(transaction *gorp.Transaction, _a1 *payment.Payment) (*payment.Payment, error) {
+	ret := _m.Called(transaction, _a1)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(*payment.Payment) *payment.Payment); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *payment.Payment) *payment.Payment); ok {
+		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*payment.Payment)
@@ -134,8 +134,8 @@ func (_m *PaymentStore) Update(_a0 *payment.Payment) (*payment.Payment, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*payment.Payment) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *payment.Payment) error); ok {
+		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

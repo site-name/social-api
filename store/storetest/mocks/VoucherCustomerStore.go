@@ -33,13 +33,13 @@ func (_m *VoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.V
 	return r0
 }
 
-// FilterByEmailAndCustomerEmail provides a mock function with given fields: voucherID, email
-func (_m *VoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, email string) ([]*product_and_discount.VoucherCustomer, error) {
-	ret := _m.Called(voucherID, email)
+// FilterByOptions provides a mock function with given fields: options
+func (_m *VoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
+	ret := _m.Called(options)
 
 	var r0 []*product_and_discount.VoucherCustomer
-	if rf, ok := ret.Get(0).(func(string, string) []*product_and_discount.VoucherCustomer); ok {
-		r0 = rf(voucherID, email)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.VoucherCustomerFilterOption) []*product_and_discount.VoucherCustomer); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*product_and_discount.VoucherCustomer)
@@ -47,8 +47,8 @@ func (_m *VoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(voucherID, email)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.VoucherCustomerFilterOption) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,13 +56,13 @@ func (_m *VoucherCustomerStore) FilterByEmailAndCustomerEmail(voucherID string, 
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: id
-func (_m *VoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCustomer, error) {
-	ret := _m.Called(id)
+// GetByOption provides a mock function with given fields: options
+func (_m *VoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
+	ret := _m.Called(options)
 
 	var r0 *product_and_discount.VoucherCustomer
-	if rf, ok := ret.Get(0).(func(string) *product_and_discount.VoucherCustomer); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.VoucherCustomerFilterOption) *product_and_discount.VoucherCustomer); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*product_and_discount.VoucherCustomer)
@@ -70,8 +70,8 @@ func (_m *VoucherCustomerStore) Get(id string) (*product_and_discount.VoucherCus
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(*product_and_discount.VoucherCustomerFilterOption) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

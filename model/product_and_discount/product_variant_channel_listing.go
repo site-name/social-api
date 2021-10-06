@@ -31,7 +31,11 @@ type ProductVariantChannelListingFilterOption struct {
 	ChannelID   *model.StringFilter
 	PriceAmount *model.NumberFilter
 
-	VariantProductID *model.StringFilter // INNER JOIN ProductVariants
+	VariantProductID *model.StringFilter // INNER JOIN ProductVariants WHERE ProductVariants.ProductID ...
+
+	SelectRelatedChannel bool   // tell store to select related Channel(s)
+	SelectForUpdate      bool   // if true, add `FOR UPDATE` to the end of query
+	SelectForUpdateOf    string // if provided, tell database system to lock on specific row(s)
 }
 
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {

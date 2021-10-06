@@ -71,6 +71,7 @@ func init() {
 		WarehouseTableName:             "Slug DESC",    //
 		WarehouseShippingZoneTableName: "",             //
 		AllocationTableName:            "CreateAt ASC", //
+		PreOrderAllocationTableName:    "",             //
 
 		AddressTableName:                    "",               // account
 		UserTableName:                       "Email ASC",      //
@@ -195,6 +196,7 @@ const (
 	WarehouseTableName             = "Warehouses"             //
 	WarehouseShippingZoneTableName = "WarehouseShippingZones" //
 	AllocationTableName            = "Allocations"            //
+	PreOrderAllocationTableName    = "PreorderAllocations"    //
 )
 
 // checkout-related table names

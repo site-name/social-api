@@ -105,6 +105,7 @@ type RetryLayer struct {
 	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
+	PreorderAllocationStore            store.PreorderAllocationStore
 	ProductStore                       store.ProductStore
 	ProductChannelListingStore         store.ProductChannelListingStore
 	ProductMediaStore                  store.ProductMediaStore
@@ -411,6 +412,10 @@ func (s *RetryLayer) PluginConfiguration() store.PluginConfigurationStore {
 
 func (s *RetryLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
+}
+
+func (s *RetryLayer) PreorderAllocation() store.PreorderAllocationStore {
+	return s.PreorderAllocationStore
 }
 
 func (s *RetryLayer) Product() store.ProductStore {
@@ -919,6 +924,11 @@ type RetryLayerPluginConfigurationStore struct {
 
 type RetryLayerPreferenceStore struct {
 	store.PreferenceStore
+	Root *RetryLayer
+}
+
+type RetryLayerPreorderAllocationStore struct {
+	store.PreorderAllocationStore
 	Root *RetryLayer
 }
 
@@ -6248,11 +6258,11 @@ func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.Produ
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+		result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
@@ -10038,6 +10048,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.PluginStore = &RetryLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &RetryLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.PreorderAllocationStore = &RetryLayerPreorderAllocationStore{PreorderAllocationStore: childStore.PreorderAllocation(), Root: &newStore}
 	newStore.ProductStore = &RetryLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
 	newStore.ProductChannelListingStore = &RetryLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
 	newStore.ProductMediaStore = &RetryLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}

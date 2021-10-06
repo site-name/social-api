@@ -147,7 +147,7 @@ func buildStoreImplement() error {
 			case "ShippingMethodTranslation", "ShippingMethodChannelListing", "ShippingMethodExcludedProduct",
 				"ShippingMethodPostalCodeRule", "ShippingMethod", "ShippingZone", "ShippingZoneChannel":
 				return "shipping"
-			case "Warehouse", "Stock", "Allocation", "WarehouseShippingZone":
+			case "Warehouse", "Stock", "Allocation", "WarehouseShippingZone", "PreorderAllocation":
 				return "warehouse"
 			case "Wishlist", "WishlistItem", "WishlistItemProductVariant":
 				return "wishlist"

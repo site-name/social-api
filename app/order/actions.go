@@ -1358,16 +1358,17 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 	refundShippingCosts bool,
 
 ) (interface{}, *model.AppError) {
-	shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, ord.ShippingPriceGrossAmount)
+	// shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, ord.ShippingPriceGrossAmount)
 
-	transaction, err := a.srv.Store.GetMaster().Begin()
-	if err != nil {
-		return nil, model.NewAppError("CreateRefundFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
+	// transaction, err := a.srv.Store.GetMaster().Begin()
+	// if err != nil {
+	// 	return nil, model.NewAppError("CreateRefundFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	// }
+	// defer a.srv.Store.FinalizeTransaction(transaction)
 
-	totalRefundAmount, appErr := a.processRefund(requester, nil, ord, payMent, orderLinesToRefund, fulfillmentLinesToRefund, amount, refundShippingCosts, manager)
+	// totalRefundAmount, appErr := a.processRefund(requester, nil, ord, payMent, orderLinesToRefund, fulfillmentLinesToRefund, amount, refundShippingCosts, manager)
 
+	panic("not implemented")
 }
 
 // populateReplaceOrderFields create new order based on the state of given originalOrder
@@ -1809,31 +1810,12 @@ func (a *ServiceOrder) ProcessReplace(
 		})
 	}
 
-	var userID *string
-	if requester != nil {
-		userID = &requester.Id
-	}
-
-	_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
-		OrderID: ord.Id,
-		Type:    order.FULFILLMENT_REPLACED_,
-		UserID:  userID,
-		Parameters: model.StringInterface{
-			"lines": linesPerQuantityToLineObjectList(replacedLines),
-		},
-	})
+	_, appErr = a.FulfillmentReplacedEvent(transaction, ord, requester, nil, replacedLines)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
-	_, appErr = a.CommonCreateOrderEvent(transaction, &order.OrderEventOption{
-		OrderID: ord.Id,
-		Type:    order.ORDER_REPLACEMENT_CREATED,
-		UserID:  userID,
-		Parameters: model.StringInterface{
-			"related_order_pk": newOrder.Id,
-		},
-	})
+	_, appErr = a.OrderReplacementCreated(transaction, ord, newOrder, requester, nil)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -1866,12 +1848,13 @@ func (a *ServiceOrder) ProcessReplace(
 // If the fulfillment line has refunded status it will be moved to
 // returned_and_refunded
 //
-// NOTE: `payMent`, `amount` , `requester` are optional.
+// NOTE: `payMent`, `amount` , `user` are optional.
 //
 // `refund` and `refundShippingCosts` default to false.
 //
 func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
-	requester *account.User,
+	user *account.User,
+	_ interface{},
 	ord *order.Order,
 	payMent *payment.Payment,
 	orderLineDatas []*order.OrderLineData,
@@ -1919,7 +1902,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	)
 	if refund && payMent != nil {
 		totalRefundAmount, appErr = a.processRefund(
-			requester,
+			user,
 			nil,
 			ord,
 			payMent,
@@ -1940,7 +1923,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	)
 	if len(replaceFulfillmentLines) > 0 || len(replaceOrderLines) > 0 {
 		replaceFulfillment, newOrder, appErr = a.ProcessReplace(
-			requester,
+			user,
 			ord,
 			replaceOrderLines,
 			replaceFulfillmentLines,
@@ -1952,7 +1935,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	}
 
 	returnFulfillment, appErr := a.CreateReturnFulfillment(
-		requester,
+		user,
 		ord,
 		returnOrderLines,
 		returnFulfillmentLines,
@@ -1972,7 +1955,10 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 		},
 		Status: &model.StringFilter{
 			StringOption: &model.StringOption{
-				Eq: string(order.FULFILLMENT_FULFILLED),
+				In: []string{
+					string(order.FULFILLMENT_FULFILLED),
+					string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
+				},
 			},
 		},
 		FulfillmentLineID: &model.StringFilter{
@@ -2135,13 +2121,11 @@ func (a *ServiceOrder) processRefund(
 
 	linesToRefund := map[string]*order.QuantityOrderLine{}
 
-	refundAmount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
-	if appErr != nil {
-		return nil, appErr
-	}
-
 	if amount == nil {
-		amount = refundAmount
+		amount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
+		if appErr != nil {
+			return nil, appErr
+		}
 		// we take into consideration the shipping costs only when amount is not provided.
 		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
 			amount = model.NewDecimal(amount.Add(*ord.ShippingPriceGrossAmount))

@@ -463,13 +463,13 @@ func (a *ServiceDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discou
 	)
 
 	safelySetAppError := func(err *model.AppError) {
+		a.mutex.Lock()
 		if err != nil {
-			a.mutex.Lock()
 			if appError == nil {
 				appError = err
 			}
-			a.mutex.Unlock()
 		}
+		a.mutex.Unlock()
 	}
 
 	a.wg.Add(4)
