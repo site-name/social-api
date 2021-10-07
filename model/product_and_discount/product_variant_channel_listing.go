@@ -38,6 +38,19 @@ type ProductVariantChannelListingFilterOption struct {
 	SelectForUpdateOf    string // if provided, tell database system to lock on specific row(s)
 }
 
+type ProductVariantChannelListings []*ProductVariantChannelListing
+
+func (p ProductVariantChannelListings) IDs() []string {
+	var res []string
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.product_variant_channel_listing.is_valid.%s.app_error",

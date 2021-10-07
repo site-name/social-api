@@ -9,6 +9,14 @@ type PreorderAllocation struct {
 	ProductVariantChannelListingID string `json:"product_variant_channel_listing_id"`
 }
 
+// PreorderAllocationFilterOption is used to build squirrel sql queries
+type PreorderAllocationFilterOption struct {
+	Id                             *model.StringFilter
+	OrderLineID                    *model.StringFilter
+	Quantity                       *model.NumberFilter
+	ProductVariantChannelListingID *model.StringFilter
+}
+
 func (p *PreorderAllocation) PreSave() {
 	if !model.IsValidId(p.Id) {
 		p.Id = model.NewId()

@@ -52,6 +52,13 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 	return util.Max(totalQuantity-quantityAllocated, 0), nil
 }
 
+// CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
+// :raises InsufficientStock: when there is not enough items in stock for a variant
+// or there is not enough available preorder items for a variant.
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) {
+	panic("not implemented")
+}
+
 // Validate if there is stock available for given variant in given country.
 //
 // If so - returns None. If there is less stock then required raise InsufficientStock

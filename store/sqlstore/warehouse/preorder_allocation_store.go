@@ -1,6 +1,8 @@
 package warehouse
 
 import (
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
@@ -41,4 +43,37 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.Pr
 		&preorderAllocation.Quantity,
 		&preorderAllocation.ProductVariantChannelListingID,
 	}
+}
+
+// FilterByOption finds and returns a list of preorder allocations filtered using given options
+func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+	query := ws.GetQueryBuilder().Select(ws.ModelFields()...).From(store.PreOrderAllocationTableName)
+
+	and := squirrel.And{}
+	// parse options
+	if options.Id != nil {
+		and = append(and, options.Id.ToSquirrel("PreorderAllocations.Id"))
+	}
+	if options.OrderLineID != nil {
+		and = append(and, options.OrderLineID.ToSquirrel("PreorderAllocations.OrderLineID"))
+	}
+	if options.Quantity != nil {
+		and = append(and, options.Quantity.ToSquirrel("PreorderAllocations.Quantity"))
+	}
+	if options.ProductVariantChannelListingID != nil {
+		and = append(and, options.ProductVariantChannelListingID.ToSquirrel("PreorderAllocations.ProductVariantChannelListingID"))
+	}
+
+	queryString, args, err := query.Where(and).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	var res []*warehouse.PreorderAllocation
+	_, err = ws.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
+	}
+
+	return res, nil
 }

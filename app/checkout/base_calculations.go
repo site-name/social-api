@@ -28,63 +28,23 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.Check
 
 // CalculatePriceForShippingMethod Return checkout shipping price
 func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []checkout.DeliveryMethodBaseInterface) (*goprices.TaxedMoney, *model.AppError) {
+	// shippingMethod := shippingMethodInfo.DeliveryMethod
+
+	// if lines != nil && func() bool {
+	// 	for _, line := range lines {
+	// 		// TODO: take a look at me
+	// 		if _, ok := line.Self().(*checkout.CheckoutLineInfo); !ok {
+	// 			return false
+	// 		}
+	// 	}
+
+	// 	return true
+	// }() {
+
+	// 	s.srv.ProductService().ProductsRequireShipping()
+	// }
 	panic("not implemented")
 }
-
-// BaseCalculationShippingPrice Return checkout shipping price.
-// func (a *ServiceCheckout) BaseCalculationShippingPrice(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo) (*goprices.TaxedMoney, *model.AppError) {
-// 	var (
-// 		shippingRequired bool
-// 		appErr           *model.AppError
-// 	)
-
-// 	if len(lineInfos) > 0 {
-// 		productIDs := []string{}
-// 		for _, info := range lineInfos {
-// 			productIDs = append(productIDs, info.Product.Id)
-// 		}
-
-// 		shippingRequired, appErr = a.srv.ProductService().ProductsRequireShipping(productIDs)
-// 	} else {
-// 		shippingRequired, appErr = a.CheckoutShippingRequired(checkoutInfo.Checkout.Token)
-// 	}
-
-// 	if appErr != nil {
-// 		return nil, appErr
-// 	}
-
-// 	if checkoutInfo.ShippingMethod == nil || !shippingRequired {
-// 		// ignore error here since checkouts were validated before saving into database
-// 		taxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
-// 		return taxedMoney, nil
-// 	}
-
-// 	shippingMethodChannelListings, appErr := a.srv.ShippingService().
-// 		ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-// 			ShippingMethodID: &model.StringFilter{
-// 				StringOption: &model.StringOption{
-// 					Eq: checkoutInfo.ShippingMethod.Id,
-// 				},
-// 			},
-// 			ChannelID: &model.StringFilter{
-// 				StringOption: &model.StringOption{
-// 					Eq: checkoutInfo.Checkout.ChannelID,
-// 				},
-// 			},
-// 		})
-// 	if appErr != nil {
-// 		return nil, appErr
-// 	}
-
-// 	shippingPrice := shippingMethodChannelListings[0].GetTotal()
-// 	res, _ := (&goprices.TaxedMoney{
-// 		Net:      shippingPrice,
-// 		Gross:    shippingPrice,
-// 		Currency: shippingPrice.Currency,
-// 	}).Quantize()
-
-// 	return res, nil
-// }
 
 // BaseCheckoutTotal returns the total cost of the checkout
 func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError) {

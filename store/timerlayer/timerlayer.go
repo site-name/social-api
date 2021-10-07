@@ -4826,6 +4826,22 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.PreorderAllocationStore.FilterByOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 

@@ -5273,6 +5273,24 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	return err
 }
 
+func (s *OpenTracingLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PreorderAllocationStore.FilterByOption(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterByOption")

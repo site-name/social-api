@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -807,4 +808,52 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 	}
 
 	return nil
+}
+
+// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
+func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlun string) *model.AppError {
+	transaction, err := s.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("AllocatePreOrders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(transaction)
+
+	orderLinesInfoWithPreOrder := s.GetOrderLinesWithPreOrder(orderLinesInfo)
+	if len(orderLinesInfoWithPreOrder) == 0 {
+		return nil
+	}
+
+	variants := orderLinesInfoWithPreOrder.Variants()
+
+	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+		VariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: variants.IDs(),
+			},
+		},
+		SelectRelatedChannel: true,
+		SelectForUpdate:      true,
+		SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+	}
+
+	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{})
+}
+
+// GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
+func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo order.OrderLineDatas) order.OrderLineDatas {
+
+	res := order.OrderLineDatas{}
+
+	for _, lineInfo := range orderLinesInfo {
+		if lineInfo.Variant != nil && lineInfo.Variant.IsPreorderActive() {
+			res = append(res, lineInfo)
+		}
+	}
+
+	return res
 }

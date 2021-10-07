@@ -413,6 +413,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
+		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
 	}
 )
 
