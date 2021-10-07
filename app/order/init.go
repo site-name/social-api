@@ -8,6 +8,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -15,14 +16,12 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-type RecalculateOrderPricesFunc func(*gorp.Transaction, *order.Order, map[string]interface{}) *model.AppError
-
 type ServiceOrder struct {
 	srv   *app.Server
 	wg    sync.WaitGroup
 	mutex sync.Mutex
 
-	RecalculateOrderPrices RecalculateOrderPricesFunc // This attribute is initialized as this app is started
+	RecalculateOrderPrices types.RecalculateOrderPricesFunc // This attribute is initialized as this app is started
 }
 
 type ServiceOrderConfig struct {
@@ -40,7 +39,7 @@ func NewServiceOrder(config *ServiceOrderConfig) sub_app_iface.OrderService {
 }
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
-func (a *ServiceOrder) UpdateVoucherDiscount(fun RecalculateOrderPricesFunc) RecalculateOrderPricesFunc {
+func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
 	return func(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})

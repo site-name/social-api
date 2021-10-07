@@ -7,6 +7,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
@@ -91,7 +92,7 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_disc
 }
 
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel) (DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel) (types.DiscountCalculator, *model.AppError) {
 	// this checks whether the given product is on sale
 	if util.StringInSlice(product.Id, discountInfo.ProductIDs) ||
 		(product.CategoryID != nil && util.StringInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
@@ -109,7 +110,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) ([]DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) ([]types.DiscountCalculator, *model.AppError) {
 	// filter duplicate collections
 	uniqueCollectionIDs := []string{}
 	meetMap := map[string]bool{}
@@ -125,7 +126,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Prod
 
 	var (
 		appError                    *model.AppError
-		discountCalculatorFunctions []DiscountCalculator
+		discountCalculatorFunctions []types.DiscountCalculator
 	)
 
 	for _, discountInfo := range discountInfos {
