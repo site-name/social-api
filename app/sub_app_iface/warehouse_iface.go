@@ -36,12 +36,25 @@ type WarehouseService interface {
 	BulkUpsertAllocations(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, *model.AppError)
 	// BulkUpsertStocks updates or insderts given stock based on its Id property
 	BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError)
+	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
+	// :raises InsufficientStock: when there is not enough available items for a variant.
+	CheckPreorderThresholdBulk(variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
 	// or there is not enough available preorder items for a variant.
-	CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int)
+	CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*exception.InsufficientStock, *model.AppError)
+	// CheckStockAndPreorderQuantityBulk Validate if products are available for stocks/preorder.
+	// :raises InsufficientStock: when there is not enough items in stock for a variant
+	// or there is not enough available preorder items for a variant.
+	//
+	// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
+	CheckStockAndPreorderQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError)
 	// DeAllocateStockForOrder Remove all allocations for given order
 	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError
+	// DeactivatePreorderForVariant Complete preorder for product variant.
+	// All preorder settings should be cleared and all preorder allocations
+	// should be replaced by regular allocations.
+	DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) *model.AppError
 	// DeallocateStock Deallocate stocks for given `order_lines`.
 	//
 	// Function lock for update stocks and allocations related to given `order_lines`.
@@ -113,7 +126,7 @@ type WarehouseService interface {
 	// Validate if there is stock available for given variants in given country.
 	//
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
-	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*checkout.CheckoutLineInfo) (*exception.InsufficientStock, *model.AppError)
+	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError)
 	// ValidateWarehouseCount
 	//	Every ShippingZone can be assigned to only one warehouse.
 	//

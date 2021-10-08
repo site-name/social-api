@@ -26,7 +26,7 @@ func (s *SaleProductRelation) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.sale_product_relation.is_valid.%s.app_error",
 		"sale_product_relation_id=",
-		"SaleCategory.IsValid",
+		"SaleProductRelation.IsValid",
 	)
 
 	if !model.IsValidId(s.Id) {

@@ -30,7 +30,7 @@ type CheckoutService interface {
 	// AddVariantToCheckout adds a product variant to checkout
 	//
 	// `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError)
+	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
 	// AddVariantsToCheckout Add variants to checkout.
 	//
 	// If a variant is not placed in checkout, a new checkout line will be created.
@@ -114,6 +114,8 @@ type CheckoutService interface {
 	// be validated in further steps (checkout completion) in order to raise
 	// 'InsufficientProductStock' error instead of 'InvalidShippingError'.
 	GetValidCollectionPointsForCheckout(lines checkout.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*warehouse.WareHouse, *model.AppError)
+	// GetValidShippingMethodListForCheckoutInfo
+	GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError)
 	// GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
 	GetValidShippingMethodsForCheckout(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError)
 	// GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
@@ -163,7 +165,7 @@ type CheckoutService interface {
 	BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError)
 	ChangeBillingAddressInCheckout(ckout *checkout.Checkout, address *account.Address) *model.AppError
-	CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *model.AppError)
+	CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
 	CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError)
 	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)
@@ -174,7 +176,6 @@ type CheckoutService interface {
 	DeleteCheckoutLines(transaction *gorp.Transaction, checkoutLineIDs []string) *model.AppError
 	GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError)
-	GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError)
 	UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError)
 	ValidateVariantsInCheckoutLines(lines []*checkout.CheckoutLineInfo) *model.AppError
 }

@@ -118,6 +118,7 @@ type TimerLayer struct {
 	SaleCategoryRelationStore          store.SaleCategoryRelationStore
 	SaleCollectionRelationStore        store.SaleCollectionRelationStore
 	SaleProductRelationStore           store.SaleProductRelationStore
+	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -146,6 +147,7 @@ type TimerLayer struct {
 	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
+	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -466,6 +468,10 @@ func (s *TimerLayer) SaleProductRelation() store.SaleProductRelationStore {
 	return s.SaleProductRelationStore
 }
 
+func (s *TimerLayer) SaleProductVariant() store.SaleProductVariantStore {
+	return s.SaleProductVariantStore
+}
+
 func (s *TimerLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
@@ -576,6 +582,10 @@ func (s *TimerLayer) VoucherCustomer() store.VoucherCustomerStore {
 
 func (s *TimerLayer) VoucherProduct() store.VoucherProductStore {
 	return s.VoucherProductStore
+}
+
+func (s *TimerLayer) VoucherProductVariant() store.VoucherProductVariantStore {
+	return s.VoucherProductVariantStore
 }
 
 func (s *TimerLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -992,6 +1002,11 @@ type TimerLayerSaleProductRelationStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerSaleProductVariantStore struct {
+	store.SaleProductVariantStore
+	Root *TimerLayer
+}
+
 type TimerLayerSessionStore struct {
 	store.SessionStore
 	Root *TimerLayer
@@ -1129,6 +1144,11 @@ type TimerLayerVoucherCustomerStore struct {
 
 type TimerLayerVoucherProductStore struct {
 	store.VoucherProductStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherProductVariantStore struct {
+	store.VoucherProductVariantStore
 	Root *TimerLayer
 }
 
@@ -5630,6 +5650,38 @@ func (s *TimerLayerSaleProductRelationStore) Save(relation *product_and_discount
 	return result, err
 }
 
+func (s *TimerLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductVariantStore.FilterByOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductVariantStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductVariantStore.Upsert(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductVariantStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 	start := timemodule.Now()
 
@@ -8406,6 +8458,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.SaleCategoryRelationStore = &TimerLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
 	newStore.SaleCollectionRelationStore = &TimerLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
 	newStore.SaleProductRelationStore = &TimerLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
+	newStore.SaleProductVariantStore = &TimerLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -8434,6 +8487,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.VoucherCollectionStore = &TimerLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &TimerLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &TimerLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
+	newStore.VoucherProductVariantStore = &TimerLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

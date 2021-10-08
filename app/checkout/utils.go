@@ -27,12 +27,12 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError) {
 	// quantity param is default to 1
 
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(ckout.Token)
 	if appErr != nil {
-		return 0, nil, appErr
+		return 0, nil, nil, appErr
 	}
 
 	var (
@@ -56,7 +56,7 @@ func (a *ServiceCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant 
 	}
 
 	if newQuantity < 0 {
-		return 0, nil, model.NewAppError(
+		return 0, nil, nil, model.NewAppError(
 			"CheckVariantInStock",
 			"app.checkout.quantity_invalid.app_error",
 			map[string]interface{}{
@@ -68,20 +68,19 @@ func (a *ServiceCheckout) CheckVariantInStock(ckout *checkout.Checkout, variant 
 	}
 
 	if newQuantity > 0 && checkQuantity {
-		// NOTE: have a look at ckout.Country below
-		_, appErr = a.srv.WarehouseService().CheckStockQuantity(variant, ckout.Country, channelSlug, newQuantity)
-		if appErr != nil {
-			return 0, nil, appErr
+		insufficientStockErr, appErr := a.srv.WarehouseService().CheckStockAndPreorderQuantity(variant, ckout.Country, channelSlug, newQuantity)
+		if insufficientStockErr != nil || appErr != nil {
+			return 0, nil, insufficientStockErr, appErr
 		}
 	}
 
-	return newQuantity, lineWithVariant, nil
+	return newQuantity, lineWithVariant, nil, nil
 }
 
 // AddVariantToCheckout adds a product variant to checkout
 //
 // `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *model.AppError) {
+func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError) {
 	// validate arguments
 	var invalidArgs string
 	if checkoutInfo == nil {
@@ -91,7 +90,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 		invalidArgs += ", variant"
 	}
 	if invalidArgs != "" {
-		return nil, model.NewAppError("AddVariantToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("AddVariantToCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArgs}, "", http.StatusBadRequest)
 	}
 
 	checkOut := checkoutInfo.Checkout
@@ -108,16 +107,16 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 		},
 	})
 	if appErr != nil {
-		return nil, appErr
+		return nil, nil, appErr
 	}
 
 	if len(productChannelListings) == 0 || !productChannelListings[0].IsPublished {
-		return nil, model.NewAppError("AddVariantToCheckout", app.ProductNotPublishedAppErrID, nil, "Please publish the product first.", http.StatusNotAcceptable)
+		return nil, nil, model.NewAppError("AddVariantToCheckout", app.ProductNotPublishedAppErrID, nil, "Please publish the product first.", http.StatusNotAcceptable)
 	}
 
-	newQuantity, line, appErr := a.CheckVariantInStock(&checkoutInfo.Checkout, variant, checkoutInfo.Channel.Slug, quantity, replace, checkQuantity)
-	if appErr != nil {
-		return nil, appErr
+	newQuantity, line, insufficientErr, appErr := a.CheckVariantInStock(&checkoutInfo.Checkout, variant, checkoutInfo.Channel.Slug, quantity, replace, checkQuantity)
+	if appErr != nil || insufficientErr != nil {
+		return nil, insufficientErr, appErr
 	}
 
 	if line == nil {
@@ -134,7 +133,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 			},
 		})
 		if appErr != nil && appErr.StatusCode != http.StatusNotFound { // ignore not found error
-			return nil, appErr
+			return nil, nil, appErr
 		}
 		line = checkoutLines[0]
 	}
@@ -142,7 +141,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 	if newQuantity == 0 {
 		if line != nil {
 			if appErr = a.DeleteCheckoutLines(nil, []string{line.Id}); appErr != nil {
-				return nil, appErr
+				return nil, nil, appErr
 			}
 		}
 	} else if line == nil {
@@ -151,16 +150,16 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 			VariantID:  variant.Id,
 			Quantity:   newQuantity,
 		}); appErr != nil {
-			return nil, appErr
+			return nil, nil, appErr
 		}
 	} else if newQuantity > 0 {
 		line.Quantity = newQuantity
 		if _, appErr = a.UpsertCheckoutLine(line); appErr != nil {
-			return nil, appErr
+			return nil, nil, appErr
 		}
 	}
 
-	return &checkoutInfo.Checkout, nil
+	return &checkoutInfo.Checkout, nil, nil
 }
 
 func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError) {
@@ -197,7 +196,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, varian
 		return nil, nil, appErr
 	}
 	if !skipStockCheck {
-		insfStock, appErr := a.srv.WarehouseService().CheckStockQuantityBulk(variants, countryCode, quantities, channelSlug, nil, nil)
+		insfStock, appErr := a.srv.WarehouseService().CheckStockAndPreorderQuantityBulk(variants, countryCode, quantities, channelSlug, nil, nil, false)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -255,22 +254,25 @@ func (a *ServiceCheckout) AddVariantsToCheckout(ckout *checkout.Checkout, varian
 	)
 	// use Min() since two slices may not have same length
 	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
-		if checkoutLine, exist := variantIDsInLines[variants[i].Id]; exist {
-			if quantities[i] > 0 {
+		variant := variants[i]
+		quantity := quantities[i]
+
+		if checkoutLine, exist := variantIDsInLines[variant.Id]; exist {
+			if quantity > 0 {
 				if replace {
-					checkoutLine.Quantity = quantities[i]
+					checkoutLine.Quantity = quantity
 				} else {
-					checkoutLine.Quantity += quantities[i]
+					checkoutLine.Quantity += quantity
 				}
 				toUpdateCheckoutLines = append(toUpdateCheckoutLines, checkoutLine)
 			} else {
 				toDeleteCheckoutLineIDs = append(toDeleteCheckoutLineIDs, checkoutLine.Id)
 			}
-		} else {
+		} else if quantity > 0 {
 			toCreateCheckoutLines = append(toCreateCheckoutLines, &checkout.CheckoutLine{
 				CheckoutID: ckout.Token,
-				VariantID:  variants[i].Id,
-				Quantity:   quantities[i],
+				VariantID:  variant.Id,
+				Quantity:   quantity,
 			})
 		}
 	}
@@ -628,6 +630,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError) {
 
 	now := model.NewTime(time.Now()) // NOTE: not sure to use UTC or system time
+	checKout := checkoutInfo.Checkout
 
 	voucherFilterOption := &product_and_discount.VoucherFilterOption{
 		UsageLimit: &model.NumberFilter{
@@ -657,7 +660,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 		ChannelListingActive: model.NewBool(true),
 	}
 
-	if checkoutInfo.Checkout.VoucherCode != nil {
+	if checKout.VoucherCode != nil {
 		// finds vouchers that are active in a channel
 		activeInChannelVouchers, appErr := a.srv.DiscountService().VouchersByOption(voucherFilterOption)
 
@@ -667,7 +670,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo *checkout.CheckoutI
 
 		// find voucher with code
 		for _, voucher := range activeInChannelVouchers {
-			if voucher.Code == *checkoutInfo.Checkout.VoucherCode && voucher.UsageLimit != nil && withLock {
+			if voucher.Code == *checKout.VoucherCode && voucher.UsageLimit != nil && withLock {
 
 				voucherFilterOption.WithLook = true // this tell database to append `FOR UPDATE` to the end of query
 				voucher, appErr = a.srv.DiscountService().VoucherByOption(voucherFilterOption)
@@ -942,7 +945,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		return []*warehouse.WareHouse{}, nil
 	}
 
-	if countryCode == "" {
+	if model.Countries[strings.ToUpper(countryCode)] == "" {
 		return []*warehouse.WareHouse{}, nil
 	}
 	checkoutLines, appErr := s.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
@@ -956,7 +959,6 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
-		checkoutLines = []*checkout.CheckoutLine{}
 	}
 
 	// TODO: implement me.

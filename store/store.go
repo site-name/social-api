@@ -99,6 +99,8 @@ type Store interface {
 	SaleCategoryRelation() SaleCategoryRelationStore                   //
 	SaleProductRelation() SaleProductRelationStore                     //
 	SaleCollectionRelation() SaleCollectionRelationStore               //
+	VoucherProductVariant() VoucherProductVariantStore                 //
+	SaleProductVariant() SaleProductVariantStore                       //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftcardEvent() GiftcardEventStore                                 //
 	GiftCardOrder() GiftCardOrderStore                                 //
@@ -807,6 +809,14 @@ type (
 		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error)                       // Save insert given sale-collection relation into database
 		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                                            // Get finds and returns a sale-collection relation with given id
 		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
+	}
+	VoucherProductVariantStore interface {
+		CreateIndexesIfNotExists()
+	}
+	SaleProductVariantStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error)                      // Upsert inserts/updates given sale-product variant relation into database, then returns it
+		FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) // FilterByOption finds and returns a list of sale-product variants filtered using given options
 	}
 )
 

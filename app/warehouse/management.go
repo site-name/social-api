@@ -857,3 +857,25 @@ func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo order.OrderL
 
 	return res
 }
+
+// createPreorderAllocation
+func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineData, variantChannelData [2]int, variantGlobalAllocation int, quantityAllocationForChannel map[string]int) (*warehouse.PreorderAllocation, *exception.InsufficientStockData, *model.AppError) {
+	panic("not implemented")
+}
+
+// DeactivatePreorderForVariant Complete preorder for product variant.
+// All preorder settings should be cleared and all preorder allocations
+// should be replaced by regular allocations.
+func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) *model.AppError {
+	panic("not implemented")
+}
+
+// getStockForPreorderAllocation Return stock where preordered variant should be allocated.
+// By default this function uses any warehouse from the shipping zone that matches
+// order's shipping method. If order has no shipping method set, it uses any warehouse
+// that matches order's country. Function returns existing stock for selected warehouse
+// or creates a new one unsaved `Stock` instance. Function raises an error if there is
+// no warehouse assigned to any shipping zone handles order's country.
+func (s *ServiceWarehouse) getStockForPreorderAllocation(preorderAllocation *warehouse.PreorderAllocation, productVariant *product_and_discount.ProductVariant) (*warehouse.Stock, *exception.PreorderAllocationError, *model.AppError) {
+	panic("not implemented")
+}

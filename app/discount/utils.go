@@ -92,12 +92,15 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_disc
 }
 
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel) (types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
 	// this checks whether the given product is on sale
-	if util.StringInSlice(product.Id, discountInfo.ProductIDs) ||
+	isProductOnSale := util.StringInSlice(product.Id, discountInfo.ProductIDs) ||
 		(product.CategoryID != nil && util.StringInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
-		len(util.StringArrayIntersection(productCollectionIDs, discountInfo.CollectionIDs)) > 0 {
+		len(util.StringArrayIntersection(productCollectionIDs, discountInfo.CollectionIDs)) > 0
 
+	isVariantOnSale := model.IsValidId(variantID) && util.StringInSlice(variantID, discountInfo.VariantsIDs)
+
+	if isProductOnSale || isVariantOnSale {
 		switch t := discountInfo.Sale.(type) {
 		case *product_and_discount.Sale:
 			return a.GetSaleDiscount(t, discountInfo.ChannelListings[channeL.Slug])
@@ -110,7 +113,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel) ([]types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
 	// filter duplicate collections
 	uniqueCollectionIDs := []string{}
 	meetMap := map[string]bool{}
@@ -131,7 +134,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Prod
 
 	for _, discountInfo := range discountInfos {
 		go func(info *product_and_discount.DiscountInfo) {
-			discountCalFunc, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL)
+			discountCalFunc, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL, variantID)
 
 			a.mutex.Lock()
 			if appErr != nil && appError == nil {
@@ -158,10 +161,10 @@ func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Prod
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 //
 // `discounts` is optional
-func (a *ServiceDiscount) CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel) (*goprices.Money, *model.AppError) {
+func (a *ServiceDiscount) CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (*goprices.Money, *model.AppError) {
 	if len(discounts) > 0 {
 
-		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL)
+		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL, variantID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -419,6 +422,10 @@ func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, 
 	}
 
 	return productMap, nil
+}
+
+func (s *ServiceDiscount) FetchVariants(salePKs []string) *model.AppError {
+	
 }
 
 func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError) {

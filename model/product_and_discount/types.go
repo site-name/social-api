@@ -31,6 +31,7 @@ type DiscountInfo struct {
 	ProductIDs      []string
 	CategoryIDs     []string
 	CollectionIDs   []string
+	VariantsIDs     []string
 }
 
 type CostsData struct {

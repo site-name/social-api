@@ -94,3 +94,19 @@ func (i *InsufficientStock) Error() string {
 
 	return builder.String()
 }
+
+type PreorderAllocationError struct {
+	OrderLine *order.OrderLine
+	Message   string
+}
+
+func (p *PreorderAllocationError) Error() string {
+	return p.Message
+}
+
+func NewPreorderAllocationError(orderLine *order.OrderLine) *PreorderAllocationError {
+	return &PreorderAllocationError{
+		OrderLine: orderLine,
+		Message:   "Unable to allocate in stock for line " + orderLine.String(),
+	}
+}

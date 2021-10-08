@@ -10,6 +10,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
+	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -1403,7 +1404,7 @@ func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType st
 	money, _ := goprices.NewMoney(value, currency)
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
 
-	var discountCalculator discount.DiscountCalculator
+	var discountCalculator types.DiscountCalculator
 	if valueType == product_and_discount.FIXED {
 		discountCalculator = discount.Decorator(money)
 	} else {

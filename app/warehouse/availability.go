@@ -55,8 +55,18 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 // CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 // or there is not enough available preorder items for a variant.
-func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) {
-	panic("not implemented")
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*exception.InsufficientStock, *model.AppError) {
+	var (
+		insufficientStockErr *exception.InsufficientStock
+		appErr               *model.AppError
+	)
+	if variant.IsPreorderActive() {
+		insufficientStockErr, appErr = s.CheckPreorderThresholdBulk([]*product_and_discount.ProductVariant{variant}, []int{quantity}, channelSlug)
+	} else {
+		insufficientStockErr, appErr = s.CheckStockQuantity(variant, countryCode, channelSlug, quantity)
+	}
+
+	return insufficientStockErr, appErr
 }
 
 // Validate if there is stock available for given variant in given country.
@@ -97,6 +107,54 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 	return nil, nil
 }
 
+// CheckStockAndPreorderQuantityBulk Validate if products are available for stocks/preorder.
+// :raises InsufficientStock: when there is not enough items in stock for a variant
+// or there is not enough available preorder items for a variant.
+//
+// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError) {
+	stockVariants, stockQuantities, preorderVariants, preorderQuantities := s.splitLinesForTrackableAndPreorder(variants, quantities)
+
+	var (
+		insufficientStockErr *exception.InsufficientStock
+		appErr               *model.AppError
+	)
+	if len(stockVariants) > 0 {
+		insufficientStockErr, appErr = s.CheckStockQuantityBulk(stockVariants, countryCode, stockQuantities, channelSlug, additionalFilterBoolup, existingLines, replace)
+	}
+
+	if len(preorderVariants) > 0 {
+		insufficientStockErr, appErr = s.CheckPreorderThresholdBulk(preorderVariants, preorderQuantities, channelSlug)
+	}
+
+	return insufficientStockErr, appErr
+}
+
+// splitLinesForTrackableAndPreorder Return variants and quantities splitted by "is_preorder_active
+func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*product_and_discount.ProductVariant, quantities []int) ([]*product_and_discount.ProductVariant, []int, []*product_and_discount.ProductVariant, []int) {
+	var (
+		preorderVariants   []*product_and_discount.ProductVariant
+		preorderQuantities []int
+		stockVariants      []*product_and_discount.ProductVariant
+		stockQuantities    []int
+	)
+
+	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+		variant := variants[i]
+		quantity := quantities[i]
+
+		if variant.IsPreorderActive() {
+			preorderVariants = append(preorderVariants, variant)
+			preorderQuantities = append(preorderQuantities, quantity)
+		} else {
+			stockVariants = append(stockVariants, variant)
+			stockQuantities = append(stockQuantities, quantity)
+		}
+	}
+
+	return stockVariants, stockQuantities, preorderVariants, preorderQuantities
+}
+
 // Validate if there is stock available for given variants in given country.
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
@@ -107,7 +165,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	channelSlug string,
 	additionalFilterLookup model.StringInterface, // can be nil, if non-nil then it must be map[string]interface{}{"warehouse_id": <an UUID string>}
 	existingLines []*checkout.CheckoutLineInfo, // can be nil
-
+	replace bool, // default false
 ) (*exception.InsufficientStock, *model.AppError) {
 
 	variants = variants.FilterNils()
@@ -162,25 +220,27 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		quantity := quantities[i]
 		variant := variants[i]
 
-		quantity += variantsQuantities[variant.Id]
+		if !replace {
+			quantity += variantsQuantities[variant.Id]
+		}
 
 		stocks, exists := variantStocks[variant.Id]
-		if !exists || stocks == nil {
+		if !exists {
 			stocks = []*warehouse.Stock{}
 		}
 
-		var availableQuantity int
+		var availableQuantity int = 0
 		for _, stock := range stocks {
 			availableQuantity += stock.AvailableQuantity
 		}
 
-		if len(stocks) == 0 {
-			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
-				Variant:           *variant,
-				AvailableQuantity: &availableQuantity,
-			})
-		} else if *variant.TrackInventory {
-			if quantities[i] > availableQuantity {
+		if quantity > 0 {
+			if len(stocks) == 0 {
+				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+					Variant:           *variant,
+					AvailableQuantity: &availableQuantity,
+				})
+			} else if *variant.TrackInventory && quantity > availableQuantity {
 				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: &availableQuantity,
@@ -196,4 +256,10 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	}
 
 	return nil, nil
+}
+
+// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
+// :raises InsufficientStock: when there is not enough available items for a variant.
+func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
+	panic("not implemented")
 }

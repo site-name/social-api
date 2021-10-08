@@ -237,6 +237,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checko
 	return appErr
 }
 
+// GetValidShippingMethodListForCheckoutInfo
 func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError) {
 	panic("not implt")
 }

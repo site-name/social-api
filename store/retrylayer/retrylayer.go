@@ -118,6 +118,7 @@ type RetryLayer struct {
 	SaleCategoryRelationStore          store.SaleCategoryRelationStore
 	SaleCollectionRelationStore        store.SaleCollectionRelationStore
 	SaleProductRelationStore           store.SaleProductRelationStore
+	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -146,6 +147,7 @@ type RetryLayer struct {
 	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
+	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -466,6 +468,10 @@ func (s *RetryLayer) SaleProductRelation() store.SaleProductRelationStore {
 	return s.SaleProductRelationStore
 }
 
+func (s *RetryLayer) SaleProductVariant() store.SaleProductVariantStore {
+	return s.SaleProductVariantStore
+}
+
 func (s *RetryLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
@@ -576,6 +582,10 @@ func (s *RetryLayer) VoucherCustomer() store.VoucherCustomerStore {
 
 func (s *RetryLayer) VoucherProduct() store.VoucherProductStore {
 	return s.VoucherProductStore
+}
+
+func (s *RetryLayer) VoucherProductVariant() store.VoucherProductVariantStore {
+	return s.VoucherProductVariantStore
 }
 
 func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -992,6 +1002,11 @@ type RetryLayerSaleProductRelationStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerSaleProductVariantStore struct {
+	store.SaleProductVariantStore
+	Root *RetryLayer
+}
+
 type RetryLayerSessionStore struct {
 	store.SessionStore
 	Root *RetryLayer
@@ -1129,6 +1144,11 @@ type RetryLayerVoucherCustomerStore struct {
 
 type RetryLayerVoucherProductStore struct {
 	store.VoucherProductStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherProductVariantStore struct {
+	store.VoucherProductVariantStore
 	Root *RetryLayer
 }
 
@@ -6718,6 +6738,46 @@ func (s *RetryLayerSaleProductRelationStore) Save(relation *product_and_discount
 
 }
 
+func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductVariantStore.FilterByOption(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductVariantStore.Upsert(relation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 
 	tries := 0
@@ -10081,6 +10141,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.SaleCategoryRelationStore = &RetryLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
 	newStore.SaleCollectionRelationStore = &RetryLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
 	newStore.SaleProductRelationStore = &RetryLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
+	newStore.SaleProductVariantStore = &RetryLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -10109,6 +10170,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &RetryLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
+	newStore.VoucherProductVariantStore = &RetryLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

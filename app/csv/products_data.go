@@ -5,5 +5,5 @@ package csv
 // It return list with product and variant data which can be used as import to
 // csv writer and list of attribute and warehouse headers.
 func (a *ServiceCsv) GetProductsData() {
-
+	panic("not implemented")
 }

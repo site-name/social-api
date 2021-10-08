@@ -116,6 +116,7 @@ type SqlStoreStores struct {
 	saleCategoryRelation          store.SaleCategoryRelationStore
 	saleCollectionRelation        store.SaleCollectionRelationStore
 	saleProductRelation           store.SaleProductRelationStore
+	saleProductVariant            store.SaleProductVariantStore
 	session                       store.SessionStore
 	shippingMethod                store.ShippingMethodStore
 	shippingMethodChannelListing  store.ShippingMethodChannelListingStore
@@ -144,6 +145,7 @@ type SqlStoreStores struct {
 	voucherCollection             store.VoucherCollectionStore
 	voucherCustomer               store.VoucherCustomerStore
 	voucherProduct                store.VoucherProductStore
+	voucherProductVariant         store.VoucherProductVariantStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
 	warehouseShippingZone         store.WarehouseShippingZoneStore
@@ -233,6 +235,7 @@ func (store *SqlStore) setupTables() {
 		saleCategoryRelation:          discount.NewSqlSaleCategoryRelationStore(store),
 		saleCollectionRelation:        discount.NewSqlSaleCollectionRelationStore(store),
 		saleProductRelation:           discount.NewSqlSaleProductRelationStore(store),
+		saleProductVariant:            discount.NewSqlSaleProductVariantStore(store),
 		session:                       session.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
@@ -261,6 +264,7 @@ func (store *SqlStore) setupTables() {
 		voucherCollection:             discount.NewSqlVoucherCollectionStore(store),
 		voucherCustomer:               discount.NewSqlVoucherCustomerStore(store),
 		voucherProduct:                discount.NewSqlVoucherProductStore(store),
+		voucherProductVariant:         discount.NewSqlVoucherProductVariantStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
 		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
@@ -351,6 +355,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.saleCategoryRelation.CreateIndexesIfNotExists()
 	store.stores.saleCollectionRelation.CreateIndexesIfNotExists()
 	store.stores.saleProductRelation.CreateIndexesIfNotExists()
+	store.stores.saleProductVariant.CreateIndexesIfNotExists()
 	store.stores.session.CreateIndexesIfNotExists()
 	store.stores.shippingMethod.CreateIndexesIfNotExists()
 	store.stores.shippingMethodChannelListing.CreateIndexesIfNotExists()
@@ -379,6 +384,7 @@ func (store *SqlStore) indexingTableFields() {
 	store.stores.voucherCollection.CreateIndexesIfNotExists()
 	store.stores.voucherCustomer.CreateIndexesIfNotExists()
 	store.stores.voucherProduct.CreateIndexesIfNotExists()
+	store.stores.voucherProductVariant.CreateIndexesIfNotExists()
 	store.stores.voucherTranslation.CreateIndexesIfNotExists()
 	store.stores.warehouse.CreateIndexesIfNotExists()
 	store.stores.warehouseShippingZone.CreateIndexesIfNotExists()
@@ -700,6 +706,10 @@ func (ss *SqlStore) SaleProductRelation() store.SaleProductRelationStore {
 	return ss.stores.saleProductRelation
 }
 
+func (ss *SqlStore) SaleProductVariant() store.SaleProductVariantStore {
+	return ss.stores.saleProductVariant
+}
+
 func (ss *SqlStore) Session() store.SessionStore {
 	return ss.stores.session
 }
@@ -810,6 +820,10 @@ func (ss *SqlStore) VoucherCustomer() store.VoucherCustomerStore {
 
 func (ss *SqlStore) VoucherProduct() store.VoucherProductStore {
 	return ss.stores.voucherProduct
+}
+
+func (ss *SqlStore) VoucherProductVariant() store.VoucherProductVariantStore {
+	return ss.stores.voucherProductVariant
 }
 
 func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {

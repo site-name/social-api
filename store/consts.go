@@ -129,6 +129,8 @@ func init() {
 		SaleProductRelationTableName:    "CreateAt ASC",                     //
 		SaleCollectionRelationTableName: "CreateAt ASC",                     //
 		OrderDiscountTableName:          "",                                 //
+		VoucherProductVariantTableName:  "CreateAt ASC",                     //
+		SaleProductVariantTableName:     "CreateAt ASC",                     //
 
 		ShopTableName:            "Shops",            // shop
 		ShopTranslationTableName: "ShopTranslations", //
@@ -297,6 +299,8 @@ const (
 	SaleProductRelationTableName    = "SaleProducts"           //
 	SaleCollectionRelationTableName = "SaleCollections"        //
 	OrderDiscountTableName          = "OrderDiscounts"         //
+	VoucherProductVariantTableName  = "VoucherProductVariants" //
+	SaleProductVariantTableName     = "SaleProductVariants"    //
 )
 
 // shop-related table names

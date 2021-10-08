@@ -119,6 +119,7 @@ type OpenTracingLayer struct {
 	SaleCategoryRelationStore          store.SaleCategoryRelationStore
 	SaleCollectionRelationStore        store.SaleCollectionRelationStore
 	SaleProductRelationStore           store.SaleProductRelationStore
+	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -147,6 +148,7 @@ type OpenTracingLayer struct {
 	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
+	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -467,6 +469,10 @@ func (s *OpenTracingLayer) SaleProductRelation() store.SaleProductRelationStore 
 	return s.SaleProductRelationStore
 }
 
+func (s *OpenTracingLayer) SaleProductVariant() store.SaleProductVariantStore {
+	return s.SaleProductVariantStore
+}
+
 func (s *OpenTracingLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
@@ -577,6 +583,10 @@ func (s *OpenTracingLayer) VoucherCustomer() store.VoucherCustomerStore {
 
 func (s *OpenTracingLayer) VoucherProduct() store.VoucherProductStore {
 	return s.VoucherProductStore
+}
+
+func (s *OpenTracingLayer) VoucherProductVariant() store.VoucherProductVariantStore {
+	return s.VoucherProductVariantStore
 }
 
 func (s *OpenTracingLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -993,6 +1003,11 @@ type OpenTracingLayerSaleProductRelationStore struct {
 	Root *OpenTracingLayer
 }
 
+type OpenTracingLayerSaleProductVariantStore struct {
+	store.SaleProductVariantStore
+	Root *OpenTracingLayer
+}
+
 type OpenTracingLayerSessionStore struct {
 	store.SessionStore
 	Root *OpenTracingLayer
@@ -1130,6 +1145,11 @@ type OpenTracingLayerVoucherCustomerStore struct {
 
 type OpenTracingLayerVoucherProductStore struct {
 	store.VoucherProductStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVoucherProductVariantStore struct {
+	store.VoucherProductVariantStore
 	Root *OpenTracingLayer
 }
 
@@ -6177,6 +6197,42 @@ func (s *OpenTracingLayerSaleProductRelationStore) Save(relation *product_and_di
 	return result, err
 }
 
+func (s *OpenTracingLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "SaleProductVariantStore.FilterByOption")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.SaleProductVariantStore.FilterByOption(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "SaleProductVariantStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.SaleProductVariantStore.Upsert(relation)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerSessionStore) AnalyticsSessionCount() (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "SessionStore.AnalyticsSessionCount")
@@ -9260,6 +9316,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.SaleCategoryRelationStore = &OpenTracingLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
 	newStore.SaleCollectionRelationStore = &OpenTracingLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
 	newStore.SaleProductRelationStore = &OpenTracingLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
+	newStore.SaleProductVariantStore = &OpenTracingLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &OpenTracingLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &OpenTracingLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &OpenTracingLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -9288,6 +9345,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.VoucherCollectionStore = &OpenTracingLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &OpenTracingLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &OpenTracingLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
+	newStore.VoucherProductVariantStore = &OpenTracingLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &OpenTracingLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &OpenTracingLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &OpenTracingLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}
