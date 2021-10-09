@@ -21,7 +21,7 @@ type DiscountService interface {
 	// ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 	//
 	//  (end_date == NULL || end_date >= date) && start_date <= date
-	ActiveSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError)
+	ActiveSales(date *time.Time) (product_and_discount.Sales, *model.AppError)
 	// AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 	AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*product_and_discount.NotApplicable, *model.AppError)
 	// BulkDeleteOrderDiscounts performs bulk delete given order discounts
@@ -104,7 +104,7 @@ type DiscountService interface {
 	FetchDiscounts(date *time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
 	FetchProducts(saleIDs []string) (map[string][]string, *model.AppError)
 	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError)
-	FetchVariants(salePKs []string) *model.AppError
+	FetchVariants(salePKs []string) (map[string][]string, *model.AppError)
 	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)

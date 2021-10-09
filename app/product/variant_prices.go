@@ -49,9 +49,11 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 ) (*goprices.Money, *model.AppError) {
 
 	// validate variantPrices have same currencies
-	var standardCurrency string
+	var (
+		standardCurrency        string
+		discountedVariantPrices []*goprices.Money
+	)
 
-	discountedVariantPrices := []*goprices.Money{}
 	for i, item := range variantPrices {
 		if i == 0 {
 			standardCurrency = item.Currency

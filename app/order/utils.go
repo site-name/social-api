@@ -770,7 +770,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 			return nil, nil, appErr // NOTE: does not care what type of error, just return
 		}
 
-		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(product, collections, chanNel, variantChannelListings[0], discounts)
+		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(variant, product, collections, chanNel, variantChannelListings[0], discounts)
 		if appErr != nil {
 			return nil, nil, appErr
 		}

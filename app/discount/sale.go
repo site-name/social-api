@@ -42,7 +42,7 @@ func (a *ServiceDiscount) FilterSalesByOption(option *product_and_discount.SaleF
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 //
 //  (end_date == NULL || end_date >= date) && start_date <= date
-func (a *ServiceDiscount) ActiveSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
+func (a *ServiceDiscount) ActiveSales(date *time.Time) (product_and_discount.Sales, *model.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
 	}

@@ -89,7 +89,7 @@ type ProductService interface {
 	// ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
 	ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError)
 	// ProductVariantGetPrice returns price
-	ProductVariantGetPrice(product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
+	ProductVariantGetPrice(productVariant *product_and_discount.ProductVariant, product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
 	// ProductVariantGetWeight returns weight of given product variant
 	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)
 	// ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping

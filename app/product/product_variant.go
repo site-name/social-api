@@ -23,13 +23,14 @@ func (a *ServiceProduct) ProductVariantById(id string) (*product_and_discount.Pr
 
 // ProductVariantGetPrice returns price
 func (a *ServiceProduct) ProductVariantGetPrice(
+	productVariant *product_and_discount.ProductVariant,
 	product *product_and_discount.Product,
 	collections []*product_and_discount.Collection,
 	channel *channel.Channel,
 	channelListing *product_and_discount.ProductVariantChannelListing,
 	discounts []*product_and_discount.DiscountInfo, // optional
 ) (*goprices.Money, *model.AppError) {
-	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel)
+	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
 
 // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping

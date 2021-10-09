@@ -80,6 +80,7 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.Check
 	}
 
 	variantPrice, appErr := a.srv.ProductService().ProductVariantGetPrice(
+		&checkoutLineInfo.Variant,
 		&checkoutLineInfo.Product,
 		checkoutLineInfo.Collections,
 		channel,
