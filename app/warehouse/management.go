@@ -812,6 +812,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 
 // AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlun string) *model.AppError {
+	// init transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("AllocatePreOrders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -841,7 +842,18 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 		}
 	}
 
-	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{})
+	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+		ProductVariantChannelListingID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: allVariantChannelListings.IDs(),
+			},
+		},
+	})
+
+	var (
+		quantityAllocationForChannel = map[string]int{}
+	)
+
 }
 
 // GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true

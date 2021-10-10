@@ -9,7 +9,7 @@ import (
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) (product_and_discount.ProductVariantChannelListings, *model.AppError) {
 	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(transaction, option)
 	var (
 		statusCode   int

@@ -19,9 +19,11 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 
 	// reference: https://github.com/mirumee/saleor/blob/master/saleor/warehouse/availability.py, function (_get_available_quantity)
 	// not sure yet why using SUM(DISTINCT 'quantity') on stocks
-	var totalQuantity int
-	meetMap := make(map[int]bool)
-	stockIDs := stocks.IDs()
+	var (
+		totalQuantity = 0
+		meetMap       = make(map[int]bool)
+		stockIDs      = stocks.IDs()
+	)
 
 	for _, stock := range stocks {
 		if _, met := meetMap[stock.Quantity]; !met {

@@ -67,6 +67,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 			collections,
 			discounts,
 			chanNel,
+			"",
 		)
 		if appErr != nil {
 			return nil, appErr

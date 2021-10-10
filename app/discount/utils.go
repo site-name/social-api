@@ -115,8 +115,10 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
 func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
 	// filter duplicate collections
-	uniqueCollectionIDs := []string{}
-	meetMap := map[string]bool{}
+	var (
+		uniqueCollectionIDs = []string{}
+		meetMap             = map[string]bool{}
+	)
 
 	for _, collection := range collections {
 		if _, met := meetMap[collection.Id]; !met {
