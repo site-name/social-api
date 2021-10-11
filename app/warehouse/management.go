@@ -3,6 +3,7 @@ package warehouse
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
@@ -858,7 +859,6 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 
 // GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
 func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo order.OrderLineDatas) order.OrderLineDatas {
-
 	res := order.OrderLineDatas{}
 
 	for _, lineInfo := range orderLinesInfo {
@@ -870,16 +870,95 @@ func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo order.OrderL
 	return res
 }
 
+// variantChannelDataType
+type variantChannelDataType struct {
+	ChannelListingID         string
+	ChannelQuantityThreshold *int
+}
+
 // createPreorderAllocation
-func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineData, variantChannelData [2]int, variantGlobalAllocation int, quantityAllocationForChannel map[string]int) (*warehouse.PreorderAllocation, *exception.InsufficientStockData, *model.AppError) {
-	panic("not implemented")
+func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineData, variantChannelData *variantChannelDataType, variantGlobalAllocation int, quantityAllocationForChannel map[string]int) (*warehouse.PreorderAllocation, *exception.InsufficientStockData, *model.AppError) {
+	// validate valid arguments are provided:
+	var invalidParams []string
+	if variantChannelData == nil {
+		invalidParams = append(invalidParams, "variantChannelData")
+	}
+	if lineInfo.Variant == nil {
+		invalidParams = append(invalidParams, "lineInfo.Variant")
+	}
+	if len(invalidParams) > 0 {
+		return nil, nil, model.NewAppError("createPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidParams, ", ")}, "", http.StatusBadRequest)
+	}
+
+	var (
+		variant                  = lineInfo.Variant // non-nil
+		quantity                 = lineInfo.Quantity
+		channelListingID         = variantChannelData.ChannelListingID
+		channelQuantityThreshold = variantChannelData.ChannelQuantityThreshold
+	)
+
+	if channelQuantityThreshold != nil {
+		channelAvailability := *channelQuantityThreshold - quantityAllocationForChannel[channelListingID]
+		if quantity > channelAvailability {
+			return nil, &exception.InsufficientStockData{
+				Variant:           *variant,
+				AvailableQuantity: &channelAvailability,
+			}, nil
+		}
+	}
+
+	if variant.PreOrderGlobalThreshold != nil {
+		globalAvailability := *variant.PreOrderGlobalThreshold - variantGlobalAllocation
+		if quantity > globalAvailability {
+			return nil, &exception.InsufficientStockData{
+				Variant:           *variant,
+				AvailableQuantity: &globalAvailability,
+			}, nil
+		}
+	}
+
+	return &warehouse.PreorderAllocation{
+		OrderLineID:                    lineInfo.Line.Id,
+		ProductVariantChannelListingID: channelListingID,
+		Quantity:                       quantity,
+	}, nil, nil
 }
 
 // DeactivatePreorderForVariant Complete preorder for product variant.
 // All preorder settings should be cleared and all preorder allocations
 // should be replaced by regular allocations.
 func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) *model.AppError {
-	panic("not implemented")
+	// init transaction:
+	transaction, err := s.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("DeactivatePreorderForVariant", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(transaction)
+
+	if !productVariant.IsPreOrder {
+		return nil
+	}
+
+	channelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+		VariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: productVariant.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+	}
+
+	s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+		ProductVariantChannelListingID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: channelListings.IDs(),
+			},
+		},
+	})
 }
 
 // getStockForPreorderAllocation Return stock where preordered variant should be allocated.

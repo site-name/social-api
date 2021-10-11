@@ -5138,10 +5138,10 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_disc
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5149,7 +5149,7 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToke
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutToken", success, elapsed)
 	}
 	return result, err
 }

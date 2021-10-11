@@ -1,12 +1,10 @@
 package attribute
 
 import (
-	"bytes"
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -43,6 +41,15 @@ func (as *SqlAssignedVariantAttributeValueStore) ModelFields() []string {
 		"AssignedVariantAttributeValues.ValueID",
 		"AssignedVariantAttributeValues.AssignmentID",
 		"AssignedVariantAttributeValues.SortOrder",
+	}
+}
+
+func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{} {
+	return []interface{}{
+		&assignedVariantAttributeValue.Id,
+		&assignedVariantAttributeValue.ValueID,
+		&assignedVariantAttributeValue.AssignmentID,
+		&assignedVariantAttributeValue.SortOrder,
 	}
 }
 
@@ -118,12 +125,10 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 	return res, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) (assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
+func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
 
 	rows, err := as.GetQueryBuilder().
-		Select(
-			append(as.ModelFields(), as.AttributeValue().ModelFields()...)...,
-		).
+		Select(append(as.ModelFields(), as.AttributeValue().ModelFields()...)...).
 		From(store.AssignedVariantAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedVariantAttributeValues.AssignmentID": assignmentID}).
@@ -131,60 +136,34 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 		Query()
 
 	if err != nil {
-		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
-		return
+		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
-
+	var (
+		assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue
+		attributeValues                []*attribute.AttributeValue
+		assignedVariantAttributeValue  attribute.AssignedVariantAttributeValue
+		attributeValue                 attribute.AttributeValue
+		scanFields                     = append(as.ScanFields(assignedVariantAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
+	)
 	for rows.Next() {
-		var (
-			richText                      []byte
-			assignedVariantAttributeValue attribute.AssignedVariantAttributeValue
-			attributeValue                attribute.AttributeValue
-		)
-
-		scanErr := rows.Scan(
-			&assignedVariantAttributeValue.Id,
-			&assignedVariantAttributeValue.ValueID,
-			&assignedVariantAttributeValue.AssignmentID,
-			&assignedVariantAttributeValue.SortOrder,
-
-			&attributeValue.Id,
-			&attributeValue.Name,
-			&attributeValue.Value,
-			&attributeValue.Slug,
-			&attributeValue.FileUrl,
-			&attributeValue.ContentType,
-			&attributeValue.AttributeID,
-			&richText, // NOTE this is because Scan() may not support parsing map[string]interface{}
-			&attributeValue.Boolean,
-			&attributeValue.SortOrder,
-		)
+		scanErr := rows.Scan(scanFields...)
 		if scanErr != nil {
-			err = errors.Wrapf(scanErr, "error scanning values")
-			return
+			return nil, nil, errors.Wrapf(scanErr, "error scanning values")
 		}
 
-		parseErr := model.ModelFromJson(&attributeValue.RichText, bytes.NewReader(richText))
-		if parseErr != nil {
-			err = errors.Wrap(err, "error parsing value")
-			return
-		}
-
-		assignedVariantAttributeValues = append(assignedVariantAttributeValues, &assignedVariantAttributeValue)
-		attributeValues = append(attributeValues, &attributeValue)
+		assignedVariantAttributeValues = append(assignedVariantAttributeValues, assignedVariantAttributeValue.DeepCopy())
+		attributeValues = append(attributeValues, attributeValue.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
-		err = errors.Wrap(err, "error closing rows")
-		return
+		return nil, nil, errors.Wrap(err, "error closing rows")
 	}
 
 	if err = rows.Err(); err != nil {
-		err = errors.Wrap(err, "error occured during scanning iteration")
-		return
+		return nil, nil, errors.Wrap(err, "error occured during scanning iteration")
 	}
 
-	return
+	return assignedVariantAttributeValues, attributeValues, nil
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {

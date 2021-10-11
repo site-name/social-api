@@ -137,3 +137,8 @@ func (f *Fulfillment) CanEdit() bool {
 func (f *Fulfillment) IstrackingNumber() bool {
 	return trackingNumberRegex.MatchString(f.TrackingNumber)
 }
+
+func (f *Fulfillment) DeepCopy() *Fulfillment {
+	res := *f
+	return &res
+}

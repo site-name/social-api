@@ -142,8 +142,7 @@ func (a *AssignedProductAttributeValue) PreSave() {
 	}
 }
 
-func AssignedProductAttributeValueFromJson(data io.Reader) *AssignedProductAttributeValue {
-	var a AssignedProductAttributeValue
-	model.ModelFromJson(&a, data)
-	return &a
+func (a *AssignedProductAttributeValue) DeepCopy() *AssignedProductAttributeValue {
+	res := *a
+	return &res
 }

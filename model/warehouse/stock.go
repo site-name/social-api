@@ -136,3 +136,8 @@ func (s *Stock) commonPre() {
 func (s *Stock) PreUpdate() {
 	s.commonPre()
 }
+
+func (s *Stock) DeepCopy() *Stock {
+	res := *s
+	return &res
+}

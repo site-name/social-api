@@ -3,6 +3,7 @@ package warehouse
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
@@ -47,32 +48,77 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.Pr
 
 // FilterByOption finds and returns a list of preorder allocations filtered using given options
 func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
-	query := ws.GetQueryBuilder().Select(ws.ModelFields()...).From(store.PreOrderAllocationTableName)
+	selectFields := ws.ModelFields()
 
-	and := squirrel.And{}
+	if options.SelectRelated_OrderLine {
+		selectFields = append(selectFields, ws.OrderLine().ModelFields()...)
+	}
+	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
+		selectFields = append(selectFields, ws.Order().ModelFields()...)
+	}
+
+	query := ws.GetQueryBuilder().Select(selectFields...).From(store.PreOrderAllocationTableName)
+
+	andConditions := squirrel.And{}
 	// parse options
 	if options.Id != nil {
-		and = append(and, options.Id.ToSquirrel("PreorderAllocations.Id"))
+		andConditions = append(andConditions, options.Id.ToSquirrel("PreorderAllocations.Id"))
 	}
 	if options.OrderLineID != nil {
-		and = append(and, options.OrderLineID.ToSquirrel("PreorderAllocations.OrderLineID"))
+		andConditions = append(andConditions, options.OrderLineID.ToSquirrel("PreorderAllocations.OrderLineID"))
 	}
 	if options.Quantity != nil {
-		and = append(and, options.Quantity.ToSquirrel("PreorderAllocations.Quantity"))
+		andConditions = append(andConditions, options.Quantity.ToSquirrel("PreorderAllocations.Quantity"))
 	}
 	if options.ProductVariantChannelListingID != nil {
-		and = append(and, options.ProductVariantChannelListingID.ToSquirrel("PreorderAllocations.ProductVariantChannelListingID"))
+		andConditions = append(andConditions, options.ProductVariantChannelListingID.ToSquirrel("PreorderAllocations.ProductVariantChannelListingID"))
 	}
 
-	queryString, args, err := query.Where(and).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	if options.SelectRelated_OrderLine {
+		query = query.InnerJoin(store.OrderLineTableName + " ON PreorderAllocations.OrderLineID = Orderlines.Id")
+	}
+	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
+		query = query.InnerJoin(store.OrderTableName + " ON Orderlines.OrderID = Orders.Id")
 	}
 
-	var res []*warehouse.PreorderAllocation
-	_, err = ws.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.Where(andConditions).RunWith(ws.GetReplica()).Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
+	}
+
+	var (
+		res                []*warehouse.PreorderAllocation
+		preorderAllocation warehouse.PreorderAllocation
+		orderLine          order.OrderLine
+		orDer              order.Order
+	)
+	scanFields := ws.ScanFields(preorderAllocation)
+	if options.SelectRelated_OrderLine {
+		scanFields = append(scanFields, ws.OrderLine().ScanFields(orderLine)...)
+	}
+	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
+		scanFields = append(scanFields, ws.Order().ScanFields(orDer)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of preorder allocation")
+		}
+
+		// join data.
+		if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
+			orderLine.Order = orDer.DeepCopy()
+		}
+		if options.SelectRelated_OrderLine {
+			preorderAllocation.OrderLine = orderLine.DeepCopy()
+		}
+
+		res = append(res, &preorderAllocation)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of preorder allocations")
 	}
 
 	return res, nil

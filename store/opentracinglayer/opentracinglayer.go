@@ -5621,16 +5621,16 @@ func (s *OpenTracingLayerProductTranslationStore) Upsert(translation *product_an
 	return result, err
 }
 
-func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *OpenTracingLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.FilterProductTypesByCheckoutID")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductTypeStore.FilterProductTypesByCheckoutToken")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

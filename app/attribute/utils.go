@@ -212,7 +212,7 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
 	// validate if `instance` and `assignment` are provided accordingly:
 	invalidArgumentErrorHandler := func(field string) *model.AppError {
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": field}, "Please read doc for this method", http.StatusBadRequest)
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": field}, "", http.StatusBadRequest)
 	}
 
 	if instance == nil || assignment == nil || len(valueIDs) == 0 {

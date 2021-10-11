@@ -6098,11 +6098,11 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_disc
 
 }
 
-func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
 		if err == nil {
 			return result, nil
 		}

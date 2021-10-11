@@ -72,6 +72,7 @@ type OrderLine struct {
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
 
 	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
+	Order          *Order                               `json:"-" db:"-"` // related data, get popularized in some calls to database
 }
 
 // OrderLinePrefetchRelated
@@ -264,4 +265,10 @@ func (o *OrderLine) PreUpdate() {
 // QuantityUnFulfilled return current order's Quantity subtract QuantityFulfilled
 func (o *OrderLine) QuantityUnFulfilled() int {
 	return o.Quantity - o.QuantityFulfilled
+}
+
+func (o *OrderLine) DeepCopy() *OrderLine {
+	orderLine := *o
+
+	return &orderLine
 }

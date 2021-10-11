@@ -48,6 +48,22 @@ func (as *SqlAttributeValueStore) ModelFields() []string {
 	}
 }
 
+func (as *SqlAttributeValueStore) ScanFields(attributeValue attribute.AttributeValue) []interface{} {
+	return []interface{}{
+		&attributeValue.Id,
+		&attributeValue.Name,
+		&attributeValue.Value,
+		&attributeValue.Slug,
+		&attributeValue.FileUrl,
+		&attributeValue.ContentType,
+		&attributeValue.AttributeID,
+		&attributeValue.RichText,
+		&attributeValue.Boolean,
+		&attributeValue.Datetime,
+		&attributeValue.SortOrder,
+	}
+}
+
 func (as *SqlAttributeValueStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributevalues_name", store.AttributeValueTableName, "Name")
 	as.CreateIndexIfNotExists("idx_attributevalues_slug", store.AttributeValueTableName, "Slug")

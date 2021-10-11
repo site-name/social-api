@@ -1,12 +1,10 @@
 package attribute
 
 import (
-	"bytes"
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -43,6 +41,15 @@ func (as *SqlAssignedProductAttributeValueStore) ModelFields() []string {
 		"AssignedProductAttributeValues.ValueID",
 		"AssignedProductAttributeValues.AssignmentID",
 		"AssignedProductAttributeValues.SortOrder",
+	}
+}
+
+func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{} {
+	return []interface{}{
+		&assignedProductAttributeValue.Id,
+		&assignedProductAttributeValue.ValueID,
+		&assignedProductAttributeValue.AssignmentID,
+		&assignedProductAttributeValue.SortOrder,
 	}
 }
 
@@ -151,12 +158,9 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 	return nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) (assignedProductAttributeValues []*attribute.AssignedProductAttributeValue, attributeValues []*attribute.AttributeValue, err error) {
-
+func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
 	rows, err := as.GetQueryBuilder().
-		Select(
-			append(as.ModelFields(), as.AttributeValue().ModelFields()...)...,
-		).
+		Select(append(as.ModelFields(), as.AttributeValue().ModelFields()...)...).
 		From(store.AssignedProductAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AssignedProductAttributeValues.Id = AttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedProductAttributeValues.AssignmentID": assignmentID}).
@@ -164,58 +168,28 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 		Query()
 
 	if err != nil {
-		err = errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
-		return
+		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
-
+	var (
+		assignedProductAttributeValues []*attribute.AssignedProductAttributeValue
+		attributeValues                []*attribute.AttributeValue
+		assignedProductAttributeValue  attribute.AssignedProductAttributeValue
+		attributeValue                 attribute.AttributeValue
+	)
+	scanFields := append(as.ScanFields(assignedProductAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	for rows.Next() {
-		var (
-			richText                      []byte
-			assignedProductAttributeValue attribute.AssignedProductAttributeValue
-			attributeValue                attribute.AttributeValue
-		)
-
-		scanErr := rows.Scan(
-			&assignedProductAttributeValue.Id,
-			&assignedProductAttributeValue.ValueID,
-			&assignedProductAttributeValue.AssignmentID,
-			&assignedProductAttributeValue.SortOrder,
-
-			&attributeValue.Id,
-			&attributeValue.Name,
-			&attributeValue.Value,
-			&attributeValue.Slug,
-			&attributeValue.FileUrl,
-			&attributeValue.ContentType,
-			&attributeValue.AttributeID,
-			&richText, // NOTE this is because Scan() may not support parsing map[string]interface{}
-			&attributeValue.Boolean,
-			&attributeValue.SortOrder,
-		)
+		scanErr := rows.Scan(scanFields...)
 		if scanErr != nil {
-			err = errors.Wrapf(scanErr, "error scanning values")
-			return
+			return nil, nil, errors.Wrapf(scanErr, "error scanning values")
 		}
 
-		parseErr := model.ModelFromJson(&attributeValue.RichText, bytes.NewReader(richText))
-		if parseErr != nil {
-			err = errors.Wrap(err, "error parsing field")
-			return
-		}
-
-		assignedProductAttributeValues = append(assignedProductAttributeValues, &assignedProductAttributeValue)
-		attributeValues = append(attributeValues, &attributeValue)
+		assignedProductAttributeValues = append(assignedProductAttributeValues, assignedProductAttributeValue.DeepCopy())
+		attributeValues = append(attributeValues, attributeValue.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
-		err = errors.Wrap(err, "error closing rows")
-		return
+		return nil, nil, errors.Wrap(err, "error closing rows")
 	}
 
-	if err = rows.Err(); err != nil {
-		err = errors.Wrap(err, "error occured during rows iteration")
-		return
-	}
-
-	return
+	return assignedProductAttributeValues, attributeValues, nil
 }

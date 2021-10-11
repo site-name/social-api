@@ -108,3 +108,8 @@ func (p *ProductVariantChannelListing) ToJson() string {
 	p.PopulateNonDbFields()
 	return model.ModelToJson(p)
 }
+
+func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing {
+	res := *p
+	return &res
+}

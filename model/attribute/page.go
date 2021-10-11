@@ -41,7 +41,11 @@ func (a *AssignedPageAttributeValue) PreSave() {
 	}
 }
 
-// ---------------
+func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
+	res := *a
+
+	return &res
+}
 
 // Associate a page type attribute and selected values to a given page.
 // PageID unique together with AssignmentID
@@ -86,4 +90,10 @@ func (a *AssignedPageAttribute) PreSave() {
 	if a.Id == "" {
 		a.Id = model.NewId()
 	}
+}
+
+func (a *AssignedPageAttribute) DeepCopy() *AssignedPageAttribute {
+	res := *a
+
+	return &res
 }

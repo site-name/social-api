@@ -136,3 +136,8 @@ func (w *WareHouse) PreUpdate() {
 func (w *WareHouse) ToJson() string {
 	return model.ModelToJson(w)
 }
+
+func (w *WareHouse) DeepCopy() *WareHouse {
+	res := *w
+	return &res
+}

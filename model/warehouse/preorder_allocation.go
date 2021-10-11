@@ -1,12 +1,17 @@
 package warehouse
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/order"
+)
 
 type PreorderAllocation struct {
 	Id                             string `json:"id"`
 	OrderLineID                    string `json:"order_line_id"`
 	Quantity                       int    `json:"quantity"`
 	ProductVariantChannelListingID string `json:"product_variant_channel_listing_id"`
+
+	OrderLine *order.OrderLine `json:"-" db:"-"` // related data popularized in some database calls
 }
 
 // PreorderAllocationFilterOption is used to build squirrel sql queries
@@ -15,6 +20,9 @@ type PreorderAllocationFilterOption struct {
 	OrderLineID                    *model.StringFilter
 	Quantity                       *model.NumberFilter
 	ProductVariantChannelListingID *model.StringFilter
+
+	SelectRelated_OrderLine       bool // INNER JOIN OrderLines ON ...
+	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...
 }
 
 func (p *PreorderAllocation) PreSave() {

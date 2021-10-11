@@ -140,9 +140,9 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 	var (
 		shippingZone           shipping.ShippingZone
 		returningShippingZones shipping.ShippingZones
-		// shippingZonesMap is a map with keys are shipping zones's ids
-		warehouseID string
+		warehouseID            string
 
+		// shippingZonesMap is a map with keys are shipping zones's ids
 		shippingZonesMap = map[string]*shipping.ShippingZone{}
 		scanFields       = s.ScanFields(shippingZone)
 	)
@@ -157,11 +157,14 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 			return nil, errors.Wrap(err, "failed to to scan a row contains shipping zones")
 		}
 
-		if _, met := shippingZonesMap[shippingZone.Id]; !met {
-			returningShippingZones = append(returningShippingZones, &shippingZone)
-			shippingZonesMap[shippingZone.Id] = &shippingZone
+		copiedShippingZone := shippingZone.DeepCopy()
+
+		if _, exist := shippingZonesMap[copiedShippingZone.Id]; !exist {
+			returningShippingZones = append(returningShippingZones, copiedShippingZone)
+			shippingZonesMap[copiedShippingZone.Id] = copiedShippingZone
 		}
-		shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
+		duplicateWarehouseID := warehouseID
+		shippingZonesMap[copiedShippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[copiedShippingZone.Id].RelativeWarehouseIDs, duplicateWarehouseID)
 	}
 
 	if err = rows.Close(); err != nil {

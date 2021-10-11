@@ -78,5 +78,9 @@ func (c *Channel) PreSave() {
 func (c *Channel) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
 	c.Currency = strings.ToUpper(c.Currency)
-	// c.Slug = slug.Make(c.Name)
+}
+
+func (c *Channel) DeepCopy() *Channel {
+	res := *c
+	return &res
 }

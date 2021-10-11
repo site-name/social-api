@@ -160,6 +160,11 @@ func (p *ProductVariant) PreUpdate() {
 	p.ModelMetadata.PopulateFields()
 }
 
+func (p *ProductVariant) DeepCopy() *ProductVariant {
+	res := *p
+	return &res
+}
+
 type ProductVariantTranslation struct {
 	Id               string `json:"id"`
 	LanguageCode     string `json:"language_code"`

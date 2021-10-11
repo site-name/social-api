@@ -7,7 +7,7 @@ import (
 )
 
 func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) {
-	productTypes, err := a.srv.Store.ProductType().FilterProductTypesByCheckoutID(checkoutToken)
+	productTypes, err := a.srv.Store.ProductType().FilterProductTypesByCheckoutToken(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductTypesByCheckoutToken", "app.product.product_types_by_checkout_missing.app_error", err)
 	}

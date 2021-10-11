@@ -258,11 +258,13 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row on product variant and related digital content")
+			return nil, errors.Wrap(err, "failed to scan a row of product")
 		}
 
-		variant.DigitalContent = &digitalContent
-		res = append(res, &variant)
+		if option.SelectRelatedDigitalContent {
+			variant.DigitalContent = digitalContent.DeepCopy()
+		}
+		res = append(res, variant.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {

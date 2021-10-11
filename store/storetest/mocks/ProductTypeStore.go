@@ -19,8 +19,8 @@ func (_m *ProductTypeStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// FilterProductTypesByCheckoutID provides a mock function with given fields: checkoutToken
-func (_m *ProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+// FilterProductTypesByCheckoutToken provides a mock function with given fields: checkoutToken
+func (_m *ProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	ret := _m.Called(checkoutToken)
 
 	var r0 []*product_and_discount.ProductType

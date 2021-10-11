@@ -259,6 +259,7 @@ type (
 	}
 	AttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
 		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) // Save inserts given attribute value into database, then returns inserted value and an error
 		Get(attributeID string) (*attribute.AttributeValue, error)                   // Get finds an attribute value with given id then returns it with an error
@@ -290,6 +291,8 @@ type (
 	}
 	AssignedVariantAttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error)                                                                               // Get try finding a value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error)                                                        // SaveInBulk save multiple values into database then returns them
@@ -312,6 +315,7 @@ type (
 	AssignedProductAttributeValueStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{}
 		Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error)                                  // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error)           // SaveInBulk save multiple values into database
@@ -538,7 +542,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)                // Save try inserting new product type into database then returns it
-		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error)             // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
+		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error)          // FilterProductTypesByCheckoutToken is used to check if a checkout requires shipping
 		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)                    // ProductTypesByProductIDs returns all product types belong to given products
 		ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error)                    // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 		GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) // GetByOption finds and returns a product type with given options

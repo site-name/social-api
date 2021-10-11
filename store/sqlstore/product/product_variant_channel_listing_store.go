@@ -161,10 +161,9 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 		}
 
 		if option.SelectRelatedChannel {
-			variantChannelListing.Channel = &chanNel
+			variantChannelListing.Channel = chanNel.DeepCopy()
 		}
-
-		res = append(res, &variantChannelListing)
+		res = append(res, variantChannelListing.DeepCopy())
 	}
 
 	return res, nil
