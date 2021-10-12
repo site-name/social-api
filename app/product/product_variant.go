@@ -3,6 +3,7 @@ package product
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -111,4 +112,34 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 	}
 
 	return productVariants, nil
+}
+
+// UpsertProductVariant tells store to upsert given product variant and returns it
+func (s *ServiceProduct) UpsertProductVariant(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError) {
+	var (
+		upsertedVariant *product_and_discount.ProductVariant
+		err             error
+	)
+	if !model.IsValidId(variant.Id) {
+		upsertedVariant, err = s.srv.Store.ProductVariant().Save(transaction, variant)
+	} else {
+		upsertedVariant, err = s.srv.Store.ProductVariant().Update(transaction, variant)
+	}
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		var (
+			statusCode = http.StatusInternalServerError
+		)
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("UpsertProductVariant", "app.product.error_upserting_product_variant.app_error", nil, err.Error(), statusCode)
+	}
+
+	return upsertedVariant, nil
 }

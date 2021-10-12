@@ -927,16 +927,16 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineDat
 // DeactivatePreorderForVariant Complete preorder for product variant.
 // All preorder settings should be cleared and all preorder allocations
 // should be replaced by regular allocations.
-func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) *model.AppError {
+func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) (*exception.PreorderAllocationError, *model.AppError) {
 	// init transaction:
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return model.NewAppError("DeactivatePreorderForVariant", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("DeactivatePreorderForVariant", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	if !productVariant.IsPreOrder {
-		return nil
+		return nil, nil
 	}
 
 	channelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
@@ -948,17 +948,92 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
-			return appErr
+			return nil, appErr
 		}
 	}
 
-	s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
 		ProductVariantChannelListingID: &model.StringFilter{
 			StringOption: &model.StringOption{
 				In: channelListings.IDs(),
 			},
 		},
+		SelectRelated_OrderLine:       true,
+		SelectRelated_OrderLine_Order: true,
 	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+	}
+
+	var (
+		allocationsToCreate []*warehouse.Allocation
+		stocksToCreate      []*warehouse.Stock
+	)
+	for _, preorderAllocation := range preorderAllocations {
+		stock, preorderAllocationErr, appErr := s.getStockForPreorderAllocation(preorderAllocation, productVariant)
+		if preorderAllocationErr != nil || appErr != nil {
+			return preorderAllocationErr, appErr
+		}
+		if !model.IsValidId(stock.Id) {
+			stocksToCreate = append(stocksToCreate, stock)
+		}
+		allocationsToCreate = append(allocationsToCreate, &warehouse.Allocation{
+			OrderLineID:       preorderAllocation.OrderLineID,
+			StockID:           stock.Id,
+			QuantityAllocated: preorderAllocation.Quantity,
+		})
+	}
+
+	if len(stocksToCreate) > 0 {
+		_, appErr = s.BulkUpsertStocks(transaction, stocksToCreate)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if len(allocationsToCreate) > 0 {
+		_, appErr = s.BulkUpsertAllocations(transaction, allocationsToCreate)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if len(preorderAllocations) > 0 {
+		appErr = s.DeletePreorderAllocations(transaction, preorderAllocations.IDs()...)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	productVariant.PreOrderGlobalThreshold = nil
+	productVariant.PreorderEndDate = nil
+	productVariant.IsPreOrder = false
+	_, appErr = s.srv.ProductService().UpsertProductVariant(transaction, productVariant)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: call the same query as above
+	// the found result may difer the above since some row(s) may have been added during the period prior to this moment.
+	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+		VariantID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: productVariant.Id,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	for _, listing := range productVariantChannelListings {
+		listing.PreorderQuantityThreshold = nil
+	}
+
+	_, appErr = s.srv.ProductService().BulkUpsertProductVariantChannelListings(transaction, productVariantChannelListings)
+	return nil, appErr
 }
 
 // getStockForPreorderAllocation Return stock where preordered variant should be allocated.

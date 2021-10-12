@@ -25,6 +25,19 @@ type PreorderAllocationFilterOption struct {
 	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...
 }
 
+type PreorderAllocations []*PreorderAllocation
+
+func (p PreorderAllocations) IDs() []string {
+	res := []string{}
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
 func (p *PreorderAllocation) PreSave() {
 	if !model.IsValidId(p.Id) {
 		p.Id = model.NewId()
@@ -49,4 +62,9 @@ func (p *PreorderAllocation) IsValid() *model.AppError {
 	}
 
 	return nil
+}
+
+func (p *PreorderAllocation) DeepCopy() *PreorderAllocation {
+	res := *p
+	return &res
 }

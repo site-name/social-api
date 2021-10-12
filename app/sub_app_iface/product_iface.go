@@ -120,8 +120,12 @@ type ProductService interface {
 	UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError
 	// UpsertDigitalContentURL create a digital content url then returns it
 	UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError)
+	// UpsertProductVariant tells store to upsert given product variant and returns it
+	UpsertProductVariant(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError)
 	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
 	VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*product_and_discount.Collection, *model.AppError)
+	// BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
+	BulkUpsertProductVariantChannelListings(transaction *gorp.Transaction, listings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError)
 	GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings
 	GetProductAvailability(product *product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel, manager interface{}, countryCode string, localCurrency string) (*product_and_discount.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product *product_and_discount.Product, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel) (*goprices.MoneyRange, *model.AppError)

@@ -78,6 +78,8 @@ type WarehouseService interface {
 	DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
 	// DecreaseAllocations Decreate allocations for provided order lines.
 	DecreaseAllocations(lineInfos []*order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError)
+	// DeletePreorderAllocations tells store to delete given preorder allocations
+	DeletePreorderAllocations(transaction *gorp.Transaction, preorderAllocationIDs ...string) *model.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
 	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
@@ -111,7 +113,7 @@ type WarehouseService interface {
 	// NOTE: allocate is default to false
 	IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError
 	// PreOrderAllocationsByOptions returns a list of preorder allocations filtered using given options
-	PreOrderAllocationsByOptions(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, *model.AppError)
+	PreOrderAllocationsByOptions(options *warehouse.PreorderAllocationFilterOption) (warehouse.PreorderAllocations, *model.AppError)
 	// StockDecreaseQuantity Return given quantity of product to a stock.
 	StockDecreaseQuantity(stockID string, quantity int) *model.AppError
 	// StockIncreaseQuantity Return given quantity of product to a stock.

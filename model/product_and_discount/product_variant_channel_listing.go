@@ -11,15 +11,16 @@ import (
 )
 
 type ProductVariantChannelListing struct {
-	Id              string           `json:"id"`
-	VariantID       string           `json:"variant_id"` // not null
-	ChannelID       string           `json:"channel_id"` // not null
-	Currency        string           `json:"currency"`
-	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
-	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
-	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // can be NULL
-	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
-	CreateAt        int64            `json:"create_at"`
+	Id                        string           `json:"id"`
+	VariantID                 string           `json:"variant_id"` // not null
+	ChannelID                 string           `json:"channel_id"` // not null
+	Currency                  string           `json:"currency"`
+	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
+	Price                     *goprices.Money  `json:"price,omitempty" db:"-"`
+	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount"` // can be NULL
+	CostPrice                 *goprices.Money  `json:"cost_price,omitempty" db:"-"`
+	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
+	CreateAt                  int64            `json:"create_at"`
 
 	Channel *channel.Channel `json:"-" db:"-"`
 }

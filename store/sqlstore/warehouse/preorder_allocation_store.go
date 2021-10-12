@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
@@ -114,7 +115,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 			preorderAllocation.OrderLine = orderLine.DeepCopy()
 		}
 
-		res = append(res, &preorderAllocation)
+		res = append(res, preorderAllocation.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
@@ -122,4 +123,23 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 	}
 
 	return res, nil
+}
+
+// Delete deletes preorder-allocations by given ids
+func (ws *SqlPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+	var runner squirrel.BaseRunner = ws.GetMaster()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	result, err := runner.Exec("DELETE FROM "+store.PreOrderAllocationTableName+" WHERE Id IN $1", preorderAllocationIDs)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete preorder-allocations with given ids")
+	}
+	numDeleted, _ := result.RowsAffected()
+	if int(numDeleted) != len(preorderAllocationIDs) {
+		return errors.Errorf("%d preorder-allocations were deleted instead of %d", numDeleted, len(preorderAllocationIDs))
+	}
+
+	return nil
 }

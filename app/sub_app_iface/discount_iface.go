@@ -42,6 +42,14 @@ type DiscountService interface {
 	ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, *model.AppError)
 	// FetchActiveDiscounts returns discounts that are activated
 	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)
+	// FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
+	FetchCollections(saleIDs []string) (map[string][]string, *model.AppError)
+	// FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
+	FetchProducts(saleIDs []string) (map[string][]string, *model.AppError)
+	// FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
+	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError)
+	// FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
+	FetchVariants(salePKs []string) (map[string][]string, *model.AppError)
 	// FilterActiveVouchers returns a list of vouchers that are active.
 	//
 	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
@@ -73,6 +81,12 @@ type DiscountService interface {
 	PromoCodeIsVoucher(code string) (bool, *model.AppError)
 	// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError
+	// SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
+	SaleCollectionsByOptions(options *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, *model.AppError)
+	// SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
+	SaleProductVariantsByOptions(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, *model.AppError)
+	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
+	SaleProductsByOptions(options *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, *model.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
 	UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)
 	// UpsertVoucher update or insert given voucher
@@ -99,12 +113,9 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)
+	FetchCatalogueInfo(instance *product_and_discount.Sale) (map[string][]string, *model.AppError)
 	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
-	FetchCollections(saleIDs []string) (map[string][]string, *model.AppError)
 	FetchDiscounts(date *time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
-	FetchProducts(saleIDs []string) (map[string][]string, *model.AppError)
-	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError)
-	FetchVariants(salePKs []string) (map[string][]string, *model.AppError)
 	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)

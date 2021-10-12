@@ -44,6 +44,7 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields() []string {
 		"ProductVariantChannelListings.Currency",
 		"ProductVariantChannelListings.PriceAmount",
 		"ProductVariantChannelListings.CostPriceAmount",
+		"ProductVariantChannelListings.PreorderQuantityThreshold",
 		"ProductVariantChannelListings.CreateAt",
 	}
 }
@@ -56,6 +57,7 @@ func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_d
 		&listing.Currency,
 		&listing.PriceAmount,
 		&listing.CostPriceAmount,
+		&listing.PreorderQuantityThreshold,
 		&listing.CreateAt,
 	}
 }
@@ -167,4 +169,61 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 	}
 
 	return res, nil
+}
+
+// BulkUpsert performs bulk upsert given product variant channel listings then returns them
+func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	var (
+		isSaving       bool
+		selectUpsertor store.SelectUpsertor = ps.GetMaster()
+	)
+	if transaction != nil {
+		selectUpsertor = transaction
+	}
+
+	for _, listing := range variantChannelListings {
+		isSaving = false
+
+		if !model.IsValidId(listing.Id) {
+			listing.PreSave()
+			isSaving = true
+		}
+
+		if err := listing.IsValid(); err != nil {
+			return nil, err
+		}
+
+		var (
+			err        error
+			numUpdated int64
+			oldListing product_and_discount.ProductVariantChannelListing
+		)
+		if isSaving {
+			err = selectUpsertor.Insert(listing)
+		} else {
+			err = selectUpsertor.SelectOne(&oldListing, "SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listing.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, listing.Id)
+				}
+				return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", listing.Id)
+			}
+
+			listing.CreateAt = oldListing.CreateAt
+
+			numUpdated, err = selectUpsertor.Update(listing)
+		}
+
+		if err != nil {
+			if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
+				return nil, store.NewErrInvalidInput(store.ProductVariantChannelListingTableName, "VariantID/ChannelID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert a product variant channel listing with id=%s", listing.Id)
+		}
+		if numUpdated != 1 {
+			return nil, errors.Errorf("%d product variant channel listing(s) with id=%s was/were updated instead of 1", numUpdated, listing.Id)
+		}
+	}
+
+	return variantChannelListings, nil
 }

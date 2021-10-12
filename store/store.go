@@ -420,6 +420,7 @@ type (
 		ModelFields() []string
 		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
 		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
+		Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error                               // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -505,9 +506,10 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
-		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                         // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                    // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                           // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                      // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -519,11 +521,12 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(variant product_and_discount.ProductVariant) []interface{}
-		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)                        // Save inserts product variant instance to database
-		Get(id string) (*product_and_discount.ProductVariant, error)                                                            // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                                         // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                      // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) // FilterByOption finds and returns product variants based on given option
+		Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
+		Get(id string) (*product_and_discount.ProductVariant, error)                                                                      // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                   // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                                // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error)           // FilterByOption finds and returns product variants based on given option
+		Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Update updates given product variant and returns it
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()

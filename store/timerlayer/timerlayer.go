@@ -4846,6 +4846,22 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+	start := timemodule.Now()
+
+	err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
 	start := timemodule.Now()
 
@@ -5282,10 +5298,10 @@ func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantStore.Save(variant)
+	result, err := s.ProductVariantStore.Save(transaction, variant)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5294,6 +5310,22 @@ func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.Produ
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantStore.Update(transaction, variant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Update", success, elapsed)
 	}
 	return result, err
 }
