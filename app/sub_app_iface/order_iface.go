@@ -136,8 +136,6 @@ type OrderService interface {
 	GetOrCreateFulfillment(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError)
 	// GetOrderCountry Return country to which order will be shipped
 	GetOrderCountry(ord *order.Order) (string, *model.AppError)
-	// GetOrderCountryCode is helper function, returns contry code of given order
-	GetOrderCountryCode(ord *order.Order) (string, *model.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
 	GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError)
 	// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.

@@ -50,6 +50,13 @@ func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
 	}
 }
 
+func (ss *SqlStockStore) TableName(withField string) string {
+	if withField == "" {
+		return "Stocks"
+	}
+	return "Stocks." + withField
+}
+
 func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
@@ -240,13 +247,13 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		query = query.InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)")
 	}
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+		query = query.Where(options.Id)
 	}
 	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID.ToSquirrel("Stocks.WarehouseID"))
+		query = query.Where(options.WarehouseID)
 	}
 	if options.ProductVariantID != nil {
-		query = query.Where(options.ProductVariantID.ToSquirrel("Stocks.ProductVariantID"))
+		query = query.Where(options.ProductVariantID)
 	}
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")

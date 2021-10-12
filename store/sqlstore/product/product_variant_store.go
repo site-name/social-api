@@ -69,6 +69,13 @@ func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.Produc
 	}
 }
 
+func (ps *SqlProductVariantStore) TableName(withField string) string {
+	if withField == "" {
+		return "ProductVariants"
+	}
+	return "ProductVariants." + withField
+}
+
 func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	var upsertor store.Upsertor = ps.GetMaster()
 	if transaction != nil {

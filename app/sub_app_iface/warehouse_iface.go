@@ -54,7 +54,7 @@ type WarehouseService interface {
 	// DeactivatePreorderForVariant Complete preorder for product variant.
 	// All preorder settings should be cleared and all preorder allocations
 	// should be replaced by regular allocations.
-	DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) *model.AppError
+	DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) (*exception.PreorderAllocationError, *model.AppError)
 	// DeallocateStock Deallocate stocks for given `order_lines`.
 	//
 	// Function lock for update stocks and allocations related to given `order_lines`.
@@ -119,7 +119,7 @@ type WarehouseService interface {
 	// StockIncreaseQuantity Return given quantity of product to a stock.
 	StockIncreaseQuantity(stockID string, quantity int) *model.AppError
 	// StocksByOption returns a list of stocks filtered using given options
-	StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError)
+	StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError)
 	// Validate if there is stock available for given variant in given country.
 	//
 	// If so - returns None. If there is less stock then required raise InsufficientStock

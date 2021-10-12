@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -38,7 +39,7 @@ func (a *ServiceOrder) GetOrderCountry(ord *order.Order) (string, *model.AppErro
 	}
 
 	if addressID == nil {
-		return model.DEFAULT_COUNTRY, nil
+		return *a.srv.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
 	address, appErr := a.srv.AccountService().AddressById(*addressID)
@@ -1113,11 +1114,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 	}
 
 	warehouses, appError := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-		ShippingZonesCountries: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Like: countryCode,
-			},
-		},
+		ShippingZonesCountries: squirrel.Like{a.srv.Store.ShippingZone().TableName("Countries"): countryCode},
 	})
 	if appError != nil {
 		return appError

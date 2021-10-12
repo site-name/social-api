@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -106,12 +107,8 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*ware
 	countryCode = strings.ToUpper(countryCode)
 
 	return a.WarehousesByOption(&warehouse.WarehouseFilterOption{
-		ShippingZonesCountries: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Like: countryCode,
-			},
-		},
-		SelectRelatedAddress:  true,
-		PrefetchShippingZones: true,
+		ShippingZonesCountries: squirrel.Like{a.srv.Store.ShippingZone().TableName("Countries"): countryCode},
+		SelectRelatedAddress:   true,
+		PrefetchShippingZones:  true,
 	})
 }

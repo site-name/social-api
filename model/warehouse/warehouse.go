@@ -3,6 +3,7 @@ package warehouse
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -47,12 +48,13 @@ type WareHouse struct {
 
 // WarehouseFilterOption is used to build squirrel queries
 type WarehouseFilterOption struct {
-	Id                     *model.StringFilter
-	Name                   *model.StringFilter
-	Slug                   *model.StringFilter
-	AddressID              *model.StringFilter
-	Email                  *model.StringFilter
-	ShippingZonesCountries *model.StringFilter // join shipping zone table
+	Id                     squirrel.Sqlizer
+	Name                   squirrel.Sqlizer
+	Slug                   squirrel.Sqlizer
+	AddressID              squirrel.Sqlizer
+	Email                  squirrel.Sqlizer
+	ShippingZonesCountries squirrel.Sqlizer // join shipping zone table
+	ShippingZonesId        squirrel.Sqlizer // join shipping zone table
 
 	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property to returning warehouse(s)
 	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also

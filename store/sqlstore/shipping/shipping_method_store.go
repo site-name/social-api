@@ -46,6 +46,36 @@ func (s *SqlShippingMethodStore) ModelFields() []string {
 	}
 }
 
+func (s *SqlShippingMethodStore) ScanFields(shippingMethod shipping.ShippingMethod) []interface{} {
+	return []interface{}{
+		&shippingMethod.Id,
+		&shippingMethod.Name,
+		&shippingMethod.Type,
+		&shippingMethod.ShippingZoneID,
+		&shippingMethod.MinimumOrderWeight,
+		&shippingMethod.MaximumOrderWeight,
+		&shippingMethod.WeightUnit,
+		&shippingMethod.MaximumDeliveryDays,
+		&shippingMethod.MinimumDeliveryDays,
+		&shippingMethod.Description,
+		&shippingMethod.Metadata,
+		&shippingMethod.PrivateMetadata,
+	}
+}
+
+// TableName returns current store's table name. If non-empty `withField` is provided, it returns the field name of the store, in standard sql style
+//
+// E.g:
+//  TableName("Id") == "ShippingMethods.Id"
+//  TableName("") == "ShippingMethods"
+func (s *SqlShippingMethodStore) TableName(withField string) string {
+	if withField == "" {
+		return "ShippingMethods"
+	} else {
+		return "ShippingMethods." + withField
+	}
+}
+
 func (s *SqlShippingMethodStore) CreateIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_shipping_methods_name", store.ShippingMethodTableName, "Name")
 	s.CreateIndexIfNotExists("idx_shipping_methods_name_lower_textpattern", store.ShippingMethodTableName, "lower(Name) text_pattern_ops")
@@ -347,22 +377,28 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFi
 
 	// parse options
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("ShippingMethods.Id"))
+		// query = query.Where(options.Id.ToSquirrel("ShippingMethods.Id"))
+		query = query.Where(options.Id)
 	}
 	if options.Type != nil {
-		query = query.Where(options.Type.ToSquirrel("ShippingMethods.Type"))
+		// query = query.Where(options.Type.ToSquirrel("ShippingMethods.Type"))
+		query = query.Where(options.Type)
 	}
 	if options.MinimumOrderWeight != nil {
-		query = query.Where(options.MinimumOrderWeight.ToSquirrel("ShippingMethods.MinimumOrderWeight"))
+		// query = query.Where(options.MinimumOrderWeight.ToSquirrel("ShippingMethods.MinimumOrderWeight"))
+		query = query.Where(options.MinimumOrderWeight)
 	}
 	if options.MaximumOrderWeight != nil {
-		query = query.Where(options.MaximumOrderWeight.ToSquirrel("ShippingMethods.MaximumOrderWeight"))
+		// query = query.Where(options.MaximumOrderWeight.ToSquirrel("ShippingMethods.MaximumOrderWeight"))
+		query = query.Where(options.MaximumOrderWeight)
 	}
 	if options.ShippingZoneChannelSlug != nil {
-		query = query.Where(options.ShippingZoneChannelSlug.ToSquirrel("ShippingMethods.ShippingZoneChannelSlug"))
+		// query = query.Where(options.ShippingZoneChannelSlug.ToSquirrel("ShippingMethods.ShippingZoneChannelSlug"))
+		query = query.Where(options.ShippingZoneChannelSlug)
 	}
 	if options.ChannelListingsChannelSlug != nil {
-		query = query.Where(options.ChannelListingsChannelSlug.ToSquirrel("ShippingMethods.ChannelListingsChannelSlug"))
+		// query = query.Where(options.ChannelListingsChannelSlug.ToSquirrel("ShippingMethods.ChannelListingsChannelSlug"))
+		query = query.Where(options.ChannelListingsChannelSlug)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -381,38 +417,3 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFi
 
 	return &res, nil
 }
-
-// GetShippingMethods
-// func (ss *SqlShippingMethodStore) GetShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, excludedProductIDs []string) ([]*shipping.ShippingMethod, error) {
-// 	priceAmountSelect := ss.GetQueryBuilder().
-// 		Select("ShippingMethodChannelListings.PriceAmount").
-// 		From(store.ShippingMethodChannelListingTableName).
-// 		Where("ShippingMethodChannelListings.ChannelID = ?", channelID).
-// 		Where("ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id")
-
-// 	mainQuery := ss.GetQueryBuilder().
-// 		Select(ss.ModelFields()...).
-// 		Column(squirrel.Alias(priceAmountSelect, "PriceAmount")). // additional column select
-// 		From(store.ShippingMethodTableName).
-// 		InnerJoin(store.ShippingMethodChannelListingTableName + " ON (ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id)").
-// 		InnerJoin(store.ShippingZoneTableName + " ON (ShippingMethods.ShippingZoneID = ShippingZones.Id)").
-// 		InnerJoin(store.ShippingZoneChannelTableName + " ON (ShippingZones.Id = ShippingZoneChannels.ShippingZoneID)").
-// 		OrderBy("PriceAmount ASC")
-
-// 	var excludedProductsQuery squirrel.SelectBuilder
-// 	if len(excludedProductIDs) > 0 {
-// 		excludedProductsQuery = ss.GetQueryBuilder().
-// 			Select(`(1) AS "a"`).
-// 			Prefix("NOT EXISTS(").
-// 			From(store.ShippingMethodExcludedProductTableName).
-// 			Where("ShippingMethodExcludedProducts.ProductID IN ?", excludedProductIDs).
-// 			Where("ShippingMethodExcludedProducts.ShippingMethodID = ShippingMethods.Id").
-// 			Suffix(")")
-// 	}
-
-// 	applicablePriceBasedSelect := ss.GetQueryBuilder().
-// 		Select("ShippingMethodChannelListings.ShippingMethodID").
-// 		From(store.ShippingMethodChannelListingTableName).
-// 		Where("ShippingMethodChannelListings.ChannelID = ?", channelID).
-// 		Where("ShippingMethodChannelListings.ShippingMethodID IN ?", )
-// }

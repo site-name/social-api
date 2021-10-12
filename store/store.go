@@ -58,7 +58,7 @@ type Store interface {
 	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
 	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
 	MarkSystemRanUnitTests()                                                                                           //
-	FinalizeTransaction(transaction driver.Tx)                                                                         // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	FinalizeTransaction(transaction driver.Tx)                                                                         // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -148,7 +148,7 @@ type Store interface {
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
 	WarehouseShippingZone() WarehouseShippingZoneStore                 //
-	PreorderAllocation() PreorderAllocationStore
+	PreorderAllocation() PreorderAllocationStore                       //
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
 	WishlistItemProductVariant() WishlistItemProductVariantStore       //
@@ -173,7 +173,7 @@ type Store interface {
 	Shop() ShopStore                                                   // shop
 	ShopTranslation() ShopTranslationStore                             //
 	ShopStaff() ShopStaffStore                                         //
-	OpenExchangeRate() OpenExchangeRateStore                           // external services tables
+	OpenExchangeRate() OpenExchangeRateStore                           // external services
 }
 
 // shop
@@ -383,6 +383,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(wh warehouse.WareHouse) []interface{}
+		TableName(withField string) string
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -393,6 +394,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(stock warehouse.Stock) []interface{}
 		ModelFields() []string
+		TableName(withField string) string
 		Get(stockID string) (*warehouse.Stock, error)                                                                                                          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
 		FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
@@ -430,6 +432,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(shippingZone shipping.ShippingZone) []interface{}
+		TableName(withField string) string
 		Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error)                 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*shipping.ShippingZone, error)                                  // Get finds 1 shipping zone for given shippingZoneID
 		FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) // FilterByOption finds a list of shipping zones based on given option
@@ -437,6 +440,7 @@ type (
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
 		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethods finds all shipping methods with given conditions
@@ -521,6 +525,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(variant product_and_discount.ProductVariant) []interface{}
+		TableName(withField string) string
 		Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                                                      // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                   // GetWeight returns weight of given product variant

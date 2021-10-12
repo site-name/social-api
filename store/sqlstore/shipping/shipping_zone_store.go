@@ -49,6 +49,14 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []
 	}
 }
 
+func (s *SqlShippingZoneStore) TableName(withField string) string {
+	if withField == "" {
+		return "ShippingZones"
+	} else {
+		return "ShippingZones." + withField
+	}
+}
+
 func (s *SqlShippingZoneStore) CreateIndexesIfNotExists() {
 	s.CreateIndexIfNotExists("idx_shipping_zone_name", store.ShippingZoneTableName, "Name")
 	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", store.ShippingZoneTableName, "lower(Name) text_pattern_ops")

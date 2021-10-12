@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app"
@@ -517,11 +518,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *order.Fulfillment, user *
 	}
 
 	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &warehouse.StockFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: fulfillmentLines.StockIDs(),
-			},
-		},
+		Id: squirrel.Eq{s.srv.Store.Stock().TableName("Id"): fulfillmentLines.StockIDs()},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
