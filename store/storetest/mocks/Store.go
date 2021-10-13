@@ -1282,6 +1282,22 @@ func (_m *Store) Preference() store.PreferenceStore {
 	return r0
 }
 
+// PreorderAllocation provides a mock function with given fields:
+func (_m *Store) PreorderAllocation() store.PreorderAllocationStore {
+	ret := _m.Called()
+
+	var r0 store.PreorderAllocationStore
+	if rf, ok := ret.Get(0).(func() store.PreorderAllocationStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.PreorderAllocationStore)
+		}
+	}
+
+	return r0
+}
+
 // Product provides a mock function with given fields:
 func (_m *Store) Product() store.ProductStore {
 	ret := _m.Called()

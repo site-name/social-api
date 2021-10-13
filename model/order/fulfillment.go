@@ -28,6 +28,7 @@ const (
 	FULFILLMENT_REFUNDED_AND_RETURNED FulfillmentStatus = "refunded_and_returned" // group of returned and replaced products
 	FULFILLMENT_REPLACED              FulfillmentStatus = "replaced"              // group of replaced products
 	FULFILLMENT_CANCELED              FulfillmentStatus = "canceled"              // fulfilled group of products in an order marked as canceled
+	FULFILLMENT_WAITING_FOR_APPROVAL  FulfillmentStatus = "waiting_for_approval"  // group of products waiting for approval
 )
 
 var FulfillmentStrings = map[FulfillmentStatus]string{
@@ -37,6 +38,7 @@ var FulfillmentStrings = map[FulfillmentStatus]string{
 	FULFILLMENT_REPLACED:              "Replaced",
 	FULFILLMENT_REFUNDED_AND_RETURNED: "Refunded and returned",
 	FULFILLMENT_CANCELED:              "Canceled",
+	FULFILLMENT_WAITING_FOR_APPROVAL:  "Waiting for approval",
 }
 
 type Fulfillment struct {
@@ -110,9 +112,17 @@ func (f *Fulfillment) PreSave() {
 		f.Id = model.NewId()
 	}
 	f.CreateAt = model.GetMillis()
+	f.commonPre()
+}
+
+func (f *Fulfillment) commonPre() {
 	if f.Status == "" {
 		f.Status = FULFILLMENT_FULFILLED
 	}
+}
+
+func (f *Fulfillment) PreUpdate() {
+	f.commonPre()
 }
 
 func (f *Fulfillment) ComposedId() string {
@@ -126,4 +136,9 @@ func (f *Fulfillment) CanEdit() bool {
 
 func (f *Fulfillment) IstrackingNumber() bool {
 	return trackingNumberRegex.MatchString(f.TrackingNumber)
+}
+
+func (f *Fulfillment) DeepCopy() *Fulfillment {
+	res := *f
+	return &res
 }

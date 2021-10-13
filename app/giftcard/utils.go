@@ -107,5 +107,10 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, order
 }
 
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lineIDs []string) {
+	panic("not implemented")
+}
 
+// GiftcardsCreate creates purchased gift cards
+func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
+	panic("not implemented")
 }

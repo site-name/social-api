@@ -5,6 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/order"
 )
 
 func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError) {
@@ -24,4 +25,13 @@ func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *stri
 	}
 
 	return event, nil
+}
+
+// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
+func (s *ServiceAccount) CustomerPlacedOrderEvent(user *account.User, orDer *order.Order) (*account.CustomerEvent, *model.AppError) {
+	if user == nil || !model.IsValidId(user.Id) {
+		return nil, nil
+	}
+
+	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, account.PLACED_ORDER, nil)
 }

@@ -134,3 +134,8 @@ func (p *Product) commonPre() {
 func (p *Product) String() string {
 	return p.Name
 }
+
+func (p *Product) DeepCopy() *Product {
+	res := *p
+	return &res
+}

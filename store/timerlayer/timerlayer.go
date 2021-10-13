@@ -105,6 +105,7 @@ type TimerLayer struct {
 	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
+	PreorderAllocationStore            store.PreorderAllocationStore
 	ProductStore                       store.ProductStore
 	ProductChannelListingStore         store.ProductChannelListingStore
 	ProductMediaStore                  store.ProductMediaStore
@@ -117,6 +118,7 @@ type TimerLayer struct {
 	SaleCategoryRelationStore          store.SaleCategoryRelationStore
 	SaleCollectionRelationStore        store.SaleCollectionRelationStore
 	SaleProductRelationStore           store.SaleProductRelationStore
+	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -145,6 +147,7 @@ type TimerLayer struct {
 	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
+	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -413,6 +416,10 @@ func (s *TimerLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
 }
 
+func (s *TimerLayer) PreorderAllocation() store.PreorderAllocationStore {
+	return s.PreorderAllocationStore
+}
+
 func (s *TimerLayer) Product() store.ProductStore {
 	return s.ProductStore
 }
@@ -459,6 +466,10 @@ func (s *TimerLayer) SaleCollectionRelation() store.SaleCollectionRelationStore 
 
 func (s *TimerLayer) SaleProductRelation() store.SaleProductRelationStore {
 	return s.SaleProductRelationStore
+}
+
+func (s *TimerLayer) SaleProductVariant() store.SaleProductVariantStore {
+	return s.SaleProductVariantStore
 }
 
 func (s *TimerLayer) Session() store.SessionStore {
@@ -571,6 +582,10 @@ func (s *TimerLayer) VoucherCustomer() store.VoucherCustomerStore {
 
 func (s *TimerLayer) VoucherProduct() store.VoucherProductStore {
 	return s.VoucherProductStore
+}
+
+func (s *TimerLayer) VoucherProductVariant() store.VoucherProductVariantStore {
+	return s.VoucherProductVariantStore
 }
 
 func (s *TimerLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -922,6 +937,11 @@ type TimerLayerPreferenceStore struct {
 	Root *TimerLayer
 }
 
+type TimerLayerPreorderAllocationStore struct {
+	store.PreorderAllocationStore
+	Root *TimerLayer
+}
+
 type TimerLayerProductStore struct {
 	store.ProductStore
 	Root *TimerLayer
@@ -979,6 +999,11 @@ type TimerLayerSaleCollectionRelationStore struct {
 
 type TimerLayerSaleProductRelationStore struct {
 	store.SaleProductRelationStore
+	Root *TimerLayer
+}
+
+type TimerLayerSaleProductVariantStore struct {
+	store.SaleProductVariantStore
 	Root *TimerLayer
 }
 
@@ -1119,6 +1144,11 @@ type TimerLayerVoucherCustomerStore struct {
 
 type TimerLayerVoucherProductStore struct {
 	store.VoucherProductStore
+	Root *TimerLayer
+}
+
+type TimerLayerVoucherProductVariantStore struct {
+	store.VoucherProductVariantStore
 	Root *TimerLayer
 }
 
@@ -4401,10 +4431,10 @@ func (s *TimerLayerPaymentStore) Get(transaction *gorp.Transaction, id string, l
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Save(payment)
+	result, err := s.PaymentStore.Save(transaction, payment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4417,10 +4447,10 @@ func (s *TimerLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Update(payment)
+	result, err := s.PaymentStore.Update(transaction, payment)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4481,10 +4511,10 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentTransactionStore.Save(transaction)
+	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4816,6 +4846,38 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+	start := timemodule.Now()
+
+	err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.Delete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.PreorderAllocationStore.FilterByOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -5092,10 +5154,10 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_disc
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5103,7 +5165,7 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToke
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutID", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutToken", success, elapsed)
 	}
 	return result, err
 }
@@ -5236,10 +5298,10 @@ func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantStore.Save(variant)
+	result, err := s.ProductVariantStore.Save(transaction, variant)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5252,10 +5314,26 @@ func (s *TimerLayerProductVariantStore) Save(variant *product_and_discount.Produ
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+	result, err := s.ProductVariantStore.Update(transaction, variant)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5600,6 +5678,38 @@ func (s *TimerLayerSaleProductRelationStore) Save(relation *product_and_discount
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductRelationStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductVariantStore.FilterByOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductVariantStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.SaleProductVariantStore.Upsert(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("SaleProductVariantStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -8367,6 +8477,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.PluginStore = &TimerLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &TimerLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &TimerLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.PreorderAllocationStore = &TimerLayerPreorderAllocationStore{PreorderAllocationStore: childStore.PreorderAllocation(), Root: &newStore}
 	newStore.ProductStore = &TimerLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
 	newStore.ProductChannelListingStore = &TimerLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
 	newStore.ProductMediaStore = &TimerLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}
@@ -8379,6 +8490,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.SaleCategoryRelationStore = &TimerLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
 	newStore.SaleCollectionRelationStore = &TimerLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
 	newStore.SaleProductRelationStore = &TimerLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
+	newStore.SaleProductVariantStore = &TimerLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &TimerLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &TimerLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &TimerLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -8407,6 +8519,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.VoucherCollectionStore = &TimerLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &TimerLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &TimerLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
+	newStore.VoucherProductVariantStore = &TimerLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &TimerLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &TimerLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &TimerLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

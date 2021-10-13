@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
@@ -41,6 +42,9 @@ func (ps *SqlProductVariantStore) ModelFields() []string {
 		"ProductVariants.Weight",
 		"ProductVariants.WeightUnit",
 		"ProductVariants.TrackInventory",
+		"ProductVariants.IsPreOrder",
+		"ProductVariants.PreorderEndDate",
+		"ProductVariants.PreOrderGlobalThreshold",
 		"ProductVariants.SortOrder",
 		"ProductVariants.Metadata",
 		"ProductVariants.PrivateMetadata",
@@ -56,23 +60,72 @@ func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.Produc
 		&variant.Weight,
 		&variant.WeightUnit,
 		&variant.TrackInventory,
+		&variant.IsPreOrder,
+		&variant.PreorderEndDate,
+		&variant.PreOrderGlobalThreshold,
 		&variant.SortOrder,
 		&variant.Metadata,
 		&variant.PrivateMetadata,
 	}
 }
 
-func (ps *SqlProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (ps *SqlProductVariantStore) TableName(withField string) string {
+	if withField == "" {
+		return "ProductVariants"
+	}
+	return "ProductVariants." + withField
+}
+
+func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	var upsertor store.Upsertor = ps.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
 	variant.PreSave()
 	if err := variant.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ps.GetMaster().Insert(variant); err != nil {
+	if err := upsertor.Insert(variant); err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(store.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant with id=%s", variant.Id)
+	}
+
+	return variant, nil
+}
+
+// Update updates given product variant and returns it
+func (ps *SqlProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	variant.PreUpdate()
+	if err := variant.IsValid(); err != nil {
+		return nil, err
+	}
+
+	var selectUpsertor store.SelectUpsertor = ps.GetMaster()
+	if transaction != nil {
+		selectUpsertor = transaction
+	}
+
+	err := selectUpsertor.SelectOne(&product_and_discount.ProductVariant{}, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": variant.Id})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ProductVariantTableName, variant.Id)
+		}
+		return nil, errors.Wrapf(err, "failed to check if a product variant with id=%s does exist", variant.Id)
+	}
+
+	numUpdated, err := selectUpsertor.Update(variant)
+	if err != nil {
+		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
+			return nil, store.NewErrInvalidInput(store.ProductVariantTableName, "Sku", variant.Sku)
+		}
+		return nil, errors.Wrapf(err, "failed to update product variant with id=%s", variant.Id)
+	}
+	if numUpdated != 1 {
+		return nil, errors.Errorf("%d product variant(s) were/was updated instead of 1", numUpdated)
 	}
 
 	return variant, nil
@@ -252,11 +305,13 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row on product variant and related digital content")
+			return nil, errors.Wrap(err, "failed to scan a row of product")
 		}
 
-		variant.DigitalContent = &digitalContent
-		res = append(res, &variant)
+		if option.SelectRelatedDigitalContent {
+			variant.DigitalContent = digitalContent.DeepCopy()
+		}
+		res = append(res, variant.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {

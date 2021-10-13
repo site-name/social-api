@@ -99,3 +99,8 @@ func (c *CheckoutLine) PreSave() {
 		c.CreateAt = model.GetMillis()
 	}
 }
+
+func (c *CheckoutLine) DeepCopy() *CheckoutLine {
+	res := *c
+	return &res
+}

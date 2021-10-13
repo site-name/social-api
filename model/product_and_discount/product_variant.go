@@ -1,6 +1,7 @@
 package product_and_discount
 
 import (
+	"fmt"
 	"strings"
 	"unicode/utf8"
 
@@ -9,19 +10,23 @@ import (
 	"golang.org/x/text/language"
 )
 
+// max lengths for some fields of product variant
 const (
 	PRODUCT_VARIANT_NAME_MAX_LENGTH = 255
 	PRODUCT_VARIANT_SKU_MAX_LENGTH  = 255
 )
 
 type ProductVariant struct {
-	Id             string                 `json:"id"`
-	Name           string                 `json:"name"`
-	ProductID      string                 `json:"product_id"`
-	Sku            string                 `json:"sku"`
-	Weight         *float32               `json:"weight"`
-	WeightUnit     measurement.WeightUnit `json:"weight_unit"`
-	TrackInventory *bool                  `json:"track_inventory"` // default *true
+	Id                      string                 `json:"id"`
+	Name                    string                 `json:"name"`
+	ProductID               string                 `json:"product_id"`
+	Sku                     *string                `json:"sku"`
+	Weight                  *float32               `json:"weight"`
+	WeightUnit              measurement.WeightUnit `json:"weight_unit"`
+	TrackInventory          *bool                  `json:"track_inventory"` // default *true
+	IsPreOrder              bool                   `json:"is_preorder"`
+	PreorderEndDate         *int64                 `json:"preorder_end_date"`
+	PreOrderGlobalThreshold *int                   `json:"preorder_global_threshold"`
 	model.Sortable
 	model.ModelMetadata
 
@@ -93,7 +98,7 @@ func (p *ProductVariant) IsValid() *model.AppError {
 	if !model.IsValidId(p.ProductID) {
 		return outer("product_id", &p.Id)
 	}
-	if len(p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
+	if p.Sku != nil && len(*p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
 		return outer("sku", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_VARIANT_NAME_MAX_LENGTH {
@@ -116,7 +121,16 @@ func (p *ProductVariant) String() string {
 	if p.Name != "" {
 		return p.Name
 	}
-	return p.Sku
+	if p.Sku != nil {
+		return *p.Sku
+	}
+
+	return fmt.Sprintf("ID:%s", p.Id)
+}
+
+func (p *ProductVariant) IsPreorderActive() bool {
+	return p.IsPreOrder && (p.PreorderEndDate == nil || (p.PreorderEndDate != nil && model.GetMillis() <= *p.PreorderEndDate))
+
 }
 
 func (p *ProductVariant) ToJson() string {
@@ -127,6 +141,11 @@ func (p *ProductVariant) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+	p.commonPre()
+	p.ModelMetadata.PopulateFields()
+}
+
+func (p *ProductVariant) commonPre() {
 	p.Name = model.SanitizeUnicode(p.Name)
 	if p.TrackInventory == nil {
 		p.TrackInventory = model.NewBool(true)
@@ -134,15 +153,16 @@ func (p *ProductVariant) PreSave() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
-	p.ModelMetadata.PreSave()
 }
 
 func (p *ProductVariant) PreUpdate() {
-	p.Name = model.SanitizeUnicode(p.Name)
-	if p.Weight != nil && p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
-	}
-	p.ModelMetadata.PreUpdate()
+	p.commonPre()
+	p.ModelMetadata.PopulateFields()
+}
+
+func (p *ProductVariant) DeepCopy() *ProductVariant {
+	res := *p
+	return &res
 }
 
 type ProductVariantTranslation struct {

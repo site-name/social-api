@@ -352,13 +352,14 @@ func (s *ServiceCheckout) createLinesForOrder(manager interface{}, checkoutInfo 
 	}
 
 	additionalWarehouseLookup := checkoutInfo.DeliveryMethodInfo.GetWarehouseFilterLookup()
-	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockQuantityBulk(
+	insufficientStockErr, appErr := s.srv.WarehouseService().CheckStockAndPreorderQuantityBulk(
 		variants,
 		countryCode,
 		quantities,
 		checkoutInfo.Channel.Slug,
 		additionalWarehouseLookup,
 		nil,
+		false,
 	)
 	if insufficientStockErr != nil || appErr != nil {
 		return nil, insufficientStockErr, appErr
@@ -567,6 +568,11 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 	insufficientStockErr, appErr := s.srv.WarehouseService().AllocateStocks(orderLinesInfo, countryCode, checkoutInfo.Channel.Slug, manager, additionalWarehouseLookup)
 	if insufficientStockErr != nil || appErr != nil {
 		return nil, insufficientStockErr, appErr
+	}
+
+	appErr = s.srv.WarehouseService().AllocatePreOrders(orderLinesInfo, checkoutInfo.Channel.Slug)
+	if appErr != nil {
+		return nil, nil, appErr
 	}
 
 	appErr = s.srv.OrderService().AddGiftcardsToOrder(transaction, checkoutInfo, createdNewOrder, totalPriceLeft, user, nil)

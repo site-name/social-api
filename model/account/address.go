@@ -217,3 +217,8 @@ func CleanNamePart(s string, nameType model.NamePart) string {
 
 	return name
 }
+
+func (a *Address) DeepCopy() *Address {
+	res := *a
+	return &res
+}

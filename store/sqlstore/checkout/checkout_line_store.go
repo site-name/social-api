@@ -223,16 +223,13 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		checkoutLines   []*checkout.CheckoutLine
 		productVariants []*product_and_discount.ProductVariant
 		products        []*product_and_discount.Product
-	)
-
-	var (
-		line    checkout.CheckoutLine
-		variant product_and_discount.ProductVariant
-		product product_and_discount.Product
+		checkoutLine    checkout.CheckoutLine
+		productVariant  product_and_discount.ProductVariant
+		product         product_and_discount.Product
 
 		scanFields = append(
-			cls.ScanFields(line),
-			append(cls.ProductVariant().ScanFields(variant), cls.Product().ScanFields(product)...),
+			cls.ScanFields(checkoutLine),
+			append(cls.ProductVariant().ScanFields(productVariant), cls.Product().ScanFields(product)...),
 		)
 	)
 
@@ -242,16 +239,13 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 			return nil, nil, nil, errors.Wrap(err, "failed to scan a row")
 		}
 
-		checkoutLines = append(checkoutLines, &line)
-		productVariants = append(productVariants, &variant)
-		products = append(products, &product)
+		checkoutLines = append(checkoutLines, checkoutLine.DeepCopy())
+		productVariants = append(productVariants, productVariant.DeepCopy())
+		products = append(products, product.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
 		return nil, nil, nil, errors.Wrap(err, "failed to close rows")
-	}
-	if err = rows.Err(); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "an error occured while handing rows")
 	}
 
 	return checkoutLines, productVariants, products, nil
@@ -289,7 +283,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 
 	var (
 		totalWeight       *measurement.Weight = measurement.ZeroWeight
-		lineQuantity      uint
+		lineQuantity      int
 		variantWeight     measurement.Weight
 		productWeight     measurement.Weight
 		productTypeWeight measurement.Weight
@@ -329,9 +323,6 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 
 	if err = rows.Close(); err != nil {
 		return nil, errors.Wrap(err, "error closing rows")
-	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "error occured during rows scanning iteration")
 	}
 
 	return totalWeight, nil

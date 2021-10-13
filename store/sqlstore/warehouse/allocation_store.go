@@ -248,15 +248,15 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		}
 
 		if option.SelectRelatedOrderLine {
-			allocation.OrderLine = &orderLine
+			allocation.OrderLine = orderLine.DeepCopy()
 		}
 		if option.SelectedRelatedStock {
-			allocation.Stock = &stock
+			allocation.Stock = stock.DeepCopy()
 		}
 		if option.AnnotateStockAvailableQuantity {
 			allocation.StockAvailableQuantity = stockAvailableQuantity
 		}
-		returnAllocations = append(returnAllocations, &allocation)
+		returnAllocations = append(returnAllocations, allocation.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {

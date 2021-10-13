@@ -16,7 +16,7 @@ type OrderLine struct {
 	ID                    string                 `json:"id"`
 	ProductName           string                 `json:"productName"`
 	VariantName           string                 `json:"variantName"`
-	ProductSku            string                 `json:"productSku"`
+	ProductSku            *string                `json:"productSku"`
 	IsShippingRequired    bool                   `json:"isShippingRequired"`
 	Quantity              int                    `json:"quantity"`
 	QuantityFulfilled     int                    `json:"quantityFulfilled"`

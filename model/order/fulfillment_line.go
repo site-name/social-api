@@ -23,7 +23,10 @@ type FulfillmentLineFilterOption struct {
 	FulfillmentOrderID *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
 	FulfillmentStatus  *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
 
-	SelectRelatedOrderLine bool
+	PrefetchRelatedOrderLine                bool // this asks to prefetch related order lines of returning fulfillment lines
+	PrefetchRelatedOrderLine_ProductVariant bool // this asks to prefetch related product variants of associated order lines of returning fulfillment lines
+
+	PrefetchRelatedStock bool
 }
 
 type FulfillmentLines []*FulfillmentLine
@@ -55,6 +58,17 @@ func (f FulfillmentLines) OrderLines() OrderLines {
 	res := OrderLines{}
 	for _, item := range f {
 		res = append(res, item.OrderLine)
+	}
+
+	return res
+}
+
+func (f FulfillmentLines) StockIDs() []string {
+	res := []string{}
+	for _, item := range f {
+		if item != nil && item.StockID != nil {
+			res = append(res, *item.StockID)
+		}
 	}
 
 	return res

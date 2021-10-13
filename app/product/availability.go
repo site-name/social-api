@@ -141,6 +141,7 @@ func (a *ServiceProduct) GetVariantPrice(
 		collections,
 		discounts,
 		chanNel,
+		variant.Id,
 	)
 }
 

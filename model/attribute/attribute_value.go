@@ -13,7 +13,7 @@ import (
 // max lengths for some fields
 const (
 	ATTRIBUTE_VALUE_NAME_MAX_LENGTH         = 250
-	ATTRIBUTE_VALUE_VALUE_MAX_LENGTH        = 100
+	ATTRIBUTE_VALUE_VALUE_MAX_LENGTH        = 9
 	ATTRIBUTE_VALUE_SLUG_MAX_LENGTH         = 255
 	ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH = 50
 )
@@ -98,14 +98,13 @@ func (a *AttributeValue) ToJson() string {
 	return model.ModelToJson(a)
 }
 
-func AttributeValueFromJson(data io.Reader) *AttributeValue {
-	var a AttributeValue
-	model.ModelFromJson(&a, data)
-	return &a
+func (a *AttributeValue) DeepCopy() *AttributeValue {
+	res := *a
+
+	return &res
 }
 
-// ---------------------------
-
+// max lengths for some fields of attribute value translation
 const (
 	ATTRIBUTE_VALUE_TRANSLATION_NAME_MAX_LENGTH = 100
 )

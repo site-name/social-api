@@ -124,3 +124,8 @@ func (a *AllocationError) Error() string {
 
 	return a.builder.String()
 }
+
+func (a *Allocation) DeepCopy() *Allocation {
+	res := *a
+	return &res
+}

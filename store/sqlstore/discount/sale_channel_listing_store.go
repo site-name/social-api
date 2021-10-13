@@ -38,6 +38,17 @@ func (scls *SqlSaleChannelListingStore) ModelFields() []string {
 	}
 }
 
+func (scls *SqlSaleChannelListingStore) ScanFields(listing product_and_discount.SaleChannelListing) []interface{} {
+	return []interface{}{
+		&listing.Id,
+		&listing.SaleID,
+		&listing.ChannelID,
+		&listing.DiscountValue,
+		&listing.Currency,
+		&listing.CreateAt,
+	}
+}
+
 func (scls *SqlSaleChannelListingStore) CreateIndexesIfNotExists() {
 	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "SaleID", store.SaleTableName, "Id", true)
 	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
@@ -92,12 +103,8 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *pr
 ) {
 
 	query := scls.GetQueryBuilder().
-		Select(
-			append(
-				scls.ModelFields(),
-				"Channels.Slug AS ChannelSlug", // note: fetch this field also
-			)...,
-		).
+		Select(scls.ModelFields()...).
+		Column("Channels.Slug AS ChannelSlug").
 		From(store.SaleChannelListingTableName).
 		InnerJoin(store.ChannelTableName + " ON (Channels.Id = SaleChannelListings.ChannelID)").
 		OrderBy(store.TableOrderingMap[store.SaleChannelListingTableName])

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
@@ -150,11 +151,7 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo map[string][]string) ([]str
 	}
 
 	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: warehouseIDs,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.Warehouse().TableName("Id"): warehouseIDs},
 	})
 	if appErr != nil {
 		return nil, appErr

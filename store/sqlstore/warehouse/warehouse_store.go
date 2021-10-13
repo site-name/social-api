@@ -21,7 +21,7 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 	ws := &SqlWareHouseStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.WareHouse{}, store.WarehouseTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(warehouse.WareHouse{}, ws.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(warehouse.WAREHOUSE_NAME_MAX_LENGTH)
@@ -46,25 +46,33 @@ func (ws *SqlWareHouseStore) ModelFields() []string {
 	}
 }
 
-func (ws *SqlWareHouseStore) ScanFields(wh warehouse.WareHouse) []interface{} {
+func (ws *SqlWareHouseStore) ScanFields(wareHouse warehouse.WareHouse) []interface{} {
 	return []interface{}{
-		&wh.Id,
-		&wh.Name,
-		&wh.Slug,
-		&wh.AddressID,
-		&wh.Email,
-		&wh.ClickAndCollectOption,
-		&wh.IsPrivate,
-		&wh.Metadata,
-		&wh.PrivateMetadata,
+		&wareHouse.Id,
+		&wareHouse.Name,
+		&wareHouse.Slug,
+		&wareHouse.AddressID,
+		&wareHouse.Email,
+		&wareHouse.ClickAndCollectOption,
+		&wareHouse.IsPrivate,
+		&wareHouse.Metadata,
+		&wareHouse.PrivateMetadata,
+	}
+}
+
+func (ws *SqlWareHouseStore) TableName(withField string) string {
+	if withField == "" {
+		return "Warehouses"
+	} else {
+		return "Warehouses." + withField
 	}
 }
 
 func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_warehouses_email", store.WarehouseTableName, "Email")
-	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", store.WarehouseTableName, "lower(Email) text_pattern_ops")
+	ws.CreateIndexIfNotExists("idx_warehouses_email", ws.TableName(""), "Email")
+	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", ws.TableName(""), "lower(Email) text_pattern_ops")
 
-	ws.CreateForeignKeyIfNotExists(store.WarehouseTableName, "AddressID", store.AddressTableName, "Id", false)
+	ws.CreateForeignKeyIfNotExists(ws.TableName(""), "AddressID", store.AddressTableName, "Id", false)
 }
 
 func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
@@ -87,7 +95,7 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	var res warehouse.WareHouse
 	err := ws.GetMaster().SelectOne(
 		&res,
-		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID",
+		"SELECT * FROM "+ws.TableName("")+" WHERE Id = :ID",
 		map[string]interface{}{
 			"ID": id,
 		},
@@ -102,96 +110,104 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	return &res, nil
 }
 
-func (wh *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilterOption) squirrel.SelectBuilder {
+func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilterOption) squirrel.SelectBuilder {
 	if option == nil {
-		return wh.GetQueryBuilder().
-			Select(wh.ModelFields()...).
-			From(store.WarehouseTableName).
-			OrderBy(store.TableOrderingMap[store.WarehouseTableName])
+		return ws.GetQueryBuilder().
+			Select(ws.ModelFields()...).
+			From(ws.TableName("")).
+			OrderBy(store.TableOrderingMap[ws.TableName("")])
 	}
 
-	selectFields := wh.ModelFields()
+	selectFields := ws.ModelFields()
 	if option.SelectRelatedAddress {
-		selectFields = append(selectFields, wh.Address().ModelFields()...)
+		selectFields = append(selectFields, ws.Address().ModelFields()...)
 	}
 
-	query := wh.GetQueryBuilder().
+	query := ws.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.WarehouseTableName + " WH").
-		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
+		From(ws.TableName("")).
+		OrderBy(store.TableOrderingMap[ws.TableName("")])
 
 	// parse option
 	if option.Distinct {
 		query = query.Distinct()
 	}
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.Name != nil {
-		query = query.Where(option.Name.ToSquirrel("Name"))
+		query = query.Where(option.Name)
 	}
 	if option.Slug != nil {
-		query = query.Where(option.Slug.ToSquirrel("Slug"))
+		query = query.Where(option.Slug)
 	}
 	if option.AddressID != nil {
-		query = query.Where(option.AddressID.ToSquirrel("AddressID"))
+		query = query.Where(option.AddressID)
 	}
 	if option.Email != nil {
-		query = query.Where(option.Email.ToSquirrel("Email"))
+		query = query.Where(option.Email)
 	}
-	if option.ShippingZonesCountries != nil {
+	if option.ShippingZonesCountries != nil || option.ShippingZonesId != nil {
 		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " AS WhSz ON (WH.Id = WhSz.WarehouseID)").
-			InnerJoin(store.ShippingZoneTableName + " AS SZ ON (WhSz.ShippingZoneID = SZ.Id)").
-			Where(option.ShippingZonesCountries.ToSquirrel("SZ.Countries"))
+			InnerJoin(store.WarehouseShippingZoneTableName + " WarehouseShippingZones ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
+			InnerJoin(store.ShippingZoneTableName + " ShippingZones ON WarehouseShippingZones.ShippingZoneID = ShippingZones.Id")
+
+		if option.ShippingZonesCountries != nil {
+			query = query.Where(option.ShippingZonesCountries)
+		}
+		if option.ShippingZonesId != nil {
+			query = query.Where(option.ShippingZonesId)
+		}
 	}
 	// check if we need to join address table:
 	if option.SelectRelatedAddress {
-		query.InnerJoin(store.AddressTableName + " AS AD ON (AD.Id = WH.AddressID)")
+		query.InnerJoin(store.AddressTableName + " ON (Addresses.Id = Warehouses.AddressID)")
 	}
 
 	return query
 }
 
 // GetByOption finds and returns a warehouse filtered given option
-func (wh *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
-	rowScanner := wh.commonQueryBuilder(option).RunWith(wh.GetReplica()).QueryRow()
+func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+	rowScanner := ws.commonQueryBuilder(option).RunWith(ws.GetReplica()).QueryRow()
 
 	var (
 		res     warehouse.WareHouse
 		address account.Address
 	)
-	scanFields := wh.ScanFields(res)
+	scanFields := ws.ScanFields(res)
 	if option.SelectRelatedAddress {
-		scanFields = append(scanFields, wh.Address().ScanFields(address)...)
+		scanFields = append(scanFields, ws.Address().ScanFields(address)...)
 	}
 
 	err := rowScanner.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WarehouseTableName, "options")
+			return nil, store.NewErrNotFound(ws.TableName(""), "options")
 		}
 		return nil, errors.Wrap(err, "failed to find warehouse with given option")
 	}
 
 	if option.SelectRelatedAddress {
-		res.Address = &address
+		res.Address = address.DeepCopy()
 	}
 
 	// check if we need to prefetch shipping zones
 	if option.PrefetchShippingZones && model.IsValidId(res.Id) {
-		rows, err := wh.GetQueryBuilder().
-			Select(wh.ShippingZone().ModelFields()...).
-			From(store.ShippingZoneTableName+" SZ").
-			InnerJoin(store.WarehouseShippingZoneTableName+" WHSZ ON (SZ.Id = WHSZ.ShippingZoneID)").
-			Where("WHSZ.WarehouseID = ?", res.Id).
-			RunWith(wh.GetReplica()).Query()
+		rows, err := ws.GetQueryBuilder().
+			Select(ws.ShippingZone().ModelFields()...).
+			From(store.ShippingZoneTableName).
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where("WarehouseShippingZones.WarehouseID = ?", res.Id).
+			RunWith(ws.GetReplica()).Query()
 
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find shipping zones related to returning warehouse")
 		}
-		var shippingZone shipping.ShippingZone
-		scanFields := wh.ShippingZone().ScanFields(shippingZone)
+		var (
+			shippingZone shipping.ShippingZone
+			scanFields   = ws.ShippingZone().ScanFields(shippingZone)
+		)
 
 		for rows.Next() {
 			err = rows.Scan(scanFields...)
@@ -199,7 +215,7 @@ func (wh *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 				return nil, errors.Wrap(err, "failed to scan a row of shipping zone")
 			}
 
-			res.ShippingZones = append(res.ShippingZones, &shippingZone)
+			res.ShippingZones = append(res.ShippingZones, shippingZone.DeepCopy())
 		}
 
 		if err = rows.Close(); err != nil {
@@ -234,11 +250,14 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 			return nil, errors.Wrap(err, "failed to scan a row of warehouse and address")
 		}
 
+		copiedWarehouse := wareHouse.DeepCopy()
+
 		if option.SelectRelatedAddress {
-			wareHouse.Address = &address
+			copiedWarehouse.Address = address.DeepCopy()
 		}
-		returningWarehouses = append(returningWarehouses, &wareHouse)
-		warehousesMap[wareHouse.Id] = &wareHouse
+
+		returningWarehouses = append(returningWarehouses, copiedWarehouse)
+		warehousesMap[wareHouse.Id] = copiedWarehouse
 	}
 
 	if err = rows.Close(); err != nil {
@@ -249,10 +268,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		rows, err = wh.GetQueryBuilder().
 			Select(wh.ShippingZone().ModelFields()...).
-			Column(squirrel.Alias(squirrel.Expr("WHSZ.WarehouseID"), "PrefetchRelatedWarehouseID")). // <- this column selection helps determine which shipping zone is related to which warehouse
-			From(store.ShippingZoneTableName+" SZ").
-			InnerJoin(store.WarehouseShippingZoneTableName+" WHSZ ON (SZ.Id = WHSZ.ShippingZoneID)").
-			Where("WHSZ.WarehouseID IN ?", returningWarehouses.IDs()).
+			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")). // <- this column selection helps determine which shipping zone is related to which warehouse
+			From(store.ShippingZoneTableName).
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where("WarehouseShippingZones.WarehouseID IN ?", returningWarehouses.IDs()).
 			RunWith(wh.GetReplica()).Query()
 
 		if err != nil {
@@ -271,7 +290,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 			}
 
 			if warehousesMap[warehouseID] != nil {
-				warehousesMap[warehouseID].ShippingZones = append(warehousesMap[warehouseID].ShippingZones, &shippingZone)
+				warehousesMap[warehouseID].ShippingZones = append(warehousesMap[warehouseID].ShippingZones, shippingZone.DeepCopy())
 			}
 		}
 
@@ -290,7 +309,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.Ware
 		&res,
 		`SELECT `+strings.Join(ws.ModelFields(), ", ")+`
 		FROM `+store.StockTableName+`
-		INNER JOIN `+store.WarehouseTableName+` ON (
+		INNER JOIN `+ws.TableName("")+` ON (
 			Stocks.WarehouseID = Warehouses.Id
 		)
 		WHERE Stocks.Id = :StockID`,
@@ -300,7 +319,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.Ware
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WarehouseTableName, "StockID="+stockID)
+			return nil, store.NewErrNotFound(ws.TableName(""), "StockID="+stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find warehouse with StockID=%s", stockID)
 	}

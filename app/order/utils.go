@@ -5,11 +5,13 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
+	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -37,7 +39,7 @@ func (a *ServiceOrder) GetOrderCountry(ord *order.Order) (string, *model.AppErro
 	}
 
 	if addressID == nil {
-		return model.DEFAULT_COUNTRY, nil
+		return *a.srv.Config().LocalizationSettings.DefaultCountryCode, nil
 	}
 
 	address, appErr := a.srv.AccountService().AddressById(*addressID)
@@ -650,6 +652,11 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int,
 
 // UpdateOrderStatus Update order status depending on fulfillments
 func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
+	// validate order is valid:
+	if ord == nil || !model.IsValidId(ord.Id) {
+		return model.NewAppError("UpdateOrderStatus", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, "", http.StatusBadRequest)
+	}
+
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
 		return appErr
@@ -684,15 +691,12 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
-
-	// order line
-	var orderLine *order.OrderLine
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
 		Id: &model.StringFilter{
@@ -723,6 +727,9 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 		}
 	}
 
+	// order line
+	var orderLine *order.OrderLine
+
 	if len(orderLinesOfOrder) > 0 {
 		orderLine = orderLinesOfOrder[0]
 		oldQuantity := orderLine.Quantity
@@ -748,7 +755,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 			return nil, nil, appErr
 		}
 
-		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&product_and_discount.ProductVariantChannelListingFilterOption{
+		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
 			VariantID: &model.StringFilter{
 				StringOption: &model.StringOption{
 					Eq: variant.Id,
@@ -764,7 +771,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 			return nil, nil, appErr // NOTE: does not care what type of error, just return
 		}
 
-		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(product, collections, chanNel, variantChannelListings[0], discounts)
+		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(variant, product, collections, chanNel, variantChannelListings[0], discounts)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -1107,11 +1114,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 	}
 
 	warehouses, appError := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-		ShippingZonesCountries: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Like: countryCode,
-			},
-		},
+		ShippingZonesCountries: squirrel.Like{a.srv.Store.ShippingZone().TableName("Countries"): countryCode},
 	})
 	if appError != nil {
 		return appError
@@ -1398,7 +1401,7 @@ func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType st
 	money, _ := goprices.NewMoney(value, currency)
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
 
-	var discountCalculator discount.DiscountCalculator
+	var discountCalculator types.DiscountCalculator
 	if valueType == product_and_discount.FIXED {
 		discountCalculator = discount.Decorator(money)
 	} else {

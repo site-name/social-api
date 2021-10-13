@@ -18,8 +18,7 @@ func (a *ServiceProduct) CategoriesByOption(option *product_and_discount.Categor
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		errMsg = err.Error()
-	}
-	if len(categories) == 0 {
+	} else if len(categories) == 0 {
 		statusCode = http.StatusNotFound
 	}
 

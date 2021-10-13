@@ -65,6 +65,11 @@ func (d *DigitalContent) ToJson() string {
 	return model.ModelToJson(d)
 }
 
+func (d *DigitalContent) DeepCopy() *DigitalContent {
+	res := *d
+	return &res
+}
+
 func (d *DigitalContent) PreSave() {
 	if d.Id == "" {
 		d.Id = model.NewId()

@@ -28,6 +28,7 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 		table.ColMap("TranslatedProductName").SetMaxSize(order.ORDER_LINE_PRODUCT_NAME_MAX_LENGTH)
 		table.ColMap("TranslatedVariantName").SetMaxSize(order.ORDER_LINE_VARIANT_NAME_MAX_LENGTH)
 		table.ColMap("ProductSku").SetMaxSize(order.ORDER_LINE_PRODUCT_SKU_MAX_LENGTH)
+		table.ColMap("ProductVariantID").SetMaxSize(order.ORDER_LINE_PRODUCT_VARIANT_ID_MAX_LENGTH)
 		table.ColMap("UnitDiscountType").SetMaxSize(order.ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH)
 		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
 	}
@@ -59,6 +60,7 @@ func (ols *SqlOrderLineStore) ModelFields() []string {
 		"Orderlines.TranslatedProductName",
 		"Orderlines.TranslatedVariantName",
 		"Orderlines.ProductSku",
+		"Orderlines.ProductVariantID",
 		"Orderlines.IsShippingRequired",
 		"Orderlines.IsGiftcard",
 		"Orderlines.Quantity",
@@ -91,6 +93,7 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{
 		&orderLine.TranslatedProductName,
 		&orderLine.TranslatedVariantName,
 		&orderLine.ProductSku,
+		&orderLine.ProductVariantID,
 		&orderLine.IsShippingRequired,
 		&orderLine.IsGiftcard,
 		&orderLine.Quantity,

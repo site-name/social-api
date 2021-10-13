@@ -71,6 +71,7 @@ func init() {
 		WarehouseTableName:             "Slug DESC",    //
 		WarehouseShippingZoneTableName: "",             //
 		AllocationTableName:            "CreateAt ASC", //
+		PreOrderAllocationTableName:    "",             //
 
 		AddressTableName:                    "",               // account
 		UserTableName:                       "Email ASC",      //
@@ -128,6 +129,8 @@ func init() {
 		SaleProductRelationTableName:    "CreateAt ASC",                     //
 		SaleCollectionRelationTableName: "CreateAt ASC",                     //
 		OrderDiscountTableName:          "",                                 //
+		VoucherProductVariantTableName:  "CreateAt ASC",                     //
+		SaleProductVariantTableName:     "CreateAt ASC",                     //
 
 		ShopTableName:            "Shops",            // shop
 		ShopTranslationTableName: "ShopTranslations", //
@@ -195,6 +198,7 @@ const (
 	WarehouseTableName             = "Warehouses"             //
 	WarehouseShippingZoneTableName = "WarehouseShippingZones" //
 	AllocationTableName            = "Allocations"            //
+	PreOrderAllocationTableName    = "PreorderAllocations"    //
 )
 
 // checkout-related table names
@@ -295,6 +299,8 @@ const (
 	SaleProductRelationTableName    = "SaleProducts"           //
 	SaleCollectionRelationTableName = "SaleCollections"        //
 	OrderDiscountTableName          = "OrderDiscounts"         //
+	VoucherProductVariantTableName  = "VoucherProductVariants" //
+	SaleProductVariantTableName     = "SaleProductVariants"    //
 )
 
 // shop-related table names

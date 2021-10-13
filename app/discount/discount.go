@@ -10,6 +10,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
@@ -27,21 +28,8 @@ func init() {
 	})
 }
 
-// DiscountCalculator number of `args` must be 1 or 2
-//
-//  // pass 1 argument if you want to calculate fixed discount
-//  if len(args) == 1 {
-//		args[0].(type) == (*Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange)
-//  }
-//
-//  // pass 2 arguments if you want to calculate percentage discount
-//  if len(args) == 2 {
-//		args[0].(type) == (*Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange) && args[1].(type) == bool
-//  }
-type DiscountCalculator func(args ...interface{}) (interface{}, error)
-
 // Decorator returns a function to calculate discount
-func Decorator(preValue interface{}) DiscountCalculator {
+func Decorator(preValue interface{}) types.DiscountCalculator {
 	return func(args ...interface{}) (interface{}, error) {
 		// validating number of args
 		if l := len(args); l < 1 || l > 2 {

@@ -50,6 +50,13 @@ func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
 	}
 }
 
+func (ss *SqlStockStore) TableName(withField string) string {
+	if withField == "" {
+		return "Stocks"
+	}
+	return "Stocks." + withField
+}
+
 func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
 	ss.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
@@ -169,7 +176,6 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		OrderBy(store.TableOrderingMap[store.StockTableName])
 
 	// parse options
-
 	if options.SelectRelatedProductVariant {
 		query = query.InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)")
 	}
@@ -202,17 +208,17 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row contains stock, product variant")
+			return nil, errors.Wrap(err, "failed to scan a row contains stock")
 		}
 
 		if options.SelectRelatedProductVariant {
-			stock.ProductVariant = &productVariant
+			stock.ProductVariant = productVariant.DeepCopy()
 		}
-		returningStocks = append(returningStocks, &stock)
+		returningStocks = append(returningStocks, stock.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
+		return nil, errors.Wrap(err, "failed to close rows of stocks")
 	}
 
 	return returningStocks, nil
@@ -241,13 +247,13 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		query = query.InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)")
 	}
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+		query = query.Where(options.Id)
 	}
 	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID.ToSquirrel("Stocks.WarehouseID"))
+		query = query.Where(options.WarehouseID)
 	}
 	if options.ProductVariantID != nil {
-		query = query.Where(options.ProductVariantID.ToSquirrel("Stocks.ProductVariantID"))
+		query = query.Where(options.ProductVariantID)
 	}
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
@@ -271,12 +277,12 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		stock             warehouse.Stock
 		variant           product_and_discount.ProductVariant
 		wareHouse         warehouse.WareHouse
-		selectFunc        func(query string, args ...interface{}) (*sql.Rows, error) = ss.GetReplica().Query
+		queryer           squirrel.Queryer = ss.GetReplica()
 		availableQuantity int
 		scanFields        = ss.ScanFields(stock)
 	)
 	if transaction != nil {
-		selectFunc = transaction.Query
+		queryer = transaction
 	}
 
 	if options.SelectRelatedWarehouse {
@@ -289,7 +295,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		scanFields = append(scanFields, &availableQuantity)
 	}
 
-	rows, err := selectFunc(queryString, args...)
+	rows, err := queryer.Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
@@ -300,13 +306,16 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 			return nil, errors.Wrap(err, "failed to find stocks with related warehouses and product variants")
 		}
 
-		stock.Warehouse = &wareHouse
-		stock.ProductVariant = &variant
-		returningStocks = append(returningStocks, &stock)
-
+		if options.SelectRelatedWarehouse {
+			stock.Warehouse = wareHouse.DeepCopy()
+		}
+		if options.SelectRelatedProductVariant {
+			stock.ProductVariant = variant.DeepCopy()
+		}
 		if options.AnnotateAvailabeQuantity {
 			stock.AvailableQuantity = availableQuantity
 		}
+		returningStocks = append(returningStocks, stock.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
@@ -403,9 +412,9 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transactio
 			return nil, errors.Wrap(err, "failed to scan a row of stock, warehouse, product variant")
 		}
 
-		stock.Warehouse = &wareHouse
-		stock.ProductVariant = &productVariant
-		returningStocks = append(returningStocks, &stock)
+		stock.Warehouse = wareHouse.DeepCopy()
+		stock.ProductVariant = productVariant.DeepCopy()
+		returningStocks = append(returningStocks, stock.DeepCopy())
 
 		if options.AnnotateAvailabeQuantity {
 			stock.AvailableQuantity = availableQuantity

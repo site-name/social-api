@@ -327,34 +327,6 @@ func (a *ServiceOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, 
 	return zeroMoney, nil
 }
 
-// GetOrderCountryCode is helper function, returns contry code of given order
-func (a *ServiceOrder) GetOrderCountryCode(ord *order.Order) (string, *model.AppError) {
-	addressID := ord.BillingAddressID
-	requireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
-	if appErr != nil {
-		return "", appErr
-	}
-
-	if requireShipping {
-		addressID = ord.ShippingAddressID
-	}
-	if addressID == nil {
-		return *a.srv.Config().LocalizationSettings.DefaultCountryCode, nil
-	}
-
-	address, err := a.srv.Store.Address().Get(*addressID)
-	if err != nil {
-
-		var statusCode int = http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return "", model.NewAppError("GetOrderCountryCode", "app.order.get_address.app_error", nil, err.Error(), statusCode)
-	}
-
-	return address.Country, nil
-}
-
 // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
 func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
 	if ord.UserID != nil {

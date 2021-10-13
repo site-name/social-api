@@ -148,13 +148,19 @@ func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 }
 
 // Save inserts given payment into database then returns it
-func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+
+	var upsertor store.Upsertor = ps.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
 	payment.PreSave()
 	if err := payment.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ps.GetMaster().Insert(payment); err != nil {
+	if err := upsertor.Insert(payment); err != nil {
 		return nil, errors.Wrapf(err, "failed to insert new payment with id=%s", payment.Id)
 	}
 
@@ -162,13 +168,18 @@ func (ps *SqlPaymentStore) Save(payment *payment.Payment) (*payment.Payment, err
 }
 
 // Update updates given payment and returns the updated value
-func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+	var upsertor store.Upsertor = ps.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
 	payment.PreUpdate()
 	if err := payment.IsValid(); err != nil {
 		return nil, err
 	}
 
-	oldPayment, err := ps.Get(nil, payment.Id, false)
+	oldPayment, err := ps.Get(transaction, payment.Id, false)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +188,7 @@ func (ps *SqlPaymentStore) Update(payment *payment.Payment) (*payment.Payment, e
 	payment.OrderID = oldPayment.OrderID
 	payment.CheckoutID = oldPayment.CheckoutID
 
-	numUpdated, err := ps.GetMaster().Update(payment)
+	numUpdated, err := upsertor.Update(payment)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update payment with PaymentId=%s", payment.Id)
 	}

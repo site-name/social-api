@@ -11,15 +11,16 @@ import (
 )
 
 type ProductVariantChannelListing struct {
-	Id              string           `json:"id"`
-	VariantID       string           `json:"variant_id"` // not null
-	ChannelID       string           `json:"channel_id"` // not null
-	Currency        string           `json:"currency"`
-	PriceAmount     *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
-	Price           *goprices.Money  `json:"price,omitempty" db:"-"`
-	CostPriceAmount *decimal.Decimal `json:"cost_price_amount"` // can be NULL
-	CostPrice       *goprices.Money  `json:"cost_price,omitempty" db:"-"`
-	CreateAt        int64            `json:"create_at"`
+	Id                        string           `json:"id"`
+	VariantID                 string           `json:"variant_id"` // not null
+	ChannelID                 string           `json:"channel_id"` // not null
+	Currency                  string           `json:"currency"`
+	PriceAmount               *decimal.Decimal `json:"price_amount,omitempty"` // can be NULL
+	Price                     *goprices.Money  `json:"price,omitempty" db:"-"`
+	CostPriceAmount           *decimal.Decimal `json:"cost_price_amount"` // can be NULL
+	CostPrice                 *goprices.Money  `json:"cost_price,omitempty" db:"-"`
+	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
+	CreateAt                  int64            `json:"create_at"`
 
 	Channel *channel.Channel `json:"-" db:"-"`
 }
@@ -31,7 +32,24 @@ type ProductVariantChannelListingFilterOption struct {
 	ChannelID   *model.StringFilter
 	PriceAmount *model.NumberFilter
 
-	VariantProductID *model.StringFilter // INNER JOIN ProductVariants
+	VariantProductID *model.StringFilter // INNER JOIN ProductVariants WHERE ProductVariants.ProductID ...
+
+	SelectRelatedChannel bool   // tell store to select related Channel(s)
+	SelectForUpdate      bool   // if true, add `FOR UPDATE` to the end of query
+	SelectForUpdateOf    string // if provided, tell database system to lock on specific row(s)
+}
+
+type ProductVariantChannelListings []*ProductVariantChannelListing
+
+func (p ProductVariantChannelListings) IDs() []string {
+	var res []string
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
 }
 
 func (p *ProductVariantChannelListing) IsValid() *model.AppError {
@@ -90,4 +108,9 @@ func (p *ProductVariantChannelListing) PopulateNonDbFields() {
 func (p *ProductVariantChannelListing) ToJson() string {
 	p.PopulateNonDbFields()
 	return model.ModelToJson(p)
+}
+
+func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing {
+	res := *p
+	return &res
 }

@@ -58,7 +58,7 @@ type Store interface {
 	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
 	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
 	MarkSystemRanUnitTests()                                                                                           //
-	FinalizeTransaction(transaction driver.Tx)                                                                         // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	FinalizeTransaction(transaction driver.Tx)                                                                         // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -99,6 +99,8 @@ type Store interface {
 	SaleCategoryRelation() SaleCategoryRelationStore                   //
 	SaleProductRelation() SaleProductRelationStore                     //
 	SaleCollectionRelation() SaleCollectionRelationStore               //
+	VoucherProductVariant() VoucherProductVariantStore                 //
+	SaleProductVariant() SaleProductVariantStore                       //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftcardEvent() GiftcardEventStore                                 //
 	GiftCardOrder() GiftCardOrderStore                                 //
@@ -146,6 +148,7 @@ type Store interface {
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
 	WarehouseShippingZone() WarehouseShippingZoneStore                 //
+	PreorderAllocation() PreorderAllocationStore                       //
 	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
 	WishlistItemProductVariant() WishlistItemProductVariantStore       //
@@ -170,7 +173,7 @@ type Store interface {
 	Shop() ShopStore                                                   // shop
 	ShopTranslation() ShopTranslationStore                             //
 	ShopStaff() ShopStaffStore                                         //
-	OpenExchangeRate() OpenExchangeRateStore                           // external services tables
+	OpenExchangeRate() OpenExchangeRateStore                           // external services
 }
 
 // shop
@@ -256,6 +259,7 @@ type (
 	}
 	AttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
 		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) // Save inserts given attribute value into database, then returns inserted value and an error
 		Get(attributeID string) (*attribute.AttributeValue, error)                   // Get finds an attribute value with given id then returns it with an error
@@ -287,6 +291,8 @@ type (
 	}
 	AssignedVariantAttributeValueStore interface {
 		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error)                                                                               // Get try finding a value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error)                                                        // SaveInBulk save multiple values into database then returns them
@@ -309,6 +315,7 @@ type (
 	AssignedProductAttributeValueStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{}
 		Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error)                                  // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error)           // SaveInBulk save multiple values into database
@@ -376,6 +383,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(wh warehouse.WareHouse) []interface{}
+		TableName(withField string) string
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -386,6 +394,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(stock warehouse.Stock) []interface{}
 		ModelFields() []string
+		TableName(withField string) string
 		Get(stockID string) (*warehouse.Stock, error)                                                                                                          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
 		FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
@@ -408,6 +417,13 @@ type (
 		ModelFields() []string
 		Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) // Save inserts given warehouse-shipping zone relation into database
 	}
+	PreorderAllocationStore interface {
+		CreateIndexesIfNotExists()
+		ModelFields() []string
+		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
+		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
+		Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error                               // Delete deletes preorder-allocations by given ids
+	}
 )
 
 // shipping
@@ -416,6 +432,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(shippingZone shipping.ShippingZone) []interface{}
+		TableName(withField string) string
 		Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error)                 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*shipping.ShippingZone, error)                                  // Get finds 1 shipping zone for given shippingZoneID
 		FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) // FilterByOption finds a list of shipping zones based on given option
@@ -423,6 +440,7 @@ type (
 	ShippingMethodStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
 		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethods finds all shipping methods with given conditions
@@ -491,9 +509,11 @@ type (
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)          // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                     // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                           // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                      // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -505,11 +525,13 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(variant product_and_discount.ProductVariant) []interface{}
-		Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)                        // Save inserts product variant instance to database
-		Get(id string) (*product_and_discount.ProductVariant, error)                                                            // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                                         // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                      // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) // FilterByOption finds and returns product variants based on given option
+		TableName(withField string) string
+		Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
+		Get(id string) (*product_and_discount.ProductVariant, error)                                                                      // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                   // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                                // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error)           // FilterByOption finds and returns product variants based on given option
+		Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Update updates given product variant and returns it
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -528,7 +550,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)                // Save try inserting new product type into database then returns it
-		FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error)             // FilterProductTypesByCheckoutID is used to check if a checkout requires shipping
+		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error)          // FilterProductTypesByCheckoutToken is used to check if a checkout requires shipping
 		ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error)                    // ProductTypesByProductIDs returns all product types belong to given products
 		ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error)                    // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 		GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) // GetByOption finds and returns a product type with given options
@@ -567,19 +589,19 @@ type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
 		ScanFields(payMent payment.Payment) []interface{}
-		Save(payment *payment.Payment) (*payment.Payment, error)                                                          // Save save payment instance into database
+		Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                           // Save save payment instance into database
 		Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
-		Update(payment *payment.Payment) (*payment.Payment, error)                                                        // Update updates given payment and returns new updated payment
+		Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                         // Update updates given payment and returns new updated payment
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                   // FilterByOption finds and returns a list of payments that satisfy given option
 		UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
-		Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                  // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                                                 // Get returns a payment transaction with given id
-		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                // Update updates given transaction and returns updated one
-		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) // FilterByOption finds and returns a list of transactions with given option
+		Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                                                      // Get returns a payment transaction with given id
+		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                     // Update updates given transaction and returns updated one
+		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error)                      // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 
@@ -800,6 +822,14 @@ type (
 		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                                            // Get finds and returns a sale-collection relation with given id
 		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
 	}
+	VoucherProductVariantStore interface {
+		CreateIndexesIfNotExists()
+	}
+	SaleProductVariantStore interface {
+		CreateIndexesIfNotExists()
+		Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error)                      // Upsert inserts/updates given sale-product variant relation into database, then returns it
+		FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) // FilterByOption finds and returns a list of sale-product variants filtered using given options
+	}
 )
 
 // csv
@@ -852,6 +882,7 @@ type (
 type ChannelStore interface {
 	CreateIndexesIfNotExists()
 	ModelFields() []string
+	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
 	GetRandomActiveChannel() (*channel.Channel, error)                              // GetRandomActiveChannel get an abitrary channel that is active

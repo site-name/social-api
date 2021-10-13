@@ -113,3 +113,8 @@ func (s *ShippingZone) PreUpdate() {
 		s.Default = model.NewBool(false)
 	}
 }
+
+func (s *ShippingZone) DeepCopy() *ShippingZone {
+	res := *s
+	return &res
+}

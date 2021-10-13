@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -166,6 +167,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 //
 // `storePaymentMethod` default to payment.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
+	transaction *gorp.Transaction,
 	gateway string,
 	total *decimal.Decimal,
 	currency string,
@@ -173,7 +175,7 @@ func (a *ServicePayment) CreatePayment(
 	customerIpAddress string,
 	paymentToken string,
 	extraData map[string]string,
-	ckout *checkout.Checkout,
+	checkOut *checkout.Checkout,
 	orDer *order.Order,
 	returnUrl string,
 	externalReference string,
@@ -182,7 +184,7 @@ func (a *ServicePayment) CreatePayment(
 
 ) (*payment.Payment, *payment.PaymentError, *model.AppError) {
 	// must at least provide either checkout or order, both is best :))
-	if ckout == nil && orDer == nil {
+	if checkOut == nil && orDer == nil {
 		return nil, nil, model.NewAppError("CreatePayment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order/checkout"}, "", http.StatusBadRequest)
 	}
 
@@ -195,8 +197,8 @@ func (a *ServicePayment) CreatePayment(
 		billingAddressID string
 	)
 
-	if ckout != nil && ckout.BillingAddressID != nil {
-		billingAddressID = *ckout.BillingAddressID
+	if checkOut != nil && checkOut.BillingAddressID != nil {
+		billingAddressID = *checkOut.BillingAddressID
 	} else if orDer != nil && orDer.BillingAddressID != nil {
 		billingAddressID = *orDer.BillingAddressID
 	}
@@ -238,14 +240,14 @@ func (a *ServicePayment) CreatePayment(
 			Metadata: metadata,
 		},
 	}
-	if ckout != nil {
-		payment.CheckoutID = &ckout.Token
+	if checkOut != nil {
+		payment.CheckoutID = &checkOut.Token
 	}
 	if orDer != nil {
 		payment.OrderID = &orDer.Id
 	}
 
-	payment, appErr = a.srv.PaymentService().UpsertPayment(payment)
+	payment, appErr = a.srv.PaymentService().UpsertPayment(transaction, payment)
 	return payment, nil, appErr
 }
 
@@ -310,7 +312,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymen
 		ActionRequiredData: gatewayResponse.ActionRequiredData,
 	}
 
-	return a.SaveTransaction(tran)
+	return a.SaveTransaction(nil, tran)
 }
 
 func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
@@ -401,7 +403,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 
 	if !paymentTransaction.IsSuccess || paymentTransaction.AlreadyProcessed {
 		if len(changedFields) > 0 {
-			if _, appErr = a.UpsertPayment(payMent); appErr != nil {
+			if _, appErr = a.UpsertPayment(nil, payMent); appErr != nil {
 				return appErr
 			}
 		}
@@ -411,7 +413,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	if paymentTransaction.ActionRequired {
 		payMent.ToConfirm = true
 		changedFields = append(changedFields, "to_confirm")
-		if _, appErr = a.UpsertPayment(payMent); appErr != nil {
+		if _, appErr = a.UpsertPayment(nil, payMent); appErr != nil {
 			return appErr
 		}
 
@@ -472,7 +474,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 
 	if len(changedFields) > 0 {
-		if _, appErr := a.UpsertPayment(payMent); appErr != nil {
+		if _, appErr := a.UpsertPayment(transaction, payMent); appErr != nil {
 			return appErr
 		}
 	}
@@ -561,23 +563,23 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 }
 
 // UpdatePayment
-func (a *ServicePayment) UpdatePayment(pm *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
+func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
 	var (
 		changedFields []string
 		appErr        *model.AppError
 	)
 
 	if gatewayResponse.PspReference != "" {
-		pm.PspReference = &gatewayResponse.PspReference
+		payMent.PspReference = &gatewayResponse.PspReference
 		changedFields = append(changedFields, "psp_reference")
 	}
 
 	if gatewayResponse.PaymentMethodInfo != nil {
-		a.UpdatePaymentMethodDetails(pm, gatewayResponse.PaymentMethodInfo, changedFields)
+		a.UpdatePaymentMethodDetails(payMent, gatewayResponse.PaymentMethodInfo, changedFields)
 	}
 
 	if len(changedFields) > 0 {
-		_, appErr = a.UpsertPayment(pm)
+		_, appErr = a.UpsertPayment(nil, payMent)
 		if appErr != nil {
 			return appErr
 		}

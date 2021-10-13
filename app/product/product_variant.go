@@ -3,6 +3,7 @@ package product
 import (
 	"net/http"
 
+	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
@@ -23,13 +24,14 @@ func (a *ServiceProduct) ProductVariantById(id string) (*product_and_discount.Pr
 
 // ProductVariantGetPrice returns price
 func (a *ServiceProduct) ProductVariantGetPrice(
+	productVariant *product_and_discount.ProductVariant,
 	product *product_and_discount.Product,
 	collections []*product_and_discount.Collection,
 	channel *channel.Channel,
 	channelListing *product_and_discount.ProductVariantChannelListing,
 	discounts []*product_and_discount.DiscountInfo, // optional
 ) (*goprices.Money, *model.AppError) {
-	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel)
+	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
 
 // ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
@@ -110,4 +112,34 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 	}
 
 	return productVariants, nil
+}
+
+// UpsertProductVariant tells store to upsert given product variant and returns it
+func (s *ServiceProduct) UpsertProductVariant(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError) {
+	var (
+		upsertedVariant *product_and_discount.ProductVariant
+		err             error
+	)
+	if !model.IsValidId(variant.Id) {
+		upsertedVariant, err = s.srv.Store.ProductVariant().Save(transaction, variant)
+	} else {
+		upsertedVariant, err = s.srv.Store.ProductVariant().Update(transaction, variant)
+	}
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		var (
+			statusCode = http.StatusInternalServerError
+		)
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("UpsertProductVariant", "app.product.error_upserting_product_variant.app_error", nil, err.Error(), statusCode)
+	}
+
+	return upsertedVariant, nil
 }

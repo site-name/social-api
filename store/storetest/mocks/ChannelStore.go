@@ -149,3 +149,19 @@ func (_m *ChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 
 	return r0, r1
 }
+
+// ScanFields provides a mock function with given fields: chanNel
+func (_m *ChannelStore) ScanFields(chanNel channel.Channel) []interface{} {
+	ret := _m.Called(chanNel)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(channel.Channel) []interface{}); ok {
+		r0 = rf(chanNel)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}

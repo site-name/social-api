@@ -133,7 +133,7 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	return &ffm, nil
 }
 
-func (fs *SqlFulfillmentStore) buildQuery(option *order.FulfillmentFilterOption) squirrel.SelectBuilder {
+func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
 	selectFields := fs.ModelFields()
 	if option.SelectRelatedOrder {
@@ -184,7 +184,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option
 		runner = transaction
 	}
 
-	query := fs.buildQuery(option)
+	query := fs.commonQueryBuild(option)
 
 	row := query.RunWith(runner).QueryRow()
 	var (
@@ -219,7 +219,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 		runner = transaction
 	}
 
-	query := fs.buildQuery(option)
+	query := fs.commonQueryBuild(option)
 
 	rows, err := query.RunWith(runner).Query()
 	if err != nil {
@@ -228,11 +228,11 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 	var (
 		res         []*order.Fulfillment
 		fulfillment order.Fulfillment
-		anOrder     order.Order
+		orDer       order.Order
 		scanFields  = fs.ScanFields(fulfillment)
 	)
 	if option.SelectRelatedOrder {
-		scanFields = append(scanFields, fs.Order().ScanFields(anOrder)...)
+		scanFields = append(scanFields, fs.Order().ScanFields(orDer)...)
 	}
 
 	for rows.Next() {
@@ -242,9 +242,9 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 		}
 
 		if option.SelectRelatedOrder {
-			fulfillment.Order = &anOrder
+			fulfillment.Order = orDer.DeepCopy()
 		}
-		res = append(res, &fulfillment)
+		res = append(res, fulfillment.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {

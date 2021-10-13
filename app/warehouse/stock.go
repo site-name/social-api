@@ -30,7 +30,7 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stock
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *ServiceWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
 	var (
 		statusCode   int

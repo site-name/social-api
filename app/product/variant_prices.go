@@ -14,19 +14,18 @@ import (
 
 // getVariantPricesInChannelsDict
 func (a *ServiceProduct) getVariantPricesInChannelsDict(product *product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
-	variantChannelListings, appErr := a.
-		ProductVariantChannelListingsByOption(&product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantProductID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product.Id,
-				},
+	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
+		VariantProductID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: product.Id,
 			},
-			PriceAmount: &model.NumberFilter{
-				NumberOption: &model.NumberOption{
-					NULL: model.NewBool(false),
-				},
+		},
+		PriceAmount: &model.NumberFilter{
+			NumberOption: &model.NumberOption{
+				NULL: model.NewBool(false),
 			},
-		})
+		},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -50,9 +49,11 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 ) (*goprices.Money, *model.AppError) {
 
 	// validate variantPrices have same currencies
-	var standardCurrency string
+	var (
+		standardCurrency        string
+		discountedVariantPrices []*goprices.Money
+	)
 
-	discountedVariantPrices := []*goprices.Money{}
 	for i, item := range variantPrices {
 		if i == 0 {
 			standardCurrency = item.Currency
@@ -66,6 +67,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 			collections,
 			discounts,
 			chanNel,
+			"",
 		)
 		if appErr != nil {
 			return nil, appErr

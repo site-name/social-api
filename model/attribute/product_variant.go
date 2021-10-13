@@ -40,6 +40,11 @@ func (a *AssignedVariantAttributeValue) ToJson() string {
 	return model.ModelToJson(a)
 }
 
+func (a *AssignedVariantAttributeValue) DeepCopy() *AssignedVariantAttributeValue {
+	res := *a
+	return &res
+}
+
 // Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
 	Id                    string `json:"id"`

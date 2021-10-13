@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
@@ -31,9 +32,9 @@ type StockFilterForChannelOption struct {
 
 // StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
-	Id               *model.StringFilter //
-	WarehouseID      *model.StringFilter //
-	ProductVariantID *model.StringFilter //
+	Id               squirrel.Sqlizer //
+	WarehouseID      squirrel.Sqlizer //
+	ProductVariantID squirrel.Sqlizer //
 
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
@@ -135,4 +136,9 @@ func (s *Stock) commonPre() {
 
 func (s *Stock) PreUpdate() {
 	s.commonPre()
+}
+
+func (s *Stock) DeepCopy() *Stock {
+	res := *s
+	return &res
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
@@ -35,17 +36,22 @@ func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
 }
 
 // Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
-	transaction.PreSave()
-	if err := transaction.IsValid(); err != nil {
+func (ps *SqlPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+	var upsertor store.Upsertor = ps.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
+	paymentTransaction.PreSave()
+	if err := paymentTransaction.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ps.GetMaster().Insert(transaction); err != nil {
-		return nil, errors.Wrapf(err, "failed to save payment transaction with id=%s", transaction.Id)
+	if err := upsertor.Insert(paymentTransaction); err != nil {
+		return nil, errors.Wrapf(err, "failed to save payment paymentTransaction with id=%s", paymentTransaction.Id)
 	}
 
-	return transaction, nil
+	return paymentTransaction, nil
 }
 
 // Update updates given transaction then return it

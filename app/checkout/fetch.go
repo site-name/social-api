@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -123,11 +124,7 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 	var shippingMethod *shipping.ShippingMethod
 	if checkOut.ShippingMethodID != nil {
 		shippingMethod, appErr = a.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: *checkOut.ShippingMethodID,
-				},
-			},
+			Id: squirrel.Eq{a.srv.Store.ShippingMethod().TableName("Id"): *checkOut.ShippingMethodID},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -163,11 +160,7 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 	var collectionPoint *warehouse.WareHouse
 	if checkOut.CollectionPointID != nil {
 		collectionPoint, appErr = a.srv.WarehouseService().WarehouseByOption(&warehouse.WarehouseFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: *checkOut.CollectionPointID,
-				},
-			},
+			Id:                   squirrel.Eq{a.srv.Store.Warehouse().TableName("Id"): *checkOut.CollectionPointID},
 			SelectRelatedAddress: true,
 		})
 		if appErr != nil {
@@ -237,6 +230,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checko
 	return appErr
 }
 
+// GetValidShippingMethodListForCheckoutInfo
 func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError) {
 	panic("not implt")
 }

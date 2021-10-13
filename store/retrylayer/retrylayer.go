@@ -105,6 +105,7 @@ type RetryLayer struct {
 	PluginStore                        store.PluginStore
 	PluginConfigurationStore           store.PluginConfigurationStore
 	PreferenceStore                    store.PreferenceStore
+	PreorderAllocationStore            store.PreorderAllocationStore
 	ProductStore                       store.ProductStore
 	ProductChannelListingStore         store.ProductChannelListingStore
 	ProductMediaStore                  store.ProductMediaStore
@@ -117,6 +118,7 @@ type RetryLayer struct {
 	SaleCategoryRelationStore          store.SaleCategoryRelationStore
 	SaleCollectionRelationStore        store.SaleCollectionRelationStore
 	SaleProductRelationStore           store.SaleProductRelationStore
+	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -145,6 +147,7 @@ type RetryLayer struct {
 	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
 	VoucherProductStore                store.VoucherProductStore
+	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -413,6 +416,10 @@ func (s *RetryLayer) Preference() store.PreferenceStore {
 	return s.PreferenceStore
 }
 
+func (s *RetryLayer) PreorderAllocation() store.PreorderAllocationStore {
+	return s.PreorderAllocationStore
+}
+
 func (s *RetryLayer) Product() store.ProductStore {
 	return s.ProductStore
 }
@@ -459,6 +466,10 @@ func (s *RetryLayer) SaleCollectionRelation() store.SaleCollectionRelationStore 
 
 func (s *RetryLayer) SaleProductRelation() store.SaleProductRelationStore {
 	return s.SaleProductRelationStore
+}
+
+func (s *RetryLayer) SaleProductVariant() store.SaleProductVariantStore {
+	return s.SaleProductVariantStore
 }
 
 func (s *RetryLayer) Session() store.SessionStore {
@@ -571,6 +582,10 @@ func (s *RetryLayer) VoucherCustomer() store.VoucherCustomerStore {
 
 func (s *RetryLayer) VoucherProduct() store.VoucherProductStore {
 	return s.VoucherProductStore
+}
+
+func (s *RetryLayer) VoucherProductVariant() store.VoucherProductVariantStore {
+	return s.VoucherProductVariantStore
 }
 
 func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -922,6 +937,11 @@ type RetryLayerPreferenceStore struct {
 	Root *RetryLayer
 }
 
+type RetryLayerPreorderAllocationStore struct {
+	store.PreorderAllocationStore
+	Root *RetryLayer
+}
+
 type RetryLayerProductStore struct {
 	store.ProductStore
 	Root *RetryLayer
@@ -979,6 +999,11 @@ type RetryLayerSaleCollectionRelationStore struct {
 
 type RetryLayerSaleProductRelationStore struct {
 	store.SaleProductRelationStore
+	Root *RetryLayer
+}
+
+type RetryLayerSaleProductVariantStore struct {
+	store.SaleProductVariantStore
 	Root *RetryLayer
 }
 
@@ -1119,6 +1144,11 @@ type RetryLayerVoucherCustomerStore struct {
 
 type RetryLayerVoucherProductStore struct {
 	store.VoucherProductStore
+	Root *RetryLayer
+}
+
+type RetryLayerVoucherProductVariantStore struct {
+	store.VoucherProductVariantStore
 	Root *RetryLayer
 }
 
@@ -5198,11 +5228,11 @@ func (s *RetryLayerPaymentStore) Get(transaction *gorp.Transaction, id string, l
 
 }
 
-func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Save(payment)
+		result, err := s.PaymentStore.Save(transaction, payment)
 		if err == nil {
 			return result, nil
 		}
@@ -5218,11 +5248,11 @@ func (s *RetryLayerPaymentStore) Save(payment *payment.Payment) (*payment.Paymen
 
 }
 
-func (s *RetryLayerPaymentStore) Update(payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Update(payment)
+		result, err := s.PaymentStore.Update(transaction, payment)
 		if err == nil {
 			return result, nil
 		}
@@ -5298,11 +5328,11 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentTransactionStore.Save(transaction)
+		result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
 		if err == nil {
 			return result, nil
 		}
@@ -5704,6 +5734,46 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
+func (s *RetryLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+
+	tries := 0
+	for {
+		err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+
+	tries := 0
+	for {
+		result, err := s.PreorderAllocationStore.FilterByOption(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 
 	tries := 0
@@ -6048,11 +6118,11 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_disc
 
 }
 
-func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutID(checkoutToken)
+		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
 		if err == nil {
 			return result, nil
 		}
@@ -6228,11 +6298,11 @@ func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 
 }
 
-func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantStore.Save(variant)
+		result, err := s.ProductVariantStore.Save(transaction, variant)
 		if err == nil {
 			return result, nil
 		}
@@ -6248,11 +6318,31 @@ func (s *RetryLayerProductVariantStore) Save(variant *product_and_discount.Produ
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
+		result, err := s.ProductVariantStore.Update(transaction, variant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
 		if err == nil {
 			return result, nil
 		}
@@ -6673,6 +6763,46 @@ func (s *RetryLayerSaleProductRelationStore) Save(relation *product_and_discount
 	tries := 0
 	for {
 		result, err := s.SaleProductRelationStore.Save(relation)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductVariantStore.FilterByOption(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.SaleProductVariantStore.Upsert(relation)
 		if err == nil {
 			return result, nil
 		}
@@ -10038,6 +10168,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.PluginStore = &RetryLayerPluginStore{PluginStore: childStore.Plugin(), Root: &newStore}
 	newStore.PluginConfigurationStore = &RetryLayerPluginConfigurationStore{PluginConfigurationStore: childStore.PluginConfiguration(), Root: &newStore}
 	newStore.PreferenceStore = &RetryLayerPreferenceStore{PreferenceStore: childStore.Preference(), Root: &newStore}
+	newStore.PreorderAllocationStore = &RetryLayerPreorderAllocationStore{PreorderAllocationStore: childStore.PreorderAllocation(), Root: &newStore}
 	newStore.ProductStore = &RetryLayerProductStore{ProductStore: childStore.Product(), Root: &newStore}
 	newStore.ProductChannelListingStore = &RetryLayerProductChannelListingStore{ProductChannelListingStore: childStore.ProductChannelListing(), Root: &newStore}
 	newStore.ProductMediaStore = &RetryLayerProductMediaStore{ProductMediaStore: childStore.ProductMedia(), Root: &newStore}
@@ -10050,6 +10181,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.SaleCategoryRelationStore = &RetryLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
 	newStore.SaleCollectionRelationStore = &RetryLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
 	newStore.SaleProductRelationStore = &RetryLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
+	newStore.SaleProductVariantStore = &RetryLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -10078,6 +10210,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
 	newStore.VoucherProductStore = &RetryLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
+	newStore.VoucherProductVariantStore = &RetryLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

@@ -33,6 +33,19 @@ type SaleFilterOption struct {
 	ShopID    model.StringFilter
 }
 
+type Sales []*Sale
+
+func (s Sales) IDs() []string {
+	res := []string{}
+	for _, item := range s {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
 func (s *Sale) String() string {
 	return s.Name
 }
@@ -72,25 +85,25 @@ func (s *Sale) PreSave() {
 	if s.Id == "" {
 		s.Id = model.NewId()
 	}
-	if s.UpdateAt == 0 {
-		s.UpdateAt = model.GetMillis()
-	}
+	s.CreateAt = model.GetMillis()
 	s.UpdateAt = s.CreateAt
-	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
-		s.Type = FIXED
-	}
+
 	if s.StartDate == 0 {
 		s.StartDate = model.GetMillis()
+	}
+	s.commonPre()
+}
+
+func (s *Sale) commonPre() {
+	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
+		s.Type = FIXED
 	}
 	s.Name = model.SanitizeUnicode(s.Name)
 }
 
 func (s *Sale) PreUpdate() {
-	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
-		s.Type = FIXED
-	}
 	s.UpdateAt = model.GetMillis()
-	s.Name = model.SanitizeUnicode(s.Name)
+	s.commonPre()
 }
 
 type SaleTranslation struct {

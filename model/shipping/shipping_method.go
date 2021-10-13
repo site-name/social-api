@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
@@ -48,12 +49,12 @@ type ShippingMethod struct {
 
 // ShippingMethodFilterOption is used for filtering shipping methods
 type ShippingMethodFilterOption struct {
-	Id                         *model.StringFilter
-	Type                       *model.StringFilter // type of shipping method
-	MinimumOrderWeight         *model.NumberFilter // minimum order weight of shipping method
-	MaximumOrderWeight         *model.NumberFilter // max number weight of shipping method
-	ShippingZoneChannelSlug    *model.StringFilter // for filtering based on inner joins
-	ChannelListingsChannelSlug *model.StringFilter
+	Id                         squirrel.Sqlizer
+	Type                       squirrel.Sqlizer
+	MinimumOrderWeight         squirrel.Sqlizer
+	MaximumOrderWeight         squirrel.Sqlizer
+	ShippingZoneChannelSlug    squirrel.Sqlizer
+	ChannelListingsChannelSlug squirrel.Sqlizer
 }
 
 func (s *ShippingMethod) PopulateNonDbFields() {
@@ -93,6 +94,13 @@ func (s *ShippingMethod) getWeightTypeDisplay() string {
 		s.MaxOrderWeight = maxWeight
 	}
 	return fmt.Sprintf("%s to %s", s.MinOrderWeight.String(), s.MaxOrderWeight.String())
+}
+
+func (s *ShippingMethod) PreSave() {
+	if s.Id == "" {
+		s.Id = model.NewId()
+	}
+	s.Name = model.SanitizeUnicode(s.Name)
 }
 
 func (s *ShippingMethod) IsValid() *model.AppError {

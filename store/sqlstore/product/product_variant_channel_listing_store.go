@@ -3,8 +3,11 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -41,7 +44,21 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields() []string {
 		"ProductVariantChannelListings.Currency",
 		"ProductVariantChannelListings.PriceAmount",
 		"ProductVariantChannelListings.CostPriceAmount",
+		"ProductVariantChannelListings.PreorderQuantityThreshold",
 		"ProductVariantChannelListings.CreateAt",
+	}
+}
+
+func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{} {
+	return []interface{}{
+		&listing.Id,
+		&listing.VariantID,
+		&listing.ChannelID,
+		&listing.Currency,
+		&listing.PriceAmount,
+		&listing.CostPriceAmount,
+		&listing.PreorderQuantityThreshold,
+		&listing.CreateAt,
 	}
 }
 
@@ -78,13 +95,30 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 }
 
 // FilterbyOption finds and returns all product variant channel listings filterd using given option
-func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	var runner squirrel.BaseRunner = ps.GetReplica()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	selectFields := ps.ModelFields()
+	if option.SelectRelatedChannel {
+		selectFields = append(selectFields, ps.Channel().ModelFields()...)
+	}
+
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(selectFields...).
 		From(store.ProductVariantChannelListingTableName).
 		OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName])
 
 	// parse option
+	if option.SelectForUpdate {
+		var forUpdateOf string
+		if option.SelectForUpdateOf != "" {
+			forUpdateOf = " OF " + option.SelectForUpdateOf
+		}
+		query = query.Suffix("FOR UPDATE" + forUpdateOf)
+	}
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("ProductVariantChannelListings.Id"))
 	}
@@ -103,17 +137,93 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *product_a
 			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)").
 			Where(option.VariantProductID.ToSquirrel("ProductVariants.ProductID"))
 	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
+	if option.SelectRelatedChannel {
+		query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariants.ChannelID)")
 	}
 
-	var res []*product_and_discount.ProductVariantChannelListing
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	rows, err := query.RunWith(runner).Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find product variant channel listings by given option")
+		return nil, errors.Wrap(err, "failed to find product variant channel listings")
+	}
+
+	var (
+		res                   []*product_and_discount.ProductVariantChannelListing
+		chanNel               channel.Channel
+		variantChannelListing product_and_discount.ProductVariantChannelListing
+		scanFields            = ps.ScanFields(variantChannelListing)
+	)
+	if option.SelectRelatedChannel {
+		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel))
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of product variant channel listing")
+		}
+
+		if option.SelectRelatedChannel {
+			variantChannelListing.Channel = chanNel.DeepCopy()
+		}
+		res = append(res, variantChannelListing.DeepCopy())
 	}
 
 	return res, nil
+}
+
+// BulkUpsert performs bulk upsert given product variant channel listings then returns them
+func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	var (
+		isSaving       bool
+		selectUpsertor store.SelectUpsertor = ps.GetMaster()
+	)
+	if transaction != nil {
+		selectUpsertor = transaction
+	}
+
+	for _, listing := range variantChannelListings {
+		isSaving = false
+
+		if !model.IsValidId(listing.Id) {
+			listing.PreSave()
+			isSaving = true
+		}
+
+		if err := listing.IsValid(); err != nil {
+			return nil, err
+		}
+
+		var (
+			err        error
+			numUpdated int64
+			oldListing product_and_discount.ProductVariantChannelListing
+		)
+		if isSaving {
+			err = selectUpsertor.Insert(listing)
+		} else {
+			err = selectUpsertor.SelectOne(&oldListing, "SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listing.Id})
+			if err != nil {
+				if err == sql.ErrNoRows {
+					return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, listing.Id)
+				}
+				return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", listing.Id)
+			}
+
+			listing.CreateAt = oldListing.CreateAt
+
+			numUpdated, err = selectUpsertor.Update(listing)
+		}
+
+		if err != nil {
+			if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
+				return nil, store.NewErrInvalidInput(store.ProductVariantChannelListingTableName, "VariantID/ChannelID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to upsert a product variant channel listing with id=%s", listing.Id)
+		}
+		if numUpdated != 1 {
+			return nil, errors.Errorf("%d product variant channel listing(s) with id=%s was/were updated instead of 1", numUpdated, listing.Id)
+		}
+	}
+
+	return variantChannelListings, nil
 }

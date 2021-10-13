@@ -16,6 +16,36 @@ type GiftCardStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: transaction, giftCards
+func (_m *GiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+	_va := make([]interface{}, len(giftCards))
+	for _i := range giftCards {
+		_va[_i] = giftCards[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, transaction)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []*giftcard.GiftCard
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, ...*giftcard.GiftCard) []*giftcard.GiftCard); ok {
+		r0 = rf(transaction, giftCards...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*giftcard.GiftCard)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, ...*giftcard.GiftCard) error); ok {
+		r1 = rf(transaction, giftCards...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *GiftCardStore) CreateIndexesIfNotExists() {
 	_m.Called()
@@ -60,29 +90,6 @@ func (_m *GiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Upsert provides a mock function with given fields: giftCard
-func (_m *GiftCardStore) Upsert(giftCard *giftcard.GiftCard) (*giftcard.GiftCard, error) {
-	ret := _m.Called(giftCard)
-
-	var r0 *giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(*giftcard.GiftCard) *giftcard.GiftCard); ok {
-		r0 = rf(giftCard)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*giftcard.GiftCard)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*giftcard.GiftCard) error); ok {
-		r1 = rf(giftCard)
 	} else {
 		r1 = ret.Error(1)
 	}

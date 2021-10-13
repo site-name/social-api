@@ -139,13 +139,13 @@ func (a *ServicePayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction *gorp.Transaction, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
 	var err error
 
 	if !model.IsValidId(payMent.Id) {
-		payMent, err = a.srv.Store.Payment().Save(payMent)
+		payMent, err = a.srv.Store.Payment().Save(transaction, payMent)
 	} else {
-		payMent, err = a.srv.Store.Payment().Update(payMent)
+		payMent, err = a.srv.Store.Payment().Update(transaction, payMent)
 	}
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

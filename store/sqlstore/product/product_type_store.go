@@ -77,7 +77,7 @@ func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductTyp
 	return productType, nil
 }
 
-func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	/*
 					checkout
 					|      |
@@ -86,7 +86,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 													 ...checkoutLine <--|              ...product <--|
 	*/
 
-	rows, err := ps.GetQueryBuilder().
+	queryString, args, err := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTypeTableName).
 		InnerJoin(store.ProductTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
@@ -94,34 +94,18 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutID(checkoutToken stri
 		InnerJoin(store.CheckoutLineTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
 		InnerJoin(store.CheckoutTableName + " ON (Checkouts.Token = CheckoutLines.CheckoutID)").
 		Where(squirrel.Eq{"Checkouts.Token": checkoutToken}).
-		RunWith(ps.GetReplica()).
-		Query()
+		ToSql()
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find product types belong to given checkout with id=%s", checkoutToken)
+		return nil, errors.Wrap(err, "FilterProductTypesByCheckoutToken_ToSql")
 	}
 
-	var (
-		productTypes []*product_and_discount.ProductType
-		productType  product_and_discount.ProductType
-		scanFields   = ps.ScanFields(productType)
-	)
+	var productTypes []*product_and_discount.ProductType
 
-	for rows.Next() {
-		err := rows.Scan(scanFields...)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse a row")
-		}
-		productTypes = append(productTypes, &productType)
+	_, err = ps.GetReplica().Select(&productTypes, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find product types related to checkout with token=%s", checkoutToken)
 	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "error closing rows")
-	}
-	if rows.Err() != nil {
-		return nil, errors.Wrapf(rows.Err(), "error occured during rows iteration")
-	}
-
 	return productTypes, nil
 }
 
