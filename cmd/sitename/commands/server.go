@@ -32,12 +32,10 @@ func init() {
 }
 
 func serverCmdF(command *cobra.Command, args []string) error {
-	disableConfigWatch, _ := command.Flags().GetBool("disableconfigwatch")
-
 	interruptChan := make(chan os.Signal, 1)
 
 	if err := util.TranslationsPreInit(); err != nil {
-		return errors.Wrap(err, "unable to load Sitename translation files")
+		return errors.Wrap(err, "unable to load Mattermost translation files")
 	}
 
 	customDefaults, err := loadCustomDefaults()
@@ -45,7 +43,7 @@ func serverCmdF(command *cobra.Command, args []string) error {
 		slog.Warn("Error loading custom configuration defaults: " + err.Error())
 	}
 
-	configStore, err := config.NewStoreFromDSN(getConfigDSN(command, config.GetEnvironment()), !disableConfigWatch, false, customDefaults)
+	configStore, err := config.NewStoreFromDSN(getConfigDSN(command, config.GetEnvironment()), false, customDefaults)
 	if err != nil {
 		return errors.Wrap(err, "failed to load configuration")
 	}

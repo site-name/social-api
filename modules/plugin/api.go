@@ -13,7 +13,6 @@ import (
 
 type PluginIface interface {
 	SetAPI(api API)
-	SetHelpers(helpers Helpers)
 	SetDriver(driver Driver)
 }
 

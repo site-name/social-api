@@ -2,24 +2,7 @@ package plugin
 
 import (
 	"database/sql/driver"
-
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 )
-
-type Helpers interface {
-	KVCompareAndDeleteJSON(key string, oldValue interface{}) (bool, error)
-	KVListWithOptions(options ...KVListOption) ([]string, error)
-	CheckRequiredServerConfiguration(req *model.Config) (bool, error)
-	// ShouldProcessMessage(post *model.Post, options ...ShouldProcessMessageOption) (bool, error)
-	InstallPluginFromURL(downloadURL string, replace bool) (*plugins.Manifest, error)
-	GetPluginAssetURL(pluginID, asset string) (string, error)
-}
-
-// HelpersImpl implements the helpers interface with an API that retrieves data on behalf of the plugin.
-type HelpersImpl struct {
-	API API
-}
 
 // ResultContainer contains the output from the LastInsertID
 // and RowsAffected methods for a given set of rows.
@@ -35,7 +18,7 @@ type ResultContainer struct {
 // Driver is a sql driver interface that is used by plugins to perform
 // raw SQL queries without opening DB connections by themselves. This interface
 // is not subject to backward compatibility guarantees and is only meant to be
-// used by plugins built by the Sitename team.
+// used by plugins built by the Mattermost team.
 type Driver interface {
 	// Connection
 	Conn(isMaster bool) (string, error)
@@ -64,4 +47,15 @@ type Driver interface {
 	RowsNextResultSet(rowsID string) error
 	RowsColumnTypeDatabaseTypeName(rowsID string, index int) string
 	RowsColumnTypePrecisionScale(rowsID string, index int) (int64, int64, bool)
+
+	// TODO: add this
+	// RowsColumnScanType(rowsID string, index int) reflect.Type
+
+	// Note: the following cannot be implemented because either MySQL or PG
+	// does not support it. So this implementation has to be a common subset
+	// of both DB implementations.
+	// RowsColumnTypeLength(rowsID string, index int) (int64, bool)
+	// RowsColumnTypeNullable(rowsID string, index int) (bool, bool)
+	// ResetSession(ctx context.Context) error
+	// IsValid() bool
 }

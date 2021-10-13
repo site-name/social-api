@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -84,7 +85,11 @@ func (s *Server) DoSecurityUpdateCheck() {
 
 		defer res.Body.Close()
 
-		bulletins := model.SecurityBulletinsFromJson(res.Body)
+		var bulletins model.SecurityBulletins
+		if jsonErr := json.JSON.NewDecoder(res.Body).Decode(&bulletins); jsonErr != nil {
+			slog.Error("failed to decode JSON", slog.Err(jsonErr))
+			return
+		}
 
 		for _, bulletin := range bulletins {
 			if bulletin.AppliesToVersion == model.CurrentVersion {

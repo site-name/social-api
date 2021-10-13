@@ -365,6 +365,8 @@ type ServiceSettings struct {
 	OpenExhcnageApiEndPoint                           *string
 	OpenExchangeRateApiKey                            *string `access:"experimental_features"`
 	OpenExchangeRecuringDurationHours                 *int    `access:"experimental_features"`
+	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
+	EnableInlineLatex                                 *bool   `access:"site_posts"`
 
 	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
@@ -382,6 +384,12 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 		} else {
 			s.EnableEmailInvitations = NewBool(true)
 		}
+	}
+	if s.EnablePermalinkPreviews == nil {
+		s.EnablePermalinkPreviews = NewBool(true)
+	}
+	if s.EnableInlineLatex == nil {
+		s.EnableInlineLatex = NewBool(true)
 	}
 
 	if s.SiteURL == nil {
@@ -1333,6 +1341,7 @@ type FileSettings struct {
 	MaxFileSize             *int64  `access:"environment_file_storage,cloud_restrictable"`
 	DriverName              *string `access:"environment_file_storage,write_restrictable,cloud_restrictable"`
 	Directory               *string `access:"environment_file_storage,write_restrictable,cloud_restrictable"`
+	MaxImageResolution      *int64  `access:"environment_file_storage,cloud_restrictable"`
 	EnablePublicLink        *bool   `access:"site_public_links,cloud_restrictable"`
 	ExtractContent          *bool   `access:"environment_file_storage,write_restrictable"`
 	ArchiveRecursion        *bool   `access:"environment_file_storage,write_restrictable"`
@@ -1357,6 +1366,10 @@ func (s *FileSettings) SetDefaults(isUpdate bool) {
 
 	if s.EnableMobileUpload == nil {
 		s.EnableMobileUpload = NewBool(true)
+	}
+
+	if s.MaxImageResolution == nil {
+		s.MaxImageResolution = NewInt64(7680 * 4320) // 8K, ~33MPX
 	}
 
 	if s.EnableMobileDownload == nil {

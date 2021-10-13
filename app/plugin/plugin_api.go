@@ -25,7 +25,7 @@ type PluginAPI struct {
 	id       string
 	app      app.AppIface
 	ctx      *request.Context
-	logger   *slog.SugarLogger
+	logger   slog.Sugar
 	manifest *plugins.Manifest
 }
 
@@ -36,7 +36,7 @@ func NewPluginAPI(a app.AppIface, c *request.Context, manifest *plugins.Manifest
 		manifest: manifest,
 		ctx:      c,
 		app:      a,
-		logger:   a.Log().With(slog.String("plugin_id", manifest.Id)).Sugar(),
+		logger:   a.Log().Sugar(slog.String("plugin_id", manifest.Id)),
 	}
 }
 
@@ -397,7 +397,7 @@ func (api *PluginAPI) PluginHTTP(request *http.Request) *http.Response {
 	if len(split) != 3 {
 		return &http.Response{
 			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("Not enough URL. Form of URL should be /<pluginid>/*")),
+			Body:       io.NopCloser(bytes.NewBufferString("Not enough URL. Form of URL should be /<pluginid>/*")),
 		}
 	}
 	destinationPluginId := split[1]

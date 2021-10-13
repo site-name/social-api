@@ -321,26 +321,3 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 	u.RawQuery = q.Encode()
 	return u.String()
 }
-
-// Validates RedirectURL passed during OAuth or SAML
-// func IsValidWebAuthRedirectURL(config *model.Config, redirectURL string) bool {
-// 	u, err := url.Parse(redirectURL)
-// 	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
-// 		if config.ServiceSettings.SiteURL != nil {
-// 			siteURL := *config.ServiceSettings.SiteURL
-// 			return strings.Index(strings.ToLower(redirectURL), strings.ToLower(siteURL)) == 0
-// 		}
-// 		return false
-// 	}
-// 	return true
-// }
-
-// Validates Mobile Custom URL Scheme passed during OAuth or SAML
-// func IsValidMobileAuthRedirectURL(config *model.Config, redirectURL string) bool {
-// 	for _, URLScheme := range config.NativeAppSettings.AppCustomURLSchemes {
-// 		if strings.Index(strings.ToLower(redirectURL), strings.ToLower(URLScheme)) == 0 {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }

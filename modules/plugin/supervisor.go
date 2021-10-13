@@ -21,6 +21,7 @@ type supervisor struct {
 	hooks       Hooks
 	implemented [TotalHooksID]bool
 	pid         int
+	hooksClient *hooksRPCClient
 }
 
 func newSupervisor(pluginInfo *plugins.BundleInfo, apiImpl API, driver Driver, parentLogger *slog.Logger, metrics einterfaces.MetricsInterface) (retSupervisor *supervisor, retErr error) {
@@ -34,7 +35,7 @@ func newSupervisor(pluginInfo *plugins.BundleInfo, apiImpl API, driver Driver, p
 	wrappedLogger := pluginInfo.WrapLogger(parentLogger)
 
 	hclogAdaptedLogger := &hclogAdapter{
-		wrappedLogger: wrappedLogger.WithCallerSkip(1),
+		wrappedLogger: wrappedLogger,
 		extrasKey:     "wrapped_extras",
 	}
 
@@ -83,6 +84,11 @@ func newSupervisor(pluginInfo *plugins.BundleInfo, apiImpl API, driver Driver, p
 		return nil, err
 	}
 
+	c, ok := raw.(*hooksRPCClient)
+	if ok {
+		sup.hooksClient = c
+	}
+
 	sup.hooks = &hooksTimerLayer{pluginInfo.Manifest.Id, raw.(Hooks), metrics}
 
 	impl, err := sup.hooks.Implemented()
@@ -103,6 +109,11 @@ func (sup *supervisor) Shutdown() {
 	defer sup.lock.RUnlock()
 	if sup.client != nil {
 		sup.client.Kill()
+	}
+
+	// Wait for API RPC server and DB RPC server to exit.
+	if sup.hooksClient != nil {
+		sup.hooksClient.doneWg.Wait()
 	}
 }
 

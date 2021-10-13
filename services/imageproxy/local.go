@@ -43,12 +43,7 @@ func makeLocalBackend(proxy *ImageProxy) *LocalBackend {
 	impl := imageproxy.NewProxy(proxy.HTTPService.MakeTransport(false), nil)
 
 	if proxy.Logger != nil {
-		logger, err := proxy.Logger.StdLogAt(slog.LevelDebug, slog.String("image_proxy", "local"))
-		if err != nil {
-			slog.Warn("Failed to initialize logger for image proxy", slog.Err(err))
-		}
-
-		impl.Logger = logger
+		impl.Logger = proxy.Logger.With(slog.String("image_proxy", "local")).StdLogger(slog.LvlDebug)
 	}
 
 	baseURL, err := url.Parse(*proxy.ConfigService.Config().ServiceSettings.SiteURL)

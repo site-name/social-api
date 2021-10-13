@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/searchengine"
 	"github.com/sitename/sitename/store"
@@ -49,16 +48,6 @@ func NewMainHelper() *MainHelper {
 func NewMainHelperWithOptions(options *HelperOptions) *MainHelper {
 	var mainHelper MainHelper
 	flag.Parse()
-
-	// Setup a global logger to catch tests logging outside of app context
-	// The global logger will be stomped by apps initializing but that's fine for testing.
-	// Ideally this won't happen.
-	slog.InitGlobalLogger(slog.NewLogger(&slog.LoggerConfiguration{
-		EnableConsole: true,
-		ConsoleJson:   true,
-		ConsoleLevel:  "error",
-		EnableFile:    false,
-	}))
 
 	util.TranslationsPreInit()
 
