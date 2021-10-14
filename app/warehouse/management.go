@@ -806,11 +806,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 
 	allVariantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: variants.IDs(),
-				},
-			},
+			VariantID:            squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): variants.IDs()},
 			SelectRelatedChannel: true,
 			SelectForUpdate:      true,
 			SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
@@ -981,11 +977,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 
 	variantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: productVariant.Id,
-				},
-			},
+			VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): productVariant.Id},
 		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -1055,11 +1047,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	// NOTE: call the same query as above
 	// the found result may difer the above since some row(s) may have been added during the period prior to this moment.
 	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productVariant.Id,
-			},
-		},
+		VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): productVariant.Id},
 	})
 	if appErr != nil {
 		return nil, appErr

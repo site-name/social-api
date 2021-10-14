@@ -756,16 +756,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 		}
 
 		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: variant.Id,
-				},
-			},
-			ChannelID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: chanNel.Id,
-				},
-			},
+			VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): variant.Id},
+			ChannelID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("ChannelID"): chanNel.Id},
 		})
 		if appErr != nil {
 			return nil, nil, appErr // NOTE: does not care what type of error, just return

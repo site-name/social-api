@@ -261,10 +261,18 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 	if options.ForUpdateOf != "" && options.LockForUpdate {
 		query = query.Suffix("OF " + options.ForUpdateOf)
 	}
+
+	groupBy := []string{}
+
 	if options.AnnotateAvailabeQuantity {
 		query = query.
 			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0)"), "AvailableQuantity")).
 			LeftJoin(store.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
+		groupBy = append(groupBy, "Stocks.Id")
+	}
+
+	if len(groupBy) > 0 {
+		query = query.GroupBy(groupBy...)
 	}
 
 	queryString, args, err := query.ToSql()

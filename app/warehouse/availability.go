@@ -3,6 +3,7 @@ package warehouse
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
@@ -260,8 +261,82 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	return nil, nil
 }
 
+type structObject struct {
+	AvailablePreorderQuantity int
+	PreorderQuantityThreshold *int
+}
+
 // CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 // :raises InsufficientStock: when there is not enough available items for a variant.
-func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
-	panic("not implemented")
+func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_discount.ProductVariants, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
+	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
+		VariantID:                         squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): variants.IDs()},
+		SelectRelatedChannel:              true,
+		AnnotatePreorderQuantityAllocated: true,
+		AnnotateAvailablePreorderQuantity: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		// variantsChannelAvailability has keys are product variant ids
+		variantsChannelAvailability = map[string]structObject{}
+		// variantChannels has keys are product variant ids
+		variantChannels = map[string][]*product_and_discount.ProductVariantChannelListing{}
+		// variantsGlobalAllocations has keys are product variant ids
+		variantsGlobalAllocations = map[string]int{}
+	)
+
+	for _, channelListing := range allVariantChannelListings {
+		if channelListing.Channel != nil && channelListing.Channel.Slug == channelSlug {
+
+			variantsChannelAvailability[channelListing.VariantID] = structObject{
+				AvailablePreorderQuantity: channelListing.Get_availablePreorderQuantity(),
+				PreorderQuantityThreshold: channelListing.PreorderQuantityThreshold,
+			}
+
+		}
+
+		variantChannels[channelListing.VariantID] = append(variantChannels[channelListing.VariantID], channelListing)
+	}
+
+	for variantID, channelListings := range variantChannels {
+		for _, channelListing := range channelListings {
+			variantsGlobalAllocations[variantID] += channelListing.Get_preorderQuantityAllocated()
+		}
+	}
+
+	var insufficientStocks []*exception.InsufficientStockData
+	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+		var (
+			variant  = variants[i]
+			quantity = quantities[i]
+		)
+
+		if variantsChannelAvailability[variant.Id].PreorderQuantityThreshold != nil {
+			if quantity > variantsChannelAvailability[variant.Id].AvailablePreorderQuantity {
+				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+					Variant:           *variant,
+					AvailableQuantity: variantsChannelAvailability[variant.Id].PreorderQuantityThreshold,
+				})
+			}
+		}
+
+		if variant.PreOrderGlobalThreshold != nil {
+			globalQuantity := *variant.PreOrderGlobalThreshold - variantsGlobalAllocations[variant.Id]
+			if quantity > globalQuantity {
+				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+					Variant:           *variant,
+					AvailableQuantity: &globalQuantity,
+				})
+			}
+		}
+	}
+
+	if len(insufficientStocks) > 0 {
+		return exception.NewInsufficientStock(insufficientStocks), nil
+	}
+
+	return nil, nil
 }

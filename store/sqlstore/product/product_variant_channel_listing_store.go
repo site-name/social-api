@@ -20,7 +20,7 @@ func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariant
 	pvcls := &SqlProductVariantChannelListingStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductVariantChannelListing{}, store.ProductVariantChannelListingTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.ProductVariantChannelListing{}, pvcls.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
@@ -32,8 +32,8 @@ func NewSqlProductVariantChannelListingStore(s store.Store) store.ProductVariant
 }
 
 func (ps *SqlProductVariantChannelListingStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductVariantChannelListingTableName, "VariantID", store.ProductVariantTableName, "Id", true)
-	ps.CreateForeignKeyIfNotExists(store.ProductVariantChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "VariantID", store.ProductVariantTableName, "Id", true)
+	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "ChannelID", store.ChannelTableName, "Id", true)
 }
 
 func (ps *SqlProductVariantChannelListingStore) ModelFields() []string {
@@ -62,11 +62,17 @@ func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_d
 	}
 }
 
+// TableName returns either:
+//  "ProductVariantChannelListings" || "ProductVariantChannelListings." + withField
 func (ps *SqlProductVariantChannelListingStore) TableName(withField string) string {
 	if withField == "" {
 		return "ProductVariantChannelListings"
 	}
 	return "ProductVariantChannelListings." + withField
+}
+
+func (ps *SqlProductVariantChannelListingStore) Ordering() string {
+	return "CreateAt ASC"
 }
 
 // Save insert given value into database then returns it with an error
@@ -79,7 +85,7 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *prod
 	err := ps.GetMaster().Insert(variantChannelListing)
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-			return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, variantChannelListing.Id)
+			return nil, store.NewErrNotFound(ps.TableName(""), variantChannelListing.Id)
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant channel listing with id=%s", variantChannelListing.Id)
 	}
@@ -90,10 +96,10 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *prod
 // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
 	var res product_and_discount.ProductVariantChannelListing
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": variantChannelListingID})
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+ps.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": variantChannelListingID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, variantChannelListingID)
+			return nil, store.NewErrNotFound(ps.TableName(""), variantChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", variantChannelListingID)
 	}
@@ -112,11 +118,17 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 	if option.SelectRelatedChannel {
 		selectFields = append(selectFields, ps.Channel().ModelFields()...)
 	}
+	if option.AnnotateAvailablePreorderQuantity {
+		selectFields = append(selectFields, `ProductVariantChannelListings.PreorderQuantityThreshold - COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS availablePreorderQuantity`)
+	}
+	if option.AnnotatePreorderQuantityAllocated {
+		selectFields = append(selectFields, `COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS preorderQuantityAllocated`)
+	}
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ProductVariantChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName])
+		From(ps.TableName("")).
+		OrderBy(ps.Ordering())
 
 	// parse option
 	if option.SelectForUpdate {
@@ -127,25 +139,39 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 		query = query.Suffix("FOR UPDATE" + forUpdateOf)
 	}
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("ProductVariantChannelListings.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.VariantID != nil {
-		query = query.Where(option.VariantID.ToSquirrel("ProductVariantChannelListings.VariantID"))
+		query = query.Where(option.VariantID)
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ProductVariantChannelListings.ChannelID"))
+		query = query.Where(option.ChannelID)
 	}
-
 	if option.PriceAmount != nil {
-		query = query.Where(option.PriceAmount.ToSquirrel("ProductVariantChannelListings.PriceAmount"))
+		query = query.Where(option.PriceAmount)
 	}
 	if option.VariantProductID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)").
-			Where(option.VariantProductID.ToSquirrel("ProductVariants.ProductID"))
+			Where(option.VariantProductID)
 	}
 	if option.SelectRelatedChannel {
 		query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariants.ChannelID)")
+	}
+
+	var groupBy []string
+
+	if option.AnnotateAvailablePreorderQuantity || option.AnnotatePreorderQuantityAllocated {
+		query = query.LeftJoin(store.PreOrderAllocationTableName + " ON (PreorderAllocations.ProductVariantChannelListingID = ProductVariantChannelListings.Id)")
+		groupBy = append(groupBy, "ProductVariantChannelListings.Id")
+
+		if option.SelectRelatedChannel {
+			groupBy = append(groupBy, "Channels.Id")
+		}
+	}
+
+	if len(groupBy) > 0 {
+		query = query.GroupBy(groupBy...)
 	}
 
 	rows, err := query.RunWith(runner).Query()
@@ -154,13 +180,21 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 	}
 
 	var (
-		res                   []*product_and_discount.ProductVariantChannelListing
-		chanNel               channel.Channel
-		variantChannelListing product_and_discount.ProductVariantChannelListing
-		scanFields            = ps.ScanFields(variantChannelListing)
+		res                       []*product_and_discount.ProductVariantChannelListing
+		chanNel                   channel.Channel
+		variantChannelListing     product_and_discount.ProductVariantChannelListing
+		availablePreorderQuantity int
+		preorderQuantityAllocated int
+		scanFields                = ps.ScanFields(variantChannelListing)
 	)
 	if option.SelectRelatedChannel {
 		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel))
+	}
+	if option.AnnotateAvailablePreorderQuantity {
+		scanFields = append(scanFields, &availablePreorderQuantity)
+	}
+	if option.AnnotatePreorderQuantityAllocated {
+		scanFields = append(scanFields, &preorderQuantityAllocated)
 	}
 
 	for rows.Next() {
@@ -171,6 +205,14 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 
 		if option.SelectRelatedChannel {
 			variantChannelListing.Channel = chanNel.DeepCopy()
+		}
+		if option.AnnotateAvailablePreorderQuantity {
+			var copied_availablePreorderQuantity int = availablePreorderQuantity
+			variantChannelListing.Set_availablePreorderQuantity(copied_availablePreorderQuantity)
+		}
+		if option.AnnotatePreorderQuantityAllocated {
+			var copied_preorderQuantityAllocated int = preorderQuantityAllocated
+			variantChannelListing.Set_preorderQuantityAllocated(copied_preorderQuantityAllocated)
 		}
 		res = append(res, variantChannelListing.DeepCopy())
 	}

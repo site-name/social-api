@@ -26,9 +26,11 @@ type WarehouseService interface {
 	// If there is less quantity in stocks then rise InsufficientStock exception.
 	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError)
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
-	AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlun string) *model.AppError
+	AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
 	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)
+	// BulkCreate tells store to insert given preorder allocations into database then returns them
+	BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError)
 	// BulkDeleteAllocations performs bulk delete given allocations.
 	// If non-nil transaction is provided, perform bulk delete operation within it.
 	BulkDeleteAllocations(transaction *gorp.Transaction, allocationIDs []string) *model.AppError
@@ -38,7 +40,7 @@ type WarehouseService interface {
 	BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError)
 	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 	// :raises InsufficientStock: when there is not enough available items for a variant.
-	CheckPreorderThresholdBulk(variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError)
+	CheckPreorderThresholdBulk(variants product_and_discount.ProductVariants, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
 	// or there is not enough available preorder items for a variant.

@@ -570,9 +570,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo *checkout.CheckoutInfo, order
 		return nil, insufficientStockErr, appErr
 	}
 
-	appErr = s.srv.WarehouseService().AllocatePreOrders(orderLinesInfo, checkoutInfo.Channel.Slug)
-	if appErr != nil {
-		return nil, nil, appErr
+	insufficientStockErr, appErr = s.srv.WarehouseService().AllocatePreOrders(orderLinesInfo, checkoutInfo.Channel.Slug)
+	if insufficientStockErr != nil || appErr != nil {
+		return nil, insufficientStockErr, appErr
 	}
 
 	appErr = s.srv.OrderService().AddGiftcardsToOrder(transaction, checkoutInfo, createdNewOrder, totalPriceLeft, user, nil)

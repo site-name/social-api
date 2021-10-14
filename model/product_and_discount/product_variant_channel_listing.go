@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -22,21 +23,42 @@ type ProductVariantChannelListing struct {
 	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
 	CreateAt                  int64            `json:"create_at"`
 
-	Channel *channel.Channel `json:"-" db:"-"`
+	preorderQuantityAllocated int              `json:"-" db:"-"` // this field got populated in some db queries
+	availablePreorderQuantity int              `json:"-" db:"-"`
+	Channel                   *channel.Channel `json:"-" db:"-"` // this field got populated in some db queries
 }
 
 // ProductVariantChannelListingFilterOption is used to build sql queries
 type ProductVariantChannelListingFilterOption struct {
-	Id          *model.StringFilter
-	VariantID   *model.StringFilter
-	ChannelID   *model.StringFilter
-	PriceAmount *model.NumberFilter
+	Id          squirrel.Sqlizer
+	VariantID   squirrel.Sqlizer
+	ChannelID   squirrel.Sqlizer
+	PriceAmount squirrel.Sqlizer
 
-	VariantProductID *model.StringFilter // INNER JOIN ProductVariants WHERE ProductVariants.ProductID ...
+	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants WHERE ProductVariants.ProductID ...
 
 	SelectRelatedChannel bool   // tell store to select related Channel(s)
 	SelectForUpdate      bool   // if true, add `FOR UPDATE` to the end of query
 	SelectForUpdateOf    string // if provided, tell database system to lock on specific row(s)
+
+	AnnotatePreorderQuantityAllocated bool // set true to populate `preorderQuantityAllocated` field of returning product variant channel listings
+	AnnotateAvailablePreorderQuantity bool // set true to populate `availablePreorderQuantity` field of returning product variant channel listings
+}
+
+func (p *ProductVariantChannelListing) Set_preorderQuantityAllocated(value int) {
+	p.preorderQuantityAllocated = value
+}
+
+func (p *ProductVariantChannelListing) Get_preorderQuantityAllocated() int {
+	return p.preorderQuantityAllocated
+}
+
+func (p *ProductVariantChannelListing) Set_availablePreorderQuantity(value int) {
+	p.availablePreorderQuantity = value
+}
+
+func (p *ProductVariantChannelListing) Get_availablePreorderQuantity() int {
+	return p.availablePreorderQuantity
 }
 
 type ProductVariantChannelListings []*ProductVariantChannelListing

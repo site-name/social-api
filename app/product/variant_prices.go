@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -15,16 +16,8 @@ import (
 // getVariantPricesInChannelsDict
 func (a *ServiceProduct) getVariantPricesInChannelsDict(product *product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
 	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: product.Id,
-			},
-		},
-		PriceAmount: &model.NumberFilter{
-			NumberOption: &model.NumberOption{
-				NULL: model.NewBool(false),
-			},
-		},
+		VariantProductID: squirrel.Eq{a.srv.Store.ProductVariant().TableName("ProductID"): product.Id},
+		PriceAmount:      squirrel.NotEq{a.srv.Store.ProductVariantChannelListing().TableName("PriceAmount"): nil},
 	})
 	if appErr != nil {
 		return nil, appErr
