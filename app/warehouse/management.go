@@ -789,49 +789,112 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 }
 
 // AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
-func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlun string) *model.AppError {
+func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
 	// init transaction
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return model.NewAppError("AllocatePreOrders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("AllocatePreOrders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	orderLinesInfoWithPreOrder := s.GetOrderLinesWithPreOrder(orderLinesInfo)
 	if len(orderLinesInfoWithPreOrder) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	variants := orderLinesInfoWithPreOrder.Variants()
 
-	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: variants.IDs(),
+	allVariantChannelListings, appErr := s.srv.ProductService().
+		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+			VariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					In: variants.IDs(),
+				},
 			},
-		},
-		SelectRelatedChannel: true,
-		SelectForUpdate:      true,
-		SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
-	})
+			SelectRelatedChannel: true,
+			SelectForUpdate:      true,
+			SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
+		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
-			return appErr
+			return nil, appErr
 		}
 	}
 
 	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: allVariantChannelListings.IDs(),
-			},
-		},
+		ProductVariantChannelListingID: squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("ProductVariantChannelListingID"): allVariantChannelListings.IDs()},
+		Quantity:                       squirrel.Gt{s.srv.Store.PreorderAllocation().TableName("Quantity"): 0},
 	})
 
 	var (
+		// quantityAllocationForChannel has keys are product variant channel listing ids
 		quantityAllocationForChannel = map[string]int{}
+		// variantToChannelListings has keys are product variant ids
+		variantToChannelListings = map[string]*variantChannelDataType{}
+		// variantsGlobalAllocations has keys are product variant ids
+		variantsGlobalAllocations = map[string]int{}
 	)
 
+	for _, allocation := range quantityAllocationList {
+		quantityAllocationForChannel[allocation.ProductVariantChannelListingID] += allocation.Quantity
+	}
+
+	for _, channelListing := range allVariantChannelListings {
+		if channelListing.Channel.Slug == channelSlug {
+			variantToChannelListings[channelListing.VariantID] = &variantChannelDataType{
+				ChannelListingID:         channelListing.Id,
+				ChannelQuantityThreshold: channelListing.PreorderQuantityThreshold,
+			}
+		}
+
+		variantsGlobalAllocations[channelListing.VariantID] += quantityAllocationForChannel[channelListing.Id]
+	}
+
+	var (
+		insufficientStocks []*exception.InsufficientStockData
+		allocations        []*warehouse.PreorderAllocation
+	)
+
+	for _, lineInfo := range orderLinesInfo {
+		variant := lineInfo.Variant
+		if variant != nil {
+			allocationItem, insufficientStockData, appErr := s.createPreorderAllocation(
+				lineInfo,
+				variantToChannelListings[variant.Id],
+				variantsGlobalAllocations[variant.Id],
+				quantityAllocationForChannel,
+			)
+
+			if appErr != nil {
+				return nil, appErr // invalid argument app error
+			}
+
+			if allocationItem != nil {
+				allocations = append(allocations, allocationItem)
+			}
+			if insufficientStockData != nil {
+				insufficientStocks = append(insufficientStocks, insufficientStockData)
+			}
+		}
+	}
+
+	if len(insufficientStocks) > 0 {
+		return exception.NewInsufficientStock(insufficientStocks), nil
+	}
+
+	if len(allocations) > 0 {
+		_, appErr = s.BulkCreate(transaction, allocations)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction.
+	if err = transaction.Commit(); err != nil {
+		return nil, model.NewAppError("AllocatePreorders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
 }
 
 // GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
@@ -916,13 +979,14 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 		return nil, nil
 	}
 
-	channelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productVariant.Id,
+	variantChannelListings, appErr := s.srv.ProductService().
+		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+			VariantID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: productVariant.Id,
+				},
 			},
-		},
-	})
+		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -930,13 +994,9 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	}
 
 	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: channelListings.IDs(),
-			},
-		},
-		SelectRelated_OrderLine:       true,
-		SelectRelated_OrderLine_Order: true,
+		ProductVariantChannelListingID: squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("ProductVariantChannelListingID"): variantChannelListings.IDs()},
+		SelectRelated_OrderLine:        true,
+		SelectRelated_OrderLine_Order:  true,
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -1036,18 +1096,13 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorp.Trans
 	}
 
 	var orDer *order.Order
-
 	if preorderAllocation.OrderLine != nil && preorderAllocation.OrderLine.Order != nil {
 		orDer = preorderAllocation.OrderLine.Order
 	} else {
 		preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
 			SelectRelated_OrderLine:       true,
 			SelectRelated_OrderLine_Order: true,
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: preorderAllocation.Id,
-				},
-			},
+			Id:                            squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("Id"): preorderAllocation.Id},
 		})
 		if appErr != nil {
 			return nil, nil, appErr

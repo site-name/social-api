@@ -62,6 +62,13 @@ func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_d
 	}
 }
 
+func (ps *SqlProductVariantChannelListingStore) TableName(withField string) string {
+	if withField == "" {
+		return "ProductVariantChannelListings"
+	}
+	return "ProductVariantChannelListings." + withField
+}
+
 // Save insert given value into database then returns it with an error
 func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
 	variantChannelListing.PreSave()

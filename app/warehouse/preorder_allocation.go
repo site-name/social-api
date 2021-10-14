@@ -6,6 +6,7 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/store"
 )
 
 // PreOrderAllocationsByOptions returns a list of preorder allocations filtered using given options
@@ -36,4 +37,22 @@ func (s *ServiceWarehouse) DeletePreorderAllocations(transaction *gorp.Transacti
 		return model.NewAppError("DeletePreorderAllocations", "app.warehouse.error_deleting_preorder_allocations_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return nil
+}
+
+// BulkCreate tells store to insert given preorder allocations into database then returns them
+func (s *ServiceWarehouse) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError) {
+	allocations, err := s.srv.Store.PreorderAllocation().BulkCreate(transaction, preorderAllocations)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("BulkCreate", "app.warehouse.error_bulk_creating_preorder_allocations.app_error", nil, err.Error(), statusCode)
+	}
+
+	return allocations, nil
 }

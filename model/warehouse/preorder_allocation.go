@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 )
@@ -16,10 +17,10 @@ type PreorderAllocation struct {
 
 // PreorderAllocationFilterOption is used to build squirrel sql queries
 type PreorderAllocationFilterOption struct {
-	Id                             *model.StringFilter
-	OrderLineID                    *model.StringFilter
-	Quantity                       *model.NumberFilter
-	ProductVariantChannelListingID *model.StringFilter
+	Id                             squirrel.Sqlizer
+	OrderLineID                    squirrel.Sqlizer
+	Quantity                       squirrel.Sqlizer
+	ProductVariantChannelListingID squirrel.Sqlizer
 
 	SelectRelated_OrderLine       bool // INNER JOIN OrderLines ON ...
 	SelectRelated_OrderLine_Order bool // INNER JOIN Orders ON ...

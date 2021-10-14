@@ -420,6 +420,8 @@ type (
 	PreorderAllocationStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
+		BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
 		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
 		Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error                               // Delete deletes preorder-allocations by given ids
@@ -509,6 +511,7 @@ type (
 	ProductVariantChannelListingStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
 		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
 		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                           // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                      // Get finds and returns 1 product variant channel listing based on given variantChannelListingID

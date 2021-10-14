@@ -671,11 +671,11 @@ func (t *UploadFileTask) init(a *ServiceFile) {
 	t.saveToDatabase = a.srv.Store.FileInfo().Save
 }
 
-// // UploadFileX uploads a single file as specified in t. It applies the upload
-// // constraints, executes plugins and image processing logic as needed. It
-// // returns a filled-out FileInfo and an optional error. A plugin may reject the
-// // upload, returning a rejection error. In this case FileInfo would have
-// // contained the last "good" FileInfo before the execution of that plugin.
+// UploadFileX uploads a single file as specified in t. It applies the upload
+// constraints, executes plugins and image processing logic as needed. It
+// returns a filled-out FileInfo and an optional error. A plugin may reject the
+// upload, returning a rejection error. In this case FileInfo would have
+// contained the last "good" FileInfo before the execution of that plugin.
 func (a *ServiceFile) UploadFileX(c *request.Context, channelID, name string, input io.Reader, opts ...func(*UploadFileTask)) (*file.FileInfo, *model.AppError) {
 
 	t := &UploadFileTask{
@@ -1226,8 +1226,8 @@ func (a *ServiceFile) CopyFileInfos(userID string, fileIDs []string) ([]string, 
 	return newFileIds, nil
 }
 
-// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
-// // Ensure the zip file name ends with a .zip
+// This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
+// Ensure the zip file name ends with a .zip
 func (a *ServiceFile) CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error {
 	// Create Zip File (temporarily stored on disk)
 	conglomerateZipFile, err := os.Create(zipFileName)

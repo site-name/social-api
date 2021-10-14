@@ -47,6 +47,39 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.Pr
 	}
 }
 
+func (ws *SqlPreorderAllocationStore) TableName(withField string) string {
+	if withField == "" {
+		return "PreorderAllocations"
+	}
+	return "PreorderAllocations." + withField
+}
+
+// BulkCreate bulk inserts given preorderAllocations and returns them
+func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+	var upsertor store.Upsertor = ws.GetMaster()
+	if transaction != nil {
+		upsertor = transaction
+	}
+
+	for _, allocation := range preorderAllocations {
+		allocation.PreSave()
+
+		if err := allocation.IsValid(); err != nil {
+			return nil, err
+		}
+
+		err := upsertor.Insert(allocation)
+		if err != nil {
+			if ws.IsUniqueConstraintError(err, []string{"OrderLineID", "ProductVariantChannelListingID", "preorderallocations_orderlineid_productvariantchannellistingid_key"}) {
+				return nil, store.NewErrInvalidInput(store.PreOrderAllocationTableName, "OrderLineID/ProductVariantChannelListingID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to insert preorder allocation with id=%s", allocation.Id)
+		}
+	}
+
+	return preorderAllocations, nil
+}
+
 // FilterByOption finds and returns a list of preorder allocations filtered using given options
 func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
 	selectFields := ws.ModelFields()
@@ -63,16 +96,16 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 	andConditions := squirrel.And{}
 	// parse options
 	if options.Id != nil {
-		andConditions = append(andConditions, options.Id.ToSquirrel("PreorderAllocations.Id"))
+		andConditions = append(andConditions, options.Id)
 	}
 	if options.OrderLineID != nil {
-		andConditions = append(andConditions, options.OrderLineID.ToSquirrel("PreorderAllocations.OrderLineID"))
+		andConditions = append(andConditions, options.OrderLineID)
 	}
 	if options.Quantity != nil {
-		andConditions = append(andConditions, options.Quantity.ToSquirrel("PreorderAllocations.Quantity"))
+		andConditions = append(andConditions, options.Quantity)
 	}
 	if options.ProductVariantChannelListingID != nil {
-		andConditions = append(andConditions, options.ProductVariantChannelListingID.ToSquirrel("PreorderAllocations.ProductVariantChannelListingID"))
+		andConditions = append(andConditions, options.ProductVariantChannelListingID)
 	}
 
 	if options.SelectRelated_OrderLine {

@@ -1,7 +1,7 @@
 package einterfaces
 
 import (
-	"github.com/mattermost/logr"
+	"github.com/mattermost/logr/v2"
 )
 
 type MetricsInterface interface {

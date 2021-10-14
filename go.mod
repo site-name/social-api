@@ -28,7 +28,6 @@ require (
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-hclog v1.0.0
-	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-plugin v1.4.3
 	github.com/hashicorp/memberlist v0.2.4
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7
@@ -41,7 +40,6 @@ require (
 	github.com/mattermost/gosaml2 v0.3.3
 	github.com/mattermost/gziphandler v0.0.1
 	github.com/mattermost/ldap v3.0.4+incompatible
-	github.com/mattermost/logr v1.0.13
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/minio/minio-go/v7 v7.0.14
@@ -52,7 +50,6 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/cors v1.8.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
-	github.com/sirupsen/logrus v1.8.1
 	github.com/site-name/decimal v1.3.0
 	github.com/site-name/go-prices v1.1.2
 	github.com/site-name/i18naddress v0.0.0-20210815055342-14130957b11d
@@ -66,15 +63,11 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.4
-	github.com/wiggin77/merror v1.0.3
-	github.com/wiggin77/srslog v1.0.1
-	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.7
 	gopkg.in/mail.v2 v2.3.1
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/olivere/elastic.v6 v6.2.37
 	gopkg.in/yaml.v2 v2.4.0
 	willnorris.com/go/imageproxy v0.10.0
@@ -138,8 +131,8 @@ require (
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
-	github.com/mattermost/logr/v2 v2.0.15
 	github.com/mailru/easyjson v0.7.0 // indirect
+	github.com/mattermost/logr/v2 v2.0.15
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
@@ -181,13 +174,11 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/wiggin77/cfg v1.0.2 // indirect
 	github.com/willf/bitset v1.1.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.opentelemetry.io/otel v0.11.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/exp v0.0.0-20200908183739-ae8ad444f925 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
@@ -201,4 +192,12 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	willnorris.com/go/gifresize v1.0.0 // indirect
+)
+
+require (
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/wiggin77/merror v1.0.3 // indirect
+	github.com/wiggin77/srslog v1.0.1 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

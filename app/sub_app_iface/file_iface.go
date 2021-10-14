@@ -16,9 +16,15 @@ import (
 
 // FileService contains methods for working with files
 type FileService interface {
-	// // This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
-	// // Ensure the zip file name ends with a .zip
+	// This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
+	// Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
+	// UploadFileX uploads a single file as specified in t. It applies the upload
+	// constraints, executes plugins and image processing logic as needed. It
+	// returns a filled-out FileInfo and an optional error. A plugin may reject the
+	// upload, returning a rejection error. In this case FileInfo would have
+	// contained the last "good" FileInfo before the execution of that plugin.
+	UploadFileX(c *request.Context, channelID, name string, input io.Reader, opts ...func(*UploadFileTask)) (*file.FileInfo, *model.AppError)
 	// Caller must close the first return value
 	FileReader(path string) (filestore.ReadCloseSeeker, *model.AppError)
 	// FileBackend returns filebackend of the system
@@ -39,6 +45,8 @@ type FileService interface {
 	TestFileStoreConnection() *model.AppError
 	// TestFileStoreConnectionWithConfig test file backend connection with config
 	TestFileStoreConnectionWithConfig(settings *model.FileSettings) *model.AppError
+	// UploadFile uploads a single file in form of a completely constructed byte array for a channel.
+	UploadFile(c *request.Context, data []byte, channelID string, filename string) (*file.FileInfo, *model.AppError)
 	// Uploads some files to the given team and channel as the given user. files and filenames should have
 	// the same length. clientIds should either not be provided or have the same length as files and filenames.
 	// The provided files should be closed by the caller so that they are not leaked.
