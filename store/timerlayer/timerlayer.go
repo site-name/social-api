@@ -3663,6 +3663,22 @@ func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction,
 	return result, err
 }
 
+func (s *TimerLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftcardEventStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
 	start := timemodule.Now()
 
@@ -3677,6 +3693,22 @@ func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Get", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerGiftcardEventStore) Ordering() string {
+	start := timemodule.Now()
+
+	result := s.GiftcardEventStore.Ordering()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Ordering", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
@@ -4846,6 +4878,22 @@ func (s *TimerLayerPreferenceStore) Save(preferences *model.Preferences) error {
 	return err
 }
 
+func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+	start := timemodule.Now()
+
+	result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PreorderAllocationStore.BulkCreate", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
 	start := timemodule.Now()
 
@@ -5326,6 +5374,22 @@ func (s *TimerLayerProductVariantStore) Update(transaction *gorp.Transaction, va
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductVariantChannelListingStore.BulkUpsert", success, elapsed)
 	}
 	return result, err
 }

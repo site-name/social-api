@@ -1,6 +1,9 @@
 package giftcard
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 // The different gift card event types
 type GiftCardEvents string
@@ -47,6 +50,13 @@ type GiftCardEvent struct {
 	Parameters model.StringInterface `json:"parameters"`  // default map[stirng]string{}
 	UserID     *string               `json:"user_id"`     // ON DELETE SET NULL
 	GiftcardID string                `json:"giftcard_id"` // ON DELETE CASCADE
+}
+
+// GiftCardEventFilterOption is used for building squirrel queries.
+type GiftCardEventFilterOption struct {
+	Id         squirrel.Sqlizer
+	Type       squirrel.Sqlizer
+	Parameters squirrel.Sqlizer
 }
 
 func (g *GiftCardEvent) IsValid() *model.AppError {

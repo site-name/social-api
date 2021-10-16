@@ -57,6 +57,8 @@ type DiscountService interface {
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
+	// GeneratePromoCode randomly generate promo code
+	GeneratePromoCode() string
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
 	//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
@@ -75,6 +77,8 @@ type DiscountService interface {
 	GetVoucherTranslationByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, *model.AppError)
 	// IncreaseVoucherUsage increase voucher's uses by 1
 	IncreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError
+	// IsValidPromoCode checks if given code is valid giftcard code or voucher code
+	IsValidPromoCode(code string) bool
 	// OrderDiscountsByOption filters and returns order discounts with given option
 	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)
 	// PromoCodeIsVoucher checks if given code is belong to a voucher

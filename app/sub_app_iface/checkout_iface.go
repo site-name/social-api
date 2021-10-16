@@ -37,7 +37,7 @@ type CheckoutService interface {
 	// If quantity is set to 0, checkout line will be deleted.
 	// Otherwise, quantity will be added or replaced (if replace argument is True).
 	//  skipStockCheck and replace are default to false
-	AddVariantsToCheckout(ckout *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
+	AddVariantsToCheckout(checkOut *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
 	// AddVoucherCodeToCheckout Add voucher data to checkout by code.
 	// Raise InvalidPromoCode() if voucher of given type cannot be applied.
 	AddVoucherCodeToCheckout(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucherCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError)
@@ -57,7 +57,7 @@ type CheckoutService interface {
 	// CalculatePriceForShippingMethod Return checkout shipping price
 	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []checkout.DeliveryMethodBaseInterface) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
-	CancelActivePayments(ckout *checkout.Checkout) *model.AppError
+	CancelActivePayments(checkOut *checkout.Checkout) *model.AppError
 	// CheckoutByOption returns a checkout filtered by given option
 	CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError)
 	// CheckoutLastActivePayment returns the most recent payment made for given checkout
@@ -145,7 +145,7 @@ type CheckoutService interface {
 	// RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
 	RemoveVoucherCodeFromCheckout(checkoutInfo *checkout.CheckoutInfo, voucherCode string) *model.AppError
 	// RemoveVoucherFromCheckout removes voucher data from checkout
-	RemoveVoucherFromCheckout(ckout *checkout.Checkout) *model.AppError
+	RemoveVoucherFromCheckout(checkOut *checkout.Checkout) *model.AppError
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
@@ -164,8 +164,8 @@ type CheckoutService interface {
 	BulkCreateCheckoutLines(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, *model.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError)
-	ChangeBillingAddressInCheckout(ckout *checkout.Checkout, address *account.Address) *model.AppError
-	CheckVariantInStock(ckout *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
+	ChangeBillingAddressInCheckout(checkOut *checkout.Checkout, address *account.Address) *model.AppError
+	CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
 	CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError)
 	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)

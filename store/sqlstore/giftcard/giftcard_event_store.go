@@ -23,6 +23,7 @@ func NewSqlGiftcardEventStore(s store.Store) store.GiftcardEventStore {
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("GiftcardID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Type").SetMaxSize(giftcard.GiftCardEventTypeMaxLength)
+		table.ColMap("Parameters").SetDataType("jsonb")
 	}
 	return gcs
 }
@@ -31,6 +32,17 @@ func (gcs *SqlGiftcardEventStore) CreateIndexesIfNotExists() {
 	gcs.CreateIndexIfNotExists("idx_giftcardevents_date", store.GiftcardEventTableName, "Date")
 	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UserID", store.UserTableName, "Id", false)
 	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "GiftcardID", store.GiftcardTableName, "Id", true)
+}
+
+func (gs *SqlGiftcardEventStore) TableName(withField string) string {
+	if withField == "" {
+		return "GiftcardEvents"
+	}
+	return "GiftcardEvents." + withField
+}
+
+func (gs *SqlGiftcardEventStore) Ordering() string {
+	return "GiftcardEvents.Date ASC"
 }
 
 // BulkUpsert upserts and returns given giftcard events
@@ -109,4 +121,36 @@ func (gs *SqlGiftcardEventStore) Get(eventId string) (*giftcard.GiftCardEvent, e
 	}
 
 	return &res, nil
+}
+
+// FilterByOptions finds and returns a list of giftcard events with given options
+func (gs *SqlGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+	query := gs.GetQueryBuilder().
+		Select("*").
+		From(gs.TableName("")).
+		OrderBy(gs.Ordering())
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.Type != nil {
+		query = query.Where(options.Type)
+	}
+	if options.Parameters != nil {
+		query = query.Where(options.Parameters)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*giftcard.GiftCardEvent
+	_, err = gs.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find giftcard events with given options")
+	}
+
+	return res, nil
 }

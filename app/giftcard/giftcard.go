@@ -58,6 +58,9 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppErro
 	})
 
 	if appErr != nil {
+		if appErr.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
 		return false, appErr
 	}
 

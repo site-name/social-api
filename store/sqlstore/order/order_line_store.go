@@ -301,6 +301,9 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	if option.IsShippingRequired != nil {
 		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
 	}
+	if option.IsGiftcard != nil {
+		query = query.Where(squirrel.Eq{"Orderlines.IsGiftcard": *option.IsGiftcard})
+	}
 	if option.VariantID != nil {
 		query = query.Where(option.VariantID.ToSquirrel("Orderlines.VariantID"))
 	}
@@ -332,8 +335,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		orderLines      order.OrderLines
 		productVariants product_and_discount.ProductVariants
 		digitalContents []*product_and_discount.DigitalContent
-
-		products []*product_and_discount.Product
+		products        []*product_and_discount.Product
 	)
 	_, err = ols.GetReplica().Select(&orderLines, queryString, args...)
 	if err != nil {
@@ -391,7 +393,6 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		for _, variant := range productVariants {
 			productVariantsMap[variant.Id] = variant
 		}
-
 		for _, line := range orderLines {
 			if line.VariantID != nil && productVariantsMap[*line.VariantID] != nil {
 				line.ProductVariant = productVariantsMap[*line.VariantID]
@@ -404,7 +405,6 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 			for _, digitalContent := range digitalContents {
 				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
 			}
-
 			for _, variant := range productVariants {
 				if content := digitalContentsMap[variant.Id]; content != nil {
 					variant.DigitalContent = content

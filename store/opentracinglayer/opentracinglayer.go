@@ -3966,6 +3966,24 @@ func (s *OpenTracingLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transa
 	return result, err
 }
 
+func (s *OpenTracingLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftcardEventStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.GiftcardEventStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftcardEventStore.Get")
@@ -3982,6 +4000,19 @@ func (s *OpenTracingLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardE
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerGiftcardEventStore) Ordering() string {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftcardEventStore.Ordering")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.GiftcardEventStore.Ordering()
+	return result
 }
 
 func (s *OpenTracingLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
@@ -5293,6 +5324,24 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	return err
 }
 
+func (s *OpenTracingLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.BulkCreate")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.Delete")
@@ -5829,6 +5878,24 @@ func (s *OpenTracingLayerProductVariantStore) Update(transaction *gorp.Transacti
 
 	defer span.Finish()
 	result, err := s.ProductVariantStore.Update(transaction, variant)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.BulkUpsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

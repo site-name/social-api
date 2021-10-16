@@ -59,7 +59,7 @@ type Shop struct {
 	FulfillmentAllowUnPaid                   *bool                      `json:"fulfillment_allow_unpaid"`             // default *true
 	GiftcardExpiryType                       GiftCardSettingsExpiryType `json:"gift_card_expiry_type"`                // default "never_expire"
 	GiftcardExpiryPeriodType                 model.TimePeriodType       `json:"gift_card_expiry_period_type"`
-	GiftcardExpiryPeriod                     *int64                     `json:"gift_card_expiry_period"`
+	GiftcardExpiryPeriod                     *int                       `json:"gift_card_expiry_period"`
 	AutomaticallyFulfillNonShippableGiftcard *bool                      `json:"automatically_fulfill_non_shippable_gift_card"` // default *true
 }
 
@@ -136,11 +136,14 @@ func (s *Shop) IsValid() *model.AppError {
 	if len(s.GiftcardExpiryType) > SHOP_GIFTCARD_EXPIRY_TYPE_MAX_LENGTH || GiftCardSettingsExpiryTypeValues[s.GiftcardExpiryType] == "" {
 		return outer("gift_card_expiry_type", &s.Id)
 	}
-	if len(s.GiftcardExpiryPeriodType) > 0 && (len(s.GiftcardExpiryPeriodType) > SHOP_GIFTCARD_EXPIRY_PERIOD_TYPE_MAX_LENGTH || model.TimePeriodMap[s.GiftcardExpiryPeriodType] == "") {
+	if model.TimePeriodMap[s.GiftcardExpiryPeriodType] == "" {
 		return outer("gift_card_expiry_period_type", &s.Id)
 	}
 	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
 		return outer("automatically_fulfill_non_shippable_gift_card", &s.Id)
+	}
+	if s.GiftcardExpiryPeriod != nil && *s.GiftcardExpiryPeriod < 0 {
+		return outer("giftcard_expiry_period", &s.Id)
 	}
 
 	return nil
@@ -186,6 +189,9 @@ func (s *Shop) commonPre() {
 	}
 	if len(s.GiftcardExpiryType) == 0 {
 		s.GiftcardExpiryType = NEVER_EXPIRE
+	}
+	if s.GiftcardExpiryPeriod != nil && *s.GiftcardExpiryPeriod < 0 {
+		s.GiftcardExpiryPeriod = model.NewInt(0)
 	}
 }
 

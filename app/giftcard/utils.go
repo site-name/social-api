@@ -1,16 +1,19 @@
 package giftcard
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/shop"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
@@ -153,11 +156,97 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines order.OrderLines) (
 // GiftcardsCreate creates purchased gift cards
 func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
 	var (
-		customerUserID        = orDer.UserID
+		customerUser          *account.User = nil
+		customerUserID        *string
+		appErr                *model.AppError
 		userEmail             = orDer.UserEmail
 		giftcards             = []*giftcard.GiftCard{}
 		nonShippableGiftcards = []*giftcard.GiftCard{}
+		expiryDate            = s.CalculateExpiryDate(settings)
 	)
+
+	if orDer.UserID != nil {
+		customerUser, appErr = s.srv.AccountService().UserById(context.Background(), *orDer.UserID)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if customerUser != nil {
+		customerUserID = &customerUser.Id
+	}
+
+	// refetch order lines with prefetching options
+	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: giftcardLines.IDs(),
+			},
+		},
+		PrefetchRelated: order.OrderLinePrefetchRelated{
+			VariantProduct: true,
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	for _, orderLine := range giftcardLines {
+		var (
+			priceAmount   = orderLine.UnitPriceGrossAmount
+			lineGiftcards = []*giftcard.GiftCard{}
+			productID     *string
+		)
+		if orderLine.VariantID != nil && orderLine.ProductVariant != nil {
+			productID = &orderLine.ProductVariant.ProductID
+		}
+
+		for i := 0; i < quantities[orderLine.Id]; i++ {
+
+			lineGiftcards = append(lineGiftcards, &giftcard.GiftCard{
+				Code:                 s.srv.DiscountService().GeneratePromoCode(),
+				InitialBalanceAmount: priceAmount,
+				CurrentBalanceAmount: priceAmount,
+				CreatedByID:          customerUserID,
+				CreatedByEmail:       &userEmail,
+				ProductID:            productID,
+				ExpiryDate:           expiryDate,
+			})
+		}
+
+		giftcards = append(giftcards, lineGiftcards...)
+		if !orderLine.IsShippingRequired {
+			nonShippableGiftcards = append(nonShippableGiftcards, lineGiftcards...)
+		}
+	}
+
+	giftcards, appErr = s.UpsertGiftcards(nil, giftcards...)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = s.GiftcardsBoughtEvent(nil, giftcards, orDer.Id, requestorUser, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orDer.ChannelID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// send to customer all non-shippable gift cards
+	appErr = s.SendGiftcardsToCustomer(nonShippableGiftcards, userEmail, requestorUser, nil, customerUser, manager, channelOfOrder.Slug)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return giftcards, nil
 }
 
 func GetGiftcardLines(lines order.OrderLines) order.OrderLines {
@@ -176,6 +265,65 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines order.OrderLines, r
 }
 
 // CalculateExpiryDate calculate expiry date based on giftcard settings.
-func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) {
-	panic("not implt")
+func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) *time.Time {
+	var (
+		today      = util.StartOfDay(time.Now())
+		expiryDate *time.Time
+	)
+
+	if shopSettings.GiftcardExpiryType == shop.EXPIRY_PERIOD {
+		if expiryPeriod := shopSettings.GiftcardExpiryPeriod; expiryPeriod != nil {
+			switch shopSettings.GiftcardExpiryPeriodType {
+			case model.DAY:
+				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * time.Hour))
+			case model.WEEK:
+				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 7 * time.Hour))
+			case model.MONTH:
+				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 30 * time.Hour))
+			case model.YEAR:
+				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 365 * time.Hour))
+			}
+		}
+	}
+
+	return expiryDate
+}
+
+func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interface{}, channelSlug string) *model.AppError {
+	panic("not implemented")
+}
+
+func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError {
+	// giftcardEvents, appErr := s.GiftcardEventsByOptions(&giftcard.GiftCardEventFilterOption{
+	// 	Type:       squirrel.Eq{s.srv.Store.GiftcardEvent().TableName("Type"): giftcard.BOUGHT},
+	// 	Parameters: squirrel.Eq{s.srv.Store.GiftcardEvent().TableName("Parameters -> 'order_id'"): orderID}, // WHERE GiftcardEvents.Parameters -> 'order_id' = <something>
+	// })
+	// if appErr != nil {
+	// 	if appErr.StatusCode == http.StatusInternalServerError {
+	// 		return appErr
+	// 	}
+	// }
+
+	// s.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
+
+	// })
+	panic("not implemented")
+}
+
+func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError) {
+	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: orDer.Id,
+			},
+		},
+		IsGiftcard: model.NewBool(true),
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return false, appErr
+		}
+	}
+
+	return len(orderLines) > 0, nil
 }

@@ -13,7 +13,7 @@ import (
 
 // max lengths for some fields of giftcard
 const (
-	GiftcardCodeMaxLength             = 16
+	GiftcardCodeMaxLength             = 40
 	GiftcardExpiryTypeMaxLength       = 32
 	GiftcardExpiryPeriodTypeMaxLength = 32
 	GiftcardTagMaxLength              = 255

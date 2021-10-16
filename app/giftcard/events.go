@@ -15,6 +15,27 @@ func (s *ServiceGiftcard) CommonCreateGiftcardEvent(giftcardID, userID string, p
 	panic("not implemented")
 }
 
+// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
+func (s *ServiceGiftcard) GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError) {
+	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
+	var (
+		statusCode int
+		errMessage string
+	)
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errMessage = err.Error()
+	} else if len(events) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("GiftcardEventsByOptions", "app.giftcard.error_finding_giftcard_events_by_options.app_error", nil, errMessage, statusCode)
+	}
+
+	return events, nil
+}
+
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
 func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorp.Transaction, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
@@ -54,6 +75,28 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorp.Transactio
 					"current_balance":      item.Giftcard.CurrentBalanceAmount,
 					"old_currency_balance": item.PreviousBalance,
 				},
+			},
+		})
+	}
+
+	return s.BulkUpsertGiftcardEvents(transaction, events)
+}
+
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorp.Transaction, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	events := []*giftcard.GiftCardEvent{}
+	for _, giftCard := range giftcards {
+		events = append(events, &giftcard.GiftCardEvent{
+			GiftcardID: giftCard.Id,
+			UserID:     userID,
+			Type:       giftcard.BOUGHT,
+			Parameters: model.StringInterface{
+				"order_id":    orderID,
+				"expiry_date": giftCard.ExpiryDate,
 			},
 		})
 	}

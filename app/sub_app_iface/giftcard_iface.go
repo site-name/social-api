@@ -23,6 +23,8 @@ type GiftcardService interface {
 	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)
 	// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
 	BulkUpsertGiftcardEvents(transaction *gorp.Transaction, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError)
+	// CalculateExpiryDate calculate expiry date based on giftcard settings.
+	CalculateExpiryDate(shopSettings *shop.Shop) *time.Time
 	// CommonCreateGiftcardEvent is common method for creating giftcard events
 	CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*giftcard.GiftCardEvent, *model.AppError)
 	// CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
@@ -31,6 +33,8 @@ type GiftcardService interface {
 	DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError
 	// FulfillNonShippableGiftcards
 	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError)
+	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
+	GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
 	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
@@ -47,7 +51,12 @@ type GiftcardService interface {
 	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)
 	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
 	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)
+	DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError
+	FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interface{}) (interface{}, *model.AppError)
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)
-	GetNonShippableGiftcardLines(lineIDs []string)
+	GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError)
+	GiftcardsBoughtEvent(transaction *gorp.Transaction, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
 	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)
+	OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError)
+	SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interface{}, channelSlug string) *model.AppError
 }

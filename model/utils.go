@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	encoding = base32.NewEncoding("ybndrfg8ejkmcpqxot1uwisza345h769")
+	encoding = base32.NewEncoding(LOWERCASE_LETTERS + NUMBERS)
 )
 
 const (

@@ -4268,6 +4268,26 @@ func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction,
 
 }
 
+func (s *RetryLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftcardEventStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
 
 	tries := 0
@@ -4285,6 +4305,12 @@ func (s *RetryLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerGiftcardEventStore) Ordering() string {
+
+	return s.GiftcardEventStore.Ordering()
 
 }
 
@@ -5734,6 +5760,26 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
+func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+
+	tries := 0
+	for {
+		result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
 
 	tries := 0
@@ -6323,6 +6369,26 @@ func (s *RetryLayerProductVariantStore) Update(transaction *gorp.Transaction, va
 	tries := 0
 	for {
 		result, err := s.ProductVariantStore.Update(transaction, variant)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
 		if err == nil {
 			return result, nil
 		}

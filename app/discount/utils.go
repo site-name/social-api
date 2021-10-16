@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -599,4 +600,29 @@ func (a *ServiceDiscount) FetchActiveDiscounts() ([]*product_and_discount.Discou
 
 func (s *ServiceDiscount) FetchCatalogueInfo(instance *product_and_discount.Sale) (map[string][]string, *model.AppError) {
 	panic("not implemented")
+}
+
+// IsValidPromoCode checks if given code is valid giftcard code or voucher code
+func (s *ServiceDiscount) IsValidPromoCode(code string) bool {
+	codeIsGiftcard, appErr := s.srv.GiftcardService().PromoCodeIsGiftCard(code)
+	if appErr != nil {
+		s.srv.Log.Error("IsValidPromoCode", slog.Err(appErr))
+	}
+
+	codeIsVoucher, appErr := s.PromoCodeIsVoucher(code)
+	if appErr != nil {
+		s.srv.Log.Error("IsValidPromoCode", slog.Err(appErr))
+	}
+
+	return !(codeIsGiftcard || codeIsVoucher)
+}
+
+// GeneratePromoCode randomly generate promo code
+func (s *ServiceDiscount) GeneratePromoCode() string {
+	code := model.NewId()
+	for !s.IsValidPromoCode(code) {
+		code = model.NewId()
+	}
+
+	return code
 }

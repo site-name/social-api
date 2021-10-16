@@ -86,6 +86,7 @@ type OrderLineFilterOption struct {
 	Id                 *model.StringFilter
 	OrderID            *model.StringFilter
 	IsShippingRequired *bool
+	IsGiftcard         *bool
 	VariantID          *model.StringFilter
 
 	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products

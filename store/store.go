@@ -712,9 +712,12 @@ type (
 	}
 	GiftcardEventStore interface {
 		CreateIndexesIfNotExists()
+		Ordering() string
+		TableName(withField string) string
 		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error)                                            // Save insdert given giftcard event into database then returns it
 		Get(id string) (*giftcard.GiftCardEvent, error)                                                                 // Get finds and returns a giftcard event found by given id
 		BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
+		FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error)                 // FilterByOptions finds and returns a list of giftcard events with given options
 	}
 	GiftCardOrderStore interface {
 		CreateIndexesIfNotExists()

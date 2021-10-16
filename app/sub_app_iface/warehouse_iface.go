@@ -29,6 +29,11 @@ type WarehouseService interface {
 	AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
 	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)
+	// ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
+	// Note this method does not check stocks quantity for given `CheckoutLine`s.
+	// This method should be used only if stocks quantity will be checked in further
+	// validation steps, for instance in checkout completion.
+	ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, *model.AppError)
 	// BulkCreate tells store to insert given preorder allocations into database then returns them
 	BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError)
 	// BulkDeleteAllocations performs bulk delete given allocations.
