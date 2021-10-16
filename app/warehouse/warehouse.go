@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -111,4 +112,20 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*ware
 		SelectRelatedAddress:   true,
 		PrefetchShippingZones:  true,
 	})
+}
+
+// ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
+// Note this method does not check stocks quantity for given `CheckoutLine`s.
+// This method should be used only if stocks quantity will be checked in further
+// validation steps, for instance in checkout completion.
+func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, *model.AppError) {
+	stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
+		SelectRelatedProductVariant: true,
+		ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+	}
 }

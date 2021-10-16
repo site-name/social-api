@@ -103,14 +103,79 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *mod
 
 // FulfillNonShippableGiftcards
 func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
-	panic("not implemented")
+	if user != nil && !model.IsValidId(user.Id) {
+		user = nil
+	}
+
+	giftcardLines, appErr := s.GetNonShippableGiftcardLines(orderLines)
+	if appErr != nil {
+		// this error caused by server
+		return nil, appErr
+	}
+
+	if len(giftcardLines) == 0 {
+		return nil, nil
+	}
+
+	_, appErr = s.FulfillGiftcardLines(giftcardLines, user, nil, orDer, manager)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var orderLineIDQuantityMap = map[string]int{} // orderLineIDQuantityMap has keys are order line ids
+	for _, line := range giftcardLines {
+		orderLineIDQuantityMap[line.Id] = line.Quantity
+	}
+
+	return s.GiftcardsCreate(orDer, giftcardLines, orderLineIDQuantityMap, siteSettings, user, nil, manager)
 }
 
-func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lineIDs []string) {
-	panic("not implemented")
+func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError) {
+	giftcardLines := GetGiftcardLines(lines)
+	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
+		Id: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: giftcardLines.IDs(),
+			},
+		},
+		IsShippingRequired: model.NewBool(true),
+	})
+
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+	}
+
+	return nonShippableLines, nil
 }
 
 // GiftcardsCreate creates purchased gift cards
 func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
-	panic("not implemented")
+	var (
+		customerUserID        = orDer.UserID
+		userEmail             = orDer.UserEmail
+		giftcards             = []*giftcard.GiftCard{}
+		nonShippableGiftcards = []*giftcard.GiftCard{}
+	)
+}
+
+func GetGiftcardLines(lines order.OrderLines) order.OrderLines {
+	res := order.OrderLines{}
+	for _, line := range lines {
+		if line != nil && line.IsGiftcard {
+			res = append(res, line)
+		}
+	}
+
+	return res
+}
+
+func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interface{}) (interface{}, *model.AppError) {
+	panic("not implt")
+}
+
+// CalculateExpiryDate calculate expiry date based on giftcard settings.
+func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) {
+	panic("not implt")
 }

@@ -124,11 +124,11 @@ type DeliveryMethodBaseInterface interface {
 	Self() interface{}
 }
 
-// checking if some struct types satisfy DeliveryMethodBaseInterface
+// check if some struct types satisfy DeliveryMethodBaseInterface
 var (
-	_ DeliveryMethodBaseInterface = &DeliveryMethodBase{}
-	_ DeliveryMethodBaseInterface = &ShippingMethodInfo{}
-	_ DeliveryMethodBaseInterface = &CollectionPointInfo{}
+	_ DeliveryMethodBaseInterface = (*DeliveryMethodBase)(nil)
+	_ DeliveryMethodBaseInterface = (*ShippingMethodInfo)(nil)
+	_ DeliveryMethodBaseInterface = (*CollectionPointInfo)(nil)
 )
 
 // DeliveryMethodBase should not be modified after initialized

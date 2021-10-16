@@ -11,9 +11,7 @@ import (
 
 // CleanCheckoutShipping
 func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError {
-	productIDs := lines.Products().IDs()
-
-	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(productIDs)
+	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr
 	}

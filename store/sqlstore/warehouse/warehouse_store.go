@@ -192,7 +192,9 @@ func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 		res.Address = address.DeepCopy()
 	}
 
-	// check if we need to prefetch shipping zones
+	// check if we need to prefetch shipping zones:
+	// 1) prefetching shipping zones is required
+	// 2) returning warehouse is valid
 	if option.PrefetchShippingZones && model.IsValidId(res.Id) {
 		rows, err := ws.GetQueryBuilder().
 			Select(ws.ShippingZone().ModelFields()...).

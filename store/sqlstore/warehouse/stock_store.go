@@ -266,7 +266,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 
 	if options.AnnotateAvailabeQuantity {
 		query = query.
-			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0)"), "AvailableQuantity")).
+			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE( SUM ( Allocations.QuantityAllocated ), 0 )"), "AvailableQuantity")).
 			LeftJoin(store.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
 		groupBy = append(groupBy, "Stocks.Id")
 	}
