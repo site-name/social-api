@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -54,12 +53,6 @@ type Preference struct {
 
 func (o *Preference) ToJson() string {
 	return ModelToJson(o)
-}
-
-func PreferenceFromJson(data io.Reader) *Preference {
-	var o *Preference
-	ModelFromJson(&o, data)
-	return o
 }
 
 func (o *Preference) IsValid() *AppError {
@@ -121,13 +114,4 @@ type Preferences []Preference
 
 func (o *Preferences) ToJson() string {
 	return ModelToJson(o)
-}
-
-func PreferencesFromJson(data io.Reader) (Preferences, error) {
-	var o Preferences
-	err := ModelFromJson(&o, data)
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
 }

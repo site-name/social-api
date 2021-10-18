@@ -1,0 +1,112 @@
+extend type Mutation {
+  addressCreate(input: AddressInput!, userId: ID!): AddressCreate
+  addressUpdate(id: ID!, input: AddressInput!): AddressUpdate
+  addressDelete(id: ID!): AddressDelete
+  addressSetDefault(addressId: ID!, type: AddressTypeEnum!, userId: ID!): AddressSetDefault
+}
+
+extend type Query {
+  addressValidationRules(countryCode: CountryCode!, countryArea: String, city: String, cityArea: String): AddressValidationData
+  address(id: ID!): Address
+}
+
+type Address implements Node {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  companyName: String!
+  streetAddress1: String!
+  streetAddress2: String!
+  city: String!
+  cityArea: String!
+  postalCode: String!
+  country: CountryDisplay!
+  countryArea: String!
+  phone: String
+  isDefaultShippingAddress(_: PlaceHolder): Boolean # isDefaultShippingAddress: Boolean
+  isDefaultBillingAddress(_: PlaceHolder): Boolean # isDefaultBillingAddress: Boolean
+}
+
+input AddressInput {
+  firstName: String
+  lastName: String
+  companyName: String
+  streetAddress1: String
+  streetAddress2: String
+  city: String
+  cityArea: String
+  postalCode: String
+  country: CountryCode
+  countryArea: String
+  phone: String
+}
+
+type AddressCreate {
+  user: User
+  errors: [AccountError!]!
+  address: Address
+}
+
+type AddressDelete {
+  user: User
+  errors: [AccountError!]!
+  address: Address
+}
+
+type AddressUpdate {
+  user: User
+  errors: [AccountError!]!
+  address: Address
+}
+
+enum AddressTypeEnum {
+  BILLING
+  SHIPPING
+}
+
+type AddressSetDefault {
+  user: User
+  errors: [AccountError!]!
+}
+
+type AddressValidationData {
+  countryCode: String
+  countryName: String
+  addressFormat: String
+  addressLatinFormat: String
+  allowedFields: [String]
+  requiredFields: [String]
+  upperFields: [String]
+  countryAreaType: String
+  countryAreaChoices: [ChoiceValue]
+  cityType: String
+  cityChoices: [ChoiceValue]
+  cityAreaType: String
+  cityAreaChoices: [ChoiceValue]
+  postalCodeType: String
+  postalCodeMatchers: [String]
+  postalCodeExamples: [String]
+  postalCodePrefix: String
+}
+
+type ChoiceValue {
+  raw: String
+  verbose: String
+}
+
+type CountryDisplay {
+  code: String!
+  country: String!
+  vat: VAT
+}
+
+type VAT {
+  countryCode: String!
+  standardRate: Float
+  reducedRates: [ReducedRate]!
+}
+
+type ReducedRate {
+  rate: Float!
+  rateType: String!
+}

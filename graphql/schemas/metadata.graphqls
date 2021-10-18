@@ -1,0 +1,54 @@
+extend type Mutation {
+  deleteMetadata(id: ID!, keys: [String!]!): DeleteMetadata
+  deletePrivateMetadata(id: ID!, keys: [String!]!): DeletePrivateMetadata
+  updateMetadata(id: ID!, input: [MetadataInput!]!): UpdateMetadata
+  updatePrivateMetadata(id: ID!, input: [MetadataInput!]!): UpdatePrivateMetadata
+}
+
+type DeleteMetadata {
+  errors: [MetadataError!]!
+  item: ObjectWithMetadata
+}
+
+type DeletePrivateMetadata {
+  errors: [MetadataError!]!
+  item: ObjectWithMetadata
+}
+
+input MetadataInput {
+  key: String!
+  value: String!
+}
+
+type UpdateMetadata {
+  errors: [MetadataError!]!
+  item: ObjectWithMetadata
+}
+
+type UpdatePrivateMetadata {
+  errors: [MetadataError!]!
+  item: ObjectWithMetadata
+}
+
+type MetadataError {
+  field: String
+  message: String
+  code: MetadataErrorCode!
+}
+
+enum MetadataErrorCode {
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+}
+
+interface ObjectWithMetadata {
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+}
+
+type MetadataItem {
+  key: String!
+  value: String!
+}

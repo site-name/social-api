@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 // ExportProducts is called by product export job, taks needed arguments then exports products

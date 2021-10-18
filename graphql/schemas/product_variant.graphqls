@@ -1,0 +1,246 @@
+extend type Mutation {
+  productVariantReorder(moves: [ReorderInput]!, productId: ID!): ProductVariantReorder
+  productVariantCreate(input: ProductVariantCreateInput!): ProductVariantCreate
+  productVariantDelete(id: ID!): ProductVariantDelete
+  productVariantBulkCreate(product: ID!, variants: [ProductVariantBulkCreateInput]!): ProductVariantBulkCreate
+  productVariantBulkDelete(ids: [ID]!): ProductVariantBulkDelete
+  productVariantStocksCreate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksCreate
+  productVariantStocksDelete(variantId: ID!, warehouseIds: [ID!]): ProductVariantStocksDelete
+  productVariantStocksUpdate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksUpdate
+  productVariantUpdate(id: ID!, input: ProductVariantInput!): ProductVariantUpdate
+  productVariantSetDefault(productId: ID!, variantId: ID!): ProductVariantSetDefault
+  productVariantTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): ProductVariantTranslate
+  productVariantChannelListingUpdate(id: ID!, input: [ProductVariantChannelListingAddInput!]!): ProductVariantChannelListingUpdate
+  productVariantReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, variantId: ID!): ProductVariantReorderAttributeValues
+}
+
+extend type Query {
+  productVariant(id: ID, sku: String, channel: String): ProductVariant
+  productVariants(ids: [ID], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
+}
+
+type ProductVariant implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  sku: String
+  product: Product!
+  trackInventory: Boolean!
+  weight: Weight
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  channel: String
+  channelListings: [ProductVariantChannelListing!]
+  pricing(address: AddressInput): VariantPricingInfo
+  attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
+  margin: Int
+  quantityOrdered: Int
+  revenue(period: ReportingPeriod): TaxedMoney
+  media: [ProductMedia!]
+  translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
+  digitalContent: DigitalContent
+  stocks(address: AddressInput, countryCode: CountryCode): [Stock]
+  quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
+}
+
+type ProductVariantReorder {
+  product: Product
+  errors: [ProductError!]!
+}
+
+input ProductVariantCreateInput {
+  attributes: [AttributeValueInput!]!
+  sku: String
+  trackInventory: Boolean
+  weight: WeightScalar
+  product: ID!
+  stocks: [StockInput!]
+}
+
+type ProductVariantCreate {
+  errors: [ProductError!]!
+  productVariant: ProductVariant
+}
+
+type ProductVariantDelete {
+  errors: [ProductError!]!
+  productVariant: ProductVariant
+}
+
+input ProductVariantBulkCreateInput {
+  attributes: [BulkAttributeValueInput!]!
+  sku: String
+  trackInventory: Boolean
+  weight: WeightScalar
+  stocks: [StockInput!]
+  channelListings: [ProductVariantChannelListingAddInput!]
+}
+
+type ProductVariantBulkDelete {
+  count: Int!
+  errors: [ProductError!]!
+}
+
+type ProductVariantStocksCreate {
+  productVariant: ProductVariant
+  errors: [BulkStockError!]!
+}
+
+input StockInput {
+  warehouse: ID!
+  quantity: Int!
+}
+
+type ProductVariantStocksDelete {
+  productVariant: ProductVariant
+  errors: [StockError!]!
+}
+
+type StockError {
+  field: String
+  message: String
+  code: StockErrorCode!
+}
+
+enum StockErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+}
+
+type ProductVariantStocksUpdate {
+  productVariant: ProductVariant
+  errors: [BulkStockError!]!
+}
+
+input ProductVariantInput {
+  attributes: [AttributeValueInput!]
+  sku: String
+  trackInventory: Boolean
+  weight: WeightScalar
+}
+
+type ProductVariantUpdate {
+  errors: [ProductError!]!
+  productVariant: ProductVariant
+}
+
+type ProductVariantSetDefault {
+  product: Product
+  errors: [ProductError!]!
+}
+
+input NameTranslationInput {
+  name: String
+}
+
+type ProductVariantTranslate {
+  errors: [TranslationError!]!
+  productVariant: ProductVariant
+}
+
+input ProductVariantChannelListingAddInput {
+  channelId: ID!
+  price: PositiveDecimal!
+  costPrice: PositiveDecimal
+}
+
+type ProductVariantChannelListingUpdate {
+  variant: ProductVariant
+  errors: [ProductChannelListingError!]!
+}
+
+type ProductVariantReorderAttributeValues {
+  productVariant: ProductVariant
+  errors: [ProductError!]!
+}
+
+input ProductVariantFilterInput {
+  search: String
+  sku: [String]
+  metadata: [MetadataInput]
+}
+
+type ProductVariantCountableConnection {
+  pageInfo: PageInfo!
+  edges: [ProductVariantCountableEdge!]!
+  totalCount: Int
+}
+
+type ProductVariantChannelListing implements Node {
+  id: ID!
+  channel: Channel!
+  price: Money
+  costPrice: Money
+  margin: Int
+}
+
+type VariantPricingInfo {
+  onSale: Boolean
+  discount: TaxedMoney
+  discountLocalCurrency: TaxedMoney
+  price: TaxedMoney
+  priceUndiscounted: TaxedMoney
+  priceLocalCurrency: TaxedMoney
+}
+
+enum VariantAttributeScope {
+  ALL
+  VARIANT_SELECTION
+  NOT_VARIANT_SELECTION
+}
+
+type ProductVariantTranslation implements Node {
+  id: ID!
+  name: String!
+  language: LanguageDisplay!
+}
+
+input BulkAttributeValueInput {
+  id: ID
+  values: [String!]
+  boolean: Boolean
+}
+
+type BulkStockError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+  index: Int
+}
+
+type ProductChannelListingError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+  channels: [ID!]
+  variants: [ID!]
+}
+
+type ProductVariantCountableEdge {
+  node: ProductVariant!
+  cursor: String!
+}
+
+type ProductVariantBulkCreate {
+  count: Int!
+  productVariants: [ProductVariant!]!
+  errors: [BulkProductError!]!
+}
+
+type BulkProductError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+  index: Int
+  warehouses: [ID!]
+  channels: [ID!]
+}

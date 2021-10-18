@@ -1081,7 +1081,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 	return appErr
 }
 
-// Delete an order line from an order.
+// DeleteOrderLine Delete an order line from an order.
 func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {

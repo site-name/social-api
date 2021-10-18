@@ -72,12 +72,12 @@ type OrderService interface {
 	CreateReplaceOrder(user *account.User, _ interface{}, originalOrder *order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (*order.Order, *model.AppError)
 	// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
 	CustomerEmail(ord *order.Order) (string, *model.AppError)
-	// Delete an order line from an order.
-	DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError)
 	// DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
 	DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) *model.AppError
 	// DeleteFulfillmentsByOption tells store to delete fulfillments that satisfy given option
 	DeleteFulfillmentsByOption(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) *model.AppError
+	// DeleteOrderLine Delete an order line from an order.
+	DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
 	DeleteOrderLines(orderLineIDs []string) *model.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option

@@ -7,10 +7,10 @@ import (
 	gqlgenGraphql "github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/sitename/sitename/graphql"
+	"github.com/sitename/sitename/graphql/generated"
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/web/graphql"
-	"github.com/sitename/sitename/web/graphql/generated"
-	"github.com/sitename/sitename/web/graphql/gqlmodel"
 	"github.com/sitename/sitename/web/shared"
 )
 
@@ -47,7 +47,7 @@ func (web *Web) InitGraphql() {
 		}
 
 		// 2) check if user has required permission(s) to proceed
-		if perms := gqlmodel.GraphqlPermissionsToSystemPermissions(permissions...); !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms...) {
+		if perms := gqlmodel.SaleorGraphqlPermissionsToSystemPermission(permissions...); !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms...) {
 			return nil, web.app.Srv().AccountService().MakePermissionError(session, perms...)
 		}
 

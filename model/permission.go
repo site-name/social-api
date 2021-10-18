@@ -420,7 +420,6 @@ func initializePermissions() {
 		"authentication.permissions.remove_others_reactions.description",
 		PermissionScopeChannel,
 	}
-
 	PermissionUploadFile = &Permission{
 		"upload_file",
 		"authentication.permissions.upload_file.name",
@@ -433,7 +432,6 @@ func initializePermissions() {
 		"authentication.permissions.get_public_link.description",
 		PermissionScopeSystem,
 	}
-
 	PermissionManageIncomingWebhooks = &Permission{
 		"manage_incoming_webhooks",
 		"authentication.permissions.manage_incoming_webhooks.name",

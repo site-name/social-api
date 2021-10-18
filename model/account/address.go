@@ -107,7 +107,7 @@ func (a *Address) commonPre() {
 	if a.Country == "" {
 		a.Country = model.DEFAULT_COUNTRY
 	} else {
-		a.Country = strings.TrimSpace(strings.ToUpper(a.Country))
+		a.Country = strings.ToUpper(a.Country)
 	}
 }
 

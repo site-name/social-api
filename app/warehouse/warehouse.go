@@ -119,13 +119,14 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*ware
 // This method should be used only if stocks quantity will be checked in further
 // validation steps, for instance in checkout completion.
 func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, *model.AppError) {
-	stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
-		SelectRelatedProductVariant: true,
-		ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},
-	})
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-	}
+	// stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
+	// 	SelectRelatedProductVariant: true,
+	// 	ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},
+	// })
+	// if appErr != nil {
+	// 	if appErr.StatusCode == http.StatusInternalServerError {
+	// 		return nil, appErr
+	// 	}
+	// }
+	panic("not implemented")
 }

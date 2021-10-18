@@ -1,0 +1,88 @@
+extend type Mutation {
+  channelCreate(input: ChannelCreateInput!): ChannelCreate
+  channelUpdate(id: ID!, input: ChannelUpdateInput!): ChannelUpdate
+  channelDelete(id: ID!, input: ChannelDeleteInput): ChannelDelete
+  channelActivate(id: ID!): ChannelActivate
+  channelDeactivate(id: ID!): ChannelDeactivate
+}
+
+extend type Query {
+  channel(id: ID): Channel
+  channels: [Channel!]
+}
+
+type Channel implements Node {
+  id: ID!
+  name: String!
+  isActive: Boolean!
+  slug: String!
+  currencyCode: String!
+  hasOrders: Boolean!
+  defaultCountry: CountryDisplay!
+}
+
+input ChannelCreateInput {
+  isActive: Boolean
+  name: String!
+  slug: String!
+  currencyCode: String!
+  defaultCountry: CountryCode!
+  addShippingZones: [ID!]
+}
+
+type ChannelCreate {
+  errors: [ChannelError!]!
+  channel: Channel
+}
+
+input ChannelUpdateInput {
+  isActive: Boolean
+  name: String
+  slug: String
+  defaultCountry: CountryCode
+  addShippingZones: [ID!]
+  removeShippingZones: [ID!]
+}
+
+type ChannelUpdate {
+  errors: [ChannelError!]!
+  channel: Channel
+}
+
+input ChannelDeleteInput {
+  channelId: ID!
+}
+
+type ChannelDelete {
+  errors: [ChannelError!]!
+  channel: Channel
+}
+
+type ChannelActivate {
+  channel: Channel
+  errors: [ChannelError!]!
+}
+
+type ChannelDeactivate {
+  channel: Channel
+  errors: [ChannelError!]!
+}
+
+type ChannelError {
+  field: String
+  message: String
+  code: ChannelErrorCode!
+  shippingZones: [ID!]
+}
+
+enum ChannelErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  CHANNELS_CURRENCY_MUST_BE_THE_SAME
+  CHANNEL_WITH_ORDERS
+  DUPLICATED_INPUT_ITEM
+}

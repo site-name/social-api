@@ -1,0 +1,243 @@
+extend type Mutation {
+  shippingMethodChannelListingUpdate(id: ID!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate
+  shippingPriceCreate(input: ShippingPriceInput!): ShippingPriceCreate
+  shippingPriceDelete(id: ID!): ShippingPriceDelete
+  shippingPriceBulkDelete(ids: [ID]!): ShippingPriceBulkDelete
+  shippingPriceUpdate(id: ID!, input: ShippingPriceInput!): ShippingPriceUpdate
+  shippingPriceTranslate(id: ID!, input: ShippingPriceTranslationInput!, languageCode: LanguageCodeEnum!): ShippingPriceTranslate
+  shippingPriceExcludeProducts(id: ID!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts
+  shippingPriceRemoveProductFromExclude(id: ID!, products: [ID]!): ShippingPriceRemoveProductFromExclude
+  shippingZoneCreate(input: ShippingZoneCreateInput!): ShippingZoneCreate
+  shippingZoneDelete(id: ID!): ShippingZoneDelete
+  shippingZoneBulkDelete(ids: [ID]!): ShippingZoneBulkDelete
+  shippingZoneUpdate(id: ID!, input: ShippingZoneUpdateInput!): ShippingZoneUpdate
+}
+
+extend type Query {
+  shippingZone(id: ID!, channel: String): ShippingZone
+  shippingZones(filter: ShippingZoneFilterInput, channel: String, before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection
+}
+
+input ShippingMethodChannelListingInput {
+  addChannels: [ShippingMethodChannelListingAddInput!]
+  removeChannels: [ID!]
+}
+
+type ShippingMethodChannelListingUpdate {
+  shippingMethod: ShippingMethod
+  errors: [ShippingError!]!
+}
+
+input ShippingPriceInput {
+  name: String
+  description: JSONString
+  minimumOrderWeight: WeightScalar
+  maximumOrderWeight: WeightScalar
+  maximumDeliveryDays: Int
+  minimumDeliveryDays: Int
+  type: ShippingMethodTypeEnum
+  shippingZone: ID
+  addPostalCodeRules: [ShippingPostalCodeRulesCreateInputRange!]
+  deletePostalCodeRules: [ID!]
+  inclusionType: PostalCodeRuleInclusionTypeEnum
+}
+
+type ShippingPriceCreate {
+  shippingZone: ShippingZone
+  shippingMethod: ShippingMethod
+  errors: [ShippingError!]!
+}
+
+type ShippingPriceDelete {
+  shippingMethod: ShippingMethod
+  shippingZone: ShippingZone
+  errors: [ShippingError!]!
+}
+
+type ShippingPriceBulkDelete {
+  count: Int!
+  errors: [ShippingError!]!
+}
+
+type ShippingPriceUpdate {
+  shippingZone: ShippingZone
+  shippingMethod: ShippingMethod
+  errors: [ShippingError!]!
+}
+
+input ShippingPriceTranslationInput {
+  name: String
+  description: JSONString
+}
+
+type ShippingPriceTranslate {
+  errors: [TranslationError!]!
+  shippingMethod: ShippingMethod
+}
+
+input ShippingPriceExcludeProductsInput {
+  products: [ID]!
+}
+
+type ShippingPriceExcludeProducts {
+  shippingMethod: ShippingMethod
+  errors: [ShippingError!]!
+}
+
+type ShippingPriceRemoveProductFromExclude {
+  shippingMethod: ShippingMethod
+  errors: [ShippingError!]!
+}
+
+input ShippingZoneCreateInput {
+  name: String
+  description: String
+  countries: [String]
+  default: Boolean
+  addWarehouses: [ID]
+  addChannels: [ID!]
+}
+
+type ShippingZoneCreate {
+  errors: [ShippingError!]!
+  shippingZone: ShippingZone
+}
+
+type ShippingZoneDelete {
+  errors: [ShippingError!]!
+  shippingZone: ShippingZone
+}
+
+type ShippingZoneBulkDelete {
+  count: Int!
+  errors: [ShippingError!]!
+}
+
+input ShippingZoneUpdateInput {
+  name: String
+  description: String
+  countries: [String]
+  default: Boolean
+  addWarehouses: [ID]
+  addChannels: [ID!]
+  removeWarehouses: [ID]
+  removeChannels: [ID!]
+}
+
+type ShippingZoneUpdate {
+  errors: [ShippingError!]!
+  shippingZone: ShippingZone
+}
+
+type ShippingZone implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  default: Boolean!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  priceRange: MoneyRange
+  countries: [CountryDisplay]
+  shippingMethods: [ShippingMethod]
+  warehouses: [Warehouse!]!
+  channels: [Channel!]!
+  description: String
+}
+
+input ShippingZoneFilterInput {
+  search: String
+  channels: [ID]
+}
+
+type ShippingZoneCountableConnection {
+  pageInfo: PageInfo!
+  edges: [ShippingZoneCountableEdge!]!
+  totalCount: Int
+}
+
+input ShippingMethodChannelListingAddInput {
+  channelId: ID!
+  price: PositiveDecimal
+  minimumOrderPrice: PositiveDecimal
+  maximumOrderPrice: PositiveDecimal
+}
+
+type ShippingMethod implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  description: JSONString
+  minimumOrderWeight: Weight
+  maximumOrderWeight: Weight
+  maximumDeliveryDays: Int
+  minimumDeliveryDays: Int
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  type: ShippingMethodTypeEnum
+  translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
+  channelListings: [ShippingMethodChannelListing!]
+  price: Money
+  maximumOrderPrice: Money
+  minimumOrderPrice: Money
+  postalCodeRules: [ShippingMethodPostalCodeRule]
+  excludedProducts(before: String, after: String, first: Int, last: Int): ProductCountableConnection
+}
+
+type ShippingError {
+  field: String
+  message: String
+  code: ShippingErrorCode!
+  warehouses: [ID!]
+  channels: [ID!]
+}
+
+enum ShippingErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  MAX_LESS_THAN_MIN
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  DUPLICATED_INPUT_ITEM
+}
+
+enum ShippingMethodTypeEnum {
+  PRICE
+  WEIGHT
+}
+
+input ShippingPostalCodeRulesCreateInputRange {
+  start: String!
+  end: String
+}
+
+enum PostalCodeRuleInclusionTypeEnum {
+  INCLUDE
+  EXCLUDE
+}
+
+type ShippingZoneCountableEdge {
+  node: ShippingZone!
+  cursor: String!
+}
+
+type ShippingMethodTranslation implements Node {
+  id: ID!
+  name: String
+  description: JSONString
+  language: LanguageDisplay!
+}
+
+type ShippingMethodChannelListing implements Node {
+  id: ID!
+  channel: Channel!
+  minimumOrderPrice: Money
+  maximumOrderPrice: Money
+  price: Money
+}
+
+type ShippingMethodPostalCodeRule implements Node {
+  start: String
+  end: String
+  inclusionType: PostalCodeRuleInclusionTypeEnum
+  id: ID!
+}

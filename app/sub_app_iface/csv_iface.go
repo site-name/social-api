@@ -4,9 +4,9 @@
 package sub_app_iface
 
 import (
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/web/graphql/gqlmodel"
 )
 
 // CsvService contains methods for working with csv

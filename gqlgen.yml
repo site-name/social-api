@@ -1,10 +1,10 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - web/graphql/schemas/*.graphqls
+  - graphql/schemas/*.graphqls
 
 # Where should the generated server code go?
 exec:
-  filename: web/graphql/generated/GRAPHQL_GENERATED.go
+  filename: graphql/generated/GRAPHQL_GENERATED.go
   package: generated
 
 # Uncomment to enable federation
@@ -14,13 +14,13 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: web/graphql/gqlmodel/GRAPHQL_MODELS_GEN.go
+  filename: graphql/gqlmodel/GRAPHQL_MODELS_GEN.go
   package: gqlmodel
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: web/graphql
+  dir: graphql
   package: graphql
 
 # Optional: turn on use `gqlgen:"fieldName"` tags in your models
@@ -35,7 +35,7 @@ omit_slice_element_pointers: false
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/sitename/sitename/web/graphql/gqlmodel"
+  - "github.com/sitename/sitename/graphql/gqlmodel"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -58,19 +58,19 @@ models:
   # custom scalars
   UUID:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.UUID
+      - github.com/sitename/sitename/graphql/scalars.UUID
   Date:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.Date
+      - github.com/sitename/sitename/graphql/scalars.Date
   DateTime:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.DateTime
+      - github.com/sitename/sitename/graphql/scalars.DateTime
   PositiveDecimal:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.PositiveDecimal
+      - github.com/sitename/sitename/graphql/scalars.PositiveDecimal
   WeightScalar:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.WeightScalar
+      - github.com/sitename/sitename/graphql/scalars.WeightScalar
   PlaceHolder:
     model:
-      - github.com/sitename/sitename/web/graphql/scalars.PlaceHolder
+      - github.com/sitename/sitename/graphql/scalars.PlaceHolder
