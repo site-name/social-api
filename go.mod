@@ -197,6 +197,7 @@ require (
 require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/wiggin77/merror v1.0.3 // indirect
 	github.com/wiggin77/srslog v1.0.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect

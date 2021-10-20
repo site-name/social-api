@@ -20,9 +20,10 @@ import (
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
+	// NOTE: we can access session like below since this resolver method is decorated with a authentication checking directive
 	session := ctx.Value(shared.APIContextKey).(*shared.Context).AppContext.Session()
 
-	if obj.UserID == nil {
+	if obj.UserID == nil || !model.IsValidId(*obj.UserID) {
 		return nil, nil
 	}
 
@@ -31,12 +32,12 @@ func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.Customer
 			AccountService().
 			SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
 
-		user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+		user, appErr := r.Srv().AccountService().UserById(ctx, *obj.UserID)
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+		return gqlmodel.SystemUserToGraphqlUser(user), nil
 	}
 
 	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
@@ -47,7 +48,7 @@ func (r *customerEventResolver) App(ctx context.Context, obj *gqlmodel.CustomerE
 }
 
 func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.Order, error) {
-	if obj.OrderID == nil {
+	if obj.OrderID == nil || !model.IsValidId(*obj.OrderID) {
 		return nil, nil
 	}
 
@@ -60,7 +61,7 @@ func (r *customerEventResolver) Order(ctx context.Context, obj *gqlmodel.Custome
 }
 
 func (r *customerEventResolver) OrderLine(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.OrderLine, error) {
-	if obj.OrderLineID == nil {
+	if obj.OrderLineID == nil || !model.IsValidId(*obj.OrderLineID) {
 		return nil, nil
 	}
 
@@ -89,15 +90,15 @@ func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string,
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
-	if session, appErr := checkUserAuthenticated("Me", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("Me", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		user, err := r.Srv().AccountService().UserById(ctx, session.UserId)
-		if err != nil {
-			return nil, err
-		}
-		return gqlmodel.DatabaseUserToGraphqlUser(user), nil
 	}
+	user, err := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if err != nil {
+		return nil, err
+	}
+	return gqlmodel.SystemUserToGraphqlUser(user), nil
 }
 
 func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*gqlmodel.User, error) {
@@ -112,69 +113,82 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 		user, appErr = r.Srv().AccountService().UserByEmail(*email)
 	}
 
-	if appErr != nil || user == nil {
+	if appErr != nil {
 		return nil, appErr
 	}
-	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+	return gqlmodel.SystemUserToGraphqlUser(user), nil
+}
+
+func (r *userResolver) Note(ctx context.Context, obj *gqlmodel.User) (*string, error) {
+	session, appErr := checkUserAuthenticated("Note", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
+		return obj.Note(), nil
+	}
+	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		// checks if current user has right to perform this action
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("DefaultShippingAddress")
-		}
-
-		if obj.DefaultShippingAddressID == nil || !model.IsValidId(*obj.DefaultShippingAddressID) {
-			return nil, nil
-		}
-
-		address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultShippingAddressID)
-		if appErr != nil {
-			return nil, appErr
-		}
-		return gqlmodel.SystemAddressToGraphqlAddress(address), nil
 	}
+
+	// checks if current user has right to perform this action
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("DefaultShippingAddress")
+	}
+
+	if obj.DefaultShippingAddressID == nil || !model.IsValidId(*obj.DefaultShippingAddressID) {
+		return nil, nil
+	}
+
+	address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultShippingAddressID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.SystemAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		// checks if current user has right to perform this action
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("DefaultBillingAddress")
-		}
-
-		if obj.DefaultBillingAddressID == nil || !model.IsValidId(*obj.DefaultBillingAddressID) {
-			return nil, nil
-		}
-
-		address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultBillingAddressID)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return gqlmodel.SystemAddressToGraphqlAddress(address), nil
 	}
+	// checks if current user has right to perform this action
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("DefaultBillingAddress")
+	}
+
+	if obj.DefaultBillingAddressID == nil || !model.IsValidId(*obj.DefaultBillingAddressID) {
+		return nil, nil
+	}
+
+	address, appErr := r.Srv().AccountService().AddressById(*obj.DefaultBillingAddressID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemAddressToGraphqlAddress(address), nil
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
-	if session, appErr := checkUserAuthenticated("Addresses", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("Addresses", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		// check if current user has right to perform this action:
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("Addresses")
-		}
-		addresses, AppErr := r.Srv().AccountService().AddressesByUserId(obj.ID)
-		if AppErr != nil {
-			return nil, AppErr
-		}
-		return gqlmodel.SystemAddressesToGraphqlAddress(addresses), nil
 	}
+	// check if current user has right to perform this action:
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("Addresses")
+	}
+	addresses, AppErr := r.Srv().AccountService().AddressesByUserId(obj.ID)
+	if AppErr != nil {
+		return nil, AppErr
+	}
+	return gqlmodel.SystemAddressesToGraphqlAddress(addresses), nil
 }
 
 func (r *userResolver) CheckoutTokens(ctx context.Context, obj *gqlmodel.User, channel *string) ([]uuid.UUID, error) {
@@ -206,54 +220,55 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	if session, appErr := checkUserAuthenticated("Events", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("Events", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		// check if requesting user is performing this operation on himself
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("Events")
-		}
-		events, appErr := r.Srv().AccountService().CustomerEventsByUser(obj.ID)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return gqlmodel.SystemCustomerEventsToGraphqlCustomerEvents(events), nil
 	}
+	// check if requesting user is performing this operation on himself
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("Events")
+	}
+	events, appErr := r.Srv().AccountService().CustomerEventsByUser(obj.ID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemCustomerEventsToGraphqlCustomerEvents(events), nil
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {
-	if session, appErr := checkUserAuthenticated("StoredPaymentSources", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("StoredPaymentSources", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("StoredPaymentSources")
-		}
-		// TODO: implement me
-		panic("not implemented")
 	}
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("StoredPaymentSources")
+	}
+	// TODO: implement me
+	panic("not implemented")
 }
 
 func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Wishlist, error) {
-	if session, appErr := checkUserAuthenticated("Wishlist", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("Wishlist", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		// users can ONLY see their own wishlist
-		if session.UserId != obj.ID {
-			return nil, permissionDenied("Wishlist")
-		}
-		wl, appErr := r.Srv().WishlistService().WishlistByOption(&wishlist.WishlistFilterOption{
-			UserID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: obj.ID,
-				},
-			},
-		})
-		if appErr != nil {
-			return nil, appErr
-		}
-		return gqlmodel.DatabaseWishlistToGraphqlWishlist(wl), nil
 	}
+	// users can ONLY see their own wishlist
+	if session.UserId != obj.ID {
+		return nil, permissionDenied("Wishlist")
+	}
+
+	wishList, appErr := r.Srv().WishlistService().WishlistByOption(&wishlist.WishlistFilterOption{
+		UserID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: obj.ID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	return gqlmodel.DatabaseWishlistToGraphqlWishlist(wishList), nil
 }
 
 // CustomerEvent returns graphql1.CustomerEventResolver implementation.

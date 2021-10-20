@@ -26,13 +26,13 @@ type User struct {
 	FirstName                string                              `json:"firstName"`
 	LastName                 string                              `json:"lastName"`
 	IsActive                 bool                                `json:"isActive"`
-	Note                     *string                             `json:"note"`
 	DateJoined               time.Time                           `json:"dateJoined"`
 	LanguageCode             LanguageCodeEnum                    `json:"languageCode"`
 	DefaultShippingAddressID *string                             `json:"defaultShippingAddress"` // *Address
 	DefaultBillingAddressID  *string                             `json:"defaultBillingAddress"`  // *Address
 	PrivateMetadata          []*MetadataItem                     `json:"privateMetadata"`
 	Metadata                 []*MetadataItem                     `json:"metadata"`
+	Note                     func() *string                      `json:"note"`                 // *String
 	WishlistID               *string                             `json:"wishlists"`            // *Wishlist
 	AddresseIDs              []string                            `json:"addresses"`            // []*Address
 	PermissionGroupIDs       []string                            `json:"permissionGroups"`     // []*Group
@@ -49,8 +49,13 @@ type User struct {
 func (User) IsNode()               {}
 func (User) IsObjectWithMetadata() {}
 
-// DatabaseUserToGraphqlUser converts database user to graphql user
-func DatabaseUserToGraphqlUser(u *account.User) *User {
+// SystemUserToGraphqlUser converts database user to graphql user
+func SystemUserToGraphqlUser(u *account.User) *User {
+
+	noteFunc := func() *string {
+		return u.Note
+	}
+
 	return &User{
 		ID:                       u.Id,
 		LastLogin:                util.TimePointerFromMillis(u.LastActivityAt),
@@ -58,12 +63,12 @@ func DatabaseUserToGraphqlUser(u *account.User) *User {
 		FirstName:                u.FirstName,
 		LastName:                 u.LastName,
 		IsActive:                 u.IsActive,
-		Note:                     u.Note,
 		DateJoined:               util.TimeFromMillis(u.CreateAt),
 		LanguageCode:             LanguageCodeEnum(strings.ToUpper(u.Locale)),
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		PrivateMetadata:          MapToGraphqlMetaDataItems(u.PrivateMetadata),
 		Metadata:                 MapToGraphqlMetaDataItems(u.Metadata),
+		Note:                     noteFunc,
 	}
 }

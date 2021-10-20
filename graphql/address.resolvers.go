@@ -24,36 +24,32 @@ func (r *addressResolver) Country(ctx context.Context, obj *gqlmodel.Address) (*
 
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	// onyl authenticated users can check their default addresses
-	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		if !model.IsValidId(obj.ID) {
-			return nil, nil
-		}
-		user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
 	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
 }
 
 func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	// onyl authenticated users can check their default addresses
-	if session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx); appErr != nil {
+	session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		if !model.IsValidId(obj.ID) {
-			return nil, nil
-		}
-		user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil
 	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return model.NewBool(user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == obj.ID), nil
 }
 
 func (r *mutationResolver) AddressCreate(ctx context.Context, input gqlmodel.AddressInput, userID string) (*gqlmodel.AddressCreate, error) {

@@ -6,8 +6,10 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -49,7 +51,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 			addressType = account.ADDRESS_TYPE_SHIPPING
 
 		default:
-			return nil, invalidParameterError("AccountSetDefaultAddress", "address type", "Invalid address type")
+			return nil, model.NewAppError("AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "", http.StatusBadRequest)
 		}
 		updatedUser, appErr := r.Srv().AccountService().UserSetDefaultAddress(session.UserId, id, addressType)
 		if appErr != nil {
@@ -57,7 +59,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 		}
 
 		return &gqlmodel.AccountSetDefaultAddress{
-			User: gqlmodel.DatabaseUserToGraphqlUser(updatedUser),
+			User: gqlmodel.SystemUserToGraphqlUser(updatedUser),
 		}, nil
 	}
 }
@@ -97,7 +99,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 
 	return &gqlmodel.AccountRegister{
 		RequiresConfirmation: r.Config().EmailSettings.RequireEmailVerification,
-		User:                 gqlmodel.DatabaseUserToGraphqlUser(ruser),
+		User:                 gqlmodel.SystemUserToGraphqlUser(ruser),
 	}, nil
 }
 

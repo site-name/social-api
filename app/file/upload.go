@@ -83,8 +83,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 	if locked {
 		// session lock is already taken, return error.
 		a.uploadLockMapMut.Unlock()
-		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error",
-			nil, "", http.StatusBadRequest)
+		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "", http.StatusBadRequest)
 	}
 	// grab the session lock.
 	a.uploadLockMap[us.Id] = true
@@ -101,8 +100,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 	if storedSession, err := a.GetUploadSession(us.Id); err != nil {
 		return nil, err
 	} else if us.FileOffset != storedSession.FileOffset {
-		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error",
-			nil, "FileOffset mismatch", http.StatusBadRequest)
+		return nil, model.NewAppError("UploadData", "app.upload.upload_data.concurrent.app_error", nil, "FileOffset mismatch", http.StatusBadRequest)
 	}
 
 	uploadPath := us.Path
@@ -129,8 +127,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 			if err != nil {
 				errStr = err.Error()
 			}
-			return nil, model.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error",
-				map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
+			return nil, model.NewAppError("UploadData", "app.upload.upload_data.first_part_too_small.app_error", map[string]interface{}{"Size": minFirstPartSize}, errStr, http.StatusBadRequest)
 		}
 	} else if us.FileOffset < us.FileSize {
 		// resume upload

@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/sitename/sitename/graphql"
+	"github.com/sitename/sitename/graphql/dataloaders"
 	"github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
@@ -64,6 +65,10 @@ func (web *Web) InitGraphql() {
 // commonGraphHandler is used for both graphql playground/api
 func commonGraphHandler(handler http.Handler) func(c *shared.Context, w http.ResponseWriter, r *http.Request) {
 	return func(c *shared.Context, w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), shared.APIContextKey, c)))
+
+		apiContext := context.WithValue(r.Context(), shared.APIContextKey, c)
+		dataloaderContext := context.WithValue(apiContext, dataloaders.DataloaderContextKey, dataloaders.NewLoaders(c.App.Srv()))
+
+		handler.ServeHTTP(w, r.WithContext(dataloaderContext))
 	}
 }

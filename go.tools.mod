@@ -3,7 +3,7 @@ module github.com/sitename/sitename
 go 1.16
 
 require (
-	github.com/99designs/gqlgen v0.14.0 // indirect
+	github.com/99designs/gqlgen v0.13.0 // indirect
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/go-chi/chi v3.3.2+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

@@ -67,8 +67,8 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *Cu
 		}
 	}
 	// parse count
-	if c, ok := event.Parameters["count"]; ok {
-		switch t := c.(type) {
+	if count, ok := event.Parameters["count"]; ok {
+		switch t := count.(type) {
 		case int:
 			count = &t
 		case int64:

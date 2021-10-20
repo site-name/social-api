@@ -11,20 +11,8 @@ import (
 // common id strings for creating AppErrors
 const (
 	userUnauthenticatedId = "graphql.account.user_unauthenticated.app_error"
-	invalidParameterId    = "graphql.invalid_parameter.app_error"
 	permissionDeniedId    = "app.account.permission_denied.app_error"
-	userInactiveID        = "app.account.user_inactive.app_error"
 )
-
-// userInactiveAppError is a common utility function for creating user-inactive app error
-func userInactiveAppError(where string) *model.AppError {
-	return model.NewAppError(where, userInactiveID, nil, "", http.StatusForbidden)
-}
-
-// newUserUnauthenticatedAppError is common method for creating user-unauthenticated app error
-func newUserUnauthenticatedAppError(where string) *model.AppError {
-	return model.NewAppError(where, userUnauthenticatedId, nil, "", http.StatusForbidden)
-}
 
 // checkUserAuthenticated is an utility function that check if session contained inside context is authenticated:
 //
@@ -37,22 +25,13 @@ func checkUserAuthenticated(where string, ctx context.Context) (*model.Session, 
 	embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
 
 	if session := embedCtx.AppContext.Session(); session == nil {
-		return nil, newUserUnauthenticatedAppError(where)
+		return nil, model.NewAppError(where, userUnauthenticatedId, nil, "", http.StatusForbidden)
 	} else {
 		return session, nil
 	}
 }
 
-// invalidParameterError is common utility function for creating app error that let user know their input parameter is invalid
-func invalidParameterError(where, paramName, message string) *model.AppError {
-	return model.NewAppError(where, invalidParameterId, map[string]interface{}{"Name": paramName}, message, http.StatusBadRequest)
-}
-
 // permissionDenied is utility function for creating app error, indicate that requesting user cannot perform specific operations
 func permissionDenied(where string) *model.AppError {
 	return model.NewAppError(where, permissionDeniedId, nil, "", http.StatusUnauthorized)
-}
-
-func permissionAppError(r *Resolver, session *model.Session, permissions ...*model.Permission) *model.AppError {
-	return r.Srv().AccountService().MakePermissionError(session, permissions...)
 }

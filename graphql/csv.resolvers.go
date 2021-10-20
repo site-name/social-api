@@ -31,7 +31,7 @@ func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEven
 	if appErr != nil {
 		return nil, appErr
 	}
-	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+	return gqlmodel.SystemUserToGraphqlUser(user), nil
 }
 
 func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile) (*gqlmodel.User, error) {
@@ -48,7 +48,7 @@ func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile)
 	if appErr != nil {
 		return nil, appErr
 	}
-	return gqlmodel.DatabaseUserToGraphqlUser(user), nil
+	return gqlmodel.SystemUserToGraphqlUser(user), nil
 }
 
 func (r *exportFileResolver) URL(ctx context.Context, obj *gqlmodel.ExportFile) (*string, error) {
