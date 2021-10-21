@@ -5,7 +5,6 @@ package graphql
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -200,9 +199,24 @@ func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *
 }
 
 func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
-	return nil, errors.New("not implemented")
-}
+	// session, appErr := checkUserAuthenticated("Orders", ctx)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
+	// // the requesting user must has permission to manage orders to see orders
+	// orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+
+	// 	return &gqlmodel.OrderCountableConnection{}, nil
+	// }
+	panic("not implemented")
+}
 func (r *userResolver) UserPermissions(ctx context.Context, obj *gqlmodel.User, _ *scalars.PlaceHolder) ([]*gqlmodel.UserPermission, error) {
 	panic(fmt.Errorf("not implemented"))
 }

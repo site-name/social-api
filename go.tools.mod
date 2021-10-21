@@ -9,6 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/reflog/struct2interface v0.6.1 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
+	github.com/vektah/dataloaden v0.3.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0 // indirect
 	github.com/vektra/mockery v1.1.2 // indirect
 	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0 // indirect

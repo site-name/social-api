@@ -66,9 +66,12 @@ func (web *Web) InitGraphql() {
 func commonGraphHandler(handler http.Handler) func(c *shared.Context, w http.ResponseWriter, r *http.Request) {
 	return func(c *shared.Context, w http.ResponseWriter, r *http.Request) {
 
-		apiContext := context.WithValue(r.Context(), shared.APIContextKey, c)
-		dataloaderContext := context.WithValue(apiContext, dataloaders.DataloaderContextKey, dataloaders.NewLoaders(c.App.Srv()))
-
-		handler.ServeHTTP(w, r.WithContext(dataloaderContext))
+		handler.ServeHTTP(w, r.WithContext(
+			context.WithValue(
+				context.WithValue(r.Context(), shared.APIContextKey, c),
+				dataloaders.DataloaderContextKey,
+				dataloaders.NewLoaders(c.App),
+			),
+		))
 	}
 }
