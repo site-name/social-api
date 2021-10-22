@@ -11,7 +11,7 @@ func (s *ServicePlugin) notifyClusterPluginEvent(event cluster.ClusterEvent, dat
 			Event:            event,
 			SendType:         cluster.ClusterSendReliable,
 			WaitForAllToSend: true,
-			Data:             data.ToJson(),
+			Data:             data.ToJSON(),
 		})
 	}
 }

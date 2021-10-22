@@ -74,7 +74,7 @@ func (a *Address) Equal(other *Address) bool {
 	return reflect.DeepEqual(a, other)
 }
 
-func (add *Address) ToJson() string {
+func (add *Address) ToJSON() string {
 	return model.ModelToJson(add)
 }
 

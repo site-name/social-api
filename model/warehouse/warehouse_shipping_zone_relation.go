@@ -40,6 +40,6 @@ func (w *WarehouseShippingZone) PreSave() {
 	}
 }
 
-func (w *WarehouseShippingZone) ToJson() string {
+func (w *WarehouseShippingZone) ToJSON() string {
 	return model.ModelToJson(w)
 }

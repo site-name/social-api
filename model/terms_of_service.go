@@ -40,7 +40,7 @@ func (t *TermsOfService) IsValid() *AppError {
 	return nil
 }
 
-func (t *TermsOfService) ToJson() string {
+func (t *TermsOfService) ToJSON() string {
 	return ModelToJson(t)
 }
 

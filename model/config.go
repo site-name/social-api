@@ -2915,13 +2915,13 @@ type Config struct {
 
 func (o *Config) Clone() *Config {
 	var ret Config
-	if err := json.JSON.Unmarshal([]byte(o.ToJson()), &ret); err != nil {
+	if err := json.JSON.Unmarshal([]byte(o.ToJSON()), &ret); err != nil {
 		panic(err)
 	}
 	return &ret
 }
 
-func (o *Config) ToJson() string {
+func (o *Config) ToJSON() string {
 	return ModelToJson(o)
 }
 

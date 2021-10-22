@@ -133,7 +133,7 @@ func (p *ProductVariant) IsPreorderActive() bool {
 
 }
 
-func (p *ProductVariant) ToJson() string {
+func (p *ProductVariant) ToJSON() string {
 	return model.ModelToJson(p)
 }
 
@@ -223,6 +223,6 @@ func (p *ProductVariantTranslation) IsValid() *model.AppError {
 	return nil
 }
 
-func (p *ProductVariantTranslation) ToJson() string {
+func (p *ProductVariantTranslation) ToJSON() string {
 	return model.ModelToJson(p)
 }

@@ -173,7 +173,7 @@ type EntityDescriptor struct {
 	ContactPerson     ContactPerson      `xml:"ContactPerson"`
 }
 
-func (s *SamlCertificateStatus) ToJson() string {
+func (s *SamlCertificateStatus) ToJSON() string {
 	return ModelToJson(s)
 }
 
@@ -183,7 +183,7 @@ func SamlCertificateStatusFromJson(data io.Reader) *SamlCertificateStatus {
 	return status
 }
 
-func (s *SamlMetadataResponse) ToJson() string {
+func (s *SamlMetadataResponse) ToJSON() string {
 	return ModelToJson(s)
 }
 

@@ -67,7 +67,7 @@ func (e *ExportEvent) IsValid() *model.AppError {
 	return nil
 }
 
-func (e *ExportEvent) ToJson() string {
+func (e *ExportEvent) ToJSON() string {
 	return model.ModelToJson(e)
 }
 

@@ -250,7 +250,7 @@ func ModelFromJson(model interface{}, data io.Reader) error {
 	return json.JSON.NewDecoder(data).Decode(&model)
 }
 
-func (a *AppError) ToJson() string {
+func (a *AppError) ToJSON() string {
 	return ModelToJson(a)
 }
 

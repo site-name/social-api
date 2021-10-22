@@ -295,7 +295,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			// IsWebhookCall(c.App, r) || IsOAuthApiCall(c.App, r) ||
 			r.Header.Get("X-Mobile-App") != "" {
 			w.WriteHeader(c.Err.StatusCode)
-			w.Write([]byte(c.Err.ToJson()))
+			w.Write([]byte(c.Err.ToJSON()))
 		} else {
 			api.RenderWebAppError(c.App.Config(), w, r, c.Err, c.App.AsymmetricSigningKey())
 		}

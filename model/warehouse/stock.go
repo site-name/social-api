@@ -116,7 +116,7 @@ func (s *Stock) IsValid() *model.AppError {
 	return nil
 }
 
-func (s *Stock) ToJson() string {
+func (s *Stock) ToJSON() string {
 	return model.ModelToJson(s)
 }
 

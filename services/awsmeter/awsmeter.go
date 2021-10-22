@@ -94,7 +94,7 @@ func (awsm *AwsMeter) GetUserCategoryUsage(dimensions []string, startTime time.T
 		var err error
 
 		switch dimension {
-		case model.AWS_METERING_DIMENSION_USAGE_HRS:
+		case model.AwsMeteringDimensionUsageHrs:
 			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(model.GetMillisForTime(startTime), model.GetMillisForTime(endTime), account.UserCountOptions{})
 			if err != nil {
 				slog.Warn("Failed to obtain usage data", slog.String("dimension", dimension), slog.String("start", startTime.String()), slog.Int64("count", userCount), slog.Err(err))

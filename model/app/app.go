@@ -71,7 +71,7 @@ func (a *App) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *App) ToJson() string {
+func (a *App) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

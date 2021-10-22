@@ -466,6 +466,8 @@ type (
 	}
 	ShippingMethodExcludedProductStore interface {
 		CreateIndexesIfNotExists()
+		Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
+		Get(id string) (*shipping.ShippingMethodExcludedProduct, error)                                         // Get finds and returns a shipping method excluded product with given id then reutrns it
 	}
 )
 

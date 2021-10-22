@@ -31,7 +31,7 @@ func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
 	case map[string]interface{}:
 		return model.StringInterfaceToJson(t), nil
 	case JSONSerializable:
-		return t.ToJson(), nil
+		return t.ToJSON(), nil
 	case *opengraph.OpenGraph:
 		return json.JSON.Marshal(t)
 	}
@@ -77,5 +77,5 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 }
 
 type JSONSerializable interface {
-	ToJson() string
+	ToJSON() string
 }

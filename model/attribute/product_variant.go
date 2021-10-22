@@ -36,7 +36,7 @@ func (a *AssignedVariantAttributeValue) PreSave() {
 	}
 }
 
-func (a *AssignedVariantAttributeValue) ToJson() string {
+func (a *AssignedVariantAttributeValue) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -81,7 +81,7 @@ func (a *AssignedVariantAttribute) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AssignedVariantAttribute) ToJson() string {
+func (a *AssignedVariantAttribute) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

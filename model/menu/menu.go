@@ -58,6 +58,6 @@ func (m *Menu) PreUpdate() {
 	m.Name = model.SanitizeUnicode(m.Name)
 }
 
-func (m *Menu) ToJson() string {
+func (m *Menu) ToJSON() string {
 	return model.ModelToJson(m)
 }

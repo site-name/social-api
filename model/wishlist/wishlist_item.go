@@ -68,6 +68,6 @@ func (w *WishlistItem) PreSave() {
 	w.CreateAt = model.GetMillis()
 }
 
-func (w *WishlistItem) ToJson() string {
+func (w *WishlistItem) ToJSON() string {
 	return model.ModelToJson(w)
 }

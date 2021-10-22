@@ -14,7 +14,7 @@ type ClusterInfo struct {
 	Hostname   string `json:"hostname"`
 }
 
-func (ci *ClusterInfo) ToJson() string {
+func (ci *ClusterInfo) ToJSON() string {
 	return model.ModelToJson(ci)
 }
 

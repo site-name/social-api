@@ -50,7 +50,7 @@ func (t *UserAccessToken) PreSave() {
 	t.IsActive = true
 }
 
-func (t *UserAccessToken) ToJson() string {
+func (t *UserAccessToken) ToJSON() string {
 	return model.ModelToJson(t)
 }
 

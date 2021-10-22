@@ -45,7 +45,7 @@ func (a *Audit) PreSave() {
 	a.CreateAt = model.GetMillis()
 }
 
-func (a *Audit) ToJson() string {
+func (a *Audit) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -65,7 +65,7 @@ func (o Audits) Etag() string {
 	return ""
 }
 
-func (o Audits) ToJson() string {
+func (o Audits) ToJSON() string {
 	return model.ModelToJson(&o)
 }
 

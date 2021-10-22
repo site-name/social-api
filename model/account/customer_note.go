@@ -15,7 +15,7 @@ type CustomerNote struct {
 	CustomerID string  `json:"customer_id"`
 }
 
-func (c *CustomerNote) ToJson() string {
+func (c *CustomerNote) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

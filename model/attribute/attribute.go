@@ -154,7 +154,7 @@ func (a *Attribute) String() string {
 	return a.Name
 }
 
-func (a *Attribute) ToJson() string {
+func (a *Attribute) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

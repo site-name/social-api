@@ -62,7 +62,7 @@ func (c *Channel) IsValid() *model.AppError {
 	return nil
 }
 
-func (c *Channel) ToJson() string {
+func (c *Channel) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

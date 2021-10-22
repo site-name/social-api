@@ -331,6 +331,6 @@ func (p *Payment) PreUpdate() {
 	p.commonPre()
 }
 
-func (p *Payment) ToJson() string {
+func (p *Payment) ToJSON() string {
 	return model.ModelToJson(p)
 }

@@ -5,6 +5,6 @@ type MfaSecret struct {
 	QRCode string `json:"qr_code"`
 }
 
-func (mfa *MfaSecret) ToJson() string {
+func (mfa *MfaSecret) ToJSON() string {
 	return ModelToJson(mfa)
 }

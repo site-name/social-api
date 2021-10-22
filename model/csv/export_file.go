@@ -20,7 +20,7 @@ type ExportFileFilterOption struct {
 	Id *model.StringFilter
 }
 
-func (e *ExportFile) ToJson() string {
+func (e *ExportFile) ToJSON() string {
 	return model.ModelToJson(e)
 }
 

@@ -15,7 +15,7 @@ func (w *WishlistItemProductVariant) PreSave() {
 	}
 }
 
-func (w *WishlistItemProductVariant) ToJson() string {
+func (w *WishlistItemProductVariant) ToJSON() string {
 	return model.ModelToJson(w)
 }
 

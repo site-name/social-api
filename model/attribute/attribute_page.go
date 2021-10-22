@@ -43,6 +43,6 @@ func (a *AttributePage) PreSave() {
 	}
 }
 
-func (a *AttributePage) ToJson() string {
+func (a *AttributePage) ToJSON() string {
 	return model.ModelToJson(a)
 }

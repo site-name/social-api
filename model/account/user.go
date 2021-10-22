@@ -468,15 +468,15 @@ func (u *User) Patch(patch *UserPatch) {
 }
 
 // ToJson convert a User to a json.JSON string
-func (u *User) ToJson() string {
+func (u *User) ToJSON() string {
 	return model.ModelToJson(u)
 }
 
-func (u *UserPatch) ToJson() string {
+func (u *UserPatch) ToJSON() string {
 	return model.ModelToJson(u)
 }
 
-func (u *UserAuth) ToJson() string {
+func (u *UserAuth) ToJSON() string {
 	return model.ModelToJson(u)
 }
 

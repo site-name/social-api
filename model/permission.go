@@ -116,18 +116,18 @@ var (
 )
 
 var (
-	PermissionInviteUser                *Permission
-	PermissionUseSlashCommands          *Permission
-	PermissionManageSlashCommands       *Permission
-	PermissionManageOthersSlashCommands *Permission
+	PermissionInviteUser *Permission
+	// PermissionUseSlashCommands          *Permission
+	// PermissionManageSlashCommands       *Permission
+	// PermissionManageOthersSlashCommands *Permission
 
-	PermissionAssignSystemAdminRole *Permission
-	PermissionManageRoles           *Permission
-	PermissionEditOtherUsers        *Permission
+	// PermissionAssignSystemAdminRole *Permission
+	PermissionManageRoles    *Permission
+	PermissionEditOtherUsers *Permission
 
-	PermissionAddReaction           *Permission
-	PermissionRemoveReaction        *Permission
-	PermissionRemoveOthersReactions *Permission
+	PermissionAddReaction    *Permission
+	PermissionRemoveReaction *Permission
+	// PermissionRemoveOthersReactions *Permission
 
 	PermissionUploadFile                   *Permission
 	PermissionGetPublicLink                *Permission
@@ -360,30 +360,30 @@ func initializePermissions() {
 		"authentication.permissions.team_invite_user.description",
 		PermissionScopeTeam,
 	}
-	PermissionUseSlashCommands = &Permission{
-		"use_slash_commands",
-		"authentication.permissions.team_use_slash_commands.name",
-		"authentication.permissions.team_use_slash_commands.description",
-		PermissionScopeChannel,
-	}
-	PermissionManageSlashCommands = &Permission{
-		"manage_slash_commands",
-		"authentication.permissions.manage_slash_commands.name",
-		"authentication.permissions.manage_slash_commands.description",
-		PermissionScopeTeam,
-	}
-	PermissionManageOthersSlashCommands = &Permission{
-		"manage_others_slash_commands",
-		"authentication.permissions.manage_others_slash_commands.name",
-		"authentication.permissions.manage_others_slash_commands.description",
-		PermissionScopeTeam,
-	}
-	PermissionAssignSystemAdminRole = &Permission{
-		"assign_system_admin_role",
-		"authentication.permissions.assign_system_admin_role.name",
-		"authentication.permissions.assign_system_admin_role.description",
-		PermissionScopeSystem,
-	}
+	// PermissionUseSlashCommands = &Permission{
+	// 	"use_slash_commands",
+	// 	"authentication.permissions.team_use_slash_commands.name",
+	// 	"authentication.permissions.team_use_slash_commands.description",
+	// 	PermissionScopeChannel,
+	// }
+	// PermissionManageSlashCommands = &Permission{
+	// 	"manage_slash_commands",
+	// 	"authentication.permissions.manage_slash_commands.name",
+	// 	"authentication.permissions.manage_slash_commands.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PermissionManageOthersSlashCommands = &Permission{
+	// 	"manage_others_slash_commands",
+	// 	"authentication.permissions.manage_others_slash_commands.name",
+	// 	"authentication.permissions.manage_others_slash_commands.description",
+	// 	PermissionScopeTeam,
+	// }
+	// PermissionAssignSystemAdminRole = &Permission{
+	// 	"assign_system_admin_role",
+	// 	"authentication.permissions.assign_system_admin_role.name",
+	// 	"authentication.permissions.assign_system_admin_role.description",
+	// 	PermissionScopeSystem,
+	// }
 	PermissionManageRoles = &Permission{
 		"manage_roles",
 		"authentication.permissions.manage_roles.name",
@@ -414,12 +414,12 @@ func initializePermissions() {
 		"authentication.permissions.remove_reaction.description",
 		PermissionScopeChannel,
 	}
-	PermissionRemoveOthersReactions = &Permission{
-		"remove_others_reactions",
-		"authentication.permissions.remove_others_reactions.name",
-		"authentication.permissions.remove_others_reactions.description",
-		PermissionScopeChannel,
-	}
+	// PermissionRemoveOthersReactions = &Permission{
+	// 	"remove_others_reactions",
+	// 	"authentication.permissions.remove_others_reactions.name",
+	// 	"authentication.permissions.remove_others_reactions.description",
+	// 	PermissionScopeChannel,
+	// }
 	PermissionUploadFile = &Permission{
 		"upload_file",
 		"authentication.permissions.upload_file.name",
@@ -1593,7 +1593,7 @@ func initializePermissions() {
 	}
 
 	SystemScopedPermissionsMinusSysconsole := []*Permission{
-		PermissionAssignSystemAdminRole,
+		// PermissionAssignSystemAdminRole,
 		PermissionManageRoles,
 		PermissionManageSystem,
 		PermissionEditOtherUsers,
@@ -1649,20 +1649,18 @@ func initializePermissions() {
 
 	TeamScopedPermissions := []*Permission{
 		PermissionInviteUser,
-		PermissionManageSlashCommands,
-		PermissionManageOthersSlashCommands,
 		PermissionManageIncomingWebhooks,
 		PermissionManageOutgoingWebhooks,
 		PermissionManageOthersIncomingWebhooks,
 		PermissionManageOthersOutgoingWebhooks,
 		PermissionViewMembers,
+		// PermissionManageSlashCommands,
+		// PermissionManageOthersSlashCommands,
 	}
 
 	ChannelScopedPermissions := []*Permission{
-		PermissionUseSlashCommands,
 		PermissionAddReaction,
 		PermissionRemoveReaction,
-		PermissionRemoveOthersReactions,
 		PermissionUploadFile,
 		PermissionCreatePost,
 		PermissionCreatePostPublic,
@@ -1671,6 +1669,8 @@ func initializePermissions() {
 		PermissionEditOthersPosts,
 		PermissionDeletePost,
 		PermissionDeleteOthersPosts,
+		// PermissionRemoveOthersReactions,
+		// PermissionUseSlashCommands,
 	}
 
 	AllPermissions = []*Permission{}
@@ -1683,6 +1683,6 @@ func initializePermissions() {
 }
 
 func init() {
-	initializePermissions()
 	initializeSaleorPermission()
+	initializePermissions()
 }

@@ -31,7 +31,7 @@ func (a *AssignedPageAttributeValue) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AssignedPageAttributeValue) ToJson() string {
+func (a *AssignedPageAttributeValue) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -82,7 +82,7 @@ func (a *AssignedPageAttribute) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AssignedPageAttribute) ToJson() string {
+func (a *AssignedPageAttribute) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

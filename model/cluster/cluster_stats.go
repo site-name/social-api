@@ -13,7 +13,7 @@ type ClusterStats struct {
 	TotalMasterDbConnections  int    `json:"total_master_db_connections"`
 }
 
-func (cs *ClusterStats) ToJson() string {
+func (cs *ClusterStats) ToJSON() string {
 	return model.ModelToJson(cs)
 }
 

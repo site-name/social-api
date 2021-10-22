@@ -142,7 +142,7 @@ func (o *OrderEvent) IsValid() *model.AppError {
 	return nil
 }
 
-func (o *OrderEvent) ToJson() string {
+func (o *OrderEvent) ToJSON() string {
 	return model.ModelToJson(o)
 }
 

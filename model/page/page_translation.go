@@ -46,7 +46,7 @@ func (p *PageTranslation) IsValid() *model.AppError {
 	return nil
 }
 
-func (p *PageTranslation) ToJson() string {
+func (p *PageTranslation) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

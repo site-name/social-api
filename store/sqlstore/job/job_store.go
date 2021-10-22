@@ -51,7 +51,7 @@ func (jss *SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus strin
 		Update(store.JobTableName).
 		Set("LastActivityAt", model.GetMillis()).
 		Set("Status", job.Status).
-		Set("Data", job.ToJson()).
+		Set("Data", job.ToJSON()).
 		Set("Progress", job.Progress).
 		Where(sq.Eq{"Id": job.Id, "Status": currentStatus}).ToSql()
 	if err != nil {

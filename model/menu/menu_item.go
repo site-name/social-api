@@ -71,7 +71,7 @@ func (m *MenuItem) PreUpdate() {
 	m.Name = model.SanitizeUnicode(m.Name)
 }
 
-func (m *MenuItem) ToJson() string {
+func (m *MenuItem) ToJSON() string {
 	return model.ModelToJson(m)
 }
 

@@ -46,7 +46,7 @@ type ComplianceExportCursor struct {
 	DirectMessagesQueryCompleted        bool
 }
 
-func (c *Compliance) ToJson() string {
+func (c *Compliance) ToJSON() string {
 	return model.ModelToJson(c)
 }
 
@@ -110,6 +110,6 @@ func (c *Compliance) IsValid() *model.AppError {
 	return nil
 }
 
-func (c *Compliances) ToJson() string {
+func (c *Compliances) ToJSON() string {
 	return model.ModelToJson(c)
 }

@@ -10,7 +10,7 @@ type UsersStats struct {
 	TotalUsersCount int64 `json:"total_users_count"`
 }
 
-func (o *UsersStats) ToJson() string {
+func (o *UsersStats) ToJSON() string {
 	return model.ModelToJson(o)
 }
 

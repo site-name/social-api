@@ -23,9 +23,9 @@ func TestPluginsResponseJson(t *testing.T) {
 		Inactive: []*PluginInfo{},
 	}
 
-	json := response.ToJson()
+	json := response.ToJSON()
 	newResponse := PluginsResponseFromJson(strings.NewReader(json))
 	assert.Equal(t, newResponse, response)
-	assert.Equal(t, newResponse.ToJson(), json)
+	assert.Equal(t, newResponse.ToJSON(), json)
 	assert.Equal(t, PluginsResponseFromJson(strings.NewReader("junk")), (*PluginsResponse)(nil))
 }

@@ -828,7 +828,7 @@ func (s *Server) DatabaseTypeAndMattermostVersion() (string, string) {
 func runReportToAWSMeterJob(s *Server) {
 	model.CreateRecurringTask("Collect and send usage report to AWS Metering Service", func() {
 		doReportUsageToAWSMeteringService(s)
-	}, time.Hour*model.AWS_METERING_REPORT_INTERVAL)
+	}, time.Hour*model.AwsMeteringReportInterval)
 }
 
 func doReportUsageToAWSMeteringService(s *Server) {
@@ -838,8 +838,8 @@ func doReportUsageToAWSMeteringService(s *Server) {
 		return
 	}
 
-	dimensions := []string{model.AWS_METERING_DIMENSION_USAGE_HRS}
-	reports := awsMeter.GetUserCategoryUsage(dimensions, time.Now().UTC(), time.Now().Add(-model.AWS_METERING_REPORT_INTERVAL*time.Hour).UTC())
+	dimensions := []string{model.AwsMeteringDimensionUsageHrs}
+	reports := awsMeter.GetUserCategoryUsage(dimensions, time.Now().UTC(), time.Now().Add(-model.AwsMeteringReportInterval*time.Hour).UTC())
 	awsMeter.ReportUserCategoryUsage(reports)
 }
 
@@ -912,7 +912,7 @@ func doSecurity(s *Server) {
 // }
 
 func (s *Server) getFirstServerRunTimestamp() (int64, *model.AppError) {
-	systemData, err := s.Store.System().GetByName(model.SYSTEM_FIRST_SERVER_RUN_TIMESTAMP_KEY)
+	systemData, err := s.Store.System().GetByName(model.SystemFirstServerRunTimestampKey)
 	if err != nil {
 		return 0, model.NewAppError("getFirstServerRunTimestamp", "app.system.get_by_name.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

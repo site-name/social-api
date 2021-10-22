@@ -23,7 +23,7 @@ type Status struct {
 	// ActiveChannel  string `json:"active_channel,omitempty" db:"-"`
 }
 
-func (o *Status) ToJson() string {
+func (o *Status) ToJSON() string {
 	oCopy := *o
 	// oCopy.ActiveChannel = ""
 	return model.ModelToJson(&oCopy)

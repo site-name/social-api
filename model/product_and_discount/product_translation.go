@@ -52,7 +52,7 @@ func (p *ProductTranslation) IsValid() *model.AppError {
 	return nil
 }
 
-func (p *ProductTranslation) ToJson() string {
+func (p *ProductTranslation) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

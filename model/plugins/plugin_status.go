@@ -27,7 +27,7 @@ type PluginStatus struct {
 
 type PluginStatuses []*PluginStatus
 
-func (m *PluginStatuses) ToJson() string {
+func (m *PluginStatuses) ToJSON() string {
 	b, _ := json.Marshal(m)
 	return string(b)
 }

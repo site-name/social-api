@@ -22,7 +22,7 @@ func (s *Server) ServePluginRequest(w http.ResponseWriter, r *http.Request) {
 		s.Log.Error(appErr.Error())
 		w.WriteHeader(appErr.StatusCode)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(appErr.ToJson()))
+		w.Write([]byte(appErr.ToJSON()))
 		return
 	}
 

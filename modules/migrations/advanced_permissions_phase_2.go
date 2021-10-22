@@ -15,7 +15,7 @@ type AdvancedPermissionsPhase2Progress struct {
 	LastUserId    string `json:"last_user"`
 }
 
-func (p *AdvancedPermissionsPhase2Progress) ToJson() string {
+func (p *AdvancedPermissionsPhase2Progress) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

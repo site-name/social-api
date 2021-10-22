@@ -37,7 +37,7 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 		cm := &cluster.ClusterMessage{
 			Event:    cluster.ClusterEventPublish,
 			SendType: cluster.ClusterSendBestEffort,
-			Data:     message.ToJson(),
+			Data:     message.ToJSON(),
 		}
 
 		switch message.EventType() {

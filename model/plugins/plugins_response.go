@@ -14,7 +14,7 @@ type PluginsResponse struct {
 	Inactive []*PluginInfo `json:"inactive"`
 }
 
-func (m *PluginsResponse) ToJson() string {
+func (m *PluginsResponse) ToJSON() string {
 	b, _ := json.Marshal(m)
 	return string(b)
 }

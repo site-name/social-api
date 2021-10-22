@@ -154,7 +154,7 @@ func (o *OrderDiscount) PreUpdate() {
 	o.commonPre()
 }
 
-func (o *OrderDiscount) ToJson() string {
+func (o *OrderDiscount) ToJSON() string {
 	o.PopulateNonDbFields()
 	return model.ModelToJson(o)
 }

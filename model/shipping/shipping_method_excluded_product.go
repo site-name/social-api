@@ -10,7 +10,7 @@ type ShippingMethodExcludedProduct struct {
 }
 
 func (s *ShippingMethodExcludedProduct) PreSave() {
-	if s.Id == "" {
+	if !model.IsValidId(s.Id) {
 		s.Id = model.NewId()
 	}
 }

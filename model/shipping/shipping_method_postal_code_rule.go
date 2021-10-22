@@ -55,6 +55,6 @@ func (s *ShippingMethodPostalCodeRule) IsValid() *model.AppError {
 	return nil
 }
 
-func (s *ShippingMethodPostalCodeRule) ToJson() string {
+func (s *ShippingMethodPostalCodeRule) ToJSON() string {
 	return model.ModelToJson(s)
 }

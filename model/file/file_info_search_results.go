@@ -20,7 +20,7 @@ func MakeFileInfoSearchResults(fileInfos *FileInfoList, matches FileInfoSearchMa
 	}
 }
 
-func (o *FileInfoSearchResults) ToJson() string {
+func (o *FileInfoSearchResults) ToJSON() string {
 	return model.ModelToJson(o)
 }
 

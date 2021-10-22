@@ -96,7 +96,7 @@ func (f *FulfillmentLine) IsValid() *model.AppError {
 	return nil
 }
 
-func (f *FulfillmentLine) ToJson() string {
+func (f *FulfillmentLine) ToJSON() string {
 	return model.ModelToJson(f)
 }
 

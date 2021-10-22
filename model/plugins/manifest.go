@@ -312,7 +312,7 @@ type ManifestWebapp struct {
 	BundleHash []byte `json:"-"`
 }
 
-func (m *Manifest) ToJson() string {
+func (m *Manifest) ToJSON() string {
 	return model.ModelToJson(m)
 }
 

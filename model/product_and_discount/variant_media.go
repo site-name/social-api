@@ -32,7 +32,7 @@ func (v *VariantMedia) IsValid() *model.AppError {
 	return nil
 }
 
-func (v *VariantMedia) ToJson() string {
+func (v *VariantMedia) ToJSON() string {
 	return model.ModelToJson(v)
 }
 

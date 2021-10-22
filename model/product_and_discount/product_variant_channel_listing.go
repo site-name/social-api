@@ -127,7 +127,7 @@ func (p *ProductVariantChannelListing) PopulateNonDbFields() {
 	}
 }
 
-func (p *ProductVariantChannelListing) ToJson() string {
+func (p *ProductVariantChannelListing) ToJSON() string {
 	p.PopulateNonDbFields()
 	return model.ModelToJson(p)
 }

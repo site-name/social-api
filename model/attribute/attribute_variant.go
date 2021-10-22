@@ -43,7 +43,7 @@ func (a *AttributeVariant) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AttributeVariant) ToJson() string {
+func (a *AttributeVariant) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

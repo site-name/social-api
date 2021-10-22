@@ -24,7 +24,7 @@ func (m *ModelMetadata) PopulateFields() {
 	}
 }
 
-func (p *ModelMetadata) ToJson() string {
+func (p *ModelMetadata) ToJSON() string {
 	return ModelToJson(p)
 }
 

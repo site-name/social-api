@@ -74,7 +74,7 @@ const (
 )
 
 type WebSocketMessage interface {
-	ToJson() []byte
+	ToJSON() []byte
 	IsValid() bool
 	EventType() string
 }
@@ -196,7 +196,7 @@ func (ev *WebSocketEvent) EventType() string {
 	return ev.event
 }
 
-func (ev *WebSocketEvent) ToJson() []byte {
+func (ev *WebSocketEvent) ToJSON() []byte {
 	if ev.precomputedJSON != nil {
 		return []byte(fmt.Sprintf(`{"event": %s, "data": %s, "broadcast": %s, "seq": %d}`, ev.precomputedJSON.Event, ev.precomputedJSON.Data, ev.precomputedJSON.Broadcast, ev.GetSequence()))
 	}
@@ -280,7 +280,7 @@ func (m *WebSocketResponse) EventType() string {
 	return WebsocketEventResponse
 }
 
-func (m *WebSocketResponse) ToJson() []byte {
+func (m *WebSocketResponse) ToJSON() []byte {
 	b, _ := json.Marshal(m)
 	return b
 }

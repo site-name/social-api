@@ -95,7 +95,7 @@ func (c *Category) PreUpdate() {
 	c.Name = model.SanitizeUnicode(c.Name)
 }
 
-func (c *Category) ToJson() string {
+func (c *Category) ToJSON() string {
 	return model.ModelToJson(c)
 }
 
@@ -118,7 +118,7 @@ func (c *CategoryTranslation) String() string {
 	return c.Name
 }
 
-func (c *CategoryTranslation) ToJson() string {
+func (c *CategoryTranslation) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

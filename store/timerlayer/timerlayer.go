@@ -6145,6 +6145,38 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *shipping.S
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*shipping.ShippingMethodExcludedProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodExcludedProductStore.Get(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodExcludedProductStore.Save(instance)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
 	start := timemodule.Now()
 

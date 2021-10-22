@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -69,7 +70,11 @@ func (s *Server) registerClusterHandlers() {
 }
 
 func (s *Server) clusterBusyStateChgHandler(msg *cluster.ClusterMessage) {
-	s.serverBusyStateChanged(model.ServerBusyStateFromJson(bytes.NewReader(msg.Data)))
+	var sbs model.ServerBusyState
+	if jsonErr := json.JSON.Unmarshal(msg.Data, &sbs); jsonErr != nil {
+		slog.Warn("Failed to decode server busy state from JSON", slog.Err(jsonErr))
+	}
+	s.serverBusyStateChanged(&sbs)
 }
 
 func (s *Server) clusterPublishHandler(msg *cluster.ClusterMessage) {

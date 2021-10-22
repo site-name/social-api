@@ -51,7 +51,7 @@ type Preference struct {
 	Value    string `json:"value"`
 }
 
-func (o *Preference) ToJson() string {
+func (o *Preference) ToJSON() string {
 	return ModelToJson(o)
 }
 
@@ -112,6 +112,6 @@ func (o *Preference) PreUpdate() {
 
 type Preferences []Preference
 
-func (o *Preferences) ToJson() string {
+func (o *Preferences) ToJSON() string {
 	return ModelToJson(o)
 }

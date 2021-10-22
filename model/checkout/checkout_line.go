@@ -54,7 +54,7 @@ func (c CheckoutLines) IDs() []string {
 	return res
 }
 
-func (c *CheckoutLine) ToJson() string {
+func (c *CheckoutLine) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

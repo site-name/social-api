@@ -31,7 +31,7 @@ func (o *FileInfoList) ToSlice() []*FileInfo {
 	return fileInfos
 }
 
-func (o *FileInfoList) ToJson() string {
+func (o *FileInfoList) ToJSON() string {
 	return model.ModelToJson(o)
 }
 

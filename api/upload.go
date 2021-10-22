@@ -46,7 +46,7 @@ package api
 
 // 	auditRec.Success()
 // 	w.WriteHeader(http.StatusCreated)
-// 	w.Write([]byte(us.ToJson()))
+// 	w.Write([]byte(us.ToJSON()))
 // }
 
 // func getUpload(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ package api
 // 		return
 // 	}
 
-// 	w.Write([]byte(us.ToJson()))
+// 	w.Write([]byte(us.ToJSON()))
 // }
 
 // func uploadData(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -104,7 +104,7 @@ package api
 // 		return
 // 	}
 
-// 	w.Write([]byte(info.ToJson()))
+// 	w.Write([]byte(info.ToJSON()))
 // }
 
 // func doUploadData(c *Context, us *file.UploadSession, r *http.Request) (*file.FileInfo, *model.AppError) {

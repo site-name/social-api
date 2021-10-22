@@ -34,7 +34,7 @@ func TestAvaliablePlugins(t *testing.T) {
 		defer os.RemoveAll(filepath.Join(dir, "plugin1"))
 
 		path := filepath.Join(dir, "plugin1", "plugin.json")
-		err = ioutil.WriteFile(path, []byte(bundle1.Manifest.ToJson()), 0644)
+		err = ioutil.WriteFile(path, []byte(bundle1.Manifest.ToJSON()), 0644)
 		require.NoError(t, err)
 
 		bundles, err := env.Available()

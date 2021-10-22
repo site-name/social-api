@@ -39,7 +39,7 @@ func (a *AttributeProduct) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AttributeProduct) ToJson() string {
+func (a *AttributeProduct) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -89,7 +89,7 @@ func (a *AssignedProductAttribute) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AssignedProductAttribute) ToJson() string {
+func (a *AssignedProductAttribute) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -132,7 +132,7 @@ func (a *AssignedProductAttributeValue) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AssignedProductAttributeValue) ToJson() string {
+func (a *AssignedProductAttributeValue) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

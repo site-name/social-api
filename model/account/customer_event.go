@@ -56,7 +56,7 @@ type CustomerEvent struct {
 	Parameters model.StringInterface `json:"parameters"`
 }
 
-func (c *CustomerEvent) ToJson() string {
+func (c *CustomerEvent) ToJSON() string {
 	return model.ModelToJson(c)
 }
 
@@ -106,7 +106,7 @@ type StaffNotificationRecipient struct {
 	Active     *bool   `json:"active"`
 }
 
-func (c *StaffNotificationRecipient) ToJson() string {
+func (c *StaffNotificationRecipient) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

@@ -54,7 +54,7 @@ type FileInfo struct {
 	RemoteId        *string `json:"remote_id"`
 }
 
-func (fi *FileInfo) ToJson() string {
+func (fi *FileInfo) ToJSON() string {
 	return model.ModelToJson(fi)
 }
 

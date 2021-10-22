@@ -12,7 +12,7 @@ type PluginEventData struct {
 	Id string `json:"id"`
 }
 
-func (p *PluginEventData) ToJson() []byte {
+func (p *PluginEventData) ToJSON() []byte {
 	res, _ := json.JSON.Marshal(p)
 	return res
 }

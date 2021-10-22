@@ -61,7 +61,7 @@ func (d *DigitalContent) IsValid() *model.AppError {
 	return nil
 }
 
-func (d *DigitalContent) ToJson() string {
+func (d *DigitalContent) ToJSON() string {
 	return model.ModelToJson(d)
 }
 
@@ -121,7 +121,7 @@ func (d *DigitalContentUrl) IsValid() *model.AppError {
 	return nil
 }
 
-func (d *DigitalContentUrl) ToJson() string {
+func (d *DigitalContentUrl) ToJSON() string {
 	return model.ModelToJson(d)
 }
 

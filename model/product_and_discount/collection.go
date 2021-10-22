@@ -87,7 +87,7 @@ func (c *Collection) IsValid() *model.AppError {
 	return nil
 }
 
-func (c *Collection) ToJson() string {
+func (c *Collection) ToJSON() string {
 	return model.ModelToJson(c)
 }
 
@@ -136,7 +136,7 @@ func (c *CollectionTranslation) String() string {
 	return c.Name
 }
 
-func (c *CollectionTranslation) ToJson() string {
+func (c *CollectionTranslation) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

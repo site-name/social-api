@@ -30,7 +30,7 @@ type UploadSession struct {
 	FileOffset int64      `json:"file_offset"` // The amount of received data in bytes. If equal to FileSize it means the upload has finished.
 }
 
-func (us *UploadSession) ToJson() string {
+func (us *UploadSession) ToJSON() string {
 	return model.ModelToJson(us)
 }
 

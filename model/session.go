@@ -64,7 +64,7 @@ func (s *Session) DeepCopy() *Session {
 	return &copySession
 }
 
-func (s *Session) ToJson() string {
+func (s *Session) ToJSON() string {
 	return ModelToJson(s)
 }
 

@@ -64,7 +64,7 @@ func (p *Page) PreUpdate() {
 	p.Title = model.SanitizeUnicode(p.Title)
 }
 
-func (p *Page) ToJson() string {
+func (p *Page) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

@@ -11,11 +11,11 @@ type SecurityBulletin struct {
 
 type SecurityBulletins []SecurityBulletin
 
-func (sb *SecurityBulletin) ToJson() string {
+func (sb *SecurityBulletin) ToJSON() string {
 	return ModelToJson(sb)
 }
 
-func (sb *SecurityBulletins) ToJson() string {
+func (sb *SecurityBulletins) ToJSON() string {
 	b, err := json.JSON.Marshal(sb)
 	if err != nil {
 		return "[]"

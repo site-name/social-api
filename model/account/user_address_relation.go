@@ -35,6 +35,6 @@ func (ua *UserAddress) PreSave() {
 	}
 }
 
-func (ua *UserAddress) ToJson() string {
+func (ua *UserAddress) ToJSON() string {
 	return model.ModelToJson(ua)
 }

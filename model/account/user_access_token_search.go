@@ -11,7 +11,7 @@ type UserAccessTokenSearch struct {
 }
 
 // ToJson convert a UserAccessTokenSearch to json string
-func (c *UserAccessTokenSearch) ToJson() string {
+func (c *UserAccessTokenSearch) ToJSON() string {
 	return model.ModelToJson(c)
 }
 

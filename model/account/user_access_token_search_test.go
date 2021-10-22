@@ -10,7 +10,7 @@ import (
 
 func TestUserAccessTokenSearchJson(t *testing.T) {
 	userAccessTokenSearch := UserAccessTokenSearch{Term: model.NewId()}
-	json := userAccessTokenSearch.ToJson()
+	json := userAccessTokenSearch.ToJSON()
 	ruserAccessTokenSearch := UserAccessTokenSearchFromJson(strings.NewReader(json))
 	require.Equal(t, userAccessTokenSearch.Term, ruserAccessTokenSearch.Term, "Terms do not match")
 }

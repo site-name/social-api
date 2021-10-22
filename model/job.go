@@ -23,8 +23,7 @@ const (
 	JOB_TYPE_EXPORT_DELETE                  = "export_delete"
 	JOB_TYPE_CLOUD                          = "cloud"
 	JOB_TYPE_RESEND_INVITATION_EMAIL        = "resend_invitation_email"
-
-	JOB_TYPE_EXPORT_CSV = "export_csv"
+	JOB_TYPE_EXPORT_CSV                     = "export_csv"
 )
 
 // job statuses
@@ -103,7 +102,7 @@ func (j *Job) IsValid() *AppError {
 	return nil
 }
 
-func (j *Job) ToJson() string {
+func (j *Job) ToJSON() string {
 	return ModelToJson(j)
 }
 

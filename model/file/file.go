@@ -21,6 +21,6 @@ func FileUploadResponseFromJson(data io.Reader) *FileUploadResponse {
 	return o
 }
 
-func (o *FileUploadResponse) ToJson() string {
+func (o *FileUploadResponse) ToJSON() string {
 	return model.ModelToJson(o)
 }

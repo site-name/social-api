@@ -115,7 +115,7 @@ func (p *ProductType) PreUpdate() {
 	}
 }
 
-func (p *ProductType) ToJson() string {
+func (p *ProductType) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

@@ -42,7 +42,7 @@ func (a *AppToken) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *AppToken) ToJson() string {
+func (a *AppToken) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

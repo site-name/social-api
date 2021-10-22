@@ -82,7 +82,7 @@ func (a *Allocation) IsValid() *model.AppError {
 	return nil
 }
 
-func (a *Allocation) ToJson() string {
+func (a *Allocation) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

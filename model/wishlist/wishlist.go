@@ -40,7 +40,7 @@ func (w *Wishlist) IsValid() *model.AppError {
 	return nil
 }
 
-func (w *Wishlist) ToJson() string {
+func (w *Wishlist) ToJSON() string {
 	return model.ModelToJson(w)
 }
 

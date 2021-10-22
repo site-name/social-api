@@ -48,7 +48,7 @@ func (p *PluginConfiguration) IsValid() *model.AppError {
 	return nil
 }
 
-func (p *PluginConfiguration) ToJson() string {
+func (p *PluginConfiguration) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

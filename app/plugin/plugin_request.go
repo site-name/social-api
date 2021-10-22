@@ -14,7 +14,7 @@ func (a *ServicePlugin) ServeInterPluginRequest(w http.ResponseWriter, r *http.R
 		a.srv.Log.Error(appErr.Error())
 		w.WriteHeader(appErr.StatusCode)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(appErr.ToJson()))
+		w.Write([]byte(appErr.ToJSON()))
 		return
 	}
 

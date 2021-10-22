@@ -135,7 +135,7 @@ func (w *WareHouse) PreUpdate() {
 	w.commonPre()
 }
 
-func (w *WareHouse) ToJson() string {
+func (w *WareHouse) ToJSON() string {
 	return model.ModelToJson(w)
 }
 

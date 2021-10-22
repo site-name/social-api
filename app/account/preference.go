@@ -63,7 +63,7 @@ func (a *ServiceAccount) UpdatePreferences(userID string, preferences model.Pref
 	// a.Publish(message)
 
 	// message = model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PREFERENCES_CHANGED, "", "", userID, nil)
-	// message.Add("preferences", preferences.ToJson())
+	// message.Add("preferences", preferences.ToJSON())
 	// a.Publish(message)
 
 	return nil
@@ -97,7 +97,7 @@ func (a *ServiceAccount) DeletePreferences(userID string, preferences model.Pref
 	// a.Publish(message)
 
 	// message = model.NewWebSocketEvent(model.WEBSOCKET_EVENT_PREFERENCES_DELETED, "", "", userID, nil)
-	// message.Add("preferences", preferences.ToJson())
+	// message.Add("preferences", preferences.ToJSON())
 	// a.Publish(message)
 
 	return nil

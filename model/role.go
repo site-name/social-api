@@ -5,15 +5,38 @@ import (
 	"strings"
 )
 
-// SysconsoleAncillaryPermissions maps the non-sysconsole permissions required by each sysconsole view.
-var SysconsoleAncillaryPermissions map[string][]*Permission
-var SystemManagerDefaultPermissions []string
-var SystemUserManagerDefaultPermissions []string
-var SystemReadOnlyAdminDefaultPermissions []string
+var (
+	SysconsoleAncillaryPermissions        map[string][]*Permission // SysconsoleAncillaryPermissions maps the non-sysconsole permissions required by each sysconsole view.
+	SystemManagerDefaultPermissions       []string
+	SystemUserManagerDefaultPermissions   []string
+	SystemReadOnlyAdminDefaultPermissions []string
+	BuiltInSchemeManagedRoleIDs           []string
+	NewSystemRoleIDs                      []string
+)
 
-var BuiltInSchemeManagedRoleIDs []string
+type RoleType string
+type RoleScope string
 
-var NewSystemRoleIDs []string
+const (
+	SystemGuestRoleId           = "system_guest"
+	SystemUserRoleId            = "system_user"
+	SystemAdminRoleId           = "system_admin"
+	SystemPostAllRoleId         = "system_post_all"
+	SystemPostAllPublicRoleId   = "system_post_all_public"
+	SystemUserAccessTokenRoleId = "system_user_access_token"
+	SystemUserManagerRoleId     = "system_user_manager"
+	SystemReadOnlyAdminRoleId   = "system_read_only_admin"
+	SystemManagerRoleId         = "system_manager"
+
+	RoleNameMaxLength        = 64
+	RoleDisplayNameMaxLength = 128
+	RoleDescriptionMaxLength = 1024
+
+	RoleScopeSystem RoleScope = "System"
+
+	RoleTypeUser  RoleType = "User"
+	RoleTypeAdmin RoleType = "Admin"
+)
 
 func init() {
 	NewSystemRoleIDs = []string{
@@ -256,30 +279,6 @@ func init() {
 	SystemManagerDefaultPermissions = AddAncillaryPermissions(SystemManagerDefaultPermissions)
 }
 
-type RoleType string
-type RoleScope string
-
-const (
-	SystemGuestRoleId           = "system_guest"
-	SystemUserRoleId            = "system_user"
-	SystemAdminRoleId           = "system_admin"
-	SystemPostAllRoleId         = "system_post_all"
-	SystemPostAllPublicRoleId   = "system_post_all_public"
-	SystemUserAccessTokenRoleId = "system_user_access_token"
-	SystemUserManagerRoleId     = "system_user_manager"
-	SystemReadOnlyAdminRoleId   = "system_read_only_admin"
-	SystemManagerRoleId         = "system_manager"
-
-	RoleNameMaxLength        = 64
-	RoleDisplayNameMaxLength = 128
-	RoleDescriptionMaxLength = 1024
-
-	RoleScopeSystem RoleScope = "System"
-
-	RoleTypeUser  RoleType = "User"
-	RoleTypeAdmin RoleType = "Admin"
-)
-
 type Role struct {
 	Id             string   `json:"id"`
 	Name           string   `json:"name"`
@@ -325,7 +324,7 @@ func (r *Role) PopulatePermissionSlice() {
 	r.PermissionsStr = ""
 }
 
-func (r *Role) ToJson() string {
+func (r *Role) ToJSON() string {
 	return ModelToJson(r)
 }
 
@@ -345,7 +344,7 @@ func RoleListFromJson(data io.Reader) []*Role {
 	return roles
 }
 
-func (r *RolePatch) ToJson() string {
+func (r *RolePatch) ToJSON() string {
 	return ModelToJson(r)
 }
 

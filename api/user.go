@@ -124,7 +124,7 @@ package api
 // 	auditRec.AddMeta("user", ruser) // overwrite meta
 
 // 	w.WriteHeader(http.StatusCreated)
-// 	w.Write([]byte(ruser.ToJson()))
+// 	w.Write([]byte(ruser.ToJSON()))
 // }
 
 // // func getUsers(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -401,7 +401,7 @@ package api
 // 		return
 // 	}
 
-// 	w.Write([]byte(stats.ToJson()))
+// 	w.Write([]byte(stats.ToJSON()))
 // }
 
 // func getFilteredUsersStats(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -436,7 +436,7 @@ package api
 // 		return
 // 	}
 
-// 	w.Write([]byte(stats.ToJson()))
+// 	w.Write([]byte(stats.ToJSON()))
 // }
 
 // func getDefaultProfileImage(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -747,7 +747,7 @@ package api
 // 	auditRec.AddMeta("update", ruser)
 // 	c.LogAudit("")
 
-// 	w.Write([]byte(ruser.ToJson()))
+// 	w.Write([]byte(ruser.ToJSON()))
 // }
 
 // func login(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -881,7 +881,7 @@ package api
 // 	user.Sanitize(map[string]bool{})
 
 // 	auditRec.Success()
-// 	w.Write([]byte(user.ToJson()))
+// 	w.Write([]byte(user.ToJSON()))
 // }
 
 // func logout(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -1072,7 +1072,7 @@ package api
 // 	auditRec.AddMeta("token_id", accessToken.Id)
 // 	c.LogAudit("success - token_id=" + accessToken.Id)
 
-// 	w.Write([]byte(accessToken.ToJson()))
+// 	w.Write([]byte(accessToken.ToJSON()))
 // }
 
 // func getUserAccessTokensForUser(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -1163,7 +1163,7 @@ package api
 // 		return
 // 	}
 
-// 	w.Write([]byte(accessToken.ToJson()))
+// 	w.Write([]byte(accessToken.ToJSON()))
 // }
 
 // func revokeUserAccessToken(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -1339,7 +1339,7 @@ package api
 // 	auditRec.AddMeta("auth_service", user.AuthService)
 // 	c.LogAudit(fmt.Sprintf("updated user %s auth to service=%v", c.Params.UserId, user.AuthService))
 
-// 	w.Write([]byte(user.ToJson()))
+// 	w.Write([]byte(user.ToJSON()))
 // }
 
 // func updateUserActive(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -1501,5 +1501,5 @@ package api
 // 	w.Header().Set("Cache-Control", "no-cache")
 // 	w.Header().Set("Pragma", "no-cache")
 // 	w.Header().Set("Expires", "0")
-// 	w.Write([]byte(secret.ToJson()))
+// 	w.Write([]byte(secret.ToJSON()))
 // }

@@ -94,7 +94,7 @@ func (a *AttributeValue) PreUpdate() {
 	a.Name = model.SanitizeUnicode(a.Name)
 }
 
-func (a *AttributeValue) ToJson() string {
+func (a *AttributeValue) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
@@ -155,7 +155,7 @@ func (a *AttributeValueTranslation) PreUpdate() {
 	a.Name = model.SanitizeUnicode(a.Name)
 }
 
-func (a *AttributeValueTranslation) ToJson() string {
+func (a *AttributeValueTranslation) ToJSON() string {
 	return model.ModelToJson(a)
 }
 

@@ -49,7 +49,7 @@ func (pt *PageType) PreUpdate() {
 	// slug should be kept unchanged
 }
 
-func (p *PageType) ToJson() string {
+func (p *PageType) ToJSON() string {
 	return model.ModelToJson(p)
 }
 

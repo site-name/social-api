@@ -30,7 +30,7 @@ func (ut *UserTermsOfService) IsValid() *model.AppError {
 	return nil
 }
 
-func (ut *UserTermsOfService) ToJson() string {
+func (ut *UserTermsOfService) ToJSON() string {
 	return model.ModelToJson(ut)
 }
 

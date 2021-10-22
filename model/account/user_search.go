@@ -29,7 +29,7 @@ type UserSearch struct {
 }
 
 // ToJson convert a User to a json string
-func (u *UserSearch) ToJson() []byte {
+func (u *UserSearch) ToJSON() []byte {
 	return []byte(model.ModelToJson(u))
 }
 

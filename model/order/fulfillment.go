@@ -103,7 +103,7 @@ func (f *Fulfillment) IsValid() *model.AppError {
 	return nil
 }
 
-func (f *Fulfillment) ToJson() string {
+func (f *Fulfillment) ToJSON() string {
 	return model.ModelToJson(f)
 }
 

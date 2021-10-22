@@ -195,7 +195,7 @@ func (o *OrderLine) PopulateNonDbFields() {
 	o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 }
 
-func (o *OrderLine) ToJson() string {
+func (o *OrderLine) ToJSON() string {
 	o.PopulateNonDbFields()
 
 	return model.ModelToJson(o)
