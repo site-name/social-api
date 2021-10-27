@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/graphql/dataloaders"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/graphql/scalars"
@@ -89,7 +90,7 @@ func (r *mutationResolver) UserBulkSetActive(ctx context.Context, ids []*string,
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*gqlmodel.User, error) {
-	session, appErr := checkUserAuthenticated("Me", ctx)
+	session, appErr := CheckUserAuthenticated("Me", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -119,19 +120,20 @@ func (r *queryResolver) User(ctx context.Context, id *string, email *string) (*g
 }
 
 func (r *userResolver) Note(ctx context.Context, obj *gqlmodel.User) (*string, error) {
-	session, appErr := checkUserAuthenticated("Note", ctx)
+	session, appErr := CheckUserAuthenticated("Note", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
-		return obj.Note(), nil
+	if !r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
 	}
-	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
+
+	return obj.Note(), nil
 }
 
 func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	session, appErr := checkUserAuthenticated("DefaultShippingAddress", ctx)
+	session, appErr := CheckUserAuthenticated("DefaultShippingAddress", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -153,7 +155,7 @@ func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel
 }
 
 func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Address, error) {
-	session, appErr := checkUserAuthenticated("", ctx)
+	session, appErr := CheckUserAuthenticated("", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -175,7 +177,7 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 }
 
 func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.Address, error) {
-	session, appErr := checkUserAuthenticated("Addresses", ctx)
+	session, appErr := CheckUserAuthenticated("Addresses", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -199,24 +201,25 @@ func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *
 }
 
 func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
-	// session, appErr := checkUserAuthenticated("Orders", ctx)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	session, appErr := CheckUserAuthenticated("Orders", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// // the requesting user must has permission to manage orders to see orders
-	// orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
+	// the requesting user must has permission to manage orders to see orders
+	orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
-	// if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+	if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
 
-	// 	return &gqlmodel.OrderCountableConnection{}, nil
-	// }
+		return &gqlmodel.OrderCountableConnection{}, nil
+	}
 	panic("not implemented")
 }
+
 func (r *userResolver) UserPermissions(ctx context.Context, obj *gqlmodel.User, _ *scalars.PlaceHolder) ([]*gqlmodel.UserPermission, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -234,24 +237,20 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	session, appErr := checkUserAuthenticated("Events", ctx)
-	if appErr != nil {
-		return nil, appErr
-	}
-	// check if requesting user is performing this operation on himself
-	if session.UserId != obj.ID {
-		return nil, permissionDenied("Events")
-	}
-	events, appErr := r.Srv().AccountService().CustomerEventsByUser(obj.ID)
+	session, appErr := CheckUserAuthenticated("Events", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return gqlmodel.SystemCustomerEventsToGraphqlCustomerEvents(events), nil
+	if r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
+		return ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).CustomerEventsByUser.Load(obj.ID)
+	}
+
+	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {
-	session, appErr := checkUserAuthenticated("StoredPaymentSources", ctx)
+	session, appErr := CheckUserAuthenticated("StoredPaymentSources", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -263,7 +262,7 @@ func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.U
 }
 
 func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmodel.Wishlist, error) {
-	session, appErr := checkUserAuthenticated("Wishlist", ctx)
+	session, appErr := CheckUserAuthenticated("Wishlist", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}

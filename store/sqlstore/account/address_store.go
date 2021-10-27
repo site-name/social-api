@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -108,9 +109,9 @@ func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.
 }
 
 func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var updateFunc func(list ...interface{}) (int64, error) = as.GetMaster().Update
+	var upsertor store.Upsertor = as.GetMaster()
 	if transaction != nil {
-		updateFunc = transaction.Update
+		upsertor = transaction
 	}
 
 	address.PreUpdate()
@@ -118,7 +119,7 @@ func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *accoun
 		return nil, err
 	}
 
-	if numUpdate, err := updateFunc(address); err != nil {
+	if numUpdate, err := upsertor.Update(address); err != nil {
 		return nil, errors.Wrapf(err, "failed to update address with id=%s", address.Id)
 	} else if numUpdate > 1 {
 		return nil, errors.New("multiple addresses updated instead of one")
@@ -151,8 +152,7 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 	if option.Id != nil {
 		query = query.Where(option.Id.ToSquirrel("Addresses.Id"))
 	}
-	if option.OrderID != nil && option.OrderID.Id != nil &&
-		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
+	if option.OrderID != nil && option.OrderID.Id != nil && util.StringInSlice(option.OrderID.On, []string{"BillingAddressID", "ShippingAddressID"}) {
 
 		query = query.
 			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).

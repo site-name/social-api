@@ -24,7 +24,8 @@ var (
 
 // DataLoaders contains all data loaders for the project
 type DataLoaders struct {
-	OrdersByUser *OrdersByUserLoader
+	OrdersByUser         *OrdersByUserLoader
+	CustomerEventsByUser *CustomerEventsByUserLoader
 }
 
 // NewLoaders returns new pointer to a DataLoaders
@@ -32,7 +33,8 @@ func NewLoaders(a app.AppIface) *DataLoaders {
 	// initialize only once
 	once.Do(func() {
 		loaders = &DataLoaders{
-			OrdersByUser: ordersByUserLoader(a.Srv()),
+			OrdersByUser:         ordersByUserLoader(a.Srv()),
+			CustomerEventsByUser: customerEventsByUserLoader(a.Srv()),
 		}
 	})
 
@@ -44,6 +46,16 @@ func ordersByUserLoader(server *app.Server) *OrdersByUserLoader {
 		wait:     wait,
 		maxBatch: maxBatch,
 		fetch: func(keys []string) ([][]*gqlmodel.Order, []error) {
+			panic("not implemented")
+		},
+	}
+}
+
+func customerEventsByUserLoader(server *app.Server) *CustomerEventsByUserLoader {
+	return &CustomerEventsByUserLoader{
+		wait:     wait,
+		maxBatch: maxBatch,
+		fetch: func(keys []string) ([][]*gqlmodel.CustomerEvent, []error) {
 			panic("not implemented")
 		},
 	}

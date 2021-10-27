@@ -25,7 +25,7 @@ func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, 
 }
 
 func (r *mutationResolver) AccountAddressDelete(ctx context.Context, id string) (*gqlmodel.AccountAddressDelete, error) {
-	if session, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+	if session, appErr := CheckUserAuthenticated("AccountUpdate", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		appErr := r.Srv().AccountService().AddressDeleteForUser(session.UserId, id)
@@ -39,7 +39,7 @@ func (r *mutationResolver) AccountAddressDelete(ctx context.Context, id string) 
 }
 
 func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id string, typeArg gqlmodel.AddressTypeEnum) (*gqlmodel.AccountSetDefaultAddress, error) {
-	if session, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+	if session, appErr := CheckUserAuthenticated("AccountUpdate", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		var addressType string
@@ -104,7 +104,7 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 }
 
 func (r *mutationResolver) AccountUpdate(ctx context.Context, input gqlmodel.AccountInput) (*gqlmodel.AccountUpdate, error) {
-	if _, appErr := checkUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+	if _, appErr := CheckUserAuthenticated("AccountUpdate", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		panic(fmt.Errorf("not implemented"))
@@ -116,7 +116,7 @@ func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *
 }
 
 func (r *mutationResolver) AccountDelete(ctx context.Context, token string) (*gqlmodel.AccountDelete, error) {
-	if _, appErr := checkUserAuthenticated("AccountDelete", ctx); appErr != nil {
+	if _, appErr := CheckUserAuthenticated("AccountDelete", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		panic(fmt.Errorf("not implemented"))

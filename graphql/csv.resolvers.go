@@ -18,7 +18,7 @@ import (
 )
 
 func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEvent) (*gqlmodel.User, error) {
-	session, appErr := checkUserAuthenticated("exportEventResolver.User", ctx)
+	session, appErr := CheckUserAuthenticated("exportEventResolver.User", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -35,7 +35,7 @@ func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEven
 }
 
 func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile) (*gqlmodel.User, error) {
-	session, appErr := checkUserAuthenticated("exportEventResolver.User", ctx)
+	session, appErr := CheckUserAuthenticated("exportEventResolver.User", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}

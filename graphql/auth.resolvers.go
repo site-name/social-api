@@ -144,7 +144,7 @@ func (r *mutationResolver) SetPassword(ctx context.Context, email string, passwo
 }
 
 func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword string, oldPassword string) (*gqlmodel.PasswordChange, error) {
-	session, appErr := checkUserAuthenticated("PasswordChange", ctx)
+	session, appErr := CheckUserAuthenticated("PasswordChange", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}

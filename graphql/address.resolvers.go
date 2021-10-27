@@ -24,7 +24,7 @@ func (r *addressResolver) Country(ctx context.Context, obj *gqlmodel.Address) (*
 
 func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	// onyl authenticated users can check their default addresses
-	session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx)
+	session, appErr := CheckUserAuthenticated("IsDefaultShippingAddress", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -39,7 +39,7 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 
 func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
 	// onyl authenticated users can check their default addresses
-	session, appErr := checkUserAuthenticated("IsDefaultShippingAddress", ctx)
+	session, appErr := CheckUserAuthenticated("IsDefaultShippingAddress", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -53,7 +53,7 @@ func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlm
 }
 
 func (r *mutationResolver) AddressCreate(ctx context.Context, input gqlmodel.AddressInput, userID string) (*gqlmodel.AddressCreate, error) {
-	if _, appErr := checkUserAuthenticated("", ctx); appErr != nil {
+	if _, appErr := CheckUserAuthenticated("", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		panic(fmt.Errorf("not implemented"))
@@ -74,7 +74,7 @@ func (r *mutationResolver) AddressSetDefault(ctx context.Context, addressID stri
 
 func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode gqlmodel.CountryCode, countryArea *string, city *string, cityArea *string) (*gqlmodel.AddressValidationData, error) {
 	// only authenticated users can see
-	// if _, appErr := checkUserAuthenticated("AddressValidationRules", ctx); appErr != nil {
+	// if _, appErr := CheckUserAuthenticated("AddressValidationRules", ctx); appErr != nil {
 	// 	return nil, appErr
 	// }
 

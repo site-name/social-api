@@ -62,7 +62,7 @@ func isRole(roleName string) func(*model.Role, map[string]map[string]bool) bool 
 }
 
 // applyPermissionsMap
-func applyPermissionsMap(role *model.Role, roleMap map[string]map[string]bool, migrationMap permissionsMap) *[]string {
+func applyPermissionsMap(role *model.Role, roleMap map[string]map[string]bool, migrationMap permissionsMap) []string {
 	var result []string
 
 	roleName := role.Name
@@ -82,7 +82,7 @@ func applyPermissionsMap(role *model.Role, roleMap map[string]map[string]bool, m
 			result = append(result, key)
 		}
 	}
-	return &result
+	return result
 }
 
 // doPermissionsMigration
@@ -102,7 +102,7 @@ func (s *Server) doPermissionsMigration(key string, migrationMap permissionsMap,
 	}
 
 	for _, role := range roles {
-		role.Permissions = *applyPermissionsMap(role, roleMap, migrationMap)
+		role.Permissions = applyPermissionsMap(role, roleMap, migrationMap)
 		if _, err := s.Store.Role().Save(role); err != nil {
 			var invErr *store.ErrInvalidInput
 			switch {

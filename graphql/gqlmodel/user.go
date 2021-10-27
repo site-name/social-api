@@ -32,7 +32,7 @@ type User struct {
 	DefaultBillingAddressID  *string                             `json:"defaultBillingAddress"`  // *Address
 	PrivateMetadata          []*MetadataItem                     `json:"privateMetadata"`
 	Metadata                 []*MetadataItem                     `json:"metadata"`
-	Note                     func() *string                      `json:"note"`                 // *String
+	Note                     func() *string                      `json:"note"`                 // *string
 	WishlistID               *string                             `json:"wishlists"`            // *Wishlist
 	AddresseIDs              []string                            `json:"addresses"`            // []*Address
 	PermissionGroupIDs       []string                            `json:"permissionGroups"`     // []*Group
@@ -51,11 +51,6 @@ func (User) IsObjectWithMetadata() {}
 
 // SystemUserToGraphqlUser converts database user to graphql user
 func SystemUserToGraphqlUser(u *account.User) *User {
-
-	noteFunc := func() *string {
-		return u.Note
-	}
-
 	return &User{
 		ID:                       u.Id,
 		LastLogin:                util.TimePointerFromMillis(u.LastActivityAt),
@@ -69,6 +64,6 @@ func SystemUserToGraphqlUser(u *account.User) *User {
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		PrivateMetadata:          MapToGraphqlMetaDataItems(u.PrivateMetadata),
 		Metadata:                 MapToGraphqlMetaDataItems(u.Metadata),
-		Note:                     noteFunc,
+		Note:                     func() *string { return u.Note },
 	}
 }
