@@ -18,7 +18,7 @@ func SaleorGraphqlPermissionsToSystemPermission(saleorGraphqlPermissions ...Perm
 
 // SaleorGraphqlPermissionToSystemPermission converts given graphql saleor permission enum to a system permission
 func SaleorGraphqlPermissionToSystemPermission(saleorPermission PermissionEnum) *model.Permission {
-	for _, perm := range model.SaleorPermissionEnumList {
+	for _, perm := range model.SaleorPermissions {
 		if perm.Id == strings.ToLower(string(saleorPermission)) {
 			return perm
 		}

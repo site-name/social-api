@@ -37,7 +37,7 @@ var (
 	PermissionHandlePayments                  *Permission
 	PermissionImpersonateUser                 *Permission
 
-	SaleorPermissionEnumList []*Permission
+	SaleorPermissions []*Permission
 	// SaleorPermissionEnumMap has keys of permission ids,
 	// values of permission names
 	SaleorPermissionEnumMap map[string]string
@@ -65,7 +65,7 @@ func initializeSaleorPermission() {
 	PermissionHandlePayments = &Permission{"handle_payments", "payment.handle_payments.name", "payment.handle_payments.description", PermissionScopeSystem}
 	PermissionImpersonateUser = &Permission{"impersonate_user", "account.impersonate_user.name", "account.impersonate_user.description", PermissionScopeSystem}
 
-	SaleorPermissionEnumList = []*Permission{
+	SaleorPermissions = []*Permission{
 		PermissionManageUsers,
 		PermissionManageStaff,
 		PermissionManageApps,
@@ -87,7 +87,7 @@ func initializeSaleorPermission() {
 	}
 
 	SaleorPermissionEnumMap = make(map[string]string)
-	for _, perm := range SaleorPermissionEnumList {
+	for _, perm := range SaleorPermissions {
 		SaleorPermissionEnumMap[perm.Id] = perm.Name
 	}
 }
@@ -1679,7 +1679,7 @@ func initializePermissions() {
 	AllPermissions = append(AllPermissions, ChannelScopedPermissions...)
 	AllPermissions = append(AllPermissions, SysconsoleReadPermissions...)
 	AllPermissions = append(AllPermissions, SysconsoleWritePermissions...)
-	AllPermissions = append(AllPermissions, SaleorPermissionEnumList...) // append saleor permissions
+	AllPermissions = append(AllPermissions, SaleorPermissions...) // append saleor permissions
 }
 
 func init() {

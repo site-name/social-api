@@ -56,7 +56,6 @@ func (Attribute) IsObjectWithMetadata() {}
 
 // ModelAttributeToGraphqlAttribute converts database *Attribute to graphql *Attribute
 func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
-
 	if a == nil {
 		return nil
 	}
@@ -64,13 +63,13 @@ func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
 	inputType := AttributeInputTypeEnum(strings.ToUpper(string(a.InputType)))
 	attrType := AttributeTypeEnum(strings.ToUpper(a.Type))
 
-	var unit *MeasurementUnitsEnum = nil
+	var unit *MeasurementUnitsEnum
 	if a.Unit != nil {
 		u := MeasurementUnitsEnum(strings.ToUpper(*a.Unit))
 		unit = &u
 	}
 
-	var entityType *AttributeEntityTypeEnum = nil
+	var entityType *AttributeEntityTypeEnum
 	if a.EntityType != nil {
 		t := AttributeEntityTypeEnum(strings.ToUpper(*a.EntityType))
 		entityType = &t
@@ -89,18 +88,3 @@ func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
 		Unit:            unit,
 	}
 }
-
-// ModelAttributeTranslationToGraphqlAttributeTranslation converts database attribute translation to graphql attribute translation
-// func ModelAttributeTranslationToGraphqlAttributeTranslation(t *attribute.AttributeTranslation) *AttributeTranslation {
-// 	if t == nil {
-// 		return nil
-// 	}
-
-// 	return &AttributeTranslation{
-// 		ID: t.Id,
-// 		Name: t.Name,
-// 		Language: &LanguageDisplay{
-// 			Code: LanguageCodeEnum(stringToGraphqlEnumString(t.LanguageCode)),
-// 		},
-// 	}
-// }

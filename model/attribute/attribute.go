@@ -44,7 +44,7 @@ const (
 	SWATCH      string = "swatch"
 	BOOLEAN     string = "boolean"
 	DATE        string = "date"
-	DATE_TIME   string = "date-time"
+	DATE_TIME   string = "date_time"
 )
 
 var (

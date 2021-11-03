@@ -6,6 +6,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// CustomerEventsByUser returns customer events belong to given user
 func (a *ServiceAccount) CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError) {
 	events, err := a.srv.Store.CustomerEvent().GetEventsByUserID(userID)
 	if err != nil {

@@ -82,7 +82,7 @@ type Job struct {
 
 func (j *Job) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"model.job_is_valid.%s.app_error",
+		"model.job.is_valid.%s.app_error",
 		"job_id=",
 		"Job.IsValid",
 	)

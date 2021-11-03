@@ -3804,15 +3804,6 @@ type StaffError struct {
 	Users       []string         `json:"users"`
 }
 
-type StaffNotificationRecipient struct {
-	User   *User   `json:"user"`
-	Active *bool   `json:"active"`
-	ID     string  `json:"id"`
-	Email  *string `json:"email"`
-}
-
-func (StaffNotificationRecipient) IsNode() {}
-
 type StaffNotificationRecipientCreate struct {
 	Errors                     []*ShopError                `json:"errors"`
 	StaffNotificationRecipient *StaffNotificationRecipient `json:"staffNotificationRecipient"`

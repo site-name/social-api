@@ -26,8 +26,7 @@ type Provider interface {
 	Close() error
 }
 
-type cacheProvider struct {
-}
+type cacheProvider struct{}
 
 // NewProvider creates a new CacheProvider
 func NewProvider() Provider {
