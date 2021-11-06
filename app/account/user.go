@@ -65,7 +65,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 	}
 
 	if !addressBelongToUser {
-		return nil, model.NewAppError("UserSetDefaultAddress", userNotOwnAddress, nil, "", http.StatusForbidden)
+		return nil, model.NewAppError("UserSetDefaultAddress", "app.account.user_not_own_address.app_error", nil, "", http.StatusForbidden)
 	}
 
 	// get user with given id

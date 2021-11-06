@@ -21,7 +21,7 @@ type Channel struct {
 	IsActive       bool   `json:"is_active"`
 	Slug           string `json:"slug"` // unique
 	Currency       string `json:"currency"`
-	DefaultCountry string `json:"default_country"`
+	DefaultCountry string `json:"default_country"` // default "US"
 }
 
 // ChannelFilterOption is used for building sql queries
@@ -70,14 +70,21 @@ func (c *Channel) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
-	c.Name = model.SanitizeUnicode(c.Name)
+	c.commonPre()
 	c.Slug = slug.Make(c.Name)
+}
+
+func (c *Channel) commonPre() {
+	c.Name = model.SanitizeUnicode(c.Name)
 	c.Currency = strings.ToUpper(c.Currency)
+	if _, exist := model.Countries[c.DefaultCountry]; !exist {
+		c.DefaultCountry = model.DEFAULT_COUNTRY
+	}
+	c.DefaultCountry = strings.ToUpper(c.DefaultCountry)
 }
 
 func (c *Channel) PreUpdate() {
-	c.Name = model.SanitizeUnicode(c.Name)
-	c.Currency = strings.ToUpper(c.Currency)
+	c.commonPre()
 }
 
 func (c *Channel) DeepCopy() *Channel {

@@ -64,7 +64,7 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 		CityAreaType:       &r.CityAreaType,
 		CityAreaChoices:    choicesToChoiceValues(r.CityAreaChoices),
 		PostalCodeType:     &r.PostalCodeType,
-		PostalCodeMatchers: StringSliceToStringPointerSlice(*i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
+		PostalCodeMatchers: StringSliceToStringPointerSlice(i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
 		PostalCodeExamples: StringSliceToStringPointerSlice(r.PostalCodeExamples),
 		PostalCodePrefix:   &r.PostalCodePrefix,
 	}

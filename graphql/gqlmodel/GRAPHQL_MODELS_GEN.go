@@ -714,18 +714,6 @@ type CategoryUpdate struct {
 	Category *Category       `json:"category"`
 }
 
-type Channel struct {
-	ID             string          `json:"id"`
-	Name           string          `json:"name"`
-	IsActive       bool            `json:"isActive"`
-	Slug           string          `json:"slug"`
-	CurrencyCode   string          `json:"currencyCode"`
-	HasOrders      bool            `json:"hasOrders"`
-	DefaultCountry *CountryDisplay `json:"defaultCountry"`
-}
-
-func (Channel) IsNode() {}
-
 type ChannelActivate struct {
 	Channel *Channel        `json:"channel"`
 	Errors  []*ChannelError `json:"errors"`

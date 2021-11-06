@@ -28,7 +28,7 @@ func (o *OpenExchangeRate) IsValid() *model.AppError {
 		goprices.CurrenciesMap[o.ToCurrency] == "" {
 		return outer("to_currency", &o.Id)
 	}
-	if o.Rate.LessThan(decimal.Zero) {
+	if o.Rate.LessThan(decimal.Zero) || o.Rate == nil {
 		return outer("rate", &o.Id)
 	}
 

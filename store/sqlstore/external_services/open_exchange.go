@@ -48,7 +48,7 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 		// try lookup:
 		err := transaction.SelectOne(
 			&oldRate,
-			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = :Curreny",
+			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = :Currency FOR UPDATE",
 			map[string]interface{}{"Currency": rate.ToCurrency},
 		)
 		if err != nil {

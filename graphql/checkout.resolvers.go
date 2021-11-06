@@ -40,15 +40,7 @@ func (r *checkoutResolver) AvailableCollectionPoints(ctx context.Context, obj *g
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.PaymentGateway, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.CheckoutLine, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *checkoutResolver) DeliveryMethod(ctx context.Context, obj *gqlmodel.Checkout) (gqlmodel.DeliveryMethod, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -119,6 +111,12 @@ type checkoutResolver struct{ *Resolver }
 //  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //    it when you're done.
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.PaymentGateway, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+func (r *checkoutResolver) DeliveryMethod(ctx context.Context, obj *gqlmodel.Checkout) (gqlmodel.DeliveryMethod, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string, token *uuid.UUID) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
