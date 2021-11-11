@@ -490,7 +490,7 @@
   "PluginSettings": {
     "Enable": true,
     "EnableUploads": false,
-    "AllowInsecureDownloadUrl": false,
+    "AllowInsecureDownloadURL": false,
     "EnableHealthCheck": true,
     "Directory": "./plugins",
     "ClientDirectory": "./client/plugins",

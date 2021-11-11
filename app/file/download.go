@@ -19,7 +19,7 @@ const (
 )
 
 func (s *ServiceFile) DownloadFromURL(downloadURL string) ([]byte, error) {
-	if !model.IsValidHttpUrl(downloadURL) {
+	if !model.IsValidHTTPURL(downloadURL) {
 		return nil, errors.Errorf("invalid url %s", downloadURL)
 	}
 
@@ -27,7 +27,7 @@ func (s *ServiceFile) DownloadFromURL(downloadURL string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Errorf("failed to parse url %s", downloadURL)
 	}
-	if !*s.srv.Config().PluginSettings.AllowInsecureDownloadUrl && u.Scheme != "https" {
+	if !*s.srv.Config().PluginSettings.AllowInsecureDownloadURL && u.Scheme != "https" {
 		return nil, errors.Errorf("insecure url not allowed %s", downloadURL)
 	}
 

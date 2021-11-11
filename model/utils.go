@@ -521,7 +521,7 @@ func Etag(parts ...interface{}) string {
 }
 
 // Check is rawURL is a valid URL or not
-func IsValidHttpUrl(rawURL string) bool {
+func IsValidHTTPURL(rawURL string) bool {
 	if strings.Index(rawURL, "http://") != 0 && strings.Index(rawURL, "https://") != 0 {
 		return false
 	}
@@ -535,7 +535,7 @@ func IsValidHttpUrl(rawURL string) bool {
 
 func IsSafeLink(link *string) bool {
 	if link != nil {
-		if IsValidHttpUrl(*link) {
+		if IsValidHTTPURL(*link) {
 			return true
 		} else if strings.HasPrefix(*link, "/") {
 			return true
