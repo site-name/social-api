@@ -26,7 +26,6 @@ func (s *Server) doAdvancedPermissionsMigration() {
 
 	slog.Info("Migrating roles to database.")
 	roles := model.MakeDefaultRoles()
-	roles = SetRolePermissionsFromConfig(roles, s.Config())
 
 	allSucceeded := true
 	for _, role := range roles {
@@ -62,11 +61,9 @@ func (s *Server) doAdvancedPermissionsMigration() {
 	}
 
 	config := s.Config()
-	if *config.ServiceSettings.DEPRECATED_DO_NOT_USE_AllowEditPost == model.ALLOW_EDIT_POST_ALWAYS {
-		*config.ServiceSettings.PostEditTimeLimit = -1
-		if _, _, err := s.SaveConfig(config, true); err != nil {
-			slog.Error("Failed to update config in Advanced Permissions Phase 1 Migration.", slog.Err(err))
-		}
+	*config.ServiceSettings.PostEditTimeLimit = -1
+	if _, _, err := s.SaveConfig(config, true); err != nil {
+		slog.Error("failed to update config in Advanced Permissions Phase 1 Migration.", slog.Err(err))
 	}
 
 	// create a evidence to prove that all roles have been saved to database.

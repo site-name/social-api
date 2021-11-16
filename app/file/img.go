@@ -1097,26 +1097,43 @@ func (a *ServiceFile) generatePreviewImage(img image.Image, previewPath string) 
 // will save fileinfo with the preview added
 func (a *ServiceFile) generateMiniPreview(fi *file.FileInfo) {
 	if fi.IsImage() && fi.MiniPreview == nil {
-		file, err := a.FileReader(fi.Path)
-		if err != nil {
-			slog.Debug("error reading image file", slog.Err(err))
+		file, appErr := a.FileReader(fi.Path)
+		if appErr != nil {
+			slog.Debug("error reading image file", slog.Err(appErr))
 			return
 		}
 		defer file.Close()
-		img, release, imgErr := prepareImage(a.srv.ImgDecoder, file)
-		if imgErr != nil {
-			slog.Debug("generateMiniPreview: prepareImage failed", slog.Err(imgErr))
+		img, release, err := prepareImage(a.srv.ImgDecoder, file)
+		if err != nil {
+			slog.Debug(
+				"generateMiniPreview: prepareImage failed",
+				slog.Err(err),
+				slog.String("fileinfo_id", fi.Id),
+				slog.String("creator_id", fi.CreatorId),
+			)
+			// Since this file is not a valid image (for whatever reason), prevent this fileInfo
+			// from entering generateMiniPreview in the future
+			fi.UpdateAt = model.GetMillis()
+			fi.MimeType = "invalid-" + fi.MimeType
+			if _, err = a.srv.Store.FileInfo().Upsert(fi); err != nil {
+				slog.Debug("Invalidating FileInfo failed", slog.Err(err))
+			}
 			return
 		}
 		defer release()
-		if miniPreview, err := imaging.GenerateMiniPreviewImage(img,
-			miniPreviewImageWidth, miniPreviewImageHeight, jpegEncQuality); err != nil {
+		var miniPreview []byte
+		if miniPreview, err = imaging.GenerateMiniPreviewImage(
+			img,
+			miniPreviewImageWidth,
+			miniPreviewImageHeight,
+			jpegEncQuality,
+		); err != nil {
 			slog.Info("Unable to generate mini preview image", slog.Err(err))
 		} else {
 			fi.MiniPreview = &miniPreview
 		}
-		if _, appErr := a.srv.Store.FileInfo().Upsert(fi); appErr != nil {
-			slog.Debug("creating mini preview failed", slog.Err(appErr))
+		if _, err = a.srv.Store.FileInfo().Upsert(fi); err != nil {
+			slog.Debug("creating mini preview failed", slog.Err(err))
 		} else {
 			// TODO: study
 			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache(fi.PostId, false)
@@ -1336,6 +1353,12 @@ func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *file.FileInfo) error 
 		}
 		if storeErr := a.srv.Store.FileInfo().SetContent(fileInfo.Id, text); storeErr != nil {
 			return errors.Wrap(storeErr, "failed to save the extracted file content")
+		}
+		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.Id)
+		if storeErr != nil {
+			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.Id))
+		} else {
+			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache()
 		}
 	}
 	return nil

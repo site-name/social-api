@@ -123,6 +123,7 @@ type Server struct {
 	// searchLicenseListenerId string
 	// loggerLicenseListenerId string
 	StatusCache             cache.Cache
+	openGraphDataCache      cache.Cache
 	configListenerId        string
 	clusterLeaderListenerId string
 	searchConfigListenerId  string
@@ -328,6 +329,11 @@ func NewServer(options ...Option) (*Server, error) {
 		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
 		return nil, errors.Wrap(err, "Unable to create status cache")
+	}
+	if s.openGraphDataCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
+		Size: openGraphMetadataCacheSize,
+	}); err != nil {
+		return nil, errors.Wrap(err, "Unable to create opengraphdata cache")
 	}
 
 	// s.createPushNotificationsHub()

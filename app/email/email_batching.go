@@ -36,6 +36,17 @@ func (es *Service) InitEmailBatching() {
 	}
 }
 
+// If the name is longer than i characters, replace remaning characters with ...
+func truncateUserNames(name string, i int) string {
+	runes := []rune(name)
+	if len(runes) > i {
+		newString := string(runes[:i])
+		return newString + "..."
+	}
+
+	return name
+}
+
 // func (es *Service) AddNotificationEmailToBatch(user *account.User, post *model.Post, team *model.Team) *model.AppError {
 // 	if !*es.config().EmailSettings.EnableEmailBatching {
 // 		return model.NewAppError("AddNotificationEmailToBatch", "api.email_batching.add_notification_email_to_batch.disabled.app_error", nil, "", http.StatusNotImplemented)
