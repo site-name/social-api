@@ -741,19 +741,22 @@ func (s *Server) runJobs() {
 //
 // Fetching exchange rates from external service, then upsate in a cache map and upsert in the database
 func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours int, apiEndPoint string) {
-	client := s.HTTPService.MakeClient(true)
+	var (
+		client = s.HTTPService.MakeClient(true)
+		params = url.Values{
+			"app_id": []string{apiKey},
+			"base":   []string{model.DEFAULT_CURRENCY}, // units other than USD require service subsciption
+		}
+		responseValue struct {
+			Disclaimer string             `json:"disclaimer,omitempty"`
+			License    string             `json:"license,omitempty"`
+			TimeStamp  int64              `json:"timestamp,omitempty"`
+			Base       string             `json:"base"`
+			Rates      map[string]float64 `json:"rates"`
+		}
+	)
+
 	client.Timeout = 2 * time.Minute
-	params := url.Values{
-		"app_id": []string{apiKey},
-		"base":   []string{model.DEFAULT_CURRENCY}, // units other than USD require service subsciption
-	}
-	var responseValue struct {
-		Disclaimer string             `json:"disclaimer,omitempty"`
-		License    string             `json:"license,omitempty"`
-		TimeStamp  int64              `json:"timestamp,omitempty"`
-		Base       string             `json:"base"`
-		Rates      map[string]float64 `json:"rates"`
-	}
 	apiEndPoint = apiEndPoint + "?" + params.Encode()
 
 	fetchFun := func() {
@@ -769,8 +772,8 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 		}
 		defer response.Body.Close()
 
-		if status := response.StatusCode; status != http.StatusOK {
-			s.Log.Error("Returned exchange response status code was not 200", slog.Int("status", status))
+		if response.StatusCode != http.StatusOK {
+			s.Log.Error("Returned exchange response status code was not 200", slog.Int("status", response.StatusCode))
 			return
 		}
 		// process data

@@ -95,5 +95,9 @@ func SystemCheckoutToGraphqlCheckout(c *checkout.Checkout) *Checkout {
 		VoucherCode:            c.VoucherCode,
 		PrivateMetadata:        MapToGraphqlMetaDataItems(c.PrivateMetadata),
 		Metadata:               MapToGraphqlMetaDataItems(c.Metadata),
+		// AvailablePaymentGateways: ,
+		Email: c.Email,
+		// IsShippingRequired: ,
+		Quantity: int(c.Quantity),
 	}
 }
