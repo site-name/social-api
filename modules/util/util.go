@@ -224,7 +224,7 @@ func SumOfIntSlice(slice []int) int {
 }
 
 func GetIPAddress(r *http.Request, trustedProxyIPHeader []string) string {
-	address := ""
+	var address string
 
 	for _, proxyHeader := range trustedProxyIPHeader {
 		header := r.Header.Get(proxyHeader)

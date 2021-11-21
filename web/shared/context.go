@@ -485,8 +485,8 @@ func (c *Context) GetRequest() *http.Request {
 	return c.request
 }
 
-// SetHttpResponse set http response writer for context
-func (c *Context) SetHttpResponse(w http.ResponseWriter) {
+// SetHttpResponseWriter set http response writer for context
+func (c *Context) SetHttpResponseWriter(w http.ResponseWriter) {
 	c.writer = w
 }
 

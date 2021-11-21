@@ -27,6 +27,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// CheckVariantInStock
 func (a *ServiceCheckout) CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError) {
 	// quantity param is default to 1
 

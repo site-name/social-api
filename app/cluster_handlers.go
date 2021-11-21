@@ -13,11 +13,19 @@ import (
 )
 
 func (s *Server) clusterInstallPluginHandler(msg *cluster.ClusterMessage) {
-	s.PluginService().InstallPluginFromData(plugins.PluginEventDataFromJson(bytes.NewReader(msg.Data)))
+	var data plugins.PluginEventData
+	if err := json.JSON.Unmarshal(msg.Data, &data); err != nil {
+		slog.Warn("Failed to decode from JSON", slog.Err(err))
+	}
+	s.PluginService().InstallPluginFromData(data)
 }
 
 func (s *Server) clusterRemovePluginHandler(msg *cluster.ClusterMessage) {
-	s.PluginService().RemovePluginFromData(plugins.PluginEventDataFromJson(bytes.NewReader(msg.Data)))
+	var data plugins.PluginEventData
+	if err := json.JSON.Unmarshal(msg.Data, &data); err != nil {
+		slog.Warn("Failed to decode from JSON", slog.Err(err))
+	}
+	s.PluginService().RemovePluginFromData(data)
 }
 
 func (s *Server) clusterPluginEventHandler(msg *cluster.ClusterMessage) {

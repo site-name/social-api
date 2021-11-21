@@ -226,7 +226,7 @@ func (o *Order) IsValid() *model.AppError {
 	if o.CreateAt == 0 {
 		return outer("create_at", &o.Id)
 	}
-	if o.RedirectUrl != nil && !model.IsValidHttpUrl(*o.RedirectUrl) {
+	if o.RedirectUrl != nil && !model.IsValidHTTPURL(*o.RedirectUrl) {
 		return outer("redirect_url", &o.Id)
 	}
 

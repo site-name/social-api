@@ -11,16 +11,21 @@ import (
 var (
 	accountMigrationInterface            func(*App) einterfaces.AccountMigrationInterface     //
 	jobsLdapSyncInterface                func(*App) ejobs.LdapSyncInterface                   //
+	jobsResendInvitationEmailInterface   func(*App) ejobs.ResendInvitationEmailJobInterface   //
 	jobsDataRetentionJobInterface        func(*Server) ejobs.DataRetentionJobInterface        //
 	jobsMessageExportJobInterface        func(*Server) ejobs.MessageExportJobInterface        //
 	jobsElasticsearchAggregatorInterface func(*Server) ejobs.ElasticsearchAggregatorInterface //
 	jobsElasticsearchIndexerInterface    func(*Server) tjobs.IndexerJobInterface              //
 	jobsBleveIndexerInterface            func(*Server) tjobs.IndexerJobInterface              //
 	jobsMigrationsInterface              func(*Server) tjobs.MigrationsJobInterface           //
-	jobsResendInvitationEmailInterface   func(*App) ejobs.ResendInvitationEmailJobInterface   //
 	csvExportInterface                   func(*Server) tjobs.CsvExportInterface               // csv export work
-	jobsPluginsInterface                 func(*Server) tjobs.PluginsJobInterface
+	jobsPluginsInterface                 func(*Server) tjobs.PluginsJobInterface              //
+	jobsExtractContentInterface          func(*Server) tjobs.ExtractContentInterface          //
 )
+
+func RegisterJobsExtractContentInterface(f func(*Server) tjobs.ExtractContentInterface) {
+	jobsExtractContentInterface = f
+}
 
 func RegisterJobsPluginsJobInterface(f func(*Server) tjobs.PluginsJobInterface) {
 	jobsPluginsInterface = f

@@ -352,7 +352,7 @@ func (a *App) ClientConfigWithComputed() map[string]string {
 	// These properties are not configurable, but nevertheless represent configuration expected
 	// by the client.
 	respCfg["NoAccounts"] = strconv.FormatBool(a.Srv().AccountService().IsFirstUserAccount())
-	// respCfg["MaxPostSize"] = strconv.Itoa(s.MaxPostSize())
+	// respCfg["MaxPostSize"] = strconv.Itoa(a.srv.MaxPostSize())
 	// respCfg["UpgradedFromTE"] = strconv.FormatBool(s.isUpgradedFromTE())
 	respCfg["InstallationDate"] = ""
 	if installationDate, err := a.Srv().getSystemInstallDate(); err == nil {
