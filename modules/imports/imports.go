@@ -14,6 +14,7 @@ import (
 	_ "github.com/sitename/sitename/app/checkout"
 	_ "github.com/sitename/sitename/app/csv"
 	_ "github.com/sitename/sitename/app/discount"
+	_ "github.com/sitename/sitename/app/file"
 	_ "github.com/sitename/sitename/app/giftcard"
 	_ "github.com/sitename/sitename/app/invoice"
 	_ "github.com/sitename/sitename/app/menu"

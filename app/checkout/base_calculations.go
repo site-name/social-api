@@ -16,7 +16,7 @@ import (
 )
 
 // BaseCheckoutShippingPrice
-func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines []checkout.DeliveryMethodBaseInterface) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
 	if shippingMethodInfo, ok := deliveryMethodInfo.(*checkout.ShippingMethodInfo); ok {
 		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
@@ -27,23 +27,51 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.Check
 }
 
 // CalculatePriceForShippingMethod Return checkout shipping price
-func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []checkout.DeliveryMethodBaseInterface) (*goprices.TaxedMoney, *model.AppError) {
-	// shippingMethod := shippingMethodInfo.DeliveryMethod
+func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError) {
+	// validate input arguments
+	if checkoutInfo == nil {
+		return nil, model.NewAppError("CalculatePriceForShippingMethod", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutInfo"}, "", http.StatusBadRequest)
+	}
 
-	// if lines != nil && func() bool {
-	// 	for _, line := range lines {
-	// 		// TODO: take a look at me
-	// 		if _, ok := line.Self().(*checkout.CheckoutLineInfo); !ok {
-	// 			return false
-	// 		}
-	// 	}
+	var (
+		shippingMethod                     = shippingMethodInfo.DeliveryMethod
+		linesIsNotNone                     = lines != nil
+		linesContainsCheckoutLineInfosOnly = true
+		shippingRequired                   bool
+		appErr                             *model.AppError
+		checkoutLineInfos                  checkout.CheckoutLineInfos
+	)
+	for _, item := range lines {
+		switch t := item.(type) {
+		case *checkout.CheckoutLineInfo:
+			checkoutLineInfos = append(checkoutLineInfos, t)
 
-	// 	return true
-	// }() {
+		case checkout.CheckoutLineInfo:
+			checkoutLineInfos = append(checkoutLineInfos, &t)
 
-	// 	s.srv.ProductService().ProductsRequireShipping()
-	// }
-	panic("not implemented")
+		default:
+			linesContainsCheckoutLineInfosOnly = false
+		}
+	}
+
+	if linesIsNotNone && linesContainsCheckoutLineInfosOnly {
+		shippingRequired, appErr = s.srv.ProductService().ProductsRequireShipping(checkoutLineInfos.Products().IDs())
+	} else {
+		shippingRequired, appErr = s.srv.CheckoutService().CheckoutShippingRequired(checkoutInfo.Checkout.Token)
+	}
+
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !model.IsValidId(shippingMethod.Id) || !shippingRequired {
+		zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkoutInfo.Checkout.Currency)
+		return zeroTaxedMoney, nil
+	}
+
+	shippingPrice := shippingMethod
+	// external shipping methods have price field,
+	// while internal methods use channel listings
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout

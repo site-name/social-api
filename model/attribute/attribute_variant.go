@@ -8,9 +8,10 @@ import (
 
 // AttributeID unique together with ProductTypeID
 type AttributeVariant struct {
-	Id            string `json:"id"`
-	AttributeID   string `json:"attribute_id"`
-	ProductTypeID string `json:"product_type_id"`
+	Id               string `json:"id"`
+	AttributeID      string `json:"attribute_id"`
+	ProductTypeID    string `json:"product_type_id"`
+	VariantSelection bool   `json:"variant_selection"`
 	model.Sortable
 }
 

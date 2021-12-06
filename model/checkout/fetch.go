@@ -21,8 +21,10 @@ type CheckoutLineInfo struct {
 	Collections    []*product_and_discount.Collection
 }
 
+// CheckoutLineInfos is a slice contains checkout line info(s)
 type CheckoutLineInfos []*CheckoutLineInfo
 
+// CheckoutLines returns a list of checkout lines
 func (c CheckoutLineInfos) CheckoutLines() CheckoutLines {
 	var res CheckoutLines
 	for _, item := range c {
@@ -34,17 +36,21 @@ func (c CheckoutLineInfos) CheckoutLines() CheckoutLines {
 	return res
 }
 
+// Products returns a list of products from current checkout line infos
 func (c CheckoutLineInfos) Products() product_and_discount.Products {
-	res := product_and_discount.Products{}
+	var res product_and_discount.Products
 	for _, item := range c {
-		res = append(res, &item.Product)
+		if item != nil {
+			res = append(res, &item.Product)
+		}
 	}
 
 	return res
 }
 
+// FilterNils returns a list of non-nil checkout line info(s)
 func (c CheckoutLineInfos) FilterNils() CheckoutLineInfos {
-	res := CheckoutLineInfos{}
+	var res CheckoutLineInfos
 	for _, item := range c {
 		if item != nil {
 			res = append(res, item)
@@ -68,9 +74,11 @@ type CheckoutInfo struct {
 }
 
 // ValidDeliveryMethods returns a slice of interfaces.
-// These interfaces can be *Warehouse or *ShippingMethod
+//
+// NOTE: These interfaces can be *Warehouse or *ShippingMethod
 func (c *CheckoutInfo) ValidDeliveryMethods() []interface{} {
-	res := []interface{}{}
+	var res []interface{}
+
 	for _, item := range c.ValidShippingMethods {
 		if item != nil {
 			res = append(res, item)
@@ -86,13 +94,14 @@ func (c *CheckoutInfo) ValidDeliveryMethods() []interface{} {
 	return res
 }
 
+// GetCountry
 func (c *CheckoutInfo) GetCountry() string {
 	addr := c.ShippingAddress
 	if addr == nil {
 		addr = c.BillingAddress
 	}
 
-	if addr == nil || addr.Country == "" {
+	if addr == nil || model.Countries[addr.Country] == "" {
 		return c.Checkout.Country
 	}
 
@@ -107,8 +116,10 @@ func (c *CheckoutInfo) GetCustomerEmail() string {
 	return c.Checkout.Email
 }
 
+// DeliveryMethodBaseInterface
 type DeliveryMethodBaseInterface interface {
 	WarehousePK() string
+	DeliveryMethodOrderField() model.StringInterface
 	IsLocalCollectionPoint() bool
 	DeliveryMethodName() model.StringMap
 	GetWarehouseFilterLookup() model.StringInterface // the returning map contains nothing or {"warehouse_id": <an UUID>}
@@ -118,10 +129,9 @@ type DeliveryMethodBaseInterface interface {
 
 	GetDeliveryMethod() interface{} // GetDeliveryMethod returns an interface{}, can be either *ShippingMethod or *Warehouse.
 	GetShippingAddress() *account.Address
-	GetOrderKey() string
 
 	String() string
-	Self() interface{}
+	Self() interface{} // Self returns the current object which implements DeliveryMethodBaseInterface
 }
 
 // check if some struct types satisfy DeliveryMethodBaseInterface
@@ -133,9 +143,8 @@ var (
 
 // DeliveryMethodBase should not be modified after initialized
 type DeliveryMethodBase struct {
-	DeliveryMethod  interface{}      // either *ShippingMethod or *Warehouse. Can be nil
+	DeliveryMethod  interface{}      // either *ShippingMethodData or *Warehouse. Can be nil
 	ShippingAddress *account.Address // can be nil
-	OrderKey        string           // default to "shipping_method"
 }
 
 func (d *DeliveryMethodBase) Self() interface{} {
@@ -148,6 +157,12 @@ func (d *DeliveryMethodBase) String() string {
 
 func (d *DeliveryMethodBase) WarehousePK() string {
 	return ""
+}
+
+func (d *DeliveryMethodBase) DeliveryMethodOrderField() model.StringInterface {
+	return model.StringInterface{
+		"shipping_method": d.DeliveryMethod,
+	}
 }
 
 func (d *DeliveryMethodBase) IsLocalCollectionPoint() bool {
@@ -181,16 +196,12 @@ func (d *DeliveryMethodBase) GetDeliveryMethod() interface{} {
 func (d *DeliveryMethodBase) GetShippingAddress() *account.Address {
 	return d.ShippingAddress
 }
-func (d *DeliveryMethodBase) GetOrderKey() string {
-	return d.OrderKey
-}
 
 // ShippingMethodInfo should not be modified after initializing
 type ShippingMethodInfo struct {
 	DeliveryMethodBase
-	DeliveryMethod  shipping.ShippingMethod
+	DeliveryMethod  shipping.ShippingMethodData
 	ShippingAddress *account.Address // can be nil
-	OrderKey        string           // default to "shipping_method"
 }
 
 func (d *ShippingMethodInfo) Self() interface{} {
@@ -202,7 +213,17 @@ func (d *ShippingMethodInfo) String() string {
 }
 
 func (s *ShippingMethodInfo) DeliveryMethodName() model.StringMap {
-	return model.StringMap{"shipping_method_name": s.DeliveryMethod.String()}
+	return model.StringMap{"shipping_method_name": s.DeliveryMethod.Name}
+}
+
+func (s *ShippingMethodInfo) DeliveryMethodOrderField() model.StringInterface {
+	if !s.DeliveryMethod.IsExternal() {
+		return model.StringInterface{
+			"shipping_method_id": s.DeliveryMethod.Id,
+		}
+	}
+
+	return model.StringInterface{}
 }
 
 func (s *ShippingMethodInfo) IsValidDeliveryMethod() bool {
@@ -224,6 +245,7 @@ func (s *ShippingMethodInfo) IsMethodInValidMethods(checkoutInfo *CheckoutInfo) 
 	return false
 }
 
+// ErrorNotUsable
 var ErrorNotUsable = errors.New("this method is not usable, please use a method with same name and is a instance method of service checkout")
 
 func (d *ShippingMethodInfo) UpdateChannelListings(_ *CheckoutInfo) error {
@@ -235,7 +257,6 @@ type CollectionPointInfo struct {
 	DeliveryMethodBase
 	DeliveryMethod  warehouse.WareHouse
 	ShippingAddress *account.Address
-	OrderKey        string // default to "collection_point"
 }
 
 func (d *CollectionPointInfo) Self() interface{} {
@@ -244,6 +265,12 @@ func (d *CollectionPointInfo) Self() interface{} {
 
 func (d *CollectionPointInfo) String() string {
 	return "CollectionPointInfo"
+}
+
+func (d *CollectionPointInfo) DeliveryMethodOrderField() model.StringInterface {
+	return model.StringInterface{
+		"collection_point": d.DeliveryMethod,
+	}
 }
 
 func (c *CollectionPointInfo) WarehousePK() string {

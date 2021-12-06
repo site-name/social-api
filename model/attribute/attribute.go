@@ -48,7 +48,7 @@ const (
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN, SWATCH}
+	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
 	TYPES_WITH_CHOICES           = []string{DROPDOWN, MULTISELECT, SWATCH}
 	// list of the input types that are unique per instances
 	TYPES_WITH_UNIQUE_VALUES = []string{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.

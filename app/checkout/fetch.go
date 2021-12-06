@@ -15,14 +15,14 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 )
 
-// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethod or *Warehouse
+// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
 func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError) {
 	if deliveryMethod == nil {
 		return &checkout.DeliveryMethodBase{}, nil
 	}
 
 	switch t := deliveryMethod.(type) {
-	case *shipping.ShippingMethod:
+	case *shipping.ShippingMethodData:
 		return &checkout.ShippingMethodInfo{
 			DeliveryMethod:  *t,
 			ShippingAddress: address,
@@ -60,8 +60,8 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *checkout.Checkout) ([]*ch
 	return checkoutLineInfos, nil
 }
 
-// FetCheckoutInfo Fetch checkout as CheckoutInfo object
-func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError) {
+// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
+func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError) {
 	// validate arguments:
 	if checkOut == nil {
 		return nil, model.NewAppError("FetchCheckoutInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
@@ -127,34 +127,47 @@ func (a *ServiceCheckout) FetCheckoutInfo(checkOut *checkout.Checkout, lines []*
 			Id: squirrel.Eq{a.srv.Store.ShippingMethod().TableName("Id"): *checkOut.ShippingMethodID},
 		})
 		if appErr != nil {
-			return nil, appErr
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+			// ignore not found error
 		}
 	}
 
-	// build shipping method channel listing filter option:
-	shippingMethodChannelListingFilterOption := new(shipping.ShippingMethodChannelListingFilterOption)
-	if chanNel != nil {
-		shippingMethodChannelListingFilterOption.ChannelID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: chanNel.Id,
-			},
-		}
-	}
+	var (
+		shippingMethodChannelListing *shipping.ShippingMethodChannelListing
+		deliveryMethod               interface{} // can be either `ShippingMethodData0` or `Warehouse`
+	)
+
 	if shippingMethod != nil {
-		shippingMethodChannelListingFilterOption.ShippingMethodID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: shippingMethod.Id,
+		// build shipping method channel listing filter option:
+		shippingMethodChannelListingFilterOption = &shipping.ShippingMethodChannelListingFilterOption{
+			ShippingMethodID: &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: shippingMethod.Id,
+				},
 			},
 		}
-	}
-	var shippingMethodChannelListing *shipping.ShippingMethodChannelListing
-	shippingMethodChannelListings, appErr := a.srv.ShippingService().ShippingMethodChannelListingsByOption(shippingMethodChannelListingFilterOption)
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
+		if chanNel != nil {
+			shippingMethodChannelListingFilterOption.ChannelID = &model.StringFilter{
+				StringOption: &model.StringOption{
+					Eq: chanNel.Id,
+				},
+			}
 		}
+
+		shippingMethodChannelListings, appErr := a.srv.ShippingService().ShippingMethodChannelListingsByOption(shippingMethodChannelListingFilterOption)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+			// ignore not found error
+		} else {
+			shippingMethodChannelListing = shippingMethodChannelListings[0]
+		}
+
 	} else {
-		shippingMethodChannelListing = shippingMethodChannelListings[0]
+		panic("not impelmented")
 	}
 
 	var collectionPoint *warehouse.WareHouse
