@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/site-name/decimal"
-	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +20,7 @@ func Test_PriceFromMinorUnit(t *testing.T) {
 }
 
 func Test_PriceToMinorUnit(t *testing.T) {
-	decimal := goprices.NewDecimal(decimal.NewFromFloat(12.34))
+	decimal := model.NewDecimal(decimal.NewFromFloat(12.34))
 	currency := "USD"
 
 	res, err := PriceToMinorUnit(decimal, currency)

@@ -118,7 +118,10 @@ func (c *Checkout) IsValid() *model.AppError {
 
 func (c *Checkout) PopulateNonDbFields() {
 	if c.DiscountAmount != nil {
-		c.Discount, _ = goprices.NewMoney(c.DiscountAmount, c.Currency)
+		c.Discount = &goprices.Money{
+			Amount:   *c.DiscountAmount,
+			Currency: c.Currency,
+		}
 	}
 }
 
@@ -134,7 +137,7 @@ func (c *Checkout) PreSave() {
 
 func (c *Checkout) commonPre() {
 	if c.Discount != nil {
-		c.DiscountAmount = c.Discount.Amount
+		c.DiscountAmount = &c.Discount.Amount
 	} else {
 		c.DiscountAmount = &decimal.Zero
 	}

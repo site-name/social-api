@@ -20,7 +20,7 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleC
 
 	if sale.Type == product_and_discount.FIXED {
 		discountAmount := &goprices.Money{ // can use directly here since sale channel listings are validated before saving
-			Amount:   saleChannelListing.DiscountValue,
+			Amount:   *saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency,
 		}
 		return Decorator(discountAmount), nil

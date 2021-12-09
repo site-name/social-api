@@ -17,7 +17,7 @@ import (
 func TestApplicableShippingMethods(t *testing.T) {
 	sqlString, err := ApplicableShippingMethods(
 		&goprices.Money{
-			Amount:   model.NewDecimal(decimal.NewFromFloat(56.78)),
+			Amount:   decimal.NewFromFloat(56.78),
 			Currency: "USD",
 		},
 		model.NewId(),

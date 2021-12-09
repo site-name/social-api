@@ -115,7 +115,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.O
 	}
 
 	// discount amount can't be greater than order total
-	if totalPrice.Gross.Amount.LessThan(*voucherDiscount.Amount) {
+	if totalPrice.Gross.Amount.LessThan(voucherDiscount.Amount) {
 		voucherDiscount = totalPrice.Gross
 	}
 	subResult, err := totalPrice.Sub(voucherDiscount)
@@ -134,8 +134,8 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.O
 		}
 
 		if assignedOrderDiscount != nil {
-			assignedOrderDiscount.AmountValue = voucherDiscount.Amount
-			assignedOrderDiscount.Value = voucherDiscount.Amount
+			assignedOrderDiscount.AmountValue = &voucherDiscount.Amount
+			assignedOrderDiscount.Value = &voucherDiscount.Amount
 			_, appErr = a.srv.DiscountService().UpsertOrderDiscount(transaction, assignedOrderDiscount)
 			if appErr != nil {
 				return appErr

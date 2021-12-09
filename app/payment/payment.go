@@ -116,7 +116,7 @@ func (a *ServicePayment) PaymentGetAuthorizedAmount(pm *payment.Payment) (*gopri
 	for _, tran := range trans {
 		if tran.Kind == payment.AUTH && tran.IsSuccess && !tran.ActionRequired {
 			authorizedMoney, err = authorizedMoney.Add(&goprices.Money{
-				Amount:   tran.Amount,
+				Amount:   *tran.Amount,
 				Currency: tran.Currency,
 			})
 			if err != nil {

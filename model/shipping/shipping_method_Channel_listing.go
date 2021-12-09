@@ -57,13 +57,22 @@ func (s *ShippingMethodChannelListing) IsValid() *model.AppError {
 // PopulateNonDbFields populates non db fields of shipping method channel listing
 func (s *ShippingMethodChannelListing) PopulateNonDbFields() {
 	if s.MinimumOrderPriceAmount != nil {
-		s.MinimumOrderPrice, _ = goprices.NewMoney(s.MinimumOrderPriceAmount, s.Currency)
+		s.MinimumOrderPrice = &goprices.Money{
+			Amount:   *s.MinimumOrderPriceAmount,
+			Currency: s.Currency,
+		}
 	}
 	if s.MaximumOrderPriceAmount != nil {
-		s.MaximumOrderPrice, _ = goprices.NewMoney(s.MaximumOrderPriceAmount, s.Currency)
+		s.MaximumOrderPrice = &goprices.Money{
+			Amount:   *s.MaximumOrderPriceAmount,
+			Currency: s.Currency,
+		}
 	}
 	if s.PriceAmount != nil {
-		s.Price, _ = goprices.NewMoney(s.PriceAmount, s.Currency)
+		s.Price = &goprices.Money{
+			Amount:   *s.PriceAmount,
+			Currency: s.Currency,
+		}
 	}
 }
 

@@ -194,7 +194,7 @@ func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *checkout.Check
 	}
 
 	return &goprices.Money{
-		Amount:   &balanceAmount,
+		Amount:   balanceAmount,
 		Currency: checkOut.Currency,
 	}, nil
 }

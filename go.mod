@@ -7,7 +7,7 @@ require (
 	github.com/99designs/gqlgen v0.14.0
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.42.19
+	github.com/aws/aws-sdk-go v1.42.21
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.2
@@ -42,7 +42,7 @@ require (
 	github.com/mattermost/ldap v3.0.4+incompatible
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/minio/minio-go/v7 v7.0.16
+	github.com/minio/minio-go/v7 v7.0.17
 	github.com/nyaruka/phonenumbers v1.0.73
 	github.com/oov/psd v0.0.0-20210618170533-9fb823ddb631
 	github.com/opentracing/opentracing-go v1.2.0
@@ -51,7 +51,7 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.1.2
+	github.com/site-name/go-prices v1.3.0
 	github.com/site-name/i18naddress v0.0.0-20211024032210-494831c34028
 	github.com/spf13/cobra v1.2.1
 	github.com/splitio/go-client/v6 v6.1.0
@@ -59,7 +59,7 @@ require (
 	github.com/throttled/throttled v2.2.5+incompatible
 	github.com/tinylib/msgp v1.1.6
 	github.com/tylerb/graceful v1.2.15
-	github.com/uber/jaeger-client-go v2.29.1+incompatible
+	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5

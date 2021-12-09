@@ -607,7 +607,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(orDer *order.Order, requestUser *account.
 	}
 
 	payMent.ChargeStatus = payment.FULLY_CHARGED
-	payMent.CapturedAmount = orDer.Total.Gross.Amount
+	payMent.CapturedAmount = &orDer.Total.Gross.Amount
 
 	savedPayment, appErr := a.srv.PaymentService().UpsertPayment(transaction, payMent)
 	if appErr != nil {
@@ -620,7 +620,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(orDer *order.Order, requestUser *account.
 		Kind:            payment.EXTERNAL,
 		Token:           externalReference,
 		IsSuccess:       true,
-		Amount:          orDer.Total.Gross.Amount,
+		Amount:          &orDer.Total.Gross.Amount,
 		Currency:        orDer.Total.Gross.Currency,
 		GatewayResponse: model.StringMap{},
 	})

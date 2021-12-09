@@ -1,18 +1,17 @@
 package util
 
 import (
-	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 )
 
 // ZeroMoney returns zero money with currency unit is given currency
 func ZeroMoney(currency string) (*goprices.Money, error) {
-	return goprices.NewMoney(&decimal.Zero, currency)
+	return goprices.NewMoney(0, currency)
 }
 
 // ZeroTaxedMoney returns zero-taxed money with currency unit of given currency
 func ZeroTaxedMoney(currency string) (*goprices.TaxedMoney, error) {
-	zero, err := goprices.NewMoney(&decimal.Zero, currency)
+	zero, err := goprices.NewMoney(0, currency)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +19,7 @@ func ZeroTaxedMoney(currency string) (*goprices.TaxedMoney, error) {
 }
 
 func ZeroMoneyRange(currency string) (*goprices.MoneyRange, error) {
-	zero, err := goprices.NewMoney(&decimal.Zero, currency)
+	zero, err := goprices.NewMoney(0, currency)
 	if err != nil {
 		return nil, err
 	}

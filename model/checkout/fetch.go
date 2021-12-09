@@ -129,6 +129,7 @@ type DeliveryMethodBaseInterface interface {
 
 	GetDeliveryMethod() interface{} // GetDeliveryMethod returns an interface{}, can be either *ShippingMethod or *Warehouse.
 	GetShippingAddress() *account.Address
+	GetOrderKey() string
 
 	String() string
 	Self() interface{} // Self returns the current object which implements DeliveryMethodBaseInterface
@@ -195,6 +196,10 @@ func (d *DeliveryMethodBase) GetDeliveryMethod() interface{} {
 }
 func (d *DeliveryMethodBase) GetShippingAddress() *account.Address {
 	return d.ShippingAddress
+}
+
+func (d *DeliveryMethodBase) GetOrderKey() string {
+	return "shipping_method"
 }
 
 // ShippingMethodInfo should not be modified after initializing
@@ -308,4 +313,8 @@ func (c *CollectionPointInfo) IsMethodInValidMethods(checkoutInfo *CheckoutInfo)
 	}
 
 	return false
+}
+
+func (c *CollectionPointInfo) GetOrderKey() string {
+	return "collection_point"
 }

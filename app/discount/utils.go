@@ -289,7 +289,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *product_and_discou
 			appErrDetail = fmt.Sprintf("a price has invalid currency unit: index: %d, currency unit: %s", index+1, price.Currency)
 			break
 		}
-		if minPrice == nil || minPrice.Amount.GreaterThan(*price.Amount) {
+		if minPrice == nil || minPrice.Amount.GreaterThan(price.Amount) {
 			minPrice = price
 		}
 	}

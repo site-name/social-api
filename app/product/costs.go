@@ -74,7 +74,7 @@ func GetCostPrice(variantChannelListing *product_and_discount.ProductVariantChan
 
 	if variantChannelListing.CostPrice == nil {
 		return &goprices.Money{
-			Amount:   &decimal.Zero,
+			Amount:   decimal.Zero,
 			Currency: variantChannelListing.Currency,
 		}
 	}

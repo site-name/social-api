@@ -169,7 +169,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, 
 		amount := orderDiscount.Amount
 
 		if (orderDiscount.ValueType == product_and_discount.PERCENTAGE || currentTotal.LessThan(*discountValue)) &&
-			!amount.Amount.Equal(*previousOrderDiscount.Amount.Amount) {
+			!amount.Amount.Equal(previousOrderDiscount.Amount.Amount) {
 			changedOrderDiscounts = append(changedOrderDiscounts, [2]*product_and_discount.OrderDiscount{
 				previousOrderDiscount,
 				orderDiscount,
@@ -517,7 +517,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 	// validate if order has voucher attached to
 	if ord.VoucherID == nil {
 		result = &goprices.Money{
-			Amount:   &decimal.Zero,
+			Amount:   decimal.Zero,
 			Currency: ord.Currency,
 		}
 		return
@@ -951,7 +951,7 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalP
 
 	return giftcard.BalanceObject{
 		Giftcard:        *giftCard,
-		PreviousBalance: previousBalance.Amount,
+		PreviousBalance: &previousBalance.Amount,
 	}
 }
 
@@ -1390,7 +1390,10 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction
 // ApplyDiscountToValue Calculate the price based on the provided values
 func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
 	// validate currency
-	money, _ := goprices.NewMoney(value, currency)
+	money := &goprices.Money{
+		Amount:   *value,
+		Currency: currency,
+	}
 	// MOTE: we can safely ignore the error here since OrderDiscounts's Currencies were validated before saving into database
 
 	var discountCalculator types.DiscountCalculator

@@ -41,6 +41,8 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 		appErr                             *model.AppError
 		checkoutLineInfos                  checkout.CheckoutLineInfos
 	)
+
+	// loop through to check if lines contains only CheckoutLineInfo(s)
 	for _, item := range lines {
 		switch t := item.(type) {
 		case *checkout.CheckoutLineInfo:
@@ -51,6 +53,7 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 
 		default:
 			linesContainsCheckoutLineInfosOnly = false
+			break
 		}
 	}
 
@@ -120,7 +123,7 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.Check
 	}
 
 	amount, _ := variantPrice.Mul(int(checkoutLineInfo.Line.Quantity))
-	amount, _ = amount.Quantize()
+	amount, _ = amount.Quantize(goprices.Up)
 
 	return &goprices.TaxedMoney{
 		Net:      amount,
@@ -133,7 +136,7 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*gopri
 	orderLine.PopulateNonDbFields()
 	if orderLine.UnitPrice != nil {
 		unitPrice, _ := orderLine.UnitPrice.Mul(int(orderLine.Quantity))
-		unitPrice, _ = unitPrice.Quantize()
+		unitPrice, _ = unitPrice.Quantize(goprices.Up)
 
 		return unitPrice, nil
 	}
@@ -142,12 +145,12 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*gopri
 }
 
 func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError) {
-	taxRate := &decimal.Zero
-	if price != nil && price.Gross != nil && !price.Gross.Amount.Equal(decimal.Zero) {
+	taxRate := decimal.Zero
+	if price != nil && price.Gross != nil && !price.Gross.Amount.IsZero() {
 		tax, _ := price.Tax()
 		div, _ := tax.TrueDiv(price.Net)
 		taxRate = div.Amount
 	}
 
-	return taxRate, nil
+	return &taxRate, nil
 }

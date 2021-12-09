@@ -167,8 +167,10 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 	switch t := base.(type) {
 	case *goprices.Money:
 		newAmount := t.Amount.Mul(*conversionRate)
-		res, _ := goprices.NewMoney(&newAmount, toCurrency)
-		return res, nil
+		return &goprices.Money{
+			Amount:   newAmount,
+			Currency: toCurrency,
+		}, nil
 
 	case *goprices.MoneyRange:
 		newStart, appErr := a.ExchangeCurrency(t.Start, toCurrency, conversionRate)

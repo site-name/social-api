@@ -184,9 +184,9 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product *product_and_disco
 			if listing.DiscountedPrice != nil &&
 				productDiscountedPrice != nil &&
 				// notice below: NOT equal
-				!listing.DiscountedPrice.Amount.Equal(*productDiscountedPrice.Amount) {
+				!listing.DiscountedPrice.Amount.Equal(productDiscountedPrice.Amount) {
 
-				listing.DiscountedPriceAmount = productDiscountedPrice.Amount
+				listing.DiscountedPriceAmount = &productDiscountedPrice.Amount
 				productChannelListingsToUpdate = append(productChannelListingsToUpdate, listing)
 			}
 		}

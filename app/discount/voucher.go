@@ -65,7 +65,7 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *product_and_discount.Vouch
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
 		return Decorator(&goprices.Money{
-			Amount:   firstListing.DiscountValue,
+			Amount:   *firstListing.DiscountValue,
 			Currency: firstListing.Currency,
 		}), nil
 	}
