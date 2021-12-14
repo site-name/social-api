@@ -22,7 +22,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 	}
 
 	switch t := deliveryMethod.(type) {
-	case *shipping.ShippingMethodData:
+	case *shipping.ShippingMethod:
 		return &checkout.ShippingMethodInfo{
 			DeliveryMethod:  *t,
 			ShippingAddress: address,

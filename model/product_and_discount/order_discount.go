@@ -105,7 +105,7 @@ func (o *OrderDiscount) IsValid() *model.AppError {
 
 func (o *OrderDiscount) PopulateNonDbFields() {
 	o.Amount = &goprices.Money{
-		Amount:   o.AmountValue,
+		Amount:   *o.AmountValue,
 		Currency: o.Currency,
 	}
 }
@@ -129,7 +129,7 @@ func (o *OrderDiscount) commonPre() {
 	}
 
 	if o.Amount != nil {
-		o.AmountValue = o.Amount.Amount
+		o.AmountValue = &o.Amount.Amount
 	} else {
 		o.AmountValue = &decimal.Zero
 	}

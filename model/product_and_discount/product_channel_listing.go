@@ -97,13 +97,16 @@ func (p *ProductChannelListing) IsValid() *model.AppError {
 
 func (p *ProductChannelListing) PopulateNonDbFields() {
 	if p.DiscountedPriceAmount != nil && p.Currency != "" {
-		p.DiscountedPrice, _ = goprices.NewMoney(p.DiscountedPriceAmount, p.Currency)
+		p.DiscountedPrice = &goprices.Money{
+			Amount:   *p.DiscountedPriceAmount,
+			Currency: p.Currency,
+		}
 	}
 }
 
 func (p *ProductChannelListing) commonPre() {
 	if p.DiscountedPrice != nil {
-		p.DiscountedPriceAmount = p.DiscountedPrice.Amount
+		p.DiscountedPriceAmount = &p.DiscountedPrice.Amount
 	}
 
 	if p.Currency != "" {

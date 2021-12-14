@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -72,9 +73,27 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 		return zeroTaxedMoney, nil
 	}
 
-	shippingPrice := shippingMethod
-	// external shipping methods have price field,
-	// while internal methods use channel listings
+	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
+		ShippingMethodID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: shippingMethod.Id,
+			},
+		},
+		ChannelID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: checkoutInfo.Checkout.ChannelID,
+			},
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shippingPrice := shippingMethodChannelListingsOfShippingMethod[0].GetTotal()
+	taxedMoney, _ := goprices.NewTaxedMoney(shippingPrice, shippingPrice)
+
+	quantizedPrice, _ := taxedMoney.Quantize(goprices.Up)
+	return quantizedPrice, nil
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout

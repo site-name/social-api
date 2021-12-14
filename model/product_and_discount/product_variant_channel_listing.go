@@ -106,11 +106,11 @@ func (p *ProductVariantChannelListing) PreSave() {
 
 func (p *ProductVariantChannelListing) commonPre() {
 	if p.Price != nil {
-		p.PriceAmount = p.Price.Amount
+		p.PriceAmount = &p.Price.Amount
 	}
 
 	if p.CostPrice != nil {
-		p.CostPriceAmount = p.CostPrice.Amount
+		p.CostPriceAmount = &p.CostPrice.Amount
 	}
 
 	if p.Currency != "" {
@@ -120,10 +120,16 @@ func (p *ProductVariantChannelListing) commonPre() {
 
 func (p *ProductVariantChannelListing) PopulateNonDbFields() {
 	if p.PriceAmount != nil && p.Currency != "" {
-		p.Price, _ = goprices.NewMoney(p.PriceAmount, p.Currency)
+		p.Price = &goprices.Money{
+			Amount:   *p.PriceAmount,
+			Currency: p.Currency,
+		}
 	}
 	if p.CostPriceAmount != nil && p.Currency != "" {
-		p.CostPrice, _ = goprices.NewMoney(p.CostPriceAmount, p.Currency)
+		p.CostPrice = &goprices.Money{
+			Amount:   *p.CostPriceAmount,
+			Currency: p.Currency,
+		}
 	}
 }
 

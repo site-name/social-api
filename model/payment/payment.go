@@ -170,7 +170,7 @@ func (p *Payment) IsManual() bool {
 */
 func (p *Payment) GetTotal() *goprices.Money {
 	return &goprices.Money{
-		Amount:   p.Total,
+		Amount:   *p.Total,
 		Currency: p.Currency,
 	}
 }
@@ -184,7 +184,7 @@ func (p *Payment) GetTotal() *goprices.Money {
 */
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{
-		Amount:   p.CapturedAmount,
+		Amount:   *p.CapturedAmount,
 		Currency: p.Currency,
 	}
 }

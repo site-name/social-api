@@ -39,12 +39,12 @@ func (v *VoucherChannelListing) PreSave() {
 
 func (v *VoucherChannelListing) commonPre() {
 	if v.Discount != nil {
-		v.DiscountValue = v.Discount.Amount
+		v.DiscountValue = &v.Discount.Amount
 	} else {
 		v.DiscountValue = &decimal.Zero
 	}
 	if v.MinSpent == nil {
-		v.MinSpenAmount = v.MinSpent.Amount
+		v.MinSpenAmount = &v.MinSpent.Amount
 	} else {
 		v.MinSpenAmount = &decimal.Zero
 	}
@@ -56,8 +56,14 @@ func (v *VoucherChannelListing) commonPre() {
 }
 
 func (v *VoucherChannelListing) PopulateNonDbFields() {
-	v.MinSpent, _ = goprices.NewMoney(v.MinSpenAmount, v.Currency)
-	v.Discount, _ = goprices.NewMoney(v.DiscountValue, v.Currency)
+	v.MinSpent = &goprices.Money{
+		Currency: v.Currency,
+		Amount:   *v.MinSpenAmount,
+	}
+	v.Discount = &goprices.Money{
+		Amount:   *v.DiscountValue,
+		Currency: v.Currency,
+	}
 }
 
 func (v *VoucherChannelListing) PreUpdate() {

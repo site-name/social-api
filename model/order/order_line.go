@@ -177,21 +177,48 @@ func (o *OrderLine) IsValid() *model.AppError {
 }
 
 func (o *OrderLine) PopulateNonDbFields() {
-	o.UnitDiscount, _ = goprices.NewMoney(o.UnitDiscountAmount, o.Currency)
-	o.UnitPriceNet, _ = goprices.NewMoney(o.UnitPriceNetAmount, o.Currency)
-	o.UnitPriceGross, _ = goprices.NewMoney(o.UnitPriceGrossAmount, o.Currency)
-	o.TotalPriceNet, _ = goprices.NewMoney(o.TotalPriceNetAmount, o.Currency)
-	o.TotalPriceGross, _ = goprices.NewMoney(o.TotalPriceGrossAmount, o.Currency)
+	o.UnitDiscount = &goprices.Money{
+		Amount:   *o.UnitDiscountAmount,
+		Currency: o.Currency,
+	}
+	o.UnitPriceNet = &goprices.Money{
+		Amount:   *o.UnitPriceNetAmount,
+		Currency: o.Currency,
+	}
+	o.UnitPriceGross = &goprices.Money{
+		Amount:   *o.UnitPriceGrossAmount,
+		Currency: o.Currency,
+	}
+	o.TotalPriceNet = &goprices.Money{
+		Amount:   *o.TotalPriceNetAmount,
+		Currency: o.Currency,
+	}
+	o.TotalPriceGross = &goprices.Money{
+		Amount:   *o.TotalPriceGrossAmount,
+		Currency: o.Currency,
+	}
 
 	o.UnitPrice, _ = goprices.NewTaxedMoney(o.UnitPriceNet, o.UnitPriceGross)
 	o.TotalPrice, _ = goprices.NewTaxedMoney(o.TotalPriceNet, o.TotalPriceGross)
 
-	net, _ := goprices.NewMoney(o.UnDiscountedUnitPriceNetAmount, o.Currency)
-	gross, _ := goprices.NewMoney(o.UnDiscountedUnitPriceGrossAmount, o.Currency)
+	net := &goprices.Money{
+		Amount:   *o.UnDiscountedUnitPriceNetAmount,
+		Currency: o.Currency,
+	}
+	gross := &goprices.Money{
+		Amount:   *o.UnDiscountedUnitPriceGrossAmount,
+		Currency: o.Currency,
+	}
 	o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 
-	net, _ = goprices.NewMoney(o.UnDiscountedTotalPriceNetAmount, o.Currency)
-	gross, _ = goprices.NewMoney(o.UnDiscountedTotalPriceGrossAmount, o.Currency)
+	net = &goprices.Money{
+		Amount:   *o.UnDiscountedTotalPriceNetAmount,
+		Currency: o.Currency,
+	}
+	gross = &goprices.Money{
+		Amount:   *o.UnDiscountedTotalPriceGrossAmount,
+		Currency: o.Currency,
+	}
 	o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 }
 
@@ -227,7 +254,7 @@ func (o *OrderLine) commonPre() {
 	}
 
 	if o.UnitDiscount != nil {
-		o.UnitDiscountAmount = o.UnitDiscount.Amount
+		o.UnitDiscountAmount = &o.UnitDiscount.Amount
 	} else {
 		o.UnitDiscountAmount = &decimal.Zero
 	}
@@ -239,16 +266,16 @@ func (o *OrderLine) commonPre() {
 	}
 
 	if o.UnDiscountedUnitPrice != nil {
-		o.UnDiscountedUnitPriceNetAmount = o.UnDiscountedUnitPrice.Net.Amount
-		o.UnDiscountedUnitPriceGrossAmount = o.UnDiscountedUnitPrice.Gross.Amount
+		o.UnDiscountedUnitPriceNetAmount = &o.UnDiscountedUnitPrice.Net.Amount
+		o.UnDiscountedUnitPriceGrossAmount = &o.UnDiscountedUnitPrice.Gross.Amount
 	} else {
 		o.UnDiscountedUnitPriceNetAmount = &decimal.Zero
 		o.UnDiscountedUnitPriceGrossAmount = &decimal.Zero
 	}
 
 	if o.UnDiscountedTotalPrice != nil {
-		o.UnDiscountedTotalPriceNetAmount = o.UnDiscountedTotalPrice.Net.Amount
-		o.UnDiscountedTotalPriceGrossAmount = o.UnDiscountedTotalPrice.Gross.Amount
+		o.UnDiscountedTotalPriceNetAmount = &o.UnDiscountedTotalPrice.Net.Amount
+		o.UnDiscountedTotalPriceGrossAmount = &o.UnDiscountedTotalPrice.Gross.Amount
 	} else {
 		o.UnDiscountedTotalPriceNetAmount = &decimal.Zero
 		o.UnDiscountedTotalPriceGrossAmount = &decimal.Zero

@@ -119,7 +119,7 @@ func (c *CheckoutInfo) GetCustomerEmail() string {
 // DeliveryMethodBaseInterface
 type DeliveryMethodBaseInterface interface {
 	WarehousePK() string
-	DeliveryMethodOrderField() model.StringInterface
+	// DeliveryMethodOrderField() model.StringInterface
 	IsLocalCollectionPoint() bool
 	DeliveryMethodName() model.StringMap
 	GetWarehouseFilterLookup() model.StringInterface // the returning map contains nothing or {"warehouse_id": <an UUID>}
@@ -160,11 +160,11 @@ func (d *DeliveryMethodBase) WarehousePK() string {
 	return ""
 }
 
-func (d *DeliveryMethodBase) DeliveryMethodOrderField() model.StringInterface {
-	return model.StringInterface{
-		"shipping_method": d.DeliveryMethod,
-	}
-}
+// func (d *DeliveryMethodBase) DeliveryMethodOrderField() model.StringInterface {
+// 	return model.StringInterface{
+// 		"shipping_method": d.DeliveryMethod,
+// 	}
+// }
 
 func (d *DeliveryMethodBase) IsLocalCollectionPoint() bool {
 	return false
@@ -205,7 +205,7 @@ func (d *DeliveryMethodBase) GetOrderKey() string {
 // ShippingMethodInfo should not be modified after initializing
 type ShippingMethodInfo struct {
 	DeliveryMethodBase
-	DeliveryMethod  shipping.ShippingMethodData
+	DeliveryMethod  shipping.ShippingMethod
 	ShippingAddress *account.Address // can be nil
 }
 
@@ -221,15 +221,15 @@ func (s *ShippingMethodInfo) DeliveryMethodName() model.StringMap {
 	return model.StringMap{"shipping_method_name": s.DeliveryMethod.Name}
 }
 
-func (s *ShippingMethodInfo) DeliveryMethodOrderField() model.StringInterface {
-	if !s.DeliveryMethod.IsExternal() {
-		return model.StringInterface{
-			"shipping_method_id": s.DeliveryMethod.Id,
-		}
-	}
+// func (s *ShippingMethodInfo) DeliveryMethodOrderField() model.StringInterface {
+// 	if !s.DeliveryMethod.IsExternal() {
+// 		return model.StringInterface{
+// 			"shipping_method_id": s.DeliveryMethod.Id,
+// 		}
+// 	}
 
-	return model.StringInterface{}
-}
+// 	return model.StringInterface{}
+// }
 
 func (s *ShippingMethodInfo) IsValidDeliveryMethod() bool {
 	return s.ShippingAddress != nil
@@ -272,11 +272,11 @@ func (d *CollectionPointInfo) String() string {
 	return "CollectionPointInfo"
 }
 
-func (d *CollectionPointInfo) DeliveryMethodOrderField() model.StringInterface {
-	return model.StringInterface{
-		"collection_point": d.DeliveryMethod,
-	}
-}
+// func (d *CollectionPointInfo) DeliveryMethodOrderField() model.StringInterface {
+// 	return model.StringInterface{
+// 		"collection_point": d.DeliveryMethod,
+// 	}
+// }
 
 func (c *CollectionPointInfo) WarehousePK() string {
 	return c.DeliveryMethod.Id

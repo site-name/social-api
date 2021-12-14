@@ -87,7 +87,7 @@ func (p *PaymentTransaction) String() string {
 
 func (p *PaymentTransaction) GetAmount() *goprices.Money {
 	return &goprices.Money{
-		Amount:   p.Amount,
+		Amount:   *p.Amount,
 		Currency: p.Currency,
 	}
 }

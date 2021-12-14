@@ -77,12 +77,18 @@ func (gc *GiftCard) PopulateNonDbFields() {
 	if gc.InitialBalanceAmount == nil {
 		gc.InitialBalanceAmount = &decimal.Zero
 	}
-	gc.InitialBalance, _ = goprices.NewMoney(gc.InitialBalanceAmount, gc.Currency)
+	gc.InitialBalance = &goprices.Money{
+		Amount:   *gc.InitialBalanceAmount,
+		Currency: gc.Currency,
+	}
 
 	if gc.CurrentBalanceAmount == nil {
 		gc.CurrentBalanceAmount = &decimal.Zero
 	}
-	gc.CurrentBalance, _ = goprices.NewMoney(gc.CurrentBalanceAmount, gc.Currency)
+	gc.CurrentBalance = &goprices.Money{
+		Amount:   *gc.CurrentBalanceAmount,
+		Currency: gc.Currency,
+	}
 }
 
 func (gc *GiftCard) IsValid() *model.AppError {
@@ -140,13 +146,13 @@ func (gc *GiftCard) PreSave() {
 
 func (gc *GiftCard) commonPre() {
 	if gc.CurrentBalance != nil {
-		gc.CurrentBalanceAmount = gc.CurrentBalance.Amount
+		gc.CurrentBalanceAmount = &gc.CurrentBalance.Amount
 	} else {
 		gc.CurrentBalanceAmount = &decimal.Zero
 	}
 
 	if gc.InitialBalance != nil {
-		gc.InitialBalanceAmount = gc.InitialBalance.Amount
+		gc.InitialBalanceAmount = &gc.InitialBalance.Amount
 	} else {
 		gc.InitialBalanceAmount = &decimal.Zero
 	}

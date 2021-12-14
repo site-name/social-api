@@ -131,16 +131,41 @@ type OrderFilterOption struct {
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
 func (o *Order) PopulateNonDbFields() {
 	// errors can be ignored since orders's Currencies were checked before saving into database
-	o.ShippingPriceNet, _ = goprices.NewMoney(o.ShippingPriceNetAmount, o.Currency)
-	o.ShippingPriceGross, _ = goprices.NewMoney(o.ShippingPriceGrossAmount, o.Currency)
+	o.ShippingPriceNet = &goprices.Money{
+		Amount:   *o.ShippingPriceNetAmount,
+		Currency: o.Currency,
+	}
+	o.ShippingPriceGross = &goprices.Money{
+		Amount:   *o.ShippingPriceGrossAmount,
+		Currency: o.Currency,
+	}
 	o.ShippingPrice, _ = goprices.NewTaxedMoney(o.ShippingPriceNet, o.ShippingPriceGross)
-	o.TotalNet, _ = goprices.NewMoney(o.TotalNetAmount, o.Currency)
-	o.UnDiscountedTotalNet, _ = goprices.NewMoney(o.UnDiscountedTotalNetAmount, o.Currency)
-	o.TotalGross, _ = goprices.NewMoney(o.TotalGrossAmount, o.Currency)
-	o.UnDiscountedTotalGross, _ = goprices.NewMoney(o.UnDiscountedTotalGrossAmount, o.Currency)
+	o.TotalNet = &goprices.Money{
+		Amount:   *o.TotalNetAmount,
+		Currency: o.Currency,
+	}
+	o.UnDiscountedTotalNet = &goprices.Money{
+		Amount:   *o.UnDiscountedTotalNetAmount,
+		Currency: o.Currency,
+	}
+	o.TotalGross = &goprices.Money{
+		Amount:   *o.TotalGrossAmount,
+		Currency: o.Currency,
+	}
+	o.UnDiscountedTotalGross = &goprices.Money{
+		Amount:   *o.UnDiscountedTotalGrossAmount,
+		Currency: o.Currency,
+	}
+	o.UnDiscountedTotalGross = &goprices.Money{
+		Amount:   *o.UnDiscountedTotalGrossAmount,
+		Currency: o.Currency,
+	}
 	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)
 	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross)
-	o.TotalPaid, _ = goprices.NewMoney(o.TotalPaidAmount, o.Currency)
+	o.TotalPaid = &goprices.Money{
+		Amount:   *o.TotalPaidAmount,
+		Currency: o.Currency,
+	}
 
 	o.Weight = &measurement.Weight{
 		Amount: &o.WeightAmount,
@@ -249,31 +274,31 @@ func (o *Order) PreUpdate() {
 
 func (o *Order) commonPre() {
 	if o.ShippingPriceNet != nil {
-		o.ShippingPriceNetAmount = o.ShippingPriceNet.Amount
+		o.ShippingPriceNetAmount = &o.ShippingPriceNet.Amount
 	} else {
 		o.ShippingPriceNetAmount = &decimal.Zero
 	}
 
 	if o.ShippingPriceGross != nil {
-		o.ShippingPriceGrossAmount = o.ShippingPriceGross.Amount
+		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
 	} else {
-		o.ShippingPriceGrossAmount = o.ShippingPriceGross.Amount
+		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
 	}
 
 	if o.TotalNet != nil {
-		o.TotalNetAmount = o.TotalNet.Amount
+		o.TotalNetAmount = &o.TotalNet.Amount
 	} else {
 		o.TotalNetAmount = &decimal.Zero
 	}
 
 	if o.TotalGross != nil {
-		o.TotalGrossAmount = o.TotalGross.Amount
+		o.TotalGrossAmount = &o.TotalGross.Amount
 	} else {
 		o.TotalGrossAmount = &decimal.Zero
 	}
 
 	if o.TotalPaid != nil {
-		o.TotalPaidAmount = o.TotalPaid.Amount
+		o.TotalPaidAmount = &o.TotalPaid.Amount
 	} else {
 		o.TotalPaidAmount = &decimal.Zero
 	}
