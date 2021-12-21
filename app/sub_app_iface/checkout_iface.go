@@ -58,6 +58,8 @@ type CheckoutService interface {
 	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
 	CancelActivePayments(checkOut *checkout.Checkout) *model.AppError
+	// CheckVariantInStock
+	CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
 	// CheckoutByOption returns a checkout filtered by given option
 	CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError)
 	// CheckoutLastActivePayment returns the most recent payment made for given checkout
@@ -95,14 +97,14 @@ type CheckoutService interface {
 	CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
 	DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) *model.AppError
-	// FetCheckoutInfo Fetch checkout as CheckoutInfo object
-	FetCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError)
+	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
+	FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 	// It prefetch some related value also
 	FetchCheckoutLines(checkOut *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
 	GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError)
-	// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethod or *Warehouse
+	// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
 	GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
 	// Specific products are products, collections and categories.
@@ -165,7 +167,6 @@ type CheckoutService interface {
 	BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError)
 	ChangeBillingAddressInCheckout(checkOut *checkout.Checkout, address *account.Address) *model.AppError
-	CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
 	CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError)
 	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)

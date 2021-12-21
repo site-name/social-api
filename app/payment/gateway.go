@@ -9,9 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 )
@@ -52,19 +50,13 @@ func (a *ServicePayment) requireActivePayment(where string, payMent *payment.Pay
 }
 
 // withLockedPayment Lock payment to protect from asynchronous modification.
-func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *gorp.Transaction, *model.AppError) {
-	transaction, err := a.srv.Store.GetMaster().Begin()
-	if err != nil {
-		return nil, nil, model.NewAppError(where, app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	paymentToOperateOn, appErr := a.srv.PaymentService().PaymentByID(transaction, payMent.Id, true)
+func (a *ServicePayment) withLockedPayment(where string, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+	paymentToOperateOn, appErr := a.srv.PaymentService().PaymentByID(nil, payMent.Id, true)
 	if appErr != nil {
-		a.srv.Store.FinalizeTransaction(transaction)
-		return nil, nil, appErr
+		return nil, appErr
 	}
 
-	return paymentToOperateOn, transaction, nil
+	return paymentToOperateOn, nil
 }
 
 // @requireActivePayment
@@ -90,13 +82,12 @@ func (a *ServicePayment) ProcessPayment(
 		return nil, paymentErr, nil
 	}
 
-	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	lockedPayment, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	paymentData, appErr := a.CreatePaymentInformation(payMent, &token, nil, customerID, storeSource, additionalData)
+	paymentData, appErr := a.CreatePaymentInformation(lockedPayment, &token, nil, customerID, storeSource, additionalData)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -119,11 +110,10 @@ func (a *ServicePayment) Authorize(
 		return nil, paymentErr, nil
 	}
 
-	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	paymentErr = a.CleanAuthorize(payMent)
 	if paymentErr != nil {
@@ -153,11 +143,10 @@ func (a *ServicePayment) Capture(
 		return nil, paymentErr, nil
 	}
 
-	payMent, transaction, appErr := a.withLockedPayment("ProcessPayment", payMent)
+	payMent, appErr := a.withLockedPayment("ProcessPayment", payMent)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	panic("not implemented")
 }

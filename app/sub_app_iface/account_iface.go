@@ -76,6 +76,8 @@ type AccountService interface {
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// CreateSession try saving given session to the database. If success then add that session to cache.
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
+	// CustomerEventsByUser returns customer events belong to given user
+	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 	CustomerPlacedOrderEvent(user *account.User, orDer *order.Order) (*account.CustomerEvent, *model.AppError)
 	// DoubleCheckPassword performs:
@@ -162,7 +164,6 @@ type AccountService interface {
 	CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError)
 	CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError)
-	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)
 	DeactivateMfa(userID string) *model.AppError
 	DeleteAddresses(addressIDs ...string) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError

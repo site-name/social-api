@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -34,6 +35,8 @@ type AppIface interface {
 	DoAppMigrations()
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
+	// GetComplianceReports returns compliances along with an app error
+	GetComplianceReports(page, perPage int) (compliance.Compliances, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -61,6 +64,8 @@ type AppIface interface {
 	Publish(message *model.WebSocketEvent)
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
+	// SaveComplianceReport
+	SaveComplianceReport(job *compliance.Compliance) (*compliance.Compliance, *model.AppError)
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
 	// Srv returns system server
@@ -91,13 +96,18 @@ type AppIface interface {
 	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
 	GetClusterId() string
 	GetClusterStatus() []*cluster.ClusterInfo
+	GetComplianceFile(job *compliance.Compliance) ([]byte, *model.AppError)
+	GetComplianceReport(reportID string) (*compliance.Compliance, *model.AppError)
 	GetLogs(page, perPage int) ([]string, *model.AppError)
 	GetLogsSkipSend(page, perPage int) ([]string, *model.AppError)
+	GetOpenGraphMetadata(requestURL string) ([]byte, error)
 	GetSystemInstallDate() (int64, *model.AppError)
 	GetWarnMetricsStatus() (map[string]*model.WarnMetricStatus, *model.AppError)
 	Handle404(w http.ResponseWriter, r *http.Request)
 	HandleMessageExportConfig(cfg *model.Config, appCfg *model.Config)
 	ImageProxy() *imageproxy.ImageProxy
+	ImageProxyAdder() func(string) string
+	ImageProxyRemover() func(string) string
 	IsLeader() bool
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string

@@ -101,7 +101,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			slog.String("request_id", requestID),
 		}
 		// Websockets are returning status code 0 to requests after closing the socket
-		if statusCode == "0" {
+		if statusCode != "0" {
 			responseLogFields = append(responseLogFields, slog.String("status_code", statusCode))
 		}
 		slog.Debug("Received HTTP request", responseLogFields...)

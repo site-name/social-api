@@ -642,7 +642,7 @@ func (a *ServicePayment) IsCurrencySupported(currency string, gatewayID string, 
 //
 // (value: 1000, currency: USD) will be converted to 10.00
 func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error) {
-	d, err := decimal.NewFromString(value)
+	deci, err := decimal.NewFromString(value)
 	if err != nil {
 		return nil, err
 	}
@@ -652,15 +652,9 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 		return nil, err
 	}
 
-	d = d.
-		Mul(
-			decimal.
-				NewFromInt32(10).
-				Pow(decimal.NewFromInt32(-int32(precision))),
-		).
-		Round(int32(precision))
+	numberPlaces := decimal.NewFromInt32(10).Pow(decimal.NewFromInt32(-precision))
 
-	return &d, nil
+	return model.NewDecimal(deci.Mul(numberPlaces)), nil
 }
 
 // Convert decimal value to the smallest unit of currency.
@@ -668,20 +662,40 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 // Take the value, discover the precision of currency and multiply value by
 // Decimal('10.0'), then change quantization to remove the comma.
 // Decimal(10.0) -> str(1000)
-func PriceToMinorUnit(value *decimal.Decimal, currency string) (string, error) {
-	precision, err := goprices.GetCurrencyPrecision(currency)
-	if err != nil {
-		return "", err
-	}
+// func PriceToMinorUnit(value decimal.Decimal, currency string) (string, error) {
+// 	money, err := (&goprices.Money{
+// 		Amount:   value,
+// 		Currency: currency,
+// 	}).
+// 		Quantize(goprices.Up)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	return value.
-		Mul(
-			decimal.
-				NewFromFloat(10.0).
-				Pow(decimal.NewFromInt32(int32(precision))),
-		).
-		String(), nil
-}
+// 	deci, err := decimal.NewFromString("10")
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	precision, err := goprices.GetCurrencyPrecision(currency)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	numberPlaces := deci.Pow(decimal.NewFromInt32(precision))
+// 	valueWithoutComma, err := money.Mul(numberPlaces)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return value.
+// 		Mul(
+// 			decimal.
+// 				NewFromFloat(10.0).
+// 				Pow(decimal.NewFromInt32(precision)),
+// 		).
+// 		String(), nil
+// }
 
 // PaymentOwnedByUser checks if given user is authenticated and owns given payment
 //
