@@ -5,10 +5,12 @@
 package file
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/filestore"
 )
 
@@ -46,4 +48,13 @@ func init() {
 
 		return service, nil
 	})
+}
+
+// FileBackend returns filebackend of the system
+func (a *ServiceFile) FileBackend() (filestore.FileBackend, *model.AppError) {
+	backend, err := filestore.NewFileBackend(a.srv.Config().FileSettings.ToFileBackendSettings(true))
+	if err != nil {
+		return nil, model.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return backend, nil
 }

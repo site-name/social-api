@@ -45,15 +45,6 @@ const (
 	maxContentExtractionSize   = 1024 * 1024 // 1MB
 )
 
-// FileBackend returns filebackend of the system
-func (a *ServiceFile) FileBackend() (filestore.FileBackend, *model.AppError) {
-	backend, err := filestore.NewFileBackend(a.srv.Config().FileSettings.ToFileBackendSettings(true))
-	if err != nil {
-		return nil, model.NewAppError("FileBackend", "app.file.no_driver.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return backend, nil
-}
-
 func (a *ServiceFile) CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError {
 	fileBackendSettings := settings.ToFileBackendSettings(false)
 	err := fileBackendSettings.CheckMandatoryS3Fields()
