@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -380,6 +381,72 @@ func (a *OpenTracingAppLayer) GetClusterStatus() []*cluster.ClusterInfo {
 	return resultVar0
 }
 
+func (a *OpenTracingAppLayer) GetComplianceFile(job *compliance.Compliance) ([]byte, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceFile")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetComplianceFile(job)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) GetComplianceReport(reportID string) (*compliance.Compliance, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceReport")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetComplianceReport(reportID)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) GetComplianceReports(page int, perPage int) (compliance.Compliances, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceReports")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetComplianceReports(page, perPage)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
 func (a *OpenTracingAppLayer) GetConfigFile(name string) ([]byte, error) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetConfigFile")
@@ -454,6 +521,28 @@ func (a *OpenTracingAppLayer) GetLogsSkipSend(page int, perPage int) ([]string, 
 
 	defer span.Finish()
 	resultVar0, resultVar1 := a.app.GetLogsSkipSend(page, perPage)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
+}
+
+func (a *OpenTracingAppLayer) GetOpenGraphMetadata(requestURL string) ([]byte, error) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetOpenGraphMetadata")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.GetOpenGraphMetadata(requestURL)
 
 	if resultVar1 != nil {
 		span.LogFields(spanlog.Error(resultVar1))
@@ -569,6 +658,40 @@ func (a *OpenTracingAppLayer) HandleMessageExportConfig(cfg *model.Config, appCf
 
 	defer span.Finish()
 	a.app.HandleMessageExportConfig(cfg, appCfg)
+}
+
+func (a *OpenTracingAppLayer) ImageProxyAdder() func(string) string {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ImageProxyAdder")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.ImageProxyAdder()
+
+	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) ImageProxyRemover() func(string) string {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.ImageProxyRemover")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0 := a.app.ImageProxyRemover()
+
+	return resultVar0
 }
 
 func (a *OpenTracingAppLayer) InvalidateCacheForUser(userID string) {
@@ -829,6 +952,28 @@ func (a *OpenTracingAppLayer) ResetPermissionsSystem() *model.AppError {
 	}
 
 	return resultVar0
+}
+
+func (a *OpenTracingAppLayer) SaveComplianceReport(job *compliance.Compliance) (*compliance.Compliance, *model.AppError) {
+	origCtx := a.ctx
+	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SaveComplianceReport")
+
+	a.ctx = newCtx
+	a.app.Srv().Store.SetContext(newCtx)
+	defer func() {
+		a.app.Srv().Store.SetContext(origCtx)
+		a.ctx = origCtx
+	}()
+
+	defer span.Finish()
+	resultVar0, resultVar1 := a.app.SaveComplianceReport(job)
+
+	if resultVar1 != nil {
+		span.LogFields(spanlog.Error(resultVar1))
+		ext.Error.Set(span, true)
+	}
+
+	return resultVar0, resultVar1
 }
 
 func (a *OpenTracingAppLayer) SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError) {
