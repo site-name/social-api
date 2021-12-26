@@ -350,6 +350,7 @@ type ComplianceStore interface {
 //plugin
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
+	TableName(withField string) string
 }
 
 // wishlist

@@ -201,22 +201,22 @@ func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *
 }
 
 func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
-	session, appErr := CheckUserAuthenticated("Orders", ctx)
-	if appErr != nil {
-		return nil, appErr
-	}
+	// session, appErr := CheckUserAuthenticated("Orders", ctx)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	// the requesting user must has permission to manage orders to see orders
-	orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
+	// // the requesting user must has permission to manage orders to see orders
+	// orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+	// if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
 
-		return &gqlmodel.OrderCountableConnection{}, nil
-	}
+	// 	return &gqlmodel.OrderCountableConnection{}, nil
+	// }
 	panic("not implemented")
 }
 

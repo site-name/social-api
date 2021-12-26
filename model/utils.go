@@ -281,6 +281,16 @@ func CopyStringMap(originalMap map[string]string) map[string]string {
 	return copyMap
 }
 
+// CopyStringInterface
+func CopyStringInterface(origin StringInterface) StringInterface {
+	res := StringInterface{}
+	for key, value := range origin {
+		res[key] = value
+	}
+
+	return res
+}
+
 func GetPreferredTimezone(timezone StringMap) string {
 	if timezone["useAutomaticTimezone"] == "true" {
 		return timezone["automaticTimezone"]
