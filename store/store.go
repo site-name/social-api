@@ -351,6 +351,8 @@ type ComplianceStore interface {
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
 	TableName(withField string) string
+	Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) // Upsert inserts or updates given plugin configuration and returns it
+	Get(id string) (*plugins.PluginConfiguration, error)                              // Get finds a plugin configuration with given id then returns it
 }
 
 // wishlist
