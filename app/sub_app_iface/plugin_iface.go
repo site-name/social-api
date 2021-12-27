@@ -45,6 +45,8 @@ type PluginService interface {
 	// SyncPluginsActiveState checks if Server's PluginsEnvironment property is set
 	// and plugin system are enabled in settings.
 	SyncPluginsActiveState()
+	// UpsertPluginConfiguration updates/inserts given configuration into database then returns it
+	UpsertPluginConfiguration(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, *model.AppError)
 	CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model.AppError)
 	CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model.AppError)
 	DeleteAllExpiredPluginKeys() *model.AppError
@@ -71,6 +73,4 @@ type PluginService interface {
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)
 	ShutDownPlugins()
 	VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError
-	// UpsertPluginConfiguration updates/inserts given configuration into database then returns it
-  UpsertPluginConfiguration(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, *model.AppError)
 }
