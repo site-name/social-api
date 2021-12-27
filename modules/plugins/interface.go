@@ -1,4 +1,4 @@
-package base_plugin
+package plugins
 
 import (
 	"fmt"
@@ -17,6 +17,23 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
+type ConfigurationTypeField string
+
+// PluginMethodNotImplemented is used to indicate if a method is implemented or not
+type PluginMethodNotImplemented struct{}
+
+const (
+	STRING           ConfigurationTypeField = "String"
+	MULTILINE        ConfigurationTypeField = "Multiline"
+	BOOLEAN          ConfigurationTypeField = "Boolean"
+	SECRET           ConfigurationTypeField = "Secret"
+	SECRET_MULTILINE ConfigurationTypeField = "SecretMultiline"
+	PASSWORD         ConfigurationTypeField = "Password"
+	OUTPUT           ConfigurationTypeField = "OUTPUT"
+)
+
+type PluginConfigurationType []model.StringInterface
+
 type ExternalAccessToken struct {
 	Token        *string
 	RefreshToken *string
@@ -24,12 +41,12 @@ type ExternalAccessToken struct {
 	User         *account.User
 }
 
-// PluginConfig
-type PluginConfig struct {
+// PluginManifest
+type PluginManifest struct {
 	Name                    string
 	ID                      string
 	Description             string
-	ConfigStructure         model.StringInterface
+	ConfigStructure         map[string]model.StringInterface
 	ConfigurationPerChannel bool
 	DefaultConfiguration    []model.StringInterface
 	DefaultActive           bool
@@ -225,12 +242,12 @@ type BasePluginInterface interface {
 	UpdateConfigItems(configurationToUpdate []model.StringInterface, currentConfig []model.StringInterface)
 	// Validate if provided configuration is correct.
 	// Raise django.core.exceptions.ValidationError otherwise.
-	ValidatePluginConfiguration(pluginConfiguration plugins.PluginConfiguration)
+	ValidatePluginConfiguration(pluginConfiguration plugins.PluginConfiguration) (*model.AppError, *PluginMethodNotImplemented)
 	// Trigger before plugin configuration will be saved.
 	// Overwrite this method if you need to trigger specific logic before saving a
 	// plugin configuration.
-	PresavePluginConfiguration(pluginConfiguration plugins.PluginConfiguration)
-	SavePluginConfiguration(pluginConfiguration plugins.PluginConfiguration, cleanedData model.StringInterface) plugins.PluginConfiguration
+	PreSavePluginConfiguration(pluginConfiguration plugins.PluginConfiguration) (*model.AppError, *PluginMethodNotImplemented)
+	SavePluginConfiguration(pluginConfiguration plugins.PluginConfiguration, cleanedData model.StringInterface) (*plugins.PluginConfiguration, *model.AppError, *PluginMethodNotImplemented)
 	// Append configuration structure to config from the database.
 	// Database stores "key: value" pairs, the definition of fields should be declared
 	// inside of the plugin. Based on this, the plugin will generate a structure of

@@ -420,3 +420,9 @@ const (
 	FirstName NamePart = "first"
 	LastName  NamePart = "last"
 )
+
+// TaxType is for unifying tax type object that comes from tax gateway
+type TaxType struct {
+	Code         string
+	Descriptiton string
+}

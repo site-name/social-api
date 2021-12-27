@@ -134,6 +134,7 @@ endif
 app-layers: ## Extract interface from App struct
 	$(GO) get -modfile=go.tools.mod github.com/reflog/struct2interface
 	$(GOBIN)/struct2interface -f "app" -o "app/app_iface.go" -p "app" -s "App" -i "AppIface" -t ./app/layer_generators/app_iface.go.tmpl
+	$(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
 	$(GOBIN)/struct2interface -f "app/checkout" -o "app/sub_app_iface/checkout_iface.go" -p "checkout" -s "ServiceCheckout" -i "CheckoutService" -t ./app/layer_generators/checkout_iface.go.tmpl
 	$(GOBIN)/struct2interface -f "app/account" -o "app/sub_app_iface/account_iface.go" -p "account" -s "ServiceAccount" -i "AccountService" -t ./app/layer_generators/account_iface.go.tmpl
 	$(GOBIN)/struct2interface -f "app/attribute" -o "app/sub_app_iface/attribute_iface.go" -p "attribute" -s "ServiceAttribute" -i "AttributeService" -t ./app/layer_generators/attribute_iface.go.tmpl
