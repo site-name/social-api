@@ -16,7 +16,7 @@ require (
 	github.com/dyatlov/go-opengraph v0.0.0-20210112100619-dae8665a5b09
 	github.com/francoispqt/gojay v1.2.13
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/getsentry/sentry-go v0.11.0
+	github.com/getsentry/sentry-go v0.12.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -24,7 +24,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/gosimple/slug v1.11.2
+	github.com/gosimple/slug v1.12.0
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/hashicorp/go-hclog v1.0.0
@@ -42,18 +42,18 @@ require (
 	github.com/mattermost/ldap v3.0.4+incompatible
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/minio/minio-go/v7 v7.0.17
+	github.com/minio/minio-go/v7 v7.0.19
 	github.com/nyaruka/phonenumbers v1.0.73
 	github.com/oov/psd v0.0.0-20210618170533-9fb823ddb631
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rs/cors v1.8.0
+	github.com/rs/cors v1.8.2
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/site-name/decimal v1.3.0
 	github.com/site-name/go-prices v1.3.0
 	github.com/site-name/i18naddress v0.0.0-20211024032210-494831c34028
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.3.0
 	github.com/splitio/go-client/v6 v6.1.0
 	github.com/stretchr/testify v1.7.0
 	github.com/throttled/throttled v2.2.5+incompatible
@@ -63,7 +63,7 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.8
@@ -83,7 +83,7 @@ require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1 // indirect
-	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
+	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/beevik/etree v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
@@ -100,7 +100,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/fatih/color v1.7.0 // indirect
+	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/set v0.2.1 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
@@ -115,10 +115,10 @@ require (
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
-	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
+	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-msgpack v0.5.3 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.1 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -131,16 +131,16 @@ require (
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
 	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mattermost/logr/v2 v2.0.15
-	github.com/mattn/go-colorable v0.1.6 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/miekg/dns v1.1.26 // indirect
+	github.com/miekg/dns v1.1.41 // indirect
 	github.com/minio/md5-simd v1.1.0 // indirect
 	github.com/minio/sha256-simd v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
-	github.com/mitchellh/mapstructure v1.4.1 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
@@ -151,7 +151,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/olivere/elastic v6.2.37+incompatible // indirect
 	github.com/otiai10/gosseract/v2 v2.2.4 // indirect
-	github.com/pelletier/go-toml v1.9.3 // indirect
+	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -179,14 +179,14 @@ require (
 	golang.org/x/exp v0.0.0-20200908183739-ae8ad444f925 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63
-	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
+	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20211013025323-ce878158c4d4 // indirect
-	google.golang.org/grpc v1.41.0 // indirect
+	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
+	google.golang.org/grpc v1.42.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
-	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	willnorris.com/go/gifresize v1.0.0 // indirect
 )
