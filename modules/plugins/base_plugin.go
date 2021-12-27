@@ -101,18 +101,22 @@ func (b *BasePlugin) UpdateConfigurationStructure(config PluginConfigurationType
 	return updatedConfiguration
 }
 
-func (b *BasePlugin) GetPluginConfiguration(config PluginConfigurationType) PluginConfigurationType {
+func (b *BasePlugin) GetPluginConfiguration(config PluginConfigurationType) (PluginConfigurationType, *PluginMethodNotImplemented) {
 	if config == nil {
 		config = PluginConfigurationType{}
 	}
 
 	config = b.UpdateConfigurationStructure(config)
 
+	var notImplt *PluginMethodNotImplemented
 	if len(config) > 0 {
-		config = b.AppendConfigStructure(config)
+		config, notImplt = b.AppendConfigStructure(config)
+		if notImplt != nil {
+			return nil, notImplt
+		}
 	}
 
-	return config
+	return config, nil
 }
 
 // Append configuration structure to config from the database.
@@ -120,7 +124,7 @@ func (b *BasePlugin) GetPluginConfiguration(config PluginConfigurationType) Plug
 // Database stores "key: value" pairs, the definition of fields should be declared
 // inside of the plugin. Based on this, the plugin will generate a structure of
 // configuration with current values and provide access to it via API.
-func (b *BasePlugin) AppendConfigStructure(config PluginConfigurationType) PluginConfigurationType {
+func (b *BasePlugin) AppendConfigStructure(config PluginConfigurationType) (PluginConfigurationType, *PluginMethodNotImplemented) {
 	configStructure := b.Manifest.ConfigStructure
 	if configStructure == nil {
 		configStructure = make(map[string]model.StringInterface)
@@ -149,7 +153,7 @@ func (b *BasePlugin) AppendConfigStructure(config PluginConfigurationType) Plugi
 		}
 	}
 
-	return config
+	return config, nil
 }
 
 func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInterface, currentConfig []model.StringInterface) []model.StringInterface {

@@ -252,7 +252,7 @@ type BasePluginInterface interface {
 	// Database stores "key: value" pairs, the definition of fields should be declared
 	// inside of the plugin. Based on this, the plugin will generate a structure of
 	// configuration with current values and provide access to it via API.
-	AppendConfigStructure(configuration []model.StringInterface)
+	AppendConfigStructure(configuration []model.StringInterface) (PluginConfigurationType, *PluginMethodNotImplemented)
 	UpdateConfigurationStructure(configuration []model.StringInterface) interface{}
 	GetDefaultActive() bool
 	GetPluginConfiguration(configuration []model.StringInterface) []model.StringInterface
