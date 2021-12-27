@@ -71,4 +71,6 @@ type PluginService interface {
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)
 	ShutDownPlugins()
 	VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError
+	// UpsertPluginConfiguration updates/inserts given configuration into database then returns it
+  UpsertPluginConfiguration(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, *model.AppError)
 }

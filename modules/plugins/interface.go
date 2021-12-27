@@ -55,23 +55,23 @@ type PluginManifest struct {
 type BasePluginInterface interface {
 	fmt.Stringer
 	// Check if given plugin_id matches with the PLUGIN_ID of this plugin
-	CheckPluginId(pluginID string) bool
+	CheckPluginId(pluginID string) (bool, *PluginMethodNotImplemented)
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
-	ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) model.StringInterface
+	ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) (model.StringInterface, *PluginMethodNotImplemented)
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
-	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue interface{}) ExternalAccessToken
+	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue interface{}) (ExternalAccessToken, *PluginMethodNotImplemented)
 	// Handle authentication refresh request.
 	// Overwrite this method if the plugin handles authentication flow and supports
 	// refreshing the access.
-	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue interface{}) ExternalAccessToken
+	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue interface{}) (ExternalAccessToken, *PluginMethodNotImplemented)
 	// Handle logout request.
 	// Overwrite this method if the plugin handles logout flow.
-	ExternalLogout(data model.StringInterface, request *http.Request, previousValue interface{})
+	ExternalLogout(data model.StringInterface, request *http.Request, previousValue interface{}) *PluginMethodNotImplemented
 	// Verify the provided authentication data.
 	// Overwrite this method if the plugin should validate the authentication data.
-	ExternalVerify(data model.StringInterface, request *http.Request, previousValue interface{}) (*account.User, model.StringInterface)
+	ExternalVerify(data model.StringInterface, request *http.Request, previousValue interface{}) (*account.User, model.StringInterface, *PluginMethodNotImplemented)
 	// Authenticate user which should be assigned to the request.
 	// Overwrite this method if the plugin handles authentication flow.
 	AuthenticateUser(request *http.Request, previousValue interface{}) *account.User

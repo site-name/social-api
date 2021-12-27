@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"net/http"
 	"reflect"
 	"strings"
 
@@ -17,10 +18,10 @@ type BasePlugin struct {
 	Active        bool
 	Channel       *channel.Channel // can be nil
 	Configuration PluginConfigurationType
-	App           app.AppIface
+	srv           *app.Server
 }
 
-func NewBasePlugin(active bool, chanNel *channel.Channel, configuration PluginConfigurationType, app app.AppIface) *BasePlugin {
+func NewBasePlugin(active bool, chanNel *channel.Channel, configuration PluginConfigurationType, srv *app.Server) *BasePlugin {
 	manifest := PluginManifest{
 		ConfigStructure:         make(map[string]model.StringInterface),
 		ConfigurationPerChannel: true,
@@ -32,8 +33,16 @@ func NewBasePlugin(active bool, chanNel *channel.Channel, configuration PluginCo
 		Active:        active,
 		Channel:       chanNel,
 		Configuration: configuration,
-		App:           app,
+		srv:           srv,
 	}
+}
+
+func (b *BasePlugin) String() string {
+	return b.Manifest.Name
+}
+
+func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) (model.StringInterface, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) CheckPluginId(pluginID string) bool {
@@ -254,7 +263,24 @@ func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *plugins.Plugin
 	if appErr != nil {
 		return nil, appErr, nil
 	}
-	b.PreSavePluginConfiguration(pluginConfiguration)
+	appErr, notImplt = b.PreSavePluginConfiguration(pluginConfiguration)
+	if notImplt != nil {
+		return nil, nil, notImplt
+	}
+	if appErr != nil {
+		return nil, appErr, nil
+	}
+
+	pluginConfiguration, appErr = b.srv.PluginService().UpsertPluginConfiguration(pluginConfiguration)
+	if appErr != nil {
+		return nil, appErr, nil
+	}
+
+	if len(pluginConfiguration.Configuration) > 0 {
+		pluginConfiguration.Configuration = b.AppendConfigStructure(pluginConfiguration.Configuration)
+	}
+
+	return pluginConfiguration, nil, nil
 }
 
 func (b *BasePlugin) ValidatePluginConfiguration(pluginConfiguration *plugins.PluginConfiguration) (*model.AppError, *PluginMethodNotImplemented) {
