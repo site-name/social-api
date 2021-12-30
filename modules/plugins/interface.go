@@ -50,6 +50,8 @@ type PluginManifest struct {
 	ConfigurationPerChannel bool
 	DefaultConfiguration    []model.StringInterface
 	DefaultActive           bool
+	MetaCodeKey             string
+	MetaDescriptionKey      string
 }
 
 type BasePluginInterface interface {
