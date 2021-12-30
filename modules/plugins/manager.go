@@ -8,7 +8,7 @@ import (
 
 type PluginManager struct {
 	srv        *app.Server
-	AllPlugins []BasePlugin // keys are channel id
+	AllPlugins []BasePluginInterface // keys are channel id
 }
 
 func NewPluginManager(srv *app.Server, channelID string) *PluginManager {
