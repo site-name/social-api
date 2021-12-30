@@ -26,6 +26,8 @@ type PluginService interface {
 	// activation if inactive anywhere in the cluster.
 	// Notifies cluster peers through config change.
 	EnablePlugin(id string) *model.AppError
+	// FilterPluginConfigurations returns a list of plugin configurations filtered using given options
+	FilterPluginConfigurations(options *plugins.PluginConfigurationFilterOptions) (plugins.PluginConfigurations, *model.AppError)
 	// GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
 	GetClusterPluginStatuses() (plugins.PluginStatuses, *model.AppError)
 	// GetMarketplacePlugins returns a list of plugins from the marketplace-server,

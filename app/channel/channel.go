@@ -7,6 +7,7 @@ package channel
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -44,11 +45,7 @@ func (s *ServiceChannel) ChannelByOption(option *channel.ChannelFilterOption) (*
 // GetChannelBySlug returns a channel with given slug
 func (a *ServiceChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) {
 	return a.ChannelByOption(&channel.ChannelFilterOption{
-		Slug: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: slug,
-			},
-		},
+		Slug: squirrel.Eq{a.srv.Store.Channel().TableName("Slug"): slug},
 	})
 }
 

@@ -699,11 +699,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.ChannelID,
-			},
-		},
+		Id: squirrel.Eq{s.srv.Store.Channel().TableName("Id"): orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
@@ -26,11 +27,11 @@ type Channel struct {
 
 // ChannelFilterOption is used for building sql queries
 type ChannelFilterOption struct {
-	Id       *model.StringFilter
-	Name     *model.StringFilter
+	Id       squirrel.Sqlizer
+	Name     squirrel.Sqlizer
 	IsActive *bool
-	Slug     *model.StringFilter
-	Currency *model.StringFilter
+	Slug     squirrel.Sqlizer
+	Currency squirrel.Sqlizer
 }
 
 func (c *Channel) String() string {

@@ -180,11 +180,7 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo map[string][]string) ([]strin
 	}
 
 	channels, appErr := a.srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: channelIDs,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.Channel().TableName("Id"): channelIDs},
 	})
 
 	if appErr != nil {

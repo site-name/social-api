@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -230,11 +231,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines orde
 	}
 
 	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.ChannelID,
-			},
-		},
+		Id: squirrel.Eq{s.srv.Store.Channel().TableName("Id"): orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr

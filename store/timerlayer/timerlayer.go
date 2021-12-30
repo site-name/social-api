@@ -4719,6 +4719,22 @@ func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 	return result, err
 }
 
+func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+	start := timemodule.Now()
+
+	result, err := s.PluginConfigurationStore.FilterPluginConfigurations(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PluginConfigurationStore.FilterPluginConfigurations", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration, error) {
 	start := timemodule.Now()
 

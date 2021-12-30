@@ -3,7 +3,9 @@ package plugins
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 )
 
 // max length for some fields
@@ -20,6 +22,49 @@ type PluginConfiguration struct {
 	Description   string                  `json:"description"`
 	Active        bool                    `json:"active"`
 	Configuration []model.StringInterface `json:"configuration"` // default [{}]
+
+	relatedChannel *channel.Channel `json:"-" db:"-"` // this field is populated in some sql queries
+}
+
+type PluginConfigurations []*PluginConfiguration
+
+func (p PluginConfigurations) IDs() []string {
+	var res []string
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
+func (p PluginConfigurations) ChannelIDs() []string {
+	var res []string
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.ChannelID)
+		}
+	}
+
+	return res
+}
+
+// PluginConfigurationFilterOptions is used to build sql queries
+type PluginConfigurationFilterOptions struct {
+	Id         squirrel.Sqlizer
+	Identifier squirrel.Sqlizer
+	ChannelID  squirrel.Sqlizer
+
+	PrefetchRelatedChannel bool // this tells store to prefetch related channel also
+}
+
+func (p *PluginConfiguration) SetRelatedChannel(ch *channel.Channel) {
+	p.relatedChannel = ch
+}
+
+func (p *PluginConfiguration) GetRelatedChannel() *channel.Channel {
+	return p.relatedChannel
 }
 
 func (p *PluginConfiguration) IsValid() *model.AppError {

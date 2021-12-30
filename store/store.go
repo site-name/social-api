@@ -351,8 +351,9 @@ type ComplianceStore interface {
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
 	TableName(withField string) string
-	Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) // Upsert inserts or updates given plugin configuration and returns it
-	Get(id string) (*plugins.PluginConfiguration, error)                              // Get finds a plugin configuration with given id then returns it
+	Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error)                                    // Upsert inserts or updates given plugin configuration and returns it
+	Get(id string) (*plugins.PluginConfiguration, error)                                                                 // Get finds a plugin configuration with given id then returns it
+	FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 }
 
 // wishlist
@@ -893,6 +894,7 @@ type (
 type ChannelStore interface {
 	CreateIndexesIfNotExists()
 	ModelFields() []string
+	TableName(withField string) string
 	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id

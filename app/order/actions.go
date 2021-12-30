@@ -1050,11 +1050,7 @@ func (a *ServiceOrder) CreateFulfillments(user *account.User, _ interface{}, orD
 	)
 
 	channel, appErr := a.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.ChannelID,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.Channel().TableName("Id"): orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr

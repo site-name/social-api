@@ -4,7 +4,9 @@ package plugin
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/store"
 )
@@ -76,7 +78,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration
 	}
 
 	if err != nil {
-		if p.IsUniqueConstraintError(err, []string{}) {
+		if p.IsUniqueConstraintError(err, []string{"Identifier", "ChannelID", "pluginconfigurations_identifier_channelid_key"}) {
 			return nil, store.NewErrInvalidInput(p.TableName(""), "Identifier/ChannelID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert plugin configuration with id=%s", config.Id)
@@ -100,4 +102,54 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfigurati
 	}
 
 	return &res, nil
+}
+
+// FilterPluginConfigurations finds and returns a list of configs with given options then returns them
+func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+	query := p.GetQueryBuilder().
+		Select("*").
+		From(p.TableName(""))
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.Identifier != nil {
+		query = query.Where(options.Identifier)
+	}
+	if options.ChannelID != nil {
+		query = query.Where(options.ChannelID)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterPluginConfigurations_ToSql")
+	}
+
+	var configs plugins.PluginConfigurations
+	_, err = p.GetReplica().Select(&configs, queryStr, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
+	}
+
+	// check if we need to prefetch
+	if options.PrefetchRelatedChannel && len(configs) != 0 {
+		channels, err := p.Channel().FilterByOption(&channel.ChannelFilterOption{
+			Id: squirrel.Eq{p.TableName("Id"): configs.ChannelIDs()},
+		})
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find related channels of plugin configs")
+		}
+
+		for _, channel := range channels {
+			for _, config := range configs {
+				if channel.Id == config.ChannelID {
+					config.SetRelatedChannel(channel)
+				}
+			}
+		}
+	}
+
+	return configs, nil
 }
