@@ -141,18 +141,14 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	var shippingMethodChannelListingsFilterOption = new(shipping.ShippingMethodChannelListingFilterOption)
 
 	if shippingMethod != nil {
-		shippingMethodChannelListingsFilterOption.ShippingMethodID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: shippingMethod.Id,
-			},
+		shippingMethodChannelListingsFilterOption.ShippingMethodID = squirrel.Eq{
+			a.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): shippingMethod.Id,
 		}
 	}
 
 	if chanNel != nil {
-		shippingMethodChannelListingsFilterOption.ChannelID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: chanNel.Id,
-			},
+		shippingMethodChannelListingsFilterOption.ChannelID = squirrel.Eq{
+			a.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): chanNel.Id,
 		}
 	}
 
@@ -291,16 +287,8 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkou
 
 func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo *checkout.CheckoutInfo) *model.AppError {
 	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id,
-			},
-		},
-		ChannelID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.Channel.Id,
-			},
-		},
+		ShippingMethodID: squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id},
+		ChannelID:        squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): checkoutInfo.Channel.Id},
 	})
 	if appErr != nil {
 		return appErr

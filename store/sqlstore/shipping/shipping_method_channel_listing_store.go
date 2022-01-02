@@ -15,8 +15,9 @@ type SqlShippingMethodChannelListingStore struct {
 
 func NewSqlShippingMethodChannelListingStore(s store.Store) store.ShippingMethodChannelListingStore {
 	smls := &SqlShippingMethodChannelListingStore{s}
+
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingMethodChannelListing{}, store.ShippingMethodChannelListingTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(shipping.ShippingMethodChannelListing{}, smls.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -27,9 +28,22 @@ func NewSqlShippingMethodChannelListingStore(s store.Store) store.ShippingMethod
 	return smls
 }
 
+func (s *SqlShippingMethodChannelListingStore) TableName(withField string) string {
+	name := "ShippingMethodChannelListings"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (s *SqlShippingMethodChannelListingStore) OrderBy() string {
+	return "CreateAt ASC"
+}
+
 func (s *SqlShippingMethodChannelListingStore) CreateIndexesIfNotExists() {
-	s.CreateForeignKeyIfNotExists(store.ShippingMethodChannelListingTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", true)
-	s.CreateForeignKeyIfNotExists(store.ShippingMethodChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+	s.CreateForeignKeyIfNotExists(s.TableName(""), "ShippingMethodID", store.ShippingMethodTableName, "Id", true)
+	s.CreateForeignKeyIfNotExists(s.TableName(""), "ChannelID", store.ChannelTableName, "Id", true)
 }
 
 // Upsert depends on given listing's Id to decide whether to save or update the listing
@@ -63,7 +77,7 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(listing *shipping.Shipping
 
 	if err != nil {
 		if s.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ChannelID", "shippingmethodchannellistings_shippingmethodid_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ShippingMethodChannelListingTableName, "ShippingMethodID/ChannelID", listing.ShippingMethodID+"/"+listing.ChannelID)
+			return nil, store.NewErrInvalidInput(s.TableName(""), "ShippingMethodID/ChannelID", listing.ShippingMethodID+"/"+listing.ChannelID)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert shipping method channel listing with id=%s", listing.Id)
 	}
@@ -79,10 +93,10 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(listing *shipping.Shipping
 // Get finds a shipping method channel listing with given listingID
 func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
 	var res shipping.ShippingMethodChannelListing
-	err := s.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShippingMethodChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listingID})
+	err := s.GetReplica().SelectOne(&res, "SELECT * FROM "+s.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": listingID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShippingMethodChannelListingTableName, listingID)
+			return nil, store.NewErrNotFound(s.TableName(""), listingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shipping method channel listing with id=%s", listingID)
 	}
@@ -95,15 +109,15 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*shipping.
 func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
-		From(store.ShippingMethodChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ShippingMethodChannelListingTableName])
+		From(s.TableName("")).
+		OrderBy(s.OrderBy())
 
 	// parse filter option
 	if option.ShippingMethodID != nil {
-		query = query.Where(option.ShippingMethodID.ToSquirrel("ShippingMethodID"))
+		query = query.Where(option.ShippingMethodID)
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
+		query = query.Where(option.ChannelID)
 	}
 
 	queryString, args, err := query.ToSql()

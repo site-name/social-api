@@ -97,6 +97,20 @@ func (_m *ShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []in
 	return r0
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *ShippingZoneStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: shippingZone
 func (_m *ShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
 	ret := _m.Called(shippingZone)

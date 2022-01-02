@@ -88,39 +88,39 @@ type BasePluginInterface interface {
 	// Calculate the total for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout total. Return TaxedMoney.
-	CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate the shipping costs for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of shipping costs. Return TaxedMoney.
-	CalculateCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate the shipping costs for the order.
 	// Update shipping costs in the order in case of changes in shipping address or
 	// changes in draft order. Return TaxedMoney.
-	CalculateOrderShipping(orDer *order.Order, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateOrderShipping(orDer *order.Order, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate checkout line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout line total. Return TaxedMoney.
-	CalculateCheckoutLineTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateCheckoutLineTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate order line total.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a order line total. Return TaxedMoney.
-	CalculateOrderLineTotal(orDer *order.Order, orderLine *order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateOrderLineTotal(orDer *order.Order, orderLine *order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate checkout line unit price
-	CalculateCheckoutLineUnitPrice(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateCheckoutLineUnitPrice(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Calculate order line unit price.
 	// Update order line unit price in the order in case of changes in draft order.
 	// Return TaxedMoney.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of an order line unit price.
-	CalculateOrderLineUnit(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	CalculateOrderLineUnit(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	//
-	GetCheckoutLineTaxRate(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented)
+	GetCheckoutLineTaxRate(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented)
 	//
-	GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented)
+	GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented)
 	//
-	GetCheckoutShippingTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented)
+	GetCheckoutShippingTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented)
 	//
-	GetOrderShippingTaxRate(orDer order.Order, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented)
+	GetOrderShippingTaxRate(orDer order.Order, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented)
 	// Return list of all tax categories.
 	// The returned list will be used to provide staff users with the possibility to
 	// assign tax categories to a product. It can be used by tax plugins to properly
@@ -133,10 +133,10 @@ type BasePluginInterface interface {
 	ShowTaxesOnStorefront(previousValue bool) (bool, *PluginMethodNotImplemented)
 	// Apply taxes to the shipping costs based on the shipping address.
 	// Overwrite this method if you want to show available shipping methods with taxes.
-	ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Apply taxes to the product price based on the customer country.
 	// Overwrite this method if you want to show products with taxes.
-	ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented)
+	ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Trigger directly before order creation.
 	// Overwrite this method if you need to trigger specific logic before an order is created.
 	PreprocessOrderCreation(checkoutInfo checkout.CheckoutInfo, discounts []*product_and_discount.DiscountInfo, lines checkout.CheckoutLineInfos, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
@@ -168,7 +168,7 @@ type BasePluginInterface interface {
 	// Return tax code from object meta.
 	//
 	// NOTE: obj can be 'Product' or 'ProductType'
-	AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (model.TaxType, *PluginMethodNotImplemented)
+	AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented)
 	// Return tax rate percentage value for a given tax rate type in a country.
 	// It is used only by the old storefront.
 	GetTaxRatePercentageValue(obj interface{}, country interface{}, previousValue interface{}) *PluginMethodNotImplemented
@@ -234,19 +234,19 @@ type BasePluginInterface interface {
 	// Triggered when ShopFetchTaxRates mutation is called.
 	FetchTaxesData(previousValue interface{}) (bool, *PluginMethodNotImplemented)
 	//
-	InitializePayment(paymentData model.StringInterface, previousValue interface{}) (payment.InitializedPaymentResponse, *PluginMethodNotImplemented)
+	InitializePayment(paymentData model.StringInterface, previousValue interface{}) (*payment.InitializedPaymentResponse, *PluginMethodNotImplemented)
 	//
-	AuthorizePayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	AuthorizePayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
-	CapturePayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	CapturePayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
-	VoidPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	VoidPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
-	RefundPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	RefundPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
-	ConfirmPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	ConfirmPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
-	ProcessPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented)
+	ProcessPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented)
 	//
 	ListPaymentSources(customerID string, previousValue interface{}) ([]*payment.CustomerSource, *PluginMethodNotImplemented)
 	//
@@ -281,4 +281,6 @@ type BasePluginInterface interface {
 	GetDefaultActive() (bool, *PluginMethodNotImplemented)
 	//
 	GetPluginConfiguration(configuration PluginConfigurationType) (PluginConfigurationType, *PluginMethodNotImplemented)
+	//
+	IsActive() bool
 }

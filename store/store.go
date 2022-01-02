@@ -458,6 +458,7 @@ type (
 	}
 	ShippingMethodChannelListingStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing
 		Get(listingID string) (*shipping.ShippingMethodChannelListing, error)                                                       // Get finds a shipping method channel listing with given listingID
 		FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) // FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC

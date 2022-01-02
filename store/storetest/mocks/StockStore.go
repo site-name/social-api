@@ -227,3 +227,17 @@ func (_m *StockStore) ScanFields(stock warehouse.Stock) []interface{} {
 
 	return r0
 }
+
+// TableName provides a mock function with given fields: withField
+func (_m *StockStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}

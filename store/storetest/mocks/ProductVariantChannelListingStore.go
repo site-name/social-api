@@ -16,6 +16,29 @@ type ProductVariantChannelListingStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: transaction, variantChannelListings
+func (_m *ProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+	ret := _m.Called(transaction, variantChannelListings)
+
+	var r0 []*product_and_discount.ProductVariantChannelListing
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*product_and_discount.ProductVariantChannelListing) []*product_and_discount.ProductVariantChannelListing); ok {
+		r0 = rf(transaction, variantChannelListings)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.ProductVariantChannelListing)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*product_and_discount.ProductVariantChannelListing) error); ok {
+		r1 = rf(transaction, variantChannelListings)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *ProductVariantChannelListingStore) CreateIndexesIfNotExists() {
 	_m.Called()
@@ -117,6 +140,20 @@ func (_m *ProductVariantChannelListingStore) ScanFields(listing product_and_disc
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *ProductVariantChannelListingStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

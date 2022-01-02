@@ -42,6 +42,22 @@ func (_m *AssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID str
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *AssignedVariantAttributeValueStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: assignedVariantAttrValue
 func (_m *AssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
 	ret := _m.Called(assignedVariantAttrValue)
@@ -86,6 +102,22 @@ func (_m *AssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, at
 	}
 
 	return r0, r1
+}
+
+// ScanFields provides a mock function with given fields: assignedVariantAttributeValue
+func (_m *AssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{} {
+	ret := _m.Called(assignedVariantAttributeValue)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(attribute.AssignedVariantAttributeValue) []interface{}); ok {
+		r0 = rf(assignedVariantAttributeValue)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
 }
 
 // SelectForSort provides a mock function with given fields: assignmentID

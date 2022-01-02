@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/modules/plugins"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -22,7 +23,7 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interface{}, checkoutInf
 // CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutSubTotal(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutSubTotal(manager *plugins.PluginManager, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	panic("not implemented")
 }
 

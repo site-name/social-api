@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	mock "github.com/stretchr/testify/mock"
 
 	warehouse "github.com/sitename/sitename/model/warehouse"
@@ -15,9 +16,76 @@ type PreorderAllocationStore struct {
 	mock.Mock
 }
 
+// BulkCreate provides a mock function with given fields: transaction, preorderAllocations
+func (_m *PreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+	ret := _m.Called(transaction, preorderAllocations)
+
+	var r0 []*warehouse.PreorderAllocation
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.PreorderAllocation) []*warehouse.PreorderAllocation); ok {
+		r0 = rf(transaction, preorderAllocations)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.PreorderAllocation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.PreorderAllocation) error); ok {
+		r1 = rf(transaction, preorderAllocations)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *PreorderAllocationStore) CreateIndexesIfNotExists() {
 	_m.Called()
+}
+
+// Delete provides a mock function with given fields: transaction, preorderAllocationIDs
+func (_m *PreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+	_va := make([]interface{}, len(preorderAllocationIDs))
+	for _i := range preorderAllocationIDs {
+		_va[_i] = preorderAllocationIDs[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, transaction)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, ...string) error); ok {
+		r0 = rf(transaction, preorderAllocationIDs...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// FilterByOption provides a mock function with given fields: options
+func (_m *PreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+	ret := _m.Called(options)
+
+	var r0 []*warehouse.PreorderAllocation
+	if rf, ok := ret.Get(0).(func(*warehouse.PreorderAllocationFilterOption) []*warehouse.PreorderAllocation); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*warehouse.PreorderAllocation)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*warehouse.PreorderAllocationFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // ModelFields provides a mock function with given fields:
@@ -47,6 +115,20 @@ func (_m *PreorderAllocationStore) ScanFields(preorderAllocation warehouse.Preor
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *PreorderAllocationStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

@@ -103,3 +103,19 @@ func (_m *AttributeValueStore) Save(_a0 *attribute.AttributeValue) (*attribute.A
 
 	return r0, r1
 }
+
+// ScanFields provides a mock function with given fields: attributeValue
+func (_m *AttributeValueStore) ScanFields(attributeValue attribute.AttributeValue) []interface{} {
+	ret := _m.Called(attributeValue)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(attribute.AttributeValue) []interface{}); ok {
+		r0 = rf(attributeValue)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}

@@ -1346,8 +1346,8 @@ github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/site-name/decimal v1.3.0 h1:z0WbTuLm2rN5ewOnKZ+2Q8lSpCajWewCwATEOyXrb+0=
 github.com/site-name/decimal v1.3.0/go.mod h1:J/MYbjBTLhIKZVfU3p3zyGdAdrOt3aVgkRSD1hCmitU=
-github.com/site-name/go-prices v1.3.0 h1:F6xW8nDWyNU+WByhbAM63sU+IsF9R66STyyZKIPcdPc=
-github.com/site-name/go-prices v1.3.0/go.mod h1:7MC1Fdxv+s7G2bmByWE52wHsCikrCZddJO/l5g+R2ZA=
+github.com/site-name/go-prices v1.3.2 h1:BNTVAeShVcNofeUkmTEY/a4Gh1JlC2GGfi6386Hmwmc=
+github.com/site-name/go-prices v1.3.2/go.mod h1:7MC1Fdxv+s7G2bmByWE52wHsCikrCZddJO/l5g+R2ZA=
 github.com/site-name/i18naddress v0.0.0-20211024032210-494831c34028 h1:0BmOCdGmVdROahlYaxO3g90FJMtPNQ5b+KVNv2jQiNE=
 github.com/site-name/i18naddress v0.0.0-20211024032210-494831c34028/go.mod h1:XBlFfP0YZfYFCNbBydzMLC18KGZCKheIJfFMCNYbp1c=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=

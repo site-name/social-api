@@ -144,6 +144,20 @@ func (_m *WarehouseStore) ScanFields(wh warehouse.WareHouse) []interface{} {
 	return r0
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *WarehouseStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // WarehouseByStockID provides a mock function with given fields: stockID
 func (_m *WarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
 	ret := _m.Called(stockID)

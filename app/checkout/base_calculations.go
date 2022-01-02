@@ -17,7 +17,7 @@ import (
 )
 
 // BaseCheckoutShippingPrice
-func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError) {
 	deliveryMethodInfo := checkoutInfo.DeliveryMethodInfo.Self()
 	if shippingMethodInfo, ok := deliveryMethodInfo.(*checkout.ShippingMethodInfo); ok {
 		return s.CalculatePriceForShippingMethod(checkoutInfo, shippingMethodInfo, lines)
@@ -28,38 +28,20 @@ func (s *ServiceCheckout) BaseCheckoutShippingPrice(checkoutInfo *checkout.Check
 }
 
 // CalculatePriceForShippingMethod Return checkout shipping price
-func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError) {
 	// validate input arguments
 	if checkoutInfo == nil {
 		return nil, model.NewAppError("CalculatePriceForShippingMethod", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutInfo"}, "", http.StatusBadRequest)
 	}
 
 	var (
-		shippingMethod                     = shippingMethodInfo.DeliveryMethod
-		linesIsNotNone                     = lines != nil
-		linesContainsCheckoutLineInfosOnly = true
-		shippingRequired                   bool
-		appErr                             *model.AppError
-		checkoutLineInfos                  checkout.CheckoutLineInfos
+		shippingMethod   = shippingMethodInfo.DeliveryMethod
+		shippingRequired bool
+		appErr           *model.AppError
 	)
 
-	// loop through to check if lines contains only CheckoutLineInfo(s)
-	for _, item := range lines {
-		switch t := item.(type) {
-		case *checkout.CheckoutLineInfo:
-			checkoutLineInfos = append(checkoutLineInfos, t)
-
-		case checkout.CheckoutLineInfo:
-			checkoutLineInfos = append(checkoutLineInfos, &t)
-
-		default:
-			linesContainsCheckoutLineInfosOnly = false
-			break
-		}
-	}
-
-	if linesIsNotNone && linesContainsCheckoutLineInfosOnly {
-		shippingRequired, appErr = s.srv.ProductService().ProductsRequireShipping(checkoutLineInfos.Products().IDs())
+	if lines != nil {
+		shippingRequired, appErr = s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	} else {
 		shippingRequired, appErr = s.srv.CheckoutService().CheckoutShippingRequired(checkoutInfo.Checkout.Token)
 	}
@@ -92,18 +74,27 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 	shippingPrice := shippingMethodChannelListingsOfShippingMethod[0].GetTotal()
 	taxedMoney, _ := goprices.NewTaxedMoney(shippingPrice, shippingPrice)
 
-	quantizedPrice, _ := taxedMoney.Quantize(goprices.Up)
+	quantizedPrice, _ := taxedMoney.Quantize(nil, goprices.Up)
 	return quantizedPrice, nil
 }
 
 // BaseCheckoutTotal returns the total cost of the checkout
-func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError) {
+//
+// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
+func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model.AppError) {
+	// valudate input
+	switch discount.(type) {
+	case *goprices.Money, *goprices.TaxedMoney, goprices.Money, goprices.TaxedMoney:
+	default:
+		return nil, model.NewAppError("BaseCheckoutTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "discount must be either Money or TaxedMoney", http.StatusBadRequest)
+	}
+
 	// this method reqires all values's currencies are uppoer-cased and supported by system
 	currency = strings.ToUpper(currency)
 	currencyMap := map[string]bool{}
 	currencyMap[subTotal.Currency] = true
 	currencyMap[shippingPrice.Currency] = true
-	currencyMap[discount.Currency] = true
+	currencyMap[discount.(goprices.Currencyable).MyCurrency()] = true // validated in the beginning
 	currencyMap[currency] = true
 
 	if _, err := goprices.GetCurrencyPrecision(currency); err != nil || len(currencyMap) > 1 {
@@ -142,7 +133,7 @@ func (a *ServiceCheckout) BaseCheckoutLineTotal(checkoutLineInfo *checkout.Check
 	}
 
 	amount, _ := variantPrice.Mul(int(checkoutLineInfo.Line.Quantity))
-	amount, _ = amount.Quantize(goprices.Up)
+	amount, _ = amount.Quantize(nil, goprices.Up)
 
 	return &goprices.TaxedMoney{
 		Net:      amount,
@@ -155,7 +146,7 @@ func (a *ServiceCheckout) BaseOrderLineTotal(orderLine *order.OrderLine) (*gopri
 	orderLine.PopulateNonDbFields()
 	if orderLine.UnitPrice != nil {
 		unitPrice, _ := orderLine.UnitPrice.Mul(int(orderLine.Quantity))
-		unitPrice, _ = unitPrice.Quantize(goprices.Up)
+		unitPrice, _ = unitPrice.Quantize(nil, goprices.Up)
 
 		return unitPrice, nil
 	}

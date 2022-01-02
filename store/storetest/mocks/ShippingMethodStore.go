@@ -107,6 +107,20 @@ func (_m *ShippingMethodStore) ModelFields() []string {
 	return r0
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *ShippingMethodStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: method
 func (_m *ShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
 	ret := _m.Called(method)

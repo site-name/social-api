@@ -3,6 +3,7 @@ package shipping
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -25,8 +26,8 @@ type ShippingMethodChannelListing struct {
 
 // ShippingMethodChannelListingFilterOption is used to build sql queries
 type ShippingMethodChannelListingFilterOption struct {
-	ShippingMethodID *model.StringFilter
-	ChannelID        *model.StringFilter
+	ShippingMethodID squirrel.Sqlizer
+	ChannelID        squirrel.Sqlizer
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *model.AppError {

@@ -51,6 +51,29 @@ func (_m *GiftcardEventStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOptions provides a mock function with given fields: options
+func (_m *GiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+	ret := _m.Called(options)
+
+	var r0 []*giftcard.GiftCardEvent
+	if rf, ok := ret.Get(0).(func(*giftcard.GiftCardEventFilterOption) []*giftcard.GiftCardEvent); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*giftcard.GiftCardEvent)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*giftcard.GiftCardEventFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *GiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
 	ret := _m.Called(id)
@@ -74,6 +97,20 @@ func (_m *GiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
 	return r0, r1
 }
 
+// Ordering provides a mock function with given fields:
+func (_m *GiftcardEventStore) Ordering() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: event
 func (_m *GiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
 	ret := _m.Called(event)
@@ -95,4 +132,18 @@ func (_m *GiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.Gif
 	}
 
 	return r0, r1
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *GiftcardEventStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
 }

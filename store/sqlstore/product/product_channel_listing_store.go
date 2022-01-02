@@ -2,7 +2,6 @@ package product
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -16,16 +15,11 @@ type SqlProductChannelListingStore struct {
 	store.Store
 }
 
-var (
-	// ProductChannelListingDuplicateKeys is used to catch crud duplicate errors
-	ProductChannelListingDuplicateKeys = []string{"ProductID", "ChannelID", strings.ToLower(store.ProductChannelListingTableName) + "_productid_channelid_key"}
-)
-
 func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListingStore {
 	pcls := &SqlProductChannelListingStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductChannelListing{}, store.ProductChannelListingTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.ProductChannelListing{}, pcls.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -34,6 +28,19 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 		table.SetUniqueTogether("ProductID", "ChannelID")
 	}
 	return pcls
+}
+
+func (ps *SqlProductChannelListingStore) TableName(withField string) string {
+	name := "ProductChannelListings"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (ps *SqlProductChannelListingStore) OrderBy() string {
+	return "CreateAt ASC"
 }
 
 func (ps *SqlProductChannelListingStore) ModelFields() []string {
@@ -51,10 +58,25 @@ func (ps *SqlProductChannelListingStore) ModelFields() []string {
 	}
 }
 
+func (ps *SqlProductChannelListingStore) ScanFields(prd product_and_discount.ProductChannelListing) []interface{} {
+	return []interface{}{
+		&prd.Id,
+		&prd.ProductID,
+		&prd.ChannelID,
+		&prd.VisibleInListings,
+		&prd.AvailableForPurchase,
+		&prd.Currency,
+		&prd.DiscountedPriceAmount,
+		&prd.CreateAt,
+		&prd.PublicationDate,
+		&prd.IsPublished,
+	}
+}
+
 func (ps *SqlProductChannelListingStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_productchannellistings_puplication_date", store.ProductChannelListingTableName, "PublicationDate")
-	ps.CreateForeignKeyIfNotExists(store.ProductChannelListingTableName, "ProductID", store.ProductTableName, "Id", true)
-	ps.CreateForeignKeyIfNotExists(store.ProductChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+	ps.CreateIndexIfNotExists("idx_productchannellistings_puplication_date", ps.TableName(""), "PublicationDate")
+	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "ProductID", store.ProductTableName, "Id", true)
+	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "ChannelID", store.ChannelTableName, "Id", true)
 }
 
 // BulkUpsert performs bulk upsert on given product channel listings
@@ -86,10 +108,10 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_disc
 		if isSaving {
 			err = transaction.Insert(listing)
 		} else {
-			err = transaction.SelectOne(&oldListing, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listing.Id})
+			err = transaction.SelectOne(&oldListing, "SELECT * FROM "+ps.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": listing.Id})
 			if err != nil {
 				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(store.ProductChannelListingTableName, listing.Id)
+					return nil, store.NewErrNotFound(ps.TableName(""), listing.Id)
 				}
 				return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listing.Id)
 			}
@@ -100,7 +122,7 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_disc
 
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"ProductID", "ChannelID", "productchannellistings_productid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ProductChannelListingTableName, "ProductID/ChannelID", "duplicate")
+				return nil, store.NewErrInvalidInput(ps.TableName(""), "ProductID/ChannelID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert product channel listing with id=%s", listing.Id)
 		}
@@ -118,10 +140,10 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_disc
 
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_discount.ProductChannelListing, error) {
 	var res product_and_discount.ProductChannelListing
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": listingID})
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+ps.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": listingID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductChannelListingTableName, listingID)
+			return nil, store.NewErrNotFound(ps.TableName(""), listingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listingID)
 	}
@@ -134,8 +156,8 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 	query := ps.
 		GetQueryBuilder().
 		Select(ps.ModelFields()...).
-		From(store.ProductChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName])
+		From(ps.TableName("")).
+		OrderBy(ps.OrderBy())
 
 	// parse option
 	if option.ProductID != nil {
@@ -188,11 +210,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 		channelIDs := product_and_discount.ProductChannelListings(listings).GetIDs(product_and_discount.ChannelIDs)
 		if len(channelIDs) > 0 {
 			channels, err := ps.Channel().FilterByOption(&channel.ChannelFilterOption{
-				Id: &model.StringFilter{
-					StringOption: &model.StringOption{
-						In: channelIDs,
-					},
-				},
+				Id: squirrel.Eq{ps.Channel().TableName("Id"): channelIDs},
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to find channels by IDs")

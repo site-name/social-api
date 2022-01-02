@@ -1490,6 +1490,22 @@ func (_m *Store) SaleProductRelation() store.SaleProductRelationStore {
 	return r0
 }
 
+// SaleProductVariant provides a mock function with given fields:
+func (_m *Store) SaleProductVariant() store.SaleProductVariantStore {
+	ret := _m.Called()
+
+	var r0 store.SaleProductVariantStore
+	if rf, ok := ret.Get(0).(func() store.SaleProductVariantStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.SaleProductVariantStore)
+		}
+	}
+
+	return r0
+}
+
 // Session provides a mock function with given fields:
 func (_m *Store) Session() store.SessionStore {
 	ret := _m.Called()
@@ -1942,6 +1958,22 @@ func (_m *Store) VoucherProduct() store.VoucherProductStore {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(store.VoucherProductStore)
+		}
+	}
+
+	return r0
+}
+
+// VoucherProductVariant provides a mock function with given fields:
+func (_m *Store) VoucherProductVariant() store.VoucherProductVariantStore {
+	ret := _m.Called()
+
+	var r0 store.VoucherProductVariantStore
+	if rf, ok := ret.Get(0).(func() store.VoucherProductVariantStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.VoucherProductVariantStore)
 		}
 	}
 

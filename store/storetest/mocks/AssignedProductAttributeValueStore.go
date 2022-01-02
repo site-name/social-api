@@ -104,6 +104,22 @@ func (_m *AssignedProductAttributeValueStore) SaveInBulk(assignmentID string, at
 	return r0, r1
 }
 
+// ScanFields provides a mock function with given fields: assignedProductAttributeValue
+func (_m *AssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{} {
+	ret := _m.Called(assignedProductAttributeValue)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(attribute.AssignedProductAttributeValue) []interface{}); ok {
+		r0 = rf(assignedProductAttributeValue)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // SelectForSort provides a mock function with given fields: assignmentID
 func (_m *AssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
 	ret := _m.Called(assignmentID)

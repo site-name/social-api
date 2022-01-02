@@ -49,9 +49,11 @@ type CheckoutService interface {
 	// `discounts` can be nil
 	BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutShippingPrice
-	BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError)
+	BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutTotal returns the total cost of the checkout
-	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount *goprices.TaxedMoney, currency string) (*goprices.TaxedMoney, *model.AppError)
+	//
+	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
+	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model.AppError)
 	// CalculateCheckoutTotalWithGiftcards
 	CalculateCheckoutTotalWithGiftcards(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price

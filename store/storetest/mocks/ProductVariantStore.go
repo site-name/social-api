@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	measurement "github.com/sitename/sitename/modules/measurement"
 	mock "github.com/stretchr/testify/mock"
 
@@ -129,13 +130,13 @@ func (_m *ProductVariantStore) ModelFields() []string {
 	return r0
 }
 
-// Save provides a mock function with given fields: variant
-func (_m *ProductVariantStore) Save(variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
-	ret := _m.Called(variant)
+// Save provides a mock function with given fields: transaction, variant
+func (_m *ProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	ret := _m.Called(transaction, variant)
 
 	var r0 *product_and_discount.ProductVariant
-	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
-		r0 = rf(variant)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
+		r0 = rf(transaction, variant)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*product_and_discount.ProductVariant)
@@ -143,8 +144,8 @@ func (_m *ProductVariantStore) Save(variant *product_and_discount.ProductVariant
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductVariant) error); ok {
-		r1 = rf(variant)
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.ProductVariant) error); ok {
+		r1 = rf(transaction, variant)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -166,4 +167,41 @@ func (_m *ProductVariantStore) ScanFields(variant product_and_discount.ProductVa
 	}
 
 	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *ProductVariantStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// Update provides a mock function with given fields: transaction, variant
+func (_m *ProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	ret := _m.Called(transaction, variant)
+
+	var r0 *product_and_discount.ProductVariant
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
+		r0 = rf(transaction, variant)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*product_and_discount.ProductVariant)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.ProductVariant) error); ok {
+		r1 = rf(transaction, variant)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

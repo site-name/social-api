@@ -25,16 +25,25 @@ var (
 	_ BasePluginInterface = (*BasePlugin)(nil)
 )
 
+type NewPluginConfig struct {
+	Srv           *app.Server
+	Channel       *channel.Channel
+	Active        bool
+	Configuration PluginConfigurationType
+	Manager       *PluginManager
+}
+
 type BasePlugin struct {
 	Manifest PluginManifest
 
 	Active        bool
 	Channel       *channel.Channel // can be nil
 	Configuration PluginConfigurationType
-	srv           *app.Server
+	Srv           *app.Server
+	Manager       *PluginManager
 }
 
-func NewBasePlugin(active bool, chanNel *channel.Channel, configuration PluginConfigurationType, srv *app.Server) *BasePlugin {
+func NewBasePlugin(cfg NewPluginConfig) *BasePlugin {
 	manifest := PluginManifest{
 		ConfigStructure:         make(map[string]model.StringInterface),
 		ConfigurationPerChannel: true,
@@ -43,11 +52,16 @@ func NewBasePlugin(active bool, chanNel *channel.Channel, configuration PluginCo
 
 	return &BasePlugin{
 		Manifest:      manifest,
-		Active:        active,
-		Channel:       chanNel,
-		Configuration: configuration,
-		srv:           srv,
+		Active:        cfg.Active,
+		Channel:       cfg.Channel,
+		Configuration: cfg.Configuration,
+		Srv:           cfg.Srv,
+		Manager:       cfg.Manager,
 	}
+}
+
+func (b *BasePlugin) IsActive() bool {
+	return b.Active
 }
 
 func (b *BasePlugin) String() string {
@@ -86,48 +100,48 @@ func (b *BasePlugin) ChangeUserAddress(address *account.Address, addressType str
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateOrderShipping(orDer *order.Order, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateOrderShipping(orDer *order.Order, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutLineTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateCheckoutLineTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateOrderLineTotal(orDer *order.Order, orderLine *order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateOrderLineTotal(orDer *order.Order, orderLine *order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateCheckoutLineUnitPrice(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateCheckoutLineUnitPrice(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CalculateOrderLineUnit(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CalculateOrderLineUnit(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) GetCheckoutLineTaxRate(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented) {
-	return decimal.Decimal{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) GetCheckoutLineTaxRate(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented) {
-	return decimal.Decimal{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) GetCheckoutShippingTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented) {
-	return decimal.Decimal{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) GetCheckoutShippingTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) GetOrderShippingTaxRate(orDer order.Order, previousValue decimal.Decimal) (decimal.Decimal, *PluginMethodNotImplemented) {
-	return decimal.Decimal{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) GetOrderShippingTaxRate(orDer order.Order, previousValue decimal.Decimal) (*decimal.Decimal, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) GetTaxRateTypeChoices(previousValue []*model.TaxType) ([]*model.TaxType, *PluginMethodNotImplemented) {
@@ -138,12 +152,12 @@ func (b *BasePlugin) ShowTaxesOnStorefront(previousValue bool) (bool, *PluginMet
 	return false, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (goprices.TaxedMoney, *PluginMethodNotImplemented) {
-	return goprices.TaxedMoney{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) PreprocessOrderCreation(checkoutInfo checkout.CheckoutInfo, discounts []*product_and_discount.DiscountInfo, lines checkout.CheckoutLineInfos, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
@@ -182,8 +196,8 @@ func (b *BasePlugin) InvoiceSent(inVoice invoice.Invoice, email string, previous
 	return new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (model.TaxType, *PluginMethodNotImplemented) {
-	return model.TaxType{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) GetTaxRatePercentageValue(obj interface{}, country interface{}, previousValue interface{}) *PluginMethodNotImplemented {
@@ -266,32 +280,32 @@ func (b *BasePlugin) FetchTaxesData(previousValue interface{}) (bool, *PluginMet
 	return false, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) InitializePayment(paymentData model.StringInterface, previousValue interface{}) (payment.InitializedPaymentResponse, *PluginMethodNotImplemented) {
-	return payment.InitializedPaymentResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) InitializePayment(paymentData model.StringInterface, previousValue interface{}) (*payment.InitializedPaymentResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) AuthorizePayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) AuthorizePayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CapturePayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) CapturePayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) VoidPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) VoidPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) RefundPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) RefundPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ConfirmPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) ConfirmPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ProcessPayment(paymentInformation payment.PaymentData, previousValue interface{}) (payment.GatewayResponse, *PluginMethodNotImplemented) {
-	return payment.GatewayResponse{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) ProcessPayment(paymentInformation payment.PaymentData, previousValue interface{}) (*payment.GatewayResponse, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) ListPaymentSources(customerID string, previousValue interface{}) ([]*payment.CustomerSource, *PluginMethodNotImplemented) {
@@ -564,7 +578,7 @@ func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *plugins.Plugin
 		return nil, appErr, nil
 	}
 
-	pluginConfiguration, appErr = b.srv.PluginService().UpsertPluginConfiguration(pluginConfiguration)
+	pluginConfiguration, appErr = b.Srv.PluginService().UpsertPluginConfiguration(pluginConfiguration)
 	if appErr != nil {
 		return nil, appErr, nil
 	}

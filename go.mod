@@ -51,7 +51,6 @@ require (
 	github.com/rs/cors v1.8.2
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/site-name/decimal v1.3.0
-	github.com/site-name/go-prices v1.3.0
 	github.com/site-name/i18naddress v0.0.0-20211024032210-494831c34028
 	github.com/spf13/cobra v1.3.0
 	github.com/splitio/go-client/v6 v6.1.0
@@ -163,6 +162,7 @@ require (
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/russellhaering/goxmldsig v1.1.1 // indirect
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
+	github.com/site-name/go-prices v1.3.2
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/splitio/go-split-commons/v3 v3.1.0 // indirect
 	github.com/splitio/go-toolkit/v4 v4.2.0 // indirect
