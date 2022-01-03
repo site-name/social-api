@@ -156,22 +156,22 @@ type BasePluginInterface interface {
 	OrderConfirmed(orDer order.Order, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when sale is created.
 	// Overwrite this method if you need to trigger specific logic after sale is created.
-	SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
+	SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when sale is deleted.
 	// Overwrite this method if you need to trigger specific logic after sale is deleted.
-	SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
+	SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when sale is updated.
 	// Overwrite this method if you need to trigger specific logic after sale is updated.
-	SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
+	SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when invoice creation starts.
 	// Overwrite to create invoice with proper data, call invoice.update_invoice.
-	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string, previousValue interface{}) *PluginMethodNotImplemented
+	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger before invoice is deleted.
 	// Perform any extra logic before the invoice gets deleted.
 	// Note there is no need to run invoice.delete() as it will happen in mutation.
-	InvoiceDelete(inVoice invoice.Invoice, previousValue interface{}) *PluginMethodNotImplemented
+	InvoiceDelete(inVoice invoice.Invoice, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger after invoice is sent.
-	InvoiceSent(inVoice invoice.Invoice, email string, previousValue interface{}) *PluginMethodNotImplemented
+	InvoiceSent(inVoice invoice.Invoice, email string, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Return tax code from object meta.
 	//
 	// NOTE: obj can be 'Product' or 'ProductType'

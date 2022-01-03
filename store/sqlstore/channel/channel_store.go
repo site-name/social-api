@@ -20,6 +20,7 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(channel.Channel{}, cs.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(channel.CHANNEL_NAME_MAX_LENGTH)
 		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH).SetUnique(true)
 		table.ColMap("DefaultCountry").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
@@ -31,7 +32,7 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 func (cs *SqlChannelStore) TableName(withField string) string {
 	name := "Channels"
 	if withField != "" {
-		name = name + "." + withField
+		name += "." + withField
 	}
 
 	return name
@@ -44,6 +45,7 @@ func (cs *SqlChannelStore) OrderBy() string {
 func (cs *SqlChannelStore) ModelFields() []string {
 	return []string{
 		"Channels.Id",
+		"Channels.ShopID",
 		"Channels.Name",
 		"Channels.IsActive",
 		"Channels.Slug",
@@ -55,6 +57,7 @@ func (cs *SqlChannelStore) ModelFields() []string {
 func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
 	return []interface{}{
 		&ch.Id,
+		&ch.ShopID,
 		&ch.Name,
 		&ch.IsActive,
 		&ch.Slug,
@@ -120,6 +123,9 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOptio
 	// parse options
 	if option.Id != nil {
 		query = query.Where(option.Id)
+	}
+	if option.ShopID != nil {
+		query = query.Where(option.ShopID)
 	}
 	if option.Name != nil {
 		query = query.Where(option.Name)

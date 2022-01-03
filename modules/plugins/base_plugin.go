@@ -9,7 +9,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/model/order"
@@ -26,7 +25,6 @@ var (
 )
 
 type NewPluginConfig struct {
-	Channel       *channel.Channel
 	Active        bool
 	Configuration PluginConfigurationType
 	Manager       *PluginManager
@@ -36,7 +34,6 @@ type BasePlugin struct {
 	Manifest PluginManifest
 
 	Active        bool
-	Channel       *channel.Channel // can be nil
 	Configuration PluginConfigurationType
 	Manager       *PluginManager
 }
@@ -51,7 +48,6 @@ func NewBasePlugin(cfg NewPluginConfig) *BasePlugin {
 	return &BasePlugin{
 		Manifest:      manifest,
 		Active:        cfg.Active,
-		Channel:       cfg.Channel,
 		Configuration: cfg.Configuration,
 		Manager:       cfg.Manager,
 	}
@@ -169,28 +165,28 @@ func (b *BasePlugin) OrderConfirmed(orDer order.Order, previousValue interface{}
 	return b.OrderCreated(orDer, previousValue)
 }
 
-func (b *BasePlugin) SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceDelete(inVoice invoice.Invoice, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) InvoiceDelete(inVoice invoice.Invoice, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) InvoiceSent(inVoice invoice.Invoice, email string, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) InvoiceSent(inVoice invoice.Invoice, email string, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
 func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented) {

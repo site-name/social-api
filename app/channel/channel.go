@@ -15,11 +15,6 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-const (
-	channelMissingErrorId  = "app.channel.missing_channel.app_error"
-	channelInactiveErrorId = "app.channel.channel_inactive.app_error"
-)
-
 type ServiceChannel struct {
 	srv *app.Server
 }
@@ -53,7 +48,7 @@ func (a *ServiceChannel) GetChannelBySlug(slug string) (*channel.Channel, *model
 func (a *ServiceChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppError) {
 	channel, err := a.srv.Store.Channel().GetRandomActiveChannel()
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetDefaultActiveChannel", channelMissingErrorId, err)
+		return nil, store.AppErrorFromDatabaseLookupError("GetDefaultActiveChannel", "app.channel.missing_channel.app_error", err)
 	}
 
 	return channel, nil
@@ -68,7 +63,7 @@ func (a *ServiceChannel) ValidateChannel(channelSlug string) (*channel.Channel, 
 
 	// check if channel is active
 	if !channel.IsActive {
-		return nil, model.NewAppError("CleanChannel", channelInactiveErrorId, nil, "", http.StatusNotModified)
+		return nil, model.NewAppError("CleanChannel", "app.channel.channel_inactive.app_error", nil, "", http.StatusNotModified)
 	}
 
 	return channel, nil
@@ -95,7 +90,7 @@ func (a *ServiceChannel) CleanChannel(channelSlug *string) (*channel.Channel, *m
 }
 
 // ChannelsByOption returns a list of channels by given options
-func (a *ServiceChannel) ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError) {
+func (a *ServiceChannel) ChannelsByOption(option *channel.ChannelFilterOption) (channel.Channels, *model.AppError) {
 	channels, err := a.srv.Store.Channel().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ChannelsByOption", "app.channel.error_finding_channels_by_option.app_error", err)

@@ -13,7 +13,7 @@ type ChannelService interface {
 	// ChannelByOption returns a channel that satisfies given options
 	ChannelByOption(option *channel.ChannelFilterOption) (*channel.Channel, *model.AppError)
 	// ChannelsByOption returns a list of channels by given options
-	ChannelsByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, *model.AppError)
+	ChannelsByOption(option *channel.ChannelFilterOption) (channel.Channels, *model.AppError)
 	// CleanChannel
 	CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError)
 	// GetChannelBySlug returns a channel with given slug

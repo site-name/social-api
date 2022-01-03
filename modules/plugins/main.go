@@ -10,7 +10,7 @@ var (
 )
 
 func RegisterVatlayerPlugin(f func(cfg NewPluginConfig) BasePluginInterface, pluginID string) {
-	if f != nil {
+	if f != nil && pluginID != "" {
 		pluginInitObjects = append(pluginInitObjects, pluginInitObjType{
 			NewPluginFunc: f,
 			PluginID:      pluginID,

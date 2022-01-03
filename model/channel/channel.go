@@ -18,6 +18,7 @@ const (
 
 type Channel struct {
 	Id             string `json:"id"`
+	ShopID         string `json:"shop_id"`
 	Name           string `json:"name"`
 	IsActive       bool   `json:"is_active"`
 	Slug           string `json:"slug"` // unique
@@ -28,10 +29,24 @@ type Channel struct {
 // ChannelFilterOption is used for building sql queries
 type ChannelFilterOption struct {
 	Id       squirrel.Sqlizer
+	ShopID   squirrel.Sqlizer
 	Name     squirrel.Sqlizer
 	IsActive *bool
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
+}
+
+type Channels []*Channel
+
+func (c Channels) IDs() []string {
+	res := []string{}
+	for _, item := range c {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
 }
 
 func (c *Channel) String() string {
@@ -46,6 +61,9 @@ func (c *Channel) IsValid() *model.AppError {
 	)
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
+	}
+	if !model.IsValidId(c.ShopID) {
+		return outer("shop_id", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > CHANNEL_NAME_MAX_LENGTH {
 		outer("name", &c.Id)

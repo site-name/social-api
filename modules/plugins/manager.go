@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -21,17 +22,28 @@ import (
 
 type PluginManager struct {
 	srv        *app.Server
-	AllPlugins []BasePluginInterface // keys are channel id
+	AllPlugins []BasePluginInterface
 }
 
-func NewPluginManager(srv *app.Server, ch *channel.Channel) (*PluginManager, *model.AppError) {
+// NewPluginManager returns a new plugin manager
+func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.AppError) {
 	m := &PluginManager{
 		srv: srv,
 	}
 
-	// finds a list of plugin configs belong to a specific channel
-	pluginConfigsOfChannel, appErr := m.srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
-		ChannelID:              squirrel.Eq{m.srv.Store.PluginConfiguration().TableName("ChannelID"): ch.Id},
+	// find all channels belong to given shop
+	channels, appErr := m.srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
+		ShopID: squirrel.Eq{m.srv.Store.Channel().TableName("ShopID"): shopID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// finds a list of plugin configs belong found channels
+	pluginConfigsOfChannels, appErr := m.srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
+		ChannelID: squirrel.Eq{
+			m.srv.Store.PluginConfiguration().TableName("ChannelID"): channels.IDs(),
+		},
 		PrefetchRelatedChannel: true, //
 	})
 	if appErr != nil {
@@ -39,7 +51,7 @@ func NewPluginManager(srv *app.Server, ch *channel.Channel) (*PluginManager, *mo
 	}
 
 	var configsMap = map[string]*plugins.PluginConfiguration{}
-	for _, config := range pluginConfigsOfChannel {
+	for _, config := range pluginConfigsOfChannels {
 		configsMap[config.Identifier] = config
 	}
 
@@ -48,7 +60,6 @@ func NewPluginManager(srv *app.Server, ch *channel.Channel) (*PluginManager, *mo
 		existingConfig := configsMap[pluginInitObj.PluginID]
 
 		plugin := pluginInitObj.NewPluginFunc(NewPluginConfig{
-			Channel:       ch,
 			Manager:       m,
 			Configuration: existingConfig.Configuration,
 			Active:        existingConfig.Active,
@@ -60,10 +71,11 @@ func NewPluginManager(srv *app.Server, ch *channel.Channel) (*PluginManager, *mo
 	return m, nil
 }
 
-func (m *PluginManager) ActivePlugins() []BasePluginInterface {
+func (m *PluginManager) filterPlugins(channelID string, active bool) []BasePluginInterface {
 	res := []BasePluginInterface{}
 
 	for _, plg := range m.AllPlugins {
+
 		if plg.IsActive() {
 			res = append(res, plg)
 		}
@@ -78,7 +90,7 @@ func (m *PluginManager) ChangeUserAddress(address *account.Address, addressType 
 		previousValue account.Address = *address
 	)
 
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		address, notImplt = plg.ChangeUserAddress(address, addressType, user, &previousValue)
 		if notImplt != nil {
 			address = &previousValue
@@ -110,7 +122,7 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInf
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateCheckoutTotal(checkoutInfo, lines, address, discounts, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -158,7 +170,7 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo checkout.Checkout
 		notImplt   *PluginMethodNotImplemented
 	)
 
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateCheckoutShipping(checkoutInfo, lines, address, discounts, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -186,7 +198,7 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo checkout.Checkou
 		notImplt   *PluginMethodNotImplemented
 	)
 
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateCheckoutLineTotal(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -230,7 +242,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer order.Order) (*goprices.Tax
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateOrderShipping(&orDer, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -257,7 +269,7 @@ func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo checkout.Checkou
 		deci     *decimal.Decimal
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		deci, notImplt = plg.GetCheckoutShippingTaxRate(checkoutInfo, lines, address, discounts, *defaultValue)
 		if notImplt != nil {
 			deci = defaultValue
@@ -279,7 +291,7 @@ func (m *PluginManager) GetOrderShippingTaxRate(orDer order.Order, shippingPrice
 		deci     *decimal.Decimal
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		deci, notImplt = plg.GetOrderShippingTaxRate(orDer, *defaultValue)
 		if notImplt != nil {
 			deci = defaultValue
@@ -301,7 +313,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer order.Order, orderLine ord
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateOrderLineTotal(&orDer, &orderLine, variant, product, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -328,7 +340,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateCheckoutLineUnitPrice(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -356,7 +368,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer order.Order, orderLine orde
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.CalculateOrderLineUnit(orDer, orderLine, variant, product, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -383,7 +395,7 @@ func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo checkout.CheckoutInf
 		deci     *decimal.Decimal
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		deci, notImplt = plg.GetCheckoutLineTaxRate(&checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
 		if notImplt != nil {
 			deci = defaultValue
@@ -405,7 +417,7 @@ func (m *PluginManager) GetOrderLineTaxRate(orDer order.Order, product product_a
 		deci     *decimal.Decimal
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		deci, notImplt = plg.GetOrderLineTaxRate(orDer, product, variant, address, *defaultValue)
 		if notImplt != nil {
 			deci = defaultValue
@@ -424,7 +436,7 @@ func (m *PluginManager) GetTaxRateTypeChoices() []*model.TaxType {
 		taxTypes []*model.TaxType
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxTypes, notImplt = plg.GetTaxRateTypeChoices(defaultValue)
 		if notImplt != nil {
 			taxTypes = defaultValue
@@ -443,7 +455,7 @@ func (m *PluginManager) ShowTaxesOnStoreFront() bool {
 		showTax  bool
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		showTax, notImplt = plg.ShowTaxesOnStorefront(defaultValue)
 		if notImplt != nil {
 			showTax = defaultValue
@@ -466,7 +478,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product product_and_discount.Product
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.ApplyTaxesToProduct(product, price, country, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -493,7 +505,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 		taxedMoney *goprices.TaxedMoney
 		notImplt   *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		taxedMoney, notImplt = plg.ApplyTaxesToShipping(price, shippingAddress, *defaultValue)
 		if notImplt != nil {
 			taxedMoney = defaultValue
@@ -517,7 +529,7 @@ func (m *PluginManager) PreprocessOrderCreation(checkoutInfo checkout.CheckoutIn
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.PreprocessOrderCreation(checkoutInfo, discounts, lines, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -536,7 +548,7 @@ func (m *PluginManager) CustomerCreated(customer account.User) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.CustomerCreated(customer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -555,7 +567,7 @@ func (m *PluginManager) CustomerUpdated(customer account.User) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.CustomerUpdated(customer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -574,7 +586,7 @@ func (m *PluginManager) ProductCreated(product product_and_discount.Product) int
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductCreated(product, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -593,7 +605,7 @@ func (m *PluginManager) ProductUpdated(product product_and_discount.Product) int
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductUpdated(product, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -612,7 +624,7 @@ func (m *PluginManager) ProductDeleted(product product_and_discount.Product, var
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductDeleted(product, variants, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -631,7 +643,7 @@ func (m *PluginManager) ProductVariantCreated(variant product_and_discount.Produ
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductVariantCreated(variant, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -650,7 +662,7 @@ func (m *PluginManager) ProductVariantUpdated(variant product_and_discount.Produ
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductVariantUpdated(variant, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -669,7 +681,7 @@ func (m *PluginManager) ProductVariantDeleted(variant product_and_discount.Produ
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.ProductVariantDeleted(variant, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -687,7 +699,7 @@ func (m *PluginManager) ProductVariantOutOfStock(stock warehouse.Stock) {
 	var (
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		notImplt = plg.ProductVariantOutOfStock(stock, defaultValue)
 		if notImplt != nil {
 			continue
@@ -701,7 +713,7 @@ func (m *PluginManager) ProductVariantBackInStock(stock warehouse.Stock) {
 	var (
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		notImplt = plg.ProductVariantBackInStock(stock, defaultValue)
 		if notImplt != nil {
 			continue
@@ -716,7 +728,7 @@ func (m *PluginManager) OrderCreated(orDer order.Order) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.OrderCreated(orDer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -735,7 +747,7 @@ func (m *PluginManager) OrderConfirmed(orDer order.Order) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.OrderConfirmed(orDer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -754,7 +766,7 @@ func (m *PluginManager) DraftOrderCreated(orDer order.Order) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.DraftOrderCreated(orDer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -773,7 +785,7 @@ func (m *PluginManager) DraftOrderDeleted(orDer order.Order) interface{} {
 		value    interface{}
 		notImplt *PluginMethodNotImplemented
 	)
-	for _, plg := range m.ActivePlugins() {
+	for _, plg := range m.filterPlugins() {
 		value, notImplt = plg.DraftOrderDeleted(orDer, defaultValue)
 		if notImplt != nil {
 			value = defaultValue
@@ -785,78 +797,211 @@ func (m *PluginManager) DraftOrderDeleted(orDer order.Order) interface{} {
 	return value
 }
 
-// func (m *PluginManager) DraftOrderUpdated(orDer order.Order) interface{} {
-// 	var defaultValue interface{}
+func (m *PluginManager) DraftOrderUpdated(orDer order.Order) interface{} {
+	var defaultValue interface{}
 
-// 	var (
-// 		value    interface{}
-// 		notImplt *PluginMethodNotImplemented
-// 	)
-// 	for _, plg := range m.ActivePlugins() {
-// 		value, notImplt = plg.DraftOrderUpdated(orDer, defaultValue)
-// 		if notImplt != nil {
-// 			value = defaultValue
-// 			continue
-// 		}
-// 		defaultValue = value
-// 	}
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.DraftOrderUpdated(orDer, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
 
-// 	return value
-// }
+	return value
+}
 
-// func (m *PluginManager) SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo) interface{} {
-// 	var defaultValue interface{}
+func (m *PluginManager) SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo) interface{} {
+	var defaultValue interface{}
 
-// 	var (
-// 		value    interface{}
-// 		notImplt *PluginMethodNotImplemented
-// 	)
-// 	for _, plg := range m.ActivePlugins() {
-// 		value, notImplt = plg.SaleCreated(sale, currentCatalogue, defaultValue)
-// 		if notImplt != nil {
-// 			value = defaultValue
-// 			continue
-// 		}
-// 		defaultValue = value
-// 	}
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.SaleCreated(sale, currentCatalogue, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
 
-// 	return value
-// }
+	return value
+}
 
-// func (m *PluginManager) DraftOrderUpdated(orDer order.Order) interface{} {
-// 	var defaultValue interface{}
+func (m *PluginManager) SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo) interface{} {
+	var defaultValue interface{}
 
-// 	var (
-// 		value    interface{}
-// 		notImplt *PluginMethodNotImplemented
-// 	)
-// 	for _, plg := range m.ActivePlugins() {
-// 		value, notImplt = plg.DraftOrderUpdated(orDer, defaultValue)
-// 		if notImplt != nil {
-// 			value = defaultValue
-// 			continue
-// 		}
-// 		defaultValue = value
-// 	}
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.SaleDeleted(sale, previousCatalogue, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
 
-// 	return value
-// }
+	return value
+}
 
-// func (m *PluginManager) DraftOrderUpdated(orDer order.Order) interface{} {
-// 	var defaultValue interface{}
+func (m *PluginManager) SaleUpdated(sale product_and_discount.Sale, previousCatalogue, currentCatalogue product_and_discount.NodeCatalogueInfo) interface{} {
+	var defaultValue interface{}
 
-// 	var (
-// 		value    interface{}
-// 		notImplt *PluginMethodNotImplemented
-// 	)
-// 	for _, plg := range m.ActivePlugins() {
-// 		value, notImplt = plg.DraftOrderUpdated(orDer, defaultValue)
-// 		if notImplt != nil {
-// 			value = defaultValue
-// 			continue
-// 		}
-// 		defaultValue = value
-// 	}
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.SaleUpdated(sale, previousCatalogue, currentCatalogue, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
 
-// 	return value
-// }
+	return value
+}
+
+func (m *PluginManager) InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.InvoiceRequest(orDer, inVoice, number, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) InvoiceDelete(inVoice invoice.Invoice) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.InvoiceDelete(inVoice, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) InvoiceSent(inVoice invoice.Invoice, email string) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.InvoiceSent(inVoice, email, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) OrderFullyPaid(orDer order.Order) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.OrderFullyPaid(orDer, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) OrderUpdated(orDer order.Order) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.OrderUpdated(orDer, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) OrderCancelled(orDer order.Order) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.OrderCancelled(orDer, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) OrderFulfilled(orDer order.Order) interface{} {
+	var defaultValue interface{}
+
+	var (
+		value    interface{}
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.filterPlugins() {
+		value, notImplt = plg.OrderFulfilled(orDer, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}

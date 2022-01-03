@@ -30,38 +30,36 @@ func init() {
 	plugins.RegisterVatlayerPlugin(func(cfg plugins.NewPluginConfig) plugins.BasePluginInterface {
 
 		basePlg := plugins.NewBasePlugin(cfg)
-		basePlg.Manifest = plugins.PluginManifest{
-			ID:                 pluginID,
-			Name:               "Vatlayer",
-			MetaCodeKey:        "vatlayer.code",
-			MetaDescriptionKey: "vatlayer.description",
-			ConfigStructure: map[string]model.StringInterface{
-				"origin_country": {
-					"type":      plugins.STRING,
-					"help_test": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
-					"label":     "Origin country",
-				},
-				"countries_to_calculate_taxes_from_origin": {
-					"type":      plugins.STRING,
-					"help_text": "List of destination countries (separated by comma), in ISO format which will use origin country to calculate taxes.",
-					"label":     "Countries for which taxes will be calculated from origin country",
-				},
-				"excluded_countries": {
-					"type":      plugins.STRING,
-					"help_text": "List of countries (separated by comma), in ISO format for which no VAT should be added.",
-					"label":     "Countries for which no VAT will be added.",
-				},
-				"Access key": {
-					"type":      plugins.PASSWORD,
-					"help_text": "Required to authenticate to Vatlayer API.",
-					"label":     "Access key",
-				},
+		basePlg.Manifest.ID = pluginID
+		basePlg.Manifest.Name = "Vatlayer"
+		basePlg.Manifest.MetaCodeKey = "vatlayer.code"
+		basePlg.Manifest.MetaDescriptionKey = "vatlayer.description"
+		basePlg.Manifest.DefaultConfiguration = []model.StringInterface{
+			{"name": "Access key", "value": nil},
+			{"name": "origin_country", "value": nil},
+			{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
+			{"name": "excluded_countries", "value": nil},
+		}
+		basePlg.Manifest.ConfigStructure = map[string]model.StringInterface{
+			"origin_country": {
+				"type":      plugins.STRING,
+				"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
+				"label":     "Origin country",
 			},
-			DefaultConfiguration: []model.StringInterface{
-				{"name": "Access key", "value": nil},
-				{"name": "origin_country", "value": nil},
-				{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
-				{"name": "excluded_countries", "value": nil},
+			"countries_to_calculate_taxes_from_origin": {
+				"type":      plugins.STRING,
+				"help_text": "List of destination countries (separated by comma), in ISO format which will use origin country to calculate taxes.",
+				"label":     "Countries for which taxes will be calculated from origin country",
+			},
+			"excluded_countries": {
+				"type":      plugins.STRING,
+				"help_text": "List of countries (separated by comma), in ISO format for which no VAT should be added.",
+				"label":     "Countries for which no VAT will be added.",
+			},
+			"Access key": {
+				"type":      plugins.PASSWORD,
+				"help_text": "Required to authenticate to Vatlayer API.",
+				"label":     "Access key",
 			},
 		}
 
