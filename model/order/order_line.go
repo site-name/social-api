@@ -177,55 +177,60 @@ func (o *OrderLine) IsValid() *model.AppError {
 }
 
 func (o *OrderLine) PopulateNonDbFields() {
-	o.UnitDiscount = &goprices.Money{
-		Amount:   *o.UnitDiscountAmount,
-		Currency: o.Currency,
+	if o.UnitDiscountAmount != nil {
+		o.UnitDiscount = &goprices.Money{
+			Amount:   *o.UnitDiscountAmount,
+			Currency: o.Currency,
+		}
 	}
-	o.UnitPriceNet = &goprices.Money{
-		Amount:   *o.UnitPriceNetAmount,
-		Currency: o.Currency,
-	}
-	o.UnitPriceGross = &goprices.Money{
-		Amount:   *o.UnitPriceGrossAmount,
-		Currency: o.Currency,
-	}
-	o.TotalPriceNet = &goprices.Money{
-		Amount:   *o.TotalPriceNetAmount,
-		Currency: o.Currency,
-	}
-	o.TotalPriceGross = &goprices.Money{
-		Amount:   *o.TotalPriceGrossAmount,
-		Currency: o.Currency,
+	if o.UnitPriceNetAmount != nil && o.UnitPriceGrossAmount != nil {
+		o.UnitPriceNet = &goprices.Money{
+			Amount:   *o.UnitPriceNetAmount,
+			Currency: o.Currency,
+		}
+		o.UnitPriceGross = &goprices.Money{
+			Amount:   *o.UnitPriceGrossAmount,
+			Currency: o.Currency,
+		}
+		o.UnitPrice, _ = goprices.NewTaxedMoney(o.UnitPriceNet, o.UnitPriceGross)
 	}
 
-	o.UnitPrice, _ = goprices.NewTaxedMoney(o.UnitPriceNet, o.UnitPriceGross)
-	o.TotalPrice, _ = goprices.NewTaxedMoney(o.TotalPriceNet, o.TotalPriceGross)
+	if o.TotalPriceNetAmount != nil && o.TotalPriceGrossAmount != nil {
+		o.TotalPriceNet = &goprices.Money{
+			Amount:   *o.TotalPriceNetAmount,
+			Currency: o.Currency,
+		}
+		o.TotalPriceGross = &goprices.Money{
+			Amount:   *o.TotalPriceGrossAmount,
+			Currency: o.Currency,
+		}
+		o.TotalPrice, _ = goprices.NewTaxedMoney(o.TotalPriceNet, o.TotalPriceGross)
 
-	net := &goprices.Money{
-		Amount:   *o.UnDiscountedUnitPriceNetAmount,
-		Currency: o.Currency,
 	}
-	gross := &goprices.Money{
-		Amount:   *o.UnDiscountedUnitPriceGrossAmount,
-		Currency: o.Currency,
-	}
-	o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 
-	net = &goprices.Money{
-		Amount:   *o.UnDiscountedTotalPriceNetAmount,
-		Currency: o.Currency,
+	if o.UnDiscountedUnitPriceNetAmount != nil && o.UnDiscountedUnitPriceGrossAmount != nil {
+		net := &goprices.Money{
+			Amount:   *o.UnDiscountedUnitPriceNetAmount,
+			Currency: o.Currency,
+		}
+		gross := &goprices.Money{
+			Amount:   *o.UnDiscountedUnitPriceGrossAmount,
+			Currency: o.Currency,
+		}
+		o.UnDiscountedUnitPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
-	gross = &goprices.Money{
-		Amount:   *o.UnDiscountedTotalPriceGrossAmount,
-		Currency: o.Currency,
+
+	if o.UnDiscountedTotalPriceNetAmount != nil && o.UnDiscountedTotalPriceGrossAmount != nil {
+		net := &goprices.Money{
+			Amount:   *o.UnDiscountedTotalPriceNetAmount,
+			Currency: o.Currency,
+		}
+		gross := &goprices.Money{
+			Amount:   *o.UnDiscountedTotalPriceGrossAmount,
+			Currency: o.Currency,
+		}
+		o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
 	}
-	o.UnDiscountedTotalPrice, _ = goprices.NewTaxedMoney(net, gross)
-}
-
-func (o *OrderLine) ToJSON() string {
-	o.PopulateNonDbFields()
-
-	return model.ModelToJson(o)
 }
 
 func (o *OrderLine) PreSave() {

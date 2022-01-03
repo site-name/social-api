@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 )
 
 type ConfigurationTypeField string
@@ -136,26 +137,32 @@ type BasePluginInterface interface {
 	ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Apply taxes to the product price based on the customer country.
 	// Overwrite this method if you want to show products with taxes.
-	ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
+	ApplyTaxesToProduct(product product_and_discount.Product, price goprices.Money, country string, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented)
 	// Trigger directly before order creation.
 	// Overwrite this method if you need to trigger specific logic before an order is created.
 	PreprocessOrderCreation(checkoutInfo checkout.CheckoutInfo, discounts []*product_and_discount.DiscountInfo, lines checkout.CheckoutLineInfos, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when order is created.
 	// Overwrite this method if you need to trigger specific logic after an order is created.
 	OrderCreated(orDer order.Order, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	//
+	DraftOrderCreated(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	//
+	DraftOrderUpdated(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	//
+	DraftOrderDeleted(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when order is confirmed by staff.
 	// Overwrite this method if you need to trigger specific logic after an order is
 	// confirmed.
 	OrderConfirmed(orDer order.Order, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when sale is created.
 	// Overwrite this method if you need to trigger specific logic after sale is created.
-	SaleCreated(sale product_and_discount.Sale, currentCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented
+	SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
 	// Trigger when sale is deleted.
 	// Overwrite this method if you need to trigger specific logic after sale is deleted.
-	SaleDeleted(sale product_and_discount.Sale, previousCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented
+	SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
 	// Trigger when sale is updated.
 	// Overwrite this method if you need to trigger specific logic after sale is updated.
-	SaleUpdated(sale product_and_discount.Sale, previousCatalogue map[string][]string, currentCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented
+	SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented
 	// Trigger when invoice creation starts.
 	// Overwrite to create invoice with proper data, call invoice.update_invoice.
 	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string, previousValue interface{}) *PluginMethodNotImplemented
@@ -192,10 +199,18 @@ type BasePluginInterface interface {
 	// Overwrite this method if you need to trigger specific logic after a product
 	// variant is created.
 	ProductVariantCreated(productVariant product_and_discount.ProductVariant, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	// Trigger when product variant is updated.
+	// Overwrite this method if you need to trigger specific logic after a product
+	// variant is updated.
+	ProductVariantUpdated(variant product_and_discount.ProductVariant, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Trigger when product variant is deleted.
 	// Overwrite this method if you need to trigger specific logic after a product
 	// variant is deleted.
 	ProductVariantDeleted(productVariant product_and_discount.ProductVariant, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	// ProductVariantOutOfStock triggered when a product variant is out of stock
+	ProductVariantOutOfStock(stock warehouse.Stock, defaultValue interface{}) *PluginMethodNotImplemented
+	// ProductVariantBackInStock is triggered when a product is available again in stock
+	ProductVariantBackInStock(stock warehouse.Stock, defaultValue interface{}) *PluginMethodNotImplemented
 	// Trigger when order is fully paid.
 	// Overwrite this method if you need to trigger specific logic when an order is
 	// fully paid.

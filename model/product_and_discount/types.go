@@ -40,7 +40,6 @@ type CostsData struct {
 }
 
 func NewCostsData(costs []*goprices.Money, margins []float64) *CostsData {
-
 	// sorting:
 	sort.Slice(costs, func(i, j int) bool {
 		less, err := costs[i].LessThan(costs[j])
@@ -62,3 +61,5 @@ func (c *CostsData) Costs() []*goprices.Money {
 func (c *CostsData) Margins() []float64 {
 	return c.margins
 }
+
+type NodeCatalogueInfo map[string][]string

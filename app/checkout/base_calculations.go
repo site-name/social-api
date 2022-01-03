@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -56,16 +57,8 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 	}
 
 	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: shippingMethod.Id,
-			},
-		},
-		ChannelID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.Checkout.ChannelID,
-			},
-		},
+		ShippingMethodID: squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): shippingMethod.Id},
+		ChannelID:        squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): checkoutInfo.Checkout.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -163,4 +156,14 @@ func (a *ServiceCheckout) BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Deci
 	}
 
 	return &taxRate, nil
+}
+
+// BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
+func (a *ServiceCheckout) BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) (*goprices.TaxedMoney, *model.AppError) {
+	div, err := totalLinePrice.TrueDiv(quantity)
+	if err != nil {
+		return nil, model.NewAppError("BaseCheckoutLineUnitPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return div, nil
 }

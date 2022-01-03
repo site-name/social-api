@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/plugins"
 )
 
 // CheckoutService contains methods for working with checkouts
@@ -48,6 +49,8 @@ type CheckoutService interface {
 	//
 	// `discounts` can be nil
 	BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	// BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
+	BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutShippingPrice
 	BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutTotal returns the total cost of the checkout
@@ -57,7 +60,7 @@ type CheckoutService interface {
 	// CalculateCheckoutTotalWithGiftcards
 	CalculateCheckoutTotalWithGiftcards(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price
-	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines []interface{}) (*goprices.TaxedMoney, *model.AppError)
+	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
 	CancelActivePayments(checkOut *checkout.Checkout) *model.AppError
 	// CheckVariantInStock
@@ -81,7 +84,7 @@ type CheckoutService interface {
 	// CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutSubTotal(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutSubTotal(manager *plugins.PluginManager, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotal Return the total cost of the checkout.
 	//
 	// Total is a cost of all lines and shipping fees, minus checkout discounts,

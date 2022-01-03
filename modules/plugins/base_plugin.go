@@ -7,7 +7,6 @@ import (
 
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -18,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -26,7 +26,6 @@ var (
 )
 
 type NewPluginConfig struct {
-	Srv           *app.Server
 	Channel       *channel.Channel
 	Active        bool
 	Configuration PluginConfigurationType
@@ -39,7 +38,6 @@ type BasePlugin struct {
 	Active        bool
 	Channel       *channel.Channel // can be nil
 	Configuration PluginConfigurationType
-	Srv           *app.Server
 	Manager       *PluginManager
 }
 
@@ -55,7 +53,6 @@ func NewBasePlugin(cfg NewPluginConfig) *BasePlugin {
 		Active:        cfg.Active,
 		Channel:       cfg.Channel,
 		Configuration: cfg.Configuration,
-		Srv:           cfg.Srv,
 		Manager:       cfg.Manager,
 	}
 }
@@ -156,7 +153,7 @@ func (b *BasePlugin) ApplyTaxesToShipping(price goprices.Money, shippingAddress 
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ApplyTaxesToProduct(price goprices.Money, shippingAddress account.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ApplyTaxesToProduct(product product_and_discount.Product, price goprices.Money, country string, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -172,15 +169,15 @@ func (b *BasePlugin) OrderConfirmed(orDer order.Order, previousValue interface{}
 	return b.OrderCreated(orDer, previousValue)
 }
 
-func (b *BasePlugin) SaleCreated(sale product_and_discount.Sale, currentCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented {
+func (b *BasePlugin) SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
 	return new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) SaleDeleted(sale product_and_discount.Sale, previousCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented {
+func (b *BasePlugin) SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
 	return new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) SaleUpdated(sale product_and_discount.Sale, previousCatalogue map[string][]string, currentCatalogue map[string][]string, previousValue interface{}) *PluginMethodNotImplemented {
+func (b *BasePlugin) SaleUpdated(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo, currentCatalogue product_and_discount.NodeCatalogueInfo, previousValue interface{}) *PluginMethodNotImplemented {
 	return new(PluginMethodNotImplemented)
 }
 
@@ -228,6 +225,18 @@ func (b *BasePlugin) ProductVariantCreated(productVariant product_and_discount.P
 	return nil, new(PluginMethodNotImplemented)
 }
 
+func (b *BasePlugin) ProductVariantUpdated(variant product_and_discount.ProductVariant, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) ProductVariantOutOfStock(stock warehouse.Stock, defaultValue interface{}) *PluginMethodNotImplemented {
+	return new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) ProductVariantBackInStock(stock warehouse.Stock, defaultValue interface{}) *PluginMethodNotImplemented {
+	return new(PluginMethodNotImplemented)
+}
+
 func (b *BasePlugin) ProductVariantDeleted(productVariant product_and_discount.ProductVariant, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
@@ -245,6 +254,18 @@ func (b *BasePlugin) OrderCancelled(orDer order.Order, previousValue interface{}
 }
 
 func (b *BasePlugin) OrderFulfilled(orDer order.Order, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) DraftOrderCreated(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) DraftOrderUpdated(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) DraftOrderDeleted(orDer order.Order, defaultValue interface{}) (interface{}, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -578,7 +599,7 @@ func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *plugins.Plugin
 		return nil, appErr, nil
 	}
 
-	pluginConfiguration, appErr = b.Srv.PluginService().UpsertPluginConfiguration(pluginConfiguration)
+	pluginConfiguration, appErr = b.Manager.srv.PluginService().UpsertPluginConfiguration(pluginConfiguration)
 	if appErr != nil {
 		return nil, appErr, nil
 	}
