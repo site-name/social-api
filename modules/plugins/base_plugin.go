@@ -64,6 +64,10 @@ func (b *BasePlugin) ChannelId() string {
 	return b.ChannelID
 }
 
+func (b *BasePlugin) GetManifest() *PluginManifest {
+	return b.Manifest
+}
+
 func (b *BasePlugin) String() string {
 	return b.Manifest.PluginName
 }
@@ -196,7 +200,7 @@ func (b *BasePlugin) InvoiceSent(inVoice invoice.Invoice, email string, previous
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented) {
+func (b *BasePlugin) AssignTaxCodeToObjectMeta(obj interface{}, taxCode string, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -336,7 +340,7 @@ func (b *BasePlugin) ListPaymentSources(customerID string, previousValue interfa
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) GetClientToken(tokenConfig interface{}, previousValue interface{}) (string, *PluginMethodNotImplemented) {
+func (b *BasePlugin) GetClientToken(tokenConfig payment.TokenConfig, previousValue interface{}) (string, *PluginMethodNotImplemented) {
 	return "", new(PluginMethodNotImplemented)
 }
 
@@ -348,7 +352,7 @@ func (b *BasePlugin) GetSupportedCurrencies(previousValue interface{}) ([]string
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) TokenIsRequiredAsPaymentInput(previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+func (b *BasePlugin) TokenIsRequiredAsPaymentInput(previousValue bool) (bool, *PluginMethodNotImplemented) {
 	return previousValue, nil
 }
 
@@ -381,8 +385,8 @@ func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, reque
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) CheckPluginId(pluginID string) (bool, *PluginMethodNotImplemented) {
-	return b.Manifest.PluginID == pluginID, nil
+func (b *BasePlugin) CheckPluginId(pluginID string) bool {
+	return b.Manifest.PluginID == pluginID
 }
 
 func (b *BasePlugin) GetDefaultActive() (bool, *PluginMethodNotImplemented) {

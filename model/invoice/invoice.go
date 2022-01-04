@@ -14,7 +14,7 @@ const (
 // TODO: considering add field Job to this model
 type Invoice struct {
 	Id          string        `json:"id"`
-	OrderID     string        `json:"order_id"`
+	OrderID     *string       `json:"order_id"`
 	Number      string        `json:"number"`
 	CreateAt    int64         `json:"create_at"`
 	ExternalUrl string        `json:"external_url"`
@@ -31,7 +31,7 @@ func (i *Invoice) IsValid() *model.AppError {
 	if !model.IsValidId(i.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(i.OrderID) {
+	if i.OrderID != nil && !model.IsValidId(*i.OrderID) {
 		return outer("order_id", &i.Id)
 	}
 	if len(i.Number) > INVOICE_NUMBER_MAX_LENGTH {

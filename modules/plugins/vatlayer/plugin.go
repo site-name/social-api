@@ -11,10 +11,6 @@ import (
 	"github.com/sitename/sitename/modules/plugins"
 )
 
-const (
-	pluginID = "sitename.taxes.vatlayer"
-)
-
 var (
 	_        plugins.BasePluginInterface = (*VatlayerPlugin)(nil)
 	manifest                             = &plugins.PluginManifest{

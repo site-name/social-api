@@ -16,5 +16,5 @@ func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) BasePluginInterface, ma
 			Manifest:      manifest,
 		})
 	}
-	panic("plugin creation function and manifest must not be nil")
+	panic("RegisterVatlayerPlugin: plugin creation function and manifest must not be nil")
 }

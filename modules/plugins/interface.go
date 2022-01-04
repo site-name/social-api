@@ -21,7 +21,13 @@ import (
 type ConfigurationTypeField string
 
 // PluginMethodNotImplemented is used to indicate if a method is implemented or not
-type PluginMethodNotImplemented struct{}
+type PluginMethodNotImplemented struct {
+	MethodName string
+}
+
+func (p *PluginMethodNotImplemented) Error() string {
+	return fmt.Sprintf("Method: %s is not implemented on this plugin", p.MethodName)
+}
 
 const (
 	STRING           ConfigurationTypeField = "String"
@@ -58,7 +64,7 @@ type PluginManifest struct {
 type BasePluginInterface interface {
 	fmt.Stringer
 	// Check if given plugin_id matches with the PLUGIN_ID of this plugin
-	CheckPluginId(pluginID string) (bool, *PluginMethodNotImplemented)
+	CheckPluginId(pluginID string) bool
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
 	ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) (model.StringInterface, *PluginMethodNotImplemented)
@@ -175,7 +181,11 @@ type BasePluginInterface interface {
 	// Return tax code from object meta.
 	//
 	// NOTE: obj can be 'Product' or 'ProductType'
-	AssignTaxCodeToObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented)
+	AssignTaxCodeToObjectMeta(obj interface{}, taxCode string, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented)
+	// Return tax code from object meta
+	//
+	// NOTE: obj must be either Product or ProductType
+	GetTaxCodeFromObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented)
 	// Return tax rate percentage value for a given tax rate type in a country.
 	// It is used only by the old storefront.
 	GetTaxRatePercentageValue(obj interface{}, country interface{}, previousValue interface{}) *PluginMethodNotImplemented
@@ -265,13 +275,13 @@ type BasePluginInterface interface {
 	//
 	ListPaymentSources(customerID string, previousValue interface{}) ([]*payment.CustomerSource, *PluginMethodNotImplemented)
 	//
-	GetClientToken(tokenConfig interface{}, previousValue interface{}) (string, *PluginMethodNotImplemented)
+	GetClientToken(tokenConfig payment.TokenConfig, previousValue interface{}) (string, *PluginMethodNotImplemented)
 	//
 	GetPaymentConfig(previousValue interface{}) ([]model.StringInterface, *PluginMethodNotImplemented)
 	//
 	GetSupportedCurrencies(previousValue interface{}) ([]string, *PluginMethodNotImplemented)
 	//
-	TokenIsRequiredAsPaymentInput(previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
+	TokenIsRequiredAsPaymentInput(previousValue bool) (bool, *PluginMethodNotImplemented)
 	//
 	GetPaymentGateways(currency string, checkOut *checkout.Checkout, previousValue interface{}) ([]*payment.PaymentGateway, *PluginMethodNotImplemented)
 	//
@@ -299,4 +309,5 @@ type BasePluginInterface interface {
 	//
 	IsActive() bool
 	ChannelId() string
+	GetManifest() *PluginManifest
 }
