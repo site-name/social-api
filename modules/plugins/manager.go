@@ -44,12 +44,13 @@ func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.Ap
 		ChannelID: squirrel.Eq{
 			m.srv.Store.PluginConfiguration().TableName("ChannelID"): channels.IDs(),
 		},
-		PrefetchRelatedChannel: true, //
+		// PrefetchRelatedChannel: true, //
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
+	// keys are plugin configurations's identifiers
 	var configsMap = map[string]*plugins.PluginConfiguration{}
 	for _, config := range pluginConfigsOfChannels {
 		configsMap[config.Identifier] = config
@@ -57,12 +58,22 @@ func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.Ap
 
 	for _, pluginInitObj := range pluginInitObjects {
 
-		existingConfig := configsMap[pluginInitObj.PluginID]
+		var (
+			pluginConfig []model.StringInterface = pluginInitObj.Manifest.DefaultConfiguration
+			active       bool                    = pluginInitObj.Manifest.DefaultActive
+			channelID    string
+		)
+		if existingConfig, ok := configsMap[pluginInitObj.Manifest.PluginID]; ok {
+			pluginConfig = existingConfig.Configuration
+			active = existingConfig.Active
+			channelID = existingConfig.ChannelID
+		}
 
-		plugin := pluginInitObj.NewPluginFunc(NewPluginConfig{
+		plugin := pluginInitObj.NewPluginFunc(&NewPluginConfig{
 			Manager:       m,
-			Configuration: existingConfig.Configuration,
-			Active:        existingConfig.Active,
+			Configuration: pluginConfig,
+			Active:        active,
+			ChannelID:     channelID,
 		})
 
 		m.AllPlugins = append(m.AllPlugins, plugin)

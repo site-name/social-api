@@ -26,20 +26,22 @@ var (
 
 type NewPluginConfig struct {
 	Active        bool
+	ChannelID     string
 	Configuration PluginConfigurationType
 	Manager       *PluginManager
 }
 
 type BasePlugin struct {
-	Manifest PluginManifest
+	Manifest *PluginManifest
 
 	Active        bool
+	ChannelID     string
 	Configuration PluginConfigurationType
 	Manager       *PluginManager
 }
 
-func NewBasePlugin(cfg NewPluginConfig) *BasePlugin {
-	manifest := PluginManifest{
+func NewBasePlugin(cfg *NewPluginConfig) *BasePlugin {
+	manifest := &PluginManifest{
 		ConfigStructure:         make(map[string]model.StringInterface),
 		ConfigurationPerChannel: true,
 		DefaultConfiguration:    []model.StringInterface{},
@@ -48,6 +50,7 @@ func NewBasePlugin(cfg NewPluginConfig) *BasePlugin {
 	return &BasePlugin{
 		Manifest:      manifest,
 		Active:        cfg.Active,
+		ChannelID:     cfg.ChannelID,
 		Configuration: cfg.Configuration,
 		Manager:       cfg.Manager,
 	}
@@ -57,8 +60,12 @@ func (b *BasePlugin) IsActive() bool {
 	return b.Active
 }
 
+func (b *BasePlugin) ChannelId() string {
+	return b.ChannelID
+}
+
 func (b *BasePlugin) String() string {
-	return b.Manifest.Name
+	return b.Manifest.PluginName
 }
 
 func (b *BasePlugin) ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue interface{}) (*ExternalAccessToken, *PluginMethodNotImplemented) {
@@ -362,8 +369,8 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *checkout.Chec
 
 	return []*payment.PaymentGateway{
 		{
-			Id:         b.Manifest.ID,
-			Name:       b.Manifest.Name,
+			Id:         b.Manifest.PluginID,
+			Name:       b.Manifest.PluginName,
 			Config:     paymentConfig,
 			Currencies: currencies,
 		},
@@ -375,7 +382,7 @@ func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, reque
 }
 
 func (b *BasePlugin) CheckPluginId(pluginID string) (bool, *PluginMethodNotImplemented) {
-	return b.Manifest.ID == pluginID, nil
+	return b.Manifest.PluginID == pluginID, nil
 }
 
 func (b *BasePlugin) GetDefaultActive() (bool, *PluginMethodNotImplemented) {

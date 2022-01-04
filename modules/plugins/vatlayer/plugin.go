@@ -16,31 +16,19 @@ const (
 )
 
 var (
-	_ plugins.BasePluginInterface = (*VatlayerPlugin)(nil)
-)
-
-type VatlayerPlugin struct {
-	*plugins.BasePlugin
-
-	config      VatlayerConfiguration
-	cachedTaxes model.StringInterface
-}
-
-func init() {
-	plugins.RegisterVatlayerPlugin(func(cfg plugins.NewPluginConfig) plugins.BasePluginInterface {
-
-		basePlg := plugins.NewBasePlugin(cfg)
-		basePlg.Manifest.ID = pluginID
-		basePlg.Manifest.Name = "Vatlayer"
-		basePlg.Manifest.MetaCodeKey = "vatlayer.code"
-		basePlg.Manifest.MetaDescriptionKey = "vatlayer.description"
-		basePlg.Manifest.DefaultConfiguration = []model.StringInterface{
+	_        plugins.BasePluginInterface = (*VatlayerPlugin)(nil)
+	manifest                             = &plugins.PluginManifest{
+		PluginID:           "sitename.taxes.vatlayer",
+		PluginName:         "Vatlayer",
+		MetaCodeKey:        "vatlayer.code",
+		MetaDescriptionKey: "vatlayer.description",
+		DefaultConfiguration: []model.StringInterface{
 			{"name": "Access key", "value": nil},
 			{"name": "origin_country", "value": nil},
 			{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
 			{"name": "excluded_countries", "value": nil},
-		}
-		basePlg.Manifest.ConfigStructure = map[string]model.StringInterface{
+		},
+		ConfigStructure: map[string]model.StringInterface{
 			"origin_country": {
 				"type":      plugins.STRING,
 				"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
@@ -61,7 +49,22 @@ func init() {
 				"help_text": "Required to authenticate to Vatlayer API.",
 				"label":     "Access key",
 			},
-		}
+		},
+	}
+)
+
+type VatlayerPlugin struct {
+	*plugins.BasePlugin
+
+	config      VatlayerConfiguration
+	cachedTaxes model.StringInterface
+}
+
+func init() {
+	plugins.RegisterVatlayerPlugin(func(cfg *plugins.NewPluginConfig) plugins.BasePluginInterface {
+
+		basePlg := plugins.NewBasePlugin(cfg)
+		basePlg.Manifest = manifest
 
 		vp := &VatlayerPlugin{
 			BasePlugin: basePlg,
@@ -106,7 +109,7 @@ func init() {
 		vp.cachedTaxes = make(model.StringInterface)
 		return vp
 
-	}, pluginID)
+	}, manifest)
 }
 
 // previousValue must be either: *Decimal, *TaxedMoney, *TaxedMoneyRange

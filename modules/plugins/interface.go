@@ -44,8 +44,8 @@ type ExternalAccessToken struct {
 
 // PluginManifest
 type PluginManifest struct {
-	Name                    string
-	ID                      string
+	PluginName              string
+	PluginID                string
 	Description             string
 	ConfigStructure         map[string]model.StringInterface
 	ConfigurationPerChannel bool
@@ -298,4 +298,5 @@ type BasePluginInterface interface {
 	GetPluginConfiguration(configuration PluginConfigurationType) (PluginConfigurationType, *PluginMethodNotImplemented)
 	//
 	IsActive() bool
+	ChannelId() string
 }
