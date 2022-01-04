@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/store"
@@ -104,8 +105,7 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfigurati
 	return &res, nil
 }
 
-// FilterPluginConfigurations finds and returns a list of configs with given options then returns them
-func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+func (p *SqlPluginConfigurationStore) optionsParse(options *plugins.PluginConfigurationFilterOptions) (string, []interface{}, error) {
 	query := p.GetQueryBuilder().
 		Select("*").
 		From(p.TableName(""))
@@ -121,7 +121,13 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins
 		query = query.Where(options.ChannelID)
 	}
 
-	queryStr, args, err := query.ToSql()
+	return query.ToSql()
+}
+
+// FilterPluginConfigurations finds and returns a list of configs with given options then returns them
+func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+
+	queryStr, args, err := p.optionsParse(&options)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterPluginConfigurations_ToSql")
 	}
@@ -152,4 +158,34 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins
 	}
 
 	return configs, nil
+}
+
+// GetByOptions finds and returns 1 plugin configuration with given options
+func (p *SqlPluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+	queryStr, args, err := p.optionsParse(options)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOptions_ToSql")
+	}
+
+	var res plugins.PluginConfiguration
+	err = p.GetReplica().SelectOne(&res, queryStr, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(p.TableName(""), "options")
+		}
+		return nil, errors.Wrap(err, "failed to find plugin configuration with given options")
+	}
+
+	// check if we need to prefetch
+	if options.PrefetchRelatedChannel && model.IsValidId(res.Id) {
+		channel, err := p.Channel().Get(res.ChannelID)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to find related channels of plugin configs")
+		}
+
+		res.SetRelatedChannel(channel)
+	}
+
+	return &res, nil
 }

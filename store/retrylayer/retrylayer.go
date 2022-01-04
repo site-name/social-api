@@ -5614,6 +5614,26 @@ func (s *RetryLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConf
 
 }
 
+func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+
+	tries := 0
+	for {
+		result, err := s.PluginConfigurationStore.GetByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) {
 
 	tries := 0

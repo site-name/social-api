@@ -351,6 +351,7 @@ type ComplianceStore interface {
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
 	TableName(withField string) string
+	GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error)                // GetByOptions finds and returns 1 plugin configuration with given options
 	Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error)                                    // Upsert inserts or updates given plugin configuration and returns it
 	Get(id string) (*plugins.PluginConfiguration, error)                                                                 // Get finds a plugin configuration with given id then returns it
 	FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) // FilterPluginConfigurations finds and returns a list of configs with given options then returns them

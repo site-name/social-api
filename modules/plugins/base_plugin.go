@@ -68,15 +68,27 @@ func (b *BasePlugin) GetManifest() *PluginManifest {
 	return b.Manifest
 }
 
+func (b *BasePlugin) GetConfiguration() PluginConfigurationType {
+	return b.Configuration
+}
+
+func (b *BasePlugin) SetConfiguration(config PluginConfigurationType) {
+	b.Configuration = config
+}
+
+func (b *BasePlugin) SetActive(active bool) {
+	b.Active = active
+}
+
 func (b *BasePlugin) String() string {
 	return b.Manifest.PluginName
 }
 
-func (b *BasePlugin) ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue interface{}) (*ExternalAccessToken, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ExternalRefresh(data model.StringInterface, request *http.Request, previousValue interface{}) (*ExternalAccessToken, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ExternalRefresh(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -92,15 +104,15 @@ func (b *BasePlugin) AuthenticateUser(request *http.Request, previousValue inter
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) Webhook(request *http.Request, path string, previousValue interface{}) (http.Response, *PluginMethodNotImplemented) {
-	return http.Response{}, new(PluginMethodNotImplemented)
+func (b *BasePlugin) Webhook(request *http.Request, path string, previousValue http.Response) (*http.Response, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) Notify(event interface{}, payload model.StringInterface, previousValue interface{}) *PluginMethodNotImplemented {
-	return new(PluginMethodNotImplemented)
+func (b *BasePlugin) Notify(event string, payload model.StringInterface, previousValue interface{}) (interface{}, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ChangeUserAddress(address *account.Address, addressType string, user *account.User, previousValue *account.Address) (*account.Address, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ChangeUserAddress(address account.Address, addressType string, user *account.User, previousValue account.Address) (*account.Address, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -304,7 +316,7 @@ func (b *BasePlugin) PageDeleted(page_ page.Page, previousValue interface{}) (in
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) FetchTaxesData(previousValue interface{}) (bool, *PluginMethodNotImplemented) {
+func (b *BasePlugin) FetchTaxesData(previousValue bool) (bool, *PluginMethodNotImplemented) {
 	return false, new(PluginMethodNotImplemented)
 }
 
@@ -349,6 +361,10 @@ func (b *BasePlugin) GetPaymentConfig(previousValue interface{}) ([]model.String
 }
 
 func (b *BasePlugin) GetSupportedCurrencies(previousValue interface{}) ([]string, *PluginMethodNotImplemented) {
+	return nil, new(PluginMethodNotImplemented)
+}
+
+func (b *BasePlugin) GetTaxCodeFromObjectMeta(obj interface{}, previousValue model.TaxType) (*model.TaxType, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 
@@ -622,9 +638,13 @@ func (b *BasePlugin) SavePluginConfiguration(pluginConfiguration *plugins.Plugin
 }
 
 func (b *BasePlugin) ValidatePluginConfiguration(pluginConfiguration *plugins.PluginConfiguration) (*model.AppError, *PluginMethodNotImplemented) {
-	return nil, new(PluginMethodNotImplemented)
+	return nil, &PluginMethodNotImplemented{
+		MethodName: "ValidatePluginConfiguration",
+	}
 }
 
 func (b *BasePlugin) PreSavePluginConfiguration(pluginConfiguration *plugins.PluginConfiguration) (*model.AppError, *PluginMethodNotImplemented) {
-	return nil, new(PluginMethodNotImplemented)
+	return nil, &PluginMethodNotImplemented{
+		MethodName: "PreSavePluginConfiguration",
+	}
 }

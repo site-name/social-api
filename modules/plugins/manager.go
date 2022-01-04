@@ -2,7 +2,9 @@ package plugins
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
@@ -20,8 +22,8 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store/sqlstore/payment"
 )
 
 type PluginManager struct {
@@ -45,9 +47,7 @@ func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.Ap
 
 	// finds a list of plugin configs belong found channels
 	pluginConfigsOfChannels, appErr := m.srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
-		ChannelID: squirrel.Eq{
-			m.srv.Store.PluginConfiguration().TableName("ChannelID"): channels.IDs(),
-		},
+		ChannelID: squirrel.Eq{m.srv.Store.PluginConfiguration().TableName("ChannelID"): channels.IDs()},
 		// PrefetchRelatedChannel: true, //
 	})
 	if appErr != nil {
@@ -99,22 +99,23 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []BasePluginIn
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address *account.Address, addressType string, user *account.User) *account.Address {
+func (m *PluginManager) ChangeUserAddress(address account.Address, addressType string, user *account.User) *account.Address {
 	var (
 		notImplt      *PluginMethodNotImplemented
-		previousValue account.Address = *address
+		previousValue account.Address = address
+		address_      *account.Address
 	)
 
 	for _, plg := range m.getPlugins("", true) {
-		address, notImplt = plg.ChangeUserAddress(address, addressType, user, &previousValue)
+		address_, notImplt = plg.ChangeUserAddress(address, addressType, user, previousValue)
 		if notImplt != nil {
-			address = &previousValue
+			address_ = &previousValue
 			continue
 		}
-		previousValue = *address
+		previousValue = *address_
 	}
 
-	return address
+	return address_
 }
 
 func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
@@ -1184,7 +1185,7 @@ func (m *PluginManager) PageDeleted(paGe page.Page) interface{} {
 
 func (m *PluginManager) getPlugin(pluginID string, channelID string) BasePluginInterface {
 	for _, plg := range m.AllPlugins {
-		if plg.CheckPluginId(pluginID) && plg.ChannelId() == channelID {
+		if plg.CheckPluginId(pluginID) && (channelID == "" || plg.ChannelId() == channelID) {
 			return plg
 		}
 	}
@@ -1328,7 +1329,7 @@ func (m *PluginManager) ListExternalAuthentications(activeOnly bool) []model.Str
 	res := []model.StringInterface{}
 
 	for _, plg := range plugins {
-		_, notImplt := plg.ExternalObtainAccessTokens(nil, nil, nil)
+		_, notImplt := plg.ExternalObtainAccessTokens(nil, nil, ExternalAccessTokens{})
 		if notImplt == nil {
 			manifest := plg.GetManifest()
 			res = append(res, model.StringInterface{
@@ -1411,17 +1412,166 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 		return nil, model.NewAppError("SavePluginConfiguration", app.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
 	}
 
-	var plugins []BasePluginInterface
+	var pluginList []BasePluginInterface
 	if channelID != "" {
-		plugins = m.getPlugins(channelID, true)
+		pluginList = m.getPlugins(channelID, true)
 	} else {
-		plugins = m.AllPlugins
+		pluginList = m.AllPlugins
 	}
 
-	for _, plg := range plugins {
+	for _, plg := range pluginList {
 		manifest := plg.GetManifest()
 		if manifest.PluginID == pluginID {
 
+			// try get or create plugin configuration
+			pluginConfig, appErr := m.srv.PluginService().GetPluginConfiguration(&plugins.PluginConfigurationFilterOptions{
+				Identifier: squirrel.Eq{m.srv.Store.PluginConfiguration().TableName("Identifier"): pluginID},
+				ChannelID:  squirrel.Eq{m.srv.Store.PluginConfiguration().TableName("ChannelID"): channelID},
+			})
+			if appErr != nil {
+				if appErr.StatusCode == http.StatusInternalServerError {
+					return nil, appErr
+				}
+
+				pluginConfig, appErr = m.srv.PluginService().UpsertPluginConfiguration(&plugins.PluginConfiguration{
+					Identifier:    pluginID,
+					ChannelID:     channelID,
+					Configuration: plg.GetConfiguration(),
+				})
+				if appErr != nil {
+					return nil, appErr
+				}
+			}
+
+			pluginConfig, appErr, notImplt := plg.SavePluginConfiguration(pluginConfig, cleanedData)
+			if notImplt != nil {
+				m.srv.Log.Warn("Method not implemented", slog.Err(notImplt))
+			}
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			pluginConfig.Name = manifest.PluginName
+			pluginConfig.Description = manifest.Description
+			plg.SetActive(pluginConfig.Active)
+			plg.SetConfiguration(pluginConfig.Configuration)
+
+			return pluginConfig, nil
 		}
 	}
+
+	return nil, nil
+}
+
+func (m *PluginManager) FetchTaxesData() bool {
+	defaultValue := false
+
+	var (
+		value    bool
+		notImplt *PluginMethodNotImplemented
+	)
+	for _, plg := range m.getPlugins("", true) {
+		value, notImplt = plg.FetchTaxesData(defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return defaultValue
+}
+
+func (m *PluginManager) WebhookEndpointWithoutChannel(req *http.Request, pluginID string) (*http.Response, *model.AppError) {
+	splitPath := strings.SplitN(req.URL.Path, pluginID, 1)
+
+	var path string
+	if len(splitPath) == 2 {
+		path = splitPath[1]
+	}
+
+	defaultValue := http.Response{
+		StatusCode: http.StatusNotFound,
+	}
+	plg := m.getPlugin(pluginID, "")
+	if plg == nil {
+		return &defaultValue, nil
+	}
+
+	value, notImplt := plg.Webhook(req, path, defaultValue)
+	if notImplt != nil {
+		return nil, model.NewAppError("WebhookEndpointWithoutChannel", "modules.plugins.method_not_implemented.app_error", nil, notImplt.Error(), http.StatusNotImplemented)
+	}
+
+	return value, nil
+}
+
+func (m *PluginManager) Webhook(req *http.Request, pluginID, channelID string) (*http.Response, *model.AppError) {
+	splitPath := strings.SplitN(req.URL.Path, pluginID, 1)
+
+	var path string
+	if len(splitPath) == 2 {
+		path = splitPath[1]
+	}
+
+	defaultValue := &http.Response{
+		StatusCode: http.StatusNotFound,
+	}
+
+	plg := m.getPlugin(pluginID, channelID)
+	if plg == nil {
+		return defaultValue, nil
+	}
+
+	if !plg.IsActive() {
+		return defaultValue, nil
+	}
+
+	if manifest := plg.GetManifest(); manifest.ConfigurationPerChannel && channelID == "" {
+		return &http.Response{
+			Body: io.NopCloser(strings.NewReader("Incorrect endpoint. Use /plugins/channel/<channel_id>/" + manifest.PluginID)),
+		}, nil
+	}
+
+	res, notImplt := plg.Webhook(req, path, *defaultValue)
+	if notImplt != nil {
+		return nil, model.NewAppError("Webhook", "modules.plugins.method_not_implemented.app_error", nil, notImplt.Error(), http.StatusNotImplemented)
+	}
+	return res, nil
+}
+
+func (m *PluginManager) Notify(event string, payload model.StringInterface, channelID string, pluginID string) interface{} {
+	var defaultValue interface{}
+
+	if pluginID != "" {
+		plg := m.getPlugin(pluginID, channelID)
+		value, notImplt := plg.Notify(event, payload, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+		}
+		return value
+	}
+
+	for _, plg := range m.getPlugins(channelID, true) {
+		value, notImplt := plg.Notify(event, payload, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return defaultValue
+}
+
+func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*ExternalAccessTokens, *model.AppError) {
+	var defaultValue ExternalAccessTokens
+	plg := m.getPlugin(pluginID, "")
+
+	res, notImplt := plg.ExternalObtainAccessTokens(data, req, defaultValue)
+	if notImplt != nil {
+		return nil, model.NewAppError("ExternalObtainAccessTokens", "modules.plugins.method_not_implemented.app_error", nil, notImplt.Error(), http.StatusNotImplemented)
+	}
+
+	return res, nil
 }

@@ -15,6 +15,8 @@ import (
 
 // PluginService contains methods for working with plugins
 type PluginService interface {
+	// GetPluginConfiguration finds and returns a plugin configuration based on given options
+ 	GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError)
 	// AddPublicKey will add plugin public key to the config. Overwrites the previous file
 	AddPublicKey(name string, key io.Reader) *model.AppError
 	// DeletePublicKey will delete plugin public key from the config.

@@ -40,3 +40,18 @@ func (s *ServicePlugin) FilterPluginConfigurations(options *plugins.PluginConfig
 
 	return configs, nil
 }
+
+// GetPluginConfiguration finds and returns a plugin configuration based on given options
+func (s *ServicePlugin) GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError) {
+	config, err := s.srv.Store.PluginConfiguration().GetByOptions(options)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusInternalServerError
+		}
+
+		return nil, model.NewAppError("GetPluginConfiguration", "app.plugin.error_finding_plugin_configuration_by_options.app_error", nil, err.Error(), statusCode)
+	}
+
+	return config, nil
+}

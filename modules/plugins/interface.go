@@ -41,7 +41,7 @@ const (
 
 type PluginConfigurationType []model.StringInterface
 
-type ExternalAccessToken struct {
+type ExternalAccessTokens struct {
 	Token        *string
 	RefreshToken *string
 	CsrfToken    *string
@@ -70,11 +70,11 @@ type BasePluginInterface interface {
 	ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) (model.StringInterface, *PluginMethodNotImplemented)
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
-	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue interface{}) (*ExternalAccessToken, *PluginMethodNotImplemented)
+	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented)
 	// Handle authentication refresh request.
 	// Overwrite this method if the plugin handles authentication flow and supports
 	// refreshing the access.
-	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue interface{}) (*ExternalAccessToken, *PluginMethodNotImplemented)
+	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented)
 	// Handle logout request.
 	// Overwrite this method if the plugin handles logout flow.
 	ExternalLogout(data model.StringInterface, request *http.Request, previousValue interface{}) *PluginMethodNotImplemented
@@ -86,12 +86,12 @@ type BasePluginInterface interface {
 	AuthenticateUser(request *http.Request, previousValue interface{}) (*account.User, *PluginMethodNotImplemented)
 	// Handle received http request.
 	// Overwrite this method if the plugin expects the incoming requests.
-	Webhook(request *http.Request, path string, previousValue interface{}) (http.Response, *PluginMethodNotImplemented)
+	Webhook(request *http.Request, path string, previousValue http.Response) (*http.Response, *PluginMethodNotImplemented)
 	// Handle notification request.
 	// Overwrite this method if the plugin is responsible for sending notifications.
-	Notify(event interface{}, payload model.StringInterface, previousValue interface{}) *PluginMethodNotImplemented
+	Notify(event string, payload model.StringInterface, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	//
-	ChangeUserAddress(address *account.Address, addressType string, user *account.User, previousValue *account.Address) (*account.Address, *PluginMethodNotImplemented)
+	ChangeUserAddress(address account.Address, addressType string, user *account.User, previousValue account.Address) (*account.Address, *PluginMethodNotImplemented)
 	// Calculate the total for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout total. Return TaxedMoney.
@@ -257,7 +257,7 @@ type BasePluginInterface interface {
 	// Overwrite this method if you need to trigger specific logic when a page is deleted.
 	PageDeleted(page_ page.Page, previousValue interface{}) (interface{}, *PluginMethodNotImplemented)
 	// Triggered when ShopFetchTaxRates mutation is called.
-	FetchTaxesData(previousValue interface{}) (bool, *PluginMethodNotImplemented)
+	FetchTaxesData(previousValue bool) (bool, *PluginMethodNotImplemented)
 	//
 	InitializePayment(paymentData model.StringInterface, previousValue interface{}) (*payment.InitializedPaymentResponse, *PluginMethodNotImplemented)
 	//
@@ -310,4 +310,7 @@ type BasePluginInterface interface {
 	IsActive() bool
 	ChannelId() string
 	GetManifest() *PluginManifest
+	GetConfiguration() PluginConfigurationType
+	SetActive(active bool)
+	SetConfiguration(config PluginConfigurationType)
 }

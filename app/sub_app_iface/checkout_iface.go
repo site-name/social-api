@@ -89,7 +89,6 @@ type CheckoutService interface {
 	//
 	// Total is a cost of all lines and shipping fees, minus checkout discounts,
 	// taxes included.
-	//
 	// It takes in account all plugins.
 	CheckoutTotal(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
