@@ -156,8 +156,7 @@ app-layers: ## Extract interface from App struct
 	$(GOBIN)/struct2interface -f "app/warehouse" -o "app/sub_app_iface/warehouse_iface.go" -p "warehouse" -s "ServiceWarehouse" -i "WarehouseService" -t ./app/layer_generators/warehouse_iface.go.tmpl
 	$(GOBIN)/struct2interface -f "app/webhook" -o "app/sub_app_iface/webhook_iface.go" -p "webhook" -s "ServiceWebhook" -i "WebhookService" -t ./app/layer_generators/webhook_iface.go.tmpl
 	$(GOBIN)/struct2interface -f "app/wishlist" -o "app/sub_app_iface/wishlist_iface.go" -p "wishlist" -s "ServiceWishlist" -i "WishlistService" -t ./app/layer_generators/wishlist_iface.go.tmpl
-
-# $(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
+	$(GOBIN)/struct2interface -f "app/plugin" -o "app/plugin/interfaces/plugin_manager_iface.go" -p "plugin" -s "PluginManager" -i "PluginManagerInterface" -t ./app/layer_generators/plugin_manager_iface.go.tmpl
 
 i18n-extract: ## Extract strings for translation from the source code
 	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool

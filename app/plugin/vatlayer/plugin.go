@@ -4,16 +4,17 @@ import (
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app/plugin"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/modules/plugins"
 )
 
 var (
-	_        plugins.BasePluginInterface = (*VatlayerPlugin)(nil)
-	manifest                             = &plugins.PluginManifest{
+	_        interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
+	manifest                                = &interfaces.PluginManifest{
 		PluginID:           "sitename.taxes.vatlayer",
 		PluginName:         "Vatlayer",
 		MetaCodeKey:        "vatlayer.code",
@@ -26,22 +27,22 @@ var (
 		},
 		ConfigStructure: map[string]model.StringInterface{
 			"origin_country": {
-				"type":      plugins.STRING,
+				"type":      interfaces.STRING,
 				"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
 				"label":     "Origin country",
 			},
 			"countries_to_calculate_taxes_from_origin": {
-				"type":      plugins.STRING,
+				"type":      interfaces.STRING,
 				"help_text": "List of destination countries (separated by comma), in ISO format which will use origin country to calculate taxes.",
 				"label":     "Countries for which taxes will be calculated from origin country",
 			},
 			"excluded_countries": {
-				"type":      plugins.STRING,
+				"type":      interfaces.STRING,
 				"help_text": "List of countries (separated by comma), in ISO format for which no VAT should be added.",
 				"label":     "Countries for which no VAT will be added.",
 			},
 			"Access key": {
-				"type":      plugins.PASSWORD,
+				"type":      interfaces.PASSWORD,
 				"help_text": "Required to authenticate to Vatlayer API.",
 				"label":     "Access key",
 			},
@@ -50,16 +51,16 @@ var (
 )
 
 type VatlayerPlugin struct {
-	*plugins.BasePlugin
+	*plugin.BasePlugin
 
 	config      VatlayerConfiguration
 	cachedTaxes model.StringInterface
 }
 
 func init() {
-	plugins.RegisterVatlayerPlugin(func(cfg *plugins.NewPluginConfig) plugins.BasePluginInterface {
+	plugin.RegisterVatlayerPlugin(func(cfg *plugin.NewPluginConfig) interfaces.BasePluginInterface {
 
-		basePlg := plugins.NewBasePlugin(cfg)
+		basePlg := plugin.NewBasePlugin(cfg)
 		basePlg.Manifest = manifest
 
 		vp := &VatlayerPlugin{
@@ -130,6 +131,6 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 	return false
 }
 
-func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *plugins.PluginMethodNotImplemented) {
+func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *interfaces.PluginMethodNotImplemented) {
 	panic("not implemented")
 }

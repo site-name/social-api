@@ -388,7 +388,7 @@ func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayRespon
 }
 
 // GatewayPostProcess
-func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
+func (a *ServicePayment) GatewayPostProcess(paymentTransaction payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
 	// create transaction
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -480,7 +480,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 
 	paymentTransaction.AlreadyProcessed = true
-	if _, appErr = a.UpdateTransaction(paymentTransaction); appErr != nil {
+	if _, appErr = a.UpdateTransaction(&paymentTransaction); appErr != nil {
 		return appErr
 	}
 
@@ -563,7 +563,7 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 }
 
 // UpdatePayment
-func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
+func (a *ServicePayment) UpdatePayment(payMent payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
 	var (
 		changedFields []string
 		appErr        *model.AppError
@@ -579,7 +579,7 @@ func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse
 	}
 
 	if len(changedFields) > 0 {
-		_, appErr = a.UpsertPayment(nil, payMent)
+		_, appErr = a.UpsertPayment(nil, &payMent)
 		if appErr != nil {
 			return appErr
 		}
@@ -588,7 +588,7 @@ func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse
 	return nil
 }
 
-func (a *ServicePayment) UpdatePaymentMethodDetails(payMent *payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string) {
+func (a *ServicePayment) UpdatePaymentMethodDetails(payMent payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string) {
 	if changedFields == nil {
 		changedFields = []string{}
 	}

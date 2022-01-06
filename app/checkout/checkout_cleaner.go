@@ -3,6 +3,7 @@ package checkout
 import (
 	"net/http"
 
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/payment"
@@ -10,7 +11,7 @@ import (
 )
 
 // CleanCheckoutShipping
-func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError {
 	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr
@@ -27,7 +28,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutI
 			return model.NewAppError("CleanCheckoutShipping", "app.discount.shipping_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 		}
 
-		if !deliveruMethodInfo.IsMethodInValidMethods(checkoutInfo) {
+		if !deliveruMethodInfo.IsMethodInValidMethods(&checkoutInfo) {
 			appErr = a.ClearDeliveryMethod(checkoutInfo)
 			if appErr != nil {
 				return appErr
@@ -39,7 +40,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo *checkout.CheckoutI
 	return nil
 }
 
-func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo checkout.CheckoutInfo) *model.AppError {
 	if checkoutInfo.BillingAddress == nil {
 		return model.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -47,7 +48,7 @@ func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo *checkout.CheckoutInf
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(manager interface{}, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, lastPayment *payment.Payment) (*payment.PaymentError, *model.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, lastPayment *payment.Payment) (*payment.PaymentError, *model.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}

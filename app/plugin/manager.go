@@ -1,4 +1,4 @@
-package plugins
+package plugin
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -26,15 +27,17 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+var _ interfaces.PluginManagerInterface = (*PluginManager)(nil)
+
 type PluginManager struct {
-	srv        *app.Server
-	AllPlugins []BasePluginInterface
+	*ServicePlugin
+	AllPlugins []interfaces.BasePluginInterface
 }
 
 // NewPluginManager returns a new plugin manager
-func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.AppError) {
+func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManagerInterface, *model.AppError) {
 	m := &PluginManager{
-		srv: srv,
+		ServicePlugin: s,
 	}
 
 	// find all channels belong to given shop
@@ -86,8 +89,8 @@ func NewPluginManager(srv *app.Server, shopID string) (*PluginManager, *model.Ap
 	return m, nil
 }
 
-func (m *PluginManager) getPlugins(channelID string, active bool) []BasePluginInterface {
-	res := []BasePluginInterface{}
+func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.BasePluginInterface {
+	res := []interfaces.BasePluginInterface{}
 
 	for _, plg := range m.AllPlugins {
 		if ((active && plg.IsActive()) || (!active && !plg.IsActive())) &&
@@ -101,7 +104,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []BasePluginIn
 
 func (m *PluginManager) ChangeUserAddress(address account.Address, addressType string, user *account.User) *account.Address {
 	var (
-		notImplt      *PluginMethodNotImplemented
+		notImplt      *interfaces.PluginMethodNotImplemented
 		previousValue account.Address = address
 		address_      *account.Address
 	)
@@ -136,7 +139,7 @@ func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInf
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		taxedMoney, notImplt = plg.CalculateCheckoutTotal(checkoutInfo, lines, address, discounts, *defaultValue)
@@ -183,7 +186,7 @@ func (m *PluginManager) CalculateCheckoutShipping(checkoutInfo checkout.Checkout
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
@@ -211,7 +214,7 @@ func (m *PluginManager) CalculateCheckoutLineTotal(checkoutInfo checkout.Checkou
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
@@ -256,7 +259,7 @@ func (m *PluginManager) CalculateOrderShipping(orDer order.Order) (*goprices.Tax
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		taxedMoney, notImplt = plg.CalculateOrderShipping(&orDer, *defaultValue)
@@ -283,7 +286,7 @@ func (m *PluginManager) GetCheckoutShippingTaxRate(checkoutInfo checkout.Checkou
 
 	var (
 		deci     *decimal.Decimal
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		deci, notImplt = plg.GetCheckoutShippingTaxRate(checkoutInfo, lines, address, discounts, *defaultValue)
@@ -305,7 +308,7 @@ func (m *PluginManager) GetOrderShippingTaxRate(orDer order.Order, shippingPrice
 
 	var (
 		deci     *decimal.Decimal
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		deci, notImplt = plg.GetOrderShippingTaxRate(orDer, *defaultValue)
@@ -327,7 +330,7 @@ func (m *PluginManager) CalculateOrderlineTotal(orDer order.Order, orderLine ord
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		taxedMoney, notImplt = plg.CalculateOrderLineTotal(&orDer, &orderLine, variant, product, *defaultValue)
@@ -354,7 +357,7 @@ func (m *PluginManager) CalculateCheckoutLineUnitPrice(totalLinePrice goprices.T
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		taxedMoney, notImplt = plg.CalculateCheckoutLineUnitPrice(checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
@@ -382,7 +385,7 @@ func (m *PluginManager) CalculateOrderLineUnit(orDer order.Order, orderLine orde
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		taxedMoney, notImplt = plg.CalculateOrderLineUnit(orDer, orderLine, variant, product, *defaultValue)
@@ -409,7 +412,7 @@ func (m *PluginManager) GetCheckoutLineTaxRate(checkoutInfo checkout.CheckoutInf
 
 	var (
 		deci     *decimal.Decimal
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		deci, notImplt = plg.GetCheckoutLineTaxRate(&checkoutInfo, lines, checkoutLineInfo, address, discounts, *defaultValue)
@@ -431,7 +434,7 @@ func (m *PluginManager) GetOrderLineTaxRate(orDer order.Order, product product_a
 
 	var (
 		deci     *decimal.Decimal
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		deci, notImplt = plg.GetOrderLineTaxRate(orDer, product, variant, address, *defaultValue)
@@ -450,7 +453,7 @@ func (m *PluginManager) GetTaxRateTypeChoices() []*model.TaxType {
 
 	var (
 		taxTypes []*model.TaxType
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		taxTypes, notImplt = plg.GetTaxRateTypeChoices(defaultValue)
@@ -469,7 +472,7 @@ func (m *PluginManager) ShowTaxesOnStoreFront() bool {
 
 	var (
 		showTax  bool
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		showTax, notImplt = plg.ShowTaxesOnStorefront(defaultValue)
@@ -492,7 +495,7 @@ func (m *PluginManager) ApplyTaxesToProduct(product product_and_discount.Product
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		taxedMoney, notImplt = plg.ApplyTaxesToProduct(product, price, country, *defaultValue)
@@ -519,7 +522,7 @@ func (m *PluginManager) ApplyTaxesToShipping(price goprices.Money, shippingAddre
 
 	var (
 		taxedMoney *goprices.TaxedMoney
-		notImplt   *PluginMethodNotImplemented
+		notImplt   *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		taxedMoney, notImplt = plg.ApplyTaxesToShipping(price, shippingAddress, *defaultValue)
@@ -543,7 +546,7 @@ func (m *PluginManager) PreprocessOrderCreation(checkoutInfo checkout.CheckoutIn
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkoutInfo.Channel.Id, true) {
 		value, notImplt = plg.PreprocessOrderCreation(checkoutInfo, discounts, lines, defaultValue)
@@ -562,7 +565,7 @@ func (m *PluginManager) CustomerCreated(customer account.User) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.CustomerCreated(customer, defaultValue)
@@ -581,7 +584,7 @@ func (m *PluginManager) CustomerUpdated(customer account.User) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.CustomerUpdated(customer, defaultValue)
@@ -600,7 +603,7 @@ func (m *PluginManager) ProductCreated(product product_and_discount.Product) int
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductCreated(product, defaultValue)
@@ -619,7 +622,7 @@ func (m *PluginManager) ProductUpdated(product product_and_discount.Product) int
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductUpdated(product, defaultValue)
@@ -638,7 +641,7 @@ func (m *PluginManager) ProductDeleted(product product_and_discount.Product, var
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductDeleted(product, variants, defaultValue)
@@ -657,7 +660,7 @@ func (m *PluginManager) ProductVariantCreated(variant product_and_discount.Produ
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductVariantCreated(variant, defaultValue)
@@ -676,7 +679,7 @@ func (m *PluginManager) ProductVariantUpdated(variant product_and_discount.Produ
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductVariantUpdated(variant, defaultValue)
@@ -695,7 +698,7 @@ func (m *PluginManager) ProductVariantDeleted(variant product_and_discount.Produ
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.ProductVariantDeleted(variant, defaultValue)
@@ -713,7 +716,7 @@ func (m *PluginManager) ProductVariantOutOfStock(stock warehouse.Stock) {
 	var defaultValue interface{}
 
 	var (
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		notImplt = plg.ProductVariantOutOfStock(stock, defaultValue)
@@ -727,7 +730,7 @@ func (m *PluginManager) ProductVariantBackInStock(stock warehouse.Stock) {
 	var defaultValue interface{}
 
 	var (
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		notImplt = plg.ProductVariantBackInStock(stock, defaultValue)
@@ -742,7 +745,7 @@ func (m *PluginManager) OrderCreated(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderCreated(orDer, defaultValue)
@@ -761,7 +764,7 @@ func (m *PluginManager) OrderConfirmed(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderConfirmed(orDer, defaultValue)
@@ -780,7 +783,7 @@ func (m *PluginManager) DraftOrderCreated(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.DraftOrderCreated(orDer, defaultValue)
@@ -799,7 +802,7 @@ func (m *PluginManager) DraftOrderDeleted(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.DraftOrderDeleted(orDer, defaultValue)
@@ -818,7 +821,7 @@ func (m *PluginManager) DraftOrderUpdated(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.DraftOrderUpdated(orDer, defaultValue)
@@ -837,7 +840,7 @@ func (m *PluginManager) SaleCreated(sale product_and_discount.Sale, currentCatal
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.SaleCreated(sale, currentCatalogue, defaultValue)
@@ -856,7 +859,7 @@ func (m *PluginManager) SaleDeleted(sale product_and_discount.Sale, previousCata
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.SaleDeleted(sale, previousCatalogue, defaultValue)
@@ -875,7 +878,7 @@ func (m *PluginManager) SaleUpdated(sale product_and_discount.Sale, previousCata
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.SaleUpdated(sale, previousCatalogue, currentCatalogue, defaultValue)
@@ -894,7 +897,7 @@ func (m *PluginManager) InvoiceRequest(orDer order.Order, inVoice invoice.Invoic
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.InvoiceRequest(orDer, inVoice, number, defaultValue)
@@ -922,7 +925,7 @@ func (m *PluginManager) InvoiceDelete(inVoice invoice.Invoice) (interface{}, *mo
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		value, notImplt = plg.InvoiceDelete(inVoice, defaultValue)
@@ -950,7 +953,7 @@ func (m *PluginManager) InvoiceSent(inVoice invoice.Invoice, email string) (inte
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(channelID, true) {
 		value, notImplt = plg.InvoiceSent(inVoice, email, defaultValue)
@@ -969,7 +972,7 @@ func (m *PluginManager) OrderFullyPaid(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderFullyPaid(orDer, defaultValue)
@@ -988,7 +991,7 @@ func (m *PluginManager) OrderUpdated(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderUpdated(orDer, defaultValue)
@@ -1007,7 +1010,7 @@ func (m *PluginManager) OrderCancelled(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderCancelled(orDer, defaultValue)
@@ -1026,7 +1029,7 @@ func (m *PluginManager) OrderFulfilled(orDer order.Order) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.OrderFulfilled(orDer, defaultValue)
@@ -1050,7 +1053,7 @@ func (m *PluginManager) FulfillmentCreated(fulfillment order.Fulfillment) (inter
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.FulfillmentCreated(fulfillment, defaultValue)
@@ -1074,7 +1077,7 @@ func (m *PluginManager) FulfillmentCanceled(fulfillment order.Fulfillment) (inte
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(orDer.ChannelID, true) {
 		value, notImplt = plg.FulfillmentCanceled(fulfillment, defaultValue)
@@ -1093,7 +1096,7 @@ func (m *PluginManager) CheckoutCreated(checkOut checkout.Checkout) interface{} 
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkOut.ChannelID, true) {
 		value, notImplt = plg.CheckoutCreated(checkOut, defaultValue)
@@ -1112,7 +1115,7 @@ func (m *PluginManager) CheckoutUpdated(checkOut checkout.Checkout) interface{} 
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins(checkOut.ChannelID, true) {
 		value, notImplt = plg.CheckoutUpdated(checkOut, defaultValue)
@@ -1131,7 +1134,7 @@ func (m *PluginManager) PageCreated(paGe page.Page) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.PageCreated(paGe, defaultValue)
@@ -1150,7 +1153,7 @@ func (m *PluginManager) PageUpdated(paGe page.Page) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.PageUpdated(paGe, defaultValue)
@@ -1169,7 +1172,7 @@ func (m *PluginManager) PageDeleted(paGe page.Page) interface{} {
 
 	var (
 		value    interface{}
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.PageDeleted(paGe, defaultValue)
@@ -1183,7 +1186,7 @@ func (m *PluginManager) PageDeleted(paGe page.Page) interface{} {
 	return value
 }
 
-func (m *PluginManager) getPlugin(pluginID string, channelID string) BasePluginInterface {
+func (m *PluginManager) getPlugin(pluginID string, channelID string) interfaces.BasePluginInterface {
 	for _, plg := range m.AllPlugins {
 		if plg.CheckPluginId(pluginID) && (channelID == "" || plg.ChannelId() == channelID) {
 			return plg
@@ -1209,7 +1212,7 @@ func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInfo
 	if plg != nil {
 		var (
 			value    *payment.GatewayResponse
-			notImplt *PluginMethodNotImplemented
+			notImplt *interfaces.PluginMethodNotImplemented
 		)
 
 		switch methodName {
@@ -1230,9 +1233,11 @@ func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInfo
 			return nil, fmt.Errorf("no method found")
 		}
 
-		if notImplt == nil && value != nil {
-			return value, nil
+		if notImplt != nil {
+			return nil, notImplt
 		}
+
+		return value, nil
 	}
 
 	return nil, fmt.Errorf("Payment plugin %s for %s payment method is in-accessible", gateway, methodName)
@@ -1324,12 +1329,12 @@ func (m *PluginManager) ListPaymentGateways(currency string, checkOut *checkout.
 }
 
 func (m *PluginManager) ListExternalAuthentications(activeOnly bool) []model.StringInterface {
-	plugins := m.getPlugins("", activeOnly)
+	filteredPlugins := m.getPlugins("", activeOnly)
 
 	res := []model.StringInterface{}
 
-	for _, plg := range plugins {
-		_, notImplt := plg.ExternalObtainAccessTokens(nil, nil, ExternalAccessTokens{})
+	for _, plg := range filteredPlugins {
+		_, notImplt := plg.ExternalObtainAccessTokens(nil, nil, plugins.ExternalAccessTokens{})
 		if notImplt == nil {
 			manifest := plg.GetManifest()
 			res = append(res, model.StringInterface{
@@ -1358,7 +1363,7 @@ func (m *PluginManager) AssignTaxCodeToObjectMeta(obj interface{}, taxCode strin
 	var (
 		defaultValue = new(model.TaxType)
 		value        *model.TaxType
-		notImplt     *PluginMethodNotImplemented
+		notImplt     *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.AssignTaxCodeToObjectMeta(obj, taxCode, *defaultValue)
@@ -1389,7 +1394,7 @@ func (m *PluginManager) GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxTyp
 	var (
 		defaultValue = new(model.TaxType)
 		value        *model.TaxType
-		notImplt     *PluginMethodNotImplemented
+		notImplt     *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.GetTaxCodeFromObjectMeta(obj, *defaultValue)
@@ -1412,7 +1417,7 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 		return nil, model.NewAppError("SavePluginConfiguration", app.InvalidArgumentAppErrorID, nil, "", http.StatusBadRequest)
 	}
 
-	var pluginList []BasePluginInterface
+	var pluginList []interfaces.BasePluginInterface
 	if channelID != "" {
 		pluginList = m.getPlugins(channelID, true)
 	} else {
@@ -1468,7 +1473,7 @@ func (m *PluginManager) FetchTaxesData() bool {
 
 	var (
 		value    bool
-		notImplt *PluginMethodNotImplemented
+		notImplt *interfaces.PluginMethodNotImplemented
 	)
 	for _, plg := range m.getPlugins("", true) {
 		value, notImplt = plg.FetchTaxesData(defaultValue)
@@ -1564,8 +1569,8 @@ func (m *PluginManager) Notify(event string, payload model.StringInterface, chan
 	return defaultValue
 }
 
-func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*ExternalAccessTokens, *model.AppError) {
-	var defaultValue ExternalAccessTokens
+func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*plugins.ExternalAccessTokens, *model.AppError) {
+	var defaultValue plugins.ExternalAccessTokens
 	plg := m.getPlugin(pluginID, "")
 
 	res, notImplt := plg.ExternalObtainAccessTokens(data, req, defaultValue)
@@ -1591,8 +1596,8 @@ func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model.St
 	return defaultValue
 }
 
-func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) ExternalAccessTokens {
-	defaultValue := ExternalAccessTokens{}
+func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) plugins.ExternalAccessTokens {
+	var defaultValue plugins.ExternalAccessTokens
 
 	plg := m.getPlugin(pluginID, "")
 	if plg != nil {
@@ -1610,7 +1615,7 @@ func (m *PluginManager) AuthenticateUser(req *http.Request) *account.User {
 	var (
 		defaultValue *account.User = nil
 		value        *account.User
-		notImplt     *PluginMethodNotImplemented
+		notImplt     *interfaces.PluginMethodNotImplemented
 	)
 
 	for _, plg := range m.getPlugins("", true) {
@@ -1647,7 +1652,7 @@ func (m *PluginManager) ExternalVerify(pluginID string, data model.StringInterfa
 
 	plg := m.getPlugin(pluginID, "")
 	if plg != nil {
-		user, data, notImplt := plg.ExternalVerify(data, req, AType{
+		user, data, notImplt := plg.ExternalVerify(data, req, interfaces.AType{
 			User: defaultUser,
 			Data: defaultData,
 		})

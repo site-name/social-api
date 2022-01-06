@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/plugins"
@@ -15,8 +16,6 @@ import (
 
 // PluginService contains methods for working with plugins
 type PluginService interface {
-	// GetPluginConfiguration finds and returns a plugin configuration based on given options
- 	GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError)
 	// AddPublicKey will add plugin public key to the config. Overwrites the previous file
 	AddPublicKey(name string, key io.Reader) *model.AppError
 	// DeletePublicKey will delete plugin public key from the config.
@@ -35,6 +34,8 @@ type PluginService interface {
 	// GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 	// and plugins that are installed locally.
 	GetMarketplacePlugins(filter *plugins.MarketplacePluginFilter) ([]*plugins.MarketplacePlugin, *model.AppError)
+	// GetPluginConfiguration finds and returns a plugin configuration based on given options
+	GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError)
 	// GetPluginStatuses returns the status for plugins installed on this server.
 	GetPluginStatuses() (plugins.PluginStatuses, *model.AppError)
 	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
@@ -43,6 +44,8 @@ type PluginService interface {
 	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
 	// lock instead.
 	GetPluginsEnvironment() (*plugin.Environment, *model.AppError)
+	// NewPluginManager returns a new plugin manager
+	NewPluginManager(shopID string) (interfaces.PluginManagerInterface, *model.AppError)
 	// SyncPlugins synchronizes the plugins installed locally
 	// with the plugin bundles available in the file store.
 	SyncPlugins() *model.AppError

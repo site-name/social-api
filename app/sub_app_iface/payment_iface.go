@@ -7,6 +7,7 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
@@ -23,13 +24,52 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	ProcessPayment(payMent *payment.Payment, token string, manager interface{}, channelSlug string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// Confirm confirms payment
+	Confirm(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// @requireActivePayment
+	//
+	// @withLockedPayment
+	//
+	// @raisePaymentError
+	//
+	// @paymentPostProcess
+	Authorize(payMent payment.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// @requireActivePayment
+	//
+	// @withLockedPayment
+	//
+	// @raisePaymentError
+	//
+	// @paymentPostProcess
+	Capture(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// @requireActivePayment
+	//
+	// @withLockedPayment
+	//
+	// @raisePaymentError
+	//
+	// @paymentPostProcess
+	ProcessPayment(payMent payment.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// @requireActivePayment
+	//
+	// @withLockedPayment
+	//
+	// @raisePaymentError
+	//
+	// @paymentPostProcess
+	Refund(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	// @requireActivePayment
+	//
+	// @withLockedPayment
+	//
+	// @raisePaymentError
+	//
+	// @paymentPostProcess
+	Void(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
 	// CleanAuthorize Check if payment can be authorized
 	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError
 	// CleanCapture Check if payment can be captured.
 	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError
-	// Confirm confirms payment
-	Confirm(payMent *payment.Payment, manager interface{}, channelSlug string, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
 	// CreatePayment Create a payment instance.
 	//
 	// This method is responsible for creating payment instances that works for
@@ -52,7 +92,7 @@ type PaymentService interface {
 	// returning string could be "" or long string
 	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)
 	// GatewayPostProcess
-	GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError
+	GatewayPostProcess(paymentTransaction payment.PaymentTransaction, payMent *payment.Payment) *model.AppError
 	// GetAllPaymentsByCheckout returns all payments that belong to given checkout
 	GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError)
 	// GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
@@ -66,7 +106,7 @@ type PaymentService interface {
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError)
 	// PaymentRefundOrVoid
-	PaymentRefundOrVoid(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentError, *model.AppError)
+	PaymentRefundOrVoid(payMent *payment.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*payment.PaymentError, *model.AppError)
 	// PaymentsByOption returns all payments that satisfy given option
 	PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError)
 	// StoreCustomerId stores new value into given user's PrivateMetadata
@@ -74,15 +114,13 @@ type PaymentService interface {
 	// TransactionsByOption returns a list of transactions filtered based on given option
 	TransactionsByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, *model.AppError)
 	// UpdatePayment
-	UpdatePayment(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError
+	UpdatePayment(payMent payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
 	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
 	UpsertPayment(transaction *gorp.Transaction, payMent *payment.Payment) (*payment.Payment, *model.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError
-	Authorize(payMent *payment.Payment, token string, manager interface{}, channelSlug string, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
-	Capture(payMent *payment.Payment, manager interface{}, channelSlug string, amount *decimal.Decimal, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
 	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
@@ -90,13 +128,11 @@ type PaymentService interface {
 	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
 	GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError)
 	GetTotalAuthorized(payments []*payment.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError)
-	ListGateways(manager interface{}, channelSlug string) ([]*payment.PaymentGateway, *model.AppError)
-	ListPaymentSources(gateway string, customerID string, manager interface{}, channelSlug string) ([]*payment.CustomerSource, *model.AppError)
+	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*payment.PaymentGateway
+	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*payment.CustomerSource, *model.AppError)
 	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
-	Refund(payMent *payment.Payment, manager interface{}, channelSlug string, amount *decimal.Decimal) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
 	SaveTransaction(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
-	UpdatePaymentMethodDetails(payMent *payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string)
+	UpdatePaymentMethodDetails(payMent payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string)
 	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
-	Void(payMent *payment.Payment, manager interface{}, channelSlug string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
 }

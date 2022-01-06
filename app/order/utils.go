@@ -880,7 +880,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo *checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
 	var (
 		balanceData       = giftcard.BalanceData{}
 		usedByUser        = checkoutInfo.User

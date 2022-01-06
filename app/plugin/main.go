@@ -1,15 +1,17 @@
-package plugins
+package plugin
+
+import "github.com/sitename/sitename/app/plugin/interfaces"
 
 type pluginInitObjType struct {
-	NewPluginFunc func(cfg *NewPluginConfig) BasePluginInterface
-	Manifest      *PluginManifest
+	NewPluginFunc func(cfg *NewPluginConfig) interfaces.BasePluginInterface
+	Manifest      *interfaces.PluginManifest
 }
 
 var (
 	pluginInitObjects []pluginInitObjType
 )
 
-func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) BasePluginInterface, manifest *PluginManifest) {
+func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) interfaces.BasePluginInterface, manifest *interfaces.PluginManifest) {
 	if f != nil && manifest != nil {
 		pluginInitObjects = append(pluginInitObjects, pluginInitObjType{
 			NewPluginFunc: f,

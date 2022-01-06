@@ -256,7 +256,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddres
 // UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
 // deliveryMethod must be either *ShippingMethod or *Warehouse or nil
-func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError {
 	// validate `deliveryMethod` is valid:
 	if deliveryMethod != nil {
 		switch deliveryMethod.(type) {
@@ -273,7 +273,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkou
 
 	checkoutInfo.DeliveryMethodInfo = deliveryMethodIface
 
-	err := checkoutInfo.DeliveryMethodInfo.UpdateChannelListings(checkoutInfo)
+	err := checkoutInfo.DeliveryMethodInfo.UpdateChannelListings(&checkoutInfo)
 	// if error is non-nil, this means we need another method that can access database Store
 	if err != nil && err == checkout.ErrorNotUsable {
 		appErr = a.updateChannelListings(checkoutInfo.DeliveryMethodInfo, checkoutInfo)
@@ -285,7 +285,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo *checkou
 	return nil
 }
 
-func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo *checkout.CheckoutInfo) *model.AppError {
+func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo checkout.CheckoutInfo) *model.AppError {
 	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
 		ShippingMethodID: squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id},
 		ChannelID:        squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): checkoutInfo.Channel.Id},

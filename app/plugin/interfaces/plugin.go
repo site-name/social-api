@@ -1,4 +1,4 @@
-package plugins
+package interfaces
 
 import (
 	"fmt"
@@ -41,13 +41,6 @@ const (
 
 type PluginConfigurationType []model.StringInterface
 
-type ExternalAccessTokens struct {
-	Token        *string
-	RefreshToken *string
-	CsrfToken    *string
-	User         *account.User
-}
-
 // PluginManifest
 type PluginManifest struct {
 	PluginName              string
@@ -75,11 +68,11 @@ type BasePluginInterface interface {
 	ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue model.StringInterface) (model.StringInterface, *PluginMethodNotImplemented)
 	// Handle authentication request responsible for obtaining access tokens.
 	// Overwrite this method if the plugin handles authentication flow.
-	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented)
+	ExternalObtainAccessTokens(data model.StringInterface, request *http.Request, previousValue plugins.ExternalAccessTokens) (*plugins.ExternalAccessTokens, *PluginMethodNotImplemented)
 	// Handle authentication refresh request.
 	// Overwrite this method if the plugin handles authentication flow and supports
 	// refreshing the access.
-	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue ExternalAccessTokens) (*ExternalAccessTokens, *PluginMethodNotImplemented)
+	ExternalRefresh(data model.StringInterface, request *http.Request, previousValue plugins.ExternalAccessTokens) (*plugins.ExternalAccessTokens, *PluginMethodNotImplemented)
 	// Handle logout request.
 	// Overwrite this method if the plugin handles logout flow.
 	ExternalLogout(data model.StringInterface, request *http.Request, previousValue model.StringInterface) *PluginMethodNotImplemented
