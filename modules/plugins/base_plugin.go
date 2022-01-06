@@ -92,11 +92,11 @@ func (b *BasePlugin) ExternalRefresh(data model.StringInterface, request *http.R
 	return nil, new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ExternalLogout(data model.StringInterface, request *http.Request, previousValue interface{}) *PluginMethodNotImplemented {
+func (b *BasePlugin) ExternalLogout(data model.StringInterface, request *http.Request, previousValue model.StringInterface) *PluginMethodNotImplemented {
 	return new(PluginMethodNotImplemented)
 }
 
-func (b *BasePlugin) ExternalVerify(data model.StringInterface, request *http.Request, previousValue interface{}) (*account.User, model.StringInterface, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ExternalVerify(data model.StringInterface, request *http.Request, previousValue AType) (*account.User, model.StringInterface, *PluginMethodNotImplemented) {
 	return nil, nil, new(PluginMethodNotImplemented)
 }
 
@@ -397,7 +397,7 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *checkout.Chec
 	}, nil
 }
 
-func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue interface{}) (model.StringInterface, *PluginMethodNotImplemented) {
+func (b *BasePlugin) ExternalAuthenticationUrl(data model.StringInterface, request *http.Request, previousValue model.StringInterface) (model.StringInterface, *PluginMethodNotImplemented) {
 	return nil, new(PluginMethodNotImplemented)
 }
 

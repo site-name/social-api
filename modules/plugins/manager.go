@@ -1575,3 +1575,87 @@ func (m *PluginManager) ExternalObtainAccessTokens(pluginID string, data model.S
 
 	return res, nil
 }
+
+func (m *PluginManager) ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) model.StringInterface {
+	defaultValue := model.StringInterface{}
+
+	plg := m.getPlugin(pluginID, "")
+	if plg != nil {
+		res, notImplt := plg.ExternalAuthenticationUrl(data, req, defaultValue)
+		if notImplt != nil {
+			return defaultValue
+		}
+		return res
+	}
+
+	return defaultValue
+}
+
+func (m *PluginManager) ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) ExternalAccessTokens {
+	defaultValue := ExternalAccessTokens{}
+
+	plg := m.getPlugin(pluginID, "")
+	if plg != nil {
+		res, notImplt := plg.ExternalRefresh(data, req, defaultValue)
+		if notImplt != nil {
+			return defaultValue
+		}
+		return *res
+	}
+
+	return defaultValue
+}
+
+func (m *PluginManager) AuthenticateUser(req *http.Request) *account.User {
+	var (
+		defaultValue *account.User = nil
+		value        *account.User
+		notImplt     *PluginMethodNotImplemented
+	)
+
+	for _, plg := range m.getPlugins("", true) {
+		value, notImplt = plg.AuthenticateUser(req, defaultValue)
+		if notImplt != nil {
+			value = defaultValue
+			continue
+		}
+		defaultValue = value
+	}
+
+	return value
+}
+
+func (m *PluginManager) ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) model.StringInterface {
+	defaultValue := model.StringInterface{}
+
+	plg := m.getPlugin(pluginID, "")
+	if plg != nil {
+		notImplt := plg.ExternalLogout(data, req, defaultValue)
+		if notImplt != nil {
+			return defaultValue
+		}
+	}
+
+	return defaultValue
+}
+
+func (m *PluginManager) ExternalVerify(pluginID string, data model.StringInterface, req *http.Request) (*account.User, model.StringInterface) {
+	var (
+		defaultData = model.StringInterface{}
+		defaultUser *account.User
+	)
+
+	plg := m.getPlugin(pluginID, "")
+	if plg != nil {
+		user, data, notImplt := plg.ExternalVerify(data, req, AType{
+			User: defaultUser,
+			Data: defaultData,
+		})
+		if notImplt != nil {
+			return defaultUser, defaultData
+		}
+		return user, data
+	}
+
+	return defaultUser, defaultData
+}
