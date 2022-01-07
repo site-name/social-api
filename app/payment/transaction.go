@@ -3,6 +3,7 @@ package payment
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
@@ -30,11 +31,7 @@ func (a *ServicePayment) TransactionsByOption(option *payment.PaymentTransaction
 
 func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		PaymentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: paymentID,
-			},
-		},
+		PaymentID: squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("PaymentID"): paymentID},
 	})
 	if appErr != nil {
 		return nil, appErr

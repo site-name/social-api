@@ -99,8 +99,8 @@ type PaymentService interface {
 	GetLastpayment(payments []*payment.Payment) *payment.Payment
 	// GetSubTotal adds up all Total prices of given order lines
 	GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)
-	// IsCurrencySupported checks if given currency is supported by system
-	IsCurrencySupported(currency string, gatewayID string, manager interface{}) (bool, *model.AppError)
+	// IsCurrencySupported Return true if the given gateway supports given currency.
+	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
 	PaymentByID(transaction *gorp.Transaction, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError)
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized

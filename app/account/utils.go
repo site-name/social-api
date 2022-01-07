@@ -13,8 +13,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util/fileutils"
@@ -153,8 +155,71 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 }
 
 // StoreUserAddress Add address to user address book and set as default one.
-func (s *ServiceAccount) StoreUserAddress(user *account.User, address *account.Address, addressType string, manager interface{}) *model.AppError {
-	panic("not implemented")
+func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+	address_ := manager.ChangeUserAddress(address, addressType, user)
+
+	addressFilterOptions := squirrel.And{}
+	if address_.FirstName != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("FirstName"): address_.FirstName})
+	}
+	if address_.LastName != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("LastName"): address_.LastName})
+	}
+	if address_.CompanyName != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("CompanyName"): address_.CompanyName})
+	}
+	if address_.Phone != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("Phone"): address_.Phone})
+	}
+	if address_.PostalCode != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("PostalCode"): address_.PostalCode})
+	}
+	if address_.Country != "" {
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("Country"): address_.Country})
+	}
+
+	addresses, appErr := s.AddressesByOption(&account.AddressFilterOption{
+		UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): user.Id},
+		Other:  addressFilterOptions,
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return appErr
+		}
+		// ignore not found error
+	}
+
+	if len(addresses) == 0 {
+		// create new address
+		address_.Id = ""
+		address_, appErr = s.UpsertAddress(nil, address_)
+		if appErr != nil {
+			return appErr
+		}
+
+		_, appErr = s.AddUserAddress(&account.UserAddress{
+			UserID:    user.Id,
+			AddressID: address_.Id,
+		})
+		if appErr != nil {
+			return appErr
+		}
+
+	} else {
+		address_ = addresses[0]
+	}
+
+	if addressType == account.ADDRESS_TYPE_BILLING {
+		if user.DefaultBillingAddressID == nil {
+			appErr = s.SetUserDefaultBillingAddress(user, address_.Id)
+		}
+	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
+		if user.DefaultShippingAddressID == nil {
+			appErr = s.SetUserDefaultShippingAddress(user, address_.Id)
+		}
+	}
+
+	return appErr
 }
 
 // SetUserDefaultBillingAddress sets default billing address for given user
@@ -172,6 +237,40 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defau
 }
 
 // ChangeUserDefaultAddress set default address for given user
-func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, addressString string, addressType string, manager interface{}) *model.AppError {
-	panic("not implemented")
+func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, address *account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+	address_ := manager.ChangeUserAddress(*address, addressType, user)
+
+	if addressType == account.ADDRESS_TYPE_BILLING {
+		if user != nil && user.DefaultBillingAddressID != nil {
+			_, appErr := s.AddUserAddress(&account.UserAddress{
+				UserID:    user.Id,
+				AddressID: *user.DefaultBillingAddressID,
+			})
+			if appErr != nil {
+				return appErr
+			}
+		}
+
+		appErr := s.SetUserDefaultBillingAddress(user, address_.Id)
+		if appErr != nil {
+			return appErr
+		}
+	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
+		if user != nil && user.DefaultShippingAddressID != nil {
+			_, appErr := s.AddUserAddress(&account.UserAddress{
+				UserID:    user.Id,
+				AddressID: *user.DefaultShippingAddressID,
+			})
+			if appErr != nil {
+				return appErr
+			}
+		}
+
+		appErr := s.SetUserDefaultShippingAddress(user, address_.Id)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
 }

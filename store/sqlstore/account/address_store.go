@@ -21,7 +21,7 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	as := &SqlAddressStore{Store: sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(account.Address{}, store.AddressTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.Address{}, as.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("FirstName").SetMaxSize(account.USER_FIRST_NAME_MAX_RUNES)
 		table.ColMap("LastName").SetMaxSize(account.USER_LAST_NAME_MAX_RUNES)
@@ -40,14 +40,27 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 }
 
 func (as *SqlAddressStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_address_lastname", store.AddressTableName, "LastName")
-	as.CreateIndexIfNotExists("idx_address_firstname", store.AddressTableName, "FirstName")
-	as.CreateIndexIfNotExists("idx_address_city", store.AddressTableName, "City")
-	as.CreateIndexIfNotExists("idx_address_country", store.AddressTableName, "Country")
-	as.CreateIndexIfNotExists("idx_address_phone", store.AddressTableName, "Phone")
+	as.CreateIndexIfNotExists("idx_address_lastname", as.TableName(""), "LastName")
+	as.CreateIndexIfNotExists("idx_address_firstname", as.TableName(""), "FirstName")
+	as.CreateIndexIfNotExists("idx_address_city", as.TableName(""), "City")
+	as.CreateIndexIfNotExists("idx_address_country", as.TableName(""), "Country")
+	as.CreateIndexIfNotExists("idx_address_phone", as.TableName(""), "Phone")
 
-	as.CreateIndexIfNotExists("idx_address_firstname_lower_textpattern", store.AddressTableName, "lower(FirstName) text_pattern_ops")
-	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", store.AddressTableName, "lower(LastName) text_pattern_ops")
+	as.CreateIndexIfNotExists("idx_address_firstname_lower_textpattern", as.TableName(""), "lower(FirstName) text_pattern_ops")
+	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", as.TableName(""), "lower(LastName) text_pattern_ops")
+}
+
+func (as *SqlAddressStore) TableName(withField string) string {
+	name := "Addresses"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (as *SqlAddressStore) OrderBy() string {
+	return "CreateAt ASC"
 }
 
 func (as *SqlAddressStore) ModelFields() model.StringArray {
@@ -89,11 +102,9 @@ func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
 }
 
 func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var (
-		insertFunc func(list ...interface{}) error = as.GetMaster().Insert
-	)
+	var upsertor store.Upsertor = as.GetMaster()
 	if transaction != nil {
-		insertFunc = transaction.Insert
+		upsertor = transaction
 	}
 
 	address.PreSave()
@@ -101,7 +112,7 @@ func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.
 		return nil, err
 	}
 
-	if err := insertFunc(address); err != nil {
+	if err := upsertor.Insert(address); err != nil {
 		return nil, errors.Wrapf(err, "failed to save Address with addressId=%s", address.Id)
 	}
 
@@ -130,12 +141,12 @@ func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *accoun
 
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 	var res account.Address
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AddressTableName+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AddressTableName, addressID)
+			return nil, store.NewErrNotFound(as.TableName(""), addressID)
 		}
-		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", store.AddressTableName, addressID)
+		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", as.TableName(""), addressID)
 	}
 
 	return &res, nil
@@ -145,24 +156,25 @@ func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields()...).
-		From(store.AddressTableName).
-		OrderBy(store.TableOrderingMap[store.AddressTableName])
+		From(as.TableName("")).
+		OrderBy(as.OrderBy())
 
 	// parse query
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Addresses.Id"))
+		query = query.Where(option.Id)
 	}
-	if option.OrderID != nil && option.OrderID.Id != nil && util.StringInSlice(option.OrderID.On, []string{"BillingAddressID", "ShippingAddressID"}) {
+	if option.OrderID != nil && option.OrderID.Id != nil &&
+		util.StringInSlice(string(option.OrderID.On), []string{"BillingAddressID", "ShippingAddressID"}) {
 
 		query = query.
 			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
-			Where(option.OrderID.Id.ToSquirrel("Orders.Id"))
+			Where(option.OrderID.Id)
 	}
 	if option.UserID != nil {
 		addressIDSelect := as.GetQueryBuilder().
 			Select("AddressID").
 			From(store.UserAddressTableName).
-			Where(option.UserID.ToSquirrel("UserAddresses.UserID"))
+			Where(option.UserID)
 
 		query = query.Where(squirrel.Expr("Addresses.Id IN ?", addressIDSelect))
 	}
@@ -181,7 +193,7 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 }
 
 func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
-	result, err := as.GetMaster().Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN $1", addressIDs)
+	result, err := as.GetMaster().Exec("DELETE FROM "+as.TableName("")+" WHERE Id IN $1", addressIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete addresses")
 	}

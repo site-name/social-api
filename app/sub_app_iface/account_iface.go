@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/mattermost/gorp"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -22,6 +23,8 @@ import (
 type AccountService interface {
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
+	// AddUserAddress add 1 user-address relation to database then returns it
+	AddUserAddress(relation *account.UserAddress) (*account.UserAddress, *model.AppError)
 	// AddressDeleteForUser just remove the relationship between user and address. Address still exist
 	AddressDeleteForUser(userID, addressID string) *model.AppError
 	// AddressesByOption returns a list of addresses by given option
@@ -37,7 +40,7 @@ type AccountService interface {
 	// AuthenticateUserForLogin
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	// ChangeUserDefaultAddress set default address for given user
-	ChangeUserDefaultAddress(user *account.User, addressString string, addressType string, manager interface{}) *model.AppError
+	ChangeUserDefaultAddress(user *account.User, address *account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
 	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
@@ -141,7 +144,7 @@ type AccountService interface {
 	// SetUserDefaultShippingAddress sets default shipping address for given user
 	SetUserDefaultShippingAddress(user *account.User, defaultShippingAddressID string) *model.AppError
 	// StoreUserAddress Add address to user address book and set as default one.
-	StoreUserAddress(user *account.User, address *account.Address, addressType string, manager interface{}) *model.AppError
+	StoreUserAddress(user *account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
 	UpsertAddress(transaction *gorp.Transaction, address *account.Address) (*account.Address, *model.AppError)
 	// UserByOrderId returns an user who owns given order

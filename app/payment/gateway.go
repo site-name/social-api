@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -402,7 +403,64 @@ func (a *ServicePayment) Confirm(
 	additionalData map[string]interface{}, // can be none
 
 ) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError) {
-	panic("not implt")
+
+	paymentErr := a.requireActivePayment("Confirm", payMent)
+	if paymentErr != nil {
+		return nil, paymentErr, nil
+	}
+
+	lockedPayment, appErr := a.withLockedPayment("Confirm", payMent)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	transactionsOfPayment, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
+		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): payment.ACTION_TO_CONFIRM},
+		IsSuccess: model.NewBool(true),
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	var (
+		lastTransaction = transactionsOfPayment[len(transactionsOfPayment)-1]
+		token           string
+	)
+	if lastTransaction.Token != "" {
+		token = lastTransaction.Token
+	}
+
+	paymentData, appErr := a.CreatePaymentInformation(lockedPayment, &token, nil, nil, false, additionalData)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	response, errMsg := a.fetchGatewayResponse(manager.ConfirmPayment, lockedPayment.GateWay, *paymentData, channelID)
+	actionRequired := response != nil && response.ActionRequired
+
+	if response != nil {
+		appErr = a.UpdatePayment(*lockedPayment, response)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+	}
+
+	paymentTransaction, appErr := a.GetAlreadyProcessedTransactionOrCreateNewTransaction(lockedPayment.Id, payment.CONFIRM, paymentData, actionRequired, response, errMsg)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	paymentErr = a.raisePaymentError("Refund", *paymentTransaction)
+	if paymentErr != nil {
+		return nil, paymentErr, nil
+	}
+
+	appErr = a.paymentPostProcess(*paymentTransaction)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	return paymentTransaction, nil, nil
 }
 
 func (a *ServicePayment) ListPaymentSources(
@@ -441,16 +499,8 @@ func (a *ServicePayment) fetchGatewayResponse(paymentFunc interfaces.PaymentMeth
 
 func (a *ServicePayment) getPastTransactionToken(payMent *payment.Payment, kind string) (string, *payment.PaymentError, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		PaymentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: payMent.Id,
-			},
-		},
-		Kind: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: kind,
-			},
-		},
+		PaymentID: squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("PaymentID"): payMent.Id},
+		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): kind},
 		IsSuccess: model.NewBool(true),
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {

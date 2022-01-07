@@ -3,6 +3,7 @@ package account
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -62,11 +63,7 @@ func (a *ServiceAccount) UpsertAddress(transaction *gorp.Transaction, address *a
 
 func (a *ServiceAccount) AddressesByUserId(userID string) ([]*account.Address, *model.AppError) {
 	return a.AddressesByOption(&account.AddressFilterOption{
-		UserID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: userID,
-			},
-		},
+		UserID: squirrel.Eq{a.srv.Store.UserAddress().TableName("UserID"): userID},
 	})
 }
 

@@ -17,7 +17,7 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	uas := &SqlUserAddressStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.UserAddress{}, store.UserAddressTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.UserAddress{}, uas.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -28,9 +28,22 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	return uas
 }
 
+func (uas *SqlUserAddressStore) TableName(withField string) string {
+	name := "UserAddresses"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (uas *SqlUserAddressStore) OrderBy() string {
+	return ""
+}
+
 func (uas *SqlUserAddressStore) CreateIndexesIfNotExists() {
-	uas.CreateForeignKeyIfNotExists(store.UserAddressTableName, "UserID", store.UserTableName, "Id", true)
-	uas.CreateForeignKeyIfNotExists(store.UserAddressTableName, "AddressID", store.AddressTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "UserID", store.UserTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "AddressID", store.AddressTableName, "Id", true)
 }
 
 func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
@@ -41,7 +54,7 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 
 	if err := uas.GetMaster().Insert(userAddress); err != nil {
 		if uas.IsUniqueConstraintError(err, []string{"UserID", "AddressID", "useraddresses_userid_addressid_key"}) {
-			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "userId: "+userAddress.UserID+", addressId: "+userAddress.AddressID)
+			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to save user-address instance with id=%s", userAddress.Id)
 	}
@@ -59,14 +72,11 @@ func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
 		invalidGrgs = append(invalidGrgs, "addressID")
 	}
 	if len(invalidGrgs) > 0 {
-		return store.NewErrInvalidInput(store.UserAddressTableName, strings.Join(invalidGrgs, ", "), userID+"/"+addressID)
+		return store.NewErrInvalidInput(uas.TableName(""), strings.Join(invalidGrgs, ", "), userID+"/"+addressID)
 	}
 
 	result, err := uas.GetMaster().Exec(
-		`DELETE FROM `+store.UserAddressTableName+`
-		WHERE (
-			UserID = UID AND AddressID = :AddrID
-		)`,
+		`DELETE FROM `+uas.TableName("")+` WHERE UserID = UID AND AddressID = :AddrID`,
 		map[string]interface{}{
 			"UID":    userID,
 			"AddrID": addressID,

@@ -8,6 +8,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -346,15 +347,11 @@ func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError)
 }
 
 // AnAddressOfOrder returns shipping address of given order if presents
-func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError) {
+func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID account.WhichOrderAddressID) (*account.Address, *model.AppError) {
 	addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 		OrderID: &account.AddressFilterOrderOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: orderID,
-				},
-			},
-			On: string(whichAddressID),
+			Id: squirrel.Eq{a.srv.Store.Order().TableName("Id"): orderID},
+			On: whichAddressID,
 		},
 	})
 	if appErr != nil {

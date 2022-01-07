@@ -90,11 +90,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	)
 	if len(checkoutAddressIDs) > 0 {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: checkoutAddressIDs,
-				},
-			},
+			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): checkoutAddressIDs},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {

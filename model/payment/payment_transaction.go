@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -69,9 +70,9 @@ type PaymentTransaction struct {
 
 // PaymentTransactionFilterOpts contains options for filter payment's transactions
 type PaymentTransactionFilterOpts struct {
-	Id             *model.StringFilter
-	PaymentID      *model.StringFilter
-	Kind           *model.StringFilter
+	Id             squirrel.Sqlizer
+	PaymentID      squirrel.Sqlizer
+	Kind           squirrel.Sqlizer
 	ActionRequired *bool
 	IsSuccess      *bool
 }

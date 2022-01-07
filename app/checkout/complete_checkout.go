@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -66,22 +67,14 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo checkout.Chec
 	)
 
 	if checkoutInfo.User != nil && shippingAddress != nil {
-		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, shippingAddress, account.ADDRESS_TYPE_SHIPPING, manager)
+		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, *shippingAddress, account.ADDRESS_TYPE_SHIPPING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: shippingAddress.Id,
-				},
-			},
-			UserID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkoutInfo.User.Id,
-				},
-			},
+			Id:     squirrel.Eq{s.srv.Store.Address().TableName("Id"): shippingAddress.Id},
+			UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): checkoutInfo.User.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode != http.StatusNotFound {
@@ -131,22 +124,14 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo checkout.Checkout
 	)
 
 	if checkoutInfo.User != nil && billingAddress != nil {
-		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, billingAddress, account.ADDRESS_TYPE_BILLING, manager)
+		appErr = s.srv.AccountService().StoreUserAddress(checkoutInfo.User, *billingAddress, account.ADDRESS_TYPE_BILLING, manager)
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			UserID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkoutInfo.User.Id,
-				},
-			},
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: billingAddress.Id,
-				},
-			},
+			UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): checkoutInfo.User.Id},
+			Id:     squirrel.Eq{s.srv.Store.Address().TableName("Id"): billingAddress.Id},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr

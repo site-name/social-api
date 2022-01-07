@@ -1253,6 +1253,12 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
+func (s *RetryLayerAddressStore) OrderBy() string {
+
+	return s.AddressStore.OrderBy()
+
+}
+
 func (s *RetryLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 
 	tries := 0
@@ -4931,6 +4937,12 @@ func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerOrderStore) OrderBy() string {
+
+	return s.OrderStore.OrderBy()
 
 }
 
@@ -9477,6 +9489,12 @@ func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerUserAddressStore) OrderBy() string {
+
+	return s.UserAddressStore.OrderBy()
 
 }
 

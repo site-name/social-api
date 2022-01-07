@@ -32,7 +32,7 @@ type OrderService interface {
 	// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 	AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError)
 	// AnAddressOfOrder returns shipping address of given order if presents
-	AnAddressOfOrder(orderID string, whichAddressID order.WhichOrderAddressID) (*account.Address, *model.AppError)
+	AnAddressOfOrder(orderID string, whichAddressID account.WhichOrderAddressID) (*account.Address, *model.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
 	ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error)
 	// AutomaticallyFulfillDigitalLines

@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
@@ -506,7 +507,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos []*order.OrderLineData,
 	}
 
 	// find address of order of orderLine
-	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, order.ShippingAddressID)
+	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, account.ShippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}

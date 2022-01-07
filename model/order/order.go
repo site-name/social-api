@@ -63,13 +63,6 @@ var OrderOriginStrings = map[OrderOrigin]string{
 	REISSUE:  "Reissue",
 }
 
-type WhichOrderAddressID string
-
-const (
-	ShippingAddressID WhichOrderAddressID = "ShippingAddressID"
-	BillingAddressID  WhichOrderAddressID = "BillingAddressID"
-)
-
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"` // NOT editable

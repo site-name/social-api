@@ -609,6 +609,7 @@ type (
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
 		Get(id string) (*payment.PaymentTransaction, error)                                                                      // Get returns a payment transaction with given id
 		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                     // Update updates given transaction and returns updated one
@@ -644,6 +645,8 @@ type (
 	OrderStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(holder order.Order) []interface{}
 		Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
 		Get(id string) (*order.Order, error)                                            // Get find order in database with given id
@@ -987,6 +990,8 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ModelFields() model.StringArray
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(addr account.Address) []interface{}
 		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
@@ -1079,6 +1084,8 @@ type (
 	}
 	UserAddressStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
+		OrderBy() string
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
 	}

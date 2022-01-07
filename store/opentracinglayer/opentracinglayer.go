@@ -1237,6 +1237,19 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*account.Address, 
 	return result, err
 }
 
+func (s *OpenTracingLayerAddressStore) OrderBy() string {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.OrderBy")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.AddressStore.OrderBy()
+	return result
+}
+
 func (s *OpenTracingLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Save")
@@ -4571,6 +4584,19 @@ func (s *OpenTracingLayerOrderStore) Get(id string) (*order.Order, error) {
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerOrderStore) OrderBy() string {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.OrderBy")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.OrderStore.OrderBy()
+	return result
 }
 
 func (s *OpenTracingLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
@@ -8716,6 +8742,19 @@ func (s *OpenTracingLayerUserAddressStore) DeleteForUser(userID string, addressI
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerUserAddressStore) OrderBy() string {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.OrderBy")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.UserAddressStore.OrderBy()
+	return result
 }
 
 func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {

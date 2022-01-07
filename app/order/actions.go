@@ -1395,11 +1395,7 @@ func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorp.Transaction,
 
 	if len(originalOrderAddressIDs) > 0 {
 		addressesOfOriginalOrder, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: originalOrderAddressIDs,
-				},
-			},
+			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): originalOrderAddressIDs},
 		})
 		if appErr != nil {
 			return nil, appErr
