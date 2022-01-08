@@ -1,9 +1,11 @@
 package vatlayer
 
 import (
+	"net/http"
 	"strings"
 
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
@@ -13,8 +15,9 @@ import (
 )
 
 var (
-	_        interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
-	manifest                                = &interfaces.PluginManifest{
+	_ interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
+
+	manifest = &interfaces.PluginManifest{
 		PluginID:           "sitename.taxes.vatlayer",
 		PluginName:         "Vatlayer",
 		MetaCodeKey:        "vatlayer.code",
@@ -61,6 +64,8 @@ func init() {
 	plugin.RegisterVatlayerPlugin(func(cfg *plugin.NewPluginConfig) interfaces.BasePluginInterface {
 
 		basePlg := plugin.NewBasePlugin(cfg)
+
+		// override base plugin's manifest
 		basePlg.Manifest = manifest
 
 		vp := &VatlayerPlugin{
@@ -116,21 +121,84 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 	}
 
 	// The previous plugin already calculated taxes so we can skip our logic
-	if taxedMoneyRange, ok := previousValue.(*goprices.TaxedMoneyRange); ok && taxedMoneyRange != nil {
-		equal1, err1 := taxedMoneyRange.Start.Net.Equal(taxedMoneyRange.Start.Gross)
-		equal2, err2 := taxedMoneyRange.Stop.Net.Equal(taxedMoneyRange.Stop.Gross)
+	switch t := previousValue.(type) {
+	case *goprices.TaxedMoneyRange:
+		equal1, err1 := t.Start.Net.Equal(t.Start.Gross)
+		equal2, err2 := t.Stop.Net.Equal(t.Stop.Gross)
 
 		return err1 == nil && err2 == nil && !equal1 && !equal2
-	}
 
-	if taxedMoney, ok := previousValue.(*goprices.TaxedMoney); ok && taxedMoney != nil {
-		equal, err := taxedMoney.Net.Equal(taxedMoney.Gross)
+	case goprices.TaxedMoneyRange:
+		equal1, err1 := t.Start.Net.Equal(t.Start.Gross)
+		equal2, err2 := t.Stop.Net.Equal(t.Stop.Gross)
+
+		return err1 == nil && err2 == nil && !equal1 && !equal2
+
+	case *goprices.TaxedMoney:
+		equal, err := t.Net.Equal(t.Gross)
 		return err == nil && !equal
-	}
 
-	return false
+	case goprices.TaxedMoney:
+		equal, err := t.Net.Equal(t.Gross)
+		return err == nil && !equal
+
+	default:
+		return false
+	}
 }
 
-func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *interfaces.PluginMethodNotImplemented) {
-	panic("not implemented")
+// previousValue must be either TaxedMoneyRange or TaxedMoney
+func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
+	if vp.skipPlugin(previousValue) {
+		return &previousValue, nil
+	}
+
+	checkoutInfo.Checkout.PopulateNonDbFields() // this is needed
+
+	checkoutSubTotal, appErr := vp.Manager.Srv.CheckoutService().CheckoutSubTotal(
+		vp.Manager,
+		checkoutInfo,
+		lines,
+		address,
+		discounts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	checkoutShippingPrice, appErr := vp.Manager.Srv.CheckoutService().CheckoutShippingPrice(
+		vp.Manager,
+		checkoutInfo,
+		lines,
+		address,
+		discounts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	sum, err := checkoutSubTotal.Add(checkoutShippingPrice)
+	if err != nil {
+		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	sub, err := sum.Sub(checkoutInfo.Checkout.Discount)
+	if err != nil {
+		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return sub, nil
+}
+
+// Try to fetch cached taxes on the plugin level.
+//
+// If the plugin doesn't have cached taxes for a given country it will fetch it
+// from cache or db.
+func (vp *VatlayerPlugin) getTaxesForCountry(country string) {
+	if country == "" {
+		originCountryCode := vp.config.OriginCountry
+		if originCountryCode == "" {
+
+		}
+	}
 }

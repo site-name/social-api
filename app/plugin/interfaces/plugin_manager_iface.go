@@ -28,9 +28,13 @@ type PluginManagerInterface interface {
 	//
 	// NOTE: obj must be either Product or ProductType
 	GetTaxCodeFromObjectMeta(obj interface{}) (*model.TaxType, *model.AppError)
+	// GetTaxRatePercentageValue
+	//
+	// obj must be either Product or ProductType
+	GetTaxRatePercentageValue(obj interface{}, country string) (*decimal.Decimal, *model.AppError)
 	ApplyTaxesToProduct(product product_and_discount.Product, price goprices.Money, country string, channelID string) (*goprices.TaxedMoney, *model.AppError)
 	ApplyTaxesToShipping(price goprices.Money, shippingAddress account.Address, channelID string) (*goprices.TaxedMoney, *model.AppError)
-	AuthenticateUser(req *http.Request) *account.User
+	AuthenticateUser(req *http.Request) (*account.User, *model.AppError)
 	AuthorizePayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
 	CalculateCheckoutLineTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	CalculateCheckoutLineUnitPrice(totalLinePrice goprices.TaxedMoney, quantity int, checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
@@ -41,64 +45,63 @@ type PluginManagerInterface interface {
 	CalculateOrderShipping(orDer order.Order) (*goprices.TaxedMoney, *model.AppError)
 	CalculateOrderlineTotal(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (interface{}, *model.AppError)
 	CapturePayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
-	ChangeUserAddress(address account.Address, addressType string, user *account.User) *account.Address
-	CheckoutCreated(checkOut checkout.Checkout) interface{}
-	CheckoutUpdated(checkOut checkout.Checkout) interface{}
+	ChangeUserAddress(address account.Address, addressType string, user *account.User) (*account.Address, *model.AppError)
+	CheckoutCreated(checkOut checkout.Checkout) (interface{}, *model.AppError)
+	CheckoutUpdated(checkOut checkout.Checkout) (interface{}, *model.AppError)
 	ConfirmPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
-	CustomerCreated(customer account.User) interface{}
-	CustomerUpdated(customer account.User) interface{}
-	DraftOrderCreated(orDer order.Order) interface{}
-	DraftOrderDeleted(orDer order.Order) interface{}
-	DraftOrderUpdated(orDer order.Order) interface{}
-	ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) model.StringInterface
-	ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) model.StringInterface
+	CustomerCreated(customer account.User) (interface{}, *model.AppError)
+	CustomerUpdated(customer account.User) (interface{}, *model.AppError)
+	DraftOrderCreated(orDer order.Order) (interface{}, *model.AppError)
+	DraftOrderDeleted(orDer order.Order) (interface{}, *model.AppError)
+	DraftOrderUpdated(orDer order.Order) (interface{}, *model.AppError)
+	ExternalAuthenticationUrl(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model.AppError)
+	ExternalLogout(pluginID string, data model.StringInterface, req *http.Request) (model.StringInterface, *model.AppError)
 	ExternalObtainAccessTokens(pluginID string, data model.StringInterface, req *http.Request) (*plugins.ExternalAccessTokens, *model.AppError)
-	ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) plugins.ExternalAccessTokens
-	ExternalVerify(pluginID string, data model.StringInterface, req *http.Request) (*account.User, model.StringInterface)
-	FetchTaxesData() bool
+	ExternalRefresh(pluginID string, data model.StringInterface, req *http.Request) (*plugins.ExternalAccessTokens, *model.AppError)
+	ExternalVerify(pluginID string, data model.StringInterface, req *http.Request) (*account.User, model.StringInterface, *model.AppError)
+	FetchTaxesData() (bool, *model.AppError)
 	FulfillmentCanceled(fulfillment order.Fulfillment) (interface{}, *model.AppError)
 	FulfillmentCreated(fulfillment order.Fulfillment) (interface{}, *model.AppError)
 	GetCheckoutLineTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, checkoutLineInfo checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	GetCheckoutShippingTaxRate(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
-	GetClientToken(gateway string, tokenConfig payment.TokenConfig, channelID string) string
+	GetClientToken(gateway string, tokenConfig payment.TokenConfig, channelID string) (string, *model.AppError)
 	GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	GetOrderShippingTaxRate(orDer order.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
-	GetTaxRatePercentageValue(obj interface{}, country string)
-	GetTaxRateTypeChoices() []*model.TaxType
+	GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppError)
 	InitializePayment(gateway string, paymentData model.StringInterface, channelID string) *payment.InitializedPaymentResponse
 	InvoiceDelete(inVoice invoice.Invoice) (interface{}, *model.AppError)
-	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string) interface{}
+	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string) (interface{}, *model.AppError)
 	InvoiceSent(inVoice invoice.Invoice, email string) (interface{}, *model.AppError)
-	ListExternalAuthentications(activeOnly bool) []model.StringInterface
-	ListPaymentGateways(currency string, checkOut *checkout.Checkout, channelID string, activeOnly bool) []*payment.PaymentGateway
+	ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model.AppError)
+	ListPaymentGateways(currency string, checkOut *checkout.Checkout, channelID string, activeOnly bool) ([]*payment.PaymentGateway)
 	ListPaymentSources(gateway, customerID, channelID string) ([]*payment.CustomerSource, error)
-	Notify(event string, payload model.StringInterface, channelID string, pluginID string) interface{}
-	OrderCancelled(orDer order.Order) interface{}
-	OrderConfirmed(orDer order.Order) interface{}
-	OrderCreated(orDer order.Order) interface{}
-	OrderFulfilled(orDer order.Order) interface{}
-	OrderFullyPaid(orDer order.Order) interface{}
-	OrderUpdated(orDer order.Order) interface{}
-	PageCreated(paGe page.Page) interface{}
-	PageDeleted(paGe page.Page) interface{}
-	PageUpdated(paGe page.Page) interface{}
-	PreprocessOrderCreation(checkoutInfo checkout.CheckoutInfo, discounts []*product_and_discount.DiscountInfo, lines checkout.CheckoutLineInfos) interface{}
+	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError)
+	OrderCancelled(orDer order.Order) (interface{}, *model.AppError)
+	OrderConfirmed(orDer order.Order) (interface{}, *model.AppError)
+	OrderCreated(orDer order.Order) (interface{}, *model.AppError)
+	OrderFulfilled(orDer order.Order) (interface{}, *model.AppError)
+	OrderFullyPaid(orDer order.Order) (interface{}, *model.AppError)
+	OrderUpdated(orDer order.Order) (interface{}, *model.AppError)
+	PageCreated(paGe page.Page) (interface{}, *model.AppError)
+	PageDeleted(paGe page.Page) (interface{}, *model.AppError)
+	PageUpdated(paGe page.Page) (interface{}, *model.AppError)
+	PreprocessOrderCreation(checkoutInfo checkout.CheckoutInfo, discounts []*product_and_discount.DiscountInfo, lines checkout.CheckoutLineInfos) (interface{}, *model.AppError)
 	ProcessPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
-	ProductCreated(product product_and_discount.Product) interface{}
-	ProductDeleted(product product_and_discount.Product, variants []int) interface{}
-	ProductUpdated(product product_and_discount.Product) interface{}
-	ProductVariantBackInStock(stock warehouse.Stock)
-	ProductVariantCreated(variant product_and_discount.ProductVariant) interface{}
-	ProductVariantDeleted(variant product_and_discount.ProductVariant) interface{}
-	ProductVariantOutOfStock(stock warehouse.Stock)
-	ProductVariantUpdated(variant product_and_discount.ProductVariant) interface{}
+	ProductCreated(product product_and_discount.Product) (interface{}, *model.AppError)
+	ProductDeleted(product product_and_discount.Product, variants []int) (interface{}, *model.AppError)
+	ProductUpdated(product product_and_discount.Product) (interface{}, *model.AppError)
+	ProductVariantBackInStock(stock warehouse.Stock) *model.AppError
+	ProductVariantCreated(variant product_and_discount.ProductVariant) (interface{}, *model.AppError)
+	ProductVariantDeleted(variant product_and_discount.ProductVariant) (interface{}, *model.AppError)
+	ProductVariantOutOfStock(stock warehouse.Stock) *model.AppError
+	ProductVariantUpdated(variant product_and_discount.ProductVariant) (interface{}, *model.AppError)
 	RefundPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
-	SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo) interface{}
-	SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo) interface{}
-	SaleUpdated(sale product_and_discount.Sale, previousCatalogue, currentCatalogue product_and_discount.NodeCatalogueInfo) interface{}
+	SaleCreated(sale product_and_discount.Sale, currentCatalogue product_and_discount.NodeCatalogueInfo) (interface{}, *model.AppError)
+	SaleDeleted(sale product_and_discount.Sale, previousCatalogue product_and_discount.NodeCatalogueInfo) (interface{}, *model.AppError)
+	SaleUpdated(sale product_and_discount.Sale, previousCatalogue, currentCatalogue product_and_discount.NodeCatalogueInfo) (interface{}, *model.AppError)
 	SavePluginConfiguration(pluginID, channelID string, cleanedData model.StringInterface) (*plugins.PluginConfiguration, *model.AppError)
-	ShowTaxesOnStoreFront() bool
-	TokenIsRequiredAsPaymentInput(gateway, channelID string) bool
+	ShowTaxesOnStoreFront() (bool, *model.AppError)
+	TokenIsRequiredAsPaymentInput(gateway, channelID string) (bool, *model.AppError)
 	TranslationCreated(translation interface{})
 	TranslationUpdated(translation interface{})
 	VoidPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)

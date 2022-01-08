@@ -156,7 +156,10 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 
 // StoreUserAddress Add address to user address book and set as default one.
 func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
-	address_ := manager.ChangeUserAddress(address, addressType, user)
+	address_, appErr := manager.ChangeUserAddress(address, addressType, user)
+	if appErr != nil {
+		return appErr
+	}
 
 	addressFilterOptions := squirrel.And{}
 	if address_.FirstName != "" {
@@ -238,7 +241,10 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defau
 
 // ChangeUserDefaultAddress set default address for given user
 func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, address *account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
-	address_ := manager.ChangeUserAddress(*address, addressType, user)
+	address_, appErr := manager.ChangeUserAddress(*address, addressType, user)
+	if appErr != nil {
+		return appErr
+	}
 
 	if addressType == account.ADDRESS_TYPE_BILLING {
 		if user != nil && user.DefaultBillingAddressID != nil {
