@@ -1,6 +1,7 @@
 package order
 
 import (
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
@@ -22,4 +23,9 @@ func (s *ServiceOrder) SendOrderConfirmation(orDer *order.Order, redirectURL str
 
 func (s *ServiceOrder) SendFulfillmentConfirmationToCustomer(orDer *order.Order, fulfillment *order.Fulfillment, user *account.User, _, manager interface{}) *model.AppError {
 	panic("not implemented")
+}
+
+// SendOrderConfirmed Send email which tells customer that order has been confirmed
+func (s *ServiceOrder) SendOrderConfirmed(orDer order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) {
+
 }

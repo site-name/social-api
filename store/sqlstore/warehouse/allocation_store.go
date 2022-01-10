@@ -16,25 +16,38 @@ type SqlAllocationStore struct {
 }
 
 func NewSqlAllocationStore(s store.Store) store.AllocationStore {
-	ws := &SqlAllocationStore{s}
+	as := &SqlAllocationStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.Allocation{}, store.AllocationTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(warehouse.Allocation{}, as.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderLineID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("StockID").SetMaxSize(store.UUID_MAX_LENGTH)
 
 		table.SetUniqueTogether("OrderLineID", "StockID")
 	}
-	return ws
+	return as
 }
 
-func (ws *SqlAllocationStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(store.AllocationTableName, "OrderLineID", store.StockTableName, "Id", true)
-	ws.CreateForeignKeyIfNotExists(store.AllocationTableName, "StockID", store.OrderLineTableName, "Id", true)
+func (as *SqlAllocationStore) CreateIndexesIfNotExists() {
+	as.CreateForeignKeyIfNotExists(as.TableName(""), "OrderLineID", store.StockTableName, "Id", true)
+	as.CreateForeignKeyIfNotExists(as.TableName(""), "StockID", store.OrderLineTableName, "Id", true)
 }
 
-func (ws *SqlAllocationStore) ModelFields() []string {
+func (as *SqlAllocationStore) TableName(withField string) string {
+	name := "Allocations"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (as *SqlAllocationStore) OrderBy() string {
+	return "CreateAt ASC"
+}
+
+func (as *SqlAllocationStore) ModelFields() []string {
 	return []string{
 		"Allocations.Id",
 		"Allocations.CreateAt",
@@ -44,7 +57,7 @@ func (ws *SqlAllocationStore) ModelFields() []string {
 	}
 }
 
-func (ws *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []interface{} {
+func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []interface{} {
 	return []interface{}{
 		&allocation.Id,
 		&allocation.CreateAt,
@@ -80,10 +93,10 @@ func (as *SqlAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocati
 		if isSaving {
 			err = transaction.Insert(allocation)
 		} else {
-			err = transaction.SelectOne(&oldAllocation, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": allocation.Id})
+			err = transaction.SelectOne(&oldAllocation, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": allocation.Id})
 			if err != nil {
 				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(store.AllocationTableName, allocation.Id)
+					return nil, store.NewErrNotFound(as.TableName(""), allocation.Id)
 				}
 				return nil, errors.Wrapf(err, "failed to find allocation with id=%s", allocation.Id)
 			}
@@ -96,7 +109,7 @@ func (as *SqlAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocati
 
 		if err != nil {
 			if as.IsUniqueConstraintError(err, []string{"OrderLineID", "StockID", "allocations_orderlineid_stockid_key"}) {
-				return nil, store.NewErrInvalidInput(store.AllocationTableName, "OrderLineID/StockID", "duplicate")
+				return nil, store.NewErrInvalidInput(as.TableName(""), "OrderLineID/StockID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert allocation with id=%s", allocation.Id)
 		}
@@ -112,10 +125,10 @@ func (as *SqlAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocati
 // Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
 	var res warehouse.Allocation
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AllocationTableName, id)
+			return nil, store.NewErrNotFound(as.TableName(""), id)
 		}
 		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)
 	}
@@ -159,15 +172,15 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.AllocationTableName).
-		OrderBy(store.TableOrderingMap[store.AllocationTableName])
+		From(as.TableName("")).
+		OrderBy(as.OrderBy())
 
 	// parse option
 	if option.AnnotateStockAvailableQuantity {
 		query.
 			Column(`Stocks.Quantity - COALESCE( SUM( T3.QuantityAllocated ), 0 ) AS StockAvailableQuantity`). // NOTE: `T3` alias of `Allocations`
 			InnerJoin(store.StockTableName+" ON (Stocks.Id = Allocations.StockID)").
-			LeftJoin(store.AllocationTableName+" AS T3 ON (T3.StockID = Stocks.Id)").
+			LeftJoin(as.TableName("")+" AS T3 ON (T3.StockID = Stocks.Id)").
 			GroupBy("Allocations.Id", "Stocks.Quantity")
 	}
 
@@ -276,7 +289,7 @@ func (as *SqlAllocationStore) BulkDelete(transaction *gorp.Transaction, allocati
 		execFunc = transaction.Exec
 	}
 
-	result, err := execFunc("DELETE FROM "+store.AllocationTableName+" WHERE Id IN $1", allocationIDs)
+	result, err := execFunc("DELETE FROM "+as.TableName("")+" WHERE Id IN $1", allocationIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete allocations")
 	}

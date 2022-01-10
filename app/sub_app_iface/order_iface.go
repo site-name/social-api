@@ -156,7 +156,7 @@ type OrderService interface {
 	// externalReference can be empty
 	MarkOrderAsPaid(orDer *order.Order, requestUser *account.User, _ interface{}, manager interface{}, externalReference string) (*payment.PaymentError, *model.AppError)
 	// OrderAuthorized
-	OrderAuthorized(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
+	OrderAuthorized(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
 	// OrderAwaitsFulfillmentApproval
 	OrderAwaitsFulfillmentApproval(fulfillments []*order.Fulfillment, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines, mnager interface{}, notifyCustomer bool) *model.AppError
 	// OrderById retuns an order with given id
@@ -170,7 +170,7 @@ type OrderService interface {
 	// OrderCanVoid
 	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
 	// OrderCaptured
-	OrderCaptured(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
+	OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
 	// OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
 	OrderConfirmed(ord *order.Order, user *account.User, _ interface{}, manager interface{}, sendConfirmationEmail bool) *model.AppError
 	// OrderCreated. `fromDraft` is default to false
@@ -200,7 +200,7 @@ type OrderService interface {
 	// OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
 	// OrderShippingUpdated
-	OrderShippingUpdated(ord *order.Order, manager interface{}) *model.AppError
+	OrderShippingUpdated(ord order.Order, manager interface{}) *model.AppError
 	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 	OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError)
 	// OrderTotalAuthorized returns order's total authorized amount

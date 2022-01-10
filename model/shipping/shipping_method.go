@@ -59,12 +59,12 @@ type ShippingMethodFilterOption struct {
 
 func (s *ShippingMethod) PopulateNonDbFields() {
 	s.MinOrderWeight = &measurement.Weight{
-		Amount: &s.MinimumOrderWeight,
+		Amount: s.MinimumOrderWeight,
 		Unit:   s.WeightUnit,
 	}
 	if s.MaximumOrderWeight != nil {
 		s.MaxOrderWeight = &measurement.Weight{
-			Amount: s.MaximumOrderWeight,
+			Amount: *s.MaximumOrderWeight,
 			Unit:   s.WeightUnit,
 		}
 	}

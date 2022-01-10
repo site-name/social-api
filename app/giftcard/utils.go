@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -106,7 +107,7 @@ func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *mod
 }
 
 // FulfillNonShippableGiftcards
-func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
+func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError) {
 	if user != nil && !model.IsValidId(user.Id) {
 		user = nil
 	}
@@ -137,11 +138,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, order
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError) {
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: giftcardLines.IDs(),
-			},
-		},
+		Id:                 squirrel.Eq{s.srv.Store.OrderLine().TableName("Id"): giftcardLines.IDs()},
 		IsShippingRequired: model.NewBool(true),
 	})
 
@@ -155,7 +152,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines order.OrderLines) (
 }
 
 // GiftcardsCreate creates purchased gift cards
-func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError) {
 	var (
 		customerUser          *account.User = nil
 		customerUserID        *string
@@ -178,11 +175,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines orde
 
 	// refetch order lines with prefetching options
 	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: giftcardLines.IDs(),
-			},
-		},
+		Id: squirrel.Eq{s.srv.Store.OrderLine().TableName("Id"): giftcardLines.IDs()},
 		PrefetchRelated: order.OrderLinePrefetchRelated{
 			VariantProduct: true,
 		},
@@ -257,7 +250,7 @@ func GetGiftcardLines(lines order.OrderLines) order.OrderLines {
 	return res
 }
 
-func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interface{}) (interface{}, *model.AppError) {
+func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError) {
 	panic("not implt")
 }
 
@@ -286,8 +279,9 @@ func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) *time.Tim
 	return expiryDate
 }
 
-func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interface{}, channelSlug string) *model.AppError {
+func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError {
 	panic("not implemented")
+
 }
 
 func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError {
@@ -309,11 +303,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account
 
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.Id,
-			},
-		},
+		OrderID:    squirrel.Eq{s.srv.Store.OrderLine().TableName("OrderID"): orDer.Id},
 		IsGiftcard: model.NewBool(true),
 	})
 	if appErr != nil {

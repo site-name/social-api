@@ -204,7 +204,7 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorp.Transact
 	})
 }
 
-func (s *ServiceOrder) OrderCreatedEvent(orDer *order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderCreatedEvent(orDer order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError) {
 	var (
 		eventType = order.PLACED_FROM_DRAFT
 		userID    *string
@@ -227,7 +227,7 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer *order.Order, user *account.User,
 	})
 }
 
-func (s *ServiceOrder) OrderConfirmedEvent(orDer *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderConfirmedEvent(orDer order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id

@@ -216,11 +216,7 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorp.Transaction, ord *orde
 // ReCalculateOrderWeight
 func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -231,6 +227,13 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord
 		hasGoRoutines bool
 		weight        = measurement.ZeroWeight
 	)
+
+	setWeight := func(w measurement.Weight) {
+		a.mutex.Lock()
+		defer a.mutex.Unlock()
+
+		weight = &w
+	}
 
 	setAppError := func(err *model.AppError) {
 		a.mutex.Lock()
@@ -256,7 +259,7 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord
 					if err != nil {
 						setAppError(model.NewAppError("ReCalculateOrderWeight", app.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
-						weight = addedWeight
+						setWeight(*addedWeight)
 					}
 					a.mutex.Unlock()
 				}
@@ -276,7 +279,7 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord
 	}
 
 	weight, _ = weight.ConvertTo(ord.WeightUnit)
-	ord.WeightAmount = *weight.Amount
+	ord.WeightAmount = weight.Amount
 
 	_, appError = a.UpsertOrder(transaction, ord)
 	return appError
@@ -529,11 +532,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return
@@ -573,11 +572,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 
 func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -706,16 +701,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 	}
 
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.Id,
-			},
-		},
-		VariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: variant.Id,
-			},
-		},
+		OrderID:   squirrel.Eq{s.srv.Store.OrderLine().TableName("OrderID"): orDer.Id},
+		VariantID: squirrel.Eq{s.srv.Store.OrderLine().TableName("VariantID"): variant.Id},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -1110,11 +1097,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 	defaultWarehouse := warehouses[0]
 
 	orderLinesOfOrder, appError := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appError != nil {
 		return appError
@@ -1225,11 +1208,7 @@ func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fu
 	}
 
 	orderLinesOfFulfillmentLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: order.FulfillmentLines(fulfillmentLines).OrderLineIDs(),
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): fulfillmentLines.OrderLineIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1419,11 +1398,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*go
 		} else {
 			if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
 				orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-					OrderID: &model.StringFilter{
-						StringOption: &model.StringOption{
-							Eq: ord.Id,
-						},
-					},
+					OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 				})
 				if appErr != nil {
 					return nil, appErr

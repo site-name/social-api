@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -73,24 +74,35 @@ type OrderLine struct {
 
 	ProductVariant *product_and_discount.ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
 	Order          *Order                               `json:"-" db:"-"` // related data, get popularized in some calls to database
+	allocations    []*ReplicateWarehouseAllocation
+}
+
+func (o *OrderLine) SetAllocations(allocations []*ReplicateWarehouseAllocation) {
+	o.allocations = allocations
+}
+
+func (o *OrderLine) GetAllocations() []*ReplicateWarehouseAllocation {
+	return o.allocations
 }
 
 // OrderLinePrefetchRelated
 type OrderLinePrefetchRelated struct {
 	VariantProduct        bool // This tells store to prefetch related ProductVariant(s) and Product(s) as well
 	VariantDigitalContent bool
+	VariantStocks         bool
+	AllocationsStock      bool
 }
 
 // OrderLineFilterOption is used for build sql queries
 type OrderLineFilterOption struct {
-	Id                 *model.StringFilter
-	OrderID            *model.StringFilter
+	Id                 squirrel.Sqlizer
+	OrderID            squirrel.Sqlizer
 	IsShippingRequired *bool
 	IsGiftcard         *bool
-	VariantID          *model.StringFilter
+	VariantID          squirrel.Sqlizer
 
-	VariantProductID        *model.StringFilter // INNER JOIN ProductVariants INNER JOIN Products
-	VariantDigitalContentID *model.StringFilter // INNER JOIN ProductVariants INNER JOIN DigitalContents
+	VariantProductID        squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...
+	VariantDigitalContentID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN DigitalContents WHERE DigitalContents.Id ...
 
 	PrefetchRelated OrderLinePrefetchRelated
 }

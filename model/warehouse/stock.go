@@ -3,6 +3,7 @@ package warehouse
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
 
@@ -92,6 +93,19 @@ func (s Stocks) IDs() []string {
 	}
 
 	return res
+}
+
+func (s *Stock) ToReplicateStock() *order.ReplicateWarehouseStock {
+	if s == nil {
+		return nil
+	}
+	return &order.ReplicateWarehouseStock{
+		Id:               s.Id,
+		CreateAt:         s.CreateAt,
+		WarehouseID:      s.WarehouseID,
+		ProductVariantID: s.ProductVariantID,
+		Quantity:         s.Quantity,
+	}
 }
 
 func (s *Stock) IsValid() *model.AppError {

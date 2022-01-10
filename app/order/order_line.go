@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
@@ -58,11 +59,7 @@ func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) (
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orderID,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -58,7 +58,7 @@ type CheckoutService interface {
 	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
 	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model.AppError)
 	// CalculateCheckoutTotalWithGiftcards
-	CalculateCheckoutTotalWithGiftcards(manager interface{}, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price
 	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
@@ -72,7 +72,7 @@ type CheckoutService interface {
 	// CheckoutLineTotal Return the total price of provided line, taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutLineTotal(manager interface{}, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, checkoutLineInfo *checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, checkoutLineInfo *checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutLinesByOption returns a list of checkout lines filtered using given option
 	CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, *model.AppError)
 	// CheckoutShippingPrice Return checkout shipping price.
@@ -91,7 +91,7 @@ type CheckoutService interface {
 	// taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutTotal(manager interface{}, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 	CheckoutTotalGiftCardsBalance(checkOut *checkout.Checkout) (*goprices.Money, *model.AppError)
 	// CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
@@ -103,7 +103,7 @@ type CheckoutService interface {
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
 	DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) *model.AppError
 	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
-	FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError)
+	FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) (*checkout.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 	// It prefetch some related value also
 	FetchCheckoutLines(checkOut *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
@@ -122,9 +122,9 @@ type CheckoutService interface {
 	// 'InsufficientProductStock' error instead of 'InvalidShippingError'.
 	GetValidCollectionPointsForCheckout(lines checkout.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*warehouse.WareHouse, *model.AppError)
 	// GetValidShippingMethodListForCheckoutInfo
-	GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError)
+	GetValidShippingMethodListForCheckoutInfo(checkoutInfo checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*shipping.ShippingMethod, *model.AppError)
 	// GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-	GetValidShippingMethodsForCheckout(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError)
+	GetValidShippingMethodsForCheckout(checkoutInfo checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError)
 	// GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
 	// Raise NotApplicable if voucher of given type cannot be applied.
 	GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError)
@@ -156,14 +156,14 @@ type CheckoutService interface {
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
-	ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeShippingAddressInCheckout(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 	// and set new value for checkoutInfo's ShippingMethodChannelListings
 	// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
 	UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError
 	// UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 	// then updates its ValidShippingMethods
-	UpdateCheckoutInfoShippingAddress(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) *model.AppError
+	UpdateCheckoutInfoShippingAddress(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertCheckout saves/updates given checkout
 	UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError)
 	BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.TaxedMoney, *model.AppError)

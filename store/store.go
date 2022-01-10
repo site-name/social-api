@@ -411,6 +411,8 @@ type (
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
+		OrderBy() string
 		BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
 		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
 		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
@@ -512,6 +514,8 @@ type (
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(content product_and_discount.DigitalContent) []interface{}
 		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                    // Save inserts given digital content into database then returns it
 		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
@@ -635,6 +639,8 @@ type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
 		ScanFields(orderLine order.OrderLine) []interface{}
+		TableName(withField string) string
+		OrderBy() string
 		ModelFields() []string
 		Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id

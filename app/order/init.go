@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -82,11 +83,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.O
 
 	// avoid using prefetched order lines
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return appErr

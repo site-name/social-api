@@ -8,6 +8,7 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -22,14 +23,17 @@ import (
 )
 
 // OrderCreated. `fromDraft` is default to false
-func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, _, manager interface{}, fromDraft bool) *model.AppError {
+func (a *ServiceOrder) OrderCreated(ord order.Order, user account.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) *model.AppError {
 	// create order created event
-	_, appErr := a.OrderCreatedEvent(ord, user, nil, fromDraft)
+	_, appErr := a.OrderCreatedEvent(ord, &user, nil, fromDraft)
 	if appErr != nil {
 		return appErr
 	}
 
-	panic("not implemented")
+	_, appErr = manager.OrderCreated(ord)
+	if appErr != nil {
+		return appErr
+	}
 
 	lastPaymentOfOrder, appErr := a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
@@ -44,13 +48,13 @@ func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, _, man
 		}
 
 		if orderIsCaptured {
-			appErr = a.OrderCaptured(ord, user, nil, lastPaymentOfOrder.Total, lastPaymentOfOrder, manager)
+			appErr = a.OrderCaptured(ord, &user, nil, lastPaymentOfOrder.Total, lastPaymentOfOrder, manager)
 			if appErr != nil {
 				return appErr
 			}
 		}
 
-		appErr = a.OrderAuthorized(ord, user, nil, lastPaymentOfOrder.Total, lastPaymentOfOrder, manager)
+		appErr = a.OrderAuthorized(ord, &user, nil, lastPaymentOfOrder.Total, lastPaymentOfOrder, manager)
 		if appErr != nil {
 			return appErr
 		}
@@ -62,7 +66,7 @@ func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, _, man
 	}
 
 	if *shopSettings.AutomaticallyConfirmAllNewOrders {
-		appErr = a.OrderConfirmed(ord, user, nil, manager, false)
+		appErr = a.OrderConfirmed(ord, &user, nil, manager, false)
 		if appErr != nil {
 			return appErr
 		}
@@ -72,12 +76,22 @@ func (a *ServiceOrder) OrderCreated(ord *order.Order, user *account.User, _, man
 }
 
 // OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
-func (a *ServiceOrder) OrderConfirmed(ord *order.Order, user *account.User, _ interface{}, manager interface{}, sendConfirmationEmail bool) *model.AppError {
+func (a *ServiceOrder) OrderConfirmed(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, sendConfirmationEmail bool) *model.AppError {
 	_, appErr := a.OrderConfirmedEvent(ord, user, nil)
 	if appErr != nil {
 		return appErr
 	}
-	panic("not implemented")
+
+	_, appErr = manager.OrderConfirmed(ord)
+	if appErr != nil {
+		return appErr
+	}
+
+	if sendConfirmationEmail {
+		panic("not implemented")
+	}
+
+	return nil
 }
 
 // HandleFullyPaidOrder
@@ -284,17 +298,17 @@ func (s *ServiceOrder) OrderAwaitsFulfillmentApproval(fulfillments []*order.Fulf
 }
 
 // OrderShippingUpdated
-func (a *ServiceOrder) OrderShippingUpdated(ord *order.Order, manager interface{}) *model.AppError {
+func (a *ServiceOrder) OrderShippingUpdated(ord order.Order, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
 
 // OrderAuthorized
-func (a *ServiceOrder) OrderAuthorized(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
+func (a *ServiceOrder) OrderAuthorized(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
 
 // OrderCaptured
-func (a *ServiceOrder) OrderCaptured(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
+func (a *ServiceOrder) OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError {
 	panic("not implemented")
 }
 
@@ -718,17 +732,9 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord *order.Order, manage
 	// 1) NOT require shipping
 	// 2) has ProductVariant attached AND that productVariant has a digitalContent accompanies
 	digitalOrderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		IsShippingRequired: model.NewBool(false),
-		VariantDigitalContentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NULL: model.NewBool(false),
-			},
-		},
+		OrderID:                 squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		IsShippingRequired:      model.NewBool(false),
+		VariantDigitalContentID: squirrel.NotEq{a.srv.Store.DigitalContent().TableName("Id"): nil},
 		PrefetchRelated: order.OrderLinePrefetchRelated{
 			VariantDigitalContent: true, // this tell store to prefetch related product variants, digital contents too
 		},
@@ -1455,11 +1461,7 @@ func (a *ServiceOrder) CreateReplaceOrder(user *account.User, _ interface{}, ori
 	}
 
 	orderLinesWithFulfillment, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: orderLineWithFulfillmentIDs,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): orderLineWithFulfillmentIDs},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1691,11 +1693,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 		orderLineIDs = append(orderLineIDs, lineData.Line.OrderLineID)
 	}
 	orderLinesByIDs, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: orderLineIDs,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): orderLineIDs},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1781,11 +1779,7 @@ func (a *ServiceOrder) ProcessReplace(
 	}
 
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: newOrder.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): newOrder.Id},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -2017,11 +2011,7 @@ func (a *ServiceOrder) calculateRefundAmount(
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: orderLineIDs,
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): orderLineIDs},
 	})
 	if appErr != nil {
 		return nil, appErr

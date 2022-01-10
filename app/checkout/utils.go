@@ -374,7 +374,7 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkOut *checkout.Chec
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkOut := checkoutInfo.Checkout
 	changed, remove, appErr := a.checkNewCheckoutAddress(&checkOut, address, account.ADDRESS_TYPE_SHIPPING)
 	if appErr != nil {
@@ -914,7 +914,7 @@ func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkOut *checkout.Checkout)
 }
 
 // GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo *checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError) {
 	var productIDs []string
 	for _, line := range lineInfos {
 		productIDs = append(productIDs, line.Product.Id)

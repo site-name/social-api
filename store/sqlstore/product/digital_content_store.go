@@ -17,7 +17,7 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	dcs := &SqlDigitalContentStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.DigitalContent{}, store.ProductDigitalContentTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.DigitalContent{}, dcs.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -28,8 +28,20 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 }
 
 func (ds *SqlDigitalContentStore) CreateIndexesIfNotExists() {
-	ds.CreateForeignKeyIfNotExists(store.ProductDigitalContentTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
-	ds.CreateForeignKeyIfNotExists(store.ProductDigitalContentTableName, "ShopID", store.ShopTableName, "Id", true)
+	ds.CreateForeignKeyIfNotExists(ds.TableName(""), "ProductVariantID", store.ProductVariantTableName, "Id", true)
+	ds.CreateForeignKeyIfNotExists(ds.TableName(""), "ShopID", store.ShopTableName, "Id", true)
+}
+
+func (ds *SqlDigitalContentStore) TableName(withField string) string {
+	name := "DigitalContents"
+	if withField != "" {
+		name += "." + withField
+	}
+	return name
+}
+
+func (ds *SqlDigitalContentStore) OrderBy() string {
+	return ""
 }
 
 func (ds *SqlDigitalContentStore) ModelFields() []string {
@@ -83,7 +95,7 @@ func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalCont
 func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
 	query := ds.GetQueryBuilder().
 		Select(ds.ModelFields()...).
-		From(store.ProductDigitalContentTableName)
+		From(ds.TableName(""))
 
 	// parse option
 	if option.Id != nil {
@@ -102,7 +114,7 @@ func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.Digit
 	err = ds.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductDigitalContentTableName, "option")
+			return nil, store.NewErrNotFound(ds.TableName(""), "option")
 		}
 		return nil, errors.Wrap(err, "failed to find digital content with given option")
 	}

@@ -86,11 +86,7 @@ func (a *ServiceOrder) OrderById(id string) (*order.Order, *model.AppError) {
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orderID,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -108,11 +104,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 // OrderTotalQuantity return total quantity of given order
 func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orderID,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
 	})
 	if appErr != nil {
 		return 0, appErr
@@ -195,11 +187,7 @@ func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		appErr.Where = "OrderSubTotal"

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -41,7 +40,7 @@ func UnmarshalWeightScalar(v interface{}) (*measurement.Weight, error) {
 		if ok1 && ok2 {
 			weight = &measurement.Weight{
 				Unit:   measurement.WeightUnit(strings.ToLower(unit.(string))),
-				Amount: model.NewFloat32(amount.(float32)),
+				Amount: amount.(float32),
 			}
 		} else {
 			err = errors.New("both 'amount' and 'unit' must be provided")

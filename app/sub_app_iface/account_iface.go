@@ -82,7 +82,7 @@ type AccountService interface {
 	// CustomerEventsByUser returns customer events belong to given user
 	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
-	CustomerPlacedOrderEvent(user *account.User, orDer *order.Order) (*account.CustomerEvent, *model.AppError)
+	CustomerPlacedOrderEvent(user *account.User, orDer order.Order) (*account.CustomerEvent, *model.AppError)
 	// DoubleCheckPassword performs:
 	//
 	// 1) check if number of failed login is not exceed the limit. If yes returns an error

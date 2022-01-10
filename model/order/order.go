@@ -161,7 +161,7 @@ func (o *Order) PopulateNonDbFields() {
 	}
 
 	o.Weight = &measurement.Weight{
-		Amount: &o.WeightAmount,
+		Amount: o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/channel"
@@ -61,7 +62,7 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *checkout.Checkout) ([]*ch
 }
 
 // FetchCheckoutInfo Fetch checkout as CheckoutInfo object
-func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) (*checkout.CheckoutInfo, *model.AppError) {
+func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) (*checkout.CheckoutInfo, *model.AppError) {
 	// validate arguments:
 	if checkOut == nil {
 		return nil, model.NewAppError("FetchCheckoutInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
@@ -200,7 +201,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 		ShippingMethodChannelListings: shippingMethodChannelListing,
 	}
 
-	validShippingMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(&checkoutInfo, shippingAddress, lines, discounts, manager)
+	validShippingMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(checkoutInfo, shippingAddress, lines, discounts, manager)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -219,7 +220,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 
 // UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 // then updates its ValidShippingMethods
-func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkoutInfo.ShippingAddress = address
 	validMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(checkoutInfo, address, lines, discounts, manager)
 	if appErr != nil {
@@ -233,8 +234,24 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo *checko
 }
 
 // GetValidShippingMethodListForCheckoutInfo
-func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo *checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interface{}) ([]*shipping.ShippingMethod, *model.AppError) {
-	panic("not implt")
+func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*shipping.ShippingMethod, *model.AppError) {
+	var countryCode string
+	if shippingAddress != nil {
+		countryCode = shippingAddress.Country
+	}
+
+	subTotal, appErr := manager.CalculateCheckoutSubTotal(checkoutInfo, lines, checkoutInfo.ShippingAddress, discounts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	checkoutInfo.Checkout.PopulateNonDbFields() // this is important
+	subTotal, err := subTotal.Sub(checkoutInfo.Checkout.Discount)
+	if err != nil {
+		return nil, model.NewAppError("GetValidShippingMethodListForCheckoutInfo", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return a.GetValidShippingMethodsForCheckout(checkoutInfo, lines, subTotal, countryCode)
 }
 
 func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError) {

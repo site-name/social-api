@@ -136,27 +136,27 @@ app-layers: ## Extract interface from App struct
 	$(GOBIN)/struct2interface -f "app" -o "app/app_iface.go" -p "app" -s "App" -i "AppIface" -t ./app/layer_generators/app_iface.go.tmpl
 	$(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
 	$(GOBIN)/struct2interface -f "app/checkout" -o "app/sub_app_iface/checkout_iface.go" -p "checkout" -s "ServiceCheckout" -i "CheckoutService" -t ./app/layer_generators/checkout_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/account" -o "app/sub_app_iface/account_iface.go" -p "account" -s "ServiceAccount" -i "AccountService" -t ./app/layer_generators/account_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/attribute" -o "app/sub_app_iface/attribute_iface.go" -p "attribute" -s "ServiceAttribute" -i "AttributeService" -t ./app/layer_generators/attribute_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/channel" -o "app/sub_app_iface/channel_iface.go" -p "channel" -s "ServiceChannel" -i "ChannelService" -t ./app/layer_generators/channel_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/csv" -o "app/sub_app_iface/csv_iface.go" -p "csv" -s "ServiceCsv" -i "CsvService" -t ./app/layer_generators/csv_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/discount" -o "app/sub_app_iface/discount_iface.go" -p "discount" -s "ServiceDiscount" -i "DiscountService" -t ./app/layer_generators/discount_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/file" -o "app/sub_app_iface/file_iface.go" -p "file" -s "ServiceFile" -i "FileService" -t ./app/layer_generators/file_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/giftcard" -o "app/sub_app_iface/giftcard_iface.go" -p "giftcard" -s "ServiceGiftcard" -i "GiftcardService" -t ./app/layer_generators/giftcard_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/invoice" -o "app/sub_app_iface/invoice_iface.go" -p "invoice" -s "ServiceInvoice" -i "InvoiceService" -t ./app/layer_generators/invoice_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/menu" -o "app/sub_app_iface/menu_iface.go" -p "menu" -s "ServiceMenu" -i "MenuService" -t ./app/layer_generators/menu_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/order" -o "app/sub_app_iface/order_iface.go" -p "order" -s "ServiceOrder" -i "OrderService" -t ./app/layer_generators/order_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/page" -o "app/sub_app_iface/page_iface.go" -p "page" -s "ServicePage" -i "PageService" -t ./app/layer_generators/page_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/payment" -o "app/sub_app_iface/payment_iface.go" -p "payment" -s "ServicePayment" -i "PaymentService" -t ./app/layer_generators/payment_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/plugin" -o "app/sub_app_iface/plugin_iface.go" -p "plugin" -s "ServicePlugin" -i "PluginService" -t ./app/layer_generators/plugin_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/product" -o "app/sub_app_iface/product_iface.go" -p "product" -s "ServiceProduct" -i "ProductService" -t ./app/layer_generators/product_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/seo" -o "app/sub_app_iface/seo_iface.go" -p "seo" -s "ServiceSeo" -i "SeoService" -t ./app/layer_generators/seo_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/shipping" -o "app/sub_app_iface/shipping_iface.go" -p "shipping" -s "ServiceShipping" -i "ShippingService" -t ./app/layer_generators/shipping_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/shop" -o "app/sub_app_iface/shop_iface.go" -p "shop" -s "ServiceShop" -i "ShopService" -t ./app/layer_generators/shop_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/warehouse" -o "app/sub_app_iface/warehouse_iface.go" -p "warehouse" -s "ServiceWarehouse" -i "WarehouseService" -t ./app/layer_generators/warehouse_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/webhook" -o "app/sub_app_iface/webhook_iface.go" -p "webhook" -s "ServiceWebhook" -i "WebhookService" -t ./app/layer_generators/webhook_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/wishlist" -o "app/sub_app_iface/wishlist_iface.go" -p "wishlist" -s "ServiceWishlist" -i "WishlistService" -t ./app/layer_generators/wishlist_iface.go.tmpl
-	$(GOBIN)/struct2interface -f "app/plugin" -o "app/plugin/interfaces/plugin_manager_iface.go" -p "plugin" -s "PluginManager" -i "PluginManagerInterface" -t ./app/layer_generators/plugin_manager_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/account" -o "app/sub_app_iface/account_iface.go" -p "account" -s "ServiceAccount" -i "AccountService" -t ./app/layer_generators/account_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/attribute" -o "app/sub_app_iface/attribute_iface.go" -p "attribute" -s "ServiceAttribute" -i "AttributeService" -t ./app/layer_generators/attribute_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/channel" -o "app/sub_app_iface/channel_iface.go" -p "channel" -s "ServiceChannel" -i "ChannelService" -t ./app/layer_generators/channel_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/csv" -o "app/sub_app_iface/csv_iface.go" -p "csv" -s "ServiceCsv" -i "CsvService" -t ./app/layer_generators/csv_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/discount" -o "app/sub_app_iface/discount_iface.go" -p "discount" -s "ServiceDiscount" -i "DiscountService" -t ./app/layer_generators/discount_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/file" -o "app/sub_app_iface/file_iface.go" -p "file" -s "ServiceFile" -i "FileService" -t ./app/layer_generators/file_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/giftcard" -o "app/sub_app_iface/giftcard_iface.go" -p "giftcard" -s "ServiceGiftcard" -i "GiftcardService" -t ./app/layer_generators/giftcard_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/invoice" -o "app/sub_app_iface/invoice_iface.go" -p "invoice" -s "ServiceInvoice" -i "InvoiceService" -t ./app/layer_generators/invoice_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/menu" -o "app/sub_app_iface/menu_iface.go" -p "menu" -s "ServiceMenu" -i "MenuService" -t ./app/layer_generators/menu_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/order" -o "app/sub_app_iface/order_iface.go" -p "order" -s "ServiceOrder" -i "OrderService" -t ./app/layer_generators/order_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/page" -o "app/sub_app_iface/page_iface.go" -p "page" -s "ServicePage" -i "PageService" -t ./app/layer_generators/page_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/payment" -o "app/sub_app_iface/payment_iface.go" -p "payment" -s "ServicePayment" -i "PaymentService" -t ./app/layer_generators/payment_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/plugin" -o "app/sub_app_iface/plugin_iface.go" -p "plugin" -s "ServicePlugin" -i "PluginService" -t ./app/layer_generators/plugin_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/product" -o "app/sub_app_iface/product_iface.go" -p "product" -s "ServiceProduct" -i "ProductService" -t ./app/layer_generators/product_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/seo" -o "app/sub_app_iface/seo_iface.go" -p "seo" -s "ServiceSeo" -i "SeoService" -t ./app/layer_generators/seo_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/shipping" -o "app/sub_app_iface/shipping_iface.go" -p "shipping" -s "ServiceShipping" -i "ShippingService" -t ./app/layer_generators/shipping_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/shop" -o "app/sub_app_iface/shop_iface.go" -p "shop" -s "ServiceShop" -i "ShopService" -t ./app/layer_generators/shop_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/warehouse" -o "app/sub_app_iface/warehouse_iface.go" -p "warehouse" -s "ServiceWarehouse" -i "WarehouseService" -t ./app/layer_generators/warehouse_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/webhook" -o "app/sub_app_iface/webhook_iface.go" -p "webhook" -s "ServiceWebhook" -i "WebhookService" -t ./app/layer_generators/webhook_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/wishlist" -o "app/sub_app_iface/wishlist_iface.go" -p "wishlist" -s "ServiceWishlist" -i "WishlistService" -t ./app/layer_generators/wishlist_iface.go.tmpl
+  $(GOBIN)/struct2interface -f "app/plugin" -o "app/plugin/interfaces/plugin_manager_iface.go" -p "plugin" -s "PluginManager" -i "PluginManagerInterface" -t ./app/layer_generators/plugin_manager_iface.go.tmpl
 
 i18n-extract: ## Extract strings for translation from the source code
 	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool
