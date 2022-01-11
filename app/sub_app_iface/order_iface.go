@@ -8,6 +8,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/order/types"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -65,7 +66,7 @@ type OrderService interface {
 	// CommonCreateOrderEvent is common method for creating desired order event instance
 	CommonCreateOrderEvent(transaction *gorp.Transaction, option *order.OrderEventOption) (*order.OrderEvent, *model.AppError)
 	// CreateGiftcardsWhenApprovingFulfillment
-	CreateGiftcardsWhenApprovingFulfillment(orDer *order.Order, linesData []*order.OrderLineData, user *account.User, _ interface{}, manager interface{}, settings *shop.Shop) *model.AppError
+	CreateGiftcardsWhenApprovingFulfillment(orDer *order.Order, linesData []*order.OrderLineData, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *shop.Shop) *model.AppError
 	// CreateOrderDiscountForOrder Add new order discount and update the prices
 	CreateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError)
 	// CreateReplaceOrder Create draft order with lines to replace
@@ -172,9 +173,9 @@ type OrderService interface {
 	// OrderCaptured
 	OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
 	// OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
-	OrderConfirmed(ord *order.Order, user *account.User, _ interface{}, manager interface{}, sendConfirmationEmail bool) *model.AppError
+	OrderConfirmed(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, sendConfirmationEmail bool) *model.AppError
 	// OrderCreated. `fromDraft` is default to false
-	OrderCreated(ord *order.Order, user *account.User, _, manager interface{}, fromDraft bool) *model.AppError
+	OrderCreated(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) *model.AppError
 	// OrderFulfilled
 	OrderFulfilled(fulfillments []*order.Fulfillment, user *account.User, _ interface{}, fulfillmentLines []*order.FulfillmentLine, manager interface{}, notifyCustomer bool) *model.AppError
 	// OrderIsCaptured checks if given order is captured
@@ -194,7 +195,7 @@ type OrderService interface {
 	// OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
 	OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *model.AppError)
 	// OrderRefunded
-	OrderRefunded(ord *order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
+	OrderRefunded(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent *payment.Payment, manager interface{}) *model.AppError
 	// OrderReturned
 	OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, _ interface{}, returnedLines []*order.QuantityOrderLine) *model.AppError
 	// OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
@@ -277,6 +278,8 @@ type OrderService interface {
 	RestockOrderLines(ord *order.Order, manager interface{}) *model.AppError
 	// SendOrderConfirmation sends notification with order confirmation
 	SendOrderConfirmation(orDer *order.Order, redirectURL string, manager interface{}) *model.AppError
+	// SendOrderConfirmed Send email which tells customer that order has been confirmed
+	SendOrderConfirmed(orDer order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface)
 	// SendPaymentConfirmation sends notification with the payment confirmation
 	SendPaymentConfirmation(orDer *order.Order, manager interface{}) *model.AppError
 	// SetGiftcardUser Set user when the gift card is used for the first time.
@@ -314,8 +317,8 @@ type OrderService interface {
 	FulfillmentTrackingUpdatedEvent(orDer *order.Order, user *account.User, _ interface{}, trackingNumber string, fulfillment *order.Fulfillment) (*order.OrderEvent, *model.AppError)
 	GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product_and_discount.OrderDiscount, *model.AppError)
 	MatchOrdersWithNewUser(user *account.User) *model.AppError
-	OrderConfirmedEvent(orDer *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError)
-	OrderCreatedEvent(orDer *order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError)
+	OrderConfirmedEvent(orDer order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError)
+	OrderCreatedEvent(orDer order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError)
 	OrderDiscountAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError)
 	OrderDiscountEvent(transaction *gorp.Transaction, eventType order.OrderEvents, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError)
 	OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorp.Transaction, ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError

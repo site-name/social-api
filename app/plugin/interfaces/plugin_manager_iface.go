@@ -73,7 +73,7 @@ type PluginManagerInterface interface {
 	InvoiceRequest(orDer order.Order, inVoice invoice.Invoice, number string) (interface{}, *model.AppError)
 	InvoiceSent(inVoice invoice.Invoice, email string) (interface{}, *model.AppError)
 	ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model.AppError)
-	ListPaymentGateways(currency string, checkOut *checkout.Checkout, channelID string, activeOnly bool) ([]*payment.PaymentGateway)
+	ListPaymentGateways(currency string, checkOut *checkout.Checkout, channelID string, activeOnly bool) []*payment.PaymentGateway
 	ListPaymentSources(gateway, customerID, channelID string) ([]*payment.CustomerSource, error)
 	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError)
 	OrderCancelled(orDer order.Order) (interface{}, *model.AppError)
@@ -107,4 +107,5 @@ type PluginManagerInterface interface {
 	VoidPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
 	Webhook(req *http.Request, pluginID, channelID string) (*http.Response, *model.AppError)
 	WebhookEndpointWithoutChannel(req *http.Request, pluginID string) (*http.Response, *model.AppError)
+	GetShopID() string
 }

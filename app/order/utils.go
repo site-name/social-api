@@ -88,7 +88,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.Order
 }
 
 // OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord order.Order) (bool, *model.AppError) {
 	// finding shop that hold this order:
 	ownerShopOfOrder, appErr := a.srv.ShopService().ShopById(ord.ShopID)
 	if appErr != nil {

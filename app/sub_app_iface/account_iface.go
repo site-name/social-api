@@ -177,6 +177,7 @@ type AccountService interface {
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
+	GetDefaultUserPayload(user account.User) model.StringInterface
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError)

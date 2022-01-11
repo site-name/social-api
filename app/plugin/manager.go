@@ -91,6 +91,10 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 	return m, nil
 }
 
+func (m *PluginManager) GetShopID() string {
+	return m.ShopID
+}
+
 func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.BasePluginInterface {
 	res := []interfaces.BasePluginInterface{}
 

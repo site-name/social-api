@@ -157,7 +157,7 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterO
 		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
 	}
 	if option.FulfillmentLineID != nil {
-		// joinFunc can be wither LeftJoin or InnerJoin
+		// joinFunc can be either LeftJoin or InnerJoin
 		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
 
 		if option.FulfillmentLineID.NULL != nil && *option.FulfillmentLineID.NULL { // meaning fulfillment must have no fulfillment line

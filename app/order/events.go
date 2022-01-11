@@ -123,7 +123,7 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction *gorp.Transaction, eventTy
 	})
 }
 
-func getPaymentData(amount *decimal.Decimal, payMent *payment.Payment) map[string]map[string]interface{} {
+func getPaymentData(amount *decimal.Decimal, payMent payment.Payment) map[string]map[string]interface{} {
 	return map[string]map[string]interface{}{
 		"parameters": {
 			"amount":          amount,
@@ -273,7 +273,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *order.Order, user 
 	})
 }
 
-func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transaction, orDer order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError) {
 	var (
 		userID     *string
 		parameters = model.StringInterface{}

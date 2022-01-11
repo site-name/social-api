@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mattermost/gorp"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
@@ -32,19 +33,21 @@ type GiftcardService interface {
 	// DeleteGiftCardCheckout drops a giftcard-checkout relation
 	DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError
 	// FulfillNonShippableGiftcards
-	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError)
+	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
 	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
-	GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interface{}) ([]*giftcard.GiftCard, *model.AppError)
+	GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events
 	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// PromoCodeIsGiftCard checks whether there is giftcard with given code
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)
 	// RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError
+	// SendGiftcardNotification Trigger sending a gift card notification for the given recipient
+	SendGiftcardNotification(requesterUser account.User, _ interface{}, customerUser account.User, giftCard giftcard.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool)
 	// ToggleGiftcardStatus set status of given giftcard to inactive/active
 	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError
 	// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
@@ -52,11 +55,12 @@ type GiftcardService interface {
 	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
 	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)
 	DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError
-	FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interface{}) (interface{}, *model.AppError)
+	FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError)
+	GetDefaultGiftcardPayload(giftCard giftcard.GiftCard) model.StringInterface
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)
 	GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError)
 	GiftcardsBoughtEvent(transaction *gorp.Transaction, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
 	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)
 	OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError)
-	SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interface{}, channelSlug string) *model.AppError
+	SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError
 }
