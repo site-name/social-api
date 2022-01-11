@@ -67,6 +67,7 @@ type PluginManagerInterface interface {
 	GetClientToken(gateway string, tokenConfig payment.TokenConfig, channelID string) (string, *model.AppError)
 	GetOrderLineTaxRate(orDer order.Order, product product_and_discount.Product, variant product_and_discount.ProductVariant, address *account.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	GetOrderShippingTaxRate(orDer order.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
+	GetShopID() string
 	GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppError)
 	InitializePayment(gateway string, paymentData model.StringInterface, channelID string) *payment.InitializedPaymentResponse
 	InvoiceDelete(inVoice invoice.Invoice) (interface{}, *model.AppError)
@@ -107,5 +108,4 @@ type PluginManagerInterface interface {
 	VoidPayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
 	Webhook(req *http.Request, pluginID, channelID string) (*http.Response, *model.AppError)
 	WebhookEndpointWithoutChannel(req *http.Request, pluginID string) (*http.Response, *model.AppError)
-	GetShopID() string
 }
