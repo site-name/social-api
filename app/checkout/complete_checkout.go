@@ -670,9 +670,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo checkout.CheckoutInfo, orderD
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	appErr = s.srv.OrderService().OrderCreated(*createdNewOrder, user, nil, manager, false)
-	if appErr != nil {
-		return nil, nil, appErr
+	insufficientStock, appErr := s.srv.OrderService().OrderCreated(*createdNewOrder, user, nil, manager, false)
+	if insufficientStock != nil || appErr != nil {
+		return nil, insufficientStock, appErr
 	}
 
 	// Send the order confirmation email

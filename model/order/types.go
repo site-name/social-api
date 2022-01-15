@@ -103,6 +103,16 @@ func (a *ReplicateWarehouseAllocation) SetStock(stock *ReplicateWarehouseStock) 
 	a.stock = stock
 }
 
+func (a *ReplicateWarehouseAllocation) DeepCopy() *ReplicateWarehouseAllocation {
+	res := *a
+
+	if st := a.GetStock(); st != nil {
+		res.SetStock(st.DeepCopy())
+	}
+
+	return &res
+}
+
 // NOTE: ReplicateWarehouseStock is identical to warehouse.Stock
 // We re-define this struct sine cycle import the package model/warehouse is not allowed
 // You should update this struct definition whenever a change to warehouse.Stock is made
@@ -112,4 +122,9 @@ type ReplicateWarehouseStock struct {
 	WarehouseID      string `json:"warehouse_id"`       // NOT NULL
 	ProductVariantID string `json:"product_variant_id"` // NOT NULL
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
+}
+
+func (s *ReplicateWarehouseStock) DeepCopy() *ReplicateWarehouseStock {
+	res := *s
+	return &res
 }

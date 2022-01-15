@@ -43,7 +43,7 @@ type PluginManagerInterface interface {
 	CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	CalculateOrderLineUnit(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (*goprices.TaxedMoney, *model.AppError)
 	CalculateOrderShipping(orDer order.Order) (*goprices.TaxedMoney, *model.AppError)
-	CalculateOrderlineTotal(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (interface{}, *model.AppError)
+	CalculateOrderlineTotal(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (*goprices.TaxedMoney, *model.AppError)
 	CapturePayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error)
 	ChangeUserAddress(address account.Address, addressType string, user *account.User) (*account.Address, *model.AppError)
 	CheckoutCreated(checkOut checkout.Checkout) (interface{}, *model.AppError)

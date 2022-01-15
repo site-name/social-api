@@ -681,7 +681,7 @@ type (
 		Get(id string) (*order.Fulfillment, error)                                                                         // Get finds and return a fulfillment by given id
 		GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
 		FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
-		DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error                       // DeleteByOptions deletes fulfillment database records that satisfy given option. It returns an error indicates if there is a problem occured during deletion process
+		BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 

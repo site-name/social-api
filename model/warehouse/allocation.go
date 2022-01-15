@@ -140,5 +140,12 @@ func (a *AllocationError) Error() string {
 
 func (a *Allocation) DeepCopy() *Allocation {
 	res := *a
+
+	if a.Stock != nil {
+		res.Stock = a.Stock.DeepCopy()
+	}
+	if a.OrderLine != nil {
+		res.OrderLine = a.OrderLine.DeepCopy()
+	}
 	return &res
 }

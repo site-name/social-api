@@ -7,6 +7,7 @@ package checkout
 import (
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -526,18 +527,20 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 		discountedCategories  []*product_and_discount.Category
 		discountedCollections []*product_and_discount.Collection
 		appError              *model.AppError
+		mut                   sync.Mutex
+		wg                    sync.WaitGroup
 	)
 
 	setErr := func(err *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if err != nil {
 			appError = err
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
 	// starting 3 go routines
-	a.wg.Add(3)
+	wg.Add(3)
 
 	go func() {
 		products, appErr := a.srv.ProductService().ProductsByVoucherID(voucher.Id)
@@ -547,7 +550,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 			discountedProducts = products
 		}
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
@@ -560,7 +563,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 			discountedCategories = categories
 		}
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
@@ -571,10 +574,10 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 			discountedCollections = collections
 		}
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
-	a.wg.Done()
+	wg.Done()
 
 	if appError != nil {
 		return nil, appError

@@ -8,7 +8,6 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mattermost/gorp"
@@ -25,9 +24,7 @@ import (
 )
 
 type ServiceCheckout struct {
-	srv   *app.Server
-	wg    sync.WaitGroup
-	mutex sync.Mutex
+	srv *app.Server
 }
 
 func init() {

@@ -24,56 +24,56 @@ import (
 )
 
 // OrderCreated. `fromDraft` is default to false
-func (a *ServiceOrder) OrderCreated(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) *model.AppError {
+func (a *ServiceOrder) OrderCreated(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) (*exception.InsufficientStock, *model.AppError) {
 	// create order created event
 	_, appErr := a.OrderCreatedEvent(ord, user, nil, fromDraft)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	_, appErr = manager.OrderCreated(ord)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	lastPaymentOfOrder, appErr := a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
-			return appErr
+			return nil, appErr
 		}
 	}
 	if lastPaymentOfOrder != nil {
 		orderIsCaptured, appErr := a.OrderIsCaptured(ord.Id)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 
 		if orderIsCaptured {
-			appErr = a.OrderCaptured(ord, user, nil, lastPaymentOfOrder.Total, *lastPaymentOfOrder, manager)
-			if appErr != nil {
-				return appErr
+			InsufficientStock, appErr := a.OrderCaptured(ord, user, nil, lastPaymentOfOrder.Total, *lastPaymentOfOrder, manager)
+			if InsufficientStock != nil || appErr != nil {
+				return InsufficientStock, appErr
 			}
 		}
 
 		appErr = a.OrderAuthorized(ord, user, nil, lastPaymentOfOrder.Total, *lastPaymentOfOrder, manager)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 	}
 
 	shopSettings, appErr := a.srv.ShopService().ShopById(ord.ShopID)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	if *shopSettings.AutomaticallyConfirmAllNewOrders {
 		appErr = a.OrderConfirmed(ord, user, nil, manager, false)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 // OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
@@ -89,7 +89,7 @@ func (a *ServiceOrder) OrderConfirmed(ord order.Order, user *account.User, _ int
 	}
 
 	if sendConfirmationEmail {
-		panic("not implemented")
+		a.SendOrderConfirmed(ord, user, nil, manager)
 	}
 
 	return nil
@@ -98,7 +98,7 @@ func (a *ServiceOrder) OrderConfirmed(ord order.Order, user *account.User, _ int
 // HandleFullyPaidOrder
 //
 // user can be nil
-func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, orDer order.Order, user *account.User, _ interface{}) *model.AppError {
+func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, orDer order.Order, user *account.User, _ interface{}) (*exception.InsufficientStock, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -110,28 +110,28 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInte
 		UserID:  userID,
 	})
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	customerEmail, appErr := a.srv.OrderService().CustomerEmail(&orDer)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	if model.IsValidEmail(customerEmail) {
 		appErr = a.SendPaymentConfirmation(orDer, manager)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 
 		orderNeedsAutoFulfillment, appErr := a.OrderNeedsAutomaticFulfillment(orDer)
 		if appErr != nil {
-			return appErr
+			return nil, appErr
 		}
 		if orderNeedsAutoFulfillment {
 			insufficientStock, appErr := a.AutomaticallyFulfillDigitalLines(orDer, manager)
-			if appErr != nil {
-				return appErr
+			if insufficientStock != nil || appErr != nil {
+				return insufficientStock, appErr
 			}
 		}
 	}
@@ -141,10 +141,10 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInte
 
 	_, appErr = manager.OrderFullyPaid(orDer)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 	_, appErr = manager.OrderUpdated(orDer)
-	return appErr
+	return nil, appErr
 }
 
 // CancelOrder Release allocation of unfulfilled order items.
@@ -246,7 +246,7 @@ func (a *ServiceOrder) OrderVoided(ord order.Order, user *account.User, _ interf
 }
 
 // OrderReturned
-func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord *order.Order, user *account.User, _ interface{}, returnedLines []*order.QuantityOrderLine) *model.AppError {
+func (a *ServiceOrder) OrderReturned(transaction *gorp.Transaction, ord order.Order, user *account.User, _ interface{}, returnedLines []*order.QuantityOrderLine) *model.AppError {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -289,7 +289,7 @@ func (a *ServiceOrder) OrderFulfilled(fulfillments []*order.Fulfillment, user *a
 		orDer = ord
 	}
 
-	appErr := a.UpdateOrderStatus(transaction, orDer)
+	appErr := a.UpdateOrderStatus(transaction, *orDer)
 	if appErr != nil {
 		return appErr
 	}
@@ -352,7 +352,7 @@ func (s *ServiceOrder) OrderAwaitsFulfillmentApproval(fulfillments []*order.Fulf
 		orDer = ord
 	}
 
-	appErr := s.UpdateOrderStatus(transaction, orDer)
+	appErr := s.UpdateOrderStatus(transaction, *orDer)
 	if appErr != nil {
 		return appErr
 	}
@@ -403,7 +403,7 @@ func (a *ServiceOrder) OrderAuthorized(ord order.Order, user *account.User, _ in
 }
 
 // OrderCaptured
-func (a *ServiceOrder) OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent payment.Payment, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceOrder) OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent payment.Payment, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -416,22 +416,22 @@ func (a *ServiceOrder) OrderCaptured(ord order.Order, user *account.User, _ inte
 		Parameters: getPaymentData(amount, payMent)["parameters"],
 	})
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	_, appErr = manager.OrderUpdated(ord)
 	if appErr != nil {
-		return appErr
+		return nil, appErr
 	}
 
 	if ord.IsFullyPaid() {
-		appErr = a.HandleFullyPaidOrder(manager, ord, user, nil)
-		if appErr != nil {
-			return appErr
+		insufficientStock, appErr := a.HandleFullyPaidOrder(manager, ord, user, nil)
+		if insufficientStock != nil || appErr != nil {
+			return insufficientStock, appErr
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 // FulfillmentTrackingUpdated
@@ -450,7 +450,7 @@ func (a *ServiceOrder) FulfillmentTrackingUpdated(fulfillment *order.Fulfillment
 }
 
 // CancelFulfillment Return products to corresponding stocks.
-func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *account.User, _ interface{}, warehouse *warehouse.WareHouse, manager interfaces.PluginManagerInterface) (*order.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) CancelFulfillment(fulfillment order.Fulfillment, user *account.User, _ interface{}, warehouse *warehouse.WareHouse, manager interfaces.PluginManagerInterface) (*order.Fulfillment, *model.AppError) {
 	// initialize a transaction
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -459,7 +459,7 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *a
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	// refetch fulfillment from database, lock for update
-	fulfillment, appErr := a.FulfillmentByOption(transaction, &order.FulfillmentFilterOption{
+	fulfillment_, appErr := a.FulfillmentByOption(transaction, &order.FulfillmentFilterOption{
 		Id: &model.StringFilter{
 			StringOption: &model.StringOption{
 				Eq: fulfillment.Id,
@@ -480,13 +480,13 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *a
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
 	}
-	_, appErr = a.FulfillmentCanceledEvent(transaction, fulfillment.Order, user, nil, fulfillment)
+	_, appErr = a.FulfillmentCanceledEvent(transaction, fulfillment_.Order, user, nil, fulfillment_)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	if warehouse != nil {
-		appErr = a.RestockFulfillmentLines(transaction, fulfillment, warehouse)
+		appErr = a.RestockFulfillmentLines(transaction, fulfillment_, warehouse)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -511,12 +511,12 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *a
 	}
 
 	fulfillment.Status = order.FULFILLMENT_CANCELED
-	_, appErr = a.UpsertFulfillment(transaction, fulfillment)
+	_, appErr = a.UpsertFulfillment(transaction, fulfillment_)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	appErr = a.UpdateOrderStatus(transaction, fulfillment.Order) // you can access order here since store attached it to fulfillment above
+	appErr = a.UpdateOrderStatus(transaction, *fulfillment.Order) // you can access order here since store attached it to fulfillment above
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -526,9 +526,17 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment *order.Fulfillment, user *a
 		return nil, model.NewAppError("CancelOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	panic("not implemented")
+	_, appErr = manager.FulfillmentCanceled(*fulfillment_)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	return fulfillment, nil
+	_, appErr = manager.OrderUpdated(*fulfillment_.Order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return fulfillment_, nil
 }
 
 // CancelWaitingFulfillment cancels fulfillments which is in waiting for approval state.
@@ -546,7 +554,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment order.Fulfillment, u
 				Eq: fulfillment.Id,
 			},
 		},
-		SelectRelatedOrder: true,
+		SelectRelatedOrder: true, // this
 	})
 	if appErr != nil {
 		return appErr
@@ -583,18 +591,12 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment order.Fulfillment, u
 		return appErr
 	}
 
-	appErr = s.DeleteFulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment_.Id,
-			},
-		},
-	})
+	appErr = s.BulkDeleteFulfillments(transaction, []*order.Fulfillment{fulfillment_})
 	if appErr != nil {
 		return appErr
 	}
 
-	appErr = s.UpdateOrderStatus(transaction, fulfillment_.Order)
+	appErr = s.UpdateOrderStatus(transaction, *fulfillment_.Order)
 	if appErr != nil {
 		return appErr
 	}
@@ -700,12 +702,34 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *order.Fulfillment, user *
 		return nil, nil, appErr
 	}
 
-	appErr = s.UpdateOrderStatus(transaction, orDer)
+	appErr = s.UpdateOrderStatus(transaction, *orDer)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
-	panic("not implemented")
+	appErr = s.CreateGiftcardsWhenApprovingFulfillment(orDer, linesToFulfill, user, nil, manager, settings)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	// commit
+	if err := transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("ApproveFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, appErr = manager.OrderUpdated(*orDer)
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	if orDer.Status == order.FULFILLED {
+		_, appErr = manager.OrderFulfilled(*orDer)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+	}
+
+	return fulfillment, nil, nil
 }
 
 // CreateGiftcardsWhenApprovingFulfillment
@@ -973,7 +997,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord order.Order, manager
 		return nil, appErr
 	}
 
-	appErr = a.UpdateOrderStatus(transaction, &ord)
+	appErr = a.UpdateOrderStatus(transaction, ord)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1461,25 +1485,26 @@ func getShippingRefundAmount(refundShippingCosts bool, refundAmount *decimal.Dec
 func (a *ServiceOrder) CreateRefundFulfillment(
 	requester *account.User,
 	_ interface{},
-	ord *order.Order,
-	payMent *payment.Payment,
+	ord order.Order,
+	payMent payment.Payment,
 	orderLinesToRefund []*order.OrderLineData,
 	fulfillmentLinesToRefund []*order.FulfillmentLineData,
 	manager interfaces.PluginManagerInterface,
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
-) (interface{}, *model.AppError) {
+
+) (interface{}, *payment.PaymentError, *model.AppError) {
 	shippingRefundAmount := getShippingRefundAmount(refundShippingCosts, amount, ord.ShippingPriceGrossAmount)
 
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return nil, model.NewAppError("CreateRefundFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("CreateRefundFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	totalRefundAmount, appErr := a.processRefund(requester, nil, ord, payMent, orderLinesToRefund, fulfillmentLinesToRefund, amount, refundShippingCosts, manager)
-	if appErr != nil {
-		return nil, appErr
+	totalRefundAmount, paymentErr, appErr := a.processRefund(requester, nil, ord, payMent, orderLinesToRefund, fulfillmentLinesToRefund, amount, refundShippingCosts, manager)
+	if paymentErr != nil || appErr != nil {
+		return nil, paymentErr, appErr
 	}
 
 	refundedFulfillment, appErr := a.UpsertFulfillment(transaction, &order.Fulfillment{
@@ -1489,31 +1514,68 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 		ShippingRefundAmount: shippingRefundAmount,
 	})
 	if appErr != nil {
-		return nil, appErr
+		return nil, paymentErr, appErr
 	}
 
 	createdFulfillmentLines, appErr := a.moveOrderLinesToTargetFulfillment(orderLinesToRefund, refundedFulfillment, manager)
 	if appErr != nil {
-		return nil, appErr
+		return nil, paymentErr, appErr
 	}
 
 	appErr = a.moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesToRefund, createdFulfillmentLines, refundedFulfillment)
 	if appErr != nil {
-		return nil, appErr
+		return nil, paymentErr, appErr
 	}
 
 	// delete fulfillments without lines after lines are removed
-	a.DeleteFulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
-		// OrderID: ,
+	fulfillments, appErr := a.FulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
+		OrderID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				Eq: ord.Id,
+			},
+		},
+		FulfillmentLineID: &model.StringFilter{
+			StringOption: &model.StringOption{
+				NULL: model.NewBool(true),
+			},
+		},
+		Status: &model.StringFilter{
+			StringOption: &model.StringOption{
+				In: []string{
+					string(order.FULFILLMENT_FULFILLED),
+					string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
+				},
+			},
+		},
 	})
+	if appErr != nil {
+		return nil, paymentErr, appErr
+	}
 
-	panic("not implemented")
+	if len(fulfillments) != 0 {
+		appErr = a.BulkDeleteFulfillments(transaction, fulfillments)
+		if appErr != nil {
+			return nil, paymentErr, appErr
+		}
+	}
+
+	// commit transaction
+	if err := transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("CreateRefundFulfillment", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, appErr = manager.OrderUpdated(ord)
+	if appErr != nil {
+		return nil, paymentErr, appErr
+	}
+
+	return refundedFulfillment, nil, nil
 }
 
 // populateReplaceOrderFields create new order based on the state of given originalOrder
 //
 // If original order has shippingAddress/billingAddress, the new order copy these address(es) and change their IDs
-func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorp.Transaction, originalOrder *order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
+func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorp.Transaction, originalOrder order.Order) (replaceOrder *order.Order, appErr *model.AppError) {
 	replaceOrder = &order.Order{
 		Status:             order.STATUS_DRAFT,
 		UserID:             originalOrder.UserID,
@@ -1567,7 +1629,7 @@ func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorp.Transaction,
 }
 
 // CreateReplaceOrder Create draft order with lines to replace
-func (a *ServiceOrder) CreateReplaceOrder(user *account.User, _ interface{}, originalOrder *order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (*order.Order, *model.AppError) {
+func (a *ServiceOrder) CreateReplaceOrder(user *account.User, _ interface{}, originalOrder order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (*order.Order, *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("CreateReplaceOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -1656,7 +1718,7 @@ func (a *ServiceOrder) CreateReplaceOrder(user *account.User, _ interface{}, ori
 	for _, line := range orderLinesToCreate {
 		lines = append(lines, &order.QuantityOrderLine{Quantity: line.Quantity, OrderLine: line})
 	}
-	_, appErr = a.DraftOrderCreatedFromReplaceEvent(transaction, replaceOrder, originalOrder, user, nil, lines)
+	_, appErr = a.DraftOrderCreatedFromReplaceEvent(transaction, *replaceOrder, originalOrder, user, nil, lines)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -1673,7 +1735,7 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
 	fulfillmentStatus order.FulfillmentStatus,
-	ord *order.Order,
+	ord order.Order,
 	totalRefundAmount *decimal.Decimal,
 	shippingRefundAmount *decimal.Decimal,
 	manager interfaces.PluginManagerInterface,
@@ -1763,7 +1825,7 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 func (a *ServiceOrder) moveLinesToReplaceFulfillment(
 	orderLinesToReplace []*order.OrderLineData,
 	fulfillmentLinesToReplace []*order.FulfillmentLineData,
-	ord *order.Order,
+	ord order.Order,
 	manager interfaces.PluginManagerInterface,
 
 ) (*order.Fulfillment, *model.AppError) {
@@ -1792,7 +1854,7 @@ func (a *ServiceOrder) moveLinesToReplaceFulfillment(
 
 func (a *ServiceOrder) CreateReturnFulfillment(
 	requester *account.User, // can be nil
-	ord *order.Order,
+	ord order.Order,
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
 	totalRefundAmount *decimal.Decimal, // can be nil
@@ -1885,8 +1947,10 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 
 	// NOTE: this is called after transaction commit
 	appErr = a.OrderReturned(transaction, ord, requester, nil, sliceOfQuantityOrderLine)
-
-	return returnFulfillment, appErr
+	if appErr != nil {
+		return nil, appErr
+	}
+	return returnFulfillment, nil
 }
 
 // ProcessReplace Create replace fulfillment and new draft order.
@@ -1895,7 +1959,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 // order create the draft order with all user details, and requested lines.
 func (a *ServiceOrder) ProcessReplace(
 	requester *account.User,
-	ord *order.Order,
+	ord order.Order,
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
 	manager interfaces.PluginManagerInterface,
@@ -1978,7 +2042,7 @@ func (a *ServiceOrder) ProcessReplace(
 func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	user *account.User,
 	_ interface{},
-	ord *order.Order,
+	ord order.Order,
 	payMent *payment.Payment,
 	orderLineDatas []*order.OrderLineData,
 	fulfillmentLineDatas []*order.FulfillmentLineData,
@@ -1987,7 +2051,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 
-) (*order.Fulfillment, *order.Fulfillment, *order.Order, *model.AppError) {
+) (*order.Fulfillment, *order.Fulfillment, *order.Order, *payment.PaymentError, *model.AppError) {
 
 	var (
 		returnOrderLines        []*order.OrderLineData
@@ -2015,28 +2079,29 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	// create transaction
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return nil, nil, nil, model.NewAppError("CreateFulfillmentsForReturnedProducts", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, nil, nil, model.NewAppError("CreateFulfillmentsForReturnedProducts", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
 		totalRefundAmount *decimal.Decimal
 		appErr            *model.AppError
+		paymentErr        *payment.PaymentError
 	)
 	if refund && payMent != nil {
-		totalRefundAmount, appErr = a.processRefund(
+		totalRefundAmount, paymentErr, appErr = a.processRefund(
 			user,
 			nil,
 			ord,
-			payMent,
+			*payMent,
 			returnOrderLines,
 			returnFulfillmentLines,
 			amount,
 			refundShippingCosts,
 			manager,
 		)
-		if appErr != nil {
-			return nil, nil, nil, appErr
+		if paymentErr != nil || appErr != nil {
+			return nil, nil, nil, paymentErr, appErr
 		}
 	}
 
@@ -2053,7 +2118,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 			manager,
 		)
 		if appErr != nil {
-			return nil, nil, nil, appErr
+			return nil, nil, nil, nil, appErr
 		}
 	}
 
@@ -2067,7 +2132,7 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 		manager,
 	)
 	if appErr != nil {
-		return nil, nil, nil, appErr
+		return nil, nil, nil, nil, appErr
 	}
 
 	fulfillmentsToDelete, appErr := a.FulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
@@ -2091,31 +2156,27 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 		},
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError { // ignore not found err
-		return nil, nil, nil, appErr
+		return nil, nil, nil, nil, appErr
 	}
 
 	if len(fulfillmentsToDelete) > 0 {
-		appErr = a.DeleteFulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: fulfillmentsToDelete.IDs(),
-				},
-			},
-		})
+		appErr = a.BulkDeleteFulfillments(transaction, fulfillmentsToDelete)
 		if appErr != nil {
-			return nil, nil, nil, appErr
+			return nil, nil, nil, nil, appErr
 		}
 	}
 
 	// commit transaction
 	if err = transaction.Commit(); err != nil {
-		return nil, nil, nil, model.NewAppError("CreateFulfillmentsForReturnedProducts", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, nil, nil, model.NewAppError("CreateFulfillmentsForReturnedProducts", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	//----------------------------
-	panic("not implt")
+	_, appErr = manager.OrderUpdated(ord)
+	if appErr != nil {
+		return nil, nil, nil, nil, appErr
+	}
 
-	return returnFulfillment, replaceFulfillment, newOrder, nil
+	return returnFulfillment, replaceFulfillment, newOrder, nil, nil
 }
 
 func (a *ServiceOrder) calculateRefundAmount(
@@ -2221,20 +2282,20 @@ func (a *ServiceOrder) calculateRefundAmount(
 func (a *ServiceOrder) processRefund(
 	user *account.User,
 	_ interface{},
-	ord *order.Order,
-	payMent *payment.Payment,
+	ord order.Order,
+	payMent payment.Payment,
 	orderLinesToRefund []*order.OrderLineData,
 	fulfillmentLinesToRefund []*order.FulfillmentLineData,
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
-	manager interface{},
+	manager interfaces.PluginManagerInterface,
 
-) (*decimal.Decimal, *model.AppError) {
+) (*decimal.Decimal, *payment.PaymentError, *model.AppError) {
 
 	// transaction begin
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return nil, model.NewAppError("processRefund", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, nil, model.NewAppError("processRefund", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
@@ -2243,7 +2304,7 @@ func (a *ServiceOrder) processRefund(
 	if amount == nil {
 		amount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
 		if appErr != nil {
-			return nil, appErr
+			return nil, nil, appErr
 		}
 		// we take into consideration the shipping costs only when amount is not provided.
 		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
@@ -2251,15 +2312,73 @@ func (a *ServiceOrder) processRefund(
 		}
 	}
 
-	if amount != nil && !amount.Equal(decimal.Zero) {
+	var (
+		createPaymentRefundedEvent   = false
+		sendOrderRefunddConfirmation = false
+	)
 
+	if amount != nil && !amount.Equal(decimal.Zero) {
+		_, paymentErr, appErr := a.srv.PaymentService().Refund(payMent, manager, ord.ChannelID, amount)
+		if paymentErr != nil || appErr != nil {
+			return nil, paymentErr, appErr
+		}
+
+		createPaymentRefundedEvent = true
+		sendOrderRefunddConfirmation = true
 	}
 
-	// TODO: fix me
-	panic("not implt")
+	// commit transaction
+	if err := transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("processRefund", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	var userID *string
+	if user != nil && model.IsValidId(user.Id) {
+		userID = &user.Id
+	}
+
+	if createPaymentRefundedEvent {
+		_, appErr := a.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+			OrderID:    ord.Id,
+			UserID:     userID,
+			Type:       order.PAYMENT_REFUNDED,
+			Parameters: getPaymentData(amount, payMent)["Parameters"],
+		})
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+	}
+
+	if sendOrderRefunddConfirmation {
+		appErr := a.SendOrderRefundedConfirmation(ord, user, nil, *amount, payMent.Currency, manager)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+	}
+
+	var sliceOfQuantityOrderLines order.QuantityOrderLines
+	for _, value := range linesToRefund {
+		sliceOfQuantityOrderLines = append(sliceOfQuantityOrderLines, value)
+	}
+
+	_, appErr := a.CommonCreateOrderEvent(nil, &order.OrderEventOption{
+		OrderID: ord.Id,
+		Type:    order.FULFILLMENT_REFUNDED_,
+		UserID:  userID,
+		Parameters: model.StringInterface{
+			"lines":                   linesPerQuantityToLineObjectList(sliceOfQuantityOrderLines),
+			"amount":                  amount,
+			"shipping_costs_included": refundShippingCosts,
+		},
+	})
+	if appErr != nil {
+		return nil, nil, appErr
+	}
+
+	return amount, nil, nil
 }
 
-func (s *ServiceOrder) decreaseStocks(orderLinesInfo []*order.OrderLineData, manager interface{}, allowStockToBeExceeded bool) (*exception.InsufficientStock, *model.AppError) {
+func (s *ServiceOrder) decreaseStocks(orderLinesInfo []*order.OrderLineData, manager interfaces.PluginManagerInterface, allowStockToBeExceeded bool) (*exception.InsufficientStock, *model.AppError) {
 	linesToDecreaseStock := s.srv.WarehouseService().GetOrderLinesWithTrackInventory(orderLinesInfo)
 	if len(linesToDecreaseStock) > 0 {
 		insufficientStock, appErr := s.srv.WarehouseService().DecreaseStock(linesToDecreaseStock, manager, true, allowStockToBeExceeded)

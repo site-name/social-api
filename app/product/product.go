@@ -6,7 +6,6 @@ package product
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -17,8 +16,6 @@ import (
 
 type ServiceProduct struct {
 	srv *app.Server
-	sync.WaitGroup
-	sync.Mutex
 }
 
 func init() {

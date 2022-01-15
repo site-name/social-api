@@ -2,7 +2,6 @@ package order
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -18,9 +17,7 @@ import (
 )
 
 type ServiceOrder struct {
-	srv   *app.Server
-	wg    sync.WaitGroup
-	mutex sync.Mutex
+	srv *app.Server
 
 	RecalculateOrderPrices types.RecalculateOrderPricesFunc // This attribute is initialized as this app is started
 }

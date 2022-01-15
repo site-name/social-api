@@ -49,14 +49,14 @@ type OrderLine struct {
 	Quantity                          int                  `json:"quantity"`
 	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
 	Currency                          string               `json:"currency"`
-	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"`
+	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"` // default 0
 	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
 	UnitDiscountType                  string               `json:"unit_discount_type"`
 	UnitDiscountReason                *string              `json:"unit_discount_reason"`
-	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"`
-	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"` // store the value of the applied discount. Like 20%, default 0
+	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"` // default 0
+	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"`   // store the value of the applied discount. Like 20%, default 0
 	UnitPriceNet                      *goprices.Money      `json:"unit_price_net" db:"-"`
-	UnitPriceGrossAmount              *decimal.Decimal     `json:"unit_price_gross_amount"`
+	UnitPriceGrossAmount              *decimal.Decimal     `json:"unit_price_gross_amount"` // default 0
 	UnitPriceGross                    *goprices.Money      `json:"unit_price_gross" db:"-"`
 	UnitPrice                         *goprices.TaxedMoney `json:"unit_price" db:"-"`
 	TotalPriceNetAmount               *decimal.Decimal     `json:"total_price_net_amount"`
@@ -133,6 +133,17 @@ func (o OrderLines) IDs() []string {
 	for _, orderLine := range o {
 		if orderLine != nil {
 			res = append(res, orderLine.Id)
+		}
+	}
+
+	return res
+}
+
+func (o OrderLines) FilterNils() OrderLines {
+	var res OrderLines
+	for _, item := range o {
+		if item != nil {
+			res = append(res, item)
 		}
 	}
 
@@ -217,7 +228,6 @@ func (o *OrderLine) PopulateNonDbFields() {
 			Currency: o.Currency,
 		}
 		o.TotalPrice, _ = goprices.NewTaxedMoney(o.TotalPriceNet, o.TotalPriceGross)
-
 	}
 
 	if o.UnDiscountedUnitPriceNetAmount != nil && o.UnDiscountedUnitPriceGrossAmount != nil {
@@ -277,9 +287,16 @@ func (o *OrderLine) commonPre() {
 	}
 
 	if o.UnitPrice != nil {
-		o.UnitPriceNet = o.UnitPrice.Net
-		o.UnitPriceGross = o.UnitPrice.Gross
-		o.Currency = o.UnitPrice.Currency
+		o.UnitPriceNetAmount = &o.UnitPrice.Net.Amount
+		o.UnitPriceGrossAmount = &o.UnitPrice.Gross.Amount
+	} else {
+		o.UnitPriceNetAmount = &decimal.Zero
+		o.UnitPriceGrossAmount = &decimal.Zero
+	}
+
+	if o.TotalPrice != nil {
+		o.TotalPriceNetAmount = &o.TotalPrice.Net.Amount
+		o.TotalPriceGrossAmount = &o.TotalPrice.Gross.Amount
 	}
 
 	if o.UnDiscountedUnitPrice != nil {
@@ -314,6 +331,21 @@ func (o *OrderLine) QuantityUnFulfilled() int {
 
 func (o *OrderLine) DeepCopy() *OrderLine {
 	orderLine := *o
+
+	if o.ProductVariant != nil {
+		orderLine.ProductVariant = o.ProductVariant.DeepCopy()
+	}
+	if o.Order != nil {
+		orderLine.Order = o.Order.DeepCopy()
+	}
+
+	copiedAllocations := []*ReplicateWarehouseAllocation{}
+
+	for _, allo := range o.GetAllocations() {
+		copiedAllocations = append(copiedAllocations, allo.DeepCopy())
+	}
+
+	o.SetAllocations(copiedAllocations)
 
 	return &orderLine
 }

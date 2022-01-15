@@ -175,22 +175,28 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		From(as.TableName("")).
 		OrderBy(as.OrderBy())
 
+	var (
+		joined_OrderLines_tableName bool
+		joined_Stock_table          bool
+	)
+
 	// parse option
 	if option.AnnotateStockAvailableQuantity {
 		query.
 			Column(`Stocks.Quantity - COALESCE( SUM( T3.QuantityAllocated ), 0 ) AS StockAvailableQuantity`). // NOTE: `T3` alias of `Allocations`
-			InnerJoin(store.StockTableName+" ON (Stocks.Id = Allocations.StockID)").
+			InnerJoin("Stocks ON (Stocks.Id = Allocations.StockID)").
 			LeftJoin(as.TableName("")+" AS T3 ON (T3.StockID = Stocks.Id)").
 			GroupBy("Allocations.Id", "Stocks.Quantity")
-	}
 
-	var joined_OrderLines_tableName bool
+		joined_Stock_table = true // indicate for later check
+	}
 
 	if option.SelectRelatedOrderLine {
 		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+
 		joined_OrderLines_tableName = true // indicate for later check
 	}
-	if option.SelectedRelatedStock {
+	if option.SelectedRelatedStock && !joined_Stock_table {
 		query = query.InnerJoin(store.StockTableName + " ON Stocks.Id = Allocations.StockID")
 	}
 	if option.Id != nil {

@@ -154,5 +154,12 @@ func (s *Stock) PreUpdate() {
 
 func (s *Stock) DeepCopy() *Stock {
 	res := *s
+
+	if s.Warehouse != nil {
+		res.Warehouse = s.Warehouse.DeepCopy()
+	}
+	if s.ProductVariant != nil {
+		res.ProductVariant = s.ProductVariant.DeepCopy()
+	}
 	return &res
 }

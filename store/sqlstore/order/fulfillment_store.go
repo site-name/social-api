@@ -2,6 +2,7 @@ package order
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -26,6 +27,15 @@ func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
 	}
 
 	return fs
+}
+
+func (fs *SqlFulfillmentStore) TableName(withField string) string {
+	name := "Fulfillments"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
 }
 
 func (fs *SqlFulfillmentStore) ModelFields() []string {
@@ -254,34 +264,20 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 	return res, nil
 }
 
-// DeleteByOptions deletes fulfillment database records that satisfy given option. It returns an error indicates if there is a problem occured during deletion process
-func (fs *SqlFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
-	var runner squirrel.BaseRunner = fs.GetMaster()
+// BulkDeleteFulfillments deletes given fulfillments
+func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
+	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMaster().Exec
 	if transaction != nil {
-		runner = transaction
+		exeFunc = transaction.Exec
 	}
 
-	query := fs.GetQueryBuilder().
-		Delete(store.FulfillmentTableName)
-
-	// parse options
-	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Id"))
-	}
-	if options.OrderID != nil {
-		query = query.Where(options.OrderID.ToSquirrel("OrderID"))
-	}
-	if options.Status != nil {
-		query = query.Where(options.Status.ToSquirrel("Status"))
-	}
-
-	result, err := query.RunWith(runner).Exec()
+	res, err := exeFunc("DELETE * FROM "+fs.TableName("")+" WHERE Id in :IDS", map[string]interface{}{"IDS": fulfillments.IDs()})
 	if err != nil {
-		return errors.Wrap(err, "failed to delete fulfillments by given options")
+		return errors.Wrap(err, "failed to delete fulfillments")
 	}
-	_, err = result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to count number of deleted fulfillments")
+	numDeleted, _ := res.RowsAffected()
+	if int(numDeleted) != len(fulfillments) {
+		return fmt.Errorf("%d fulfillemts deleted instead of %d", numDeleted, len(fulfillments))
 	}
 
 	return nil

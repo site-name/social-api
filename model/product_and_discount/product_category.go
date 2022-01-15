@@ -4,6 +4,7 @@ import (
 	"io"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
@@ -30,9 +31,9 @@ type Category struct {
 
 // CategoryFilterOption is used for building sql queries
 type CategoryFilterOption struct {
-	Id   *model.StringFilter
-	Name *model.StringFilter
-	Slug *model.StringFilter
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
+	Slug squirrel.Sqlizer
 
 	VoucherIDs []string // SELECT * FROM Categories WHERE Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (...))
 	SaleIDs    []string

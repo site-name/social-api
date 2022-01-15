@@ -30,7 +30,7 @@ type DiscountService interface {
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
-	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (*goprices.Money, *model.AppError)
+	CalculateDiscountedPrice(product product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (*goprices.Money, *model.AppError)
 	// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
 	CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError)
 	// DecreaseVoucherUsage decreases voucher's uses by 1
@@ -67,9 +67,9 @@ type DiscountService interface {
 	// NOTE: the returning interface's type should be identical to given price's type
 	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-	GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
+	GetProductDiscountOnSale(product product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.
-	GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
+	GetProductDiscounts(product product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
 	// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)
 	// GetVoucherDiscount

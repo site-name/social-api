@@ -1399,6 +1399,12 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 
 }
 
+func (s *RetryLayerAllocationStore) OrderBy() string {
+
+	return s.AllocationStore.OrderBy()
+
+}
+
 func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 	tries := 0
@@ -3319,6 +3325,12 @@ func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount
 
 }
 
+func (s *RetryLayerDigitalContentStore) OrderBy() string {
+
+	return s.DigitalContentStore.OrderBy()
+
+}
+
 func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 
 	tries := 0
@@ -3874,11 +3886,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+		err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
 		if err == nil {
 			return nil
 		}
@@ -5183,6 +5195,12 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerOrderLineStore) OrderBy() string {
+
+	return s.OrderLineStore.OrderBy()
 
 }
 

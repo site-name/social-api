@@ -2,6 +2,7 @@ package order
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -68,16 +69,19 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 	var (
 		digitalOrderLines []*order.OrderLine
 		appError          *model.AppError
+		mut               sync.Mutex
+		wg                sync.WaitGroup
 	)
+
 	setAppError := func(err *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if err != nil && appError == nil {
 			appError = err
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
-	a.wg.Add(len(orderLines))
+	wg.Add(len(orderLines))
 
 	for _, orderLine := range orderLines {
 		go func(anOrderLine *order.OrderLine) {
@@ -87,18 +91,18 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 			} else {
 				if orderLineIsDigital {
 
-					a.mutex.Lock()
+					mut.Lock()
 					digitalOrderLines = append(digitalOrderLines, anOrderLine)
-					a.mutex.Unlock()
+					mut.Unlock()
 
 				}
 			}
 
-			a.wg.Done()
+			wg.Done()
 		}(orderLine)
 	}
 
-	a.wg.Wait()
+	wg.Wait()
 
 	if appError != nil {
 		return nil, appError

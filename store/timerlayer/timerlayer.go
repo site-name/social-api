@@ -1358,6 +1358,22 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 	return result, err
 }
 
+func (s *TimerLayerAllocationStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.AllocationStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.OrderBy", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
 	start := timemodule.Now()
 
@@ -2894,6 +2910,22 @@ func (s *TimerLayerDigitalContentStore) GetByOption(option *product_and_discount
 	return result, err
 }
 
+func (s *TimerLayerDigitalContentStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.DigitalContentStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.OrderBy", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 	start := timemodule.Now()
 
@@ -3359,10 +3391,10 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
 	start := timemodule.Now()
 
-	err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+	err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3370,7 +3402,7 @@ func (s *TimerLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transacti
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.DeleteByOptions", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.BulkDeleteFulfillments", success, elapsed)
 	}
 	return err
 }
@@ -4429,6 +4461,22 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Get", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerOrderLineStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.OrderLineStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.OrderBy", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {

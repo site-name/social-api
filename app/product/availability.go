@@ -6,6 +6,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -124,12 +125,12 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 
 // GetVariantPrice
 func (a *ServiceProduct) GetVariantPrice(
-	variant *product_and_discount.ProductVariant,
-	variantChannelListing *product_and_discount.ProductVariantChannelListing,
-	product *product_and_discount.Product,
+	variant product_and_discount.ProductVariant,
+	variantChannelListing product_and_discount.ProductVariantChannelListing,
+	product product_and_discount.Product,
 	collections []*product_and_discount.Collection,
 	discounts []*product_and_discount.DiscountInfo,
-	chanNel *channel.Channel,
+	chanNel channel.Channel,
 
 ) (*goprices.Money, *model.AppError) {
 
@@ -146,12 +147,12 @@ func (a *ServiceProduct) GetVariantPrice(
 }
 
 func (a *ServiceProduct) GetProductPriceRange(
-	product *product_and_discount.Product,
-	variants []*product_and_discount.ProductVariant,
+	product product_and_discount.Product,
+	variants product_and_discount.ProductVariants,
 	variantsChannelListing []*product_and_discount.ProductVariantChannelListing,
 	collections []*product_and_discount.Collection,
 	discounts []*product_and_discount.DiscountInfo,
-	chanNel *channel.Channel,
+	chanNel channel.Channel,
 
 ) (*goprices.MoneyRange, *model.AppError) {
 
@@ -176,12 +177,12 @@ func (a *ServiceProduct) GetProductPriceRange(
 		}
 
 		prices := []*goprices.Money{}
-		for _, variant := range variants {
+		for _, variant := range variants.FilterNils() {
 			variantChannelListing := variantChannelListingsMap[variant.Id]
 			if variantChannelListing != nil {
 				price, appErr := a.GetVariantPrice(
-					variant,
-					variantChannelListing, // no need to populate non db fields, since GetVariantPrice() does that.
+					*variant,
+					*variantChannelListing, // no need to populate non db fields, since GetVariantPrice() does that.
 					product,
 					collections,
 					discounts,
@@ -209,14 +210,14 @@ func (a *ServiceProduct) GetProductPriceRange(
 }
 
 func (a *ServiceProduct) GetProductAvailability(
-	product *product_and_discount.Product,
+	product product_and_discount.Product,
 	productChannelListing *product_and_discount.ProductChannelListing,
 	variants []*product_and_discount.ProductVariant,
 	variantsChannelListing []*product_and_discount.ProductVariantChannelListing,
 	collections []*product_and_discount.Collection,
 	discounts []*product_and_discount.DiscountInfo,
-	chanNel *channel.Channel,
-	manager interface{},
+	chanNel channel.Channel,
+	manager interfaces.PluginManagerInterface,
 	countryCode string, // can be empty
 	localCurrency string, // can be empty
 
@@ -226,20 +227,82 @@ func (a *ServiceProduct) GetProductAvailability(
 		countryCode = model.DEFAULT_COUNTRY
 	}
 
-	// discountedNetRange, appErr := a.GetProductPriceRange(
-	// 	product,
-	// 	variants,
-	// 	variantsChannelListing,
-	// 	collections,
-	// 	discounts,
-	// 	chanNel,
-	// )
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	var discounted *goprices.TaxedMoneyRange
 
-	panic("not implemented")
+	discountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, discounts, chanNel)
+	if appErr != nil {
+		return nil, appErr
+	}
 
+	if discountedNetRange != nil {
+		start, appErr := manager.ApplyTaxesToProduct(product, *discountedNetRange.Start, countryCode, chanNel.Slug)
+		if appErr != nil {
+			return nil, appErr
+		}
+		stop, appErr := manager.ApplyTaxesToProduct(product, *discountedNetRange.Stop, countryCode, chanNel.Slug)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		discounted = &goprices.TaxedMoneyRange{
+			Start:    start,
+			Stop:     stop,
+			Currency: start.Currency,
+		}
+	}
+
+	var undiscounted *goprices.TaxedMoneyRange
+	undiscountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, []*product_and_discount.DiscountInfo{}, chanNel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if undiscountedNetRange != nil {
+		start, appErr := manager.ApplyTaxesToProduct(product, *undiscountedNetRange.Start, countryCode, chanNel.Slug)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		stop, appErr := manager.ApplyTaxesToProduct(product, *undiscountedNetRange.Stop, countryCode, chanNel.Slug)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		undiscounted = &goprices.TaxedMoneyRange{
+			Start:    start,
+			Stop:     stop,
+			Currency: start.Currency,
+		}
+	}
+
+	var (
+		discount              *goprices.TaxedMoney
+		priceRangeLocal       interface{}
+		discountLocalCurrency interface{}
+	)
+	if discountedNetRange != nil && undiscountedNetRange != nil {
+		discount, _ = getTotalDiscountFromRange(undiscounted, discounted)
+
+		aType, appErr := a.getProductPriceRange(discounted, undiscounted, localCurrency)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		priceRangeLocal = aType.PriceRangeLocal
+		discountLocalCurrency = aType.DiscountLocalCurrency
+	}
+
+	isVisible := productChannelListing != nil && productChannelListing.IsVisible()
+	isOnSale := isVisible && discount != nil
+
+	return &product_and_discount.ProductAvailability{
+		OnSale:                  isOnSale,
+		PriceRange:              discounted,
+		PriceRangeUnDiscounted:  undiscounted,
+		Discount:                discount,
+		PriceRangeLocalCurrency: priceRangeLocal.(*goprices.TaxedMoneyRange),
+		DiscountLocalCurrency:   discountLocalCurrency.(*goprices.TaxedMoneyRange),
+	}, nil
 }
 
 func (a *ServiceProduct) GetVariantAvailability(

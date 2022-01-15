@@ -334,7 +334,7 @@ func (m *PluginManager) GetOrderShippingTaxRate(orDer order.Order, shippingPrice
 	return model.NewDecimal(deci.Round(4)), nil
 }
 
-func (m *PluginManager) CalculateOrderlineTotal(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (interface{}, *model.AppError) {
+func (m *PluginManager) CalculateOrderlineTotal(orDer order.Order, orderLine order.OrderLine, variant product_and_discount.ProductVariant, product product_and_discount.Product) (*goprices.TaxedMoney, *model.AppError) {
 	defaultValue, appErr := m.Srv.CheckoutService().BaseOrderLineTotal(&orderLine)
 	if appErr != nil {
 		return nil, appErr

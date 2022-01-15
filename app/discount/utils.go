@@ -94,7 +94,7 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_disc
 }
 
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscountOnSale(product product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
 	// this checks whether the given product is on sale
 	isProductOnSale := util.StringInSlice(product.Id, discountInfo.ProductIDs) ||
 		(product.CategoryID != nil && util.StringInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
@@ -115,7 +115,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product *product_and_discount
 }
 
 // GetProductDiscounts Return discount values for all discounts applicable to a product.
-func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
+func (a *ServiceDiscount) GetProductDiscounts(product product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError) {
 	// filter duplicate collections
 	var (
 		uniqueCollectionIDs = []string{}
@@ -165,7 +165,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product *product_and_discount.Prod
 // CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 //
 // `discounts` is optional
-func (a *ServiceDiscount) CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (*goprices.Money, *model.AppError) {
+func (a *ServiceDiscount) CalculateDiscountedPrice(product product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (*goprices.Money, *model.AppError) {
 	if len(discounts) > 0 {
 
 		discountCalFuncs, appErr := a.GetProductDiscounts(product, collections, discounts, channeL, variantID)

@@ -6,6 +6,7 @@ import (
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -49,18 +50,15 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 //
 // Set products of deleted categories as unpublished, delete categories
 // and update products minimal variant prices.
-func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interface{}) *model.AppError {
-	// categories, appErr := a.CategoriesByOption(&product_and_discount.CategoryFilterOption{
-	// 	Id: &model.StringFilter{
-	// 		StringOption: &model.StringOption{
-	// 			In: categoryIDs,
-	// 		},
-	// 	},
-	// 	LockForUpdate: true, // SELECT .. FOR UPDATE
-	// })
-	// if appErr != nil {
-	// 	return appErr
+func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfaces.PluginManagerInterface) *model.AppError {
+	// start transaction
+	// transaction, err := a.srv.Store.GetMaster().Begin()
+	// if err != nil {
+	// 	return model.NewAppError("DeleteCategories", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	// }
+	// defer a.srv.Store.FinalizeTransaction(transaction)
+
+	// a.CategoriesByOption()
 	panic("not implemented")
 }
 
