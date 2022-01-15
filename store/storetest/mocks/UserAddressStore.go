@@ -33,6 +33,20 @@ func (_m *UserAddressStore) DeleteForUser(userID string, addressID string) error
 	return r0
 }
 
+// OrderBy provides a mock function with given fields:
+func (_m *UserAddressStore) OrderBy() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: userAddress
 func (_m *UserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
 	ret := _m.Called(userAddress)
@@ -54,4 +68,18 @@ func (_m *UserAddressStore) Save(userAddress *account.UserAddress) (*account.Use
 	}
 
 	return r0, r1
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *UserAddressStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
 }

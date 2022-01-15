@@ -65,6 +65,20 @@ func (_m *ShippingMethodChannelListingStore) Get(listingID string) (*shipping.Sh
 	return r0, r1
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *ShippingMethodChannelListingStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: listing
 func (_m *ShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
 	ret := _m.Called(listing)

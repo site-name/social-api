@@ -124,3 +124,31 @@ func (_m *AllocationStore) Get(allocationID string) (*warehouse.Allocation, erro
 
 	return r0, r1
 }
+
+// OrderBy provides a mock function with given fields:
+func (_m *AllocationStore) OrderBy() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *AllocationStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}

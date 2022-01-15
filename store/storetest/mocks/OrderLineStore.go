@@ -120,6 +120,20 @@ func (_m *OrderLineStore) ModelFields() []string {
 	return r0
 }
 
+// OrderBy provides a mock function with given fields:
+func (_m *OrderLineStore) OrderBy() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // ScanFields provides a mock function with given fields: orderLine
 func (_m *OrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
 	ret := _m.Called(orderLine)
@@ -131,6 +145,20 @@ func (_m *OrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *OrderLineStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

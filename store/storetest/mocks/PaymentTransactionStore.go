@@ -90,6 +90,20 @@ func (_m *PaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTr
 	return r0, r1
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *PaymentTransactionStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: transaction
 func (_m *PaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	ret := _m.Called(transaction)

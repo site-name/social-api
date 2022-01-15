@@ -65,6 +65,29 @@ func (_m *PluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration
 	return r0, r1
 }
 
+// GetByOptions provides a mock function with given fields: options
+func (_m *PluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+	ret := _m.Called(options)
+
+	var r0 *plugins.PluginConfiguration
+	if rf, ok := ret.Get(0).(func(*plugins.PluginConfigurationFilterOptions) *plugins.PluginConfiguration); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*plugins.PluginConfiguration)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*plugins.PluginConfigurationFilterOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TableName provides a mock function with given fields: withField
 func (_m *PluginConfigurationStore) TableName(withField string) string {
 	ret := _m.Called(withField)
