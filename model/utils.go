@@ -761,3 +761,56 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 
 	return nil
 }
+
+// {
+//	"blocks": [
+//		{
+//			"data": {
+//				"text": "There is life in outer space. This vibrant light speed yellow paint brings life to any surface. Goes on easy and dries at light speed."
+//			},
+//			"type": "paragraph"
+//		}
+//	]
+// }
+func DraftJSContentToRawText(content StringInterface, sep string) string {
+	if sep == "" {
+		sep = "/n"
+	}
+
+	if content == nil {
+		return ""
+	}
+
+	blocks, ok := content["blocks"]
+	if !ok {
+		return ""
+	}
+
+	blocksSlice, ok := blocks.([]StringInterface)
+	if !ok {
+		return ""
+	}
+
+	paragraphs := []string{}
+
+	for _, block := range blocksSlice {
+		data, ok := block["data"]
+		if !ok {
+			continue
+		}
+
+		dataMap, ok := data.(StringMap)
+		if !ok {
+			continue
+		}
+
+		text, ok := dataMap["text"]
+		if !ok {
+			continue
+		}
+
+		paragraphs = append(paragraphs, text)
+	}
+
+	return strings.Join(paragraphs, sep)
+}

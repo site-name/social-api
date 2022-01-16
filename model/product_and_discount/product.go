@@ -22,7 +22,7 @@ type Product struct {
 	ProductTypeID        string                 `json:"product_type_id"`
 	Name                 string                 `json:"name"`
 	Slug                 string                 `json:"slug"`
-	Description          *string                `json:"description"`
+	Description          model.StringInterface  `json:"description"`
 	DescriptionPlainText string                 `json:"description_plaintext"`
 	CategoryID           *string                `json:"category_id"`
 	CreateAt             int64                  `json:"create_at"`
@@ -66,7 +66,7 @@ func (p Products) IDs() []string {
 
 // PlainTextDescription Convert DraftJS JSON content to plain text
 func (p *Product) PlainTextDescription() string {
-	panic("not implemented")
+	return p.Name
 }
 
 func SortByAttributeFields() []string {

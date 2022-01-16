@@ -235,29 +235,29 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.Order
 	// select exists product type with kind == "gift_card":
 	productTypeQuery := gs.GetQueryBuilder().
 		Select(`(1) AS "a"`).
-		From(store.ProductTypeTableName+" U0").
-		Where("U0.Kind = ?", product_and_discount.GIFT_CARD).
-		Where("U0.Id = V0.ProductTypeID"). // NOTE: `V0` is Products table name
+		From(store.ProductTypeTableName).
+		Where("ProductTypes.Kind = ?", product_and_discount.GIFT_CARD).
+		Where("ProductTypes.Id = Products.ProductTypeID").
 		Limit(1)
 
 	productQuery := gs.GetQueryBuilder().
 		Select(`(1) AS "a"`).
-		From(store.ProductTableName + " V0").
+		From(store.ProductTableName).
 		Where(squirrel.Expr("EXISTS(?)", productTypeQuery)).
-		Where("V0.Id = W0.ProductID"). // NOTE: W0 is ProductVariants table name
+		Where("Products.Id = ProductVariants.ProductID").
 		Limit(1)
 
 	productVariantQuery := gs.GetQueryBuilder().
 		Select(`(1) AS "a"`).
-		From(store.ProductVariantTableName + " W0").
+		From(store.ProductVariantTableName).
 		Where(squirrel.Expr("EXISTS(?)", productQuery)).
-		Where("W0.Id = OL.VariantID"). // NOTE: OL is OrderLines table name
+		Where("ProductVariants.Id = Orderlines.VariantID").
 		Limit(1)
 
 	orderLineQuery := gs.GetQueryBuilder().
 		Select("*").
-		From(store.OrderLineTableName+" OL").
-		Where("OL.Id IN ?", orderLineIDs).
+		From(store.OrderLineTableName).
+		Where("Orderlines.Id IN ?", orderLineIDs).
 		Where(squirrel.Expr("EXISTS(?)", productVariantQuery)).
 		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
 

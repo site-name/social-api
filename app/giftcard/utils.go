@@ -280,8 +280,14 @@ func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) *time.Tim
 }
 
 func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError {
-	panic("not implemented")
+	for _, gc := range giftcards {
+		appErr := s.SendGiftcardNotification(requestorUser, nil, customerUser, userEmail, *gc, manager, channelSlug, false)
+		if appErr != nil {
+			return appErr
+		}
+	}
 
+	return nil
 }
 
 func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError {
@@ -295,9 +301,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account
 	// 	}
 	// }
 
-	// s.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-
-	// })
+	// s.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{})
 	panic("not implemented")
 }
 

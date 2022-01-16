@@ -208,7 +208,7 @@ func (s *ServiceCheckout) createLineForOrder(
 	manager interfaces.PluginManagerInterface,
 	checkoutInfo checkout.CheckoutInfo,
 	lines []*checkout.CheckoutLineInfo,
-	checkoutLineInfo *checkout.CheckoutLineInfo,
+	checkoutLineInfo checkout.CheckoutLineInfo,
 	discounts []*product_and_discount.DiscountInfo,
 	productsTranslation map[string]string,
 	variantsTranslation map[string]string,
@@ -236,8 +236,20 @@ func (s *ServiceCheckout) createLineForOrder(
 		translatedVariantName = ""
 	}
 
-	// TODO: fixme. This part requires a few works with `manager`
-	panic("not implemented")
+	totalLinePrice, appErr := manager.CalculateCheckoutLineTotal(checkoutInfo, lines, checkoutLineInfo, address, discounts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	unitPrice, appErr := manager.CalculateCheckoutLineUnitPrice(*totalLinePrice, quantity, checkoutInfo, lines, checkoutLineInfo, address, discounts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	taxRate, appErr := manager.GetCheckoutLineTaxRate(checkoutInfo, lines, checkoutLineInfo, address, discounts, *unitPrice)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	productVariantRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping([]string{variant.ProductID})
 	if appErr != nil {
@@ -253,9 +265,9 @@ func (s *ServiceCheckout) createLineForOrder(
 		IsShippingRequired:    productVariantRequireShipping,
 		Quantity:              quantity,
 		VariantID:             &variant.Id,
-		UnitPrice:             nil, // TODO: add me
-		TotalPrice:            nil, // TODO: add me
-		TaxRate:               nil, // TODO: add me
+		UnitPrice:             unitPrice,
+		TotalPrice:            totalLinePrice,
+		TaxRate:               taxRate,
 	}
 
 	return &order.OrderLineData{
@@ -363,7 +375,7 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 			mutex.Lock()
 			defer mutex.Unlock()
 
-			orderLineData, appErr := s.createLineForOrder(manager, checkoutInfo, lines, lineInfo, discounts, productTranslationMap, productVariantTranslationMap)
+			orderLineData, appErr := s.createLineForOrder(manager, checkoutInfo, lines, *lineInfo, discounts, productTranslationMap, productVariantTranslationMap)
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError && appError == nil {
 					appError = appErr

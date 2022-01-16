@@ -127,3 +127,19 @@ func Test_MakeStringMapForModelSlice(t *testing.T) {
 		)
 	})
 }
+
+func TestDraftJSContentToRawText(t *testing.T) {
+	data := StringInterface{
+		"blocks": []StringInterface{
+			{
+				"data": StringMap{
+					"text": "Hello World",
+				},
+				"type": "paragraph",
+			},
+		},
+	}
+
+	res := DraftJSContentToRawText(data, "")
+	fmt.Println(res)
+}
