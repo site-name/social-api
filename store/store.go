@@ -583,6 +583,7 @@ type (
 	ProductStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
 		ScanFields(prd product_and_discount.Product) []interface{}
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
@@ -807,11 +808,13 @@ type (
 	}
 	VoucherCategoryStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
 		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
 	}
 	VoucherCollectionStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
 		Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error)                                   // Get finds a voucher collection with given id, then returns it with an error
 	}
@@ -829,6 +832,7 @@ type (
 	}
 	SaleCategoryRelationStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error)                               // Save inserts given sale-category relation into database
 		Get(relationID string) (*product_and_discount.SaleCategoryRelation, error)                                                                  // Get returns 1 sale-category relation with given id
 		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option

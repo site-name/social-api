@@ -3,8 +3,10 @@ package discount
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
@@ -120,6 +122,8 @@ func (a *ServiceDiscount) GetProductDiscounts(product product_and_discount.Produ
 	var (
 		uniqueCollectionIDs = []string{}
 		meetMap             = map[string]bool{}
+		wg                  sync.WaitGroup
+		mut                 sync.Mutex
 	)
 
 	for _, collection := range collections {
@@ -129,7 +133,7 @@ func (a *ServiceDiscount) GetProductDiscounts(product product_and_discount.Produ
 		}
 	}
 
-	a.wg.Add(len(uniqueCollectionIDs))
+	wg.Add(len(uniqueCollectionIDs))
 
 	var (
 		appError                    *model.AppError
@@ -140,20 +144,20 @@ func (a *ServiceDiscount) GetProductDiscounts(product product_and_discount.Produ
 		go func(info *product_and_discount.DiscountInfo) {
 			discountCalFunc, appErr := a.GetProductDiscountOnSale(product, uniqueCollectionIDs, info, channeL, variantID)
 
-			a.mutex.Lock()
+			mut.Lock()
 			if appErr != nil && appError == nil {
 				appError = appErr
 			} else {
 				discountCalculatorFunctions = append(discountCalculatorFunctions, discountCalFunc)
 			}
-			a.mutex.Unlock()
+			mut.Unlock()
 
-			a.wg.Done()
+			wg.Done()
 
 		}(discountInfo)
 	}
 
-	a.wg.Wait()
+	wg.Wait()
 
 	if appError != nil {
 		return nil, appError
@@ -276,6 +280,8 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *product_and_discou
 		invalidArg   bool
 		minPrice     *goprices.Money
 		appErrDetail string
+		mut          sync.Mutex
+		wg           sync.WaitGroup
 	)
 
 	if len(prices) == 0 {
@@ -311,15 +317,15 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *product_and_discou
 
 	setAppErr := func(err *model.AppError) {
 		if err != nil {
-			a.mutex.Lock()
+			mut.Lock()
 			if appErr == nil {
 				appErr = err
 			}
-			a.mutex.Unlock()
+			mut.Unlock()
 		}
 	}
 
-	a.wg.Add(len(prices))
+	wg.Add(len(prices))
 
 	for _, price := range prices {
 		go func(aPrice *goprices.Money) {
@@ -334,16 +340,16 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *product_and_discou
 						model.NewAppError("GetProductsVoucherDiscount", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError),
 					)
 				} else {
-					a.mutex.Lock()
+					mut.Lock()
 					totalAmount = addedAmount
-					a.mutex.Unlock()
+					mut.Unlock()
 				}
 			}
 
 		}(price)
 	}
 
-	a.wg.Wait()
+	wg.Wait()
 
 	if appErr != nil {
 		return nil, appErr
@@ -508,9 +514,9 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	return channelListingMap, nil
 }
 
-func (a *ServiceDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError) {
+func (a *ServiceDiscount) FetchDiscounts(date time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError) {
 	// finds active sales
-	activeSales, apErr := a.ActiveSales(date)
+	activeSales, apErr := a.ActiveSales(&date)
 	if apErr != nil {
 		return nil, apErr
 	}
@@ -524,55 +530,57 @@ func (a *ServiceDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discou
 		variants            map[string][]string
 		appError            *model.AppError
 		saleChannelListings map[string]map[string]*product_and_discount.SaleChannelListing
+		mut                 sync.Mutex
+		wg                  sync.WaitGroup
 	)
 
 	safelySetAppError := func(err *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if err != nil && appError == nil {
 			appError = err
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
-	a.wg.Add(5)
+	wg.Add(5)
 
 	go func() {
 		// find collections
 		collections, apErr = a.FetchCollections(activeSaleIDs)
 		safelySetAppError(apErr)
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
 		saleChannelListings, apErr = a.FetchSaleChannelListings(activeSaleIDs)
 		safelySetAppError(apErr)
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
 		products, apErr = a.FetchProducts(activeSaleIDs)
 		safelySetAppError(apErr)
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
 		categories, apErr = a.FetchCategories(activeSaleIDs)
 		safelySetAppError(apErr)
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
 		variants, apErr = a.FetchVariants(activeSaleIDs)
 		safelySetAppError(apErr)
 
-		a.wg.Done()
+		wg.Done()
 	}()
 
-	a.wg.Wait()
+	wg.Wait()
 
 	if appError != nil {
 		return nil, appError
@@ -596,11 +604,106 @@ func (a *ServiceDiscount) FetchDiscounts(date *time.Time) ([]*product_and_discou
 
 // FetchActiveDiscounts returns discounts that are activated
 func (a *ServiceDiscount) FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError) {
-	return a.FetchDiscounts(util.NewTime(time.Now().UTC()))
+	return a.FetchDiscounts(time.Now().UTC())
 }
 
-func (s *ServiceDiscount) FetchCatalogueInfo(instance *product_and_discount.Sale) (map[string][]string, *model.AppError) {
-	panic("not implemented")
+// FetchCatalogueInfo may return a map with keys are ["categories", "collections", "products", "variants"].
+//
+// values are slices of uuid strings
+func (s *ServiceDiscount) FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError) {
+
+	var (
+		wg       sync.WaitGroup
+		mut      sync.Mutex
+		appError *model.AppError
+
+		categorieIDs  []string
+		collectionIDs []string
+		productIDs    []string
+		variantIDs    []string
+
+		setAppErr = func(err *model.AppError) {
+			mut.Lock()
+			defer mut.Unlock()
+
+			if err != nil && appError == nil {
+				appError = err
+			}
+		}
+	)
+
+	wg.Add(4)
+
+	go func() {
+		defer wg.Done()
+
+		cates, appErr := s.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
+			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": instance.Id},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				setAppErr(appErr)
+			}
+			return
+		}
+		categorieIDs = product_and_discount.Categories(cates).IDs()
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		collecs, appErr := s.srv.ProductService().CollectionsByOption(&product_and_discount.CollectionFilterOption{
+			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": instance.Id},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				setAppErr(appErr)
+			}
+			return
+		}
+		collectionIDs = product_and_discount.Collections(collecs).IDs()
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		prds, appErr := s.srv.ProductService().ProductsByOption(&product_and_discount.ProductFilterOption{
+			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": instance.Id},
+		})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				setAppErr(appErr)
+			}
+			return
+		}
+		productIDs = product_and_discount.Products(prds).IDs()
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{})
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				setAppErr(appErr)
+			}
+			return
+		}
+		variantIDs = product_and_discount.ProductVariants(productVariants).IDs()
+	}()
+
+	wg.Wait()
+
+	if appError != nil {
+		return nil, appError
+	}
+
+	return map[string][]string{
+		"categories":  categorieIDs,
+		"collections": collectionIDs,
+		"products":    productIDs,
+		"variants":    variantIDs,
+	}, nil
 }
 
 // IsValidPromoCode checks if given code is valid giftcard code or voucher code

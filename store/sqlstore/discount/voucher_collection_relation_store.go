@@ -12,12 +12,6 @@ type SqlVoucherCollectionStore struct {
 	store.Store
 }
 
-var (
-	VoucherCollectionDuplicateList = []string{
-		"VoucherID", "CollectionID", "vouchercollections_voucherid_collectionid_key",
-	}
-)
-
 func NewSqlVoucherCollectionStore(s store.Store) store.VoucherCollectionStore {
 	vcs := &SqlVoucherCollectionStore{s}
 
@@ -31,6 +25,15 @@ func NewSqlVoucherCollectionStore(s store.Store) store.VoucherCollectionStore {
 	}
 
 	return vcs
+}
+
+func (vcs *SqlVoucherCollectionStore) TableName(withField string) string {
+	name := "VoucherCollections"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
 }
 
 func (vcs *SqlVoucherCollectionStore) CreateIndexesIfNotExists() {
@@ -60,7 +63,7 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 	}
 
 	if err != nil {
-		if vcs.IsUniqueConstraintError(err, VoucherCollectionDuplicateList) {
+		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CollectionID", "vouchercollections_voucherid_collectionid_key"}) {
 			return nil, store.NewErrInvalidInput(store.VoucherCollectionTableName, "VoucherID/CollectionID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher-collection relation with id=%s", voucherCollection.Id)

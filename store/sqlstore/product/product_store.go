@@ -34,6 +34,14 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return ps
 }
 
+func (ps *SqlProductStore) TableName(withField string) string {
+	name := "Products"
+	if withField != "" {
+		name += "." + withField
+	}
+	return name
+}
+
 func (ps *SqlProductStore) ModelFields() []string {
 	return []string{
 		"Products.Id",
@@ -108,8 +116,7 @@ func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and
 	return prd, nil
 }
 
-// FilterByOption finds and returns all products that satisfy given option
-func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.ProductFilterOption) (string, []interface{}, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTableName).
@@ -117,29 +124,42 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Products.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.ProductVariantID != nil {
 		// decide which type of join to use (LEFT or INNER)
-		var whichJoinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder
+		var whichJoinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
 
-		if null := option.ProductVariantID.NULL; null != nil && *null {
-			whichJoinFunc = query.LeftJoin
-		} else {
-			whichJoinFunc = query.InnerJoin
+		if val, ok := option.ProductVariantID.(squirrel.Eq); ok {
+			// squirrel.Eq{"": nil}
+			for _, v := range val {
+				if v == nil {
+					whichJoinFunc = query.LeftJoin
+					break
+				}
+			}
 		}
 
 		query = whichJoinFunc(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
-			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
+			Where(option.ProductVariantID)
 	}
-	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID IN ?)", store.VoucherProductTableName, option.VoucherIDs))
+	if option.VoucherID != nil {
+		query = query.
+			InnerJoin(store.VoucherProductTableName + " ON Products.Id = VoucherProducts.ProductID").
+			Where(option.VoucherID)
 	}
-	if len(option.SaleIDs) > 0 {
-		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE SaleID IN ?)", store.SaleProductRelationTableName, option.SaleIDs))
+	if option.SaleID != nil {
+		query = query.
+			InnerJoin(store.SaleProductRelationTableName + " ON Products.Id = SaleProducts.ProductID").
+			Where(option.SaleID)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query.ToSql()
+}
+
+// FilterByOption finds and returns all products that satisfy given option
+func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+	queryString, args, err := ps.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
@@ -155,35 +175,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 // GetByOption finds and returns 1 product that satisfies given option
 func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
-	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
-		From(store.ProductTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTableName])
-
-	// parse option
-	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Products.Id"))
-	}
-	if option.ProductVariantID != nil {
-		// decide which type of join to use (LEFT or INNER)
-		var whichJoinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder
-
-		if null := option.ProductVariantID.NULL; null != nil && *null {
-			whichJoinFunc = query.LeftJoin
-		} else {
-			whichJoinFunc = query.InnerJoin
-		}
-		query = whichJoinFunc(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
-			Where(option.ProductVariantID.ToSquirrel("ProductVariants.Id"))
-	}
-	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE VoucherID IN ?)", store.VoucherProductTableName, option.VoucherIDs))
-	}
-	if len(option.SaleIDs) > 0 {
-		query = query.Where(squirrel.Expr("Products.Id IN (SELECT ProductID FROM ? WHERE SaleID IN ?)", store.SaleProductRelationTableName, option.SaleIDs))
-	}
-
-	queryString, args, err := query.ToSql()
+	queryString, args, err := ps.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}

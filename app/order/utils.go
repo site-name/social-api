@@ -27,6 +27,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // GetOrderCountry Return country to which order will be shipped
@@ -465,7 +466,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
-			VoucherIDs: []string{voucher.Id},
+			VoucherID: squirrel.Eq{a.srv.Store.VoucherCategory().TableName("VoucherID"): voucher.Id},
 		})
 		if appErr != nil {
 			setFirstAppErr(appErr)
@@ -521,23 +522,19 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 
 		for _, orderLine := range orderLines {
 			// we can
-			if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+			if orderLine != nil && orderLine.VariantID != nil {
 				hasGoRoutines = true
 				wg.Add(1)
 
 				go func(anOrderLine *order.OrderLine) {
 					orderLineProduct, appErr := a.srv.ProductService().ProductByOption(&product_and_discount.ProductFilterOption{
-						ProductVariantID: &model.StringFilter{
-							StringOption: &model.StringOption{
-								Eq: *anOrderLine.VariantID,
-							},
-						},
+						ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *anOrderLine.VariantID},
 					})
 					if appErr != nil {
 						setAppError(appErr)
 					} else {
 						orderLineCategory, appErr := a.srv.ProductService().CategoryByOption(&product_and_discount.CategoryFilterOption{
-							ProductIDs: []string{orderLineProduct.Id},
+							ProductID: squirrel.Eq{a.srv.Store.Product().TableName("Id"): orderLineProduct.Id},
 						})
 						if appErr != nil {
 							setAppError(appErr)

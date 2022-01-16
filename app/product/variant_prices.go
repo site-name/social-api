@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // getVariantPricesInChannelsDict
@@ -279,18 +280,17 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 		if err != nil && appError == nil {
 			appError = err
 		}
-		return
 	}
 
 	switch t := discount.(type) {
 	case *product_and_discount.Sale:
-		productFilterOption.SaleIDs = []string{t.Id}
-		categoryFilterOption.SaleIDs = []string{t.Id}
-		collectionFilterOption.SaleIDs = []string{t.Id}
+		productFilterOption.SaleID = squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": t.Id}
+		categoryFilterOption.SaleID = squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": t.Id}
+		collectionFilterOption.SaleID = squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": t.Id}
 	case *product_and_discount.Voucher:
-		productFilterOption.VoucherIDs = []string{t.Id}
-		categoryFilterOption.SaleIDs = []string{t.Id}
-		collectionFilterOption.VoucherIDs = []string{t.Id}
+		productFilterOption.VoucherID = squirrel.Eq{store.VoucherProductTableName + ".VoucherID": t.Id}
+		categoryFilterOption.VoucherID = squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": t.Id}
+		collectionFilterOption.VoucherID = squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": t.Id}
 
 	default:
 		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
@@ -315,8 +315,6 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 			return
 		}
 		productIDs = product_and_discount.Products(products).IDs()
-
-		return
 	}()
 
 	go func() {
@@ -330,7 +328,6 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 			return
 		}
 		categoryIDs = product_and_discount.Categories(categories).IDs()
-
 	}()
 
 	go func() {
@@ -340,9 +337,9 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
 		if appErr != nil {
 			syncSetAppError(appErr)
+			return
 		}
 		collectionIDs = product_and_discount.Collections(collections).IDs()
-
 	}()
 
 	wg.Wait()

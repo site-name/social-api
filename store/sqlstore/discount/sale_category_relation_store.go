@@ -26,6 +26,14 @@ func NewSqlSaleCategoryRelationStore(s store.Store) store.SaleCategoryRelationSt
 	return ss
 }
 
+func (ss *SqlSaleCategoryRelationStore) TableName(withField string) string {
+	name := "SaleCategories"
+	if withField != "" {
+		name += "." + withField
+	}
+	return name
+}
+
 func (ss *SqlSaleCategoryRelationStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.SaleCategoryRelationTableName, "SaleID", store.SaleTableName, "Id", false)
 	ss.CreateForeignKeyIfNotExists(store.SaleCategoryRelationTableName, "CategoryID", store.ProductCategoryTableName, "Id", false)

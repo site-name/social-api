@@ -35,9 +35,9 @@ type CategoryFilterOption struct {
 	Name squirrel.Sqlizer
 	Slug squirrel.Sqlizer
 
-	VoucherIDs []string // SELECT * FROM Categories WHERE Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (...))
-	SaleIDs    []string
-	ProductIDs []string // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
+	SaleID    squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN SaleCategories ON (Categories.Id = SaleCategories.CategoryID) WHERE SaleCategories.SaleID ...
+	VoucherID squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN VoucherCategories ON (VoucherCategories.CategoryID = Categories.Id) WHERE VoucherCategories.VoucherID ...
+	ProductID squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
 
 	LockForUpdate bool // set this to true if you want to add "FOR UPDATE" suffix to the end of queries
 }

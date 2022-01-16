@@ -6,7 +6,6 @@ package discount
 
 import (
 	"errors"
-	"sync"
 
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -15,9 +14,7 @@ import (
 )
 
 type ServiceDiscount struct {
-	srv   *app.Server
-	wg    sync.WaitGroup // this is for some methods that need concurrent executions
-	mutex sync.Mutex     // this is for prevent data racing in methods that have concurrent executions
+	srv *app.Server
 }
 
 func init() {
