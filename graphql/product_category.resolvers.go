@@ -9,7 +9,12 @@ import (
 
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/model"
 )
+
+func (r *categoryResolver) Description(ctx context.Context, obj *gqlmodel.Category) (model.StringInterface, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *categoryResolver) Parent(ctx context.Context, obj *gqlmodel.Category) (*gqlmodel.Category, error) {
 	panic(fmt.Errorf("not implemented"))

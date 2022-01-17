@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 )
 
@@ -499,7 +500,7 @@ type AttributeValue struct {
 	InputType   *AttributeInputTypeEnum    `json:"inputType"`
 	Reference   *string                    `json:"reference"`
 	File        *File                      `json:"file"`
-	RichText    *string                    `json:"richText"`
+	RichText    model.StringInterface      `json:"richText"`
 	Boolean     *bool                      `json:"boolean"`
 	Date        *time.Time                 `json:"date"`
 	DateTime    *time.Time                 `json:"dateTime"`
@@ -530,11 +531,11 @@ type AttributeValueCreate struct {
 }
 
 type AttributeValueCreateInput struct {
-	Name        string  `json:"name"`
-	Value       *string `json:"value"`
-	RichText    *string `json:"richText"`
-	FileURL     *string `json:"fileUrl"`
-	ContentType *string `json:"contentType"`
+	Name        string                `json:"name"`
+	Value       *string               `json:"value"`
+	RichText    model.StringInterface `json:"richText"`
+	FileURL     *string               `json:"fileUrl"`
+	ContentType *string               `json:"contentType"`
 }
 
 type AttributeValueDelete struct {
@@ -548,21 +549,21 @@ type AttributeValueFilterInput struct {
 }
 
 type AttributeValueInput struct {
-	ID          *string    `json:"id"`
-	Values      []string   `json:"values"`
-	File        *string    `json:"file"`
-	ContentType *string    `json:"contentType"`
-	References  []string   `json:"references"`
-	RichText    *string    `json:"richText"`
-	Boolean     *bool      `json:"boolean"`
-	Date        *time.Time `json:"date"`
-	DateTime    *time.Time `json:"dateTime"`
+	ID          *string               `json:"id"`
+	Values      []string              `json:"values"`
+	File        *string               `json:"file"`
+	ContentType *string               `json:"contentType"`
+	References  []string              `json:"references"`
+	RichText    model.StringInterface `json:"richText"`
+	Boolean     *bool                 `json:"boolean"`
+	Date        *time.Time            `json:"date"`
+	DateTime    *time.Time            `json:"dateTime"`
 }
 
 type AttributeValueTranslatableContent struct {
 	ID          string                     `json:"id"`
 	Name        string                     `json:"name"`
-	RichText    *string                    `json:"richText"`
+	RichText    model.StringInterface      `json:"richText"`
 	Translation *AttributeValueTranslation `json:"translation"`
 }
 
@@ -575,17 +576,17 @@ type AttributeValueTranslate struct {
 }
 
 type AttributeValueTranslation struct {
-	ID       string           `json:"id"`
-	Name     string           `json:"name"`
-	RichText *string          `json:"richText"`
-	Language *LanguageDisplay `json:"language"`
+	ID       string                `json:"id"`
+	Name     string                `json:"name"`
+	RichText model.StringInterface `json:"richText"`
+	Language *LanguageDisplay      `json:"language"`
 }
 
 func (AttributeValueTranslation) IsNode() {}
 
 type AttributeValueTranslationInput struct {
-	Name     *string `json:"name"`
-	RichText *string `json:"richText"`
+	Name     *string               `json:"name"`
+	RichText model.StringInterface `json:"richText"`
 }
 
 type AttributeValueUpdate struct {
@@ -595,11 +596,11 @@ type AttributeValueUpdate struct {
 }
 
 type AttributeValueUpdateInput struct {
-	Value       *string `json:"value"`
-	RichText    *string `json:"richText"`
-	FileURL     *string `json:"fileUrl"`
-	ContentType *string `json:"contentType"`
-	Name        *string `json:"name"`
+	Value       *string               `json:"value"`
+	RichText    model.StringInterface `json:"richText"`
+	FileURL     *string               `json:"fileUrl"`
+	ContentType *string               `json:"contentType"`
+	Name        *string               `json:"name"`
 }
 
 type BulkAttributeValueInput struct {
@@ -667,12 +668,12 @@ type CategoryFilterInput struct {
 }
 
 type CategoryInput struct {
-	Description        *string         `json:"description"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Seo                *SeoInput       `json:"seo"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
+	Description        model.StringInterface `json:"description"`
+	Name               *string               `json:"name"`
+	Slug               *string               `json:"slug"`
+	Seo                *SeoInput             `json:"seo"`
+	BackgroundImage    *graphql.Upload       `json:"backgroundImage"`
+	BackgroundImageAlt *string               `json:"backgroundImageAlt"`
 }
 
 type CategorySortingInput struct {
@@ -682,12 +683,12 @@ type CategorySortingInput struct {
 }
 
 type CategoryTranslatableContent struct {
-	ID             string               `json:"id"`
-	SeoTitle       *string              `json:"seoTitle"`
-	SeoDescription *string              `json:"seoDescription"`
-	Name           string               `json:"name"`
-	Description    *string              `json:"description"`
-	Translation    *CategoryTranslation `json:"translation"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           string                `json:"name"`
+	Description    model.StringInterface `json:"description"`
+	Translation    *CategoryTranslation  `json:"translation"`
 }
 
 func (CategoryTranslatableContent) IsTranslatableItem() {}
@@ -699,12 +700,12 @@ type CategoryTranslate struct {
 }
 
 type CategoryTranslation struct {
-	ID             string           `json:"id"`
-	SeoTitle       *string          `json:"seoTitle"`
-	SeoDescription *string          `json:"seoDescription"`
-	Name           *string          `json:"name"`
-	Description    *string          `json:"description"`
-	Language       *LanguageDisplay `json:"language"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           *string               `json:"name"`
+	Description    model.StringInterface `json:"description"`
+	Language       *LanguageDisplay      `json:"language"`
 }
 
 func (CategoryTranslation) IsNode() {}
@@ -779,10 +780,10 @@ type CheckoutBillingAddressUpdate struct {
 }
 
 type CheckoutComplete struct {
-	Order              *Order           `json:"order"`
-	ConfirmationNeeded bool             `json:"confirmationNeeded"`
-	ConfirmationData   *string          `json:"confirmationData"`
-	Errors             []*CheckoutError `json:"errors"`
+	Order              *Order                `json:"order"`
+	ConfirmationNeeded bool                  `json:"confirmationNeeded"`
+	ConfirmationData   model.StringInterface `json:"confirmationData"`
+	Errors             []*CheckoutError      `json:"errors"`
 }
 
 type CheckoutCountableConnection struct {
@@ -915,7 +916,7 @@ type Collection struct {
 	SeoTitle        *string                     `json:"seoTitle"`
 	SeoDescription  *string                     `json:"seoDescription"`
 	Name            string                      `json:"name"`
-	Description     *string                     `json:"description"`
+	Description     model.StringInterface       `json:"description"`
 	Slug            string                      `json:"slug"`
 	PrivateMetadata []*MetadataItem             `json:"privateMetadata"`
 	Metadata        []*MetadataItem             `json:"metadata"`
@@ -984,15 +985,15 @@ type CollectionCreate struct {
 }
 
 type CollectionCreateInput struct {
-	IsPublished        *bool           `json:"isPublished"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Description        *string         `json:"description"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
-	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *time.Time      `json:"publicationDate"`
-	Products           []*string       `json:"products"`
+	IsPublished        *bool                 `json:"isPublished"`
+	Name               *string               `json:"name"`
+	Slug               *string               `json:"slug"`
+	Description        model.StringInterface `json:"description"`
+	BackgroundImage    *graphql.Upload       `json:"backgroundImage"`
+	BackgroundImageAlt *string               `json:"backgroundImageAlt"`
+	Seo                *SeoInput             `json:"seo"`
+	PublicationDate    *time.Time            `json:"publicationDate"`
+	Products           []*string             `json:"products"`
 }
 
 type CollectionDelete struct {
@@ -1016,14 +1017,14 @@ type CollectionFilterInput struct {
 }
 
 type CollectionInput struct {
-	IsPublished        *bool           `json:"isPublished"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Description        *string         `json:"description"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
-	Seo                *SeoInput       `json:"seo"`
-	PublicationDate    *time.Time      `json:"publicationDate"`
+	IsPublished        *bool                 `json:"isPublished"`
+	Name               *string               `json:"name"`
+	Slug               *string               `json:"slug"`
+	Description        model.StringInterface `json:"description"`
+	BackgroundImage    *graphql.Upload       `json:"backgroundImage"`
+	BackgroundImageAlt *string               `json:"backgroundImageAlt"`
+	Seo                *SeoInput             `json:"seo"`
+	PublicationDate    *time.Time            `json:"publicationDate"`
 }
 
 type CollectionRemoveProducts struct {
@@ -1047,7 +1048,7 @@ type CollectionTranslatableContent struct {
 	SeoTitle       *string                `json:"seoTitle"`
 	SeoDescription *string                `json:"seoDescription"`
 	Name           string                 `json:"name"`
-	Description    *string                `json:"description"`
+	Description    model.StringInterface  `json:"description"`
 	Translation    *CollectionTranslation `json:"translation"`
 }
 
@@ -1060,12 +1061,12 @@ type CollectionTranslate struct {
 }
 
 type CollectionTranslation struct {
-	ID             string           `json:"id"`
-	SeoTitle       *string          `json:"seoTitle"`
-	SeoDescription *string          `json:"seoDescription"`
-	Name           *string          `json:"name"`
-	Description    *string          `json:"description"`
-	Language       *LanguageDisplay `json:"language"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           *string               `json:"name"`
+	Description    model.StringInterface `json:"description"`
+	Language       *LanguageDisplay      `json:"language"`
 }
 
 func (CollectionTranslation) IsNode() {}
@@ -1378,11 +1379,11 @@ type ExternalAuthentication struct {
 }
 
 type ExternalAuthenticationURL struct {
-	AuthenticationData *string `json:"authenticationData"`
+	AuthenticationData model.StringInterface `json:"authenticationData"`
 }
 
 type ExternalLogout struct {
-	LogoutData *string `json:"logoutData"`
+	LogoutData model.StringInterface `json:"logoutData"`
 }
 
 type ExternalNotificationError struct {
@@ -1396,9 +1397,9 @@ type ExternalNotificationTrigger struct {
 }
 
 type ExternalNotificationTriggerInput struct {
-	Ids               []*string `json:"ids"`
-	ExtraPayload      *string   `json:"extraPayload"`
-	ExternalEventType string    `json:"externalEventType"`
+	Ids               []*string             `json:"ids"`
+	ExtraPayload      model.StringInterface `json:"extraPayload"`
+	ExternalEventType string                `json:"externalEventType"`
 }
 
 type ExternalObtainAccessTokens struct {
@@ -1416,9 +1417,9 @@ type ExternalRefresh struct {
 }
 
 type ExternalVerify struct {
-	User       *User   `json:"user"`
-	IsValid    bool    `json:"isValid"`
-	VerifyData *string `json:"verifyData"`
+	User       *User                 `json:"user"`
+	IsValid    bool                  `json:"isValid"`
+	VerifyData model.StringInterface `json:"verifyData"`
 }
 
 type File struct {
@@ -2337,20 +2338,20 @@ type OrderVoid struct {
 }
 
 type Page struct {
-	ID              string               `json:"id"`
-	SeoTitle        *string              `json:"seoTitle"`
-	SeoDescription  *string              `json:"seoDescription"`
-	Title           string               `json:"title"`
-	Content         *string              `json:"content"`
-	PublicationDate *time.Time           `json:"publicationDate"`
-	IsPublished     bool                 `json:"isPublished"`
-	Slug            string               `json:"slug"`
-	PageType        *PageType            `json:"pageType"`
-	Created         time.Time            `json:"created"`
-	PrivateMetadata []*MetadataItem      `json:"privateMetadata"`
-	Metadata        []*MetadataItem      `json:"metadata"`
-	Translation     *PageTranslation     `json:"translation"`
-	Attributes      []*SelectedAttribute `json:"attributes"`
+	ID              string                `json:"id"`
+	SeoTitle        *string               `json:"seoTitle"`
+	SeoDescription  *string               `json:"seoDescription"`
+	Title           string                `json:"title"`
+	Content         model.StringInterface `json:"content"`
+	PublicationDate *time.Time            `json:"publicationDate"`
+	IsPublished     bool                  `json:"isPublished"`
+	Slug            string                `json:"slug"`
+	PageType        *PageType             `json:"pageType"`
+	Created         time.Time             `json:"created"`
+	PrivateMetadata []*MetadataItem       `json:"privateMetadata"`
+	Metadata        []*MetadataItem       `json:"metadata"`
+	Translation     *PageTranslation      `json:"translation"`
+	Attributes      []*SelectedAttribute  `json:"attributes"`
 }
 
 func (Page) IsNode()               {}
@@ -2395,7 +2396,7 @@ type PageCreate struct {
 type PageCreateInput struct {
 	Slug            *string                `json:"slug"`
 	Title           *string                `json:"title"`
-	Content         *string                `json:"content"`
+	Content         model.StringInterface  `json:"content"`
 	Attributes      []*AttributeValueInput `json:"attributes"`
 	IsPublished     *bool                  `json:"isPublished"`
 	PublicationDate *string                `json:"publicationDate"`
@@ -2432,7 +2433,7 @@ type PageInfo struct {
 type PageInput struct {
 	Slug            *string                `json:"slug"`
 	Title           *string                `json:"title"`
-	Content         *string                `json:"content"`
+	Content         model.StringInterface  `json:"content"`
 	Attributes      []*AttributeValueInput `json:"attributes"`
 	IsPublished     *bool                  `json:"isPublished"`
 	PublicationDate *string                `json:"publicationDate"`
@@ -2450,12 +2451,12 @@ type PageSortingInput struct {
 }
 
 type PageTranslatableContent struct {
-	ID             string           `json:"id"`
-	SeoTitle       *string          `json:"seoTitle"`
-	SeoDescription *string          `json:"seoDescription"`
-	Title          string           `json:"title"`
-	Content        *string          `json:"content"`
-	Translation    *PageTranslation `json:"translation"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Title          string                `json:"title"`
+	Content        model.StringInterface `json:"content"`
+	Translation    *PageTranslation      `json:"translation"`
 }
 
 func (PageTranslatableContent) IsTranslatableItem() {}
@@ -2467,21 +2468,21 @@ type PageTranslate struct {
 }
 
 type PageTranslation struct {
-	ID             string           `json:"id"`
-	SeoTitle       *string          `json:"seoTitle"`
-	SeoDescription *string          `json:"seoDescription"`
-	Title          *string          `json:"title"`
-	Content        *string          `json:"content"`
-	Language       *LanguageDisplay `json:"language"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Title          *string               `json:"title"`
+	Content        model.StringInterface `json:"content"`
+	Language       *LanguageDisplay      `json:"language"`
 }
 
 func (PageTranslation) IsNode() {}
 
 type PageTranslationInput struct {
-	SeoTitle       *string `json:"seoTitle"`
-	SeoDescription *string `json:"seoDescription"`
-	Title          *string `json:"title"`
-	Content        *string `json:"content"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Title          *string               `json:"title"`
+	Content        model.StringInterface `json:"content"`
 }
 
 type PageType struct {
@@ -2630,9 +2631,9 @@ type PaymentInitialize struct {
 }
 
 type PaymentInitialized struct {
-	Gateway string  `json:"gateway"`
-	Name    string  `json:"name"`
-	Data    *string `json:"data"`
+	Gateway string                `json:"gateway"`
+	Name    string                `json:"name"`
+	Data    model.StringInterface `json:"data"`
 }
 
 type PaymentInput struct {
@@ -2867,7 +2868,7 @@ type ProductCreateInput struct {
 	Category    *string                `json:"category"`
 	ChargeTaxes *bool                  `json:"chargeTaxes"`
 	Collections []string               `json:"collections"`
-	Description *string                `json:"description"`
+	Description model.StringInterface  `json:"description"`
 	Name        *string                `json:"name"`
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
@@ -2913,7 +2914,7 @@ type ProductInput struct {
 	Category    *string                `json:"category"`
 	ChargeTaxes *bool                  `json:"chargeTaxes"`
 	Collections []string               `json:"collections"`
-	Description *string                `json:"description"`
+	Description model.StringInterface  `json:"description"`
 	Name        *string                `json:"name"`
 	Slug        *string                `json:"slug"`
 	TaxCode     *string                `json:"taxCode"`
@@ -2923,12 +2924,12 @@ type ProductInput struct {
 }
 
 type ProductMedia struct {
-	ID         string           `json:"id"`
-	SortOrder  *int             `json:"sortOrder"`
-	Alt        string           `json:"alt"`
-	Type       ProductMediaType `json:"type"`
-	OembedData string           `json:"oembedData"`
-	URL        string           `json:"url"`
+	ID         string                `json:"id"`
+	SortOrder  *int                  `json:"sortOrder"`
+	Alt        string                `json:"alt"`
+	Type       ProductMediaType      `json:"type"`
+	OembedData model.StringInterface `json:"oembedData"`
+	URL        string                `json:"url"`
 }
 
 func (ProductMedia) IsNode() {}
@@ -3000,12 +3001,12 @@ type ProductStockFilterInput struct {
 }
 
 type ProductTranslatableContent struct {
-	ID             string              `json:"id"`
-	SeoTitle       *string             `json:"seoTitle"`
-	SeoDescription *string             `json:"seoDescription"`
-	Name           string              `json:"name"`
-	Description    *string             `json:"description"`
-	Translation    *ProductTranslation `json:"translation"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           string                `json:"name"`
+	Description    model.StringInterface `json:"description"`
+	Translation    *ProductTranslation   `json:"translation"`
 }
 
 func (ProductTranslatableContent) IsTranslatableItem() {}
@@ -3017,12 +3018,12 @@ type ProductTranslate struct {
 }
 
 type ProductTranslation struct {
-	ID             string           `json:"id"`
-	SeoTitle       *string          `json:"seoTitle"`
-	SeoDescription *string          `json:"seoDescription"`
-	Name           *string          `json:"name"`
-	Description    *string          `json:"description"`
-	Language       *LanguageDisplay `json:"language"`
+	ID             string                `json:"id"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           *string               `json:"name"`
+	Description    model.StringInterface `json:"description"`
+	Language       *LanguageDisplay      `json:"language"`
 }
 
 func (ProductTranslation) IsNode() {}
@@ -3474,7 +3475,7 @@ type ShippingError struct {
 type ShippingMethod struct {
 	ID                  string                          `json:"id"`
 	Name                string                          `json:"name"`
-	Description         *string                         `json:"description"`
+	Description         model.StringInterface           `json:"description"`
 	MinimumOrderWeight  *Weight                         `json:"minimumOrderWeight"`
 	MaximumOrderWeight  *Weight                         `json:"maximumOrderWeight"`
 	MaximumDeliveryDays *int                            `json:"maximumDeliveryDays"`
@@ -3534,7 +3535,7 @@ func (ShippingMethodPostalCodeRule) IsNode() {}
 type ShippingMethodTranslatableContent struct {
 	ID          string                     `json:"id"`
 	Name        string                     `json:"name"`
-	Description *string                    `json:"description"`
+	Description model.StringInterface      `json:"description"`
 	Translation *ShippingMethodTranslation `json:"translation"`
 }
 
@@ -3542,10 +3543,10 @@ func (ShippingMethodTranslatableContent) IsTranslatableItem() {}
 func (ShippingMethodTranslatableContent) IsNode()             {}
 
 type ShippingMethodTranslation struct {
-	ID          string           `json:"id"`
-	Name        *string          `json:"name"`
-	Description *string          `json:"description"`
-	Language    *LanguageDisplay `json:"language"`
+	ID          string                `json:"id"`
+	Name        *string               `json:"name"`
+	Description model.StringInterface `json:"description"`
+	Language    *LanguageDisplay      `json:"language"`
 }
 
 func (ShippingMethodTranslation) IsNode() {}
@@ -3583,7 +3584,7 @@ type ShippingPriceExcludeProductsInput struct {
 
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
-	Description           *string                                    `json:"description"`
+	Description           model.StringInterface                      `json:"description"`
 	MinimumOrderWeight    *measurement.Weight                        `json:"minimumOrderWeight"`
 	MaximumOrderWeight    *measurement.Weight                        `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int                                       `json:"maximumDeliveryDays"`
@@ -3606,8 +3607,8 @@ type ShippingPriceTranslate struct {
 }
 
 type ShippingPriceTranslationInput struct {
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
+	Name        *string               `json:"name"`
+	Description model.StringInterface `json:"description"`
 }
 
 type ShippingPriceUpdate struct {
@@ -3907,15 +3908,15 @@ type TokenCreateInput struct {
 }
 
 type Transaction struct {
-	ID              string          `json:"id"`
-	Created         time.Time       `json:"created"`
-	Payment         *Payment        `json:"payment"`
-	Token           string          `json:"token"`
-	Kind            TransactionKind `json:"kind"`
-	IsSuccess       bool            `json:"isSuccess"`
-	Error           *string         `json:"error"`
-	GatewayResponse string          `json:"gatewayResponse"`
-	Amount          *Money          `json:"amount"`
+	ID              string                `json:"id"`
+	Created         time.Time             `json:"created"`
+	Payment         *Payment              `json:"payment"`
+	Token           string                `json:"token"`
+	Kind            TransactionKind       `json:"kind"`
+	IsSuccess       bool                  `json:"isSuccess"`
+	Error           *string               `json:"error"`
+	GatewayResponse model.StringInterface `json:"gatewayResponse"`
+	Amount          *Money                `json:"amount"`
 }
 
 func (Transaction) IsNode() {}
@@ -3938,10 +3939,10 @@ type TranslationError struct {
 }
 
 type TranslationInput struct {
-	SeoTitle       *string `json:"seoTitle"`
-	SeoDescription *string `json:"seoDescription"`
-	Name           *string `json:"name"`
-	Description    *string `json:"description"`
+	SeoTitle       *string               `json:"seoTitle"`
+	SeoDescription *string               `json:"seoDescription"`
+	Name           *string               `json:"name"`
+	Description    model.StringInterface `json:"description"`
 }
 
 type UpdateInvoiceInput struct {

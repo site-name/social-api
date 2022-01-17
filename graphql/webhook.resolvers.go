@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/model"
 )
 
 func (r *mutationResolver) WebhookCreate(ctx context.Context, input gqlmodel.WebhookCreateInput) (*gqlmodel.WebhookCreate, error) {
@@ -30,6 +31,6 @@ func (r *queryResolver) WebhookEvents(ctx context.Context) ([]*gqlmodel.WebhookE
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) WebhookSamplePayload(ctx context.Context, eventType gqlmodel.WebhookSampleEventTypeEnum) (*string, error) {
+func (r *queryResolver) WebhookSamplePayload(ctx context.Context, eventType gqlmodel.WebhookSampleEventTypeEnum) (model.StringInterface, error) {
 	panic(fmt.Errorf("not implemented"))
 }

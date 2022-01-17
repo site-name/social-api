@@ -3,6 +3,7 @@ package gqlmodel
 import (
 	"time"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
@@ -15,7 +16,7 @@ import (
 // 	SeoTitle               *string                  `json:"seoTitle"`
 // 	SeoDescription         *string                  `json:"seoDescription"`
 // 	Name                   string                   `json:"name"`
-// 	Description            *string                  `json:"description"`
+// 	Description            model.StringInterface    `json:"description"`
 // 	ProductType            *ProductType             `json:"productType"`
 // 	Slug                   string                   `json:"slug"`
 // 	Category               *Category                `json:"category"`
@@ -50,7 +51,7 @@ type Product struct {
 	SeoTitle               *string                    `json:"seoTitle"`
 	SeoDescription         *string                    `json:"seoDescription"`
 	Name                   string                     `json:"name"`
-	Description            *string                    `json:"description"`
+	Description            model.StringInterface      `json:"description"`
 	ProductTypeID          *string                    `json:"productType"` // *ProductType
 	Slug                   string                     `json:"slug"`
 	CategoryID             *string                    `json:"category"` // *Category

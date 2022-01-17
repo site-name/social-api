@@ -77,23 +77,23 @@ func (r *mutationResolver) TokensDeactivateAll(ctx context.Context) (*gqlmodel.D
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ExternalAuthenticationURL(ctx context.Context, input string, pluginID string) (*gqlmodel.ExternalAuthenticationURL, error) {
+func (r *mutationResolver) ExternalAuthenticationURL(ctx context.Context, input model.StringInterface, pluginID string) (*gqlmodel.ExternalAuthenticationURL, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ExternalObtainAccessTokens(ctx context.Context, input string, pluginID string) (*gqlmodel.ExternalObtainAccessTokens, error) {
+func (r *mutationResolver) ExternalObtainAccessTokens(ctx context.Context, input model.StringInterface, pluginID string) (*gqlmodel.ExternalObtainAccessTokens, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ExternalRefresh(ctx context.Context, input string, pluginID string) (*gqlmodel.ExternalRefresh, error) {
+func (r *mutationResolver) ExternalRefresh(ctx context.Context, input model.StringInterface, pluginID string) (*gqlmodel.ExternalRefresh, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ExternalLogout(ctx context.Context, input string, pluginID string) (*gqlmodel.ExternalLogout, error) {
+func (r *mutationResolver) ExternalLogout(ctx context.Context, input model.StringInterface, pluginID string) (*gqlmodel.ExternalLogout, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) ExternalVerify(ctx context.Context, input string, pluginID string) (*gqlmodel.ExternalVerify, error) {
+func (r *mutationResolver) ExternalVerify(ctx context.Context, input model.StringInterface, pluginID string) (*gqlmodel.ExternalVerify, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
