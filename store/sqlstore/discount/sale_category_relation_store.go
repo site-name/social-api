@@ -77,19 +77,15 @@ func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *product_a
 		From(store.SaleCategoryRelationTableName).
 		OrderBy(store.TableOrderingMap[store.SaleCategoryRelationTableName])
 
-	// check id
+	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
-
-	// check saleID
 	if option.SaleID != nil {
-		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+		query = query.Where(option.SaleID)
 	}
-
-	// check categoryID
 	if option.CategoryID != nil {
-		query = query.Where(option.CategoryID.ToSquirrel("CategoryID"))
+		query = query.Where(option.CategoryID)
 	}
 
 	queryString, args, err := query.ToSql()

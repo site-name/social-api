@@ -970,6 +970,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
+		return []*warehouse.WareHouse{}, nil
 	}
 
 	// TODO: implement me.

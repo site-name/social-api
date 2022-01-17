@@ -33,9 +33,7 @@ const (
 	NUMBERS           = "0123456789"
 )
 
-var (
-	encoding = base32.NewEncoding(LOWERCASE_LETTERS + NUMBERS)
-)
+var encoding = base32.NewEncoding("ybndrfg8ejkmcpqxot1uwisza345h769")
 
 const (
 	MinIdLength  = 3

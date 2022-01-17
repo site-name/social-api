@@ -47,7 +47,7 @@ type GiftcardService interface {
 	// RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError
 	// SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-	SendGiftcardNotification(requesterUser account.User, _ interface{}, customerUser account.User, giftCard giftcard.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool)
+	SendGiftcardNotification(requesterUser *account.User, _ interface{}, customerUser *account.User, email string, giftCard giftcard.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError
 	// ToggleGiftcardStatus set status of given giftcard to inactive/active
 	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError
 	// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it

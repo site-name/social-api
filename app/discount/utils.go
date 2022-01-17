@@ -359,27 +359,22 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *product_and_discou
 }
 
 func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string, *model.AppError) {
-	// saleCategories, appErr := a.SaleCategoriesByOption(&product_and_discount.SaleCategoryRelationFilterOption{
-	// 	SaleID: &model.StringFilter{
-	// 		StringOption: &model.StringOption{
-	// 			In: saleIDs,
-	// 		},
-	// 	},
-	// })
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	saleCategories, appErr := a.SaleCategoriesByOption(&product_and_discount.SaleCategoryRelationFilterOption{
+		SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": saleIDs},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return map[string][]string{}, nil
+	}
 
-	// categoryMap := map[string][]string{}
-	// for _, relation := range saleCategories {
-	// 	if !util.StringInSlice(relation.CategoryID, categoryMap[relation.SaleID]) {
-	// 		categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
-	// 	}
-	// }
+	// categoryMap has keys are sale ids, values are slices of category ids
+	var categoryMap = map[string][]string{}
+	for _, relation := range saleCategories {
+		categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
+	}
 
-	// subCategoryMap := map[string][]string{}
-
-	// TODO: implement me
 	panic("not implemented")
 }
 

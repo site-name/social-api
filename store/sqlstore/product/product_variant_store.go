@@ -204,14 +204,17 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
 	var res product_and_discount.ProductVariant
 
-	query, args, _ := vs.GetQueryBuilder().
+	query, args, err := vs.GetQueryBuilder().
 		Select(vs.ModelFields()...).
 		From(store.ProductVariantTableName).
 		InnerJoin(store.OrderLineTableName + " ON (ProductVariants.Id = Orderlines.VariantID)").
 		Where(squirrel.Eq{"Orderlines.Id": orderLineID}).
 		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOrderLineID_ToSql")
+	}
 
-	err := vs.GetReplica().SelectOne(&res, query, args...)
+	err = vs.GetReplica().SelectOne(&res, query, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -224,7 +227,6 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product
 
 // FilterByOption finds and returns product variants based on given option
 func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
-
 	selectFields := vs.ModelFields()
 	if option.SelectRelatedDigitalContent {
 		selectFields = append(selectFields, vs.DigitalContent().ModelFields()...)

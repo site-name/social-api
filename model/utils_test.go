@@ -137,6 +137,12 @@ func TestDraftJSContentToRawText(t *testing.T) {
 				},
 				"type": "paragraph",
 			},
+			{
+				"data": StringMap{
+					"text": "Hello World",
+				},
+				"type": "paragraph",
+			},
 		},
 	}
 

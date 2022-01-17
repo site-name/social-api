@@ -1222,7 +1222,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 	setAppError := func(err *model.AppError) {
 		if err != nil {
 			mut.Lock()
-			if appError == nil {
+			if appError == nil && err != nil {
 				appError = err
 			}
 			mut.Unlock()
