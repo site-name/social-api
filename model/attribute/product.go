@@ -3,6 +3,7 @@ package attribute
 import (
 	"io"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -16,8 +17,8 @@ type AttributeProduct struct {
 
 // AttributeProductFilterOption is used when finding an attributeProduct.
 type AttributeProductFilterOption struct {
-	AttributeID   *model.StringFilter
-	ProductTypeID *model.StringFilter
+	AttributeID   squirrel.Sqlizer
+	ProductTypeID squirrel.Sqlizer
 }
 
 func (a *AttributeProduct) IsValid() *model.AppError {
@@ -66,8 +67,8 @@ type AssignedProductAttribute struct {
 
 // AssignedProductAttributeFilterOption is used to filter or creat new AssignedProductAttribute
 type AssignedProductAttributeFilterOption struct {
-	ProductID    *model.StringFilter
-	AssignmentID *model.StringFilter
+	ProductID    squirrel.Sqlizer
+	AssignmentID squirrel.Sqlizer
 }
 
 func (a *AssignedProductAttribute) IsValid() *model.AppError {

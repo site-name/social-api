@@ -66,10 +66,10 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.Assi
 
 	// parse option
 	if option.AssignmentID != nil {
-		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+		query = query.Where(option.AssignmentID)
 	}
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+		query = query.Where(option.ProductID)
 	}
 
 	queryString, args, err := query.ToSql()

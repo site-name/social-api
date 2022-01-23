@@ -291,18 +291,27 @@ func (s *ServiceGiftcard) SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard
 }
 
 func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError {
-	// giftcardEvents, appErr := s.GiftcardEventsByOptions(&giftcard.GiftCardEventFilterOption{
-	// 	Type:       squirrel.Eq{s.srv.Store.GiftcardEvent().TableName("Type"): giftcard.BOUGHT},
-	// 	Parameters: squirrel.Eq{s.srv.Store.GiftcardEvent().TableName("Parameters -> 'order_id'"): orderID}, // WHERE GiftcardEvents.Parameters -> 'order_id' = <something>
-	// })
-	// if appErr != nil {
-	// 	if appErr.StatusCode == http.StatusInternalServerError {
-	// 		return appErr
-	// 	}
-	// }
+	giftcardIDs, err := s.srv.Store.GiftCard().DeactivateOrderGiftcards(orderID)
+	if err != nil {
+		return model.NewAppError("DeactivateOrderGiftcards", "app.giftcard.error_updating_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
 
-	// s.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{})
-	panic("not implemented")
+	var userID *string
+	if user != nil {
+		userID = &user.Id
+	}
+
+	var events []*giftcard.GiftCardEvent
+	for _, id := range giftcardIDs {
+		events = append(events, &giftcard.GiftCardEvent{
+			UserID:     userID,
+			GiftcardID: id,
+			Type:       giftcard.DEACTIVATED,
+		})
+	}
+
+	_, appErr := s.BulkUpsertGiftcardEvents(nil, events)
+	return appErr
 }
 
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError) {

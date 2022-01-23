@@ -274,3 +274,52 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.Order
 
 	return res, nil
 }
+
+// DeactivateOrderGiftcards update giftcards
+// which have giftcard events with type == 'bought', parameters.order_id == given order id
+// by setting their IsActive attribute to false
+func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+	query, args, err := gs.GetQueryBuilder().
+		Select("*").
+		From(store.GiftcardTableName).
+		Where(
+			`EXISTS (
+				SELECT
+					(1) AS "a"
+				FROM
+					GiftcardEvents
+				WHERE (
+					GiftcardEvents.Parameters -> 'order_id' = :OrderID
+					AND GiftcardEvents.Type = :Type
+					AND GiftcardEvents.GiftcardID = GiftCards.Id
+				)
+				LIMIT 1
+			)`,
+			map[string]interface{}{
+				"OrderID": orderID,
+				"Type":    giftcard.BOUGHT,
+			},
+		).
+		ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "DeactivateOrderGiftcards_ToSql")
+	}
+
+	var giftcards giftcard.Giftcards
+	_, err = gs.GetReplica().Select(&giftcards, query, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to find giftcards with Parameters.order_id = %s", orderID)
+	}
+
+	giftcardIDs := giftcards.IDs()
+	res, err := gs.GetMaster().Exec("UPDATE "+store.GiftcardTableName+" SET IsActive = false WHERE Id IN :IDS", map[string]interface{}{"IDS": giftcardIDs})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update giftcards")
+	}
+	if num, _ := res.RowsAffected(); int(num) != len(giftcards) {
+		return nil, errors.Errorf("%d giftcards updated instead of %d", num, len(giftcards))
+	}
+
+	return giftcardIDs, nil
+}

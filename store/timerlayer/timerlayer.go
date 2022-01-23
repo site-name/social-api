@@ -3567,6 +3567,22 @@ func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, gift
 	return result, err
 }
 
+func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.DeactivateOrderGiftcards", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 

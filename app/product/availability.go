@@ -277,8 +277,8 @@ func (a *ServiceProduct) GetProductAvailability(
 
 	var (
 		discount              *goprices.TaxedMoney
-		priceRangeLocal       interface{}
-		discountLocalCurrency interface{}
+		priceRangeLocal       *goprices.TaxedMoneyRange
+		discountLocalCurrency *goprices.TaxedMoneyRange
 	)
 	if discountedNetRange != nil && undiscountedNetRange != nil {
 		discount, _ = getTotalDiscountFromRange(undiscounted, discounted)
@@ -288,35 +288,87 @@ func (a *ServiceProduct) GetProductAvailability(
 			return nil, appErr
 		}
 
-		priceRangeLocal = aType.PriceRangeLocal
-		discountLocalCurrency = aType.DiscountLocalCurrency
+		priceRangeLocal = aType.PriceRangeLocal.(*goprices.TaxedMoneyRange)
+		discountLocalCurrency = aType.DiscountLocalCurrency.(*goprices.TaxedMoneyRange)
 	}
 
-	isVisible := productChannelListing != nil && productChannelListing.IsVisible()
-	isOnSale := isVisible && discount != nil
+	isOnSale := productChannelListing != nil && productChannelListing.IsVisible() && discount != nil
 
 	return &product_and_discount.ProductAvailability{
 		OnSale:                  isOnSale,
 		PriceRange:              discounted,
 		PriceRangeUnDiscounted:  undiscounted,
 		Discount:                discount,
-		PriceRangeLocalCurrency: priceRangeLocal.(*goprices.TaxedMoneyRange),
-		DiscountLocalCurrency:   discountLocalCurrency.(*goprices.TaxedMoneyRange),
+		PriceRangeLocalCurrency: priceRangeLocal,
+		DiscountLocalCurrency:   discountLocalCurrency,
 	}, nil
 }
 
 func (a *ServiceProduct) GetVariantAvailability(
-	variant *product_and_discount.ProductVariant,
-	variantChannelListing *product_and_discount.ProductVariantChannelListing,
-	product *product_and_discount.Product,
+	variant product_and_discount.ProductVariant,
+	variantChannelListing product_and_discount.ProductVariantChannelListing,
+	product product_and_discount.Product,
 	productChannelListing *product_and_discount.ProductChannelListing,
 	collections []*product_and_discount.Collection,
 	discounts []*product_and_discount.DiscountInfo,
-	chanNel *channel.Channel,
-	plugins interface{},
+	chanNel channel.Channel,
+	plugins interfaces.PluginManagerInterface,
 	country string, // can be empty
 	localCurrency string, // can be empty
 
 ) (*product_and_discount.VariantAvailability, *model.AppError) {
-	panic("not implt")
+
+	variarntPrice, appErr := a.GetVariantPrice(variant, variantChannelListing, product, collections, discounts, chanNel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	discounted, appErr := plugins.ApplyTaxesToProduct(product, *variarntPrice, country, chanNel.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	variarntPrice, appErr = a.GetVariantPrice(variant, variantChannelListing, product, collections, []*product_and_discount.DiscountInfo{}, chanNel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	undiscounted, appErr := plugins.ApplyTaxesToProduct(product, *variarntPrice, country, chanNel.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	discount, err := getTotalDiscount(undiscounted, discounted)
+	if err != nil {
+		return nil, model.NewAppError("GetVariantAvailability", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	var (
+		priceLocalCurrency    *goprices.TaxedMoney
+		discountLocalCurrency *goprices.TaxedMoney
+	)
+	if localCurrency != "" {
+		iface1, appErr := a.srv.ToLocalCurrency(discounted, localCurrency)
+		if appErr != nil {
+			return nil, appErr
+		}
+		priceLocalCurrency = iface1.(*goprices.TaxedMoney)
+
+		iface2, appErr := a.srv.ToLocalCurrency(discount, localCurrency)
+		if appErr != nil {
+			return nil, appErr
+		}
+		discountLocalCurrency = iface2.(*goprices.TaxedMoney)
+	}
+
+	isOnSale := (productChannelListing != nil && productChannelListing.IsVisible()) && discount != nil
+
+	return &product_and_discount.VariantAvailability{
+		OnSale:                isOnSale,
+		Price:                 *discounted,
+		PriceUnDiscounted:     *undiscounted,
+		Discount:              discount,
+		PriceLocalCurrency:    priceLocalCurrency,
+		DiscountLocalCurrency: discountLocalCurrency,
+	}, nil
 }

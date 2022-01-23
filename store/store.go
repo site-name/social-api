@@ -727,6 +727,10 @@ type (
 		BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*giftcard.GiftCard, error)                                                                     // GetById returns a giftcard instance that has id of given id
 		FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
+		// DeactivateOrderGiftcards update giftcards
+		// which have giftcard events with type == 'bought', parameters.order_id == given order id
+		// by setting their IsActive attribute to false
+		DeactivateOrderGiftcards(orderID string) ([]string, error)
 	}
 	GiftcardEventStore interface {
 		CreateIndexesIfNotExists()

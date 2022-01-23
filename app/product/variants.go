@@ -1,25 +1,19 @@
 package product
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
 func (a *ServiceProduct) GenerateAndSetVariantName(variant *product_and_discount.ProductVariant, sku string) *model.AppError {
 	_, _ = a.srv.AttributeService().AssignedVariantAttributesByOption(&attribute.AssignedVariantAttributeFilterOption{
-		AssignmentAttributeInputType: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: attribute.ALLOWED_IN_VARIANT_SELECTION,
-			},
-		},
-		AssignmentAttributeType: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: attribute.PRODUCT_TYPE,
-			},
-		},
+		AssignmentAttributeInputType: squirrel.Eq{store.AttributeTableName + ".InputType": attribute.ALLOWED_IN_VARIANT_SELECTION},
+		AssignmentAttributeType:      squirrel.Eq{store.AttributeTableName + ".Type": attribute.PRODUCT_TYPE},
 	})
 	panic("not implt")
 }

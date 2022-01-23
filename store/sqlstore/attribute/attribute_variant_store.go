@@ -66,13 +66,13 @@ func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVaria
 
 	// parse option
 	if option.AttributeID != nil {
-		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
+		query = query.Where(option.AttributeID)
 	}
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.ProductTypeID != nil {
-		query = query.Where(option.ProductTypeID.ToSquirrel("ProductTypeID"))
+		query = query.Where(option.ProductTypeID)
 	}
 	if len(option.ProductIDs) > 0 {
 		query = query.Where("AttributeID IN (SELECT AttributeID FROM ? WHERE Id IN ?)", store.ProductTableName, option.ProductIDs)

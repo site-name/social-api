@@ -3,6 +3,7 @@ package attribute
 import (
 	"io"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -19,9 +20,9 @@ type AttributeVariant struct {
 //
 // properties can be provided partially or fully
 type AttributeVariantFilterOption struct {
-	Id            *model.StringFilter
-	AttributeID   *model.StringFilter
-	ProductTypeID *model.StringFilter
+	Id            squirrel.Sqlizer
+	AttributeID   squirrel.Sqlizer
+	ProductTypeID squirrel.Sqlizer
 	ProductIDs    []string
 }
 

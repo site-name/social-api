@@ -53,14 +53,6 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 // Set products of deleted categories as unpublished, delete categories
 // and update products minimal variant prices.
 func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfaces.PluginManagerInterface) *model.AppError {
-	// start transaction
-	// transaction, err := a.srv.Store.GetMaster().Begin()
-	// if err != nil {
-	// 	return model.NewAppError("DeleteCategories", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	// }
-	// defer a.srv.Store.FinalizeTransaction(transaction)
-
-	// a.CategoriesByOption()
 	panic("not implemented")
 }
 

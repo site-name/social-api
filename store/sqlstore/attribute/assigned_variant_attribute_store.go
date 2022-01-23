@@ -77,17 +77,17 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.As
 
 	// parse option
 	if option.AssignmentID != nil {
-		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+		query = query.Where(option.AssignmentID)
 	}
 	if option.VariantID != nil {
-		query = query.Where(option.VariantID.ToSquirrel("VariantID"))
+		query = query.Where(option.VariantID)
 	}
 	var joined_AssignedVariantAttributes_and_Attributes_tables bool
 	if option.AssignmentAttributeInputType != nil {
 		query = query.
 			InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
 			InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
-			Where(option.AssignmentAttributeInputType.ToSquirrel("Attributes.InputType"))
+			Where(option.AssignmentAttributeInputType)
 
 		joined_AssignedVariantAttributes_and_Attributes_tables = true // indicate that already joined 2 tables
 	}
@@ -97,7 +97,7 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.As
 				InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
 				InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
 		}
-		query = query.Where(option.AssignmentAttributeType.ToSquirrel("Attributes.Type"))
+		query = query.Where(option.AssignmentAttributeType)
 	}
 
 	return query.ToSql()

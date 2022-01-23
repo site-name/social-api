@@ -168,17 +168,22 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		QueryRow()
 
 	var (
-		variantWeight     measurement.Weight
-		productWeight     measurement.Weight
-		productTypeWeight measurement.Weight
+		variantWeightAmount *float32
+		variantWeightUnit   measurement.WeightUnit
+
+		productWeightAmount *float32
+		productWeightUnit   measurement.WeightUnit
+
+		productTypeWeightAmount *float32
+		productTypeWeightUnit   measurement.WeightUnit
 	)
 	err := rowScanner.Scan(
-		&variantWeight.Amount,
-		&variantWeight.Unit,
-		&productWeight.Amount,
-		&productWeight.Unit,
-		&productTypeWeight.Amount,
-		&productTypeWeight.Unit,
+		&variantWeightAmount,
+		&variantWeightUnit,
+		&productWeightAmount,
+		&productWeightUnit,
+		&productTypeWeightAmount,
+		&productTypeWeightUnit,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -187,14 +192,14 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
 	}
 
-	if variantWeight.Amount != nil {
-		return &variantWeight, nil
+	if variantWeightAmount != nil && variantWeightUnit != "" {
+		return &measurement.Weight{Amount: *variantWeightAmount, Unit: variantWeightUnit}, nil
 	}
-	if productWeight.Amount != nil {
-		return &productWeight, nil
+	if productWeightAmount != nil && productWeightUnit != "" {
+		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
 	}
-	if productTypeWeight.Amount != nil {
-		return &productTypeWeight, nil
+	if productTypeWeightAmount != nil && productTypeWeightUnit != "" {
+		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
 	}
 
 	return nil, errors.Errorf("weight for product variant with id=%s is not set", productVariantID)

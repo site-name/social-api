@@ -68,10 +68,10 @@ func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProdu
 
 	// parse option
 	if option.AttributeID != nil {
-		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
+		query = query.Where(option.AttributeID)
 	}
 	if option.ProductTypeID != nil {
-		query = query.Where(option.ProductTypeID.ToSquirrel("ProductTypeID"))
+		query = query.Where(option.ProductTypeID)
 	}
 
 	queryString, args, err := query.ToSql()

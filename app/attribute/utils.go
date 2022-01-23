@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
@@ -127,20 +128,11 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 //  +) *AssignedVariantAttribute
 //  +) *AssignedPageAttribute
 func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
-
 	switch v := instance.(type) {
 	case *product_and_discount.Product:
 		attributeProduct, appErr := a.AttributeProductByOption(&attribute.AttributeProductFilterOption{
-			ProductTypeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: v.ProductTypeID,
-				},
-			},
-			AttributeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: attributeID,
-				},
-			},
+			ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID},
+			AttributeID:   squirrel.Eq{store.AttributeProductTableName + ".AttributeID": attributeID},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -153,16 +145,8 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *product_and_discount.ProductVariant:
 		attrVariant, appErr := a.AttributeVariantByOption(&attribute.AttributeVariantFilterOption{
-			ProductTypeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: v.ProductID,
-				},
-			},
-			AttributeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: attributeID,
-				},
-			},
+			ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": v.ProductID},
+			AttributeID:   squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": attributeID},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -175,16 +159,8 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *page.Page:
 		attributePage, appErr := a.AttributePageByOption(&attribute.AttributePageFilterOption{
-			AttributeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: attributeID,
-				},
-			},
-			PageTypeID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: v.PageTypeID,
-				},
-			},
+			AttributeID: squirrel.Eq{store.AttributePageTableName + ".AttributeID": attributeID},
+			PageTypeID:  squirrel.Eq{store.AttributePageTableName + ".PageTypeID": v.PageTypeID},
 		})
 		if appErr != nil {
 			return nil, appErr

@@ -66,10 +66,10 @@ func (as *SqlAttributePageStore) GetByOption(option *attribute.AttributePageFilt
 
 	// parse option
 	if option.PageTypeID != nil {
-		query = query.Where(option.PageTypeID.ToSquirrel("PageTypeID"))
+		query = query.Where(option.PageTypeID)
 	}
 	if option.AttributeID != nil {
-		query = query.Where(option.AttributeID.ToSquirrel("AttributeID"))
+		query = query.Where(option.AttributeID)
 	}
 
 	queryString, args, err := query.ToSql()

@@ -8,7 +8,7 @@ import (
 
 // compile time checks
 var (
-	_ Squirrelable = (*StringFilter)(nil)
+	// _ Squirrelable = (*StringFilter)(nil)
 	_ Squirrelable = (*TimeFilter)(nil)
 	_ Squirrelable = (*NumberFilter)(nil)
 )

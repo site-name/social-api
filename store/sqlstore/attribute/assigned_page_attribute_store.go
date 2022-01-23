@@ -67,10 +67,10 @@ func (as *SqlAssignedPageAttributeStore) GetByOption(option *attribute.AssignedP
 
 	// parse option
 	if option.AssignmentID != nil {
-		query = query.Where(option.AssignmentID.ToSquirrel("AssignmentID"))
+		query = query.Where(option.AssignmentID)
 	}
 	if option.PageID != nil {
-		query = query.Where(option.PageID.ToSquirrel("PageID"))
+		query = query.Where(option.PageID)
 	}
 
 	queryString, args, err := query.ToSql()

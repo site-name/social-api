@@ -5,17 +5,12 @@
 package csv
 
 import (
-	"sync"
-
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 )
 
 type ServiceCsv struct {
 	srv *app.Server
-
-	sync.WaitGroup
-	sync.Mutex
 }
 
 func init() {

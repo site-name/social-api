@@ -4106,6 +4106,26 @@ func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, gift
 
 }
 
+func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 
 	tries := 0

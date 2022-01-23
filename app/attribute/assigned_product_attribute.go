@@ -3,6 +3,7 @@ package attribute
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -23,18 +24,10 @@ func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAt
 	// try get first:
 	option := new(attribute.AssignedProductAttributeFilterOption)
 	if assignedProductAttribute.ProductID != "" {
-		option.ProductID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedProductAttribute.ProductID,
-			},
-		}
+		option.ProductID = squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": assignedProductAttribute.ProductID}
 	}
 	if assignedProductAttribute.AssignmentID != "" {
-		option.AssignmentID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedProductAttribute.AssignmentID,
-			},
-		}
+		option.AssignmentID = squirrel.Eq{store.AssignedProductAttributeTableName + ".AssignmentID": assignedProductAttribute.AssignmentID}
 	}
 
 	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(option)

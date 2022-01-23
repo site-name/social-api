@@ -130,7 +130,18 @@ type ProductService interface {
 	GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings
 	GetProductAvailability(product product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel, manager interfaces.PluginManagerInterface, countryCode string, localCurrency string) (*product_and_discount.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product product_and_discount.Product, variants product_and_discount.ProductVariants, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel) (*goprices.MoneyRange, *model.AppError)
-	GetVariantAvailability(variant *product_and_discount.ProductVariant, variantChannelListing *product_and_discount.ProductVariantChannelListing, product *product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel, plugins interface{}, country string, localCurrency string) (*product_and_discount.VariantAvailability, *model.AppError)
+	GetVariantAvailability(
+		variant product_and_discount.ProductVariant,
+		variantChannelListing product_and_discount.ProductVariantChannelListing,
+		product product_and_discount.Product,
+		productChannelListing *product_and_discount.ProductChannelListing,
+		collections []*product_and_discount.Collection,
+		discounts []*product_and_discount.DiscountInfo,
+		chanNel channel.Channel,
+		plugins interfaces.PluginManagerInterface,
+		country string, // can be empty
+		localCurrency string, // can be empty
+	) (*product_and_discount.VariantAvailability, *model.AppError)
 	IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError

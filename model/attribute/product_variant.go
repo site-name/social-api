@@ -1,6 +1,9 @@
 package attribute
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 // ValueID unique together with AssignmentID
 type AssignedVariantAttributeValue struct {
@@ -55,11 +58,11 @@ type AssignedVariantAttribute struct {
 
 // AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance
 type AssignedVariantAttributeFilterOption struct {
-	VariantID    *model.StringFilter
-	AssignmentID *model.StringFilter
+	VariantID    squirrel.Sqlizer
+	AssignmentID squirrel.Sqlizer
 
-	AssignmentAttributeInputType *model.StringFilter
-	AssignmentAttributeType      *model.StringFilter
+	AssignmentAttributeInputType squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.InputType
+	AssignmentAttributeType      squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.Type
 }
 
 func (a *AssignedVariantAttribute) IsValid() *model.AppError {

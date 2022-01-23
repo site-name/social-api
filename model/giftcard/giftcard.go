@@ -68,6 +68,19 @@ type GiftCardFilterOption struct {
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries
 }
 
+type Giftcards []*GiftCard
+
+func (g Giftcards) IDs() []string {
+	res := []string{}
+	for _, item := range g {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
 func (gc *GiftCard) DisplayCode() string {
 	return "****" + gc.Code[len(gc.Code)-4:]
 }

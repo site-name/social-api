@@ -1,6 +1,7 @@
 package attribute
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -58,8 +59,8 @@ type AssignedPageAttribute struct {
 
 // AssignedPageAttributeFilterOption is used to find or creat new AssignedPageAttribute
 type AssignedPageAttributeFilterOption struct {
-	PageID       *model.StringFilter
-	AssignmentID *model.StringFilter
+	PageID       squirrel.Sqlizer
+	AssignmentID squirrel.Sqlizer
 }
 
 func (a *AssignedPageAttribute) IsValid() *model.AppError {
