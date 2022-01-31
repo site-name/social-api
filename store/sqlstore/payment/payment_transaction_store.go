@@ -19,7 +19,7 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	ps := &SqlPaymentTransactionStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(payment.PaymentTransaction{}, store.TransactionTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(payment.PaymentTransaction{}, ps.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("PaymentID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Token").SetMaxSize(payment.MAX_LENGTH_PAYMENT_TOKEN)
@@ -31,8 +31,21 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	return ps
 }
 
+func (ps *SqlPaymentTransactionStore) TableName(withField string) string {
+	name := "Transactions"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (ps *SqlPaymentTransactionStore) OrderBy() string {
+	return "CreateAt ASC"
+}
+
 func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.TransactionTableName, "PaymentID", store.PaymentTableName, "Id", false)
+	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "PaymentID", store.PaymentTableName, "Id", false)
 }
 
 // Save insert given transaction into database then returns it
@@ -83,10 +96,10 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	var res payment.PaymentTransaction
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.TransactionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+ps.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.TransactionTableName, id)
+			return nil, store.NewErrNotFound(ps.TableName(""), id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)
 	}
@@ -98,18 +111,18 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransactio
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
-		From(store.TransactionTableName).
-		OrderBy(store.TableOrderingMap[store.TransactionTableName])
+		From(ps.TableName("")).
+		OrderBy(ps.OrderBy())
 
 	// parse options:
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.PaymentID != nil {
-		query = query.Where(option.PaymentID.ToSquirrel("PaymentID"))
+		query = query.Where(option.PaymentID)
 	}
 	if option.Kind != nil {
-		query = query.Where(option.Kind.ToSquirrel("Kind"))
+		query = query.Where(option.Kind)
 	}
 	if option.ActionRequired != nil {
 		query = query.Where(squirrel.Eq{"ActionRequired": *option.ActionRequired})

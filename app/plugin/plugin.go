@@ -41,9 +41,7 @@ type ServicePlugin struct {
 
 func init() {
 	app.RegisterPluginService(func(s *app.Server) (sub_app_iface.PluginService, error) {
-		return &ServicePlugin{
-			srv: s,
-		}, nil
+		return &ServicePlugin{s}, nil
 	})
 }
 

@@ -9,10 +9,10 @@ import (
 	"github.com/sitename/sitename/graphql/gqlmodel"
 )
 
-// OrdersByUserLoaderConfig captures the config to create a new OrdersByUserLoader
-type OrdersByUserLoaderConfig struct {
+// OrdersByUserConfig captures the config to create a new OrdersByUser
+type OrdersByUserConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []string) ([][]*gqlmodel.Order, []error)
+	Fetch func(keys []string) ([]*gqlmodel.Order, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -21,19 +21,19 @@ type OrdersByUserLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewOrdersByUserLoader creates a new OrdersByUserLoader given a fetch, wait, and maxBatch
-func NewOrdersByUserLoader(config OrdersByUserLoaderConfig) *OrdersByUserLoader {
-	return &OrdersByUserLoader{
+// NewOrdersByUser creates a new OrdersByUser given a fetch, wait, and maxBatch
+func NewOrdersByUser(config OrdersByUserConfig) *OrdersByUser {
+	return &OrdersByUser{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// OrdersByUserLoader batches and caches requests
-type OrdersByUserLoader struct {
+// OrdersByUser batches and caches requests
+type OrdersByUser struct {
 	// this method provides the data for the loader
-	fetch func(keys []string) ([][]*gqlmodel.Order, []error)
+	fetch func(keys []string) ([]*gqlmodel.Order, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,51 +44,51 @@ type OrdersByUserLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[string][]*gqlmodel.Order
+	cache map[string]*gqlmodel.Order
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *ordersByUserLoaderBatch
+	batch *ordersByUserBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type ordersByUserLoaderBatch struct {
+type ordersByUserBatch struct {
 	keys    []string
-	data    [][]*gqlmodel.Order
+	data    []*gqlmodel.Order
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a Order by key, batching and caching will be applied automatically
-func (l *OrdersByUserLoader) Load(key string) ([]*gqlmodel.Order, error) {
+func (l *OrdersByUser) Load(key string) (*gqlmodel.Order, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a Order.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *OrdersByUserLoader) LoadThunk(key string) func() ([]*gqlmodel.Order, error) {
+func (l *OrdersByUser) LoadThunk(key string) func() (*gqlmodel.Order, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]*gqlmodel.Order, error) {
+		return func() (*gqlmodel.Order, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &ordersByUserLoaderBatch{done: make(chan struct{})}
+		l.batch = &ordersByUserBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]*gqlmodel.Order, error) {
+	return func() (*gqlmodel.Order, error) {
 		<-batch.done
 
-		var data []*gqlmodel.Order
+		var data *gqlmodel.Order
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,14 +113,14 @@ func (l *OrdersByUserLoader) LoadThunk(key string) func() ([]*gqlmodel.Order, er
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *OrdersByUserLoader) LoadAll(keys []string) ([][]*gqlmodel.Order, []error) {
-	results := make([]func() ([]*gqlmodel.Order, error), len(keys))
+func (l *OrdersByUser) LoadAll(keys []string) ([]*gqlmodel.Order, []error) {
+	results := make([]func() (*gqlmodel.Order, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	orders := make([][]*gqlmodel.Order, len(keys))
+	orders := make([]*gqlmodel.Order, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		orders[i], errors[i] = thunk()
@@ -131,13 +131,13 @@ func (l *OrdersByUserLoader) LoadAll(keys []string) ([][]*gqlmodel.Order, []erro
 // LoadAllThunk returns a function that when called will block waiting for a Orders.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *OrdersByUserLoader) LoadAllThunk(keys []string) func() ([][]*gqlmodel.Order, []error) {
-	results := make([]func() ([]*gqlmodel.Order, error), len(keys))
+func (l *OrdersByUser) LoadAllThunk(keys []string) func() ([]*gqlmodel.Order, []error) {
+	results := make([]func() (*gqlmodel.Order, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]*gqlmodel.Order, []error) {
-		orders := make([][]*gqlmodel.Order, len(keys))
+	return func() ([]*gqlmodel.Order, []error) {
+		orders := make([]*gqlmodel.Order, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			orders[i], errors[i] = thunk()
@@ -149,37 +149,36 @@ func (l *OrdersByUserLoader) LoadAllThunk(keys []string) func() ([][]*gqlmodel.O
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *OrdersByUserLoader) Prime(key string, value []*gqlmodel.Order) bool {
+func (l *OrdersByUser) Prime(key string, value *gqlmodel.Order) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]*gqlmodel.Order, len(value))
-		copy(cpy, value)
-		l.unsafeSet(key, cpy)
+		cpy := *value
+		l.unsafeSet(key, &cpy)
 	}
 	l.mu.Unlock()
 	return !found
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *OrdersByUserLoader) Clear(key string) {
+func (l *OrdersByUser) Clear(key string) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *OrdersByUserLoader) unsafeSet(key string, value []*gqlmodel.Order) {
+func (l *OrdersByUser) unsafeSet(key string, value *gqlmodel.Order) {
 	if l.cache == nil {
-		l.cache = map[string][]*gqlmodel.Order{}
+		l.cache = map[string]*gqlmodel.Order{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *ordersByUserLoaderBatch) keyIndex(l *OrdersByUserLoader, key string) int {
+func (b *ordersByUserBatch) keyIndex(l *OrdersByUser, key string) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +202,7 @@ func (b *ordersByUserLoaderBatch) keyIndex(l *OrdersByUserLoader, key string) in
 	return pos
 }
 
-func (b *ordersByUserLoaderBatch) startTimer(l *OrdersByUserLoader) {
+func (b *ordersByUserBatch) startTimer(l *OrdersByUser) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +218,7 @@ func (b *ordersByUserLoaderBatch) startTimer(l *OrdersByUserLoader) {
 	b.end(l)
 }
 
-func (b *ordersByUserLoaderBatch) end(l *OrdersByUserLoader) {
+func (b *ordersByUserBatch) end(l *OrdersByUser) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

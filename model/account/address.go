@@ -7,7 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // length limits for address fields
@@ -20,6 +22,13 @@ const (
 	ADDRESS_COUNTRY_MAX_LENGTH        = 3
 	ADDRESS_COUNTRY_AREA_MAX_LENGTH   = 128
 	ADDRESS_PHONE_MAX_LENGTH          = 20
+)
+
+type WhichOrderAddressID string
+
+const (
+	ShippingAddressID WhichOrderAddressID = "ShippingAddressID"
+	BillingAddressID  WhichOrderAddressID = "BillingAddressID"
 )
 
 // Address contains information that tells details about an address
@@ -41,21 +50,22 @@ type Address struct {
 }
 
 type AddressFilterOrderOption struct {
-	Id *model.StringFilter
+	Id squirrel.Sqlizer
 	// Either `ShippingAddressID` or `BillingAddressID`.
 	//
 	// since `Orders` have `ShippingAddressID` and `BillingAddressID`.
-	// This `On` specify which Id to put in the ON () conditions:
+	// This `On` specifies which Id to put in the ON () conditions:
 	//
 	// E.g: On = "ShippingAddressID" => ON (Orders.ShippingAddressID = Addresses.Id)
-	On string
+	On WhichOrderAddressID
 }
 
 // AddressFilterOption is used to build sql queries to filter address(es)
 type AddressFilterOption struct {
-	Id      *model.StringFilter
+	Id      squirrel.Sqlizer
 	OrderID *AddressFilterOrderOption
-	UserID  *model.StringFilter // SELECT * FROM Addresses WHERE Id IN (SELECT * FROM UserAddresses WHERE UserID ...)
+	UserID  squirrel.Sqlizer // SELECT * FROM Addresses WHERE Id IN (SELECT Id FROM UserAddresses WHERE UserID ...)
+	Other   squirrel.Sqlizer
 }
 
 func (add *Address) FullName() string {
@@ -165,8 +175,10 @@ func (a *Address) IsValid() *model.AppError {
 	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
 		return outer("phone", &a.Id)
 	}
-	if _, ok := model.IsValidPhoneNumber(a.Phone, ""); !ok {
+	if str, ok := util.IsValidPhoneNumber(a.Phone, a.Country); !ok {
 		return outer("phone", &a.Id)
+	} else {
+		a.Phone = str
 	}
 
 	return nil

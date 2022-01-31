@@ -4,6 +4,7 @@ import (
 	"io"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
@@ -21,22 +22,24 @@ type Category struct {
 	Name               string  `json:"name"` // unique
 	Slug               string  `json:"slug"` // unique
 	Description        *string `json:"description"`
-	ParentID           string  `json:"parent_id"`
+	ParentID           *string `json:"parent_id"`
 	BackgroundImage    *string `json:"background_image"`
 	BackgroundImageAlt string  `json:"background_image_alt"`
 	seo.Seo
 	model.ModelMetadata
+
+	Children Categories `db:"-"`
 }
 
 // CategoryFilterOption is used for building sql queries
 type CategoryFilterOption struct {
-	Id   *model.StringFilter
-	Name *model.StringFilter
-	Slug *model.StringFilter
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
+	Slug squirrel.Sqlizer
 
-	VoucherIDs []string // SELECT * FROM Categories WHERE Id IN (SELECT CategoryID FROM VoucherCategories WHERE VoucherID IN (...))
-	SaleIDs    []string
-	ProductIDs []string // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
+	SaleID    squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN SaleCategories ON (Categories.Id = SaleCategories.CategoryID) WHERE SaleCategories.SaleID ...
+	VoucherID squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN VoucherCategories ON (VoucherCategories.CategoryID = Categories.Id) WHERE VoucherCategories.VoucherID ...
+	ProductID squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN Products (ON ...) WHERE ProductID IN (...)
 
 	LockForUpdate bool // set this to true if you want to add "FOR UPDATE" suffix to the end of queries
 }
@@ -67,7 +70,7 @@ func (c *Category) IsValid() *model.AppError {
 	if !model.IsValidId(c.Id) {
 		return outer("id", nil)
 	}
-	if !model.IsValidId(c.ParentID) {
+	if c.ParentID != nil && !model.IsValidId(*c.ParentID) {
 		return outer("id", &c.Id)
 	}
 	if len(c.BackgroundImageAlt) > CATEGORY_BG_IMAGE_ALT_MAX_LENGTH {
@@ -152,4 +155,28 @@ func (c *CategoryTranslation) PreSave() {
 		c.Id = model.NewId()
 	}
 	c.Name = model.SanitizeUnicode(c.Name)
+}
+
+// ClassifyCategories takes a slice of single categories.
+// Returns a slice of category families
+func ClassifyCategories(categories Categories) Categories {
+	var res Categories
+
+	// trackMap has keys are category ids
+	var trackMap = map[string]*Category{}
+
+	for _, cate := range categories {
+		trackMap[cate.Id] = cate
+	}
+
+	for _, cate := range categories {
+		if cate.ParentID == nil {
+			res = append(res, cate)
+			continue
+		}
+
+		trackMap[*cate.ParentID].Children = append(trackMap[*cate.ParentID].Children, cate)
+	}
+
+	return res
 }

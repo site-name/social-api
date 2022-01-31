@@ -99,6 +99,20 @@ func (_m *AddressStore) ModelFields() model.StringArray {
 	return r0
 }
 
+// OrderBy provides a mock function with given fields:
+func (_m *AddressStore) OrderBy() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: transaction, address
 func (_m *AddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	ret := _m.Called(transaction, address)
@@ -133,6 +147,20 @@ func (_m *AddressStore) ScanFields(addr account.Address) []interface{} {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *AddressStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

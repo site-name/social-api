@@ -60,6 +60,19 @@ func (a Allocations) StockIDs() []string {
 	return res
 }
 
+func (a *Allocation) ToReplicateAllocation() *order.ReplicateWarehouseAllocation {
+	if a == nil {
+		return nil
+	}
+	return &order.ReplicateWarehouseAllocation{
+		Id:                a.Id,
+		CreateAt:          a.CreateAt,
+		OrderLineID:       a.OrderLineID,
+		StockID:           a.StockID,
+		QuantityAllocated: a.QuantityAllocated,
+	}
+}
+
 func (a *Allocation) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.allocation.is_valid.%s.app_error",
@@ -127,5 +140,12 @@ func (a *AllocationError) Error() string {
 
 func (a *Allocation) DeepCopy() *Allocation {
 	res := *a
+
+	if a.Stock != nil {
+		res.Stock = a.Stock.DeepCopy()
+	}
+	if a.OrderLine != nil {
+		res.OrderLine = a.OrderLine.DeepCopy()
+	}
 	return &res
 }

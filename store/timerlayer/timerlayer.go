@@ -1230,6 +1230,22 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
+func (s *TimerLayerAddressStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.AddressStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.OrderBy", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
@@ -1340,6 +1356,22 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.Get", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerAllocationStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.AllocationStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.OrderBy", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
@@ -2878,6 +2910,22 @@ func (s *TimerLayerDigitalContentStore) GetByOption(option *product_and_discount
 	return result, err
 }
 
+func (s *TimerLayerDigitalContentStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.DigitalContentStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.OrderBy", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 	start := timemodule.Now()
 
@@ -3343,10 +3391,10 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
 	start := timemodule.Now()
 
-	err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+	err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3354,7 +3402,7 @@ func (s *TimerLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transacti
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.DeleteByOptions", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("FulfillmentStore.BulkDeleteFulfillments", success, elapsed)
 	}
 	return err
 }
@@ -3515,6 +3563,22 @@ func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, gift
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.DeactivateOrderGiftcards", success, elapsed)
 	}
 	return result, err
 }
@@ -4207,6 +4271,22 @@ func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
 	return result, err
 }
 
+func (s *TimerLayerOrderStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.OrderStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.OrderBy", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 	start := timemodule.Now()
 
@@ -4397,6 +4477,22 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.Get", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerOrderLineStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.OrderLineStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderLineStore.OrderBy", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
@@ -6289,6 +6385,22 @@ func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 	return result, err
 }
 
+func (s *TimerLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 	start := timemodule.Now()
 
@@ -6301,6 +6413,22 @@ func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStore.GetByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -7916,6 +8044,22 @@ func (s *TimerLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.DeleteForUser", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerUserAddressStore) OrderBy() string {
+	start := timemodule.Now()
+
+	result := s.UserAddressStore.OrderBy()
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.OrderBy", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {

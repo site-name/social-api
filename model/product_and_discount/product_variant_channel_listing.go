@@ -115,17 +115,19 @@ func (p *ProductVariantChannelListing) commonPre() {
 
 	if p.Currency != "" {
 		p.Currency = strings.ToUpper(p.Currency)
+	} else {
+		p.Currency = model.DEFAULT_CURRENCY
 	}
 }
 
 func (p *ProductVariantChannelListing) PopulateNonDbFields() {
-	if p.PriceAmount != nil && p.Currency != "" {
+	if p.PriceAmount != nil {
 		p.Price = &goprices.Money{
 			Amount:   *p.PriceAmount,
 			Currency: p.Currency,
 		}
 	}
-	if p.CostPriceAmount != nil && p.Currency != "" {
+	if p.CostPriceAmount != nil {
 		p.CostPrice = &goprices.Money{
 			Amount:   *p.CostPriceAmount,
 			Currency: p.Currency,
@@ -133,12 +135,10 @@ func (p *ProductVariantChannelListing) PopulateNonDbFields() {
 	}
 }
 
-func (p *ProductVariantChannelListing) ToJSON() string {
-	p.PopulateNonDbFields()
-	return model.ModelToJson(p)
-}
-
 func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing {
 	res := *p
+	if p.Channel != nil {
+		res.Channel = p.Channel.DeepCopy()
+	}
 	return &res
 }

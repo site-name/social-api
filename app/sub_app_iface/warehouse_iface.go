@@ -5,6 +5,7 @@ package sub_app_iface
 
 import (
 	"github.com/mattermost/gorp"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
@@ -24,7 +25,7 @@ type WarehouseService interface {
 	// Iterate by stocks and allocate as many items as needed or available in stock
 	// for order line, until allocated all required quantity for the order line.
 	// If there is less quantity in stocks then rise InsufficientStock exception.
-	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interface{}, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError)
+	AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError)
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 	AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
@@ -57,7 +58,7 @@ type WarehouseService interface {
 	// `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
 	CheckStockAndPreorderQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError)
 	// DeAllocateStockForOrder Remove all allocations for given order
-	DeAllocateStockForOrder(ord *order.Order, manager interface{}) *model.AppError
+	DeAllocateStockForOrder(ord *order.Order, manager interfaces.PluginManagerInterface) *model.AppError
 	// DeactivatePreorderForVariant Complete preorder for product variant.
 	// All preorder settings should be cleared and all preorder allocations
 	// should be replaced by regular allocations.
@@ -69,7 +70,7 @@ type WarehouseService interface {
 	// as needed of available in stock for order line, until deallocated all required
 	// quantity for the order line. If there is less quantity in stocks then
 	// raise an exception.
-	DeallocateStock(orderLineDatas []*order.OrderLineData, manager interface{}) (*warehouse.AllocationError, *model.AppError)
+	DeallocateStock(orderLineDatas []*order.OrderLineData, manager interfaces.PluginManagerInterface) (*warehouse.AllocationError, *model.AppError)
 	// Decrease stocks quantities for given `order_lines` in given warehouses.
 	//
 	// Function deallocate as many quantities as requested if order_line has less quantity
@@ -82,9 +83,9 @@ type WarehouseService interface {
 	// If allow_stock_to_be_exceeded flag is True then quantity could be < 0.
 	//
 	// updateStocks default to true
-	DecreaseStock(orderLineInfos []*order.OrderLineData, manager interface{}, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
+	DecreaseStock(orderLineInfos order.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
 	// DecreaseAllocations Decreate allocations for provided order lines.
-	DecreaseAllocations(lineInfos []*order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError)
+	DecreaseAllocations(lineInfos []*order.OrderLineData, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
 	// DeletePreorderAllocations tells store to delete given preorder allocations
 	DeletePreorderAllocations(transaction *gorp.Transaction, preorderAllocationIDs ...string) *model.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
@@ -106,7 +107,7 @@ type WarehouseService interface {
 	// Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
 	GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError)
 	// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-	IncreaseAllocations(lineInfos []*order.OrderLineData, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError)
+	IncreaseAllocations(lineInfos order.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
 	//
 	// Function lock for update stock and allocations related to given `order_line`

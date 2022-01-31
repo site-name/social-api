@@ -168,17 +168,22 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		QueryRow()
 
 	var (
-		variantWeight     measurement.Weight
-		productWeight     measurement.Weight
-		productTypeWeight measurement.Weight
+		variantWeightAmount *float32
+		variantWeightUnit   measurement.WeightUnit
+
+		productWeightAmount *float32
+		productWeightUnit   measurement.WeightUnit
+
+		productTypeWeightAmount *float32
+		productTypeWeightUnit   measurement.WeightUnit
 	)
 	err := rowScanner.Scan(
-		&variantWeight.Amount,
-		&variantWeight.Unit,
-		&productWeight.Amount,
-		&productWeight.Unit,
-		&productTypeWeight.Amount,
-		&productTypeWeight.Unit,
+		&variantWeightAmount,
+		&variantWeightUnit,
+		&productWeightAmount,
+		&productWeightUnit,
+		&productTypeWeightAmount,
+		&productTypeWeightUnit,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -187,14 +192,14 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
 	}
 
-	if variantWeight.Amount != nil {
-		return &variantWeight, nil
+	if variantWeightAmount != nil && variantWeightUnit != "" {
+		return &measurement.Weight{Amount: *variantWeightAmount, Unit: variantWeightUnit}, nil
 	}
-	if productWeight.Amount != nil {
-		return &productWeight, nil
+	if productWeightAmount != nil && productWeightUnit != "" {
+		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
 	}
-	if productTypeWeight.Amount != nil {
-		return &productTypeWeight, nil
+	if productTypeWeightAmount != nil && productTypeWeightUnit != "" {
+		return &measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}, nil
 	}
 
 	return nil, errors.Errorf("weight for product variant with id=%s is not set", productVariantID)
@@ -204,14 +209,17 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
 	var res product_and_discount.ProductVariant
 
-	query, args, _ := vs.GetQueryBuilder().
+	query, args, err := vs.GetQueryBuilder().
 		Select(vs.ModelFields()...).
 		From(store.ProductVariantTableName).
 		InnerJoin(store.OrderLineTableName + " ON (ProductVariants.Id = Orderlines.VariantID)").
 		Where(squirrel.Eq{"Orderlines.Id": orderLineID}).
 		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOrderLineID_ToSql")
+	}
 
-	err := vs.GetReplica().SelectOne(&res, query, args...)
+	err = vs.GetReplica().SelectOne(&res, query, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -224,7 +232,6 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product
 
 // FilterByOption finds and returns product variants based on given option
 func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
-
 	selectFields := vs.ModelFields()
 	if option.SelectRelatedDigitalContent {
 		selectFields = append(selectFields, vs.DigitalContent().ModelFields()...)

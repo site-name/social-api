@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
@@ -36,17 +37,18 @@ type CollectionFilterOption struct {
 	ShopID    string // single string since we can only view collections of ONLY 1 shop at a time
 	SelectAll bool   // if this is true, ignore every other options and find all collections by shop
 
-	Id   *model.StringFilter //
-	Name *model.StringFilter //
-	Slug *model.StringFilter
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
+	Slug squirrel.Sqlizer
 
-	ProductIDs                    []string            // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
-	VoucherIDs                    []string            // use sub query SELECT ... FROM Collections WHERE Id IN (SELECT CollectionID FROM ... WHERE OtherID = ?)
-	SaleIDs                       []string            //
-	ChannelListingPublicationDate *model.TimeFilter   // INNER JOIN `CollectionChannelListings`
-	ChannelListingChannelSlug     *model.StringFilter // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
-	ChannelListingChannelIsActive *bool               // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
-	ChannelListingIsPublished     *bool               // INNER JOIN `CollectionChannelListing`
+	ProductID squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN ProductCollections ON (...) WHERE ProductCollections.ProductID ...
+	VoucherID squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN VoucherCollections ON (...) WHERE VoucherCollections.VoucherID ...
+	SaleID    squirrel.Sqlizer // SELECT * FROM Collections INNER JOIN SaleCollections ON (Collections.Id = SaleCollections.CollectionID) WHERE SaleCollections.SaleID ...
+
+	ChannelListingPublicationDate squirrel.Sqlizer // INNER JOIN `CollectionChannelListings`
+	ChannelListingChannelSlug     squirrel.Sqlizer // INNER JOIN `CollectionChannelListings` INNER JOIN `Channels`
+	ChannelListingChannelIsActive *bool            // INNER JOIN `CollectionChannelListing` INNER JOIN `Channels`
+	ChannelListingIsPublished     *bool            // INNER JOIN `CollectionChannelListing`
 }
 
 type Collections []*Collection

@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
@@ -85,11 +87,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 
 	if billingAddressID != "" || shippingAddressID != "" {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: []string{billingAddressID, shippingAddressID},
-				},
-			},
+			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): []string{billingAddressID, shippingAddressID}},
 		})
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -388,7 +386,7 @@ func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayRespon
 }
 
 // GatewayPostProcess
-func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
+func (a *ServicePayment) GatewayPostProcess(paymentTransaction payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
 	// create transaction
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -480,7 +478,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction *payment.PaymentT
 	}
 
 	paymentTransaction.AlreadyProcessed = true
-	if _, appErr = a.UpdateTransaction(paymentTransaction); appErr != nil {
+	if _, appErr = a.UpdateTransaction(&paymentTransaction); appErr != nil {
 		return appErr
 	}
 
@@ -508,10 +506,10 @@ func (a *ServicePayment) FetchCustomerId(user *account.User, gateway string) (st
 	// validate arguments are valid
 	var argumentErrorFields string
 	if user == nil {
-		argumentErrorFields = "'user'"
+		argumentErrorFields = "user"
 	}
 	if gateway == "" {
-		argumentErrorFields += ", 'gateway'"
+		argumentErrorFields += ", gateway"
 	}
 
 	if argumentErrorFields != "" {
@@ -527,13 +525,13 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 	// validate arguments are valid:
 	var argumentErrFields string
 	if !model.IsValidId(userID) {
-		argumentErrFields = "'userID'"
+		argumentErrFields = "userID"
 	}
 	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" || len(trimmedGateway) > payment.MAX_LENGTH_PAYMENT_GATEWAY {
-		argumentErrFields += ", 'gateway'"
+		argumentErrFields += ", gateway"
 	}
 	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" || len(trimmedCustomerID) > payment.TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
-		argumentErrFields += ", 'customerID'"
+		argumentErrFields += ", customerID"
 	}
 
 	if argumentErrFields != "" {
@@ -563,7 +561,7 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 }
 
 // UpdatePayment
-func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
+func (a *ServicePayment) UpdatePayment(payMent payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError {
 	var (
 		changedFields []string
 		appErr        *model.AppError
@@ -579,7 +577,7 @@ func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse
 	}
 
 	if len(changedFields) > 0 {
-		_, appErr = a.UpsertPayment(nil, payMent)
+		_, appErr = a.UpsertPayment(nil, &payMent)
 		if appErr != nil {
 			return appErr
 		}
@@ -588,7 +586,7 @@ func (a *ServicePayment) UpdatePayment(payMent *payment.Payment, gatewayResponse
 	return nil
 }
 
-func (a *ServicePayment) UpdatePaymentMethodDetails(payMent *payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string) {
+func (a *ServicePayment) UpdatePaymentMethodDetails(payMent payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string) {
 	if changedFields == nil {
 		changedFields = []string{}
 	}
@@ -616,11 +614,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent *payment.Payment, pa
 
 func (a *ServicePayment) GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		Kind: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: payment.AUTH,
-			},
-		},
+		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): payment.AUTH},
 		IsSuccess: model.NewBool(true),
 	})
 	if appErr != nil {
@@ -633,9 +627,15 @@ func (a *ServicePayment) GetPaymentToken(payMent *payment.Payment) (string, *pay
 	return authTransactions[0].Token, nil, nil
 }
 
-// IsCurrencySupported checks if given currency is supported by system
-func (a *ServicePayment) IsCurrencySupported(currency string, gatewayID string, manager interface{}) (bool, *model.AppError) {
-	panic("not implemented")
+// IsCurrencySupported Return true if the given gateway supports given currency.
+func (a *ServicePayment) IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool {
+	for _, gateway := range manager.ListPaymentGateways(currency, nil, "", true) {
+		if gateway.Id == gatewayID {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Convert minor unit (smallest unit of currency) to decimal value.

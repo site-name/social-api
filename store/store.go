@@ -186,8 +186,10 @@ type (
 	}
 	ShopStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(shop *shop.Shop) (*shop.Shop, error) // Upsert depends on shop's Id to decide to update/insert the given shop.
-		Get(shopID string) (*shop.Shop, error)      // Get finds a shop with given id and returns it
+		Upsert(shop *shop.Shop) (*shop.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given shop.
+		Get(shopID string) (*shop.Shop, error)                                 // Get finds a shop with given id and returns it
+		FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) // FilterByOptions finds and returns shops with given options
+		GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error)      // GetByOptions finds and returns 1 shop with given options
 	}
 	ShopTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -411,6 +413,8 @@ type (
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
+		OrderBy() string
 		BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
 		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
 		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
@@ -512,6 +516,8 @@ type (
 	DigitalContentStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(content product_and_discount.DigitalContent) []interface{}
 		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                    // Save inserts given digital content into database then returns it
 		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
@@ -579,6 +585,7 @@ type (
 	ProductStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
 		ScanFields(prd product_and_discount.Product) []interface{}
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
@@ -609,6 +616,7 @@ type (
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
 		Get(id string) (*payment.PaymentTransaction, error)                                                                      // Get returns a payment transaction with given id
 		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                     // Update updates given transaction and returns updated one
@@ -634,6 +642,8 @@ type (
 	OrderLineStore interface {
 		CreateIndexesIfNotExists()
 		ScanFields(orderLine order.OrderLine) []interface{}
+		TableName(withField string) string
+		OrderBy() string
 		ModelFields() []string
 		Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id
@@ -644,6 +654,8 @@ type (
 	OrderStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(holder order.Order) []interface{}
 		Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
 		Get(id string) (*order.Order, error)                                            // Get find order in database with given id
@@ -672,7 +684,7 @@ type (
 		Get(id string) (*order.Fulfillment, error)                                                                         // Get finds and return a fulfillment by given id
 		GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
 		FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
-		DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error                       // DeleteByOptions deletes fulfillment database records that satisfy given option. It returns an error indicates if there is a problem occured during deletion process
+		BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 
@@ -717,6 +729,10 @@ type (
 		BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
 		GetById(id string) (*giftcard.GiftCard, error)                                                                     // GetById returns a giftcard instance that has id of given id
 		FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
+		// DeactivateOrderGiftcards update giftcards
+		// which have giftcard events with type == 'bought', parameters.order_id == given order id
+		// by setting their IsActive attribute to false
+		DeactivateOrderGiftcards(orderID string) ([]string, error)
 	}
 	GiftcardEventStore interface {
 		CreateIndexesIfNotExists()
@@ -798,11 +814,13 @@ type (
 	}
 	VoucherCategoryStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
 		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
 	}
 	VoucherCollectionStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
 		Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error)                                   // Get finds a voucher collection with given id, then returns it with an error
 	}
@@ -820,6 +838,7 @@ type (
 	}
 	SaleCategoryRelationStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
 		Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error)                               // Save inserts given sale-category relation into database
 		Get(relationID string) (*product_and_discount.SaleCategoryRelation, error)                                                                  // Get returns 1 sale-category relation with given id
 		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option
@@ -987,6 +1006,8 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ModelFields() model.StringArray
+		TableName(withField string) string
+		OrderBy() string
 		ScanFields(addr account.Address) []interface{}
 		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
 		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
@@ -1079,8 +1100,12 @@ type (
 	}
 	UserAddressStore interface {
 		CreateIndexesIfNotExists()
+		TableName(withField string) string
+		OrderBy() string
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
+		// FilterByOptions finds and returns a list of user-address relations with given options
+		FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error)
 	}
 	CustomerEventStore interface {
 		CreateIndexesIfNotExists()

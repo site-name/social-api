@@ -123,7 +123,7 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction *gorp.Transaction, eventTy
 	})
 }
 
-func getPaymentData(amount *decimal.Decimal, payMent *payment.Payment) map[string]map[string]interface{} {
+func getPaymentData(amount *decimal.Decimal, payMent payment.Payment) map[string]map[string]interface{} {
 	return map[string]map[string]interface{}{
 		"parameters": {
 			"amount":          amount,
@@ -204,7 +204,7 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorp.Transact
 	})
 }
 
-func (s *ServiceOrder) OrderCreatedEvent(orDer *order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderCreatedEvent(orDer order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError) {
 	var (
 		eventType = order.PLACED_FROM_DRAFT
 		userID    *string
@@ -227,7 +227,7 @@ func (s *ServiceOrder) OrderCreatedEvent(orDer *order.Order, user *account.User,
 	})
 }
 
-func (s *ServiceOrder) OrderConfirmedEvent(orDer *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderConfirmedEvent(orDer order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -273,7 +273,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *order.Order, user 
 	})
 }
 
-func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transaction, orDer order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError) {
 	var (
 		userID     *string
 		parameters = model.StringInterface{}
@@ -293,7 +293,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorp.Transact
 	})
 }
 
-func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorp.Transaction, draftOrder *order.Order, originalOrder *order.Order, user *account.User, _ interface{}, lines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorp.Transaction, draftOrder order.Order, originalOrder order.Order, user *account.User, _ interface{}, lines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -310,7 +310,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorp.Trans
 	})
 }
 
-func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorp.Transaction, orDer *order.Order, user *account.User, _ interface{}, replacedLines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorp.Transaction, orDer order.Order, user *account.User, _ interface{}, replacedLines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {
@@ -327,7 +327,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorp.Transaction, o
 	})
 }
 
-func (s *ServiceOrder) OrderReplacementCreated(transaction *gorp.Transaction, originalOrder *order.Order, replaceOrder *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderReplacementCreated(transaction *gorp.Transaction, originalOrder order.Order, replaceOrder *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {

@@ -12,17 +12,11 @@ type SqlVoucherCategoryStore struct {
 	store.Store
 }
 
-var (
-	VoucherCategoryUniqueList = []string{
-		"VoucherID", "CategoryID", "vouchercategories_voucherid_categoryid_key",
-	}
-)
-
 func NewSqlVoucherCategoryStore(s store.Store) store.VoucherCategoryStore {
 	vcs := &SqlVoucherCategoryStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherCategory{}, store.VoucherCategoryTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(product_and_discount.VoucherCategory{}, vcs.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CategoryID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -33,9 +27,18 @@ func NewSqlVoucherCategoryStore(s store.Store) store.VoucherCategoryStore {
 	return vcs
 }
 
+func (vcs *SqlVoucherCategoryStore) TableName(withField string) string {
+	name := "VoucherCategories"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
 func (vcs *SqlVoucherCategoryStore) CreateIndexesIfNotExists() {
-	vcs.CreateForeignKeyIfNotExists(store.VoucherCategoryTableName, "VoucherID", store.VoucherTableName, "Id", true)
-	vcs.CreateForeignKeyIfNotExists(store.VoucherCategoryTableName, "CategoryID", store.ProductCategoryTableName, "Id", true)
+	vcs.CreateForeignKeyIfNotExists(vcs.TableName(""), "VoucherID", store.VoucherTableName, "Id", true)
+	vcs.CreateForeignKeyIfNotExists(vcs.TableName(""), "CategoryID", store.ProductCategoryTableName, "Id", true)
 }
 
 // Upsert saves or updates given voucher category then returns it with an error
@@ -60,8 +63,8 @@ func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *product_and_discount
 	}
 
 	if err != nil {
-		if vcs.IsUniqueConstraintError(err, VoucherCategoryUniqueList) {
-			return nil, store.NewErrInvalidInput(store.VoucherCategoryTableName, "VoucherID/CategoryID", "duplicate")
+		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CategoryID", "vouchercategories_voucherid_categoryid_key"}) {
+			return nil, store.NewErrInvalidInput(vcs.TableName(""), "VoucherID/CategoryID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher-category relation with id=%s", voucherCategory.Id)
 	} else if numUpdated > 1 {
@@ -74,10 +77,10 @@ func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *product_and_discount
 // Get finds a voucher category with given id, then returns it with an error
 func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
 	var res product_and_discount.VoucherCategory
-	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCategoryTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherCategoryID})
+	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+vcs.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": voucherCategoryID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherCategoryTableName, voucherCategoryID)
+			return nil, store.NewErrNotFound(vcs.TableName(""), voucherCategoryID)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher-category relation with id=%s", voucherCategoryID)
 	}

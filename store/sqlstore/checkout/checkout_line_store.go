@@ -253,10 +253,6 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 
 // TotalWeightForCheckoutLines calculate total weight for given checkout lines
 func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
-	// 1 checkout line has 1 product variant
-	// 1 product varnat has 1 product
-	// 1 product has 1 product type
-	// So don't worry about rows duplicate here
 
 	rows, err := cls.
 		GetQueryBuilder().
@@ -282,38 +278,44 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 	}
 
 	var (
-		totalWeight       *measurement.Weight = measurement.ZeroWeight
-		lineQuantity      int
-		variantWeight     measurement.Weight
-		productWeight     measurement.Weight
-		productTypeWeight measurement.Weight
-		weight            measurement.Weight
+		totalWeight  = measurement.ZeroWeight
+		lineQuantity int
+		weight       measurement.Weight
+
+		variantWeightAmount *float32
+		variantWeightUnit   measurement.WeightUnit
+
+		productWeightAmount *float32
+		productWeightUnit   measurement.WeightUnit
+
+		productTypeWeightAmount *float32
+		productTypeWeightUnit   measurement.WeightUnit
 	)
 
 	for rows.Next() {
 		err = rows.Scan(
 			&lineQuantity,
-			&variantWeight.Amount,
-			&variantWeight.Unit,
-			&productWeight.Amount,
-			&productWeight.Unit,
-			&productTypeWeight.Amount,
-			&productTypeWeight.Unit,
+			&variantWeightAmount,
+			&variantWeightUnit,
+			&productWeightAmount,
+			&productWeightUnit,
+			&productTypeWeightAmount,
+			&productTypeWeightUnit,
 		)
 		if err != nil {
 			// return immediately if an error occured
 			return nil, errors.Wrap(err, "failed to scan a row")
 		}
 
-		if variantWeight.Amount != nil {
-			weight = variantWeight
-		} else if productWeight.Amount != nil {
-			weight = productWeight
-		} else if productTypeWeight.Amount != nil {
-			weight = productTypeWeight
+		if variantWeightAmount != nil {
+			weight = measurement.Weight{Amount: *variantWeightAmount, Unit: variantWeightUnit}
+		} else if productWeightAmount != nil {
+			weight = measurement.Weight{Amount: *variantWeightAmount, Unit: productWeightUnit}
+		} else if productTypeWeightAmount != nil {
+			weight = measurement.Weight{Amount: *productTypeWeightAmount, Unit: productTypeWeightUnit}
 		}
 
-		if weight.Amount != nil {
+		if weight.Amount != 0 && weight.Unit != "" {
 			totalWeight, err = totalWeight.Add(weight.Mul(float32(lineQuantity)))
 			if err != nil {
 				return nil, err

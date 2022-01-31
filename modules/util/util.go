@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -320,4 +322,14 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 	}
 	u.RawQuery = q.Encode()
 	return u.String()
+}
+
+// GetFunctionName returns a string name of given function
+//
+// E.g
+//  func hello() {}
+//  name := GetFunctionName(hello)
+//  fmt.Println(name) == "hello"
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

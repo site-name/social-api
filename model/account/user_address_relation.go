@@ -1,6 +1,7 @@
 package account
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -8,6 +9,12 @@ type UserAddress struct {
 	Id        string `json:"id"`
 	UserID    string `json:"user_id"`
 	AddressID string `json:"address_id"`
+}
+
+type UserAddressFilterOptions struct {
+	Id        squirrel.Sqlizer
+	UserID    squirrel.Sqlizer
+	AddressID squirrel.Sqlizer
 }
 
 func (ua *UserAddress) IsValid() *model.AppError {

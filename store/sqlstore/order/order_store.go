@@ -19,7 +19,7 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	os := &SqlOrderStore{sqlStore}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.Order{}, store.OrderTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.Order{}, os.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -45,19 +45,32 @@ func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
 	return os
 }
 
+func (os *SqlOrderStore) TableName(withField string) string {
+	name := "Orders"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (os *SqlOrderStore) OrderBy() string {
+	return "CreateAt DESC"
+}
+
 func (os *SqlOrderStore) CreateIndexesIfNotExists() {
-	os.CommonMetaDataIndex(store.OrderTableName)
-	os.CreateIndexIfNotExists("idx_orders_user_email", store.OrderTableName, "UserEmail")
-	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", store.OrderTableName, "lower(UserEmail) text_pattern_ops")
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "UserID", store.UserTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "BillingAddressID", store.AddressTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "OriginalID", store.OrderTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ChannelID", store.ChannelTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "VoucherID", store.VoucherTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "ShopID", store.ShopTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(store.OrderTableName, "CollectionPointID", store.WarehouseTableName, "Id", false)
+	os.CommonMetaDataIndex(os.TableName(""))
+	os.CreateIndexIfNotExists("idx_orders_user_email", os.TableName(""), "UserEmail")
+	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", os.TableName(""), "lower(UserEmail) text_pattern_ops")
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "UserID", store.UserTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "BillingAddressID", store.AddressTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShippingAddressID", store.AddressTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "OriginalID", os.TableName(""), "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "ChannelID", store.ChannelTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "VoucherID", store.VoucherTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShopID", store.ShopTableName, "Id", false)
+	os.CreateForeignKeyIfNotExists(os.TableName(""), "CollectionPointID", store.WarehouseTableName, "Id", false)
 }
 
 func (os *SqlOrderStore) ModelFields() []string {
@@ -187,7 +200,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 			}
 		} else {
 			// try finding if order exist
-			err = tx.SelectOne(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :ID", map[string]interface{}{"ID": ord.Id})
+			err = tx.SelectOne(&oldOrder, "SELECT * FROM "+os.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": ord.Id})
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, err
@@ -251,10 +264,10 @@ func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order)
 // Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	var order order.Order
-	err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+os.TableName("")+" WHERE Id = :id", map[string]interface{}{"id": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderTableName, id)
+			return nil, store.NewErrNotFound(os.TableName(""), id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
@@ -293,7 +306,7 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 	if err != nil {
 		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 			// this is user's intension to update token, he/she must be notified
-			return nil, store.NewErrInvalidInput(store.OrderTableName, "token", newOrder.Token)
+			return nil, store.NewErrInvalidInput(os.TableName(""), "token", newOrder.Token)
 		}
 		return nil, errors.Wrapf(err, "failed to update order with id=%s", newOrder.Id)
 	}
@@ -309,8 +322,8 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 	query := os.GetQueryBuilder().
 		Select(os.ModelFields()...).
-		From(store.OrderTableName).
-		OrderBy(store.TableOrderingMap[store.OrderTableName])
+		From(os.TableName("")).
+		OrderBy(os.OrderBy())
 
 	// parse options:
 	if option.Status != nil {

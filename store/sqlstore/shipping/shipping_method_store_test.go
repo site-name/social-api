@@ -73,8 +73,8 @@ func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *
 		"CountryCode":             "%" + countryCode + "%",
 		"MinimumOrderPriceAmount": priceAmount,
 		"MaximumOrderPriceAmount": priceAmount,
-		"MinimumOrderWeight":      *weight.Amount,
-		"MaximumOrderWeight":      *weight.Amount,
+		"MinimumOrderWeight":      weight.Amount,
+		"MaximumOrderWeight":      weight.Amount,
 		"WeightBasedShippingType": shipping.WEIGHT_BASED,
 		"PriceBasedShipType":      shipping.PRICE_BASED,
 	}

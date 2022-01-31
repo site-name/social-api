@@ -5,6 +5,8 @@
 package shop
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -29,6 +31,20 @@ func (a *ServiceShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
 	shop, err := a.srv.Store.Shop().Get(shopID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.error_finding_shop_by_id.app_error", err)
+	}
+
+	return shop, nil
+}
+
+func (a *ServiceShop) ShopByOptions(options *shop.ShopFilterOptions) (*shop.Shop, *model.AppError) {
+	shop, err := a.srv.Store.Shop().GetByOptions(options)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("ShopByOptions", "app.shop.error_finding_shop_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return shop, nil

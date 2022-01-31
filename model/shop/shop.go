@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -61,6 +62,12 @@ type Shop struct {
 	GiftcardExpiryPeriodType                 model.TimePeriodType       `json:"gift_card_expiry_period_type"`
 	GiftcardExpiryPeriod                     *int                       `json:"gift_card_expiry_period"`
 	AutomaticallyFulfillNonShippableGiftcard *bool                      `json:"automatically_fulfill_non_shippable_gift_card"` // default *true
+}
+
+type ShopFilterOptions struct {
+	Id      squirrel.Sqlizer
+	OwnerID squirrel.Sqlizer
+	Name    squirrel.Sqlizer
 }
 
 type ShopDefaultDigitalContentSettings struct {

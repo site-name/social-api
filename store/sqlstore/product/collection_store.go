@@ -128,34 +128,28 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Collections.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.Name != nil {
-		query = query.Where(option.Name.ToSquirrel("Collections.Name"))
+		query = query.Where(option.Name)
 	}
 	if option.Slug != nil {
-		query = query.Where(option.Slug.ToSquirrel("Collections.Slug"))
+		query = query.Where(option.Slug)
 	}
-	if len(option.ProductIDs) > 0 {
-		query = query.Where(squirrel.Expr(
-			"Collections.Id IN (SELECT CollectionID FROM ? WHERE ProductID IN ?)",
-			store.CollectionProductRelationTableName,
-			option.ProductIDs,
-		))
+	if option.ProductID != nil {
+		query = query.
+			InnerJoin(store.CollectionProductRelationTableName + " ON Collections.Id = ProductCollections.CollectionID").
+			Where(option.ProductID)
 	}
-	if len(option.VoucherIDs) > 0 {
-		query = query.Where(squirrel.Expr(
-			"Collections.Id IN (SELECT CollectionID FROM ? WHERE VoucherID IN ?)",
-			store.VoucherCollectionTableName,
-			option.VoucherIDs,
-		))
+	if option.VoucherID != nil {
+		query = query.
+			InnerJoin(store.VoucherCollectionTableName + " ON Collections.Id = VoucherCollections.CollectionID").
+			Where(option.VoucherID)
 	}
-	if len(option.SaleIDs) > 0 {
-		query = query.Where(squirrel.Expr(
-			"Collections.Id IN (SELECT CollectionID FROM ? WHERE SaleID IN ?)",
-			store.SaleCollectionRelationTableName,
-			option.SaleIDs,
-		))
+	if option.SaleID != nil {
+		query = query.
+			InnerJoin(store.SaleCollectionRelationTableName + " ON Collections.Id = SaleCollections.CollectionID").
+			Where(option.SaleID)
 	}
 
 	var (
@@ -165,7 +159,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 	if option.ChannelListingPublicationDate != nil {
 		query = query.
 			InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
-			Where(option.ChannelListingPublicationDate.ToSquirrel("CollectionChannelListings.PublicationDate"))
+			Where(option.ChannelListingPublicationDate)
 
 		joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 	}
@@ -185,7 +179,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 		}
 		query = query.
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)").
-			Where(option.ChannelListingChannelSlug.ToSquirrel("Channels.Slug"))
+			Where(option.ChannelListingChannelSlug)
 
 		joined_ChannelTable = true // indicate joined channel table
 	}
@@ -196,8 +190,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
 		if !joined_ChannelTable {
-			query = query.
-				InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
+			query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
 		}
 		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingChannelIsActive})
 	}

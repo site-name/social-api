@@ -1,6 +1,7 @@
 package attribute
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -14,8 +15,8 @@ type AttributePage struct {
 
 // AttributePageFilterOption is used for lookup AttributePage
 type AttributePageFilterOption struct {
-	PageTypeID  *model.StringFilter
-	AttributeID *model.StringFilter
+	PageTypeID  squirrel.Sqlizer
+	AttributeID squirrel.Sqlizer
 }
 
 func (a *AttributePage) IsValid() *model.AppError {

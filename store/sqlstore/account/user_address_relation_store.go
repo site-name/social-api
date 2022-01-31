@@ -1,10 +1,7 @@
 package account
 
 import (
-	"strings"
-
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -17,7 +14,7 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	uas := &SqlUserAddressStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.UserAddress{}, store.UserAddressTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(account.UserAddress{}, uas.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -28,9 +25,22 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	return uas
 }
 
+func (uas *SqlUserAddressStore) TableName(withField string) string {
+	name := "UserAddresses"
+	if withField != "" {
+		name += "." + withField
+	}
+
+	return name
+}
+
+func (uas *SqlUserAddressStore) OrderBy() string {
+	return ""
+}
+
 func (uas *SqlUserAddressStore) CreateIndexesIfNotExists() {
-	uas.CreateForeignKeyIfNotExists(store.UserAddressTableName, "UserID", store.UserTableName, "Id", true)
-	uas.CreateForeignKeyIfNotExists(store.UserAddressTableName, "AddressID", store.AddressTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "UserID", store.UserTableName, "Id", true)
+	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "AddressID", store.AddressTableName, "Id", true)
 }
 
 func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
@@ -41,7 +51,7 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 
 	if err := uas.GetMaster().Insert(userAddress); err != nil {
 		if uas.IsUniqueConstraintError(err, []string{"UserID", "AddressID", "useraddresses_userid_addressid_key"}) {
-			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "userId: "+userAddress.UserID+", addressId: "+userAddress.AddressID)
+			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to save user-address instance with id=%s", userAddress.Id)
 	}
@@ -50,23 +60,8 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 }
 
 func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
-	// validating input arguments:
-	var invalidGrgs []string
-	if !model.IsValidId(userID) {
-		invalidGrgs = []string{"userID"}
-	}
-	if !model.IsValidId(addressID) {
-		invalidGrgs = append(invalidGrgs, "addressID")
-	}
-	if len(invalidGrgs) > 0 {
-		return store.NewErrInvalidInput(store.UserAddressTableName, strings.Join(invalidGrgs, ", "), userID+"/"+addressID)
-	}
-
 	result, err := uas.GetMaster().Exec(
-		`DELETE FROM `+store.UserAddressTableName+`
-		WHERE (
-			UserID = UID AND AddressID = :AddrID
-		)`,
+		`DELETE FROM `+uas.TableName("")+` WHERE UserID = :UID AND AddressID = :AddrID`,
 		map[string]interface{}{
 			"UID":    userID,
 			"AddrID": addressID,
@@ -78,9 +73,37 @@ func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
 	}
 	if num, err := result.RowsAffected(); err != nil {
 		return errors.Wrapf(err, "failed to call RowsAffected() after deleting user-address relation with userID=%s, addressID=%s", userID, addressID)
-	} else if num > 1 {
-		return errors.Errorf("multiple user-address relations deleted: %d, expect: 1", num)
+	} else if num != 1 {
+		return errors.Errorf("%d user-address relation(s) deleted instead of 1", num)
 	}
 
 	return nil
+}
+
+// FilterByOptions finds and returns a list of user-address relations with given options
+func (uas *SqlUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+	query := uas.GetQueryBuilder().Select("*").From(store.UserAddressTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.UserID != nil {
+		query = query.Where(options.UserID)
+	}
+	if options.AddressID != nil {
+		query = query.Where(options.AddressID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*account.UserAddress
+	_, err = uas.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find user-address relations with given options")
+	}
+
+	return res, nil
 }

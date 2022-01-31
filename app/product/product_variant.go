@@ -25,9 +25,9 @@ func (a *ServiceProduct) ProductVariantById(id string) (*product_and_discount.Pr
 // ProductVariantGetPrice returns price
 func (a *ServiceProduct) ProductVariantGetPrice(
 	productVariant *product_and_discount.ProductVariant,
-	product *product_and_discount.Product,
+	product product_and_discount.Product,
 	collections []*product_and_discount.Collection,
-	channel *channel.Channel,
+	channel channel.Channel,
 	channelListing *product_and_discount.ProductVariantChannelListing,
 	discounts []*product_and_discount.DiscountInfo, // optional
 ) (*goprices.Money, *model.AppError) {

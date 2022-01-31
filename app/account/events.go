@@ -28,7 +28,7 @@ func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *stri
 }
 
 // CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
-func (s *ServiceAccount) CustomerPlacedOrderEvent(user *account.User, orDer *order.Order) (*account.CustomerEvent, *model.AppError) {
+func (s *ServiceAccount) CustomerPlacedOrderEvent(user *account.User, orDer order.Order) (*account.CustomerEvent, *model.AppError) {
 	if user == nil || !model.IsValidId(user.Id) {
 		return nil, nil
 	}

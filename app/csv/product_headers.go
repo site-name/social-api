@@ -3,12 +3,14 @@ package csv
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/store"
 )
 
 // Get export fields, all headers and headers mapping.
@@ -58,10 +60,13 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]stri
 		attributes_01 []*attribute.Attribute
 		attributes_02 []*attribute.Attribute
 
+		wg  sync.WaitGroup
+		mut sync.Mutex
+
 		// syncSetAppError is used to safely set `appError`
 		syncSetAppError = func(err *model.AppError) {
-			a.Lock()
-			defer a.Unlock()
+			mut.Lock()
+			defer mut.Unlock()
 			if err != nil && appError == nil {
 				appError = err
 			}
@@ -71,41 +76,25 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]stri
 
 	filterOptions := [...]*attribute.AttributeFilterOption{
 		{
-			Distinct: true,
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: attributeIDs,
-				},
-			},
-			ProductTypes: &model.StringFilter{
-				StringOption: &model.StringOption{
-					NULL: model.NewBool(false),
-				},
-			},
+			Distinct:     true,
+			Id:           squirrel.Eq{store.AttributeTableName + ".Id": attributeIDs},
+			ProductTypes: squirrel.NotEq{store.AttributeProductTableName + ".ProductTypeID": nil},
 		},
 		{
-			Distinct: true,
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: attributeIDs,
-				},
-			},
-			ProductVariantTypes: &model.StringFilter{
-				StringOption: &model.StringOption{
-					NULL: model.NewBool(false),
-				},
-			},
+			Distinct:            true,
+			Id:                  squirrel.Eq{store.AttributeTableName + ".Id": attributeIDs},
+			ProductVariantTypes: squirrel.NotEq{store.AttributeVariantTableName + ".ProductID": nil},
 		},
 	}
 
-	a.Add(len(filterOptions))
+	wg.Add(len(filterOptions))
 
 	for index, filterOption := range filterOptions {
 
 		go func(idx int, option *attribute.AttributeFilterOption) {
-			a.Lock()
-			defer a.Unlock()
-			defer a.Done()
+			mut.Lock()
+			defer mut.Unlock()
+			defer wg.Done()
 
 			attributes, appErr := a.srv.AttributeService().AttributesByOption(option)
 			if appErr != nil {
@@ -123,7 +112,7 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo map[string][]string) ([]stri
 		}(index, filterOption)
 	}
 
-	a.Wait()
+	wg.Wait()
 
 	if appError != nil {
 		return nil, appError

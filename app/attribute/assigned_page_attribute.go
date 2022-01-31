@@ -3,6 +3,7 @@ package attribute
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -22,19 +23,12 @@ func (a *ServiceAttribute) AssignedPageAttributeByOption(option *attribute.Assig
 func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, *model.AppError) {
 	option := new(attribute.AssignedPageAttributeFilterOption)
 	if assignedPageAttribute.PageID != "" {
-		option.PageID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedPageAttribute.PageID,
-			},
-		}
+		option.PageID = squirrel.Eq{store.AssignedPageAttributeTableName + ".PageID": assignedPageAttribute.PageID}
 	}
 	if assignedPageAttribute.AssignmentID != "" {
-		option.AssignmentID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedPageAttribute.AssignmentID,
-			},
-		}
+		option.AssignmentID = squirrel.Eq{store.AssignedPageAttributeTableName + ".AssignmentID": assignedPageAttribute.AssignmentID}
 	}
+
 	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(option)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

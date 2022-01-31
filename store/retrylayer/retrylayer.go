@@ -1253,6 +1253,12 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
+func (s *RetryLayerAddressStore) OrderBy() string {
+
+	return s.AddressStore.OrderBy()
+
+}
+
 func (s *RetryLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
 
 	tries := 0
@@ -1390,6 +1396,12 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerAllocationStore) OrderBy() string {
+
+	return s.AllocationStore.OrderBy()
 
 }
 
@@ -3313,6 +3325,12 @@ func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount
 
 }
 
+func (s *RetryLayerDigitalContentStore) OrderBy() string {
+
+	return s.DigitalContentStore.OrderBy()
+
+}
+
 func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 
 	tries := 0
@@ -3868,11 +3886,11 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
 
 	tries := 0
 	for {
-		err := s.FulfillmentStore.DeleteByOptions(transaction, options)
+		err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
 		if err == nil {
 			return nil
 		}
@@ -4073,6 +4091,26 @@ func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, gift
 	tries := 0
 	for {
 		result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.DeactivateOrderGiftcards(orderID)
 		if err == nil {
 			return result, nil
 		}
@@ -4934,6 +4972,12 @@ func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 
 }
 
+func (s *RetryLayerOrderStore) OrderBy() string {
+
+	return s.OrderStore.OrderBy()
+
+}
+
 func (s *RetryLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
 
 	tries := 0
@@ -5171,6 +5215,12 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 			return result, err
 		}
 	}
+
+}
+
+func (s *RetryLayerOrderLineStore) OrderBy() string {
+
+	return s.OrderLineStore.OrderBy()
 
 }
 
@@ -7510,11 +7560,51 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 
 }
 
+func (s *RetryLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 
 	tries := 0
 	for {
 		result, err := s.ShopStore.Get(shopID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.GetByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -9477,6 +9567,12 @@ func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerUserAddressStore) OrderBy() string {
+
+	return s.UserAddressStore.OrderBy()
 
 }
 

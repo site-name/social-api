@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
@@ -21,7 +22,7 @@ type Product struct {
 	ProductTypeID        string                 `json:"product_type_id"`
 	Name                 string                 `json:"name"`
 	Slug                 string                 `json:"slug"`
-	Description          *string                `json:"description"`
+	Description          model.StringInterface  `json:"description"`
 	DescriptionPlainText string                 `json:"description_plaintext"`
 	CategoryID           *string                `json:"category_id"`
 	CreateAt             int64                  `json:"create_at"`
@@ -40,10 +41,14 @@ type Product struct {
 
 // ProductFilterOption is used to compose squirrel sql queries
 type ProductFilterOption struct {
-	Id               *model.StringFilter
-	ProductVariantID *model.StringFilter // LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
-	VoucherIDs       []string            // SELECT * FROM Products WHERE Id IN (SELECT ProductID FROM ... WHERE VoucherID IN ?)
-	SaleIDs          []string
+	Id squirrel.Sqlizer
+
+	// LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
+	//
+	// LEFT JOIN when squirrel.Eq{"": nil}, INNER JOIN otherwise
+	ProductVariantID squirrel.Sqlizer
+	VoucherID        squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
+	SaleID           squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
 }
 
 type Products []*Product
@@ -61,7 +66,7 @@ func (p Products) IDs() []string {
 
 // PlainTextDescription Convert DraftJS JSON content to plain text
 func (p *Product) PlainTextDescription() string {
-	panic("not implemented")
+	return p.Name
 }
 
 func SortByAttributeFields() []string {

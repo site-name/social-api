@@ -105,11 +105,11 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorp.Transaction, opt
 	return fulfillmentByOption, nil
 }
 
-// DeleteFulfillmentsByOption tells store to delete fulfillments that satisfy given option
-func (a *ServiceOrder) DeleteFulfillmentsByOption(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) *model.AppError {
-	err := a.srv.Store.Fulfillment().DeleteByOptions(transaction, options)
+// BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
+func (a *ServiceOrder) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) *model.AppError {
+	err := a.srv.Store.Fulfillment().BulkDeleteFulfillments(transaction, fulfillments)
 	if err != nil {
-		return model.NewAppError("DeleteFulfillmentsByOption", "app.order.error_deleting_fulfillments.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return model.NewAppError("BulkDeleteFulfillments", "app.order.error_deleting_fulfillments.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

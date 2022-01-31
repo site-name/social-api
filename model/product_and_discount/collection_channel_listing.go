@@ -9,6 +9,7 @@ type CollectionChannelListing struct {
 	CreateAt     int64  `json:"create_at"`
 	CollectionID string `json:"collection_id"`
 	ChannelID    string `json:"channel_id"`
+	model.Publishable
 }
 
 func (c *CollectionChannelListing) IsValid() *model.AppError {

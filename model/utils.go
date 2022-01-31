@@ -18,7 +18,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/nyaruka/phonenumbers"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
@@ -33,9 +32,7 @@ const (
 	NUMBERS           = "0123456789"
 )
 
-var (
-	encoding = base32.NewEncoding(LOWERCASE_LETTERS + NUMBERS)
-)
+var encoding = base32.NewEncoding("ybndrfg8ejkmcpqxot1uwisza345h769")
 
 const (
 	MinIdLength  = 3
@@ -289,6 +286,12 @@ func CopyStringInterface(origin StringInterface) StringInterface {
 	}
 
 	return res
+}
+
+func (m StringInterface) Merge(other StringInterface) {
+	for key, value := range m {
+		m[key] = value
+	}
 }
 
 func GetPreferredTimezone(timezone StringMap) string {
@@ -638,15 +641,6 @@ func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
 	return T(er.Id, er.params)
 }
 
-// IsValidPhoneNumber checks if number is valid
-func IsValidPhoneNumber(phone, countryCode string) (*phonenumbers.PhoneNumber, bool) {
-	parsed, err := phonenumbers.Parse(phone, strings.ToUpper(countryCode)) // since country code must be upper-cased
-	if err != nil {
-		return nil, false
-	}
-	return parsed, true
-}
-
 // checkif username is valid
 func IsValidUsername(s string) bool {
 	if len(s) < USER_NAME_MIN_LENGTH || len(s) > USER_NAME_MAX_LENGTH {
@@ -754,4 +748,57 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 	}
 
 	return nil
+}
+
+// {
+//	"blocks": [
+//		{
+//			"data": {
+//				"text": "There is life in outer space. This vibrant light speed yellow paint brings life to any surface. Goes on easy and dries at light speed."
+//			},
+//			"type": "paragraph"
+//		}
+//	]
+// }
+func DraftJSContentToRawText(content StringInterface, sep string) string {
+	if sep == "" {
+		sep = "/n"
+	}
+
+	if content == nil {
+		return ""
+	}
+
+	blocks, ok := content["blocks"]
+	if !ok {
+		return ""
+	}
+
+	blocksSlice, ok := blocks.([]StringInterface)
+	if !ok {
+		return ""
+	}
+
+	paragraphs := []string{}
+
+	for _, block := range blocksSlice {
+		data, ok := block["data"]
+		if !ok {
+			continue
+		}
+
+		dataMap, ok := data.(StringMap)
+		if !ok {
+			continue
+		}
+
+		text, ok := dataMap["text"]
+		if !ok {
+			continue
+		}
+
+		paragraphs = append(paragraphs, text)
+	}
+
+	return strings.Join(paragraphs, sep)
 }

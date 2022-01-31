@@ -9,6 +9,7 @@ import (
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/model"
 )
 
 func (r *mutationResolver) PaymentCapture(ctx context.Context, amount *decimal.Decimal, paymentID string) (*gqlmodel.PaymentCapture, error) {
@@ -23,7 +24,7 @@ func (r *mutationResolver) PaymentVoid(ctx context.Context, paymentID string) (*
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) PaymentInitialize(ctx context.Context, channel *string, gateway string, paymentData *string) (*gqlmodel.PaymentInitialize, error) {
+func (r *mutationResolver) PaymentInitialize(ctx context.Context, channel *string, gateway string, paymentData model.StringInterface) (*gqlmodel.PaymentInitialize, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

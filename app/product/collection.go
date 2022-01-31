@@ -4,21 +4,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sitename/sitename/app"
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // CollectionsByOption returns all collections that satisfy given option.
 //
 // NOTE: `ShopID` is required.
 func (a *ServiceProduct) CollectionsByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, *model.AppError) {
-	// validate if shopID is provided
-	if !model.IsValidId(option.ShopID) {
-		return nil, model.NewAppError("CollectionsByOption", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "option.ShopID"}, "", http.StatusBadRequest)
-	}
-
 	collections, err := a.srv.Store.Collection().FilterByOption(option)
 	var (
 		statusCode int
@@ -41,14 +37,14 @@ func (a *ServiceProduct) CollectionsByOption(option *product_and_discount.Collec
 // CollectionsByVoucherID finds all collections that have relationships with given voucher
 func (a *ServiceProduct) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, *model.AppError) {
 	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
-		VoucherIDs: []string{voucherID},
+		VoucherID: squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": voucherID},
 	})
 }
 
 // CollectionsByProductID finds and returns all collections related to given product
 func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError) {
 	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
-		ProductIDs: []string{productID},
+		ProductID: squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productID},
 	})
 }
 
@@ -58,19 +54,12 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 
 	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
 		ShopID: shopID,
-		ChannelListingPublicationDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				LtE:               &today,
-				CompareStartOfDay: true, // since `CollectionChannelListing's PublicationDate field has type date
-				NULL:              model.NewBool(true),
-			},
+		ChannelListingPublicationDate: squirrel.Or{
+			squirrel.LtOrEq{store.ProductCollectionChannelListingTableName + ".PublicationDate": today},
+			squirrel.Eq{store.ProductCollectionChannelListingTableName + ".PublicationDate": nil},
 		},
-		ChannelListingIsPublished: model.NewBool(true),
-		ChannelListingChannelSlug: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: channelSlug,
-			},
-		},
+		ChannelListingIsPublished:     model.NewBool(true),
+		ChannelListingChannelSlug:     squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 		ChannelListingChannelIsActive: model.NewBool(true),
 	})
 }
@@ -88,12 +77,8 @@ func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, 
 
 	if channelSlug != "" {
 		return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
-			ShopID: shopID,
-			ChannelListingChannelSlug: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: channelSlug,
-				},
-			},
+			ShopID:                    shopID,
+			ChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 		})
 	}
 

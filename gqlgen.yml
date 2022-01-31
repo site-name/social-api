@@ -74,3 +74,6 @@ models:
   PlaceHolder:
     model:
       - github.com/sitename/sitename/graphql/scalars.PlaceHolder
+  JSONString:
+    model:
+      - github.com/sitename/sitename/graphql/scalars.JSONString

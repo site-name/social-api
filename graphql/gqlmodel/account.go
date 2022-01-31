@@ -44,10 +44,9 @@ func (CustomerEvent) IsNode() {}
 func SystemCustomerEventsToGraphqlCustomerEvents(events []*account.CustomerEvent) []*CustomerEvent {
 	res := []*CustomerEvent{}
 	for _, event := range events {
-		if event == nil {
-			continue
+		if event != nil {
+			res = append(res, SystemCustomerEventToGraphqlCustomerEvent(event))
 		}
-		res = append(res, SystemCustomerEventToGraphqlCustomerEvent(event))
 	}
 
 	return res
@@ -72,6 +71,8 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *Cu
 		switch t := count.(type) {
 		case int:
 			count = &t
+		case int32:
+			count = model.NewInt(int(t))
 		case int64:
 			count = model.NewInt(int(t))
 		}
@@ -98,21 +99,22 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *account.CustomerEvent) *Cu
 }
 
 // original implementation for Address graphql type
+//
 // type Address struct {
-// 	ID                       string                   `json:"id"`
-// 	FirstName                string                   `json:"firstName"`
-// 	LastName                 string                   `json:"lastName"`
-// 	CompanyName              string                   `json:"companyName"`
-// 	StreetAddress1           string                   `json:"streetAddress1"`
-// 	StreetAddress2           string                   `json:"streetAddress2"`
-// 	City                     string                   `json:"city"`
-// 	CityArea                 string                   `json:"cityArea"`
-// 	PostalCode               string                   `json:"postalCode"`
-// 	Country                  *gqlmodel.CountryDisplay `json:"country"`
-// 	CountryArea              string                   `json:"countryArea"`
-// 	Phone                    *string                  `json:"phone"`
-// 	IsDefaultShippingAddress *bool                    `json:"isDefaultShippingAddress"`
-// 	IsDefaultBillingAddress  *bool                    `json:"isDefaultBillingAddress"`
+// 	ID                       string          `json:"id"`
+// 	FirstName                string          `json:"firstName"`
+// 	LastName                 string          `json:"lastName"`
+// 	CompanyName              string          `json:"companyName"`
+// 	StreetAddress1           string          `json:"streetAddress1"`
+// 	StreetAddress2           string          `json:"streetAddress2"`
+// 	City                     string          `json:"city"`
+// 	CityArea                 string          `json:"cityArea"`
+// 	PostalCode               string          `json:"postalCode"`
+// 	Country                  *CountryDisplay `json:"country"`
+// 	CountryArea              string          `json:"countryArea"`
+// 	Phone                    *string         `json:"phone"`
+// 	IsDefaultShippingAddress *bool           `json:"isDefaultShippingAddress"`
+// 	IsDefaultBillingAddress  *bool           `json:"isDefaultBillingAddress"`
 // }
 
 // func (Address) IsNode() {}
@@ -137,14 +139,13 @@ type Address struct {
 
 func (Address) IsNode() {}
 
-// SystemAddressesToGraphqlAddress convert a slice of database addresses to graphql addresses
-func SystemAddressesToGraphqlAddress(addresses []*account.Address) []*Address {
+// SystemAddressesToGraphqlAddresses convert a slice of database addresses to graphql addresses
+func SystemAddressesToGraphqlAddresses(addresses []*account.Address) []*Address {
 	res := []*Address{}
 	for _, address := range addresses {
-		if address == nil {
-			continue
+		if address != nil {
+			res = append(res, SystemAddressToGraphqlAddress(address))
 		}
-		res = append(res, SystemAddressToGraphqlAddress(address))
 	}
 
 	return res
@@ -227,6 +228,7 @@ func SystemUserToGraphqlUser(u *account.User) *User {
 	}
 }
 
+// ORIGINAL implementeation
 // type StaffNotificationRecipient struct {
 // 	User   *User   `json:"user"`
 // 	Active *bool   `json:"active"`

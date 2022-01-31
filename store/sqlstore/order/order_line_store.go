@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
@@ -19,7 +20,7 @@ type SqlOrderLineStore struct {
 func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	ols := &SqlOrderLineStore{sqlStore}
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.OrderLine{}, store.OrderLineTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(order.OrderLine{}, ols.TableName("")).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -36,17 +37,30 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	return ols
 }
 
+func (ols *SqlOrderLineStore) TableName(withField string) string {
+	name := "Orderlines"
+	if withField != "" {
+		withField += "." + withField
+	}
+
+	return name
+}
+
+func (ols *SqlOrderLineStore) OrderBy() string {
+	return "CreateAt ASC"
+}
+
 func (ols *SqlOrderLineStore) CreateIndexesIfNotExists() {
-	ols.CreateIndexIfNotExists("idx_order_lines_product_name", store.OrderLineTableName, "ProductName")
-	ols.CreateIndexIfNotExists("idx_order_lines_translated_product_name", store.OrderLineTableName, "TranslatedProductName")
-	ols.CreateIndexIfNotExists("idx_order_lines_variant_name", store.OrderLineTableName, "VariantName")
-	ols.CreateIndexIfNotExists("idx_order_lines_translated_variant_name", store.OrderLineTableName, "TranslatedVariantName")
+	ols.CreateIndexIfNotExists("idx_order_lines_product_name", ols.TableName(""), "ProductName")
+	ols.CreateIndexIfNotExists("idx_order_lines_translated_product_name", ols.TableName(""), "TranslatedProductName")
+	ols.CreateIndexIfNotExists("idx_order_lines_variant_name", ols.TableName(""), "VariantName")
+	ols.CreateIndexIfNotExists("idx_order_lines_translated_variant_name", ols.TableName(""), "TranslatedVariantName")
 
-	ols.CreateIndexIfNotExists("idx_order_lines_product_name_lower_textpattern", store.OrderLineTableName, "lower(ProductName) text_pattern_ops")
-	ols.CreateIndexIfNotExists("idx_order_lines_variant_name_lower_textpattern", store.OrderLineTableName, "lower(VariantName) text_pattern_ops")
+	ols.CreateIndexIfNotExists("idx_order_lines_product_name_lower_textpattern", ols.TableName(""), "lower(ProductName) text_pattern_ops")
+	ols.CreateIndexIfNotExists("idx_order_lines_variant_name_lower_textpattern", ols.TableName(""), "lower(VariantName) text_pattern_ops")
 
-	ols.CreateForeignKeyIfNotExists(store.OrderLineTableName, "OrderID", store.OrderTableName, "Id", true)
-	ols.CreateForeignKeyIfNotExists(store.OrderLineTableName, "VariantID", store.ProductVariantTableName, "Id", false)
+	ols.CreateForeignKeyIfNotExists(ols.TableName(""), "OrderID", store.OrderTableName, "Id", true)
+	ols.CreateForeignKeyIfNotExists(ols.TableName(""), "VariantID", store.ProductVariantTableName, "Id", false)
 }
 
 func (ols *SqlOrderLineStore) ModelFields() []string {
@@ -167,27 +181,16 @@ func (ols *SqlOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *o
 
 // BulkUpsert performs upsert multiple order lines in once
 func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
-	var (
-		err error
-		// if the provided transaction is nil, we have to create a new one ourself
-		// in that case, remember to defer rollback and do commit right in the scope of this function
-		providedTransactionIsNil bool
-	)
-	if transaction == nil {
-		transaction, err = ols.GetMaster().Begin()
-		providedTransactionIsNil = true
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	if providedTransactionIsNil { // <- note
-		defer store.FinalizeTransaction(transaction)
+	var upsertSelector store.SelectUpsertor = ols.GetMaster()
+	if transaction != nil {
+		upsertSelector = transaction
 	}
 
 	var (
 		isSaving     bool
 		oldOrderLine order.OrderLine
 		numUpdated   int64
+		err          error
 	)
 
 	for _, orderLine := range orderLines {
@@ -205,12 +208,12 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLin
 		}
 
 		if isSaving {
-			err = transaction.Insert(orderLine)
+			err = upsertSelector.Insert(orderLine)
 		} else {
-			err = transaction.SelectOne(&oldOrderLine, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
+			err = upsertSelector.SelectOne(&oldOrderLine, "SELECT * FROM "+ols.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": orderLine.Id})
 			if err != nil { // return immediately
 				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(store.OrderLineTableName, orderLine.Id)
+					return nil, store.NewErrNotFound(ols.TableName(""), orderLine.Id)
 				}
 				return nil, errors.Wrapf(err, "failed to find order line with id=%s", orderLine.Id)
 			}
@@ -219,7 +222,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLin
 			orderLine.OrderID = oldOrderLine.OrderID
 			orderLine.CreateAt = oldOrderLine.CreateAt
 
-			numUpdated, err = transaction.Update(orderLine)
+			numUpdated, err = upsertSelector.Update(orderLine)
 		}
 
 		if err != nil {
@@ -230,21 +233,15 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLin
 		}
 	}
 
-	if providedTransactionIsNil {
-		if err = transaction.Commit(); err != nil {
-			return nil, errors.Wrap(err, "transaction_commit")
-		}
-	}
-
 	return orderLines, nil
 }
 
 func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	var odl order.OrderLine
-	err := ols.GetReplica().SelectOne(&odl, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = :id", map[string]interface{}{"id": id})
+	err := ols.GetReplica().SelectOne(&odl, "SELECT * FROM "+ols.TableName("")+" WHERE Id = :id", map[string]interface{}{"id": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderLineTableName, id)
+			return nil, store.NewErrNotFound(ols.TableName(""), id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order line with id=%s", id)
 	}
@@ -255,7 +252,7 @@ func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
 // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	result, err := ols.GetQueryBuilder().
-		Delete(store.OrderLineTableName).
+		Delete(ols.TableName("")).
 		Where(squirrel.Eq{"Id": orderLineIDs}).
 		RunWith(ols.GetMaster()).
 		Exec()
@@ -288,15 +285,15 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
 	query := ols.GetQueryBuilder().
 		Select(ols.ModelFields()...).
-		From(store.OrderLineTableName).
-		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
+		From(ols.TableName("")).
+		OrderBy(ols.OrderBy())
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Orderlines.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.OrderID != nil {
-		query = query.Where(option.OrderID.ToSquirrel("Orderlines.OrderID"))
+		query = query.Where(option.OrderID)
 	}
 	if option.IsShippingRequired != nil {
 		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
@@ -305,7 +302,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		query = query.Where(squirrel.Eq{"Orderlines.IsGiftcard": *option.IsGiftcard})
 	}
 	if option.VariantID != nil {
-		query = query.Where(option.VariantID.ToSquirrel("Orderlines.VariantID"))
+		query = query.Where(option.VariantID)
 	}
 
 	var joined_ProductVariantTableName bool
@@ -314,7 +311,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
 			InnerJoin(store.ProductDigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
-			Where(option.VariantDigitalContentID.ToSquirrel("DigitalContents.Id"))
+			Where(option.VariantDigitalContentID)
 		joined_ProductVariantTableName = true // indicate joined the table
 	}
 	if option.VariantProductID != nil {
@@ -323,7 +320,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 		query = query.
 			InnerJoin(store.ProductTableName + " ON (ProductVariants.ProductID = Products.Id)").
-			Where(option.VariantProductID.ToSquirrel("Products.Id"))
+			Where(option.VariantProductID)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -332,10 +329,12 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	var (
-		orderLines      order.OrderLines
-		productVariants product_and_discount.ProductVariants
-		digitalContents []*product_and_discount.DigitalContent
-		products        []*product_and_discount.Product
+		orderLines       order.OrderLines
+		productVariants  product_and_discount.ProductVariants
+		digitalContents  []*product_and_discount.DigitalContent
+		products         []*product_and_discount.Product
+		allocations      warehouse.Allocations
+		allocationStocks warehouse.Stocks
 	)
 	_, err = ols.GetReplica().Select(&orderLines, queryString, args...)
 	if err != nil {
@@ -343,21 +342,25 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	// check if prefetching is needed and order lines have been found to proceed
-	if (option.PrefetchRelated.VariantDigitalContent || option.PrefetchRelated.VariantProduct) && len(orderLines) > 0 {
+	if (option.PrefetchRelated.VariantDigitalContent ||
+		option.PrefetchRelated.VariantProduct ||
+		option.PrefetchRelated.AllocationsStock) && len(orderLines) > 0 {
 
 		// prefetch product variants
-		_, err = ols.GetReplica().Select(
-			&productVariants,
-			`SELECT * FROM `+store.ProductVariantTableName+` WHERE Id IN :IDs`,
-			map[string]interface{}{
-				"IDs": orderLines.ProductVariantIDs(),
-			},
-		)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find product variants with given IDs")
+		if option.PrefetchRelated.VariantDigitalContent {
+			_, err = ols.GetReplica().Select(
+				&productVariants,
+				`SELECT * FROM `+store.ProductVariantTableName+` WHERE Id IN :IDs`,
+				map[string]interface{}{
+					"IDs": orderLines.ProductVariantIDs(),
+				},
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find product variants with given IDs")
+			}
 		}
 
-		// prefetch digital contents or products, productVariants must not be empty to proceed
+		// prefetch digital contents or products
 		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
 			_, err = ols.GetReplica().Select(
 				&digitalContents,
@@ -371,6 +374,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 			}
 		}
 
+		// prefetch related product
 		if option.PrefetchRelated.VariantProduct && len(productVariants) > 0 {
 			_, err = ols.GetReplica().Select(
 				&products,
@@ -383,45 +387,101 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 				return nil, errors.Wrap(err, "failed to find products with given product variant IDs")
 			}
 		}
+
+		// prefetch related allocations of order lines
+		if option.PrefetchRelated.AllocationsStock && len(orderLines) > 0 {
+			_, err = ols.GetReplica().Select(
+				&allocations,
+				("SELECT * FROM " + ols.Allocation().TableName("") + " WHERE " + ols.Allocation().TableName("OrderLineID") + " IN :IDs"),
+				map[string]interface{}{
+					"IDs": orderLines.IDs(),
+				},
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find allocations with order line IDs")
+			}
+		}
+
+		// prefetch related stocks of allocations of order lines
+		if option.PrefetchRelated.AllocationsStock && len(allocations) > 0 {
+			_, err = ols.GetReplica().Select(
+				&allocationStocks,
+				("SELECT * FROM " + ols.Stock().TableName("") + " WHERE " + ols.Stock().TableName("Id") + " IN :IDs"),
+				map[string]interface{}{
+					"IDs": allocations.StockIDs(),
+				},
+			)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find stocks with IDs")
+			}
+		}
 	}
 
 	// joining prefetched data.
-	// if slice of productVariants is not empty, this means we have prefetch-related data
+	// if productVariants is not empty,
+	// this means we have prefetch-related data
 	if len(productVariants) > 0 {
+
+		// digitalContentsMap has keys are product variant ids
+		var digitalContentsMap = map[string]*product_and_discount.DigitalContent{}
+		if len(digitalContents) > 0 {
+			for _, digitalContent := range digitalContents {
+				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
+			}
+		}
+
+		// productsMap has keys are product ids
+		var productsMap = map[string]*product_and_discount.Product{}
+		if len(products) > 0 {
+			for _, product := range products {
+				productsMap[product.Id] = product
+			}
+		}
+
 		// productVariantsMap has keys are product variant ids
 		var productVariantsMap = map[string]*product_and_discount.ProductVariant{}
 		for _, variant := range productVariants {
 			productVariantsMap[variant.Id] = variant
+
+			if dgt := digitalContentsMap[variant.Id]; dgt != nil {
+				variant.DigitalContent = dgt
+			}
+
+			if prd := productsMap[variant.ProductID]; prd != nil {
+				variant.Product = prd
+			}
 		}
 		for _, line := range orderLines {
 			if line.VariantID != nil && productVariantsMap[*line.VariantID] != nil {
 				line.ProductVariant = productVariantsMap[*line.VariantID]
 			}
 		}
+	}
 
-		if len(digitalContents) > 0 {
-			// digitalContentsMap has keys are product variant ids
-			var digitalContentsMap = map[string]*product_and_discount.DigitalContent{}
-			for _, digitalContent := range digitalContents {
-				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
-			}
-			for _, variant := range productVariants {
-				if content := digitalContentsMap[variant.Id]; content != nil {
-					variant.DigitalContent = content
-				}
+	if len(allocations) > 0 {
+		// allocationStocksMap has keys are stock ids
+		var allocationStocksMap = map[string]*warehouse.Stock{}
+		if len(allocationStocks) > 0 {
+			for _, stock := range allocationStocks {
+				allocationStocksMap[stock.Id] = stock
 			}
 		}
 
-		if len(products) > 0 {
-			// productsMap has keys are product ids
-			var productsMap = map[string]*product_and_discount.Product{}
-			for _, product := range products {
-				productsMap[product.Id] = product
+		// allocationsMap has keys are order line ids
+		var allocationsMap = map[string][]*order.ReplicateWarehouseAllocation{}
+		for _, allocation := range allocations {
+
+			replicateAllocation := allocation.ToReplicateAllocation()
+
+			if stock := allocationStocksMap[replicateAllocation.StockID]; stock != nil {
+				replicateAllocation.SetStock(stock.ToReplicateStock())
 			}
-			for _, variant := range productVariants {
-				if product := productsMap[variant.ProductID]; product != nil {
-					variant.Product = product
-				}
+
+			allocationsMap[allocation.OrderLineID] = append(allocationsMap[allocation.OrderLineID], replicateAllocation)
+		}
+		for _, orderLine := range orderLines {
+			if alls := allocationsMap[orderLine.Id]; alls != nil {
+				orderLine.SetAllocations(alls)
 			}
 		}
 	}

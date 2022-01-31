@@ -6,8 +6,8 @@ package product
 
 import (
 	"net/http"
-	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -17,8 +17,6 @@ import (
 
 type ServiceProduct struct {
 	srv *app.Server
-	sync.WaitGroup
-	sync.Mutex
 }
 
 func init() {
@@ -32,11 +30,7 @@ func init() {
 // ProductById returns 1 product by given id
 func (a *ServiceProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
 	return a.ProductByOption(&product_and_discount.ProductFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productID,
-			},
-		},
+		Id: squirrel.Eq{store.ProductTableName + ".Id": productID},
 	})
 }
 
@@ -74,7 +68,7 @@ func (a *ServiceProduct) ProductByOption(option *product_and_discount.ProductFil
 // ProductsByVoucherID finds all products that have relationships with given voucher
 func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
 	products, appErr := a.ProductsByOption(&product_and_discount.ProductFilterOption{
-		VoucherIDs: []string{voucherID},
+		VoucherID: squirrel.Eq{store.VoucherProductTableName + ".VoucherID": voucherID},
 	})
 	if appErr != nil {
 		return nil, appErr

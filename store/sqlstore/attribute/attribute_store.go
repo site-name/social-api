@@ -108,7 +108,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Attributes.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.Distinct {
 		query = query.Distinct()
@@ -116,12 +116,12 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 	if option.ProductTypes != nil {
 		query = query.
 			InnerJoin(store.AttributeProductTableName + " ON (AttributeProducts.AttributeID = Attributes.Id)").
-			Where(option.ProductTypes.ToSquirrel("AttributeProducts.ProductTypeID"))
+			Where(option.ProductTypes)
 	}
 	if option.ProductVariantTypes != nil {
 		query = query.
 			InnerJoin(store.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
-			Where(option.ProductVariantTypes.ToSquirrel("AttributeVariants.ProductTypeID"))
+			Where(option.ProductVariantTypes)
 	}
 
 	queryString, args, err := query.ToSql()

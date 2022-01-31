@@ -8,6 +8,7 @@ import (
 
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
@@ -45,7 +46,7 @@ type ProductService interface {
 	//
 	// Set products of deleted categories as unpublished, delete categories
 	// and update products minimal variant prices.
-	DeleteCategories(categoryIDs []string, manager interface{}) *model.AppError
+	DeleteCategories(categoryIDs []string, manager interfaces.PluginManagerInterface) *model.AppError
 	// DigitalContentUrlIsValid Check if digital url is still valid for customer.
 	//
 	// It takes default settings or digital product's settings
@@ -62,7 +63,7 @@ type ProductService interface {
 	// GetProductsIDsWithoutVariants Return list of product's ids without variants
 	GetProductsIDsWithoutVariants(productList []*product_and_discount.Product) ([]string, *model.AppError)
 	// GetVariantPrice
-	GetVariantPrice(variant *product_and_discount.ProductVariant, variantChannelListing *product_and_discount.ProductVariantChannelListing, product *product_and_discount.Product, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel) (*goprices.Money, *model.AppError)
+	GetVariantPrice(variant product_and_discount.ProductVariant, variantChannelListing product_and_discount.ProductVariantChannelListing, product product_and_discount.Product, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel) (*goprices.Money, *model.AppError)
 	// GetVariantSelectionAttributes Return attributes that can be used in variant selection.
 	//
 	// Attribute must be product attribute and attribute input type must be
@@ -91,7 +92,7 @@ type ProductService interface {
 	// ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
 	ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) (product_and_discount.ProductVariantChannelListings, *model.AppError)
 	// ProductVariantGetPrice returns price
-	ProductVariantGetPrice(productVariant *product_and_discount.ProductVariant, product *product_and_discount.Product, collections []*product_and_discount.Collection, channel *channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
+	ProductVariantGetPrice(productVariant *product_and_discount.ProductVariant, product product_and_discount.Product, collections []*product_and_discount.Collection, channel channel.Channel, channelListing *product_and_discount.ProductVariantChannelListing, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *model.AppError)
 	// ProductVariantGetWeight returns weight of given product variant
 	ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError)
 	// ProductVariantIsDigital finds product type that related to given product variant and check if that product type is digital and does not require shipping
@@ -113,7 +114,7 @@ type ProductService interface {
 	// UpdateProductDiscountedPrice
 	//
 	// NOTE: `discounts` can be nil
-	UpdateProductDiscountedPrice(product *product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError
+	UpdateProductDiscountedPrice(product product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError
 	// UpdateProductsDiscountedPrices
 	UpdateProductsDiscountedPrices(products []*product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError
 	// UpdateProductsDiscountedPricesOfDiscount
@@ -127,9 +128,20 @@ type ProductService interface {
 	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
 	VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*product_and_discount.Collection, *model.AppError)
 	GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings
-	GetProductAvailability(product *product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel, manager interface{}, countryCode string, localCurrency string) (*product_and_discount.ProductAvailability, *model.AppError)
-	GetProductPriceRange(product *product_and_discount.Product, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel) (*goprices.MoneyRange, *model.AppError)
-	GetVariantAvailability(variant *product_and_discount.ProductVariant, variantChannelListing *product_and_discount.ProductVariantChannelListing, product *product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel *channel.Channel, plugins interface{}, country string, localCurrency string) (*product_and_discount.VariantAvailability, *model.AppError)
+	GetProductAvailability(product product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel, manager interfaces.PluginManagerInterface, countryCode string, localCurrency string) (*product_and_discount.ProductAvailability, *model.AppError)
+	GetProductPriceRange(product product_and_discount.Product, variants product_and_discount.ProductVariants, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel) (*goprices.MoneyRange, *model.AppError)
+	GetVariantAvailability(
+		variant product_and_discount.ProductVariant,
+		variantChannelListing product_and_discount.ProductVariantChannelListing,
+		product product_and_discount.Product,
+		productChannelListing *product_and_discount.ProductChannelListing,
+		collections []*product_and_discount.Collection,
+		discounts []*product_and_discount.DiscountInfo,
+		chanNel channel.Channel,
+		plugins interfaces.PluginManagerInterface,
+		country string, // can be empty
+		localCurrency string, // can be empty
+	) (*product_and_discount.VariantAvailability, *model.AppError)
 	IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError

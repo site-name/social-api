@@ -2,8 +2,8 @@ package order
 
 import (
 	"net/http"
-	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -17,9 +17,7 @@ import (
 )
 
 type ServiceOrder struct {
-	srv   *app.Server
-	wg    sync.WaitGroup
-	mutex sync.Mutex
+	srv *app.Server
 
 	RecalculateOrderPrices types.RecalculateOrderPricesFunc // This attribute is initialized as this app is started
 }
@@ -82,11 +80,7 @@ func (a *ServiceOrder) decoratedFunc(transaction *gorp.Transaction, ord *order.O
 
 	// avoid using prefetched order lines
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return appErr

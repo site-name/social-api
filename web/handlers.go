@@ -44,12 +44,12 @@ func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Requ
 	return &Handler{
 		App:            w.app,
 		HandleFunc:     h,
-		HandlerName:    GetHandlerName(h),
 		RequireSession: false,
 		TrustRequester: false,
 		RequireMfa:     false,
 		IsStatic:       false,
 		IsLocal:        false,
+		// HandlerName:    GetHandlerName(h),
 	}
 }
 

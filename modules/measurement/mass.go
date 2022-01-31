@@ -43,16 +43,12 @@ const (
 const STANDARD_WEIGHT_UNIT = KG
 
 type Weight struct {
-	Amount *float32   `json:"amount"`
+	Amount float32    `json:"amount"`
 	Unit   WeightUnit `json:"unit"`
 }
 
-func (w *Weight) String() string {
-	return fmt.Sprintf("%.3f %s", *w.Amount, w.Unit)
-}
-
-func newFloat32(f float32) *float32 {
-	return &f
+func (w Weight) String() string {
+	return fmt.Sprintf("%.3f %s", w.Amount, w.Unit)
 }
 
 // Adds weight to current weight and returns new weight.
@@ -63,20 +59,20 @@ func (w *Weight) Add(other *Weight) (*Weight, error) {
 		return nil, err
 	}
 	return &Weight{
-		Amount: newFloat32(*w.Amount + *converted.Amount),
+		Amount: w.Amount + converted.Amount,
 		Unit:   w.Unit,
 	}, nil
 }
 
 // Subs weight to current weight and returns new weight.
-func (w *Weight) Sub(other *Weight) (*Weight, error) {
+func (w *Weight) Sub(other Weight) (*Weight, error) {
 	// convert other's unit to w's unit
 	converted, err := other.ConvertTo(w.Unit)
 	if err != nil {
 		return nil, err
 	}
 	return &Weight{
-		Amount: newFloat32(*w.Amount - *converted.Amount),
+		Amount: w.Amount - converted.Amount,
 		Unit:   w.Unit,
 	}, nil
 }
@@ -84,7 +80,7 @@ func (w *Weight) Sub(other *Weight) (*Weight, error) {
 // Multiplies weight to current weight and returns new weight.
 func (w *Weight) Mul(quantity float32) *Weight {
 	return &Weight{
-		Amount: newFloat32(*w.Amount * quantity),
+		Amount: w.Amount * quantity,
 		Unit:   w.Unit,
 	}
 }
@@ -100,16 +96,16 @@ func (w *Weight) ConvertTo(unit WeightUnit) (*Weight, error) {
 		return w, nil
 	}
 
-	resAmount := *w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
+	resAmount := w.Amount / WEIGHT_UNIT_CONVERSION[w.Unit] * WEIGHT_UNIT_CONVERSION[unit]
 	return &Weight{
-		Amount: newFloat32(resAmount),
+		Amount: resAmount,
 		Unit:   unit,
 	}, nil
 }
 
 // Zero weight for unit (kg)
 var ZeroWeight = &Weight{
-	Amount: newFloat32(0),
+	Amount: 0,
 	Unit:   KG,
 }
 
@@ -119,7 +115,7 @@ func NewWeight(amount float32, unit WeightUnit) (*Weight, error) {
 		return nil, ErrInvalidWeightUnit
 	}
 	return &Weight{
-		Amount: newFloat32(amount),
+		Amount: amount,
 		Unit:   unit,
 	}, nil
 }

@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 )
 
 func TestMarshalWeightScalar(t *testing.T) {
 	w := measurement.Weight{
 		Unit:   measurement.G,
-		Amount: model.NewFloat32(2457),
+		Amount: 2457,
 	}
 	msl := MarshalWeightScalar(&w)
 	buf := bytes.Buffer{}

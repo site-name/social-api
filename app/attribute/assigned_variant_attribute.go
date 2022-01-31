@@ -3,6 +3,7 @@ package attribute
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -20,21 +21,12 @@ func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *attribute.As
 
 // GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
 func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, *model.AppError) {
-
 	option := new(attribute.AssignedVariantAttributeFilterOption)
 	if assignedVariantAttr.VariantID != "" {
-		option.VariantID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedVariantAttr.VariantID,
-			},
-		}
+		option.VariantID = squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": assignedVariantAttr.VariantID}
 	}
 	if assignedVariantAttr.AssignmentID != "" {
-		option.AssignmentID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: assignedVariantAttr.AssignmentID,
-			},
-		}
+		option.AssignmentID = squirrel.Eq{store.AssignedVariantAttributeTableName + ".AssignmentID": assignedVariantAttr.AssignmentID}
 	}
 	assignedVariantAttribute, appErr := a.AssignedVariantAttributeByOption(option)
 	if appErr != nil {

@@ -131,8 +131,8 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		"CountryCode":             "%" + countryCode + "%",
 		"MinimumOrderPriceAmount": priceAmount,
 		"MaximumOrderPriceAmount": priceAmount,
-		"MinimumOrderWeight":      *weight.Amount,
-		"MaximumOrderWeight":      *weight.Amount,
+		"MinimumOrderWeight":      weight.Amount,
+		"MaximumOrderWeight":      weight.Amount,
 		"WeightBasedShippingType": shipping.WEIGHT_BASED,
 		"PriceBasedShipType":      shipping.PRICE_BASED,
 	}
@@ -377,27 +377,21 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFi
 
 	// parse options
 	if options.Id != nil {
-		// query = query.Where(options.Id.ToSquirrel("ShippingMethods.Id"))
 		query = query.Where(options.Id)
 	}
 	if options.Type != nil {
-		// query = query.Where(options.Type.ToSquirrel("ShippingMethods.Type"))
 		query = query.Where(options.Type)
 	}
 	if options.MinimumOrderWeight != nil {
-		// query = query.Where(options.MinimumOrderWeight.ToSquirrel("ShippingMethods.MinimumOrderWeight"))
 		query = query.Where(options.MinimumOrderWeight)
 	}
 	if options.MaximumOrderWeight != nil {
-		// query = query.Where(options.MaximumOrderWeight.ToSquirrel("ShippingMethods.MaximumOrderWeight"))
 		query = query.Where(options.MaximumOrderWeight)
 	}
 	if options.ShippingZoneChannelSlug != nil {
-		// query = query.Where(options.ShippingZoneChannelSlug.ToSquirrel("ShippingMethods.ShippingZoneChannelSlug"))
 		query = query.Where(options.ShippingZoneChannelSlug)
 	}
 	if options.ChannelListingsChannelSlug != nil {
-		// query = query.Where(options.ChannelListingsChannelSlug.ToSquirrel("ShippingMethods.ChannelListingsChannelSlug"))
 		query = query.Where(options.ChannelListingsChannelSlug)
 	}
 

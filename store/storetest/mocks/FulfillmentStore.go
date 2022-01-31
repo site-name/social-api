@@ -16,23 +16,23 @@ type FulfillmentStore struct {
 	mock.Mock
 }
 
-// CreateIndexesIfNotExists provides a mock function with given fields:
-func (_m *FulfillmentStore) CreateIndexesIfNotExists() {
-	_m.Called()
-}
-
-// DeleteByOptions provides a mock function with given fields: transaction, options
-func (_m *FulfillmentStore) DeleteByOptions(transaction *gorp.Transaction, options *order.FulfillmentFilterOption) error {
-	ret := _m.Called(transaction, options)
+// BulkDeleteFulfillments provides a mock function with given fields: transaction, fulfillments
+func (_m *FulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
+	ret := _m.Called(transaction, fulfillments)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.FulfillmentFilterOption) error); ok {
-		r0 = rf(transaction, options)
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, order.Fulfillments) error); ok {
+		r0 = rf(transaction, fulfillments)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
+}
+
+// CreateIndexesIfNotExists provides a mock function with given fields:
+func (_m *FulfillmentStore) CreateIndexesIfNotExists() {
+	_m.Called()
 }
 
 // FilterByOption provides a mock function with given fields: transaction, option

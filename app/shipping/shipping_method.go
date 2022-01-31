@@ -3,6 +3,7 @@ package shipping
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
@@ -90,11 +91,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, c
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-			OrderID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: oder.Id,
-				},
-			},
+			OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): oder.Id},
 			PrefetchRelated: order.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},

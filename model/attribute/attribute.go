@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
@@ -96,9 +97,9 @@ type Attribute struct {
 }
 
 type AttributeFilterOption struct {
-	Id                  *model.StringFilter
-	ProductTypes        *model.StringFilter
-	ProductVariantTypes *model.StringFilter
+	Id                  squirrel.Sqlizer
+	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON () WHERE AttributeProducts.ProductTypeID
+	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON () WHERE AttributeVariants.ProductTypeID
 	Distinct            bool
 }
 

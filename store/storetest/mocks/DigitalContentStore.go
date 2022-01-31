@@ -58,6 +58,20 @@ func (_m *DigitalContentStore) ModelFields() []string {
 	return r0
 }
 
+// OrderBy provides a mock function with given fields:
+func (_m *DigitalContentStore) OrderBy() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: content
 func (_m *DigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 	ret := _m.Called(content)
@@ -92,6 +106,20 @@ func (_m *DigitalContentStore) ScanFields(content product_and_discount.DigitalCo
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
 		}
+	}
+
+	return r0
+}
+
+// TableName provides a mock function with given fields: withField
+func (_m *DigitalContentStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

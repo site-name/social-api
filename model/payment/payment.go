@@ -114,11 +114,11 @@ type PaymentPatch struct {
 }
 
 // Retrieve the maximum capture possible.
-func (p *Payment) GetChargeAmount() decimal.Decimal {
+func (p *Payment) GetChargeAmount() *decimal.Decimal {
 	if p.Total == nil || p.CapturedAmount == nil {
-		return decimal.Zero
+		return &decimal.Zero
 	}
-	return p.Total.Sub(*p.CapturedAmount)
+	return model.NewDecimal(p.Total.Sub(*p.CapturedAmount))
 }
 
 // IsNotCharged checks if current payment's charge status is "not_charged"

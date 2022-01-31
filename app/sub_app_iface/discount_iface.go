@@ -9,6 +9,7 @@ import (
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
@@ -29,7 +30,7 @@ type DiscountService interface {
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
-	CalculateDiscountedPrice(product *product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (*goprices.Money, *model.AppError)
+	CalculateDiscountedPrice(product product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (*goprices.Money, *model.AppError)
 	// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
 	CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError)
 	// DecreaseVoucherUsage decreases voucher's uses by 1
@@ -66,9 +67,9 @@ type DiscountService interface {
 	// NOTE: the returning interface's type should be identical to given price's type
 	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-	GetProductDiscountOnSale(product *product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
+	GetProductDiscountOnSale(product product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.
-	GetProductDiscounts(product *product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL *channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
+	GetProductDiscounts(product product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
 	// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
 	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)
 	// GetVoucherDiscount
@@ -100,7 +101,7 @@ type DiscountService interface {
 	// ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
 	// ValidateVoucherForCheckout validates given voucher
-	ValidateVoucherForCheckout(manager interface{}, voucher *product_and_discount.Voucher, checkoutInfo *checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError)
+	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError)
 	// ValidateVoucherOnlyForStaff validate if voucher is only for staff
 	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
 	// VoucherById finds and returns a voucher with given id
@@ -117,9 +118,9 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)
-	FetchCatalogueInfo(instance *product_and_discount.Sale) (map[string][]string, *model.AppError)
+	FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError)
 	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
-	FetchDiscounts(date *time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
+	FetchDiscounts(date time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
 	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)

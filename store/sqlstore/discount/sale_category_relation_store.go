@@ -26,6 +26,14 @@ func NewSqlSaleCategoryRelationStore(s store.Store) store.SaleCategoryRelationSt
 	return ss
 }
 
+func (ss *SqlSaleCategoryRelationStore) TableName(withField string) string {
+	name := "SaleCategories"
+	if withField != "" {
+		name += "." + withField
+	}
+	return name
+}
+
 func (ss *SqlSaleCategoryRelationStore) CreateIndexesIfNotExists() {
 	ss.CreateForeignKeyIfNotExists(store.SaleCategoryRelationTableName, "SaleID", store.SaleTableName, "Id", false)
 	ss.CreateForeignKeyIfNotExists(store.SaleCategoryRelationTableName, "CategoryID", store.ProductCategoryTableName, "Id", false)
@@ -69,19 +77,15 @@ func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *product_a
 		From(store.SaleCategoryRelationTableName).
 		OrderBy(store.TableOrderingMap[store.SaleCategoryRelationTableName])
 
-	// check id
+	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
-
-	// check saleID
 	if option.SaleID != nil {
-		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+		query = query.Where(option.SaleID)
 	}
-
-	// check categoryID
 	if option.CategoryID != nil {
-		query = query.Where(option.CategoryID.ToSquirrel("CategoryID"))
+		query = query.Where(option.CategoryID)
 	}
 
 	queryString, args, err := query.ToSql()

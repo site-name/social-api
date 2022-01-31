@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/model"
 )
 
 func (r *checkoutResolver) User(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.User, error) {
@@ -52,7 +53,7 @@ func (r *mutationResolver) CheckoutBillingAddressUpdate(ctx context.Context, bil
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutComplete(ctx context.Context, checkoutID *string, paymentData *string, redirectURL *string, storeSource *bool, token *uuid.UUID) (*gqlmodel.CheckoutComplete, error) {
+func (r *mutationResolver) CheckoutComplete(ctx context.Context, checkoutID *string, paymentData model.StringInterface, redirectURL *string, storeSource *bool, token *uuid.UUID) (*gqlmodel.CheckoutComplete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

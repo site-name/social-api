@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
@@ -12,6 +13,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount"
 	"github.com/sitename/sitename/app/discount/types"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -25,6 +27,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // GetOrderCountry Return country to which order will be shipped
@@ -88,7 +91,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.Order
 }
 
 // OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord *order.Order) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord order.Order) (bool, *model.AppError) {
 	// finding shop that hold this order:
 	ownerShopOfOrder, appErr := a.srv.ShopService().ShopById(ord.ShopID)
 	if appErr != nil {
@@ -216,11 +219,7 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorp.Transaction, ord *orde
 // ReCalculateOrderWeight
 func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -230,45 +229,54 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord
 		appError      *model.AppError
 		hasGoRoutines bool
 		weight        = measurement.ZeroWeight
+		mut           sync.Mutex
+		wg            sync.WaitGroup
 	)
 
+	setWeight := func(w measurement.Weight) {
+		mut.Lock()
+		defer mut.Unlock()
+
+		weight = &w
+	}
+
 	setAppError := func(err *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if err != nil && appError == nil {
 			appError = err
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
 	for _, orderLine := range orderLines {
 		if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
 
 			hasGoRoutines = true
-			a.wg.Add(1)
+			wg.Add(1)
 
 			go func(anOrderLine *order.OrderLine) {
 				productVariantWeight, appErr := a.srv.ProductService().ProductVariantGetWeight(*anOrderLine.VariantID)
 				if appErr != nil {
 					setAppError(appErr)
 				} else {
-					a.mutex.Lock()
+					mut.Lock()
 					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))
 					if err != nil {
 						setAppError(model.NewAppError("ReCalculateOrderWeight", app.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
-						weight = addedWeight
+						setWeight(*addedWeight)
 					}
-					a.mutex.Unlock()
+					mut.Unlock()
 				}
 
-				a.wg.Done()
+				wg.Done()
 			}(orderLine)
 
 		}
 	}
 
 	if hasGoRoutines {
-		a.wg.Wait()
+		wg.Wait()
 	}
 
 	if appError != nil {
@@ -276,19 +284,73 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord
 	}
 
 	weight, _ = weight.ConvertTo(ord.WeightUnit)
-	ord.WeightAmount = *weight.Amount
+	ord.WeightAmount = weight.Amount
 
 	_, appError = a.UpsertOrder(transaction, ord)
 	return appError
 }
 
-func (a *ServiceOrder) UpdateTaxesForOrderLine(line *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
-	panic("not implt")
+func (a *ServiceOrder) UpdateTaxesForOrderLine(line order.OrderLine, ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
+	variant := line.ProductVariant
+	if variant == nil {
+		var appErr *model.AppError
+		variant, appErr = a.srv.ProductService().ProductVariantById(*line.ProductVariantID)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	product, appErr := a.srv.ProductService().ProductById(variant.ProductID)
+	if appErr != nil {
+		return appErr
+	}
+
+	line.PopulateNonDbFields() // this is needed
+
+	linePrice := line.UnitPrice.Gross
+	if !taxIncluded {
+		linePrice = line.UnitPrice.Net
+	}
+
+	line.UnitPrice = &goprices.TaxedMoney{
+		Net:      linePrice,
+		Gross:    linePrice,
+		Currency: line.Currency,
+	}
+
+	unitPrice, appErr := manager.CalculateOrderLineUnit(ord, line, *variant, *product)
+	if appErr != nil {
+		return appErr
+	}
+
+	totalPrice, appErr := manager.CalculateOrderlineTotal(ord, line, *variant, *product)
+	if appErr != nil {
+		return appErr
+	}
+
+	line.UnitPrice = unitPrice
+	line.TotalPrice = totalPrice
+
+	line.UnDiscountedUnitPrice, _ = line.UnitPrice.Add(line.UnitDiscount)
+	line.UnDiscountedTotalPrice = totalPrice
+	if line.UnitDiscount != nil && !line.UnitDiscount.Amount.Equal(decimal.Zero) {
+		line.UnDiscountedTotalPrice, _ = line.UnDiscountedUnitPrice.Mul(line.Quantity)
+	}
+
+	unitPriceTax, _ := unitPrice.Tax()
+	if !unitPriceTax.Amount.Equal(decimal.Zero) && !unitPrice.Net.Amount.Equal(decimal.Zero) {
+		line.TaxRate, appErr = manager.GetOrderLineTaxRate(ord, *product, *variant, nil, *unitPrice)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return nil
 }
 
-func (a *ServiceOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *order.Order, manager interface{}, taxIncludeed bool) *model.AppError {
-	for _, line := range lines {
-		appErr := a.UpdateTaxesForOrderLine(line, ord, manager, taxIncludeed)
+func (a *ServiceOrder) UpdateTaxesForOrderLines(lines order.OrderLines, ord order.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError {
+	for _, line := range lines.FilterNils() {
+		appErr := a.UpdateTaxesForOrderLine(*line, ord, manager, taxIncludeed)
 		if appErr != nil {
 			return appErr
 		}
@@ -299,8 +361,38 @@ func (a *ServiceOrder) UpdateTaxesForOrderLines(lines []*order.OrderLine, ord *o
 }
 
 // UpdateOrderPrices Update prices in order with given discounts and proper taxes.
-func (a *ServiceOrder) UpdateOrderPrices(ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
-	panic("not implemented")
+func (a *ServiceOrder) UpdateOrderPrices(ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
+	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	appErr = a.UpdateTaxesForOrderLines(lines, ord, manager, taxIncluded)
+	if appErr != nil {
+		return appErr
+	}
+
+	if ord.ShippingMethodID != nil && model.IsValidId(*ord.ShippingMethodID) {
+		shippingPrice, appErr := manager.CalculateOrderShipping(ord)
+		if appErr != nil {
+			return appErr
+		}
+
+		ord.ShippingPrice = shippingPrice
+		ord.ShippingTaxRate, appErr = manager.GetOrderShippingTaxRate(ord, *shippingPrice)
+		if appErr != nil {
+			return appErr
+		}
+
+		_, appErr = a.UpsertOrder(nil, &ord)
+		if appErr != nil {
+			return appErr
+		}
+	}
+
+	return a.RecalculateOrder(nil, &ord, nil)
 }
 
 // thereIsAnItem takes a slice and a checker function.
@@ -348,17 +440,19 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 		discountedCollections []*product_and_discount.Collection
 		firstAppError         *model.AppError
 		meetMap               = map[string]bool{}
+		wg                    sync.WaitGroup
+		mut                   sync.Mutex
 	)
 
 	setFirstAppErr := func(err *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if err != nil {
 			firstAppError = err
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
-	a.wg.Add(3)
+	wg.Add(3)
 
 	go func() {
 		products, appErr := a.srv.ProductService().ProductsByVoucherID(voucher.Id)
@@ -367,12 +461,12 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 		} else {
 			discountedProducts = products
 		}
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
-			VoucherIDs: []string{voucher.Id},
+			VoucherID: squirrel.Eq{a.srv.Store.VoucherCategory().TableName("VoucherID"): voucher.Id},
 		})
 		if appErr != nil {
 			setFirstAppErr(appErr)
@@ -385,7 +479,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 				}
 			}
 		}
-		a.wg.Done()
+		wg.Done()
 	}()
 
 	go func() {
@@ -401,10 +495,10 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 				}
 			}
 		}
-		a.wg.Done()
+		wg.Done()
 	}()
 
-	a.wg.Wait()
+	wg.Wait()
 
 	// returns immediately if there is an system error occured
 	if firstAppError != nil {
@@ -417,34 +511,30 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 		hasGoRoutines        bool
 	)
 	setAppError := func(appErr *model.AppError) {
-		a.mutex.Lock()
+		mut.Lock()
 		if appErr != nil && appError == nil {
 			appError = appErr
 		}
-		a.mutex.Unlock()
+		mut.Unlock()
 	}
 
 	if len(discountedProducts) > 0 || len(discountedCategories) > 0 || len(discountedCollections) > 0 {
 
 		for _, orderLine := range orderLines {
 			// we can
-			if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+			if orderLine != nil && orderLine.VariantID != nil {
 				hasGoRoutines = true
-				a.wg.Add(1)
+				wg.Add(1)
 
 				go func(anOrderLine *order.OrderLine) {
 					orderLineProduct, appErr := a.srv.ProductService().ProductByOption(&product_and_discount.ProductFilterOption{
-						ProductVariantID: &model.StringFilter{
-							StringOption: &model.StringOption{
-								Eq: *anOrderLine.VariantID,
-							},
-						},
+						ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *anOrderLine.VariantID},
 					})
 					if appErr != nil {
 						setAppError(appErr)
 					} else {
 						orderLineCategory, appErr := a.srv.ProductService().CategoryByOption(&product_and_discount.CategoryFilterOption{
-							ProductIDs: []string{orderLineProduct.Id},
+							ProductID: squirrel.Eq{a.srv.Store.Product().TableName("Id"): orderLineProduct.Id},
 						})
 						if appErr != nil {
 							setAppError(appErr)
@@ -458,15 +548,15 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 								orderLineCollectionsIntersectDiscountedCollections := collectionsIntersection(orderLineCollections, discountedCollections)
 
 								if orderLineProductInDiscountedProducts || orderLineCategoryInDiscountedCategories || len(orderLineCollectionsIntersectDiscountedCollections) > 0 {
-									a.mutex.Lock()
+									mut.Lock()
 									discountedOrderLines = append(discountedOrderLines, anOrderLine)
-									a.mutex.Unlock()
+									mut.Unlock()
 								}
 							}
 						}
 					}
 
-					a.wg.Done()
+					wg.Done()
 				}(orderLine)
 			}
 		}
@@ -477,7 +567,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 	}
 
 	if hasGoRoutines {
-		a.wg.Wait()
+		wg.Wait()
 	}
 
 	return discountedOrderLines, nil
@@ -529,11 +619,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return
@@ -571,13 +657,9 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 	return
 }
 
-func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int, int, int, *model.AppError) {
+func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -651,11 +733,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord *order.Order) (int,
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
-	// validate order is valid:
-	if ord == nil || !model.IsValidId(ord.Id) {
-		return model.NewAppError("UpdateOrderStatus", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order"}, "", http.StatusBadRequest)
-	}
+func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord order.Order) *model.AppError {
 
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
@@ -679,7 +757,7 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 
 	if status != ord.Status {
 		ord.Status = status
-		_, appErr := a.UpsertOrder(transaction, ord)
+		_, appErr := a.UpsertOrder(transaction, &ord)
 		if appErr != nil {
 			return appErr
 		}
@@ -691,7 +769,7 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord *ord
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interface{}, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
+func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
 	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -706,16 +784,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 	}
 
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: orDer.Id,
-			},
-		},
-		VariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: variant.Id,
-			},
-		},
+		OrderID:   squirrel.Eq{s.srv.Store.OrderLine().TableName("OrderID"): orDer.Id},
+		VariantID: squirrel.Eq{s.srv.Store.OrderLine().TableName("VariantID"): variant.Id},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -759,15 +829,15 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 			return nil, nil, appErr // NOTE: does not care what type of error, just return
 		}
 
-		unitPrice, appErr := s.srv.ProductService().ProductVariantGetPrice(variant, product, collections, chanNel, variantChannelListings[0], discounts)
+		price, appErr := s.srv.ProductService().ProductVariantGetPrice(&variant, *product, collections, *chanNel, variantChannelListings[0], discounts)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 
 		taxedUnitPrice := &goprices.TaxedMoney{
-			Net:      unitPrice,
-			Gross:    unitPrice,
-			Currency: unitPrice.Currency,
+			Net:      price,
+			Gross:    price,
+			Currency: price.Currency,
 		}
 
 		totalPrice, _ := taxedUnitPrice.Mul(quantity)
@@ -854,8 +924,30 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 		if appErr != nil {
 			return nil, nil, appErr
 		}
-		// NOTE: this code requires manager
-		panic("not implemented")
+
+		unitPrice, appErr := manager.CalculateOrderLineUnit(orDer, *orderLine, variant, *product)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		totalPrice, appErr = manager.CalculateOrderlineTotal(orDer, *orderLine, variant, *product)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		orderLine.UnitPrice = unitPrice
+		orderLine.TotalPrice = totalPrice
+		orderLine.UnDiscountedUnitPrice = unitPrice
+		orderLine.UnDiscountedTotalPrice = totalPrice
+		orderLine.TaxRate, appErr = manager.GetOrderLineTaxRate(orDer, *product, variant, nil, *unitPrice)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
+
+		_, appErr = s.UpsertOrderLine(transaction, orderLine)
+		if appErr != nil {
+			return nil, nil, appErr
+		}
 	}
 
 	if allocateStock {
@@ -864,7 +956,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 				{
 					Line:        *orderLine,
 					Quantity:    quantity,
-					Variant:     variant,
+					Variant:     &variant,
 					WarehouseID: nil,
 				},
 			},
@@ -876,11 +968,16 @@ func (s *ServiceOrder) AddVariantToOrder(orDer *order.Order, variant *product_an
 		}
 	}
 
+	// commit transaction
+	if err := transaction.Commit(); err != nil {
+		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
 	return orderLine, nil, nil
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo *checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
 	var (
 		balanceData       = giftcard.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -961,7 +1058,7 @@ func (s *ServiceOrder) SetGiftcardUser(giftCard *giftcard.GiftCard, usedByUser *
 	}
 }
 
-func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError) {
 	if oldQuantity == newQuantity {
 		return nil, nil
 	}
@@ -983,7 +1080,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interface{}, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -1078,7 +1175,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine
 }
 
 // DeleteOrderLine Delete an order line from an order.
-func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interface{}) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError) {
 	ord, appErr := a.OrderById(lineInfo.Line.OrderID)
 	if appErr != nil {
 		return nil, appErr
@@ -1095,7 +1192,7 @@ func (a *ServiceOrder) DeleteOrderLine(lineInfo *order.OrderLineData, manager in
 }
 
 // RestockOrderLines Return ordered products to corresponding stocks
-func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) *model.AppError {
+func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.PluginManagerInterface) *model.AppError {
 	countryCode, appError := a.GetOrderCountry(ord)
 	if appError != nil {
 		return appError
@@ -1110,11 +1207,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 	defaultWarehouse := warehouses[0]
 
 	orderLinesOfOrder, appError := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 	})
 	if appError != nil {
 		return appError
@@ -1122,24 +1215,24 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 
 	var (
 		dellocatingStockLines []*order.OrderLineData
-		hasGoRoutines         bool
+		mut                   sync.Mutex
+		wg                    sync.WaitGroup
 	)
 
 	setAppError := func(err *model.AppError) {
 		if err != nil {
-			a.mutex.Lock()
-			if appError == nil {
+			mut.Lock()
+			if appError == nil && err != nil {
 				appError = err
 			}
-			a.mutex.Unlock()
+			mut.Unlock()
 		}
 	}
 
 	for _, orderLine := range orderLinesOfOrder {
 		if orderLine.VariantID != nil {
 
-			hasGoRoutines = true
-			a.wg.Add(1)
+			wg.Add(1)
 
 			go func(anOrderLine *order.OrderLine) {
 				productVariant, appErr := a.srv.ProductService().ProductVariantById(*anOrderLine.VariantID)
@@ -1149,12 +1242,12 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 					if *productVariant.TrackInventory {
 						if anOrderLine.QuantityUnFulfilled() > 0 {
 
-							a.mutex.Lock()
+							mut.Lock()
 							dellocatingStockLines = append(dellocatingStockLines, &order.OrderLineData{
 								Line:     *anOrderLine,
 								Quantity: anOrderLine.QuantityUnFulfilled(),
 							})
-							a.mutex.Unlock()
+							mut.Unlock()
 
 						}
 
@@ -1193,14 +1286,12 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interface{}) 
 					}
 				}
 
-				a.wg.Done()
+				wg.Done()
 			}(orderLine)
 		}
 	}
 
-	if hasGoRoutines {
-		a.wg.Wait()
-	}
+	wg.Wait()
 
 	if len(dellocatingStockLines) > 0 {
 		_, appError = a.srv.WarehouseService().DeallocateStock(dellocatingStockLines, manager)
@@ -1225,11 +1316,7 @@ func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fu
 	}
 
 	orderLinesOfFulfillmentLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: order.FulfillmentLines(fulfillmentLines).OrderLineIDs(),
-			},
-		},
+		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): fulfillmentLines.OrderLineIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1419,11 +1506,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*go
 		} else {
 			if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
 				orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-					OrderID: &model.StringFilter{
-						StringOption: &model.StringOption{
-							Eq: ord.Id,
-						},
-					},
+					OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
 				})
 				if appErr != nil {
 					return nil, appErr
@@ -1597,7 +1680,7 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transactio
 // UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 //
 // `reason`, `valueType` can be empty. `value` can be nil
-func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, ord *order.Order, reason string, valueType string, value *decimal.Decimal, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine order.OrderLine, ord order.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 
 	ord.PopulateNonDbFields()
 	orderLine.PopulateNonDbFields()
@@ -1634,7 +1717,7 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, or
 	}
 
 	// Save lines before calculating the taxes as some plugin can fetch all order data from db
-	_, appErr := a.UpsertOrderLine(nil, orderLine)
+	_, appErr := a.UpsertOrderLine(nil, &orderLine)
 	if appErr != nil {
 		return appErr
 	}
@@ -1644,12 +1727,12 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine *order.OrderLine, or
 		return appErr
 	}
 
-	_, appErr = a.UpsertOrderLine(nil, orderLine)
+	_, appErr = a.UpsertOrderLine(nil, &orderLine)
 	return appErr
 }
 
 // RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, ord *order.Order, manager interface{}, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine order.OrderLine, ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	orderLine.PopulateNonDbFields()
 
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice
@@ -1658,7 +1741,7 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, o
 	orderLine.UnitDiscountReason = model.NewString("")
 	orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
 
-	_, appErr := a.UpsertOrderLine(nil, orderLine)
+	_, appErr := a.UpsertOrderLine(nil, &orderLine)
 	if appErr != nil {
 		return appErr
 	}
@@ -1668,6 +1751,6 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine *order.OrderLine, o
 		return appErr
 	}
 
-	_, appErr = a.UpsertOrderLine(nil, orderLine)
+	_, appErr = a.UpsertOrderLine(nil, &orderLine)
 	return appErr
 }
