@@ -7,9 +7,7 @@ type pluginInitObjType struct {
 	Manifest      *interfaces.PluginManifest
 }
 
-var (
-	pluginInitObjects []pluginInitObjType
-)
+var pluginInitObjects []pluginInitObjType
 
 func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) interfaces.BasePluginInterface, manifest *interfaces.PluginManifest) {
 	if f != nil && manifest != nil {
@@ -17,6 +15,7 @@ func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) interfaces.BasePluginIn
 			NewPluginFunc: f,
 			Manifest:      manifest,
 		})
+		return
 	}
 	panic("RegisterVatlayerPlugin: plugin creation function and manifest must not be nil")
 }

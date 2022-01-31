@@ -237,3 +237,5 @@ store-mocks: ## Creates mock files.
 	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
 	$(GOBIN)/mockery -dir store -all -output store/storetest/mocks -note 'Regenerate this file using `make store-mocks`.'
 
+dataloaders:
+	$(GOBIN)/dataloaden OrdersByUserLoader string *github.com/sitename/sitename/graphql/gqlmodel.Order

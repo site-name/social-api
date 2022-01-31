@@ -14,4 +14,5 @@ type ShopService interface {
 	ShopById(shopID string) (*shop.Shop, *model.AppError)
 	// ShopStaffRelationByShopIDAndStaffID finds if there is a relationship betwwen given user and given shop
 	ShopStaffRelationByShopIDAndStaffID(shopID string, staffID string) (*shop.ShopStaffRelation, *model.AppError)
+	ShopByOptions(options *shop.ShopFilterOptions) (*shop.Shop, *model.AppError)
 }

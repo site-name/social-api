@@ -7560,11 +7560,51 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 
 }
 
+func (s *RetryLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 
 	tries := 0
 	for {
 		result, err := s.ShopStore.Get(shopID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShopStore.GetByOptions(options)
 		if err == nil {
 			return result, nil
 		}

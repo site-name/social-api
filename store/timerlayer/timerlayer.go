@@ -6385,6 +6385,22 @@ func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 	return result, err
 }
 
+func (s *TimerLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 	start := timemodule.Now()
 
@@ -6397,6 +6413,22 @@ func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.Get", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStore.GetByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }

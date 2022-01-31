@@ -40,7 +40,7 @@ type AccountService interface {
 	// AuthenticateUserForLogin
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError)
 	// ChangeUserDefaultAddress set default address for given user
-	ChangeUserDefaultAddress(user *account.User, address *account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeUserDefaultAddress(user account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
 	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
@@ -250,4 +250,8 @@ type AccountService interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
+	// DeleteUserAddressRelation deletes 1 user-address relation from database
+ 	DeleteUserAddressRelation(userID, addressID string) *model.AppError
+	// FilterUserAddressRelations finds and returns a list of user-address relations with given options
+ 	FilterUserAddressRelations(options *account.UserAddressFilterOptions) ([]*account.UserAddress, *model.AppError)
 }

@@ -16,12 +16,10 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/wishlist"
-	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
-	// NOTE: we can access session like below since this resolver method is decorated with a authentication checking directive
-	session := ctx.Value(shared.APIContextKey).(*shared.Context).AppContext.Session()
+	session, _ := CheckUserAuthenticated("CustomerEvent.User", ctx)
 
 	if obj.UserID == nil || !model.IsValidId(*obj.UserID) {
 		return nil, nil
@@ -189,7 +187,7 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 	if AppErr != nil {
 		return nil, AppErr
 	}
-	return gqlmodel.SystemAddressesToGraphqlAddress(addresses), nil
+	return gqlmodel.SystemAddressesToGraphqlAddresses(addresses), nil
 }
 
 func (r *userResolver) CheckoutTokens(ctx context.Context, obj *gqlmodel.User, channel *string) ([]uuid.UUID, error) {
@@ -201,22 +199,21 @@ func (r *userResolver) GiftCards(ctx context.Context, obj *gqlmodel.User, page *
 }
 
 func (r *userResolver) Orders(ctx context.Context, obj *gqlmodel.User, page *int, perPage *int, order *gqlmodel.OrderDirection) (*gqlmodel.OrderCountableConnection, error) {
-	// session, appErr := CheckUserAuthenticated("Orders", ctx)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
+	session, appErr := CheckUserAuthenticated("Orders", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// // the requesting user must has permission to manage orders to see orders
+	if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+		return &gqlmodel.OrderCountableConnection{}, nil
+	}
+
 	// orders, err := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).OrdersByUser.Load(obj.ID)
 
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
-
-	// 	return &gqlmodel.OrderCountableConnection{}, nil
-	// }
 	panic("not implemented")
 }
 

@@ -240,14 +240,14 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defau
 }
 
 // ChangeUserDefaultAddress set default address for given user
-func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, address *account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
-	address_, appErr := manager.ChangeUserAddress(*address, addressType, user)
+func (s *ServiceAccount) ChangeUserDefaultAddress(user account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+	address_, appErr := manager.ChangeUserAddress(address, addressType, &user)
 	if appErr != nil {
 		return appErr
 	}
 
 	if addressType == account.ADDRESS_TYPE_BILLING {
-		if user != nil && user.DefaultBillingAddressID != nil {
+		if user.DefaultBillingAddressID != nil {
 			_, appErr := s.AddUserAddress(&account.UserAddress{
 				UserID:    user.Id,
 				AddressID: *user.DefaultBillingAddressID,
@@ -257,12 +257,12 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, address *a
 			}
 		}
 
-		appErr := s.SetUserDefaultBillingAddress(user, address_.Id)
+		appErr := s.SetUserDefaultBillingAddress(&user, address_.Id)
 		if appErr != nil {
 			return appErr
 		}
 	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
-		if user != nil && user.DefaultShippingAddressID != nil {
+		if user.DefaultShippingAddressID != nil {
 			_, appErr := s.AddUserAddress(&account.UserAddress{
 				UserID:    user.Id,
 				AddressID: *user.DefaultShippingAddressID,
@@ -272,7 +272,7 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user *account.User, address *a
 			}
 		}
 
-		appErr := s.SetUserDefaultShippingAddress(user, address_.Id)
+		appErr := s.SetUserDefaultShippingAddress(&user, address_.Id)
 		if appErr != nil {
 			return appErr
 		}

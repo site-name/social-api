@@ -23,8 +23,8 @@ type Address implements Node {
   country: CountryDisplay!
   countryArea: String!
   phone: String
-  isDefaultShippingAddress(_: PlaceHolder): Boolean # isDefaultShippingAddress: Boolean
-  isDefaultBillingAddress(_: PlaceHolder): Boolean # isDefaultBillingAddress: Boolean
+  isDefaultShippingAddress: Boolean
+  isDefaultBillingAddress: Boolean
 }
 
 input AddressInput {

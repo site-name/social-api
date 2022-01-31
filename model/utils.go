@@ -18,7 +18,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/nyaruka/phonenumbers"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
@@ -640,15 +639,6 @@ func (er *AppError) SystemMessage(T i18n.TranslateFunc) string {
 		return T(er.Id)
 	}
 	return T(er.Id, er.params)
-}
-
-// IsValidPhoneNumber checks if number is valid
-func IsValidPhoneNumber(phone, countryCode string) (*phonenumbers.PhoneNumber, bool) {
-	parsed, err := phonenumbers.Parse(phone, strings.ToUpper(countryCode)) // since country code must be upper-cased
-	if err != nil {
-		return nil, false
-	}
-	return parsed, true
 }
 
 // checkif username is valid

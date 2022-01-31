@@ -21,8 +21,8 @@ type Channel struct {
 	ShopID         string `json:"shop_id"`
 	Name           string `json:"name"`
 	IsActive       bool   `json:"is_active"`
-	Slug           string `json:"slug"` // unique
-	Currency       string `json:"currency"`
+	Slug           string `json:"slug"`            // unique
+	Currency       string `json:"currency"`        //
 	DefaultCountry string `json:"default_country"` // default "US"
 }
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // length limits for address fields
@@ -174,8 +175,10 @@ func (a *Address) IsValid() *model.AppError {
 	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
 		return outer("phone", &a.Id)
 	}
-	if _, ok := model.IsValidPhoneNumber(a.Phone, ""); !ok {
+	if str, ok := util.IsValidPhoneNumber(a.Phone, a.Country); !ok {
 		return outer("phone", &a.Id)
+	} else {
+		a.Phone = str
 	}
 
 	return nil

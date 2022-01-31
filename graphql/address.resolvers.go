@@ -11,7 +11,6 @@ import (
 	"github.com/site-name/i18naddress"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
-	"github.com/sitename/sitename/graphql/scalars"
 	"github.com/sitename/sitename/model"
 )
 
@@ -22,7 +21,7 @@ func (r *addressResolver) Country(ctx context.Context, obj *gqlmodel.Address) (*
 	}, nil
 }
 
-func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
+func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gqlmodel.Address) (*bool, error) {
 	// onyl authenticated users can check their default addresses
 	session, appErr := CheckUserAuthenticated("IsDefaultShippingAddress", ctx)
 	if appErr != nil {
@@ -37,7 +36,7 @@ func (r *addressResolver) IsDefaultShippingAddress(ctx context.Context, obj *gql
 	return model.NewBool(user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == obj.ID), nil
 }
 
-func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address, _ *scalars.PlaceHolder) (*bool, error) {
+func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlmodel.Address) (*bool, error) {
 	// onyl authenticated users can check their default addresses
 	session, appErr := CheckUserAuthenticated("IsDefaultShippingAddress", ctx)
 	if appErr != nil {
@@ -53,7 +52,7 @@ func (r *addressResolver) IsDefaultBillingAddress(ctx context.Context, obj *gqlm
 }
 
 func (r *mutationResolver) AddressCreate(ctx context.Context, input gqlmodel.AddressInput, userID string) (*gqlmodel.AddressCreate, error) {
-	if _, appErr := CheckUserAuthenticated("", ctx); appErr != nil {
+	if _, appErr := CheckUserAuthenticated("AddressCreate", ctx); appErr != nil {
 		return nil, appErr
 	} else {
 		panic(fmt.Errorf("not implemented"))
@@ -73,10 +72,6 @@ func (r *mutationResolver) AddressSetDefault(ctx context.Context, addressID stri
 }
 
 func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode gqlmodel.CountryCode, countryArea *string, city *string, cityArea *string) (*gqlmodel.AddressValidationData, error) {
-	// only authenticated users can see
-	// if _, appErr := CheckUserAuthenticated("AddressValidationRules", ctx); appErr != nil {
-	// 	return nil, appErr
-	// }
 
 	var (
 		countryArea_ string

@@ -186,8 +186,10 @@ type (
 	}
 	ShopStore interface {
 		CreateIndexesIfNotExists()
-		Upsert(shop *shop.Shop) (*shop.Shop, error) // Upsert depends on shop's Id to decide to update/insert the given shop.
-		Get(shopID string) (*shop.Shop, error)      // Get finds a shop with given id and returns it
+		Upsert(shop *shop.Shop) (*shop.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given shop.
+		Get(shopID string) (*shop.Shop, error)                                 // Get finds a shop with given id and returns it
+		FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) // FilterByOptions finds and returns shops with given options
+		GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error)      // GetByOptions finds and returns 1 shop with given options
 	}
 	ShopTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -1102,6 +1104,8 @@ type (
 		OrderBy() string
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
+		// FilterByOptions finds and returns a list of user-address relations with given options
+		FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error)
 	}
 	CustomerEventStore interface {
 		CreateIndexesIfNotExists()

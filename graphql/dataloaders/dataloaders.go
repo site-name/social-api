@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/graphql/gqlmodel"
 )
 
 type DataloaderContextKeyType string
@@ -25,14 +24,13 @@ var (
 
 // DataLoaders contains all data loaders for the project
 type DataLoaders struct {
-	OrdersByUser         *OrdersByUserLoader
+	OrdersByUser         *OrdersByUser
 	CustomerEventsByUser *CustomerEventsByUserLoader
 	AddressByID          *AddressByIDLoader
 }
 
 // NewLoaders returns new pointer to a DataLoaders
 func NewLoaders(a app.AppIface) *DataLoaders {
-	// initialize only once
 	once.Do(func() {
 		loaders = &DataLoaders{
 			OrdersByUser:         ordersByUserLoader(a.Srv()),
@@ -42,34 +40,4 @@ func NewLoaders(a app.AppIface) *DataLoaders {
 	})
 
 	return loaders
-}
-
-func ordersByUserLoader(server *app.Server) *OrdersByUserLoader {
-	return &OrdersByUserLoader{
-		wait:     wait,
-		maxBatch: maxBatch,
-		fetch: func(keys []string) ([][]*gqlmodel.Order, []error) {
-			panic("not implemented")
-		},
-	}
-}
-
-func customerEventsByUserLoader(server *app.Server) *CustomerEventsByUserLoader {
-	return &CustomerEventsByUserLoader{
-		wait:     wait,
-		maxBatch: maxBatch,
-		fetch: func(keys []string) ([][]*gqlmodel.CustomerEvent, []error) {
-			panic("not implemented")
-		},
-	}
-}
-
-func addressByIDLoader(server *app.Server) *AddressByIDLoader {
-	return &AddressByIDLoader{
-		wait:     wait,
-		maxBatch: maxBatch,
-		fetch: func(keys []string) ([]gqlmodel.Address, []error) {
-			panic("not implemented")
-		},
-	}
 }

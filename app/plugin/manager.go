@@ -25,6 +25,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 var _ interfaces.PluginManagerInterface = (*PluginManager)(nil)
@@ -44,7 +45,7 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 
 	// find all channels belong to given shop
 	channels, appErr := m.Srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
-		ShopID: squirrel.Eq{m.Srv.Store.Channel().TableName("ShopID"): shopID},
+		ShopID: squirrel.Eq{store.ChannelTableName + ".ShopID": shopID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -52,8 +53,7 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 
 	// finds a list of plugin configs belong found channels
 	pluginConfigsOfChannels, appErr := m.Srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
-		ChannelID: squirrel.Eq{m.Srv.Store.PluginConfiguration().TableName("ChannelID"): channels.IDs()},
-		// PrefetchRelatedChannel: true, //
+		ChannelID: squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
 	})
 	if appErr != nil {
 		return nil, appErr

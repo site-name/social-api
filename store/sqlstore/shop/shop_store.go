@@ -100,3 +100,55 @@ func (ss *SqlShopStore) Get(shopID string) (*shop.Shop, error) {
 
 	return &res, nil
 }
+
+func (ss *SqlShopStore) commonQueryBuilder(options *shop.ShopFilterOptions) (string, []interface{}, error) {
+	query := ss.GetQueryBuilder().Select("*").From(store.ShopTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.OwnerID != nil {
+		query = query.Where(options.OwnerID)
+	}
+	if options.Name != nil {
+		query = query.Where(options.Name)
+	}
+
+	return query.ToSql()
+}
+
+// FilterByOptions finds and returns shops with given options
+func (ss *SqlShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+	var res []*shop.Shop
+
+	queryString, args, err := ss.commonQueryBuilder(options)
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	_, err = ss.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find shops with given options")
+	}
+
+	return res, nil
+}
+
+// GetByOptions finds and returns 1 shop with given options
+func (ss *SqlShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+	queryString, args, err := ss.commonQueryBuilder(options)
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res shop.Shop
+	err = ss.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.ShopTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed to find shop with given options")
+	}
+
+	return &res, nil
+}

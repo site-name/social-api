@@ -202,9 +202,9 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 	var channelActiveExpr string
 	if isActive != nil {
 		if *isActive {
-			channelActiveExpr = "Channels.IsActive "
+			channelActiveExpr = "Channels.IsActive"
 		} else {
-			channelActiveExpr = "NOT Channels.IsActive "
+			channelActiveExpr = "NOT Channels.IsActive"
 		}
 	}
 	return ps.
@@ -212,7 +212,7 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where(channelActiveExpr+"AND Channels.Slug = ? AND Channels.Id = ?.ChannelID", channelSlug, compareToTable).
+		Where(channelActiveExpr+" AND Channels.Slug = ? AND Channels.Id = ?.ChannelID", channelSlug, compareToTable).
 		Suffix(")").
 		Limit(1)
 }
