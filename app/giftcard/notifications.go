@@ -1,11 +1,11 @@
 package giftcard
 
 import (
-	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/model/plugins"
 )
 
 // SendGiftcardNotification Trigger sending a gift card notification for the given recipient
@@ -15,7 +15,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *account.User, 
 		userID      *string
 	)
 	if requesterUser != nil {
-		userPayload = s.srv.AccountService().GetDefaultUserPayload(*requesterUser)
+		userPayload = s.srv.AccountService().GetDefaultUserPayload(requesterUser)
 		userID = &requesterUser.Id
 	}
 
@@ -35,7 +35,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *account.User, 
 		"site_name":         shop.Name,
 	}
 
-	_, appErr = manager.Notify(plugin.SEND_GIFT_CARD, payload, channelID, "")
+	_, appErr = manager.Notify(plugins.SEND_GIFT_CARD, payload, channelID, "")
 	return appErr
 }
 

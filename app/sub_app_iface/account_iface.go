@@ -83,6 +83,8 @@ type AccountService interface {
 	CustomerEventsByUser(userID string) ([]*account.CustomerEvent, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 	CustomerPlacedOrderEvent(user *account.User, orDer order.Order) (*account.CustomerEvent, *model.AppError)
+	// DeleteUserAddressRelation deletes 1 user-address relation from database
+	DeleteUserAddressRelation(userID, addressID string) *model.AppError
 	// DoubleCheckPassword performs:
 	//
 	// 1) check if number of failed login is not exceed the limit. If yes returns an error
@@ -95,6 +97,8 @@ type AccountService interface {
 	// A new ExpiresAt is only written if enough time has elapsed since last update.
 	// Returns true only if the session was extended.
 	ExtendSessionExpiryIfNeeded(session *model.Session) bool
+	// FilterUserAddressRelations finds and returns a list of user-address relations with given options
+	FilterUserAddressRelations(options *account.UserAddressFilterOptions) ([]*account.UserAddress, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -127,6 +131,8 @@ type AccountService interface {
 	//
 	// 2) one item in the role's Permissions is equal to given permissionId
 	RolesGrantPermission(roleNames []string, permissionId string) bool
+	// SendAccountDeleteConfirmationNotification Trigger sending a account delete notification for the given user
+	SendAccountDeleteConfirmationNotification(redirectUrl string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// SessionHasPermissionTo checks if this user has given permission to procceed
 	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
@@ -145,6 +151,16 @@ type AccountService interface {
 	SetUserDefaultShippingAddress(user *account.User, defaultShippingAddressID string) *model.AppError
 	// StoreUserAddress Add address to user address book and set as default one.
 	StoreUserAddress(user *account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
+	// Trigger sending a email change notification for the given user
+	SendUserChangeEmailNotification(recipientEmail string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
+	// Trigger sending a notification change email for the given user
+	SendRequestUserChangeEmailNotification(redirectUrl string, user account.User, newEmail string, token string, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
+	// Trigger sending a password reset notification for the given customer/staff.
+	SendPasswordResetNotification(redirectURL string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
+	// Trigger sending a set password notification for the given customer/staff.
+	SendSetPasswordNotification(redirectUrl string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
+	// Trigger sending an account confirmation notification for the given user
+	SendAccountConfirmation(redirectUrl string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
 	UpsertAddress(transaction *gorp.Transaction, address *account.Address) (*account.Address, *model.AppError)
 	// UserByOrderId returns an user who owns given order
@@ -177,7 +193,7 @@ type AccountService interface {
 	GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError)
 	GetCloudSession(token string) (*model.Session, *model.AppError)
 	GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError)
-	GetDefaultUserPayload(user account.User) model.StringInterface
+	GetDefaultUserPayload(user *account.User) model.StringInterface
 	GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError)
 	GetPasswordRecoveryToken(token string) (*model.Token, *model.AppError)
 	GetPreferenceByCategoryAndNameForUser(userID string, category string, preferenceName string) (*model.Preference, *model.AppError)
@@ -250,8 +266,4 @@ type AccountService interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
-	// DeleteUserAddressRelation deletes 1 user-address relation from database
- 	DeleteUserAddressRelation(userID, addressID string) *model.AppError
-	// FilterUserAddressRelations finds and returns a list of user-address relations with given options
- 	FilterUserAddressRelations(options *account.UserAddressFilterOptions) ([]*account.UserAddress, *model.AppError)
 }

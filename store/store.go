@@ -919,7 +919,6 @@ type ChannelStore interface {
 	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
-	GetRandomActiveChannel() (*channel.Channel, error)                              // GetRandomActiveChannel get an abitrary channel that is active
 	FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) // FilterByOption returns a list of channels with given option
 	GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
 }

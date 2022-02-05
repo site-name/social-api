@@ -42,6 +42,20 @@ func (_m *VoucherCategoryStore) Get(voucherCategoryID string) (*product_and_disc
 	return r0, r1
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *VoucherCategoryStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: voucherCategory
 func (_m *VoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
 	ret := _m.Called(voucherCategory)

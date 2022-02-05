@@ -33,6 +33,29 @@ func (_m *UserAddressStore) DeleteForUser(userID string, addressID string) error
 	return r0
 }
 
+// FilterByOptions provides a mock function with given fields: options
+func (_m *UserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+	ret := _m.Called(options)
+
+	var r0 []*account.UserAddress
+	if rf, ok := ret.Get(0).(func(*account.UserAddressFilterOptions) []*account.UserAddress); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*account.UserAddress)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*account.UserAddressFilterOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // OrderBy provides a mock function with given fields:
 func (_m *UserAddressStore) OrderBy() string {
 	ret := _m.Called()

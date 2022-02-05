@@ -37,3 +37,14 @@ func URLJoin(base string, elems ...string) string {
 
 	return joinedURL
 }
+
+// PrepareUrl adds params to redirect url
+func PrepareUrl(params url.Values, redirectURL string) (string, error) {
+	u, err := url.Parse(redirectURL)
+	if err != nil {
+		return "", err
+	}
+
+	u.RawQuery = params.Encode()
+	return u.String(), nil
+}

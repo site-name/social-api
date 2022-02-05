@@ -51,6 +51,29 @@ func (_m *GiftCardStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// DeactivateOrderGiftcards provides a mock function with given fields: orderID
+func (_m *GiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
+	ret := _m.Called(orderID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(string) []string); ok {
+		r0 = rf(orderID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(orderID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FilterByOption provides a mock function with given fields: transaction, option
 func (_m *GiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	ret := _m.Called(transaction, option)

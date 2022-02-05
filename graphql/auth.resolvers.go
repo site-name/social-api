@@ -9,10 +9,15 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/account"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/shop"
+	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/shared"
 )
 
@@ -160,9 +165,157 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 }
 
 func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *string, newEmail string, password string, redirectURL string) (*gqlmodel.RequestEmailChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	// check if current user is authenticated
+	session, appErr := CheckUserAuthenticated("RequestEmailChange", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// check user password
+	if err := account.CheckUserPassword(user, password); err != nil {
+		if passErr := r.Srv().Store.User().UpdateFailedPasswordAttempts(user.Id, user.FailedAttempts+1); passErr != nil {
+			return nil, model.NewAppError("RequestEmailChange", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
+		}
+
+		if _, ok := err.(*account.ErrInvalidPassword); ok {
+			return nil, model.NewAppError("RequestEmailChange", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
+		}
+		return nil, model.NewAppError("RequestEmailChange", "app.valid_password_generic.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	if passErr := r.Srv().Store.User().UpdateFailedPasswordAttempts(user.Id, 0); passErr != nil {
+		return nil, model.NewAppError("RequestEmailChange", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
+	}
+
+	if appErr = r.Srv().AccountService().CheckUserPostflightAuthenticationCriteria(user); appErr != nil {
+		return nil, appErr
+	}
+
+	// check if an user with provided email does exist
+	userWithEmail, appErr := r.Srv().AccountService().UserByEmail(newEmail)
+	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
+		return nil, appErr
+	}
+	if userWithEmail != nil {
+		return nil, model.NewAppError("RequestEmailChange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is already taken", http.StatusBadRequest)
+	}
+
+	// validate provided redirect url is valid
+	if appErr = model.ValidateStoreFrontUrl(r.Srv().Config(), redirectURL); appErr != nil {
+		return nil, appErr
+	}
+
+	// clean channel
+	aChannel, appErr := r.Srv().ChannelService().CleanChannel(channel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// create token for sending to email
+	token, appErr := r.Srv().SaveToken(model.TokenTypeRequestChangeEmail, model.RequestEmailChangeTokenExtra{
+		OldEmail: user.Email,
+		NewEmail: newEmail,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// get shop for creating plugin manager
+	shop, appErr := r.Srv().ShopService().ShopByOptions(&shop.ShopFilterOptions{
+		OwnerID: squirrel.Eq{store.ShopTableName + ".OwnerID": user.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginsManager, appErr := r.Srv().PluginService().NewPluginManager(shop.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = r.Srv().AccountService().SendRequestUserChangeEmailNotification(redirectURL, *user, newEmail, token.Token, pluginsManager, aChannel.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.RequestEmailChange{
+		User: gqlmodel.SystemUserToGraphqlUser(user),
+	}, nil
 }
 
 func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, channel *string, token string) (*gqlmodel.ConfirmEmailChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("ConfirmEmailChange", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	tkn, appErr := r.Srv().ValidateTokenByToken(token)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var payload model.RequestEmailChangeTokenExtra
+	err := json.JSON.Unmarshal([]byte(tkn.Extra), &payload)
+	if err != nil {
+		return nil, model.NewAppError("ConfirmEmailChange", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// validate if user with new email does exist:
+	_, appErr = r.Srv().AccountService().UserByEmail(payload.NewEmail)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		// ignore not found error
+	} else {
+		return nil, model.NewAppError("ConfirmEmailChange", "app.graphql.email_token.app_error", nil, "An User with email already exist", http.StatusConflict)
+	}
+
+	user.Email = payload.NewEmail
+
+	user, appErr = r.Srv().AccountService().UpdateUser(user, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	aChannel, appErr := r.Srv().ChannelService().CleanChannel(channel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shop, appErr := r.Srv().ShopService().ShopByOptions(&shop.ShopFilterOptions{
+		OwnerID: squirrel.Eq{store.ShopTableName + ".OwnerID": user.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginsManager, appErr := r.Srv().PluginService().NewPluginManager(shop.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = r.Srv().AccountService().SendUserChangeEmailNotification(payload.OldEmail, *user, pluginsManager, aChannel.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = pluginsManager.CustomerUpdated(*user)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.ConfirmEmailChange{
+		User: gqlmodel.SystemUserToGraphqlUser(user),
+	}, nil
 }

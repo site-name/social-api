@@ -107,9 +107,6 @@ func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode 
 }
 
 func (r *queryResolver) Address(ctx context.Context, id string) (*gqlmodel.Address, error) {
-	if !model.IsValidId(id) {
-		return nil, model.NewAppError("Address", "graphql.gqlmodel.invalid_id.app_error", nil, "", http.StatusBadRequest)
-	}
 	address, appErr := r.Srv().AccountService().AddressById(id)
 	if appErr != nil {
 		return nil, appErr

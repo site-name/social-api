@@ -87,3 +87,17 @@ func (_m *SaleCategoryRelationStore) Save(relation *product_and_discount.SaleCat
 
 	return r0, r1
 }
+
+// TableName provides a mock function with given fields: withField
+func (_m *SaleCategoryRelationStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}

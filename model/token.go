@@ -11,6 +11,16 @@ const (
 	MAX_EXTRA             = 2048
 )
 
+// all possible token types
+const (
+	TokenTypePasswordRecovery   = "password_recovery"
+	TokenTypeVerifyEmail        = "verify_email"
+	TokenTypeTeamInvitation     = "team_invitation"
+	TokenTypeGuestInvitation    = "guest_invitation"
+	TokenTypeCWSAccess          = "cws_access_token"
+	TokenTypeRequestChangeEmail = "request_change_email"
+)
+
 type Token struct {
 	Token    string
 	CreateAt int64
@@ -37,4 +47,10 @@ func (t *Token) IsValid() *AppError {
 	}
 
 	return nil
+}
+
+type RequestEmailChangeTokenExtra struct {
+	OldEmail string `json:"old_email"`
+	NewEmail string `json:"new_email"`
+	UserID   string `json:"user_id"`
 }

@@ -20,7 +20,6 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mfa"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -112,7 +111,11 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 func (a *ServiceAccount) UserByEmail(email string) (*account.User, *model.AppError) {
 	user, err := a.srv.Store.User().GetByEmail(email)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UserByEmail", "app.account.user_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UserByEmail", "app.account.error_finding_user_by_email.app_error", nil, err.Error(), statusCode)
 	}
 
 	return user, nil
@@ -251,7 +254,7 @@ func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *account.U
 		return nil, err
 	}
 
-	if token.Type != email.TokenTypeGuestInvitation {
+	if token.Type != model.TokenTypeGuestInvitation {
 		return nil, model.NewAppError("CreateUserWithToken", "api.user.create_user.signup_link_invalid.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -295,7 +298,7 @@ func (a *ServiceAccount) GetVerifyEmailToken(token string) (*model.Token, *model
 	if err != nil {
 		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.bad_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
-	if rtoken.Type != email.TokenTypeVerifyEmail {
+	if rtoken.Type != model.TokenTypeVerifyEmail {
 		return nil, model.NewAppError("GetVerifyEmailToken", "api.user.verify_email.broken_token.app_error", nil, "", http.StatusBadRequest)
 	}
 	return rtoken, nil
@@ -1052,7 +1055,7 @@ func (a *ServiceAccount) GetPasswordRecoveryToken(token string) (*model.Token, *
 	if err != nil {
 		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.invalid_link.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
-	if rtoken.Type != email.TokenTypePasswordRecovery {
+	if rtoken.Type != model.TokenTypePasswordRecovery {
 		return nil, model.NewAppError("GetPasswordRecoveryToken", "api.user.reset_password.broken_token.app_error", nil, "", http.StatusBadRequest)
 	}
 	return rtoken, nil
@@ -1180,29 +1183,10 @@ func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, 
 }
 
 func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model.AppError) {
-	tokenExtra := tokenExtra{
+	return a.srv.SaveToken(model.TokenTypePasswordRecovery, tokenExtra{
 		UserId: userID,
 		Email:  eMail,
-	}
-	jsonData, err := json.JSON.Marshal(tokenExtra)
-
-	if err != nil {
-		return nil, model.NewAppError("CreatePasswordRecoveryToken", "api.user.create_password_token.error", nil, "", http.StatusInternalServerError)
-	}
-
-	token := model.NewToken(email.TokenTypePasswordRecovery, string(jsonData))
-
-	if err := a.srv.Store.Token().Save(token); err != nil {
-		var appErr *model.AppError
-		switch {
-		case errors.As(err, &appErr):
-			return nil, appErr
-		default:
-			return nil, model.NewAppError("CreatePasswordRecoveryToken", "app.recover.save.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-	}
-
-	return token, nil
+	})
 }
 
 func (a *ServiceAccount) CheckProviderAttributes(user *account.User, patch *account.UserPatch) string {

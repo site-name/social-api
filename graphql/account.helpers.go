@@ -1,8 +1,12 @@
 package graphql
 
 import (
+	"net/http"
+
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // cleanAccountCreateInput cleans user registration input
@@ -28,39 +32,17 @@ func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegister
 	return data, nil
 }
 
-// validateAddressInput validate if given address data is valid
-// func validateAddressInput(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (interface{}, *model.AppError) {
-// 	if addressData.Country == nil {
-// 		return nil, model.NewAppError("validateAddressInput", "graphql.account.country_required.app_error", nil, "", http.StatusBadRequest)
-// 	}
+func validateAddressInput(where string, input *gqlmodel.AddressInput) *model.AppError {
+	if input.Country == nil || *input.Country == "" {
+		return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Country"}, "input.Country is required", http.StatusBadRequest)
+	}
+	if input.Phone != nil {
+		if phone, ok := util.IsValidPhoneNumber(*input.Phone, string(*input.Country)); !ok {
+			return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Phone"}, "", http.StatusBadRequest)
+		} else {
+			input.Phone = &phone
+		}
+	}
 
-// 	if _, appErr := validateAddressForm(addressData, addressType); appErr != nil {
-// 		return nil, appErr
-// 	}
-// }
-
-// validateAddressForm does:
-//
-// 1) check if given phone number, country code are valid
-// func validateAddressForm(addressData *gqlmodel.AddressInput, addressType *gqlmodel.AddressTypeEnum) (interface{}, *model.AppError) {
-// 	if addressData.Phone != nil {
-// 		_, valid := model.IsValidPhoneNumber(*addressData.Phone, string(*addressData.Country))
-// 		if !valid {
-// 			return nil, model.NewAppError(
-// 				"validateAddressForm",
-// 				"graphql.account.invalid_phone_number.app_error",
-// 				map[string]interface{}{"phone": *addressData.Phone},
-// 				"",
-// 				http.StatusBadRequest,
-// 			)
-// 		}
-// 	}
-
-// }
-
-// type AddressFormForCountry struct {
-// 	Name            string
-// 	I18nCountryCode string
-// 	I18nFieldOrder  string
-// 	account.Address
-// }
+	return nil
+}

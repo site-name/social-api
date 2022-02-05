@@ -1,6 +1,6 @@
-package plugin
+package plugins
 
-// User notify event consts
+// plugin event types
 const (
 	ACCOUNT_CONFIRMATION           = "account_confirmation"
 	ACCOUNT_PASSWORD_RESET         = "account_password_reset"

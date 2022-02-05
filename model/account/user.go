@@ -6,11 +6,13 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/timezones"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/language"
 )
@@ -771,4 +773,24 @@ func (u *User) MakeNonNil() {
 	if u.NotifyProps == nil {
 		u.NotifyProps = make(map[string]string)
 	}
+}
+
+var (
+	_ util.Hashable = (*User)(nil)
+)
+
+func (u *User) GetId() string {
+	return u.Id
+}
+
+func (u *User) GetPassword() string {
+	return u.Password
+}
+
+func (u *User) GetLastLogin() time.Time {
+	return util.TimeFromMillis(u.LastActivityAt)
+}
+
+func (u *User) GetEmail() string {
+	return u.Email
 }

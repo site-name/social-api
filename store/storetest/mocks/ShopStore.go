@@ -19,6 +19,29 @@ func (_m *ShopStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOptions provides a mock function with given fields: options
+func (_m *ShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+	ret := _m.Called(options)
+
+	var r0 []*shop.Shop
+	if rf, ok := ret.Get(0).(func(*shop.ShopFilterOptions) []*shop.Shop); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*shop.Shop)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*shop.ShopFilterOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: shopID
 func (_m *ShopStore) Get(shopID string) (*shop.Shop, error) {
 	ret := _m.Called(shopID)
@@ -35,6 +58,29 @@ func (_m *ShopStore) Get(shopID string) (*shop.Shop, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(shopID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByOptions provides a mock function with given fields: options
+func (_m *ShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+	ret := _m.Called(options)
+
+	var r0 *shop.Shop
+	if rf, ok := ret.Get(0).(func(*shop.ShopFilterOptions) *shop.Shop); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*shop.Shop)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*shop.ShopFilterOptions) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

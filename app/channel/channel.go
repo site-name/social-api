@@ -31,32 +31,21 @@ func init() {
 func (s *ServiceChannel) ChannelByOption(option *channel.ChannelFilterOption) (*channel.Channel, *model.AppError) {
 	foundChannel, err := s.srv.Store.Channel().GetbyOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ChannelByOption", "app.channel.error_finding_channel_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ChannelByOption", "app.channel.error_finding_channel_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return foundChannel, nil
 }
 
-// GetChannelBySlug returns a channel with given slug
-func (a *ServiceChannel) GetChannelBySlug(slug string) (*channel.Channel, *model.AppError) {
-	return a.ChannelByOption(&channel.ChannelFilterOption{
-		Slug: squirrel.Eq{a.srv.Store.Channel().TableName("Slug"): slug},
-	})
-}
-
-// GetDefaultActiveChannel
-func (a *ServiceChannel) GetDefaultActiveChannel() (*channel.Channel, *model.AppError) {
-	channel, err := a.srv.Store.Channel().GetRandomActiveChannel()
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetDefaultActiveChannel", "app.channel.missing_channel.app_error", err)
-	}
-
-	return channel, nil
-}
-
 // ValidateChannel check if a channel with given slug is active
-func (a *ServiceChannel) ValidateChannel(channelSlug string) (*channel.Channel, *model.AppError) {
-	channel, appErr := a.GetChannelBySlug(channelSlug)
+func (a *ServiceChannel) ValidateChannel(channelID string) (*channel.Channel, *model.AppError) {
+	channel, appErr := a.ChannelByOption(&channel.ChannelFilterOption{
+		Id: squirrel.Eq{store.ChannelTableName + ".Id": channelID},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -70,30 +59,44 @@ func (a *ServiceChannel) ValidateChannel(channelSlug string) (*channel.Channel, 
 }
 
 // CleanChannel
-func (a *ServiceChannel) CleanChannel(channelSlug *string) (*channel.Channel, *model.AppError) {
+func (a *ServiceChannel) CleanChannel(channelID *string) (*channel.Channel, *model.AppError) {
 	var (
-		channel *channel.Channel
-		appErr  *model.AppError
+		needChannel *channel.Channel
+		appErr      *model.AppError
 	)
 
-	if channelSlug != nil && *channelSlug != "" {
-		channel, appErr = a.ValidateChannel(*channelSlug)
+	if channelID != nil && *channelID != "" {
+		needChannel, appErr = a.ValidateChannel(*channelID)
 	} else {
-		channel, appErr = a.GetDefaultActiveChannel()
+		needChannel, appErr = a.ChannelByOption(&channel.ChannelFilterOption{
+			IsActive: model.NewBool(true),
+		})
 	}
 
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return channel, nil
+	return needChannel, nil
 }
 
 // ChannelsByOption returns a list of channels by given options
 func (a *ServiceChannel) ChannelsByOption(option *channel.ChannelFilterOption) (channel.Channels, *model.AppError) {
 	channels, err := a.srv.Store.Channel().FilterByOption(option)
+	var (
+		statusCode int
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ChannelsByOption", "app.channel.error_finding_channels_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	}
+	if len(channels) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ChannelsByOptions", "app.channel.error_finding_channels_by_options.app_error", nil, errMsg, statusCode)
 	}
 
 	return channels, nil
