@@ -230,6 +230,20 @@ func (_m *ProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs [
 	return r0, r1
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *ProductStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // VisibleToUserProducts provides a mock function with given fields: channelSlug, requesterIsStaff
 func (_m *ProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
 	ret := _m.Called(channelSlug, requesterIsStaff)

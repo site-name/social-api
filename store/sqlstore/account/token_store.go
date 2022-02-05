@@ -79,12 +79,8 @@ func (s *SqlTokenStore) RemoveAllTokensByType(tokenType string) error {
 }
 
 func (s *SqlTokenStore) GetAllTokensByType(tokenType string) ([]*model.Token, error) {
-
 	var tokens []*model.Token
 	if _, err := s.GetReplica().Select(&tokens, "SELECT * FROM "+store.TokenTableName+" WHERE Type = :TokenType", map[string]interface{}{"TokenType": tokenType}); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.TokenTableName, "TokenType="+tokenType)
-		}
 		return nil, errors.Wrapf(err, "failed to find tokens with type=%s", tokenType)
 	}
 

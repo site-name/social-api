@@ -2445,26 +2445,6 @@ func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
 
 }
 
-func (s *RetryLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelStore.GetRandomActiveChannel()
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
 
 	tries := 0
@@ -9565,6 +9545,26 @@ func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+
+	tries := 0
+	for {
+		result, err := s.UserAddressStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 

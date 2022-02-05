@@ -43,6 +43,10 @@ type DiscountService interface {
 	ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, *model.AppError)
 	// FetchActiveDiscounts returns discounts that are activated
 	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)
+	// FetchCatalogueInfo may return a map with keys are ["categories", "collections", "products", "variants"].
+	//
+	// values are slices of uuid strings
+	FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError)
 	// FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
 	FetchCollections(saleIDs []string) (map[string][]string, *model.AppError)
 	// FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
@@ -86,6 +90,8 @@ type DiscountService interface {
 	PromoCodeIsVoucher(code string) (bool, *model.AppError)
 	// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError
+	// SaleCategoriesByOption returns sale-category relations with an app error
+	SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, *model.AppError)
 	// SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
 	SaleCollectionsByOptions(options *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, *model.AppError)
 	// SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
@@ -118,7 +124,6 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)
-	FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError)
 	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
 	FetchDiscounts(date time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
 	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)

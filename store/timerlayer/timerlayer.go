@@ -2206,22 +2206,6 @@ func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelStore.GetRandomActiveChannel()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetRandomActiveChannel", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
 	start := timemodule.Now()
 
@@ -8044,6 +8028,22 @@ func (s *TimerLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.DeleteForUser", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+	start := timemodule.Now()
+
+	result, err := s.UserAddressStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerUserAddressStore) OrderBy() string {

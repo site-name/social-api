@@ -5,7 +5,6 @@ package graphql
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -27,50 +26,11 @@ func (r *mutationResolver) AccountAddressCreate(ctx context.Context, input gqlmo
 	}
 
 	// validate country
-	if input.Country == nil || *input.Country == "" {
-		return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Country"}, "input.Country is required", http.StatusBadRequest)
-	}
-	if input.Phone != nil {
-		if phone, ok := util.IsValidPhoneNumber(*input.Phone, string(*input.Country)); !ok {
-			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Phone"}, "", http.StatusBadRequest)
-		} else {
-			input.Phone = &phone
-		}
+	if appErr := validateAddressInput("AccountAddressCreate", &input); appErr != nil {
+		return nil, appErr
 	}
 
-	address := new(account.Address)
-	address.Country = string(*input.Country)
-
-	if input.FirstName != nil && *input.FirstName != "" {
-		address.FirstName = *input.FirstName
-	}
-	if input.LastName != nil && *input.LastName != "" {
-		address.LastName = *input.LastName
-	}
-	if input.CompanyName != nil && *input.CompanyName != "" {
-		address.CompanyName = *input.CompanyName
-	}
-	if input.StreetAddress1 != nil && *input.StreetAddress1 != "" {
-		address.StreetAddress1 = *input.StreetAddress1
-	}
-	if input.StreetAddress2 != nil && *input.StreetAddress2 != "" {
-		address.StreetAddress2 = *input.StreetAddress2
-	}
-	if input.City != nil && *input.City != "" {
-		address.City = *input.City
-	}
-	if input.CityArea != nil && *input.CityArea != "" {
-		address.CityArea = *input.CityArea
-	}
-	if input.PostalCode != nil && *input.PostalCode != "" {
-		address.PostalCode = *input.PostalCode
-	}
-	if input.CountryArea != nil && *input.CountryArea != "" {
-		address.CountryArea = *input.CountryArea
-	}
-	if input.Phone != nil {
-		address.Phone = *input.Phone
-	}
+	address := input.ToSystemAddress()
 
 	// insert address
 	address, appErr = r.Srv().AccountService().UpsertAddress(nil, address)
@@ -134,50 +94,11 @@ func (r *mutationResolver) AccountAddressUpdate(ctx context.Context, id string, 
 	}
 
 	// validate country
-	if input.Country == nil || *input.Country == "" {
-		return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Country"}, "input.Country is required", http.StatusBadRequest)
-	}
-	if input.Phone != nil {
-		if phone, ok := util.IsValidPhoneNumber(*input.Phone, string(*input.Country)); !ok {
-			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Phone"}, "", http.StatusBadRequest)
-		} else {
-			input.Phone = &phone
-		}
+	if appErr := validateAddressInput("AccountAddressUpdate", &input); appErr != nil {
+		return nil, appErr
 	}
 
-	address := new(account.Address)
-	address.Country = string(*input.Country)
-
-	if input.FirstName != nil && *input.FirstName != "" {
-		address.FirstName = *input.FirstName
-	}
-	if input.LastName != nil && *input.LastName != "" {
-		address.LastName = *input.LastName
-	}
-	if input.CompanyName != nil && *input.CompanyName != "" {
-		address.CompanyName = *input.CompanyName
-	}
-	if input.StreetAddress1 != nil && *input.StreetAddress1 != "" {
-		address.StreetAddress1 = *input.StreetAddress1
-	}
-	if input.StreetAddress2 != nil && *input.StreetAddress2 != "" {
-		address.StreetAddress2 = *input.StreetAddress2
-	}
-	if input.City != nil && *input.City != "" {
-		address.City = *input.City
-	}
-	if input.CityArea != nil && *input.CityArea != "" {
-		address.CityArea = *input.CityArea
-	}
-	if input.PostalCode != nil && *input.PostalCode != "" {
-		address.PostalCode = *input.PostalCode
-	}
-	if input.CountryArea != nil && *input.CountryArea != "" {
-		address.CountryArea = *input.CountryArea
-	}
-	if input.Phone != nil {
-		address.Phone = *input.Phone
-	}
+	address := input.ToSystemAddress()
 
 	// save address
 	address, appErr = r.Srv().AccountService().UpsertAddress(nil, address)
@@ -346,21 +267,193 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 }
 
 func (r *mutationResolver) AccountUpdate(ctx context.Context, input gqlmodel.AccountInput) (*gqlmodel.AccountUpdate, error) {
-	if _, appErr := CheckUserAuthenticated("AccountUpdate", ctx); appErr != nil {
+	session, appErr := CheckUserAuthenticated("AccountUpdate", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		panic(fmt.Errorf("not implemented"))
 	}
+
+	// clean input:
+	var (
+		shippingAddressData = input.DefaultShippingAddress
+		billingAddressData  = input.DefaultBillingAddress
+	)
+
+	var (
+		shippingAddress *account.Address
+		billingAddress  *account.Address
+	)
+
+	if shippingAddressData != nil {
+		appErr = validateAddressInput("AccountUpdate", shippingAddressData)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		shippingAddress = shippingAddressData.ToSystemAddress()
+	}
+
+	if billingAddressData != nil {
+		appErr = validateAddressInput("AccountUpdate", billingAddressData)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		billingAddress = billingAddressData.ToSystemAddress()
+	}
+
+	// create transaction:
+	transaction, err := r.Srv().Store.GetMaster().Begin()
+	if err != nil {
+		return nil, model.NewAppError("AccountUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer r.Srv().Store.FinalizeTransaction(transaction)
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// find shop for creating plugins manager
+	shop, appErr := r.Srv().ShopService().ShopByOptions(&shop.ShopFilterOptions{
+		OwnerID: squirrel.Eq{store.ShopTableName + ".OwnerID": user.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginsManager, appErr := r.Srv().PluginService().NewPluginManager(shop.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if shippingAddress != nil {
+		// add new address to database
+		shippingAddress, appErr = r.Srv().AccountService().UpsertAddress(transaction, shippingAddress)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// call plugin method(s)
+		shippingAddress, appErr = pluginsManager.ChangeUserAddress(*shippingAddress, account.ADDRESS_TYPE_SHIPPING, user)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// set new default shipping address for current user
+		user.DefaultShippingAddressID = &shippingAddress.Id
+
+		// add another user-address relation
+		_, appErr = r.Srv().AccountService().AddUserAddress(&account.UserAddress{
+			UserID:    user.Id,
+			AddressID: shippingAddress.Id,
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	if billingAddress != nil {
+		// add new address to database
+		billingAddress, appErr = r.Srv().AccountService().UpsertAddress(transaction, shippingAddress)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// call plugin method(s)
+		billingAddress, appErr = pluginsManager.ChangeUserAddress(*billingAddress, account.ADDRESS_TYPE_BILLING, user)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// set new default billing address for current user
+		user.DefaultBillingAddressID = &billingAddress.Id
+
+		// add another user-address relation
+		_, appErr = r.Srv().AccountService().AddUserAddress(&account.UserAddress{
+			UserID:    user.Id,
+			AddressID: billingAddress.Id,
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// actually update current user in database
+	user, appErr = r.Srv().AccountService().UpdateUser(user, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = pluginsManager.CustomerUpdated(*user)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.AccountUpdate{
+		User: gqlmodel.SystemUserToGraphqlUser(user),
+	}, nil
 }
 
 func (r *mutationResolver) AccountRequestDeletion(ctx context.Context, channel *string, redirectURL string) (*gqlmodel.AccountRequestDeletion, error) {
-	panic("not implemented")
+	session, appErr := CheckUserAuthenticated("AccountRequestDeletion", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if appErr = model.ValidateStoreFrontUrl(r.Srv().Config(), redirectURL); appErr != nil {
+		return nil, appErr
+	}
+
+	// validate if channel is non-nil and exist
+	aChannel, appErr := r.Srv().ChannelService().CleanChannel(channel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shop, appErr := r.Srv().ShopService().ShopByOptions(&shop.ShopFilterOptions{
+		OwnerID: squirrel.Eq{store.ShopTableName + ".OwnerID": user.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginsManager, appErr := r.Srv().PluginService().NewPluginManager(shop.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = r.Srv().AccountService().SendAccountDeleteConfirmationNotification(redirectURL, *user, pluginsManager, aChannel.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.AccountRequestDeletion{
+		Ok: true,
+	}, nil
 }
 
 func (r *mutationResolver) AccountDelete(ctx context.Context, token string) (*gqlmodel.AccountDelete, error) {
-	if _, appErr := CheckUserAuthenticated("AccountDelete", ctx); appErr != nil {
+	session, appErr := CheckUserAuthenticated("AccountDelete", ctx)
+	if appErr != nil {
 		return nil, appErr
-	} else {
-		panic(fmt.Errorf("not implemented"))
 	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !util.DefaultTokenGenerator.CheckToken(user, token) {
+		return nil, model.NewAppError("AccountDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "provided token is invalid", http.StatusBadRequest)
+	}
+
+	// just deactivate the user instead of completely delete them
+	user.IsActive = false
+
+	panic("not implemented")
 }

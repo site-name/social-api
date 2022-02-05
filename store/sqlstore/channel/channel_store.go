@@ -104,16 +104,6 @@ func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 	return &channel, nil
 }
 
-func (cs *SqlChannelStore) GetRandomActiveChannel() (*channel.Channel, error) {
-	var channels = []*channel.Channel{}
-	_, err := cs.GetReplica().Select(&channels, "SELECT * FROM "+cs.TableName("")+" WHERE IsActive")
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get Channel with Active=true")
-	}
-
-	return channels[0], nil
-}
-
 func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields()...).

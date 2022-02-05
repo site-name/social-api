@@ -42,6 +42,20 @@ func (_m *VoucherCollectionStore) Get(voucherCollectionID string) (*product_and_
 	return r0, r1
 }
 
+// TableName provides a mock function with given fields: withField
+func (_m *VoucherCollectionStore) TableName(withField string) string {
+	ret := _m.Called(withField)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(withField)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: voucherCollection
 func (_m *VoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
 	ret := _m.Called(voucherCollection)

@@ -13,7 +13,6 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/email"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -93,7 +92,7 @@ func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginI
 			token = &model.Token{
 				Token:    cwsToken,
 				CreateAt: model.GetMillis(),
-				Type:     email.TokenTypeCWSAccess,
+				Type:     model.TokenTypeCWSAccess,
 			}
 			err := a.srv.Store.Token().Save(token)
 			if err != nil {

@@ -211,6 +211,10 @@ func (User) IsObjectWithMetadata() {}
 
 // SystemUserToGraphqlUser converts database user to graphql user
 func SystemUserToGraphqlUser(u *account.User) *User {
+	if u == nil {
+		return nil
+	}
+
 	return &User{
 		ID:                       u.Id,
 		LastLogin:                util.TimePointerFromMillis(u.LastActivityAt),
@@ -255,4 +259,44 @@ func SystemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(snr *ac
 			return snr.StaffEmail
 		},
 	}
+}
+
+func (input *AddressInput) ToSystemAddress() *account.Address {
+	address := new(account.Address)
+
+	if input.Country != nil {
+		address.Country = string(*input.Country)
+	}
+	if input.FirstName != nil && *input.FirstName != "" {
+		address.FirstName = *input.FirstName
+	}
+	if input.LastName != nil && *input.LastName != "" {
+		address.LastName = *input.LastName
+	}
+	if input.CompanyName != nil && *input.CompanyName != "" {
+		address.CompanyName = *input.CompanyName
+	}
+	if input.StreetAddress1 != nil && *input.StreetAddress1 != "" {
+		address.StreetAddress1 = *input.StreetAddress1
+	}
+	if input.StreetAddress2 != nil && *input.StreetAddress2 != "" {
+		address.StreetAddress2 = *input.StreetAddress2
+	}
+	if input.City != nil && *input.City != "" {
+		address.City = *input.City
+	}
+	if input.CityArea != nil && *input.CityArea != "" {
+		address.CityArea = *input.CityArea
+	}
+	if input.PostalCode != nil && *input.PostalCode != "" {
+		address.PostalCode = *input.PostalCode
+	}
+	if input.CountryArea != nil && *input.CountryArea != "" {
+		address.CountryArea = *input.CountryArea
+	}
+	if input.Phone != nil {
+		address.Phone = *input.Phone
+	}
+
+	return address
 }

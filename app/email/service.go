@@ -16,11 +16,6 @@ const (
 	emailRateLimitingMemstoreSize = 65536
 	emailRateLimitingPerHour      = 20
 	emailRateLimitingMaxBurst     = 20
-	TokenTypePasswordRecovery     = "password_recovery"
-	TokenTypeVerifyEmail          = "verify_email"
-	TokenTypeTeamInvitation       = "team_invitation"
-	TokenTypeGuestInvitation      = "guest_invitation"
-	TokenTypeCWSAccess            = "cws_access_token"
 )
 
 func condenseSiteURL(siteURL string) string {

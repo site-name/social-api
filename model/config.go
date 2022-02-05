@@ -268,6 +268,7 @@ var ServerTLSSupportedCiphers = map[string]uint16{
 
 type ServiceSettings struct {
 	SiteURL                                           *string  `access:"environment_web_server,authentication_saml,write_restrictable"`
+	SiteName                                          *string  `access:"environment_web_server,write_restrictable"`
 	WebsocketURL                                      *string  `access:"write_restrictable,cloud_restrictable"`
 	LicenseFileLocation                               *string  `access:"write_restrictable,cloud_restrictable"`                        // telemetry: none
 	ListenAddress                                     *string  `access:"environment_web_server,write_restrictable,cloud_restrictable"` // telemetry: none
@@ -390,6 +391,10 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	}
 	if s.EnableInlineLatex == nil {
 		s.EnableInlineLatex = NewBool(true)
+	}
+
+	if s.SiteName == nil {
+		s.SiteName = NewString("SiteName")
 	}
 
 	if s.SiteURL == nil {
