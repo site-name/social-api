@@ -339,13 +339,13 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *checkout.Checkout
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.CheckoutID != nil {
-		query = query.Where(option.CheckoutID.ToSquirrel("CheckoutID"))
+		query = query.Where(option.CheckoutID)
 	}
 	if option.VariantID != nil {
-		query = query.Where(option.VariantID.ToSquirrel("VariantID"))
+		query = query.Where(option.VariantID)
 	}
 
 	queryString, args, err := query.ToSql()

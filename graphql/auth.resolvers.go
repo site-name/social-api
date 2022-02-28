@@ -7,13 +7,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/account"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	accountModel "github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
@@ -115,7 +114,7 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 
 	// checks if user is active to perform this:
 	if !userWithEmail.IsActive {
-		return nil, permissionDenied("RequestPasswordReset")
+		return nil, model.NewAppError("RequestPasswordReset", permissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 
 	// if !userWithEmail.IsStaff {
@@ -145,6 +144,11 @@ func (r *mutationResolver) ConfirmAccount(ctx context.Context, email string, tok
 }
 
 func (r *mutationResolver) SetPassword(ctx context.Context, email string, password string, token string) (*gqlmodel.SetPassword, error) {
+	// validate user with email does exist:
+	// user, appErr := r.Srv().AccountService().UserByEmail(email)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -153,15 +157,29 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 	if appErr != nil {
 		return nil, appErr
 	}
-	if strings.TrimSpace(oldPassword) == "" {
-		return nil, model.NewAppError("PasswordChange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "oldPassword"}, "", http.StatusBadRequest)
-	}
 
-	if appErr = r.Srv().AccountService().UpdatePasswordAsUser(session.UserId, oldPassword, newPassword); appErr != nil {
+	user, appErr := r.Srv().AccountService().UserById(ctx, session.UserId)
+	if appErr != nil {
 		return nil, appErr
 	}
 
-	return &gqlmodel.PasswordChange{}, nil
+	if appErr = r.Srv().AccountService().CheckUserPassword(user, oldPassword); appErr != nil {
+		return nil, appErr
+	}
+
+	// NOTE: this step includes validate password also
+	if appErr = r.Srv().AccountService().UpdatePassword(user, newPassword); appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = r.Srv().AccountService().CommonCustomerCreateEvent(&user.Id, nil, accountModel.PASSWORD_CHANGED, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.PasswordChange{
+		User: gqlmodel.SystemUserToGraphqlUser(user),
+	}, nil
 }
 
 func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *string, newEmail string, password string, redirectURL string) (*gqlmodel.RequestEmailChange, error) {
@@ -177,19 +195,8 @@ func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *stri
 	}
 
 	// check user password
-	if err := account.CheckUserPassword(user, password); err != nil {
-		if passErr := r.Srv().Store.User().UpdateFailedPasswordAttempts(user.Id, user.FailedAttempts+1); passErr != nil {
-			return nil, model.NewAppError("RequestEmailChange", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
-		}
-
-		if _, ok := err.(*account.ErrInvalidPassword); ok {
-			return nil, model.NewAppError("RequestEmailChange", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
-		}
-		return nil, model.NewAppError("RequestEmailChange", "app.valid_password_generic.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	if passErr := r.Srv().Store.User().UpdateFailedPasswordAttempts(user.Id, 0); passErr != nil {
-		return nil, model.NewAppError("RequestEmailChange", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
+	if appErr = r.Srv().AccountService().CheckUserPassword(user, password); appErr != nil {
+		return nil, appErr
 	}
 
 	if appErr = r.Srv().AccountService().CheckUserPostflightAuthenticationCriteria(user); appErr != nil {
@@ -278,7 +285,7 @@ func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, channel *stri
 		}
 		// ignore not found error
 	} else {
-		return nil, model.NewAppError("ConfirmEmailChange", "app.graphql.email_token.app_error", nil, "An User with email already exist", http.StatusConflict)
+		return nil, model.NewAppError("ConfirmEmailChange", "app.graphql.email_taken.app_error", nil, "An User with email already exist", http.StatusConflict)
 	}
 
 	user.Email = payload.NewEmail
@@ -311,6 +318,11 @@ func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, channel *stri
 	}
 
 	_, appErr = pluginsManager.CustomerUpdated(*user)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = r.Srv().AccountService().DeleteToken(tkn)
 	if appErr != nil {
 		return nil, appErr
 	}

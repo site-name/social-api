@@ -1,7 +1,3 @@
-/*
-	NOTE: There are many methods or functions that are not implemented due to uncomplishment
-	of the plugin system. Remember to implement them as soon as possible
-*/
 package checkout
 
 import (
@@ -124,16 +120,8 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 
 	if line == nil {
 		checkoutLines, appErr := a.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
-			CheckoutID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkOut.Token,
-				},
-			},
-			VariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: variant.Id,
-				},
-			},
+			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": checkOut.Token},
+			VariantID:  squirrel.Eq{store.CheckoutLineTableName + ".VariantID": variant.Id},
 		})
 		if appErr != nil && appErr.StatusCode != http.StatusNotFound { // ignore not found error
 			return nil, nil, appErr
@@ -953,24 +941,20 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		return nil, appErr
 	}
 	if !linesRequireShipping {
-		return []*warehouse.WareHouse{}, nil
+		return warehouse.Warehouses{}, nil
 	}
 
 	if model.Countries[strings.ToUpper(countryCode)] == "" {
-		return []*warehouse.WareHouse{}, nil
+		return warehouse.Warehouses{}, nil
 	}
 	checkoutLines, appErr := s.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: lines.CheckoutLines().IDs(),
-			},
-		},
+		Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
-		return []*warehouse.WareHouse{}, nil
+		return warehouse.Warehouses{}, nil
 	}
 
 	// TODO: implement me.

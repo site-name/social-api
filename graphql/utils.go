@@ -29,8 +29,3 @@ func CheckUserAuthenticated(where string, ctx context.Context) (*model.Session, 
 	}
 	return session, nil
 }
-
-// permissionDenied is utility function for creating app error, indicate that requesting user cannot perform specific operations
-func permissionDenied(where string) *model.AppError {
-	return model.NewAppError(where, permissionDeniedId, nil, "", http.StatusUnauthorized)
-}

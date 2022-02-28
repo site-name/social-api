@@ -266,4 +266,6 @@ type AccountService interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
+	// CheckUserPassword compares user's password to given password. If they dont match, return an error
+  CheckUserPassword(user *account.User, password string) *model.AppError
 }

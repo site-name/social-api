@@ -30,7 +30,7 @@ func (s *Server) SaveToken(tokenType string, extraData interface{}) (*model.Toke
 	return token, nil
 }
 
-// ValidateTokenByToken finds and check if token is expired
+// ValidateTokenByToken finds and checks if token is expired
 func (s *Server) ValidateTokenByToken(token string) (*model.Token, *model.AppError) {
 	tkn, err := s.Store.Token().GetByToken(token)
 	if err != nil {
