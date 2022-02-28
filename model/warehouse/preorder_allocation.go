@@ -67,5 +67,9 @@ func (p *PreorderAllocation) IsValid() *model.AppError {
 
 func (p *PreorderAllocation) DeepCopy() *PreorderAllocation {
 	res := *p
+
+	if p.OrderLine != nil {
+		res.OrderLine = p.OrderLine.DeepCopy()
+	}
 	return &res
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -21,7 +22,7 @@ func NewSqlWarehouseStore(s store.Store) store.WarehouseStore {
 	ws := &SqlWareHouseStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.WareHouse{}, ws.TableName("")).SetKeys(false, "Id")
+		table := db.AddTableWithName(warehouse.WareHouse{}, store.WarehouseTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Name").SetMaxSize(warehouse.WAREHOUSE_NAME_MAX_LENGTH)
@@ -69,10 +70,10 @@ func (ws *SqlWareHouseStore) TableName(withField string) string {
 }
 
 func (ws *SqlWareHouseStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_warehouses_email", ws.TableName(""), "Email")
-	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", ws.TableName(""), "lower(Email) text_pattern_ops")
+	ws.CreateIndexIfNotExists("idx_warehouses_email", store.WarehouseTableName, "Email")
+	ws.CreateIndexIfNotExists("idx_warehouses_email_lower_textpattern", store.WarehouseTableName, "lower(Email) text_pattern_ops")
 
-	ws.CreateForeignKeyIfNotExists(ws.TableName(""), "AddressID", store.AddressTableName, "Id", false)
+	ws.CreateForeignKeyIfNotExists(store.WarehouseTableName, "AddressID", store.AddressTableName, "Id", false)
 }
 
 func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
@@ -95,7 +96,7 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	var res warehouse.WareHouse
 	err := ws.GetMaster().SelectOne(
 		&res,
-		"SELECT * FROM "+ws.TableName("")+" WHERE Id = :ID",
+		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = :ID",
 		map[string]interface{}{
 			"ID": id,
 		},
@@ -114,8 +115,8 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 	if option == nil {
 		return ws.GetQueryBuilder().
 			Select(ws.ModelFields()...).
-			From(ws.TableName("")).
-			OrderBy(store.TableOrderingMap[ws.TableName("")])
+			From(store.WarehouseTableName).
+			OrderBy(store.TableOrderingMap[store.WarehouseTableName])
 	}
 
 	selectFields := ws.ModelFields()
@@ -125,8 +126,8 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 
 	query := ws.GetQueryBuilder().
 		Select(selectFields...).
-		From(ws.TableName("")).
-		OrderBy(store.TableOrderingMap[ws.TableName("")])
+		From(store.WarehouseTableName).
+		OrderBy(store.TableOrderingMap[store.WarehouseTableName])
 
 	// parse option
 	if option.Distinct {
@@ -149,8 +150,8 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 	}
 	if option.ShippingZonesCountries != nil || option.ShippingZonesId != nil {
 		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " WarehouseShippingZones ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
-			InnerJoin(store.ShippingZoneTableName + " ShippingZones ON WarehouseShippingZones.ShippingZoneID = ShippingZones.Id")
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
+			InnerJoin(store.ShippingZoneTableName + " ON WarehouseShippingZones.ShippingZoneID = ShippingZones.Id")
 
 		if option.ShippingZonesCountries != nil {
 			query = query.Where(option.ShippingZonesCountries)
@@ -159,7 +160,6 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 			query = query.Where(option.ShippingZonesId)
 		}
 	}
-	// check if we need to join address table:
 	if option.SelectRelatedAddress {
 		query.InnerJoin(store.AddressTableName + " ON (Addresses.Id = Warehouses.AddressID)")
 	}
@@ -183,7 +183,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 	err := rowScanner.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(ws.TableName(""), "options")
+			return nil, store.NewErrNotFound(store.WarehouseTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find warehouse with given option")
 	}
@@ -311,7 +311,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.Ware
 		&res,
 		`SELECT `+strings.Join(ws.ModelFields(), ", ")+`
 		FROM `+store.StockTableName+`
-		INNER JOIN `+ws.TableName("")+` ON (
+		INNER JOIN `+store.WarehouseTableName+` ON (
 			Stocks.WarehouseID = Warehouses.Id
 		)
 		WHERE Stocks.Id = :StockID`,
@@ -321,10 +321,31 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.Ware
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(ws.TableName(""), "StockID="+stockID)
+			return nil, store.NewErrNotFound(store.WarehouseTableName, "StockID="+stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find warehouse with StockID=%s", stockID)
 	}
 
 	return &res, nil
+}
+
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	stocks, err := ws.Stock().FilterByOption(nil, &warehouse.StockFilterOption{
+		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
+		SelectRelatedProductVariant: true,
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find stocks")
+	}
+
+	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
+}
+
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	panic("not implemented")
+}
+
+func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines checkout.CheckoutLines, stocks warehouse.Stocks, country string) (warehouse.Warehouses, error) {
+	panic("not implemented")
 }

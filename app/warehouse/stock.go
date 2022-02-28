@@ -123,7 +123,11 @@ func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Tr
 func (a *ServiceWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.AppError) {
 	stock, err := a.srv.Store.Stock().Get(stockID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetStockById", "app.warehouse.error_finding_stock_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetStockById", "app.warehouse.error_finding_stock_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return stock, nil

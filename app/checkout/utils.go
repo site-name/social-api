@@ -957,8 +957,21 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 		return warehouse.Warehouses{}, nil
 	}
 
-	// TODO: implement me.
-	panic("not implemented")
+	var (
+		warehouses warehouse.Warehouses
+		err        error
+	)
+	if quantityCheck {
+		warehouses, err = s.srv.Store.Warehouse().ApplicableForClickAndCollect(checkoutLines, countryCode)
+	} else {
+		warehouses, err = s.srv.Store.Warehouse().ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, countryCode)
+	}
+
+	if err != nil {
+		return nil, model.NewAppError("GetValidCollectionPointsForCheckout", "app.warehouse.error_finding_warehouses_by_checkout_lines_and_country.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return warehouses, nil
 }
 
 func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo checkout.CheckoutInfo) *model.AppError {

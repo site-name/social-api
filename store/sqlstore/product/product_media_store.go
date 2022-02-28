@@ -3,7 +3,6 @@ package product
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -106,13 +105,13 @@ func (ps *SqlProductMediaStore) FilterByOption(option *product_and_discount.Prod
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+		query = query.Where(option.ProductID)
 	}
-	if len(option.Type) > 0 {
-		query = query.Where(squirrel.Eq{"Type": option.Type})
+	if option.Type != nil {
+		query = query.Where(option.Type)
 	}
 
 	queryString, args, err := query.ToSql()

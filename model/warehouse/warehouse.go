@@ -53,8 +53,8 @@ type WarehouseFilterOption struct {
 	Slug                   squirrel.Sqlizer
 	AddressID              squirrel.Sqlizer
 	Email                  squirrel.Sqlizer
-	ShippingZonesCountries squirrel.Sqlizer // join shipping zone table
-	ShippingZonesId        squirrel.Sqlizer // join shipping zone table
+	ShippingZonesCountries squirrel.Sqlizer // inner join warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...)
+	ShippingZonesId        squirrel.Sqlizer // inner join warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...)
 
 	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property to returning warehouse(s)
 	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also

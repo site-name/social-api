@@ -1,7 +1,3 @@
-/*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
-*/
 package product
 
 import (
@@ -95,17 +91,13 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 
 // ProductGetFirstImage returns first media of given product
 func (a *ServiceProduct) ProductGetFirstImage(productID string) (*product_and_discount.ProductMedia, *model.AppError) {
-	mediasOfProduct, appErr := a.ProductMediasByOption(&product_and_discount.ProductMediaFilterOption{
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productID,
-			},
-		},
-		Type: []string{product_and_discount.IMAGE},
+	productMedias, appErr := a.ProductMediasByOption(&product_and_discount.ProductMediaFilterOption{
+		ProductID: squirrel.Eq{store.ProductMediaTableName + ".ProductID": productID},
+		Type:      squirrel.Eq{store.ProductMediaTableName + ".Type": product_and_discount.IMAGE},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return mediasOfProduct[0], nil
+	return productMedias[0], nil
 }

@@ -131,7 +131,6 @@ func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.Produ
 		var whichJoinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
 
 		if val, ok := option.ProductVariantID.(squirrel.Eq); ok {
-			// squirrel.Eq{"": nil}
 			for _, v := range val {
 				if v == nil {
 					whichJoinFunc = query.LeftJoin
