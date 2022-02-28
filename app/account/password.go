@@ -6,17 +6,8 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func CheckUserPassword(user *account.User, password string) error {
-	if err := ComparePassword(user.Password, password); err != nil {
-		return NewErrInvalidPassword("")
-	}
-
-	return nil
-}
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword
 func HashPassword(password string) string {
@@ -37,19 +28,12 @@ func ComparePassword(hash string, password string) error {
 }
 
 func (a *ServiceAccount) isPasswordValid(password string) *model.AppError {
-
 	if *a.srv.Config().ServiceSettings.EnableDeveloper {
 		return nil
 	}
 
 	if err := IsPasswordValidWithSettings(password, &a.srv.Config().PasswordSettings); err != nil {
-		var invErr *ErrInvalidPassword
-		switch {
-		case errors.As(err, &invErr):
-			return model.NewAppError("User.IsValid", invErr.Id(), map[string]interface{}{"Min": *a.srv.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
-		default:
-			return model.NewAppError("User.IsValid", "app.valid_password_generic.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+		return model.NewAppError("User.IsValid", err.Id(), map[string]interface{}{"Min": *a.srv.Config().PasswordSettings.MinimumLength}, "", http.StatusBadRequest)
 	}
 
 	return nil
@@ -57,7 +41,7 @@ func (a *ServiceAccount) isPasswordValid(password string) *model.AppError {
 
 // IsPasswordValidWithSettings is a utility functions that checks if the given password
 // comforms to the password settings. It returns the error id as error value.
-func IsPasswordValidWithSettings(password string, settings *model.PasswordSettings) error {
+func IsPasswordValidWithSettings(password string, settings *model.PasswordSettings) *ErrInvalidPassword {
 	id := "model.user.is_valid.pwd"
 	isError := false
 

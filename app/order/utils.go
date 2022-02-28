@@ -898,11 +898,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_
 			return nil, nil, appErr
 		}
 		productType, appErr := s.srv.ProductService().ProductTypeByOption(&product_and_discount.ProductTypeFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product.ProductTypeID,
-				},
-			},
+			Id: squirrel.Eq{store.ProductTypeTableName + ".Id": product.ProductTypeID},
 		})
 		if appErr != nil {
 			return nil, nil, appErr

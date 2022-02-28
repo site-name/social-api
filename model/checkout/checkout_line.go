@@ -1,6 +1,7 @@
 package checkout
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 )
@@ -25,9 +26,9 @@ type CheckoutLine struct {
 
 // CheckoutLineFilterOption is used to build squirrel sql queries
 type CheckoutLineFilterOption struct {
-	Id         *model.StringFilter
-	CheckoutID *model.StringFilter
-	VariantID  *model.StringFilter
+	Id         squirrel.Sqlizer
+	CheckoutID squirrel.Sqlizer
+	VariantID  squirrel.Sqlizer
 }
 
 type CheckoutLines []*CheckoutLine

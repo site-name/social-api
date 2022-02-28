@@ -16,7 +16,7 @@ func (a *ServiceAccount) CheckPasswordAndAllCriteria(user *account.User, passwor
 		return err
 	}
 
-	if err := a.checkUserPassword(user, password); err != nil {
+	if err := a.CheckUserPassword(user, password); err != nil {
 		if passErr := a.srv.Store.User().UpdateFailedPasswordAttempts(user.Id, user.FailedAttempts+1); passErr != nil {
 			return model.NewAppError("CheckPasswordAndAllCriteria", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
 		}
@@ -65,7 +65,7 @@ func (a *ServiceAccount) DoubleCheckPassword(user *account.User, password string
 		return err
 	}
 
-	if err := a.checkUserPassword(user, password); err != nil {
+	if err := a.CheckUserPassword(user, password); err != nil {
 		if passErr := a.srv.Store.User().UpdateFailedPasswordAttempts(user.Id, user.FailedAttempts+1); passErr != nil {
 			return model.NewAppError("DoubleCheckPassword", "app.user.update_failed_pwd_attempts.app_error", nil, passErr.Error(), http.StatusInternalServerError)
 		}
@@ -84,10 +84,10 @@ func (a *ServiceAccount) DoubleCheckPassword(user *account.User, password string
 	return nil
 }
 
-// checkUserPassword compares user's password to given password. If they dont match, return an error
-func (a *ServiceAccount) checkUserPassword(user *account.User, password string) *model.AppError {
+// CheckUserPassword compares user's password to given password. If they dont match, return an error
+func (a *ServiceAccount) CheckUserPassword(user *account.User, password string) *model.AppError {
 	if err := ComparePassword(user.Password, password); err != nil {
-		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
+		return model.NewAppError("CheckUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
 
 	return nil

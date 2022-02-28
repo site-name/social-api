@@ -85,7 +85,7 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 	}
 
 	for _, productType := range productTypes {
-		if *productType.IsShippingRequired { // use pointer directly since this field has default value
+		if *productType.IsShippingRequired {
 			return true, nil
 		}
 	}

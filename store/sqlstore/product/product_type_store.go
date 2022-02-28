@@ -165,10 +165,10 @@ func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount
 
 	// parse options
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Id"))
+		query = query.Where(options.Id)
 	}
 	if options.Name != nil {
-		query = query.Where(options.Name.ToSquirrel("Name"))
+		query = query.Where(options.Name)
 	}
 
 	return query

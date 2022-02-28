@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
@@ -33,7 +34,7 @@ type ProductType struct {
 	Name               string                 `json:"name"`
 	Slug               string                 `json:"slug"`
 	Kind               ProductTypeKind        `json:"kind"`
-	HasVariants        *bool                  `json:"has_variants"`
+	HasVariants        *bool                  `json:"has_variants"`         // default true
 	IsShippingRequired *bool                  `json:"is_shipping_required"` // default true
 	IsDigital          *bool                  `json:"is_digital"`           // default false
 	Weight             *float32               `json:"weight"`
@@ -43,8 +44,8 @@ type ProductType struct {
 
 // ProductTypeFilterOption is used to build squirrel sql queries
 type ProductTypeFilterOption struct {
-	Id   *model.StringFilter
-	Name *model.StringFilter
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
 }
 
 func (p *ProductType) String() string {
@@ -83,6 +84,15 @@ func (p *ProductType) PreSave() {
 	if p.Id == "" {
 		p.Id = model.NewId()
 	}
+
+	p.commonPre()
+}
+
+func (p *ProductType) PreUpdate() {
+	p.commonPre()
+}
+
+func (p *ProductType) commonPre() {
 	p.Name = model.SanitizeUnicode(p.Name)
 	p.Slug = slug.Make(p.Name)
 
@@ -101,22 +111,6 @@ func (p *ProductType) PreSave() {
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
-}
-
-func (p *ProductType) PreUpdate() {
-	p.Name = model.SanitizeUnicode(p.Name)
-	p.Slug = slug.Make(p.Name)
-
-	if p.Weight != nil && p.WeightUnit == "" {
-		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
-	}
-	if p.IsShippingRequired == nil {
-		p.IsShippingRequired = model.NewBool(true)
-	}
-}
-
-func (p *ProductType) ToJSON() string {
-	return model.ModelToJson(p)
 }
 
 // IsGiftcard checks if current product type has kind of "gift_card"

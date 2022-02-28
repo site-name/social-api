@@ -35,10 +35,6 @@ func init() {
 	})
 }
 
-const (
-	CheckoutMissingAppErrorId = "app.checkout.missing_checkout.app_error"
-)
-
 // CheckoutByOption returns a checkout filtered by given option
 func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
 	chekout, err := a.srv.Store.Checkout().GetByOption(option)
@@ -120,7 +116,7 @@ func (a *ServiceCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Ch
 		var errID string = "app.checkout.checkout_upsert_error.app_error"
 
 		if _, ok := err.(*store.ErrNotFound); ok { // this error caused by Update
-			errID = CheckoutMissingAppErrorId
+			errID = "app.checkout.missing_checkout.app_error"
 			statusCode = http.StatusNotFound
 		}
 		return nil, model.NewAppError("UpsertCheckout", errID, nil, err.Error(), statusCode)
