@@ -198,6 +198,7 @@ require (
 )
 
 require (
+	github.com/mattermost/morph v0.0.0-20220222074146-cff3f12ff131
 	github.com/splitio/go-split-commons/v4 v4.0.2 // indirect
 	github.com/splitio/go-toolkit/v5 v5.0.3 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect

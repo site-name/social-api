@@ -1,6 +1,9 @@
 package sqlstore
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
@@ -8,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 // siteNameConverter make tables able to have fields with custom types
@@ -78,4 +82,14 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 
 type JSONSerializable interface {
 	ToJSON() string
+}
+
+type TraceOnAdapter struct{}
+
+func (t *TraceOnAdapter) Printf(format string, v ...interface{}) {
+	originalString := fmt.Sprintf(format, v...)
+	newString := strings.ReplaceAll(originalString, "\n", " ")
+	newString = strings.ReplaceAll(newString, "\t", " ")
+	newString = strings.ReplaceAll(newString, "\"", "")
+	slog.Debug(newString)
 }

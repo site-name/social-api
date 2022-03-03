@@ -6,7 +6,7 @@ import (
 	dbsql "database/sql"
 	"database/sql/driver"
 	"fmt"
-	"os"
+	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -14,12 +14,13 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/go-sql-driver/mysql"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
+	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/mattermost/gorp"
+	"github.com/mattermost/morph"
+	"github.com/mattermost/morph/drivers"
+	ps "github.com/mattermost/morph/drivers/postgres"
+	mbindata "github.com/mattermost/morph/sources/go_bindata"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/db/migrations"
 	"github.com/sitename/sitename/einterfaces"
@@ -53,67 +54,26 @@ const (
 	replicaLagPrefix = "replica-lag"
 )
 
-// os exit codes when error occures
-const (
-	ExitGenericFailure           = 1
-	ExitCreateTable              = 100
-	ExitDBOpen                   = 101
-	ExitPing                     = 102
-	ExitNoDriver                 = 103
-	ExitTableExists              = 104
-	ExitTableExistsMySQL         = 105
-	ExitColumnExists             = 106
-	ExitDoesColumnExistsPostgres = 107
-	ExitDoesColumnExistsMySQL    = 108
-	ExitDoesColumnExistsMissing  = 109
-	ExitCreateColumnPostgres     = 110
-	ExitCreateColumnMySQL        = 111
-	ExitCreateColumnMissing      = 112
-	ExitRemoveColumn             = 113
-	ExitRenameColumn             = 114
-	ExitMaxColumn                = 115
-	ExitAlterColumn              = 116
-	ExitCreateIndexPostgres      = 117
-	ExitCreateIndexMySQL         = 118
-	ExitCreateIndexFullMySQL     = 119
-	ExitCreateIndexMissing       = 120
-	ExitRemoveIndexPostgres      = 121
-	ExitRemoveIndexMySQL         = 122
-	ExitRemoveIndexMissing       = 123
-	ExitRemoveTable              = 134
-	ExitAlterPrimaryKey          = 139
-)
-
 type SqlStore struct {
 	// rrCounter and srCounter should be kept first.
-	// See https://github.com/mattermost/mattermost-server/v5/pull/7281
-	rrCounter         int64
-	srCounter         int64
-	master            *gorp.DbMap
-	Replicas          []*gorp.DbMap
-	searchReplicas    []*gorp.DbMap
+	rrCounter int64
+	srCounter int64
+
+	master  *gorp.DbMap
+	masterX *sqlxDBWrapper
+
+	Replicas  []*gorp.DbMap
+	ReplicaXs []*sqlxDBWrapper
+
+	searchReplicas  []*gorp.DbMap
+	searchReplicaXs []*sqlxDBWrapper
+
 	replicaLagHandles []*dbsql.DB
 	stores            *SqlStoreStores
 	settings          *model.SqlSettings
 	lockedToMaster    bool
 	context           context.Context
 	metrics           einterfaces.MetricsInterface
-}
-
-type TraceOnAdapter struct{}
-
-// ColumnInfo holds information about a column.
-type ColumnInfo struct {
-	DataType          string
-	CharMaximumLength int
-}
-
-func (t *TraceOnAdapter) Printf(format string, v ...interface{}) {
-	originalString := fmt.Sprintf(format, v...)
-	newString := strings.ReplaceAll(originalString, "\n", " ")
-	newString = strings.ReplaceAll(newString, "\t", " ")
-	newString = strings.ReplaceAll(newString, "\"", "")
-	slog.Debug(newString)
 }
 
 // New initializes connections to postgresql database
@@ -131,21 +91,18 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 	// check if database version is met requirement
 	ver, err := store.GetDbVersion(true)
 	if err != nil {
-		slog.Critical("Cannot get DB version.", slog.Err(err))
-		os.Exit(ExitGenericFailure)
+		slog.Fatal("Cannot get DB version.", slog.Err(err))
 	}
 
 	ok, err := store.ensureMinimumDBVersion(ver)
 	if !ok {
-		slog.Critical("Error while checking DB version.", slog.Err(err))
-		os.Exit(ExitGenericFailure)
+		slog.Fatal("Error while checking DB version.", slog.Err(err))
 	}
 
 	// migrate tables
 	err = store.migrate(migrationsDirectionUp)
 	if err != nil {
-		slog.Critical("Failed to apply database migrations.", slog.Err(err))
-		os.Exit(ExitGenericFailure)
+		slog.Fatal("Failed to apply database migrations.", slog.Err(err))
 	}
 
 	// set up tables before performing migrations:
@@ -158,16 +115,13 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		if IsDuplicate(err) {
 			slog.Warn("Duplicate key error occurred; assuming table already created and proceeding.", slog.Err(err))
 		} else {
-			slog.Critical("Error creating database tables.", slog.Err(err))
-			os.Exit(ExitCreateTable)
+			slog.Fatal("Error creating database tables.", slog.Err(err))
 		}
 	}
 
 	err = upgradeDatabase(store, model.CurrentVersion)
 	if err != nil {
-		slog.Critical("Failed to upgrade database.", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
+		slog.Fatal("Failed to upgrade database.", slog.Err(err))
 	}
 
 	// perform database indexing
@@ -177,12 +131,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 }
 
 // setupConnection opens connection to database, check if it works by ping
-func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *gorp.DbMap {
+func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *dbsql.DB {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
-		slog.Critical("Failed to open SQL connection to err.", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitDBOpen)
+		slog.Fatal("Failed to open SQL connection to err.", slog.Err(err))
 	}
 
 	for i := 0; i < DBPingAttempts; i++ {
@@ -194,9 +146,7 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 			break
 		} else {
 			if i == DBPingAttempts-1 {
-				slog.Critical("Failed to ping DB, server will exit.", slog.Err(err))
-				time.Sleep(time.Second)
-				os.Exit(ExitPing)
+				slog.Fatal("Failed to ping DB, server will exit.", slog.Err(err))
 			} else {
 				slog.Error("Failed to ping DB", slog.Err(err), slog.Int("retrying in seconds", DBPingTimeoutSecs))
 				time.Sleep(DBPingTimeoutSecs * time.Second)
@@ -221,18 +171,7 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 	db.SetConnMaxLifetime(time.Duration(*settings.ConnMaxLifetimeMilliseconds) * time.Millisecond)
 	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
-	dbmap := &gorp.DbMap{
-		Db:            db,
-		TypeConverter: siteNameConverter{},
-		Dialect:       gorp.PostgresDialect{},
-		QueryTimeout:  time.Duration(*settings.QueryTimeout) * time.Second,
-	}
-
-	if settings.Trace != nil && *settings.Trace {
-		dbmap.TraceOn("sql-trace:", &TraceOnAdapter{})
-	}
-
-	return dbmap
+	return db
 }
 
 func (ss *SqlStore) SetContext(context context.Context) {
@@ -243,21 +182,32 @@ func (ss *SqlStore) Context() context.Context {
 	return ss.context
 }
 
-// connect to postgresql server
 func (ss *SqlStore) initConnection() {
-	ss.master = setupConnection("master", *ss.settings.DataSource, ss.settings)
+	dataSource := *ss.settings.DataSource
+
+	handle := setupConnection("master", dataSource, ss.settings)
+	ss.master = getDBMap(ss.settings, handle)
+	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
 		ss.Replicas = make([]*gorp.DbMap, len(ss.settings.DataSourceReplicas))
+		ss.ReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
 		for i, replica := range ss.settings.DataSourceReplicas {
-			ss.Replicas[i] = setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
+			handle := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
+
+			ss.Replicas[i] = getDBMap(ss.settings, handle)
+			ss.ReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
 
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
 		ss.searchReplicas = make([]*gorp.DbMap, len(ss.settings.DataSourceSearchReplicas))
+		ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
-			ss.searchReplicas[i] = setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
+			handle := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
+
+			ss.searchReplicas[i] = getDBMap(ss.settings, handle)
+			ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
 
@@ -267,10 +217,24 @@ func (ss *SqlStore) initConnection() {
 			if src.DataSource == nil {
 				continue
 			}
-			gorpConn := setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), *src.DataSource, ss.settings)
-			ss.replicaLagHandles[i] = gorpConn.Db
+			ss.replicaLagHandles[i] = setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), *src.DataSource, ss.settings)
 		}
 	}
+}
+
+func getDBMap(settings *model.SqlSettings, db *dbsql.DB) *gorp.DbMap {
+	connectionTimeout := time.Duration(*settings.QueryTimeout) * time.Second
+	dbMap := &gorp.DbMap{
+		Db:            db,
+		TypeConverter: siteNameConverter{},
+		Dialect:       gorp.PostgresDialect{},
+		QueryTimeout:  connectionTimeout,
+	}
+
+	if settings.Trace != nil && *settings.Trace {
+		dbMap.TraceOn("sql-trace:", &TraceOnAdapter{})
+	}
+	return dbMap
 }
 
 func (ss *SqlStore) DriverName() string {
@@ -306,6 +270,14 @@ func (ss *SqlStore) GetMaster() *gorp.DbMap {
 	return ss.master
 }
 
+func (ss *SqlStore) GetMasterX() *sqlxDBWrapper {
+	return ss.masterX
+}
+
+func (ss *SqlStore) SetMasterX(db *sql.DB) {
+	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(db, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
+}
+
 func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
 		return ss.GetReplica()
@@ -313,6 +285,16 @@ func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
 
 	rrNum := atomic.AddInt64(&ss.srCounter, 1) % int64(len(ss.searchReplicas))
 	return ss.searchReplicas[rrNum]
+}
+
+func (ss *SqlStore) GetSearchReplicaX() *sqlxDBWrapper {
+
+	if len(ss.settings.DataSourceSearchReplicas) == 0 {
+		return ss.GetReplicaX()
+	}
+
+	rrNum := atomic.AddInt64(&ss.srCounter, 1) % int64(len(ss.searchReplicaXs))
+	return ss.searchReplicaXs[rrNum]
 }
 
 // GetReplica try getting a slave datasource, if there is no slave or can only choose main source, it returns main datasource.
@@ -324,6 +306,11 @@ func (ss *SqlStore) GetReplica() *gorp.DbMap {
 
 	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
 	return ss.Replicas[rrNum]
+}
+
+func (ss *SqlStore) GetReplicaX() *sqlxDBWrapper {
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
+	return ss.ReplicaXs[rrNum]
 }
 
 // returns number of connections to master database
@@ -417,9 +404,7 @@ func (ss *SqlStore) DoesTableExist(tableName string) bool {
 	)
 
 	if err != nil {
-		slog.Critical("Failed to check if table exists", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitTableExists)
+		slog.Fatal("Failed to check if table exists", slog.Err(err))
 	}
 
 	return count > 0
@@ -441,44 +426,15 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 			return false
 		}
 
-		slog.Critical("Failed to check if column exists", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitDoesColumnExistsPostgres)
+		slog.Fatal("Failed to check if column exists", slog.Err(err))
 	}
 
 	return count > 0
 }
 
-// GetColumnInfo returns data type information about the given column.
-func (ss *SqlStore) GetColumnInfo(tableName, columnName string) (*ColumnInfo, error) {
-	var columnInfo ColumnInfo
-	err := ss.GetMaster().SelectOne(&columnInfo,
-		`SELECT 
-			data_type as DataType,
-			COALESCE(character_maximum_length, 0) as CharMaximumLength
-		FROM 
-			information_schema.columns
-		WHERE 
-			lower(table_name) = lower($1)
-		AND 
-			lower(column_name) = lower($2)`,
-		tableName,
-		columnName,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return &columnInfo, nil
-}
-
-// IsVarchar returns true if the column type matches one of the varchar types
-// either in MySQL or PostgreSQL.
-func (ss *SqlStore) IsVarchar(columnType string) bool {
-	return columnType == "character varying"
-}
-
 func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
-	count, err := ss.GetMaster().SelectInt(`
+	var count int64
+	err := ss.GetMasterX().Get(&count, `
 			SELECT
 				COUNT(0)
 			FROM
@@ -488,13 +444,16 @@ func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
 		`, triggerName)
 
 	if err != nil {
-		slog.Critical("Failed to check if trigger exists", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
+		slog.Fatal("Failed to check if trigger exists", slog.Err(err))
 	}
 
 	return count > 0
+}
 
+// IsVarchar returns true if the column type matches one of the varchar types
+// either in MySQL or PostgreSQL.
+func (ss *SqlStore) IsVarchar(columnType string) bool {
+	return columnType == "character varying"
 }
 
 func (ss *SqlStore) CreateColumnIfNotExists(tableName string, columnName string, mySqlColType string, postgresColType string, defaultValue string) bool {
@@ -502,41 +461,9 @@ func (ss *SqlStore) CreateColumnIfNotExists(tableName string, columnName string,
 		return false
 	}
 
-	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " ADD " + columnName + " " + postgresColType + " DEFAULT '" + defaultValue + "'")
+	_, err := ss.GetMasterX().ExecNoTimeout("ALTER TABLE " + tableName + " ADD " + columnName + " " + postgresColType + " DEFAULT '" + defaultValue + "'")
 	if err != nil {
-		slog.Critical("Failed to create column", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitCreateColumnPostgres)
-	}
-
-	return true
-}
-
-func (ss *SqlStore) CreateColumnIfNotExistsNoDefault(tableName string, columnName string, mySqlColType string, postgresColType string) bool {
-	if ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " ADD " + columnName + " " + postgresColType)
-	if err != nil {
-		slog.Critical("Failed to create column", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitCreateColumnPostgres)
-	}
-
-	return true
-}
-
-func (ss *SqlStore) RemoveColumnIfExists(tableName string, columnName string) bool {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " DROP COLUMN " + columnName)
-	if err != nil {
-		slog.Critical("Failed to drop column", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitRemoveColumn)
+		slog.Fatal("Failed to create column", slog.Err(err))
 	}
 
 	return true
@@ -546,127 +473,12 @@ func (ss *SqlStore) RemoveTableIfExists(tableName string) bool {
 	if !ss.DoesTableExist(tableName) {
 		return false
 	}
-	_, err := ss.GetMaster().Exec("DROP TABLE " + tableName)
+
+	_, err := ss.GetMasterX().ExecNoTimeout("DROP TABLE " + tableName)
 	if err != nil {
-		slog.Critical("Failed to drop table", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitRemoveTable)
+		slog.Fatal("Failed to drop table", slog.Err(err))
 	}
 
-	return true
-}
-
-func (ss *SqlStore) RenameColumnIfExists(tableName string, oldColumnName string, newColumnName string, colType string) bool {
-	if !ss.DoesColumnExist(tableName, oldColumnName) {
-		return false
-	}
-
-	_, err := ss.GetMaster().Exec("ALTER TABLE " + tableName + " RENAME COLUMN " + oldColumnName + " TO " + newColumnName)
-
-	if err != nil {
-		slog.Critical("Failed to rename column", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitRenameColumn)
-	}
-
-	return true
-}
-
-func (ss *SqlStore) GetMaxLengthOfColumnIfExists(tableName string, columnName string) string {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return ""
-	}
-
-	result, err := ss.GetMaster().SelectStr("SELECT character_maximum_length FROM information_schema.columns WHERE table_name = '" + strings.ToLower(tableName) + "' AND column_name = '" + strings.ToLower(columnName) + "'")
-
-	if err != nil {
-		slog.Critical("Failed to get max length of column", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitMaxColumn)
-	}
-
-	return result
-}
-
-func (ss *SqlStore) AlterColumnTypeIfExists(tableName string, columnName string, postgresColType string) bool {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	_, err := ss.GetMaster().Exec("ALTER TABLE " + strings.ToLower(tableName) + " ALTER COLUMN " + strings.ToLower(columnName) + " TYPE " + postgresColType)
-
-	if err != nil {
-		slog.Critical("Failed to alter column type", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitAlterColumn)
-	}
-
-	return true
-}
-
-func (ss *SqlStore) AlterColumnDefaultIfExists(tableName string, columnName string, postgresColDefault *string) bool {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-	// Postgres doesn't have the same limitation, but preserve the interface.
-	if postgresColDefault == nil {
-		return true
-	}
-
-	tableName = strings.ToLower(tableName)
-	columnName = strings.ToLower(columnName)
-	defaultValue := *postgresColDefault
-	var err error
-	if defaultValue == "" {
-		_, err = ss.GetMaster().Exec("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP DEFAULT")
-	} else {
-		_, err = ss.GetMaster().Exec("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " SET DEFAULT " + defaultValue)
-	}
-
-	if err != nil {
-		slog.Critical("Failed to alter column", slog.String("table", tableName), slog.String("column", columnName), slog.String("default value", defaultValue), slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
-		return false
-	}
-
-	return true
-}
-
-func (ss *SqlStore) AlterPrimaryKey(tableName string, columnNames []string) bool {
-	// get the current primary key as a comma separated list of columns
-	query := `
-			SELECT string_agg(a.attname, ',') AS pk
-		FROM
-			pg_constraint AS c
-		CROSS JOIN
-			(SELECT unnest(conkey) FROM pg_constraint WHERE conrelid='` + strings.ToLower(tableName) + `'::REGCLASS AND contype='p') AS cols(colnum)
-		INNER JOIN
-			pg_attribute AS a ON a.attrelid = c.conrelid
-		AND cols.colnum = a.attnum
-		WHERE
-			c.contype = 'p'
-		AND c.conrelid = '` + strings.ToLower(tableName) + `'::REGCLASS`
-	currentPrimaryKey, err := ss.GetMaster().SelectStr(query)
-	if err != nil {
-		slog.Critical("Failed to get current primary key", slog.String("table", tableName), slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitAlterPrimaryKey)
-	}
-
-	primaryKey := strings.Join(columnNames, ",")
-	if strings.EqualFold(currentPrimaryKey, primaryKey) {
-		return false
-	}
-	// alter primary key
-	alterQuery := "ALTER TABLE " + tableName + " DROP CONSTRAINT " + strings.ToLower(tableName) + "_pkey, ADD PRIMARY KEY (" + strings.ToLower(primaryKey) + ")"
-
-	_, err = ss.GetMaster().Exec(alterQuery)
-	if err != nil {
-		slog.Critical("Failed to alter primary key", slog.String("table", tableName), slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitAlterPrimaryKey)
-	}
 	return true
 }
 
@@ -709,16 +521,14 @@ func (ss *SqlStore) createIndexIfNotExists(indexName string, tableName string, c
 	query := ""
 	if indexType == IndexTypeFullText {
 		if len(columnNames) != 1 {
-			slog.Critical("Unable to create multi column full text index")
-			os.Exit(ExitCreateIndexPostgres)
+			slog.Fatal("Unable to create multi column full text index")
 		}
 		columnName := columnNames[0]
 		postgresColumnNames := convertMySQLFullTextColumnsToPostgres(columnName)
 		query = "CREATE INDEX " + indexName + " ON " + tableName + " USING gin(to_tsvector('english', " + postgresColumnNames + "))"
 	} else if indexType == IndexTypeFullTextFunc {
 		if len(columnNames) != 1 {
-			slog.Critical("Unable to create multi column full text index")
-			os.Exit(ExitCreateIndexPostgres)
+			slog.Fatal("Unable to create multi column full text index")
 		}
 		columnName := columnNames[0]
 		query = "CREATE INDEX " + indexName + " ON " + tableName + " USING gin(to_tsvector('english', " + columnName + "))"
@@ -728,9 +538,8 @@ func (ss *SqlStore) createIndexIfNotExists(indexName string, tableName string, c
 
 	_, err := ss.GetMaster().Exec(query)
 	if err != nil {
-		slog.Critical("Failed to create index", slog.Err(errExists), slog.Err(err))
+		slog.Fatal("Failed to create index", slog.Err(errExists), slog.Err(err))
 		time.Sleep(time.Second)
-		os.Exit(ExitCreateIndexPostgres)
 	}
 
 	return true
@@ -754,23 +563,6 @@ func (ss *SqlStore) CreateForeignKeyIfNotExists(tableName, columnName, refTableN
 	return
 }
 
-func (ss *SqlStore) RemoveIndexIfExists(indexName string, tableName string) bool {
-	_, err := ss.GetMaster().SelectStr("SELECT $1::regclass", indexName)
-	// It should fail if the index does not exist
-	if err != nil {
-		return false
-	}
-
-	_, err = ss.GetMaster().Exec("DROP INDEX " + indexName)
-	if err != nil {
-		slog.Critical("Failed to remove index", slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitRemoveIndexPostgres)
-	}
-
-	return true
-}
-
 // check if given err is postgres's duplicate error
 func IsConstraintAlreadyExistsError(err error) bool {
 	if dbErr, ok := err.(*pq.Error); ok {
@@ -781,11 +573,6 @@ func IsConstraintAlreadyExistsError(err error) bool {
 	return false
 }
 
-// check if given err is postgres's unique error if it satisfy the following:
-//
-// 1) given error's type is pq.Error and err's code is "23505"(uniqueless violation code)
-//
-// 2) error's string contains at least one value in given indexName
 func (ss *SqlStore) IsUniqueConstraintError(err error, indexName []string) bool {
 	unique := false
 	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
@@ -851,7 +638,17 @@ func (ss *SqlStore) UnlockFromMaster() {
 }
 
 func (ss *SqlStore) DropAllTables() {
-	ss.master.TruncateTables()
+	ss.masterX.Exec(`DO
+			$func$
+			BEGIN
+			   EXECUTE
+			   (SELECT 'TRUNCATE TABLE ' || string_agg(oid::regclass::text, ', ') || ' CASCADE'
+			    FROM   pg_class
+			    WHERE  relkind = 'r'  -- only tables
+			    AND    relnamespace = 'public'::regnamespace
+			   );
+			END
+			$func$;`)
 }
 
 func (ss *SqlStore) GetQueryBuilder() sq.StatementBuilderType {
@@ -864,19 +661,7 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
-// migrate performs database migration with go-migrate. Make sure to add .sql schemas to /db/migrations folder so it can work.
-// If you don't add .sql schemas, still migration can be done using gorp
 func (ss *SqlStore) migrate(direction migrationDirection) error {
-	// When WithInstance is used in golang-migrate, the underlying driver connections are not tracked.
-	// So we will have to open a fresh connection for migrations and explicitly close it when all is done.
-	conn := setupConnection("migrations", *ss.settings.DataSource, ss.settings)
-	defer conn.Db.Close()
-
-	driver, err := postgres.WithInstance(conn.Db, &postgres.Config{})
-	if err != nil {
-		return err
-	}
-
 	var assetNamesForDriver []string
 	for _, assetName := range migrations.AssetNames() {
 		if strings.HasPrefix(assetName, ss.DriverName()) {
@@ -884,40 +669,44 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		}
 	}
 
-	source := bindata.Resource(assetNamesForDriver, func(name string) ([]byte, error) {
-		return migrations.Asset(filepath.Join(ss.DriverName(), name))
+	src, err := mbindata.WithInstance(&mbindata.AssetSource{
+		Names: assetNamesForDriver,
+		AssetFunc: func(name string) ([]byte, error) {
+			return migrations.Asset(filepath.Join(ss.DriverName(), name))
+		},
+	})
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	driver, err := ps.WithInstance(ss.GetMasterX().DB.DB, &ps.Config{
+		Config: drivers.Config{
+			StatementTimeoutInSecs: *ss.settings.MigrationsStatementTimeoutSeconds,
+		},
 	})
 
-	sourceDriver, err := bindata.WithInstance(source)
 	if err != nil {
 		return err
 	}
 
-	migrations, err := migrate.NewWithInstance(
-		"go-bindata",
-		sourceDriver,
-		ss.DriverName(),
-		driver)
-
+	opts := []morph.EngineOption{
+		morph.WithLogger(log.New(&morphWriter{}, "", log.Lshortfile)),
+		morph.WithLock("mm-lock-key"),
+	}
+	engine, err := morph.New(context.Background(), driver, src, opts...)
 	if err != nil {
 		return err
 	}
-	defer migrations.Close()
+	defer engine.Close()
 
 	switch direction {
-	case migrationsDirectionUp:
-		err = migrations.Up()
 	case migrationsDirectionDown:
-		err = migrations.Down()
-	default:
-		return fmt.Errorf("unsupported migration direction %s", direction)
-	}
-
-	if err != nil && err != migrate.ErrNoChange && !errors.Is(err, os.ErrNotExist) {
+		_, err = engine.ApplyDown(-1)
 		return err
+	default:
+		return engine.ApplyAll()
 	}
-
-	return nil
 }
 
 func convertMySQLFullTextColumnsToPostgres(columnNames string) string {
@@ -949,15 +738,12 @@ func IsDuplicate(err error) bool {
 // ensureMinimumDBVersion gets the DB version and ensures it is
 // above the required minimum version requirements.
 func (ss *SqlStore) ensureMinimumDBVersion(ver string) (bool, error) {
-	switch *ss.settings.DriverName {
-	case model.DATABASE_DRIVER_POSTGRES:
-		intVer, err2 := strconv.Atoi(ver)
-		if err2 != nil {
-			return false, fmt.Errorf("cannot parse DB version: %v", err2)
-		}
-		if intVer < MinimumRequiredPostgresVersion {
-			return false, fmt.Errorf("minimum Postgres version requirements not met. Found: %s, Wanted: %s", versionString(intVer, *ss.settings.DriverName), versionString(MinimumRequiredPostgresVersion, *ss.settings.DriverName))
-		}
+	intVer, err2 := strconv.Atoi(ver)
+	if err2 != nil {
+		return false, fmt.Errorf("cannot parse DB version: %v", err2)
+	}
+	if intVer < MinimumRequiredPostgresVersion {
+		return false, fmt.Errorf("minimum Postgres version requirements not met. Found: %s, Wanted: %s", versionString(intVer, *ss.settings.DriverName), versionString(MinimumRequiredPostgresVersion, *ss.settings.DriverName))
 	}
 	return true, nil
 }
@@ -968,13 +754,9 @@ func (ss *SqlStore) ensureMinimumDBVersion(ver string) (bool, error) {
 // https://www.postgresql.org/docs/13/libpq-status.html#LIBPQ-PQSERVERVERSION.
 // For MySQL, we consider a major*1000 + minor*100 + patch format.
 func versionString(v int, driver string) string {
-	switch driver {
-	case model.DATABASE_DRIVER_POSTGRES:
-		minor := v % 10000
-		major := v / 10000
-		return strconv.Itoa(major) + "." + strconv.Itoa(minor)
-	}
-	return ""
+	minor := v % 10000
+	major := v / 10000
+	return strconv.Itoa(major) + "." + strconv.Itoa(minor)
 }
 
 // indexing metadata fields for models
@@ -991,77 +773,8 @@ func (ss *SqlStore) CommonSeoMaxLength(table *gorp.TableMap) {
 }
 
 func (ss *SqlStore) appendMultipleStatementsFlag(dataSource string) (string, error) {
-	// We need to tell the MySQL driver that we want to use multiStatements
-	// in order to make migrations work.
-	if ss.DriverName() == model.DATABASE_DRIVER_MYSQL {
-		config, err := mysql.ParseDSN(dataSource)
-		if err != nil {
-			return "", err
-		}
-
-		if config.Params == nil {
-			config.Params = map[string]string{}
-		}
-
-		config.Params["multiStatements"] = "true"
-		return config.FormatDSN(), nil
-	}
 
 	return dataSource, nil
-}
-
-func (ss *SqlStore) AlterDefaultIfColumnExists(tableName string, columnName string, mySqlColDefault *string, postgresColDefault *string) bool {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	var defaultValue string
-	if ss.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		// Postgres doesn't have the same limitation, but preserve the interface.
-		if postgresColDefault == nil {
-			return true
-		}
-
-		tableName = strings.ToLower(tableName)
-		columnName = strings.ToLower(columnName)
-		defaultValue = *postgresColDefault
-	} else {
-		slog.Critical("Failed to alter column default because of missing driver")
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
-		return false
-	}
-
-	if defaultValue == "" {
-		defaultValue = "''"
-	}
-
-	query := "ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " SET DEFAULT " + defaultValue
-	_, err := ss.GetMaster().ExecNoTimeout(query)
-	if err != nil {
-		slog.Critical("Failed to alter column default", slog.String("table", tableName), slog.String("column", columnName), slog.String("default value", defaultValue), slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
-		return false
-	}
-
-	return true
-}
-
-func (ss *SqlStore) RemoveDefaultIfColumnExists(tableName, columnName string) bool {
-	if !ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	_, err := ss.GetMaster().ExecNoTimeout("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP DEFAULT")
-	if err != nil {
-		slog.Critical("Failed to drop column default", slog.String("table", tableName), slog.String("column", columnName), slog.Err(err))
-		time.Sleep(time.Second)
-		os.Exit(ExitGenericFailure)
-		return false
-	}
-
-	return true
 }
 
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
