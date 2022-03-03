@@ -396,6 +396,8 @@ type (
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
 		GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error)      // GetByOption finds and returns a warehouse filtered given option
 		WarehouseByStockID(stockID string) (*warehouse.WareHouse, error)                        // WarehouseByStockID returns 1 warehouse by given stock id
+		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error)
+		ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error)
 	}
 	StockStore interface {
 		CreateIndexesIfNotExists()

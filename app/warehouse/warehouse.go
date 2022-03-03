@@ -1,7 +1,3 @@
-/*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
-*/
 package warehouse
 
 import (
@@ -55,7 +51,11 @@ func (a *ServiceWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterO
 func (s *ServiceWarehouse) WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WarehouseByOption", "app.warehouse.error_finding_warehouse_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("WarehouseByOption", "app.warehouse.error_finding_warehouse_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return warehouse, nil
@@ -65,7 +65,11 @@ func (s *ServiceWarehouse) WarehouseByOption(option *warehouse.WarehouseFilterOp
 func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WarehouseByStockID", "app.warehouse.error_finding_warehouse_by_stock_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("WarehouseByStockID", "app.warehouse.error_finding_warehouse_by_stock_id", nil, err.Error(), statusCode)
 	}
 
 	return warehouse, nil
@@ -108,7 +112,7 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*ware
 	countryCode = strings.ToUpper(countryCode)
 
 	return a.WarehousesByOption(&warehouse.WarehouseFilterOption{
-		ShippingZonesCountries: squirrel.Like{a.srv.Store.ShippingZone().TableName("Countries"): countryCode},
+		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,
 		PrefetchShippingZones:  true,
 	})

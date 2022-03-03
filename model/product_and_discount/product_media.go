@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -41,9 +42,9 @@ type ProductMedia struct {
 
 // ProductMediaFilterOption is used for building squirrel sql queries
 type ProductMediaFilterOption struct {
-	Id        *model.StringFilter
-	ProductID *model.StringFilter
-	Type      []string
+	Id        squirrel.Sqlizer
+	ProductID squirrel.Sqlizer
+	Type      squirrel.Sqlizer
 }
 
 func (p *ProductMedia) IsValid() *model.AppError {

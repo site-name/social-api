@@ -55,10 +55,6 @@ func (c CheckoutLines) IDs() []string {
 	return res
 }
 
-func (c *CheckoutLine) ToJSON() string {
-	return model.ModelToJson(c)
-}
-
 func (c *CheckoutLine) Equal(other *CheckoutLine) bool {
 	return c.VariantID == other.VariantID && c.Quantity == other.Quantity
 }

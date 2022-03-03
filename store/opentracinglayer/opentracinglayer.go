@@ -9228,6 +9228,42 @@ func (s *OpenTracingLayerVoucherTranslationStore) Save(translation *product_and_
 	return result, err
 }
 
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollect")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.FilterByOprion")

@@ -8398,6 +8398,38 @@ func (s *TimerLayerVoucherTranslationStore) Save(translation *product_and_discou
 	return result, err
 }
 
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollect", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
 	start := timemodule.Now()
 
