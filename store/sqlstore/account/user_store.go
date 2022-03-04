@@ -42,17 +42,8 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
 	us.usersQuery = us.
 		GetQueryBuilder().
-		Select( // select all the fields of user model
-			"u.Id", "u.Email", "u.Username", "u.FirstName", "u.LastName",
-			"u.DefaultShippingAddressID", "u.DefaultBillingAddressID", "u.Password", "u.AuthData", "u.AuthService",
-			"u.EmailVerified", "u.Nickname", "u.Roles", "u.Props", "u.NotifyProps",
-			"u.LastPasswordUpdate", "u.LastPictureUpdate", "u.FailedAttempts", "u.Locale", "u.Timezone",
-			"u.MfaActive", "u.MfaSecret", "u.CreateAt", "u.UpdateAt", "u.DeleteAt",
-			"u.IsActive", "u.Note", "u.JwtTokenKey",
-			"u.LastActivityAt", "u.TermsOfServiceId", "u.TermsOfServiceCreateAt", "u.DisableWelcomeEmail",
-			"u.Metadata", "u.PrivateMetadata",
-		).
-		From(store.UserTableName + " AS u")
+		Select(us.ModelFields()...).
+		From(store.UserTableName)
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(account.User{}, store.UserTableName).SetKeys(false, "Id")

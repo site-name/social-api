@@ -10,26 +10,28 @@ import (
 )
 
 // cleanAccountCreateInput cleans user registration input
-func cleanAccountCreateInput(r *mutationResolver, data *gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
+func cleanAccountCreateInput(r *mutationResolver, data gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegisterInput, *model.AppError) {
 	// if signup email verification is disabled
 	if !*r.Config().EmailSettings.RequireEmailVerification {
-		return data, nil
+		return &data, nil
 	}
 
 	// clean redirect url
-	appErr := model.ValidateStoreFrontUrl(r.Config(), *data.RedirectURL)
-	if appErr != nil {
-		return nil, appErr
+	if data.RedirectURL != nil {
+		appErr := model.ValidateStoreFrontUrl(r.Config(), *data.RedirectURL)
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	// clean channel
-	channel, appErr := r.Srv().ChannelService().CleanChannel(data.Channel)
-	if appErr != nil {
-		return nil, appErr
-	}
-	data.Channel = &channel.Slug
+	// channel, appErr := r.Srv().ChannelService().CleanChannel(data.Channel)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+	// data.Channel = &channel.Slug
 
-	return data, nil
+	return &data, nil
 }
 
 func validateAddressInput(where string, input *gqlmodel.AddressInput) *model.AppError {

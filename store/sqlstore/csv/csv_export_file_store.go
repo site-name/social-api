@@ -19,7 +19,6 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 		table := db.AddTableWithName(csv.ExportFile{}, store.CsvExportFileTablename).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Data").SetMaxSize(csv.EXPORT_FILE_DATA_MAX_LENGTH)
 	}
 	return cs
 }

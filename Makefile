@@ -214,7 +214,7 @@ gqlgen:
 	$(GO) get -modfile=go.tools.mod github.com/99designs/gqlgen@v0.14.0
 	$(GO) get -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
 
-	$(GOBIN)/gqlgen run github.com/99designs/gqlgen
+	$(GOBIN)/gqlgen
 	@echo Gqlgen has done generating.
 
 update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.

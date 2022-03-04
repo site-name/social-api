@@ -72,7 +72,6 @@ func (r *mutationResolver) AddressSetDefault(ctx context.Context, addressID stri
 }
 
 func (r *queryResolver) AddressValidationRules(ctx context.Context, countryCode gqlmodel.CountryCode, countryArea *string, city *string, cityArea *string) (*gqlmodel.AddressValidationData, error) {
-
 	var (
 		countryArea_ string
 		city_        string

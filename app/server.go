@@ -535,8 +535,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	s.SearchEngine.UpdateConfig(s.Config())
-	searchConfigListenerId := s.StartSearchEngine()
-	s.searchConfigListenerId = searchConfigListenerId
+	s.searchConfigListenerId = s.StartSearchEngine()
 
 	// app := New(ServerConnector(s))
 	// c := request.EmptyContext()

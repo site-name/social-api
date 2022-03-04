@@ -59,7 +59,7 @@ func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginI
 	}
 
 	// get the sn user we are trying to login
-	if user, err = a.GetUserForLogin(id, cwsToken); err != nil {
+	if user, err = a.GetUserForLogin(id, loginId); err != nil {
 		return nil, err
 	}
 
@@ -150,7 +150,8 @@ func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*account.User, *mo
 	}
 
 	// Try to get the user by username/email
-	if user, err := a.srv.Store.User().GetForLogin(loginId, enableUsername, enableEmail); err == nil {
+	user, err := a.srv.Store.User().GetForLogin(loginId, enableUsername, enableEmail)
+	if err == nil {
 		return user, nil
 	}
 

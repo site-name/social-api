@@ -230,7 +230,7 @@ func (r *mutationResolver) AccountSetDefaultAddress(ctx context.Context, id stri
 func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.AccountRegisterInput) (*gqlmodel.AccountRegister, error) {
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	cleanedInput, appErr := cleanAccountCreateInput(r, &input)
+	cleanedInput, appErr := cleanAccountCreateInput(r, input)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -243,11 +243,18 @@ func (r *mutationResolver) AccountRegister(ctx context.Context, input gqlmodel.A
 	}
 	user := &account.User{
 		Email:    cleanedInput.Email,
+		Username: cleanedInput.UserName,
 		Password: cleanedInput.Password,
 		Locale:   userLanguage,
 		ModelMetadata: account.ModelMetadata{
 			Metadata: gqlmodel.MetaDataToStringMap(cleanedInput.Metadata),
 		},
+	}
+	if input.FirstName != nil {
+		user.FirstName = *input.FirstName
+	}
+	if input.LastName != nil {
+		user.LastName = *input.LastName
 	}
 
 	// 2) save to database

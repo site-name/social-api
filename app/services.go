@@ -118,92 +118,175 @@ func RegisterInvoiceService(f func(*Server) (sub_app_iface.InvoiceService, error
 	invoiceService = f
 }
 
-func criticalLog(service string) {
-	slog.Critical("Failed to register a service", slog.String("service", service))
-}
-
 // registerSubServices register all sub services to App.
 func (s *Server) registerSubServices() error {
 	slog.Info("Registering all sub services...")
 
 	var err error
+	if accountService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "accountService"))
+	}
 	s.account, err = accountService(s)
 	if err != nil {
 		return err
+	}
+
+	if giftcardService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "giftcardService"))
 	}
 	s.giftcard, err = giftcardService(s)
 	if err != nil {
 		return err
 	}
+
+	if paymentService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "paymentService"))
+	}
 	s.payment, err = paymentService(s)
 	if err != nil {
 		return err
+	}
+
+	if checkoutService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "checkoutService"))
 	}
 	s.checkout, err = checkoutService(s)
 	if err != nil {
 		return err
 	}
+
+	if warehouseService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "warehouseService"))
+	}
 	s.warehouse, err = warehouseService(s)
 	if err != nil {
 		return err
+	}
+
+	if productService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "productService"))
 	}
 	s.product, err = productService(s)
 	if err != nil {
 		return err
 	}
+
+	if wishlistService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "wishlistService"))
+	}
 	s.wishlist, err = wishlistService(s)
 	if err != nil {
 		return err
+	}
+
+	if orderService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "orderService"))
 	}
 	s.order, err = orderService(s)
 	if err != nil {
 		return err
 	}
+
+	if webhookService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "webhookService"))
+	}
 	s.webhook, err = webhookService(s)
 	if err != nil {
 		return err
+	}
+
+	if menuService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "menuService"))
 	}
 	s.menu, err = menuService(s)
 	if err != nil {
 		return err
 	}
+
+	if pageService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "pageService"))
+	}
 	s.page, err = pageService(s)
 	if err != nil {
 		return err
+	}
+
+	if seoService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "seoService"))
 	}
 	s.seo, err = seoService(s)
 	if err != nil {
 		return err
 	}
+
+	if shopService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "shopService"))
+	}
 	s.shop, err = shopService(s)
 	if err != nil {
 		return err
+	}
+
+	if shippingService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "shippingService"))
 	}
 	s.shipping, err = shippingService(s)
 	if err != nil {
 		return err
 	}
+
+	if csvService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "csvService"))
+	}
 	s.csv, err = csvService(s)
 	if err != nil {
 		return err
+	}
+
+	if attributeService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "attributeService"))
 	}
 	s.attribute, err = attributeService(s)
 	if err != nil {
 		return err
 	}
+
+	if channelService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "channelService"))
+	}
 	s.channel, err = channelService(s)
 	if err != nil {
 		return err
+	}
+
+	if invoiceService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "invoiceService"))
 	}
 	s.invoice, err = invoiceService(s)
 	if err != nil {
 		return err
 	}
+
+	if fileService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "fileService"))
+	}
 	s.file, err = fileService(s)
 	if err != nil {
 		return err
 	}
+
+	if pluginService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "pluginService"))
+	}
 	s.plugin, err = pluginService(s)
+	if err != nil {
+		return err
+	}
+
+	if discountService == nil {
+		slog.Fatal("service initializer is not registered", slog.String("service", "discountService"))
+	}
+	s.discount, err = discountService(s)
 	if err != nil {
 		return err
 	}
