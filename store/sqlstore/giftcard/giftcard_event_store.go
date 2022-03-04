@@ -31,7 +31,7 @@ func NewSqlGiftcardEventStore(s store.Store) store.GiftcardEventStore {
 func (gcs *SqlGiftcardEventStore) CreateIndexesIfNotExists() {
 	gcs.CreateIndexIfNotExists("idx_giftcardevents_date", store.GiftcardEventTableName, "Date")
 	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UserID", store.UserTableName, "Id", false)
-	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "GiftcardID", store.GiftcardTableName, "Id", true)
+	gcs.CreateForeignKeyIfNotExists(store.GiftcardEventTableName, "GiftcardID", store.GiftcardTableName, "Id", true)
 }
 
 func (gs *SqlGiftcardEventStore) TableName(withField string) string {

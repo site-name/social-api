@@ -4,10 +4,6 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-const (
-	EXPORT_FILE_DATA_MAX_LENGTH = 2000
-)
-
 type ExportFile struct {
 	Id          string  `json:"id"`
 	UserID      *string `json:"user_id"`

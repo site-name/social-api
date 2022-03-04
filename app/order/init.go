@@ -16,24 +16,22 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+func init() {
+	app.RegisterOrderService(func(s *app.Server) (sub_app_iface.OrderService, error) {
+		sv := &ServiceOrder{
+			srv: s,
+		}
+
+		sv.RecalculateOrderPrices = sv.UpdateVoucherDiscount(sv.decoratedFunc)
+
+		return sv, nil
+	})
+}
+
 type ServiceOrder struct {
 	srv *app.Server
 
 	RecalculateOrderPrices types.RecalculateOrderPricesFunc // This attribute is initialized as this app is started
-}
-
-type ServiceOrderConfig struct {
-	Server *app.Server
-}
-
-func NewServiceOrder(config *ServiceOrderConfig) sub_app_iface.OrderService {
-	sv := &ServiceOrder{
-		srv: config.Server,
-	}
-
-	sv.RecalculateOrderPrices = sv.UpdateVoucherDiscount(sv.decoratedFunc)
-
-	return sv
 }
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher

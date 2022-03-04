@@ -19,11 +19,6 @@ import (
 
 type App struct {
 	srv *Server
-
-	// XXX: This is required because removing this needs BleveEngine
-	// to be registered in (h *MainHelper) setupStore, but that creates
-	// a cyclic dependency as bleve tests themselves import testlib.
-	searchEngine *searchengine.Broker
 }
 
 // New creates new app and returns it
@@ -101,7 +96,7 @@ func (a *App) DataRetention() einterfaces.DataRetentionInterface {
 }
 
 func (a *App) SearchEngine() *searchengine.Broker {
-	return a.searchEngine
+	return a.srv.SearchEngine
 }
 
 func (a *App) Ldap() einterfaces.LdapInterface {

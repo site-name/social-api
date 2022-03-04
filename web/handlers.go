@@ -49,7 +49,7 @@ func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Requ
 		RequireMfa:     false,
 		IsStatic:       false,
 		IsLocal:        false,
-		// HandlerName:    GetHandlerName(h),
+		HandlerName:    GetHandlerName(h),
 	}
 }
 

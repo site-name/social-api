@@ -29,7 +29,6 @@ import (
 	"github.com/rs/cors"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/email"
-	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -179,9 +178,6 @@ type Server struct {
 	featureFlagStopped           chan struct{}
 	featureFlagSynchronizerMutex sync.Mutex
 
-	ImgDecoder *imaging.Decoder
-	ImgEncoder *imaging.Encoder
-
 	ExchangeRateMap sync.Map // this is cache for storing currency exchange rates. Keys are strings, values are float64
 
 	// these are sub services
@@ -239,21 +235,6 @@ func NewServer(options ...Option) (*Server, error) {
 
 	if err := s.initLogging(); err != nil {
 		slog.Error("Could not initiate logging", slog.Err(err))
-	}
-
-	// initialize image encoder/decoder for processing file uploads
-	var imgErr error
-	s.ImgDecoder, imgErr = imaging.NewDecoder(imaging.DecoderOptions{
-		ConcurrencyLevel: runtime.NumCPU(),
-	})
-	if imgErr != nil {
-		return nil, errors.Wrap(imgErr, "failed to create image decoder")
-	}
-	s.ImgEncoder, imgErr = imaging.NewEncoder(imaging.EncoderOptions{
-		ConcurrencyLevel: runtime.NumCPU(),
-	})
-	if imgErr != nil {
-		return nil, errors.Wrap(imgErr, "failed to create image encoder")
 	}
 
 	// This is called after initLogging() to avoid a race condition.
@@ -554,8 +535,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 
 	s.SearchEngine.UpdateConfig(s.Config())
-	searchConfigListenerId := s.StartSearchEngine()
-	s.searchConfigListenerId = searchConfigListenerId
+	s.searchConfigListenerId = s.StartSearchEngine()
 
 	// app := New(ServerConnector(s))
 	// c := request.EmptyContext()

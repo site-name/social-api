@@ -36,6 +36,7 @@ type AccountSetDefaultAddress {
 input AccountRegisterInput {
   firstName: String
   lastName: String
+  userName: String!
   email: String!
   password: String!
   redirectUrl: String

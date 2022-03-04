@@ -75,6 +75,7 @@ type AccountRegister struct {
 type AccountRegisterInput struct {
 	FirstName    *string           `json:"firstName"`
 	LastName     *string           `json:"lastName"`
+	UserName     string            `json:"userName"`
 	Email        string            `json:"email"`
 	Password     string            `json:"password"`
 	RedirectURL  *string           `json:"redirectUrl"`

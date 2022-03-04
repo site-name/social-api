@@ -148,10 +148,10 @@ func (p *ModelMetadata) DeleteValueFromMeta(key string, which WhichMeta) {
 // please run make gen-serialized.
 type User struct {
 	Id                       string    `json:"id"`
-	Email                    string    `json:"email"`
-	Username                 string    `json:"username"`   // can be empty
+	Email                    string    `json:"email"`      // unique
+	Username                 string    `json:"username"`   // unique
 	FirstName                string    `json:"first_name"` // can be empty
-	LastName                 string    `json:"last_name"`
+	LastName                 string    `json:"last_name"`  // can be empty
 	DefaultShippingAddressID *string   `json:"default_shipping_address,omitempty"`
 	DefaultBillingAddressID  *string   `json:"default_billing_address,omitempty"`
 	Password                 string    `json:"password,omitempty"`
@@ -186,11 +186,13 @@ type User struct {
 // It is used to generate methods which can be used for fast serialization/de-serialization.
 type UserMap map[string]*User
 
+//msgp:ignore UserUpdate
 type UserUpdate struct {
 	Old *User
 	New *User
 }
 
+//msgp:ignore UserPatch
 type UserPatch struct {
 	Username    *string   `json:"username"`
 	Password    *string   `json:"password,omitempty"`
@@ -203,12 +205,14 @@ type UserPatch struct {
 	NotifyProps StringMap `json:"notify_props,omitempty"`
 }
 
+//msgp:ignore UserAuth
 type UserAuth struct {
 	Password    string  `json:"password,omitempty"`
 	AuthData    *string `json:"auth_data,omitempty"`
 	AuthService string  `json:"auth_service,omitempty"`
 }
 
+//msgp:ignore UserForIndexing
 type UserForIndexing struct {
 	Id        string `json:"id"`
 	Username  string `json:"username"`
@@ -220,6 +224,7 @@ type UserForIndexing struct {
 	DeleteAt  int64  `json:"delete_at"`
 }
 
+//msgp:ignore UserSlice
 type UserSlice []*User
 
 func (u UserSlice) Usernames() []string {

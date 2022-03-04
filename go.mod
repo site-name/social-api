@@ -4,10 +4,10 @@ go 1.17
 
 require (
 	code.sajari.com/docconv v1.2.0
-	github.com/99designs/gqlgen v0.16.0
+	github.com/99designs/gqlgen v0.17.1
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/avct/uasurfer v0.0.0-20191028135549-26b5daa857f1
-	github.com/aws/aws-sdk-go v1.42.47
+	github.com/aws/aws-sdk-go v1.43.11
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cespare/xxhash/v2 v2.1.2
@@ -18,12 +18,11 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/getsentry/sentry-go v0.12.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/gosimple/slug v1.12.0
 	github.com/h2non/go-is-svg v0.0.0-20160927212452-35e8c4b0612c
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
@@ -33,7 +32,7 @@ require (
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/json-iterator/go v1.1.12
-	github.com/ledongthuc/pdf v0.0.0-20210621053716-e28cb8259002
+	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/lib/pq v1.10.4
 	github.com/mattermost/go-i18n v1.11.0
 	github.com/mattermost/gorp v1.6.2-0.20210714143452-8b50f5209a7f
@@ -42,7 +41,7 @@ require (
 	github.com/mattermost/ldap v3.0.4+incompatible
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/minio/minio-go/v7 v7.0.21
+	github.com/minio/minio-go/v7 v7.0.23
 	github.com/nyaruka/phonenumbers v1.0.74
 	github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb
 	github.com/opentracing/opentracing-go v1.2.0
@@ -60,10 +59,10 @@ require (
 	github.com/tylerb/graceful v1.2.15
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vektah/gqlparser/v2 v2.3.1
+	github.com/vektah/gqlparser/v2 v2.4.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
-	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+	golang.org/x/image v0.0.0-20220302094943-723b81ca9867
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.9
 	gopkg.in/mail.v2 v2.3.1
@@ -174,7 +173,7 @@ require (
 	go.etcd.io/bbolt v1.3.6 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.5.1 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
@@ -198,6 +197,7 @@ require (
 )
 
 require (
+	github.com/mattermost/morph v0.0.0-20220222074146-cff3f12ff131
 	github.com/splitio/go-split-commons/v4 v4.0.2 // indirect
 	github.com/splitio/go-toolkit/v5 v5.0.3 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect

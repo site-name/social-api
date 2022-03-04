@@ -21,12 +21,12 @@ type Web struct {
 }
 
 // New initializes web routes and returns web instance
-func New(a app.AppIface, root *mux.Router) *Web {
+func New(a app.AppIface) *Web {
 	slog.Debug("Initializing web routes")
 
 	web := &Web{
 		app:        a,
-		MainRouter: root,
+		MainRouter: a.Srv().RootRouter,
 	}
 
 	// web.InitOAuth()
