@@ -56,6 +56,8 @@ type AccountService interface {
 	//
 	// 3) validates user's `MfaSecret` and given token, if error occur or not valid => return concret error
 	CheckUserMfa(user *account.User, token string) *model.AppError
+	// CheckUserPassword compares user's password to given password. If they dont match, return an error
+	CheckUserPassword(user *account.User, password string) *model.AppError
 	// CheckUserPostflightAuthenticationCriteria checks if:
 	//
 	// Given user's `EmailVerified` attribute is false && email verification is required,
@@ -266,6 +268,4 @@ type AccountService interface {
 	UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
-	// CheckUserPassword compares user's password to given password. If they dont match, return an error
-  CheckUserPassword(user *account.User, password string) *model.AppError
 }

@@ -607,7 +607,7 @@ func (a *ServiceAccount) SetProfileImageFromMultiPartFile(userID string, f multi
 
 func (a *ServiceAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppError) {
 	// Decode image into Image object
-	img, _, err := a.srv.ImgDecoder.Decode(file)
+	img, _, err := a.srv.FileService().ImageDecoder().Decode(file)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.decode.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -620,7 +620,7 @@ func (a *ServiceAccount) AdjustImage(file io.Reader) (*bytes.Buffer, *model.AppE
 	img = imaging.FillCenter(img, profileWidthAndHeight, profileWidthAndHeight)
 
 	buf := new(bytes.Buffer)
-	err = a.srv.ImgEncoder.EncodePNG(buf, img)
+	err = a.srv.FileService().ImageEncoder().EncodePNG(buf, img)
 	if err != nil {
 		return nil, model.NewAppError("SetProfileImage", "api.user.upload_profile_user.encode.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

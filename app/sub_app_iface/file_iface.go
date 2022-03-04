@@ -5,13 +5,13 @@ package sub_app_iface
 
 import (
 	"io"
-	"mime/multipart"
 	"time"
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/app/imaging"
 )
 
 // FileService contains methods for working with files
@@ -39,18 +39,12 @@ type FileService interface {
 	// This function zip's up all the files in fileDatas array and then saves it to the directory specified with the specified zip file name
 	// Ensure the zip file name ends with a .zip
 	CreateZipFileAndAddFiles(fileBackend filestore.FileBackend, fileDatas []model.FileData, zipFileName, directory string) error
-	// UploadFile uploads a single file in form of a completely constructed byte array for a channel.
-	UploadFile(c *request.Context, data []byte, channelID string, filename string) (*file.FileInfo, *model.AppError)
 	// UploadFileX uploads a single file as specified in t. It applies the upload
 	// constraints, executes plugins and image processing logic as needed. It
 	// returns a filled-out FileInfo and an optional error. A plugin may reject the
 	// upload, returning a rejection error. In this case FileInfo would have
 	// contained the last "good" FileInfo before the execution of that plugin.
-	UploadFileX(c *request.Context, channelID, name string, input io.Reader, opts ...func(*UploadFileTask)) (*file.FileInfo, *model.AppError)
-	// Uploads some files to the given team and channel as the given user. files and filenames should have
-	// the same length. clientIds should either not be provided or have the same length as files and filenames.
-	// The provided files should be closed by the caller so that they are not leaked.
-	UploadFiles(c *request.Context, teamID string, channelID string, userID string, files []io.ReadCloser, filenames []string, clientIds []string, now time.Time) (*file.FileUploadResponse, *model.AppError)
+	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*file.FileInfo, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
@@ -68,6 +62,9 @@ type FileService interface {
 	RemoveDirectory(path string) *model.AppError
 	RemoveFile(path string) *model.AppError
 	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
-	UploadMultipartFiles(c *request.Context, teamID string, channelID string, userID string, fileHeaders []*multipart.FileHeader, clientIds []string, now time.Time) (*file.FileUploadResponse, *model.AppError)
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
+	// ImageEncoder returns image encoder
+ ImageEncoder() *imaging.Encoder
+// ImageDecoder retutns image encoder
+ ImageDecoder() *imaging.Decoder
 }
