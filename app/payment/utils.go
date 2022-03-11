@@ -316,11 +316,14 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymen
 func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
 		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
-		if appErr == nil {
-			return transaction, nil
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+			// ignore not found error
 		}
-		if appErr.StatusCode == http.StatusInternalServerError { // ignore not found error
-			return nil, appErr
+		if transaction != nil {
+			return transaction, nil
 		}
 	}
 

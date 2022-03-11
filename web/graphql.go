@@ -41,7 +41,8 @@ func (web *Web) InitGraphql() {
 			return nil, appErr
 		}
 
-		if perms := gqlmodel.SaleorGraphqlPermissionsToSystemPermission(permissions...); !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms...) {
+		perms := gqlmodel.SaleorGraphqlPermissionsToSystemPermissions(permissions...)
+		if !web.app.Srv().AccountService().SessionHasPermissionToAll(session, perms...) {
 			return nil, web.app.Srv().AccountService().MakePermissionError(session, perms...)
 		}
 

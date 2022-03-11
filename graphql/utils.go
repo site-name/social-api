@@ -2,7 +2,6 @@ package graphql
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/sitename/sitename/model"
@@ -25,9 +24,7 @@ const (
 func CheckUserAuthenticated(where string, ctx context.Context) (*model.Session, *model.AppError) {
 	session := ctx.Value(shared.APIContextKey).(*shared.Context).AppContext.Session()
 
-	fmt.Println("GOT session: ", session)
-
-	if session == nil {
+	if session == nil || session.UserId == "" {
 		return nil, model.NewAppError(where, UserUnauthenticatedId, nil, "", http.StatusForbidden)
 	}
 	return session, nil

@@ -70,7 +70,27 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 }
 
 func (r *mutationResolver) TokenRefresh(ctx context.Context, csrfToken *string, refreshToken *string) (*gqlmodel.RefreshToken, error) {
-	panic(fmt.Errorf("not implemented"))
+	// embedCtx := ctx.Value(shared.APIContextKey).(*shared.Context)
+
+	// step1: get csrf_token
+	// if request is performed by javascript then get from the cookie.
+	// otherwise get token from input
+
+	// var actualCsrfToken string
+	// if csrfToken != nil {
+	// 	actualCsrfToken = *csrfToken
+	// }
+
+	// if embedCtx.GetRequest().Header.Get(model.HEADER_REQUESTED_WITH) == model.HEADER_REQUESTED_WITH_XML {
+	// 	cookie, err := embedCtx.GetRequest().Cookie(model.SESSION_COOKIE_CSRF)
+	// 	if err == nil && cookie != nil {
+	// 		actualCsrfToken = cookie.Value
+	// 	} else {
+	// 		return nil, model.NewAppError("TokenRefresh", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "csrf_token"}, "missing csrf token", http.StatusBadRequest)
+	// 	}
+	// }
+
+	panic("not implemented")
 }
 
 func (r *mutationResolver) TokenVerify(ctx context.Context, token string) (*gqlmodel.VerifyToken, error) {
@@ -116,14 +136,6 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 	if !userWithEmail.IsActive {
 		return nil, model.NewAppError("RequestPasswordReset", permissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
-
-	// if !userWithEmail.IsStaff {
-	// 	activeChannel, appErr := r.ChannelService().CleanChannel(channel)
-	// 	if appErr != nil {
-	// 		return nil, appErr
-	// 	}
-	// 	channel = &activeChannel.Slug
-	// } else
 
 	if channel != nil {
 		channelBySlug, appErr := r.Srv().ChannelService().ValidateChannel(*channel)
@@ -183,7 +195,6 @@ func (r *mutationResolver) PasswordChange(ctx context.Context, newPassword strin
 }
 
 func (r *mutationResolver) RequestEmailChange(ctx context.Context, channel *string, newEmail string, password string, redirectURL string) (*gqlmodel.RequestEmailChange, error) {
-	// check if current user is authenticated
 	session, appErr := CheckUserAuthenticated("RequestEmailChange", ctx)
 	if appErr != nil {
 		return nil, appErr

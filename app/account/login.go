@@ -260,10 +260,7 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 //
 // 3) csrf cookie with value of csrf in session
 func (a *ServiceAccount) AttachSessionCookies(c *request.Context, w http.ResponseWriter, r *http.Request) {
-	secure := false
-	if app.GetProtocol(r) == "https" {
-		secure = true
-	}
+	secure := app.GetProtocol(r) == "https"
 
 	maxAge := *a.srv.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
 	domain := a.srv.GetCookieDomain()

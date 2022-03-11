@@ -56,7 +56,7 @@ func (a *ServiceAccount) GetSessions(userID string) ([]*model.Session, *model.Ap
 	return sessions, nil
 }
 
-// RevokeAllSessions get session from database that has UserID of given userID, then removes it
+// RevokeAllSessions get sessions from database that has UserID of given userID, then removes them
 func (a *ServiceAccount) RevokeAllSessions(userID string) *model.AppError {
 	sessions, err := a.srv.Store.Session().GetSessions(userID)
 	if err != nil {
@@ -141,7 +141,7 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppErr
 					a.AddSessionToCache(session)
 				}
 			}
-		} else if nfErr := new(store.ErrNotFound); !errors.As(nErr, &nfErr) {
+		} else if _, ok := nErr.(*store.ErrNotFound); !ok {
 			return nil, model.NewAppError("GetSession", "app.session.get.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 		}
 	}

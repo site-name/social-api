@@ -6,8 +6,8 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-// SaleorGraphqlPermissionsToSystemPermission converts all given graphql permission enums to a slice of system's permissions
-func SaleorGraphqlPermissionsToSystemPermission(saleorGraphqlPermissions ...PermissionEnum) []*model.Permission {
+// SaleorGraphqlPermissionsToSystemPermissions converts all given graphql permission enums to a slice of system's permissions
+func SaleorGraphqlPermissionsToSystemPermissions(saleorGraphqlPermissions ...PermissionEnum) []*model.Permission {
 	var res = []*model.Permission{}
 	for _, perm := range saleorGraphqlPermissions {
 		res = append(res, SaleorGraphqlPermissionToSystemPermission(perm))

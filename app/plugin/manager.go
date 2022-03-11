@@ -99,7 +99,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	res := []interfaces.BasePluginInterface{}
 
 	for _, plg := range m.AllPlugins {
-		if active == plg.IsActive() && (channelID == "" || channelID == plg.ChannelId()) {
+		if plg != nil && active == plg.IsActive() && (channelID == "" || channelID == plg.ChannelId()) {
 			res = append(res, plg)
 		}
 	}
@@ -1316,7 +1316,7 @@ func (m *PluginManager) PageDeleted(paGe page.Page) (interface{}, *model.AppErro
 
 func (m *PluginManager) getPlugin(pluginID string, channelID string) interfaces.BasePluginInterface {
 	for _, plg := range m.AllPlugins {
-		if plg.CheckPluginId(pluginID) && (channelID == "" || plg.ChannelId() == channelID) {
+		if plg != nil && plg.CheckPluginId(pluginID) && (channelID == "" || plg.ChannelId() == channelID) {
 			return plg
 		}
 	}
@@ -1368,7 +1368,7 @@ func (m *PluginManager) runPaymentMethod(gateway, methodName string, paymentInfo
 		return value, nil
 	}
 
-	return nil, fmt.Errorf("Payment plugin %s for %s payment method is in-accessible", gateway, methodName)
+	return nil, fmt.Errorf("payment plugin %s for %s payment method is in-accessible", gateway, methodName)
 }
 
 func (m *PluginManager) AuthorizePayment(gateway string, paymentInformation payment.PaymentData, channelID string) (*payment.GatewayResponse, error) {
@@ -1430,7 +1430,7 @@ func (m *PluginManager) ListPaymentSources(gateway, customerID, channelID string
 		return plg.ListPaymentSources(customerID, defaultValue)
 	}
 
-	return nil, fmt.Errorf("Payment plugin %s is inaccessible", gateway)
+	return nil, fmt.Errorf("payment plugin %s is inaccessible", gateway)
 }
 
 func (m *PluginManager) TranslationCreated(translation interface{}) {
