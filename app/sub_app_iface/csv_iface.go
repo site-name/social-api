@@ -43,10 +43,11 @@ type CsvService interface {
 	// Get headers for exported warehouses.
 	// Headers are build from slug. Example: "slug-value (warehouse quantity)"
 	GetWarehousesHeaders(exportInfo map[string][]string) ([]string, *model.AppError)
+	// GetDefaultExportPayload returns a map for mapping
+	GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.
 	//
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
 	GetProductsData()
-	GetDefaultExportPayload(exportFile *csv.ExportFile) (map[string]interface{}, *model.AppError)
 }

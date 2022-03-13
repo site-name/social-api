@@ -120,7 +120,7 @@ type AccountService interface {
 	HasPermissionToUser(askingUserId string, userID string) bool
 	// InvalidateCacheForUser invalidates cache for given user
 	InvalidateCacheForUser(userID string)
-	// RevokeAllSessions get session from database that has UserID of given userID, then removes it
+	// RevokeAllSessions get sessions from database that has UserID of given userID, then removes them
 	RevokeAllSessions(userID string) *model.AppError
 	// RevokeSession removes session from database
 	RevokeSession(session *model.Session) *model.AppError

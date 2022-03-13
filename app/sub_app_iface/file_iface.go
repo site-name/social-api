@@ -7,11 +7,11 @@ import (
 	"io"
 	"time"
 
+	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/app/imaging"
 )
 
 // FileService contains methods for working with files
@@ -28,6 +28,10 @@ type FileService interface {
 	FileSize(path string) (int64, *model.AppError)
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
 	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
+	// ImageDecoder retutns image encoder
+	ImageDecoder() *imaging.Decoder
+	// ImageEncoder returns image encoder
+	ImageEncoder() *imaging.Encoder
 	// MoveFile moves file from given oldPath to newPath
 	MoveFile(oldPath, newPath string) *model.AppError
 	// ReadFile read file content from given path
@@ -63,8 +67,4 @@ type FileService interface {
 	RemoveFile(path string) *model.AppError
 	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
-	// ImageEncoder returns image encoder
- ImageEncoder() *imaging.Encoder
-// ImageDecoder retutns image encoder
- ImageDecoder() *imaging.Decoder
 }

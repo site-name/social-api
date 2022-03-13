@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/mux v1.6.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381 // indirect
 	github.com/matryer/moq v0.2.3 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
@@ -23,6 +24,8 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20180121065927-ffb13db8def0 // indirect
+	github.com/spf13/cobra v0.0.5 // indirect
+	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	github.com/vektah/dataloaden v0.3.0 // indirect

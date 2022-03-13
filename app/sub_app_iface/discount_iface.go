@@ -47,6 +47,8 @@ type DiscountService interface {
 	//
 	// values are slices of uuid strings
 	FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError)
+	// FetchCategories returns a map with keys are sale ids, values are slices of category ids
+	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
 	// FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
 	FetchCollections(saleIDs []string) (map[string][]string, *model.AppError)
 	// FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
@@ -124,7 +126,6 @@ type DiscountService interface {
 	VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
 	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)
-	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
 	FetchDiscounts(date time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
 	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
