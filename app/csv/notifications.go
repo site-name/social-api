@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model/csv"
 )
 
+// GetDefaultExportPayload returns a map for mapping
 func (a *ServiceCsv) GetDefaultExportPayload(exportFile *csv.ExportFile) (map[string]interface{}, *model.AppError) {
 	var user *account.User
 	var appErr *model.AppError

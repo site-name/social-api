@@ -25,6 +25,7 @@ func (s *ServiceCsv) ExportProducts(exportFile *csv.ExportFile, exportProductsIn
 	panic("not implemented")
 }
 
+// getFileName returns a file name for exported file
 func getFileName(modelName string, fileType string) string {
 	return fmt.Sprintf(
 		"%s_data_%s_%s.%s",
