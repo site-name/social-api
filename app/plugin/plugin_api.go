@@ -3,6 +3,7 @@ package plugin
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -369,10 +370,9 @@ func (api *PluginAPI) KVList(page, perPage int) ([]string, *model.AppError) {
 }
 
 func (api *PluginAPI) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
-	// ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
-	// ev = ev.SetBroadcast(broadcast).SetData(payload)
-	// api.app.Srv().Publish(ev)
-	panic("not implemented") // TODO: fixme
+	ev := model.NewWebSocketEvent(fmt.Sprintf("custom_%v_%v", api.id, event), "", nil)
+	ev = ev.SetBroadcast(broadcast).SetData(payload)
+	api.app.Srv().Publish(ev)
 }
 
 func (api *PluginAPI) HasPermissionTo(userID string, permission *model.Permission) bool {

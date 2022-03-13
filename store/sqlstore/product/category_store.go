@@ -138,6 +138,14 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *product_and_discount.Cate
 		From(cs.TableName("")).
 		OrderBy(cs.OrderBy())
 
+	if option.LockForUpdate {
+		query = query.Suffix("FOR UPDATE")
+	}
+
+	if option.All {
+		return query.ToSql()
+	}
+
 	// parse option
 	if option.Id != nil {
 		query = query.Where(option.Id)
@@ -163,9 +171,6 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *product_and_discount.Cate
 		query = query.
 			InnerJoin(store.ProductTableName + " ON (Categories.Id = Products.CategoryID)").
 			Where(option.ProductID)
-	}
-	if option.LockForUpdate {
-		query = query.Suffix("FOR UPDATE")
 	}
 
 	return query.ToSql()

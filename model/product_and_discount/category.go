@@ -1,7 +1,6 @@
 package product_and_discount
 
 import (
-	"io"
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
@@ -33,6 +32,7 @@ type Category struct {
 
 // CategoryFilterOption is used for building sql queries
 type CategoryFilterOption struct {
+	All  bool // if true, select all categories
 	Id   squirrel.Sqlizer
 	Name squirrel.Sqlizer
 	Slug squirrel.Sqlizer
@@ -102,12 +102,6 @@ func (c *Category) ToJSON() string {
 	return model.ModelToJson(c)
 }
 
-func CategoryFromJSON(data io.Reader) *Category {
-	var c Category
-	model.ModelFromJson(&c, data)
-	return &c
-}
-
 type CategoryTranslation struct {
 	Id           string  `json:"id"`
 	LanguageCode string  `json:"language_code"`
@@ -123,12 +117,6 @@ func (c *CategoryTranslation) String() string {
 
 func (c *CategoryTranslation) ToJSON() string {
 	return model.ModelToJson(c)
-}
-
-func CategoryTranslationFromJSON(data io.Reader) *Category {
-	var c Category
-	model.ModelFromJson(&c, data)
-	return &c
 }
 
 func (c *CategoryTranslation) IsValid() *model.AppError {
@@ -160,22 +148,30 @@ func (c *CategoryTranslation) PreSave() {
 // ClassifyCategories takes a slice of single categories.
 // Returns a slice of category families
 func ClassifyCategories(categories Categories) Categories {
+	if len(categories) <= 1 {
+		return categories
+	}
+
 	var res Categories
 
 	// trackMap has keys are category ids
 	var trackMap = map[string]*Category{}
 
 	for _, cate := range categories {
-		trackMap[cate.Id] = cate
+		if cate != nil {
+			trackMap[cate.Id] = cate
+		}
 	}
 
 	for _, cate := range categories {
-		if cate.ParentID == nil {
-			res = append(res, cate)
-			continue
-		}
+		if cate != nil {
+			if cate.ParentID == nil { // category has no child category
+				res = append(res, cate)
+				continue
+			}
 
-		trackMap[*cate.ParentID].Children = append(trackMap[*cate.ParentID].Children, cate)
+			trackMap[*cate.ParentID].Children = append(trackMap[*cate.ParentID].Children, cate)
+		}
 	}
 
 	return res

@@ -145,6 +145,16 @@ func StringInSlice(a string, slice []string) bool {
 	return false
 }
 
+// check if given int a resides in given slice
+func IntInSlice(a int, slice []int) bool {
+	for _, b := range slice {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // RemoveStringFromSlice removes the first occurrence of a from slice.
 func RemoveStringFromSlice(a string, slice []string) []string {
 	for i, str := range slice {

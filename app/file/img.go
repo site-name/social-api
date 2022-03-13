@@ -902,7 +902,7 @@ func (a *ServiceFile) generateMiniPreview(fi *file.FileInfo) {
 			slog.Debug("creating mini preview failed", slog.Err(err))
 		} else {
 			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache(fi.PostId, false)
-			panic("not implemented")
+			slog.Warn("this flow is not implemented", slog.String("function", "generateMiniPreview"))
 		}
 	}
 }
@@ -1079,7 +1079,7 @@ func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *file.FileInfo) error 
 			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.Id))
 		} else {
 			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache()
-			panic("not implemented")
+			slog.Warn("This flow is not implemented", slog.String("function", "generateMiniPreview"))
 		}
 	}
 	return nil

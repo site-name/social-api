@@ -70,15 +70,15 @@ func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *product_and_dis
 		OrderBy(store.TableOrderingMap[store.SaleCollectionRelationTableName])
 
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 
 	if option.SaleID != nil {
-		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+		query = query.Where(option.SaleID)
 	}
 
 	if option.CollectionID != nil {
-		query = query.Where(option.CollectionID.ToSquirrel("CollectionID"))
+		query = query.Where(option.CollectionID)
 	}
 
 	queryString, args, err := query.ToSql()

@@ -1,6 +1,9 @@
 package product_and_discount
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 type SaleCollectionRelation struct {
 	Id           string `json:"id"`
@@ -11,9 +14,9 @@ type SaleCollectionRelation struct {
 
 // SaleCollectionRelationFilterOption is used to build sql queries
 type SaleCollectionRelationFilterOption struct {
-	Id           *model.StringFilter
-	SaleID       *model.StringFilter
-	CollectionID *model.StringFilter
+	Id           squirrel.Sqlizer
+	SaleID       squirrel.Sqlizer
+	CollectionID squirrel.Sqlizer
 }
 
 func (s *SaleCollectionRelation) PreSave() {
