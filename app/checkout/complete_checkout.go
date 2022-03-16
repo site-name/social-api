@@ -656,9 +656,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo checkout.CheckoutInfo, orderD
 	}
 
 	// copy metadata from the checkout into the new order
-	createdNewOrder.Metadata = model.CopyStringMap(checkOut.Metadata)
+	createdNewOrder.Metadata = checkOut.Metadata.DeepCopy()
 	createdNewOrder.RedirectUrl = checkOut.RedirectURL
-	createdNewOrder.PrivateMetadata = model.CopyStringMap(checkOut.PrivateMetadata)
+	createdNewOrder.PrivateMetadata = checkOut.PrivateMetadata.DeepCopy()
 
 	appErr = s.srv.OrderService().UpdateOrderTotalPaid(transaction, createdNewOrder)
 	if appErr != nil {

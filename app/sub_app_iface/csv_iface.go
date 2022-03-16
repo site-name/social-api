@@ -25,12 +25,12 @@ type CsvService interface {
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.
 	// Headers contains product, variant, attribute and warehouse headers.
-	GetExportFieldsAndHeadersInfo(exportInfo map[string][]string) ([]string, []string, []string, *model.AppError)
+	GetExportFieldsAndHeadersInfo(exportInfo gqlmodel.ExportInfoInput) ([]string, []string, []string, *model.AppError)
 	// Get headers for exported attributes.
 	// Headers are build from slug and contains information if it's a product or variant
 	// attribute. Respectively for product: "slug-value (product attribute)"
 	// and for variant: "slug-value (variant attribute)".
-	GetAttributeHeaders(exportInfo map[string][]string) ([]string, *model.AppError)
+	GetAttributeHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
 	// Get headers for exported channels.
 	//
 	// Headers are build from slug and exported field.
@@ -39,10 +39,10 @@ type CsvService interface {
 	// - currency code data header: "slug-value (channel currency code)"
 	// - published data header: "slug-value (channel visible)"
 	// - publication date data header: "slug-value (channel publication date)"
-	GetChannelsHeaders(exportInfo map[string][]string) ([]string, *model.AppError)
+	GetChannelsHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
 	// Get headers for exported warehouses.
 	// Headers are build from slug. Example: "slug-value (warehouse quantity)"
-	GetWarehousesHeaders(exportInfo map[string][]string) ([]string, *model.AppError)
+	GetWarehousesHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
 	// GetDefaultExportPayload returns a map for mapping
 	GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.

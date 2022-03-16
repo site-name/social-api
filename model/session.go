@@ -30,6 +30,19 @@ const (
 
 type StringMap map[string]string
 
+func (m StringMap) DeepCopy() StringMap {
+	if m == nil {
+		return nil
+	}
+
+	res := StringMap{}
+	for key, value := range m {
+		res[key] = value
+	}
+
+	return res
+}
+
 // Session contains the user session details.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
@@ -58,7 +71,7 @@ func (s *Session) DeepCopy() *Session {
 	copySession := *s
 
 	if s.Props != nil {
-		copySession.Props = CopyStringMap(s.Props)
+		copySession.Props = s.Props.DeepCopy()
 	}
 
 	return &copySession

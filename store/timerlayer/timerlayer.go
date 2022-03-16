@@ -1966,6 +1966,22 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 	return result, err
 }
 
+func (s *TimerLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeValueStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
 	start := timemodule.Now()
 
@@ -1978,22 +1994,6 @@ func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeValueStore.GetAllByAttributeID(attributeID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.GetAllByAttributeID", success, elapsed)
 	}
 	return result, err
 }

@@ -101,16 +101,65 @@ func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, err
 	return &res, nil
 }
 
-func (as *SqlAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
-	var avs []*attribute.AttributeValue
-	if _, err := as.GetReplica().Select(
-		&avs, "SELECT * FROM "+store.AttributeValueTableName+" WHERE AttributeID = :AttributeID",
-		map[string]interface{}{
-			"AttributeID": attributeID,
-		},
-	); err != nil {
-		return nil, errors.Wrapf(err, "failed to find attribute values belong to attribute with id=%s", attribute.REFERENCE)
+// FilterByOptions finds and returns all matched attribute values based on given options
+func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+	selectFields := as.ModelFields()
+	if options.SelectRelatedAttribute {
+		selectFields = append(selectFields, as.Attribute().ModelFields()...)
 	}
 
-	return avs, nil
+	query := as.GetQueryBuilder().
+		Select(selectFields...).
+		From(store.AttributeValueTableName)
+
+	if options.SelectRelatedAttribute {
+		query = query.InnerJoin(store.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
+	}
+
+	if !options.All { // check if we need to filter further
+		if options.Id != nil {
+			query = query.Where(options.Id)
+		}
+		if options.AttributeID != nil {
+			query = query.Where(options.AttributeID)
+		}
+		if options.Extra != nil {
+			query = query.Where(options.Extra)
+		}
+	}
+
+	rows, err := query.RunWith(as.GetReplica()).Query()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find attribute values")
+	}
+
+	var (
+		res attribute.AttributeValues
+
+		attributeValue attribute.AttributeValue
+		attr           attribute.Attribute
+		scanFields     = as.ScanFields(attributeValue)
+	)
+	if options.SelectRelatedAttribute {
+		scanFields = append(scanFields, as.Attribute().ScanFields(attr)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of attribute value")
+		}
+
+		// don't worry when we assign directly value here.
+		// The Attribute will be deep copied later
+		attributeValue.Attribute = &attr
+
+		res = append(res, attributeValue.DeepCopy())
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of attribute values")
+	}
+
+	return res, nil
 }

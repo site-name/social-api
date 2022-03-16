@@ -70,6 +70,21 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 }
 
 type StringInterface map[string]interface{}
+
+func (s *StringInterface) DeepCopy() *StringInterface {
+	if s == nil {
+		return nil
+	}
+
+	res := StringInterface{}
+
+	for key, value := range *s {
+		res[key] = value
+	}
+
+	return &res
+}
+
 type StringArray []string
 
 func NewBool(b bool) *bool                          { return &b }

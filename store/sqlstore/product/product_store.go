@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
@@ -494,6 +495,60 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 	_, err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
+	}
+
+	return products, nil
+}
+
+// AdvancedFilter advancedly finds products, filtered using given options
+func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) (product_and_discount.Products, error) {
+	query := ps.GetQueryBuilder().
+		Select(ps.ModelFields()...).
+		From(store.ProductTableName).
+		OrderBy("CreateAt")
+
+	var channelID interface{} = nil
+	if options.Channel != nil {
+		channelID = *options.Channel
+	}
+
+	// parse options
+	if options.IsPublished != nil {
+		query = ps.filterIsPublishedAt(query, *options.IsPublished, channelID)
+	}
+	if len(options.Collections) > 0 {
+		query = ps.filterCollections(query, options.Collections)
+	}
+
+	if options.HasCategory != nil {
+		// default to has no category
+		var condition squirrel.Sqlizer = squirrel.Eq{store.ProductTableName + ".CategoryID": nil}
+
+		if *options.HasCategory {
+			condition = squirrel.NotEq(condition.(squirrel.Eq))
+		}
+		query = query.Where(condition)
+	}
+	if options.Price != nil {
+		query = ps.filterVariantPrice(query, *options.Price, channelID)
+	}
+	if options.MinimalPrice != nil {
+		query = ps.filterMinimalPrice(query, *options.MinimalPrice, channelID)
+	}
+	if len(options.Attributes) > 0 {
+		query = ps.filterAttributes(query, options.Attributes)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "AdvancedFilter_ToSql")
+	}
+
+	var products product_and_discount.Products
+
+	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find products with given options")
 	}
 
 	return products, nil

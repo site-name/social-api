@@ -28,6 +28,23 @@ func (p *ModelMetadata) ToJSON() string {
 	return ModelToJson(p)
 }
 
+func (p *ModelMetadata) DeepCopy() *ModelMetadata {
+	if p == nil {
+		return nil
+	}
+
+	res := ModelMetadata{}
+
+	if p.Metadata != nil {
+		res.Metadata = p.Metadata.DeepCopy()
+	}
+	if p.PrivateMetadata != nil {
+		res.PrivateMetadata = p.PrivateMetadata.DeepCopy()
+	}
+
+	return &res
+}
+
 type WhichMeta string
 
 const (

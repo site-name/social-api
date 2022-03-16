@@ -251,10 +251,12 @@ type FileInfoStore interface {
 type (
 	AttributeStore interface {
 		CreateIndexesIfNotExists()
-		Save(attr *attribute.Attribute) (*attribute.Attribute, error)                           // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
-		Get(id string) (*attribute.Attribute, error)                                            // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
-		GetBySlug(slug string) (*attribute.Attribute, error)                                    // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
-		FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) // FilterbyOption returns a list of attributes by given option
+		ModelFields() []string
+		ScanFields(v attribute.Attribute) []interface{}
+		Save(attr *attribute.Attribute) (*attribute.Attribute, error)                         // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
+		Get(id string) (*attribute.Attribute, error)                                          // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
+		GetBySlug(slug string) (*attribute.Attribute, error)                                  // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
+		FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) // FilterbyOption returns a list of attributes by given option
 	}
 	AttributeTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -263,9 +265,9 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
-		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) // Save inserts given attribute value into database, then returns inserted value and an error
-		Get(attributeID string) (*attribute.AttributeValue, error)                   // Get finds an attribute value with given id then returns it with an error
-		GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) // GetAllByAttributeID finds all attribute values that belong to given attribute then returns them withh an error
+		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error)                      // Save inserts given attribute value into database, then returns inserted value and an error
+		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
+		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}
 	AttributeValueTranslationStore interface {
 		CreateIndexesIfNotExists()

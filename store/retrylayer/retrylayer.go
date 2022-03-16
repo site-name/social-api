@@ -2145,11 +2145,11 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 
 }
 
-func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeValueStore.Get(attributeID)
+		result, err := s.AttributeValueStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -2165,11 +2165,11 @@ func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 
 }
 
-func (s *RetryLayerAttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeValueStore.GetAllByAttributeID(attributeID)
+		result, err := s.AttributeValueStore.Get(attributeID)
 		if err == nil {
 			return result, nil
 		}

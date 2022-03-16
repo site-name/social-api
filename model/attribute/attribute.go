@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -94,13 +93,19 @@ type Attribute struct {
 	StorefrontSearchPosition int     `json:"storefront_search_position"`
 	AvailableInGrid          bool    `json:"available_in_grid"`
 	model.ModelMetadata
+
+	AttributeValues `json:"-" db:"-"`
 }
 
 type AttributeFilterOption struct {
 	Id                  squirrel.Sqlizer
-	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON () WHERE AttributeProducts.ProductTypeID
-	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON () WHERE AttributeVariants.ProductTypeID
+	Slug                squirrel.Sqlizer
+	InputType           squirrel.Sqlizer
+	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
+	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
 	Distinct            bool
+
+	PrefetchRelatedAttributeValues bool
 }
 
 func (a *Attribute) IsValid() *model.AppError {
@@ -136,6 +141,19 @@ func (a *Attribute) IsValid() *model.AppError {
 	return nil
 }
 
+type Attributes []*Attribute
+
+func (as Attributes) IDs() []string {
+	res := []string{}
+	for _, item := range as {
+		if item != nil {
+			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
 func (a *Attribute) PreSave() {
 	if a.Id == "" {
 		a.Id = model.NewId()
@@ -159,10 +177,20 @@ func (a *Attribute) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
-func AttributeFromJson(data io.Reader) *Attribute {
-	var a Attribute
-	model.ModelFromJson(&a, data)
-	return &a
+func (a *Attribute) DeepCopy() *Attribute {
+	if a == nil {
+		return nil
+	}
+	res := *a
+
+	res.ModelMetadata = *(a.ModelMetadata.DeepCopy())
+	res.AttributeValues = AttributeValues{}
+
+	for _, item := range a.AttributeValues {
+		res.AttributeValues = append(res.AttributeValues, item.DeepCopy())
+	}
+
+	return &res
 }
 
 // max lengths for attribute translation's fields

@@ -10,8 +10,10 @@ import (
 
 // GetDefaultExportPayload returns a map for mapping
 func (a *ServiceCsv) GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError) {
-	var user *account.User
-	var appErr *model.AppError
+	var (
+		user   *account.User
+		appErr *model.AppError
+	)
 
 	if exportFile.UserID != nil {
 		user, appErr = a.srv.AccountService().UserById(context.Background(), *exportFile.UserID)
@@ -20,17 +22,13 @@ func (a *ServiceCsv) GetDefaultExportPayload(exportFile csv.ExportFile) (map[str
 		return nil, appErr
 	}
 
-	userID := ""
-	userEmail := ""
-	if user != nil {
-		userID = user.Id
-		userEmail = user.Email
-	}
-
 	return map[string]interface{}{
-		"user_id":    userID,
-		"user_email": userEmail,
+		"user_id":    user.Id,
+		"user_email": user.Email,
 		"id":         exportFile.Id,
-		"status":     "",
+		"status":     nil,
+		"message":    nil,
+		"created_at": exportFile.CreateAt,
+		"updated_at": exportFile.UpdateAt,
 	}, nil
 }

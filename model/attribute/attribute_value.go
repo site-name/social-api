@@ -3,8 +3,10 @@ package attribute
 import (
 	"io"
 	"strings"
+	"time"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
@@ -28,8 +30,19 @@ type AttributeValue struct {
 	AttributeID string                 `json:"attribute_id"`
 	RichText    *model.StringInterface `json:"rich_text"`
 	Boolean     *bool                  `json:"boolean"`
-	Datetime    *int64                 `json:"date_time"`
+	Datetime    *time.Time             `json:"date_time"`
 	model.Sortable
+
+	Attribute *Attribute `db:"-" json:"-"`
+}
+
+type AttributeValueFilterOptions struct {
+	Id          squirrel.Sqlizer
+	AttributeID squirrel.Sqlizer
+
+	Extra                  squirrel.Sqlizer
+	All                    bool // if true, select all attribute values, ignore other options
+	SelectRelatedAttribute bool
 }
 
 type AttributeValues []*AttributeValue
@@ -75,7 +88,7 @@ func (a *AttributeValue) IsValid() *model.AppError {
 	if a.ContentType != nil && len(*a.ContentType) > ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH {
 		return outer("content_type", &a.Id)
 	}
-	if a.Datetime != nil && *a.Datetime == 0 {
+	if a.Datetime != nil && a.Datetime.IsZero() {
 		return outer("date_time", &a.Id)
 	}
 
@@ -100,6 +113,12 @@ func (a *AttributeValue) ToJSON() string {
 
 func (a *AttributeValue) DeepCopy() *AttributeValue {
 	res := *a
+
+	res.RichText = a.RichText.DeepCopy()
+
+	if a.Attribute != nil {
+		res.Attribute = a.Attribute.DeepCopy()
+	}
 
 	return &res
 }

@@ -3,6 +3,7 @@ package attribute
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -47,6 +48,27 @@ func (as *SqlAttributeStore) ModelFields() []string {
 		"Attributes.AvailableInGrid",
 		"Attributes.Metadata",
 		"Attributes.PrivateMetadata",
+	}
+}
+
+func (as *SqlAttributeStore) ScanFields(v attribute.Attribute) []interface{} {
+	return []interface{}{
+		&v.Id,
+		&v.Slug,
+		&v.Name,
+		&v.Type,
+		&v.InputType,
+		&v.EntityType,
+		&v.Unit,
+		&v.ValueRequired,
+		&v.IsVariantOnly,
+		&v.VisibleInStoreFront,
+		&v.FilterableInStorefront,
+		&v.FilterableInDashboard,
+		&v.StorefrontSearchPosition,
+		&v.AvailableInGrid,
+		&v.Metadata,
+		&v.PrivateMetadata,
 	}
 }
 
@@ -100,7 +122,7 @@ func (as *SqlAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error
 }
 
 // FilterbyOption returns a list of attributes by given option
-func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields()...).
 		From(store.AttributeTableName).
@@ -112,6 +134,12 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 	}
 	if option.Distinct {
 		query = query.Distinct()
+	}
+	if option.Slug != nil {
+		query = query.Where(option.Slug)
+	}
+	if option.InputType != nil {
+		query = query.Where(option.InputType)
 	}
 	if option.ProductTypes != nil {
 		query = query.
@@ -129,10 +157,33 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var res []*attribute.Attribute
+	var res attribute.Attributes
 	_, err = as.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
+	}
+
+	// check if we need to prefetch related attribute values of found attributes
+	if option.PrefetchRelatedAttributeValues && len(res) > 0 {
+		attributeValues, err := as.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": res.IDs()},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		var (
+			// attributesMap has keys are attribute ids
+			attributesMap = map[string]*attribute.Attribute{}
+		)
+
+		for _, attr := range res {
+			attributesMap[attr.Id] = attr
+		}
+
+		for _, attrVl := range attributeValues {
+			attributesMap[attrVl.AttributeID].AttributeValues = append(attributesMap[attrVl.AttributeID].AttributeValues, attrVl)
+		}
 	}
 
 	return res, nil

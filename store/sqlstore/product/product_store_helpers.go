@@ -1,0 +1,649 @@
+package product
+
+import (
+	"fmt"
+	"math"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
+	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
+)
+
+func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, categoryIDs []*string) squirrel.SelectBuilder {
+	ids := []string{}
+	for _, id := range categoryIDs {
+		if id != nil {
+			ids = append(ids, *id)
+		}
+	}
+
+	if len(ids) == 0 {
+		return query
+	}
+
+	panic("not implemented")
+}
+
+func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []*string) squirrel.SelectBuilder {
+	ids := stringPointerSliceToStringSlice(collectionIDs)
+
+	if len(ids) == 0 {
+		return query
+	}
+
+	return query.Where(`
+		EXISTS (
+			SELECT
+				(1) AS "a"
+			FROM `+store.CollectionProductRelationTableName+`
+			WHERE
+				(
+					ProductCollections.CollectionID IN :collectionIDs
+					AND ProductCollections.ProductID = Products.Id
+				)
+			LIMIT 1
+		)`,
+		map[string]interface{}{
+			"collectionIDs": collectionIDs,
+		},
+	)
+}
+
+func (ps *SqlProductStore) filterIsPublishedAt(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
+
+	return query.Where(`
+		EXISTS (
+			SELECT
+				(1) AS "a"
+			FROM 
+				`+store.ProductChannelListingTableName+`
+			WHERE
+				(
+					EXISTS (
+						SELECT 
+							(1) AS "a"
+						FROM
+							`+store.ChannelTableName+`
+						WHERE
+							(
+								ProductChannelListings.ChannelID = Channels.Id AND
+								Channels.Id = :channelID
+							)
+						LIMIT 1
+					)
+					AND ProductChannelListings.IsPublished = :isPublished
+					AND ProductChannelListings.ProductID = Products.Id
+				)
+			LIMIT 1
+		)
+		AND EXISTS (
+			SELECT
+				(1) AS "a"
+			FROM
+				`+store.ProductVariantTableName+`
+			WHERE
+				(
+					EXISTS (
+						SELECT
+							(1) AS "a"
+						FROM
+							`+store.ProductVariantChannelListingTableName+`
+						WHERE
+							(
+								EXISTS (
+									SELECT
+										(1) AS "a"
+									FROM
+										`+store.ChannelTableName+`
+									WHERE
+										(
+											Channels.Id = :channelID
+											AND Channels.Id = ProductVariantChannelListings.ChannelID
+										)
+									LIMIT 1
+								)
+								AND ProductVariantChannelListings.PriceAmount IS NOT NULL
+								AND ProductVariantChannelListings.VariantID = ProductVariants.Id
+							)
+						LIMIT 1
+					)
+					AND ProductVariants.ProductID = Products.Id
+				)
+			LIMIT 1
+		)`,
+		map[string]interface{}{
+			"channelID":   channelID,
+			"isPublished": isPublished,
+		},
+	)
+}
+
+func (ps *SqlProductStore) filterVariantPrice(query squirrel.SelectBuilder, priceRange gqlmodel.PriceRangeInput, channelID interface{}) squirrel.SelectBuilder {
+	channelQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ChannelTableName).
+		Where("Channels.Id = ? AND Channels.Id = ProductVariantChannelListings.ChannelID", channelID).
+		Limit(1).
+		Suffix(")")
+
+	productVariantChannelListingQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductVariantChannelListingTableName).
+		Where(channelQuery).
+		Where("ProductVariantChannelListings.VariantID = ProductVariants.Id").
+		Limit(1).
+		Suffix(")")
+
+	if priceRange.Lte != nil {
+		productVariantChannelListingQuery = productVariantChannelListingQuery.Where(squirrel.Or{
+			squirrel.LtOrEq{store.ProductVariantChannelListingTableName + ".PriceAmount": *priceRange.Lte},
+			squirrel.Eq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		})
+	}
+	if priceRange.Gte != nil {
+		productVariantChannelListingQuery = productVariantChannelListingQuery.Where(squirrel.Or{
+			squirrel.GtOrEq{store.ProductVariantChannelListingTableName + ".PriceAmount": *priceRange.Lte},
+			squirrel.Eq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		})
+	}
+
+	productVariantQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		From(store.ProductVariantTableName).
+		Prefix("EXISTS (").
+		Where(productVariantChannelListingQuery).
+		Where("ProductVariants.ProductID = Products.Id").
+		Limit(1).
+		Suffix(")")
+
+	return query.Where(productVariantQuery)
+}
+
+func (ps *SqlProductStore) filterMinimalPrice(query squirrel.SelectBuilder, priceRange gqlmodel.PriceRangeInput, channelID interface{}) squirrel.SelectBuilder {
+	channelQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ChannelTableName).
+		Where("Channels.Id = ? AND Channels.Id = ProductChannelListings.ChannelID", channelID).
+		Limit(1).
+		Suffix(")")
+
+	productChannelListingQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductChannelListingTableName).
+		Where(channelQuery).
+		Where("ProductChannelListings.ProductID = Products.Id").
+		Limit(1).
+		Suffix(")")
+
+	if priceRange.Lte != nil {
+		productChannelListingQuery = productChannelListingQuery.Where(squirrel.And{
+			squirrel.LtOrEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": *priceRange.Lte}, // >=
+			squirrel.NotEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": nil},
+		})
+	}
+	if priceRange.Gte != nil {
+		productChannelListingQuery = productChannelListingQuery.Where(squirrel.And{
+			squirrel.GtOrEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": *priceRange.Lte}, // <=
+			squirrel.NotEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": nil},
+		})
+	}
+
+	return query.Where(productChannelListingQuery)
+}
+
+type (
+	value struct {
+		Slug   string
+		Values []string
+	}
+	booleanRange struct {
+		Slug    string
+		Boolean bool
+	}
+	valueRange struct {
+		Slug  string
+		Range gqlmodel.IntRangeInput
+	}
+	timeRange struct {
+		Slug string
+		Date gqlmodel.DateRangeInput
+	}
+
+	valueList      []value
+	booleanList    []booleanRange
+	valueRangeList []valueRange
+	timeRangeList  []timeRange
+)
+
+func (t timeRangeList) Slugs() []string {
+	res := []string{}
+	for _, item := range t {
+		res = append(res, item.Slug)
+	}
+
+	return res
+}
+
+func (t booleanList) Slugs() []string {
+	res := []string{}
+	for _, item := range t {
+		res = append(res, item.Slug)
+	}
+
+	return res
+}
+
+type safeMap struct {
+	mu sync.Mutex
+	m  map[string][]string
+}
+
+func (m *safeMap) write(key string, value []string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.m[key] = append(m.m[key], value...)
+}
+
+func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attributes []*gqlmodel.AttributeInput) squirrel.SelectBuilder {
+	nonNilAttributes := []gqlmodel.AttributeInput{}
+	for _, attr := range attributes {
+		if attr != nil {
+			nonNilAttributes = append(nonNilAttributes, *attr)
+		}
+	}
+
+	if len(nonNilAttributes) == 0 {
+		return query
+	}
+
+	var (
+		value_list           valueList
+		boolean_list         booleanList
+		value_range_list     valueRangeList
+		date_range_list      timeRangeList
+		date_time_range_list timeRangeList
+	)
+
+	for _, input := range nonNilAttributes {
+		if len(input.Values) > 0 {
+			value_list = append(value_list, value{input.Slug, stringPointerSliceToStringSlice(input.Values)})
+		} else if input.ValuesRange != nil {
+			value_range_list = append(value_range_list, valueRange{input.Slug, *input.ValuesRange})
+		} else if input.Date != nil {
+			date_range_list = append(date_range_list, timeRange{input.Slug, *input.Date})
+		} else if input.DateTime != nil {
+			date_time_range_list = append(date_time_range_list, timeRange{input.Slug, gqlmodel.DateRangeInput(*input.DateTime)})
+		} else if input.Boolean != nil {
+			boolean_list = append(boolean_list, booleanRange{input.Slug, *input.Boolean})
+		}
+	}
+
+	var queries = &safeMap{
+		m: map[string][]string{},
+	}
+	var wg sync.WaitGroup
+	var funcErr error
+	var mu sync.Mutex
+
+	syncSetErr := func(err error) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		if err != nil && funcErr == nil {
+			funcErr = err
+		}
+	}
+
+	if len(value_list) > 0 {
+		wg.Add(1)
+
+		err := ps.cleanProductAttributesFilterInput(value_list, queries)
+		syncSetErr(err)
+
+		wg.Done()
+	}
+
+	if len(value_range_list) > 0 {
+		wg.Add(1)
+		err := ps.cleanProductAttributesRangeFilterInput(value_range_list, queries)
+		syncSetErr(err)
+		wg.Done()
+	}
+
+	if len(date_range_list) > 0 {
+		wg.Add(1)
+		err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_range_list, queries, true)
+		syncSetErr(err)
+		wg.Done()
+	}
+
+	if len(date_time_range_list) > 0 {
+		wg.Add(1)
+		err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_time_range_list, queries, false)
+		syncSetErr(err)
+		wg.Done()
+	}
+
+	if len(boolean_list) > 0 {
+		wg.Add(1)
+		err := ps.cleanProductAttributesBooleanFilterInput(boolean_list, queries)
+		syncSetErr(err)
+		wg.Done()
+	}
+
+	wg.Wait()
+
+	if funcErr != nil {
+		slog.Error("Filter product attributes error", slog.Err(funcErr))
+		return query
+	}
+
+	return ps.filterProductsByAttributesValues(query, queries)
+}
+
+func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.SelectBuilder, queries *safeMap) squirrel.SelectBuilder {
+
+	for _, values := range queries.m {
+		orExpr := squirrel.Or{}
+
+		assigned_product_attribute_values := ps.GetQueryBuilder().
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			From(store.AssignedProductAttributeValueTableName).
+			Where("AssignedProductAttributeValues.ValueID IN ?", values).
+			Where("AssignedProductAttributeValues.AssignmentID = AssignedProductAttributes.Id").
+			Limit(1).
+			Suffix(")")
+
+		assigned_product_attributes := ps.GetQueryBuilder().
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			From(store.AssignedProductAttributeTableName).
+			Where(assigned_product_attribute_values).
+			Where("AssignedProductAttributes.ProductID = Products.Id").
+			Limit(1).
+			Suffix(")")
+
+		orExpr = append(orExpr, assigned_product_attributes)
+
+		assigned_variant_attribute_values := ps.GetQueryBuilder().
+			Select(`(1) AS "a"`).
+			From(store.AssignedVariantAttributeValueTableName).
+			Prefix("EXISTS (").
+			Where("AssignedVariantAttributeValues.ValueID IN ?", values).
+			Where("AssignedVariantAttributeValues.AssignmentID = AssignedVariantAttributes.Id").
+			Limit(1).
+			Suffix(")")
+
+		assigned_variant_attributes := ps.GetQueryBuilder().
+			Select(`(1) AS "a"`).
+			From(store.AssignedVariantAttributeTableName).
+			Prefix("EXISTS (").
+			Where(assigned_variant_attribute_values).
+			Where("AssignedVariantAttributes.VariantID = ProductVariants.Id").
+			Limit(1).
+			Suffix(")")
+
+		productVariants := ps.GetQueryBuilder().
+			Select(`(1) AS "a"`).
+			From(store.ProductVariantTableName).
+			Prefix("EXISTS (").
+			Where(assigned_variant_attributes).
+			Where("ProductVariants.ProductID = Products.Id").
+			Limit(1).
+			Suffix(")")
+
+		orExpr = append(orExpr, productVariants)
+		query = query.Where(orExpr)
+	}
+
+	return query
+}
+
+func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueList, queries *safeMap) error {
+	var attributes []*attribute.Attribute
+	_, err := ps.GetReplica().Select(&attributes, "SELECT * FROM "+store.AttributeTableName)
+	if err != nil {
+		return errors.Wrap(err, "failed to find all attributes")
+	}
+
+	var (
+		attributesSlugPkMap = map[string]string{}
+		attributesPkSlugMap = map[string]string{}
+		valuesMap           = map[string]map[string]string{}
+	)
+
+	for _, attr := range attributes {
+		attributesSlugPkMap[attr.Slug] = attr.Id
+		attributesPkSlugMap[attr.Id] = attr.Slug
+	}
+
+	var attributeValues attribute.AttributeValues
+	_, err = ps.GetReplica().Select(&attributeValues, "SELECT * FROM "+store.AttributeValueTableName)
+	if err != nil {
+		return errors.Wrap(err, "failed to find all attribute values")
+	}
+
+	for _, attrValue := range attributeValues {
+		valuesMap[attributesPkSlugMap[attrValue.AttributeID]][attrValue.Id] = attrValue.Slug
+	}
+
+	// Convert attribute:value pairs into a dictionary where
+	// attributes are keys and values are grouped in lists
+	for _, value := range filterValue {
+		attrPk, ok := attributesSlugPkMap[value.Slug]
+		if !ok {
+			return fmt.Errorf("unknown attribute name: %s", value.Slug)
+		}
+
+		attrvaluePk := []string{}
+
+		for _, valueSlug := range value.Values {
+			if item, ok := valuesMap[value.Slug]; ok {
+				attrvaluePk = append(attrvaluePk, item[valueSlug])
+			}
+		}
+
+		queries.write(attrPk, attrvaluePk)
+	}
+
+	return nil
+}
+
+func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue valueRangeList, queries *safeMap) error {
+	attributeQuery := ps.GetQueryBuilder().
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.AttributeTableName).
+		Where(squirrel.Eq{store.AttributeTableName + ".InputType": attribute.NUMERIC}).
+		Where("Attributes.Id = AttributeValues.AttributeID").
+		Suffix(")").
+		Limit(1)
+
+	attributeValues, err := ps.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+		All:                    true,
+		SelectRelatedAttribute: true,
+		Extra:                  attributeQuery,
+	})
+	if err != nil {
+		return err
+	}
+
+	var (
+		// attributesMap has keys are attribute slugs, values are attribute ids
+		attributesMap = model.StringMap{}
+		valuesMap     = map[string]map[float64]string{}
+	)
+	for _, attrValue := range attributeValues {
+		attributesMap[attrValue.Attribute.Slug] = attrValue.AttributeID
+
+		// we can parse strings into float64 here since:
+		// all found attribute values have parent attributes's input type is 'numeric'
+		numericName, err := strconv.ParseFloat(attrValue.Name, 64)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse attribute value's name to float64")
+		}
+		valuesMap[attrValue.Attribute.Slug][numericName] = attrValue.Id
+	}
+
+	for _, vlRange := range filterValue {
+		attrPk, ok := attributesMap[vlRange.Slug]
+		if !ok {
+			return fmt.Errorf("unknown numeric attribute name: %v", vlRange.Slug)
+		}
+
+		var (
+			gte float64 = 0
+			lte float64 = math.MaxInt64
+		)
+		if vlRange.Range.Gte != nil {
+			gte = float64(*vlRange.Range.Gte)
+		}
+		if vlRange.Range.Lte != nil {
+			lte = float64(*vlRange.Range.Lte)
+		}
+
+		attrValues := valuesMap[vlRange.Slug]
+
+		attrValPks := []string{}
+		for key, value := range attrValues {
+			if gte <= key && key <= lte {
+				attrValPks = append(attrValPks, value)
+			}
+		}
+
+		queries.write(attrPk, attrValPks)
+	}
+
+	return nil
+}
+
+func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filterRange timeRangeList, queries *safeMap, isDate bool) error {
+	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{
+		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterRange.Slugs()},
+		PrefetchRelatedAttributeValues: true,
+	})
+	if err != nil {
+		return err
+	}
+
+	type aMap struct {
+		pk     string
+		values map[*time.Time]string
+	}
+
+	var valuesMap = map[string]aMap{}
+
+	for _, attr := range attributes {
+		values := map[*time.Time]string{}
+
+		for _, attrValue := range attr.AttributeValues {
+			values[attrValue.Datetime] = attrValue.Id
+		}
+
+		valuesMap[attr.Slug] = aMap{attr.Id, values}
+	}
+
+	for _, item := range filterRange {
+		var (
+			attrPK           = valuesMap[item.Slug].pk
+			gte              = item.Date.Gte
+			lte              = item.Date.Lte
+			matchingValuesID = []string{}
+		)
+
+		for value, pk := range valuesMap[item.Slug].values {
+			if value == nil {
+				continue
+			}
+
+			realValue := *value
+			if isDate {
+				realValue = util.StartOfDay(realValue)
+			}
+
+			if gte != nil && lte != nil {
+				if (gte.Equal(realValue) || gte.Before(realValue)) && (lte.After(realValue) || lte.Equal(realValue)) {
+					matchingValuesID = append(matchingValuesID, pk)
+				}
+			} else if gte != nil && (gte.Equal(realValue) || gte.Before(realValue)) {
+				matchingValuesID = append(matchingValuesID, pk)
+			} else if lte != nil && (lte.After(realValue) || lte.Equal(realValue)) {
+				matchingValuesID = append(matchingValuesID, pk)
+			}
+
+			queries.write(attrPK, matchingValuesID)
+		}
+	}
+
+	return nil
+}
+
+func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue booleanList, queries *safeMap) error {
+	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{
+		PrefetchRelatedAttributeValues: true,
+		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterValue.Slugs()},
+		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": attribute.BOOLEAN},
+	})
+	if err != nil {
+		return err
+	}
+
+	type aMap struct {
+		pk     string
+		values map[bool]string
+	}
+
+	var valuesMap = map[string]aMap{}
+
+	for _, attr := range attributes {
+		values := map[bool]string{}
+
+		for _, attrValue := range attr.AttributeValues {
+			if attrValue.Boolean != nil {
+				values[*attrValue.Boolean] = attrValue.Id
+			}
+		}
+
+		valuesMap[attr.Slug] = aMap{attr.Id, values}
+	}
+
+	for _, item := range filterValue {
+
+		attrPK := valuesMap[item.Slug].pk
+
+		if valuePK, ok := valuesMap[item.Slug].values[item.Boolean]; ok {
+			queries.write(attrPK, []string{valuePK})
+		}
+	}
+
+	return nil
+}
+
+// func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value gqlmodel.StockAvailability, channelID string) squirrel.SelectBuilder {
+// 	validValue := false
+// 	for _, item := range gqlmodel.AllStockAvailability {
+// 		if value == item {
+// 			validValue = true
+// 			break
+// 		}
+// 	}
+
+// 	if !validValue {
+// 		return query
+// 	}
+
+// }
