@@ -643,6 +643,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 // 	}
 
 // 	if !validValue {
+
 // 		return query
 // 	}
 
