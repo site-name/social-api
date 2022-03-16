@@ -102,7 +102,7 @@ func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
 }
 
 func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var upsertor store.Upsertor = as.GetMaster()
+	var upsertor gorp.SqlExecutor = as.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -120,7 +120,7 @@ func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.
 }
 
 func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var upsertor store.Upsertor = as.GetMaster()
+	var upsertor gorp.SqlExecutor = as.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}

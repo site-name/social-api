@@ -50,7 +50,7 @@ func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
 
 // Save insert given transaction into database then returns it
 func (ps *SqlPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
-	var upsertor store.Upsertor = ps.GetMaster()
+	var upsertor gorp.SqlExecutor = ps.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}

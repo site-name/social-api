@@ -49,7 +49,7 @@ func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
 func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 	var saving bool
-	var upsertSelector store.SelectUpsertor = gcs.GetMaster()
+	var upsertSelector gorp.SqlExecutor = gcs.GetMaster()
 	if transaction != nil {
 		upsertSelector = transaction
 	}
@@ -119,7 +119,7 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 
 // FilterByOption finds giftcards wth option
 func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
-	var selector store.Selector = gs.GetReplica()
+	var selector gorp.SqlExecutor = gs.GetReplica()
 	if transaction != nil {
 		selector = transaction
 	}

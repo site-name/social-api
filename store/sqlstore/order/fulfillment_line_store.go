@@ -81,7 +81,7 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, erro
 
 // BulkUpsert upsert given fulfillment lines
 func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
-	var selectUpsertor store.SelectUpsertor = fls.GetMaster()
+	var selectUpsertor gorp.SqlExecutor = fls.GetMaster()
 	if transaction != nil {
 		selectUpsertor = transaction
 	}

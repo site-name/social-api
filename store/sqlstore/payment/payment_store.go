@@ -150,7 +150,7 @@ func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 // Save inserts given payment into database then returns it
 func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
 
-	var upsertor store.Upsertor = ps.GetMaster()
+	var upsertor gorp.SqlExecutor = ps.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -169,7 +169,7 @@ func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.
 
 // Update updates given payment and returns the updated value
 func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
-	var upsertor store.Upsertor = ps.GetMaster()
+	var upsertor gorp.SqlExecutor = ps.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -201,7 +201,7 @@ func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *paymen
 
 // Get finds and returns the payment with given id
 func (ps *SqlPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
-	var selector store.Selector = ps.GetReplica()
+	var selector gorp.SqlExecutor = ps.GetReplica()
 	if transaction != nil {
 		selector = transaction
 	}

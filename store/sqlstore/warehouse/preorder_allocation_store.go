@@ -56,7 +56,7 @@ func (ws *SqlPreorderAllocationStore) TableName(withField string) string {
 
 // BulkCreate bulk inserts given preorderAllocations and returns them
 func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
-	var upsertor store.Upsertor = ws.GetMaster()
+	var upsertor gorp.SqlExecutor = ws.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}

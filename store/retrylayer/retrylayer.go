@@ -1945,7 +1945,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 
 	tries := 0
 	for {

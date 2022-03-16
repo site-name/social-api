@@ -131,7 +131,7 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{
 
 // Upsert depends on given orderLine's Id to decide to update or save it
 func (ols *SqlOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
-	var upsertor store.Upsertor = ols.GetMaster()
+	var upsertor gorp.SqlExecutor = ols.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -181,7 +181,7 @@ func (ols *SqlOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *o
 
 // BulkUpsert performs upsert multiple order lines in once
 func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
-	var upsertSelector store.SelectUpsertor = ols.GetMaster()
+	var upsertSelector gorp.SqlExecutor = ols.GetMaster()
 	if transaction != nil {
 		upsertSelector = transaction
 	}

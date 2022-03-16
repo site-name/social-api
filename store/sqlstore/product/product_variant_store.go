@@ -77,7 +77,7 @@ func (ps *SqlProductVariantStore) TableName(withField string) string {
 }
 
 func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
-	var upsertor store.Upsertor = ps.GetMaster()
+	var upsertor gorp.SqlExecutor = ps.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -104,7 +104,7 @@ func (ps *SqlProductVariantStore) Update(transaction *gorp.Transaction, variant 
 		return nil, err
 	}
 
-	var selectUpsertor store.SelectUpsertor = ps.GetMaster()
+	var selectUpsertor gorp.SqlExecutor = ps.GetMaster()
 	if transaction != nil {
 		selectUpsertor = transaction
 	}

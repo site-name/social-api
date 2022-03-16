@@ -78,7 +78,7 @@ func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
 func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	var (
 		isSaving bool
-		upsertor store.Upsertor = fs.GetMaster()
+		upsertor gorp.SqlExecutor = fs.GetMaster()
 	)
 	if transaction != nil {
 		upsertor = transaction

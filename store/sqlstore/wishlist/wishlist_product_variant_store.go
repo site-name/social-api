@@ -102,7 +102,7 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transa
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
 func (w *SqlWishlistItemProductVariantStore) GetById(transaction *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
-	var selector store.Selector = w.GetReplica()
+	var selector gorp.SqlExecutor = w.GetReplica()
 	if transaction != nil {
 		selector = transaction
 	}

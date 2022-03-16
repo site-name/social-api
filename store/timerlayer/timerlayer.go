@@ -1806,7 +1806,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
-func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.FilterbyOption(option)

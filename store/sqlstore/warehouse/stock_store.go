@@ -64,15 +64,12 @@ func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
 func (ss *SqlStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
-
 	var (
-		isSaving   bool
-		insertFunc func(list ...interface{}) error          = ss.GetMaster().Insert
-		updateFunc func(list ...interface{}) (int64, error) = ss.GetMaster().Update
+		isSaving bool
+		executor gorp.SqlExecutor = ss.GetMaster()
 	)
 	if transaction != nil {
-		insertFunc = transaction.Insert
-		updateFunc = transaction.Update
+		executor = transaction
 	}
 
 	for _, stock := range stocks {
@@ -95,7 +92,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*war
 			oldStock  *warehouse.Stock
 		)
 		if isSaving {
-			err = insertFunc(stock)
+			err = executor.Insert(stock)
 		} else {
 			// try finding a stock with id:
 			oldStock, err = ss.Get(stock.Id)
@@ -105,7 +102,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*war
 
 			stock.CreateAt = oldStock.CreateAt
 
-			numUpdate, err = updateFunc(stock)
+			numUpdate, err = executor.Update(stock)
 		}
 
 		if err != nil {

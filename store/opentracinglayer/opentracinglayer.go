@@ -1875,7 +1875,7 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
-func (s *OpenTracingLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+func (s *OpenTracingLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)

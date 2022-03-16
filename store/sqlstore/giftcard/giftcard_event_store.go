@@ -48,7 +48,7 @@ func (gs *SqlGiftcardEventStore) Ordering() string {
 // BulkUpsert upserts and returns given giftcard events
 func (gs *SqlGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
 	var isSaving bool
-	var upsertSelector store.SelectUpsertor = gs.GetMaster()
+	var upsertSelector gorp.SqlExecutor = gs.GetMaster()
 	if transaction != nil {
 		upsertSelector = transaction
 	}

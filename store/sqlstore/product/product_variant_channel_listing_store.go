@@ -224,7 +224,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	var (
 		isSaving       bool
-		selectUpsertor store.SelectUpsertor = ps.GetMaster()
+		selectUpsertor gorp.SqlExecutor = ps.GetMaster()
 	)
 	if transaction != nil {
 		selectUpsertor = transaction

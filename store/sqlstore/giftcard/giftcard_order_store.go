@@ -64,7 +64,7 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error)
 
 // BulkUpsert upserts given order-giftcard relations and returns it
 func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
-	var upsertSelector store.SelectUpsertor = gs.GetMaster()
+	var upsertSelector gorp.SqlExecutor = gs.GetMaster()
 	if transaction != nil {
 		upsertSelector = transaction
 	}

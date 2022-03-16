@@ -41,7 +41,7 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishli
 		err             error
 		numUpdated      int64
 		oldWishlistItem *wishlist.WishlistItem
-		upsertor        store.Upsertor = ws.GetMaster()
+		upsertor        gorp.SqlExecutor = ws.GetMaster()
 	)
 	if transaction != nil {
 		upsertor = transaction
