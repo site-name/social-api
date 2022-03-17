@@ -12,18 +12,14 @@ import (
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, categoryIDs []*string) squirrel.SelectBuilder {
-	ids := []string{}
-	for _, id := range categoryIDs {
-		if id != nil {
-			ids = append(ids, *id)
-		}
-	}
+	ids := stringPointerSliceToStringSlice(categoryIDs)
 
 	if len(ids) == 0 {
 		return query
@@ -46,14 +42,12 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 			FROM `+store.CollectionProductRelationTableName+`
 			WHERE
 				(
-					ProductCollections.CollectionID IN :collectionIDs
+					ProductCollections.CollectionID IN ?
 					AND ProductCollections.ProductID = Products.Id
 				)
 			LIMIT 1
 		)`,
-		map[string]interface{}{
-			"collectionIDs": collectionIDs,
-		},
+		collectionIDs,
 	)
 }
 
@@ -633,18 +627,88 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	return nil
 }
 
-// func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value gqlmodel.StockAvailability, channelID string) squirrel.SelectBuilder {
-// 	validValue := false
-// 	for _, item := range gqlmodel.AllStockAvailability {
-// 		if value == item {
-// 			validValue = true
-// 			break
-// 		}
-// 	}
+func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value gqlmodel.StockAvailability, channelID interface{}) squirrel.SelectBuilder {
+	var (
+		validValue = true
+		prefix     string
+		channelID_ string
+	)
+	if channelID != nil {
+		channelID_ = channelID.(string)
+	}
 
-// 	if !validValue {
+	switch value {
+	case gqlmodel.StockAvailabilityInStock:
+		prefix = "EXISTS ("
+	case gqlmodel.StockAvailabilityOutOfStock:
+		prefix = "NOT EXISTS ("
 
-// 		return query
-// 	}
+	default:
+		validValue = false
+	}
 
-// }
+	if !validValue {
+		return query
+	}
+
+	channelQuery, _, _ := ps.Stock().FilterForChannel(&warehouse.StockFilterForChannelOption{
+		ChannelID:       channelID_,
+		ReturnQueryOnly: true,
+	})
+
+	productVariantIDsQuery := ps.GetQueryBuilder().
+		Select("Stocks.ProductVariantID").
+		Prefix("ProductVariants.Id IN").
+		From(store.StockTableName).
+		Where(channelQuery).
+		Where(`Stocks.Quantity > COALESCE (
+			(
+        SELECT
+          SUM( Allocations.QuantityAllocated )
+        FROM
+					Allocations
+        WHERE
+            Allocations.QuantityAllocated > 0
+            AND Allocations.StockID = Stocks.Id
+        GROUP BY Allocations.StockID
+      ), 0
+		)`).
+		Suffix(")")
+
+	productVariantSelect := ps.GetQueryBuilder().
+		Select("ProductVariants.ProductID").
+		Prefix(prefix).
+		From(store.ProductVariantTableName).
+		Where(productVariantIDsQuery).
+		Where("ProductVariants.ProductID = Products.Id").
+		Limit(1).
+		Suffix(")")
+
+	return query.Where(productVariantSelect)
+}
+
+func (ps *SqlProductStore) filterProductTypes(query squirrel.SelectBuilder, value []*string) squirrel.SelectBuilder {
+	ids := stringPointerSliceToStringSlice(value)
+
+	if len(ids) == 0 {
+		return query
+	}
+
+	return query.Where("Products.ProductTypeID IN ?", ids)
+}
+
+func (ps *SqlProductStore) filterStocks(query squirrel.SelectBuilder, value gqlmodel.ProductStockFilterInput) squirrel.SelectBuilder {
+	if len(value.WarehouseIds) > 0 && value.Quantity == nil {
+		return query.
+			InnerJoin(store.ProductVariantTableName+" ON ProductVariants.ProductID = Products.Id").
+			InnerJoin(store.StockTableName+" ON Stocks.ProductVariantID = ProductVariants.Id").
+			Where("Stocks.WarehouseID IN ?", value.WarehouseIds).
+			Distinct()
+	}
+
+	if len(value.WarehouseIds) == 0 && value.Quantity != nil {
+
+	}
+
+	return query
+}

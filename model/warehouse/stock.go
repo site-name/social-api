@@ -21,14 +21,15 @@ type Stock struct {
 
 // StockFilterForChannelOption is used by a filter function at store/sqlstore/channel/channel_store.go
 type StockFilterForChannelOption struct {
-	ChannelSlug string
+	ChannelID string
 
-	Id               *model.StringFilter // WHERE Id ...
-	WarehouseID      *model.StringFilter // WHERE WarehouseID ...
-	ProductVariantID *model.StringFilter // WHERE ProductVariantID ...
+	Id               squirrel.Sqlizer // WHERE Id ...
+	WarehouseID      squirrel.Sqlizer // WHERE WarehouseID ...
+	ProductVariantID squirrel.Sqlizer // WHERE ProductVariantID ...
 
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
-	// SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
+
+	ReturnQueryOnly bool // if true, only the squirrel query will be returned, no execution will be performed
 }
 
 // StockFilterOption is used for build squirrel sql queries
@@ -154,6 +155,14 @@ func (s *Stock) PreUpdate() {
 
 func (s *Stock) DeepCopy() *Stock {
 	res := *s
+
+	if s.Warehouse != nil {
+		res.Warehouse = s.Warehouse.DeepCopy()
+	}
+
+	if s.ProductVariant != nil {
+		res.ProductVariant = s.ProductVariant.DeepCopy()
+	}
 
 	return &res
 }

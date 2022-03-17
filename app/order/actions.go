@@ -21,6 +21,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // OrderCreated. `fromDraft` is default to false
@@ -1031,22 +1032,14 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord order.Order, manager
 //
 //     Raise:
 //         InsufficientStock: If system hasn't containt enough item in stock for any line.
-func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelSlug string, manager interfaces.PluginManagerInterface, decreaseStock bool, allowStockTobeExceeded bool) ([]*order.FulfillmentLine, *exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelID string, manager interfaces.PluginManagerInterface, decreaseStock bool, allowStockTobeExceeded bool) ([]*order.FulfillmentLine, *exception.InsufficientStock, *model.AppError) {
 
 	var variantIDs = lineDatas.OrderLines().ProductVariantIDs()
 
 	stocks, appErr := a.srv.WarehouseService().FilterStocksForChannel(&warehouse.StockFilterForChannelOption{
-		ChannelSlug: channelSlug,
-		WarehouseID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: warehouseID,
-			},
-		},
-		ProductVariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: variantIDs,
-			},
-		},
+		ChannelID:                   channelID,
+		WarehouseID:                 squirrel.Eq{store.StockTableName + ".WarehouseID": warehouseID},
+		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": variantIDs},
 		SelectRelatedProductVariant: true,
 	})
 	if appErr != nil {

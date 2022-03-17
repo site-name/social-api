@@ -132,13 +132,13 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 }
 
 // FilterForChannel finds and returns stocks that satisfy given options
-func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
 	channelQuery := ss.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where(squirrel.Expr("Channels.Slug = ?", options.ChannelSlug)).
-		Where(squirrel.Expr("Channels.Id = ShippingZoneChannels.ChannelID")).
+		Where("Channels.Id = ?", options.ChannelID).
+		Where("Channels.Id = ShippingZoneChannels.ChannelID").
 		Limit(1).
 		Suffix(")")
 
@@ -177,19 +177,23 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		query = query.InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)")
 	}
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+		query = query.Where(options.Id)
 	}
 	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID.ToSquirrel("Stocks.WarehouseID"))
+		query = query.Where(options.WarehouseID)
 	}
 	if options.ProductVariantID != nil {
-		query = query.Where(options.ProductVariantID.ToSquirrel("Stocks.ProductVariantID"))
+		query = query.Where(options.ProductVariantID)
+	}
+
+	if options.ReturnQueryOnly {
+		return query, nil, nil
 	}
 
 	rows, err := query.RunWith(ss.GetReplica()).Query()
 
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find stocks with given channel slug")
+		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
 	}
 
 	var (
@@ -205,20 +209,20 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row contains stock")
+			return nil, nil, errors.Wrap(err, "failed to scan a row contains stock")
 		}
 
 		if options.SelectRelatedProductVariant {
-			stock.ProductVariant = productVariant.DeepCopy()
+			stock.ProductVariant = &productVariant
 		}
 		returningStocks = append(returningStocks, stock.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of stocks")
+		return nil, nil, errors.Wrap(err, "failed to close rows of stocks")
 	}
 
-	return returningStocks, nil
+	return nil, returningStocks, nil
 }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
@@ -259,17 +263,17 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		query = query.Suffix("OF " + options.ForUpdateOf)
 	}
 
-	groupBy := []string{}
+	var groupBy string
 
 	if options.AnnotateAvailabeQuantity {
 		query = query.
 			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE( SUM ( Allocations.QuantityAllocated ), 0 )"), "AvailableQuantity")).
 			LeftJoin(store.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
-		groupBy = append(groupBy, "Stocks.Id")
+		groupBy = "Stocks.Id"
 	}
 
 	if len(groupBy) > 0 {
-		query = query.GroupBy(groupBy...)
+		query = query.GroupBy(groupBy)
 	}
 
 	queryString, args, err := query.ToSql()

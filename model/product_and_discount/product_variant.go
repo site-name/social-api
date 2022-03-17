@@ -30,9 +30,9 @@ type ProductVariant struct {
 	model.Sortable
 	model.ModelMetadata
 
-	DigitalContent *DigitalContent                 `json:"-" db:"-"` // for storing value returned by prefetching
-	Product        *Product                        `json:"-" db:"-"`
-	ChannelListing []*ProductVariantChannelListing `json:"-" db:"-"`
+	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
+	Product        *Product        `json:"-" db:"-"`
+	// ChannelListing []*ProductVariantChannelListing `json:"-" db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
@@ -162,6 +162,14 @@ func (p *ProductVariant) PreUpdate() {
 
 func (p *ProductVariant) DeepCopy() *ProductVariant {
 	res := *p
+
+	if p.Product != nil {
+		res.Product = p.Product.DeepCopy()
+	}
+	if p.DigitalContent != nil {
+		res.DigitalContent = p.DigitalContent.DeepCopy()
+	}
+
 	return &res
 }
 

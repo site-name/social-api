@@ -141,5 +141,14 @@ func (w *WareHouse) ToJSON() string {
 
 func (w *WareHouse) DeepCopy() *WareHouse {
 	res := *w
+
+	if w.Address != nil {
+		res.Address = w.Address.DeepCopy()
+	}
+
+	res.ShippingZones = []*shipping.ShippingZone{}
+	for _, sz := range w.ShippingZones {
+		res.ShippingZones = append(res.ShippingZones, sz.DeepCopy())
+	}
 	return &res
 }

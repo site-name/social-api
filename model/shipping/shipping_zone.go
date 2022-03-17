@@ -116,5 +116,7 @@ func (s *ShippingZone) PreUpdate() {
 
 func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
+
+	res.ModelMetadata = *s.ModelMetadata.DeepCopy()
 	return &res
 }

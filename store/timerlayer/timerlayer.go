@@ -6689,10 +6689,10 @@ func (s *TimerLayerStockStore) FilterByOption(transaction *gorp.Transaction, opt
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterForChannel(options)
+	result, resultVar1, err := s.StockStore.FilterForChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6702,7 +6702,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options *warehouse.StockFilterFo
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.FilterForChannel", success, elapsed)
 	}
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {

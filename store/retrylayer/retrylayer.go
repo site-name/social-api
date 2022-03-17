@@ -7940,21 +7940,21 @@ func (s *RetryLayerStockStore) FilterByOption(transaction *gorp.Transaction, opt
 
 }
 
-func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterForChannel(options)
+		result, resultVar1, err := s.StockStore.FilterForChannel(options)
 		if err == nil {
-			return result, nil
+			return result, resultVar1, nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return result, resultVar1, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return result, resultVar1, err
 		}
 	}
 

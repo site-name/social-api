@@ -7332,7 +7332,7 @@ func (s *OpenTracingLayerStockStore) FilterByOption(transaction *gorp.Transactio
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7341,13 +7341,13 @@ func (s *OpenTracingLayerStockStore) FilterForChannel(options *warehouse.StockFi
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterForChannel(options)
+	result, resultVar1, err := s.StockStore.FilterForChannel(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return result, err
+	return result, resultVar1, err
 }
 
 func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
