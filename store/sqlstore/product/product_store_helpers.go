@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -47,11 +48,11 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 				)
 			LIMIT 1
 		)`,
-		collectionIDs,
+		ids,
 	)
 }
 
-func (ps *SqlProductStore) filterIsPublishedAt(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
 
 	return query.Where(`
 		EXISTS (
@@ -658,7 +659,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 
 	productVariantIDsQuery := ps.GetQueryBuilder().
 		Select("Stocks.ProductVariantID").
-		Prefix("ProductVariants.Id IN").
+		Prefix("ProductVariants.Id IN (").
 		From(store.StockTableName).
 		Where(channelQuery).
 		Where(`Stocks.Quantity > COALESCE (
@@ -670,7 +671,8 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
         WHERE
             Allocations.QuantityAllocated > 0
             AND Allocations.StockID = Stocks.Id
-        GROUP BY Allocations.StockID
+        GROUP BY
+					Allocations.StockID
       ), 0
 		)`).
 		Suffix(")")
@@ -707,8 +709,127 @@ func (ps *SqlProductStore) filterStocks(query squirrel.SelectBuilder, value gqlm
 	}
 
 	if len(value.WarehouseIds) == 0 && value.Quantity != nil {
-
+		return ps.filterQuantity(query, *value.Quantity, nil).Distinct()
 	}
 
+	if value.Quantity != nil && len(value.WarehouseIds) != 0 {
+		return ps.filterQuantity(query, *value.Quantity, value.WarehouseIds).Distinct()
+	}
+
+	return query
+}
+
+func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity gqlmodel.IntRangeInput, warehouseIDs []string) squirrel.SelectBuilder {
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		slog.Error("failed to build query string for products", slog.Err(err))
+		return query
+	}
+
+	var products product_and_discount.Products
+	_, err = ps.GetReplica().Select(&products, queryString, args)
+	if err != nil {
+		slog.Error("failed to find products", slog.Err(err))
+		return query
+	}
+
+	productVariantQuery := ps.GetQueryBuilder().
+		Select(ps.ProductVariant().ModelFields()...).
+		From(store.ProductVariantTableName).
+		Where("ProductVariants.ProductID IN ?", products.IDs())
+
+	if len(warehouseIDs) > 0 {
+		productVariantQuery = productVariantQuery.
+			Column(`SUM (Stocks.Quantity) FILTER (
+				WHERE (
+					Stocks.WarehouseID IN ?
+				)
+			) AS TotalQuantity`, warehouseIDs)
+
+	} else {
+		productVariantQuery = productVariantQuery.
+			Column(`SUM (Stocks.Quantity) AS TotalQuantity`)
+	}
+
+	productVariantQuery = productVariantQuery.
+		LeftJoin(store.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
+		GroupBy("ProductVariants.Id")
+
+	// parse quantity range
+	if quantity.Gte != nil {
+		productVariantQuery = productVariantQuery.Where("TotalQuantity >= ?", *quantity.Gte)
+	}
+	if quantity.Lte != nil {
+		productVariantQuery = productVariantQuery.Where("TotalQuantity <= ?", *quantity.Lte)
+	}
+
+	queryString, args, err = productVariantQuery.ToSql()
+	if err != nil {
+		slog.Error("failed to build query string for product variants", slog.Err(err))
+		return query
+	}
+
+	var variants product_and_discount.ProductVariants
+	_, err = ps.GetReplica().Select(&variants, queryString, args...)
+	if err != nil {
+		slog.Error("failed to find product variants", slog.Err(err))
+		return query
+	}
+
+	return query.
+		InnerJoin(store.ProductVariantTableName+" ON ProductVariants.ProductID = Products.Id").
+		Where("ProductVariants.Id IN ?", variants.IDs())
+}
+
+func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
+	productTypeFilter := ps.GetQueryBuilder().
+		Select("*").
+		From(store.ProductTypeTableName).
+		Where("ProductTypes.Kind = ?", product_and_discount.GIFT_CARD).
+		Where("ProductTypes.Id = Products.ProductTypeID").
+		Limit(1).
+		Suffix(")")
+
+	if value {
+		return query.Where(productTypeFilter.Prefix("EXISTS ("))
+	}
+
+	return query.Where(productTypeFilter.Prefix("NOT EXISTS ("))
+}
+
+func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, productIDs []*string) squirrel.SelectBuilder {
+	ids := stringPointerSliceToStringSlice(productIDs)
+	if len(ids) == 0 {
+		return query
+	}
+
+	return query.Where("Products.Id IN ?", ids)
+}
+
+func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
+	variantQuery := ps.GetQueryBuilder().
+		Select("*").
+		From(store.ProductVariantTableName).
+		Where(
+			`ProductVariants.IsPreOrder = true
+			AND ( 
+				ProductVariants.PreorderEndDate = null 
+				OR ProductVariants.PreorderEndDate > ? 
+			)
+			AND ProductVariants.ProductID = Products.Id`,
+			model.GetMillis(),
+		).
+		Limit(1).
+		Suffix(")")
+
+	if value {
+		return query.Where(variantQuery.Prefix("EXISTS ("))
+	}
+
+	return query.Where(variantQuery.Prefix("NOT EXISTS ("))
+}
+
+func (ps *SqlProductStore) filterSearch(query squirrel.SelectBuilder, value string) squirrel.SelectBuilder {
+	slog.Warn("this method is not implemented", slog.String("method", "SqlProductStore.filterSearch"))
 	return query
 }

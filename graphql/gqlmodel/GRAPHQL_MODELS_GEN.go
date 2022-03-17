@@ -2893,21 +2893,22 @@ type ProductError struct {
 }
 
 type ProductFilterInput struct {
-	IsPublished       *bool                    `json:"isPublished"`
-	Collections       []*string                `json:"collections"`
-	Categories        []*string                `json:"categories"`
-	HasCategory       *bool                    `json:"hasCategory"`
-	Attributes        []*AttributeInput        `json:"attributes"`
-	StockAvailability *StockAvailability       `json:"stockAvailability"`
-	Stocks            *ProductStockFilterInput `json:"stocks"`
-	Search            *string                  `json:"search"`
-	Metadata          []*MetadataInput         `json:"metadata"`
-	Price             *PriceRangeInput         `json:"price"`
-	MinimalPrice      *PriceRangeInput         `json:"minimalPrice"`
-	ProductTypes      []*string                `json:"productTypes"`
-	GiftCard          *bool                    `json:"giftCard"`
-	Ids               []*string                `json:"ids"`
-	Channel           *string                  `json:"channel"`
+	IsPublished           *bool                    `json:"isPublished"`
+	Collections           []*string                `json:"collections"`
+	Categories            []*string                `json:"categories"`
+	HasCategory           *bool                    `json:"hasCategory"`
+	Attributes            []*AttributeInput        `json:"attributes"`
+	StockAvailability     *StockAvailability       `json:"stockAvailability"`
+	Stocks                *ProductStockFilterInput `json:"stocks"`
+	Search                *string                  `json:"search"`
+	Metadata              []*MetadataInput         `json:"metadata"`
+	Price                 *PriceRangeInput         `json:"price"`
+	MinimalPrice          *PriceRangeInput         `json:"minimalPrice"`
+	ProductTypes          []*string                `json:"productTypes"`
+	GiftCard              *bool                    `json:"giftCard"`
+	Ids                   []*string                `json:"ids"`
+	HasPreorderedVariants *bool                    `json:"hasPreorderedVariants"`
+	Channel               *string                  `json:"channel"`
 }
 
 type ProductInput struct {

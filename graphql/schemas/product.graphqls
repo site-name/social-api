@@ -201,6 +201,7 @@ input ProductFilterInput {
   productTypes: [ID]
   giftCard: Boolean
   ids: [ID]
+  hasPreorderedVariants: Boolean
   channel: String
 }
 

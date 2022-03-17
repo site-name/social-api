@@ -7,6 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"

@@ -1,5 +1,5 @@
 extend type Mutation {
-  exportProducts(input: ExportProductsInput!): ExportProducts @hasPermissions(permissions: [MANAGE_PRODUCTS])
+  exportProducts(input: ExportProductsInput!): ExportProducts # @hasPermissions(permissions: [MANAGE_PRODUCTS])
 }
 
 extend type Query {

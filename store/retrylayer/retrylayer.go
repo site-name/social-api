@@ -7,6 +7,7 @@ import (
 	"context"
 	timemodule "time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"

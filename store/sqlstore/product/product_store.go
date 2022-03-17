@@ -514,12 +514,14 @@ func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) 
 
 	// parse options
 	if options.IsPublished != nil {
-		query = ps.filterIsPublishedAt(query, *options.IsPublished, channelID)
+		query = ps.filterIsPublished(query, *options.IsPublished, channelID)
 	}
 	if len(options.Collections) > 0 {
 		query = ps.filterCollections(query, options.Collections)
 	}
-
+	if len(options.Categories) != 0 {
+		query = ps.filterCategories(query, options.Categories)
+	}
 	if options.HasCategory != nil {
 		// default to has no category
 		var condition squirrel.Sqlizer = squirrel.Eq{store.ProductTableName + ".CategoryID": nil}
@@ -537,6 +539,27 @@ func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) 
 	}
 	if len(options.Attributes) > 0 {
 		query = ps.filterAttributes(query, options.Attributes)
+	}
+	if options.StockAvailability != nil {
+		query = ps.filterStockAvailability(query, *options.StockAvailability, channelID)
+	}
+	if len(options.ProductTypes) > 0 {
+		query = ps.filterProductTypes(query, options.ProductTypes)
+	}
+	if options.Stocks != nil {
+		query = ps.filterStocks(query, *options.Stocks)
+	}
+	if options.GiftCard != nil {
+		query = ps.filterGiftCard(query, *options.GiftCard)
+	}
+	if len(options.Ids) != 0 {
+		query = ps.filterProductIDs(query, options.Ids)
+	}
+	if options.HasPreorderedVariants != nil {
+		query = ps.filterHasPreorderedVariants(query, *options.HasPreorderedVariants)
+	}
+	if options.Search != nil {
+		query = ps.filterSearch(query, *options.Search)
 	}
 
 	queryString, args, err := query.ToSql()
