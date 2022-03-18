@@ -369,11 +369,8 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantChannelListingTableName).
-		Where(squirrel.And{
-			channelQuery,
-			squirrel.NotEq{"ProductVariantChannelListings.PriceAmount": nil},
-			squirrel.Expr("ProductVariantChannelListings.VariantID = ProductVariants.Id"),
-		}).
+		Where(channelQuery).
+		Where("ProductVariantChannelListings.PriceAmount IS NOT NULL AND ProductVariantChannelListings.VariantID = ProductVariants.Id").
 		Suffix(")").
 		Limit(1)
 
@@ -382,27 +379,23 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantTableName).
-		Where(squirrel.And{
-			productVariantChannelListingQuery,
-			squirrel.Expr("Products.Id = ProductVariants.ProductID"),
-		}).
+		Where(productVariantChannelListingQuery).
+		Where("Products.Id = ProductVariants.ProductID").
 		Suffix(")").
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTableName).
-		Where(squirrel.And{
-			productChannelListingQuery,
-			productVariantQuery,
-		}).
+		Where(productChannelListingQuery).
+		Where(productVariantQuery).
 		OrderBy(store.TableOrderingMap[store.ProductTableName]).
 		ToSql()
 
 	if err != nil {
 		return nil, errors.Wrap(err, "PublishedWithVariants_ToSql")
 	}
-	var res []*product_and_discount.Product
+	var res product_and_discount.Products
 	_, err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published with variants product with channelSlug=%s", channelSlug)
@@ -422,7 +415,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 // 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
 func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
 	var (
-		res []*product_and_discount.Product
+		res product_and_discount.Products
 		err error
 	)
 	// check if requesting user has right to view products
@@ -436,10 +429,8 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 				Select(`(1) AS "a"`).
 				Prefix("EXISTS (").
 				From(store.ProductChannelListingTableName).
-				Where(squirrel.And{
-					squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
-					channelQuery,
-				}).
+				Where(channelQuery).
+				Where("ProductChannelListings.ProductID = Products.Id").
 				Suffix(")").
 				Limit(1)
 

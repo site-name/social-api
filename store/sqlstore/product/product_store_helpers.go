@@ -53,7 +53,6 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 }
 
 func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
-
 	return query.Where(`
 		EXISTS (
 			SELECT
@@ -70,11 +69,11 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 						WHERE
 							(
 								ProductChannelListings.ChannelID = Channels.Id AND
-								Channels.Id = :channelID
+								Channels.Id = ?
 							)
 						LIMIT 1
 					)
-					AND ProductChannelListings.IsPublished = :isPublished
+					AND ProductChannelListings.IsPublished = ?
 					AND ProductChannelListings.ProductID = Products.Id
 				)
 			LIMIT 1
@@ -100,7 +99,7 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 										`+store.ChannelTableName+`
 									WHERE
 										(
-											Channels.Id = :channelID
+											Channels.Id = ?
 											AND Channels.Id = ProductVariantChannelListings.ChannelID
 										)
 									LIMIT 1
@@ -114,10 +113,9 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 				)
 			LIMIT 1
 		)`,
-		map[string]interface{}{
-			"channelID":   channelID,
-			"isPublished": isPublished,
-		},
+		channelID,
+		isPublished,
+		channelID,
 	)
 }
 
@@ -140,16 +138,12 @@ func (ps *SqlProductStore) filterVariantPrice(query squirrel.SelectBuilder, pric
 		Suffix(")")
 
 	if priceRange.Lte != nil {
-		productVariantChannelListingQuery = productVariantChannelListingQuery.Where(squirrel.Or{
-			squirrel.LtOrEq{store.ProductVariantChannelListingTableName + ".PriceAmount": *priceRange.Lte},
-			squirrel.Eq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
-		})
+		productVariantChannelListingQuery = productVariantChannelListingQuery.
+			Where("ProductVariantChannelListings.PriceAmount <= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Gte)
 	}
 	if priceRange.Gte != nil {
-		productVariantChannelListingQuery = productVariantChannelListingQuery.Where(squirrel.Or{
-			squirrel.GtOrEq{store.ProductVariantChannelListingTableName + ".PriceAmount": *priceRange.Lte},
-			squirrel.Eq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
-		})
+		productVariantChannelListingQuery = productVariantChannelListingQuery.
+			Where("ProductVariantChannelListings.PriceAmount >= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Lte)
 	}
 
 	productVariantQuery := ps.GetQueryBuilder().
@@ -183,16 +177,12 @@ func (ps *SqlProductStore) filterMinimalPrice(query squirrel.SelectBuilder, pric
 		Suffix(")")
 
 	if priceRange.Lte != nil {
-		productChannelListingQuery = productChannelListingQuery.Where(squirrel.And{
-			squirrel.LtOrEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": *priceRange.Lte}, // >=
-			squirrel.NotEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": nil},
-		})
+		productChannelListingQuery = productChannelListingQuery.
+			Where("ProductChannelListings.DiscountedPriceAmount IS NULL OR ProductChannelListings.DiscountedPriceAmount <= ?", *priceRange.Lte)
 	}
 	if priceRange.Gte != nil {
-		productChannelListingQuery = productChannelListingQuery.Where(squirrel.And{
-			squirrel.GtOrEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": *priceRange.Lte}, // <=
-			squirrel.NotEq{store.ProductChannelListingTableName + ".DiscountedPriceAmount": nil},
-		})
+		productChannelListingQuery = productChannelListingQuery.
+			Where("ProductChannelListings.DiscountedPriceAmount IS NULL OR ProductChannelListings.DiscountedPriceAmount >= ?", *priceRange.Gte)
 	}
 
 	return query.Where(productChannelListingQuery)
@@ -304,10 +294,8 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 
 	if len(value_list) > 0 {
 		wg.Add(1)
-
 		err := ps.cleanProductAttributesFilterInput(value_list, queries)
 		syncSetErr(err)
-
 		wg.Done()
 	}
 
@@ -727,7 +715,7 @@ func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity
 	}
 
 	var products product_and_discount.Products
-	_, err = ps.GetReplica().Select(&products, queryString, args)
+	_, err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find products", slog.Err(err))
 		return query
@@ -783,7 +771,7 @@ func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity
 
 func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
 	productTypeFilter := ps.GetQueryBuilder().
-		Select("*").
+		Select(`(1) AS "a"`).
 		From(store.ProductTypeTableName).
 		Where("ProductTypes.Kind = ?", product_and_discount.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
@@ -808,12 +796,12 @@ func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, produc
 
 func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
 	variantQuery := ps.GetQueryBuilder().
-		Select("*").
+		Select(`(1) AS "a"`).
 		From(store.ProductVariantTableName).
 		Where(
 			`ProductVariants.IsPreOrder = true
 			AND ( 
-				ProductVariants.PreorderEndDate = null 
+				ProductVariants.PreorderEndDate IS NULL 
 				OR ProductVariants.PreorderEndDate > ? 
 			)
 			AND ProductVariants.ProductID = Products.Id`,
