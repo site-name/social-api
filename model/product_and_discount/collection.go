@@ -53,11 +53,32 @@ type CollectionFilterOption struct {
 
 type Collections []*Collection
 
+func (c *Collection) DeepCopy() *Collection {
+	if c == nil {
+		return nil
+	}
+
+	res := *c
+
+	return &res
+}
+
 func (c Collections) IDs() []string {
 	var res []string
 	for _, item := range c {
 		if item != nil {
 			res = append(res, item.Id)
+		}
+	}
+
+	return res
+}
+
+func (c Collections) DeepCopy() Collections {
+	res := Collections{}
+	for _, cl := range c {
+		if cl != nil {
+			res = append(res, cl.DeepCopy())
 		}
 	}
 

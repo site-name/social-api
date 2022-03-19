@@ -10,6 +10,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -603,6 +604,7 @@ type (
 		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                                                                      // PublishedWithVariants finds and returns products.
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
+		AdvancedFilter(options *gqlmodel.ProductFilterInput) (product_and_discount.Products, error)                                                             // AdvancedFilter advancedly finds products, filtered using given options
 	}
 )
 

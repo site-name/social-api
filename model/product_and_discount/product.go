@@ -142,5 +142,13 @@ func (p *Product) String() string {
 
 func (p *Product) DeepCopy() *Product {
 	res := *p
+
+	if p.Collections != nil {
+		res.Collections = p.Collections.DeepCopy()
+	}
+
+	if p.ProductType != nil {
+		res.ProductType = p.ProductType.DeepCopy()
+	}
 	return &res
 }

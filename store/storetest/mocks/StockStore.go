@@ -8,6 +8,8 @@ import (
 	gorp "github.com/mattermost/gorp"
 	mock "github.com/stretchr/testify/mock"
 
+	squirrel "github.com/Masterminds/squirrel"
+
 	warehouse "github.com/sitename/sitename/model/warehouse"
 )
 
@@ -82,26 +84,35 @@ func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *war
 }
 
 // FilterForChannel provides a mock function with given fields: options
-func (_m *StockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, error) {
+func (_m *StockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
 	ret := _m.Called(options)
 
-	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForChannelOption) []*warehouse.Stock); ok {
+	var r0 squirrel.Sqlizer
+	if rf, ok := ret.Get(0).(func(*warehouse.StockFilterForChannelOption) squirrel.Sqlizer); ok {
 		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*warehouse.Stock)
+			r0 = ret.Get(0).(squirrel.Sqlizer)
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForChannelOption) error); ok {
+	var r1 []*warehouse.Stock
+	if rf, ok := ret.Get(1).(func(*warehouse.StockFilterForChannelOption) []*warehouse.Stock); ok {
 		r1 = rf(options)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*warehouse.Stock)
+		}
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*warehouse.StockFilterForChannelOption) error); ok {
+		r2 = rf(options)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // FilterForCountryAndChannel provides a mock function with given fields: transaction, options

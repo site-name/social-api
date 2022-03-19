@@ -74,16 +74,12 @@ func (r *mutationResolver) ExportProducts(ctx context.Context, input gqlmodel.Ex
 	// authentication and permissions checks are already done, thank to directive.
 	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
 
-	// validate scope is provided properly
-	switch input.Scope {
-	case gqlmodel.ExportScopeIDS:
-		if input.Ids == nil || len(input.Ids) == 0 {
-			return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "IDs"}, "", http.StatusBadRequest)
-		}
-	case gqlmodel.ExportScopeFilter:
-		if input.Filter == nil {
-			return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter"}, "", http.StatusBadRequest)
-		}
+	// validate export scope
+	if input.Scope == gqlmodel.ExportScopeIDS && len(input.Ids) == 0 {
+		return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Ids"}, "", http.StatusBadRequest)
+	}
+	if input.Scope == gqlmodel.ExportScopeFilter && input.Filter == nil {
+		return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Filter"}, "", http.StatusBadRequest)
 	}
 
 	newExportFile, appErr := r.Srv().CsvService().CreateExportFile(&csv.ExportFile{

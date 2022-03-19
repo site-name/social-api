@@ -42,6 +42,16 @@ type ProductType struct {
 	model.ModelMetadata
 }
 
+func (p *ProductType) DeepCopy() *ProductType {
+	if p == nil {
+		return nil
+	}
+
+	res := *p
+
+	return &res
+}
+
 // ProductTypeFilterOption is used to build squirrel sql queries
 type ProductTypeFilterOption struct {
 	Id   squirrel.Sqlizer

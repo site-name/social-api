@@ -20,15 +20,15 @@ func (_m *AttributeStore) CreateIndexesIfNotExists() {
 }
 
 // FilterbyOption provides a mock function with given fields: option
-func (_m *AttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, error) {
+func (_m *AttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	ret := _m.Called(option)
 
-	var r0 []*attribute.Attribute
-	if rf, ok := ret.Get(0).(func(*attribute.AttributeFilterOption) []*attribute.Attribute); ok {
+	var r0 attribute.Attributes
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeFilterOption) attribute.Attributes); ok {
 		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*attribute.Attribute)
+			r0 = ret.Get(0).(attribute.Attributes)
 		}
 	}
 
@@ -88,6 +88,22 @@ func (_m *AttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
 	return r0, r1
 }
 
+// ModelFields provides a mock function with given fields:
+func (_m *AttributeStore) ModelFields() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Save provides a mock function with given fields: attr
 func (_m *AttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	ret := _m.Called(attr)
@@ -109,4 +125,20 @@ func (_m *AttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute,
 	}
 
 	return r0, r1
+}
+
+// ScanFields provides a mock function with given fields: v
+func (_m *AttributeStore) ScanFields(v attribute.Attribute) []interface{} {
+	ret := _m.Called(v)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(attribute.Attribute) []interface{}); ok {
+		r0 = rf(v)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
 }

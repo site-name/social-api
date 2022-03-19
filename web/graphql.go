@@ -14,11 +14,6 @@ import (
 	"github.com/sitename/sitename/web/shared"
 )
 
-const (
-	graphqlApi        = "/api/graphql"
-	graphqlPlayground = "/playground"
-)
-
 // InitGraphql registers graphql playground and graphql api endpoint routes
 func (web *Web) InitGraphql() {
 	config := generated.Config{
@@ -50,10 +45,10 @@ func (web *Web) InitGraphql() {
 	}
 
 	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(config))
-	playgroundHandler := playground.Handler("Sitename", graphqlApi)
+	playgroundHandler := playground.Handler("Sitename", *web.app.Config().ServiceSettings.GraphqlApiPath)
 
-	web.MainRouter.Handle(graphqlPlayground, web.NewHandler(commonGraphHandler(playgroundHandler))).Methods(http.MethodGet)
-	web.MainRouter.Handle(graphqlApi, web.NewHandler(commonGraphHandler(graphqlServer))).Methods(http.MethodPost)
+	web.MainRouter.Handle(*web.app.Config().ServiceSettings.GraphqlPlaygroundPath, web.NewHandler(commonGraphHandler(playgroundHandler))).Methods(http.MethodGet)
+	web.MainRouter.Handle(*web.app.Config().ServiceSettings.GraphqlApiPath, web.NewHandler(commonGraphHandler(graphqlServer))).Methods(http.MethodPost)
 }
 
 // commonGraphHandler is used for both graphql playground/api

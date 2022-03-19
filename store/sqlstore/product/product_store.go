@@ -129,18 +129,18 @@ func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.Produ
 	}
 	if option.ProductVariantID != nil {
 		// decide which type of join to use (LEFT or INNER)
-		var whichJoinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
+		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
 
 		if val, ok := option.ProductVariantID.(squirrel.Eq); ok {
 			for _, v := range val {
 				if v == nil {
-					whichJoinFunc = query.LeftJoin
+					joinFunc = query.LeftJoin
 					break
 				}
 			}
 		}
 
-		query = whichJoinFunc(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		query = joinFunc(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
 			Where(option.ProductVariantID)
 	}
 	if option.VoucherID != nil {

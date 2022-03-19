@@ -105,11 +105,6 @@ const (
 	SERVICE_SETTINGS_DEFAULT_GFYCAT_API_SECRET  = "3wLVZPiswc3DnaiaFoLkDvB4X0IV6CpMkj4tf2inJRsBY6-FnkT08zGmppWFgeof"
 
 	OPEN_EXCHANGE_RATE_API_KEY = "cb3c20ad2a624639806f043e4b5aafa4"
-	// TEAM_SETTINGS_DEFAULT_SITE_NAME                = "Sitename"
-	// TEAM_SETTINGS_DEFAULT_MAX_USERS_PER_TEAM       = 50
-	// TEAM_SETTINGS_DEFAULT_CUSTOM_BRAND_TEXT        = ""
-	// TEAM_SETTINGS_DEFAULT_CUSTOM_DESCRIPTION_TEXT  = ""
-	// TEAM_SETTINGS_DEFAULT_USER_STATUS_AWAY_TIMEOUT = 300
 
 	SQL_SETTINGS_DEFAULT_DATA_SOURCE = "postgres://minh:anhyeuem98@localhost/sitename_test?sslmode=disable&connect_timeout=10"
 
@@ -235,6 +230,9 @@ const (
 	OPENID_SETTINGS_DEFAULT_SCOPE      = "profile openid email"
 
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
+
+	GRAPHQL_API_PLAYGROUND_PATH = "/playground"
+	GRAPHWL_API_PATH            = "/api/graphql"
 )
 
 func GetDefaultAppCustomURLSchemes() []string {
@@ -368,6 +366,8 @@ type ServiceSettings struct {
 	OpenExchangeRecuringDurationHours                 *int    `access:"experimental_features"`
 	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
 	EnableInlineLatex                                 *bool   `access:"site_posts"`
+	GraphqlPlaygroundPath                             *string
+	GraphqlApiPath                                    *string
 
 	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
@@ -838,6 +838,12 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	}
 	if s.OpenExhcnageApiEndPoint == nil {
 		s.OpenExhcnageApiEndPoint = NewString("http://openexchangerates.org/api/latest.json")
+	}
+	if s.GraphqlPlaygroundPath == nil {
+		s.GraphqlPlaygroundPath = NewString(GRAPHQL_API_PLAYGROUND_PATH)
+	}
+	if s.GraphqlApiPath == nil {
+		s.GraphqlApiPath = NewString(GRAPHWL_API_PATH)
 	}
 }
 

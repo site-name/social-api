@@ -19,6 +19,29 @@ func (_m *AttributeValueStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOptions provides a mock function with given fields: options
+func (_m *AttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+	ret := _m.Called(options)
+
+	var r0 attribute.AttributeValues
+	if rf, ok := ret.Get(0).(func(attribute.AttributeValueFilterOptions) attribute.AttributeValues); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(attribute.AttributeValues)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(attribute.AttributeValueFilterOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: attributeID
 func (_m *AttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
 	ret := _m.Called(attributeID)
@@ -29,29 +52,6 @@ func (_m *AttributeValueStore) Get(attributeID string) (*attribute.AttributeValu
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*attribute.AttributeValue)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(attributeID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAllByAttributeID provides a mock function with given fields: attributeID
-func (_m *AttributeValueStore) GetAllByAttributeID(attributeID string) ([]*attribute.AttributeValue, error) {
-	ret := _m.Called(attributeID)
-
-	var r0 []*attribute.AttributeValue
-	if rf, ok := ret.Get(0).(func(string) []*attribute.AttributeValue); ok {
-		r0 = rf(attributeID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*attribute.AttributeValue)
 		}
 	}
 

@@ -332,35 +332,35 @@ func (a *ServiceFile) DoUploadFile(c *request.Context, now time.Time, rawTeamId 
 // 	}
 // }
 
-func UploadFileSetUserId(userID string) func(t *UploadFileTask) {
-	return func(t *UploadFileTask) {
-		t.UserId = filepath.Base(userID)
-	}
-}
+// func UploadFileSetUserId(userID string) func(t *UploadFileTask) {
+// 	return func(t *UploadFileTask) {
+// 		t.UserId = filepath.Base(userID)
+// 	}
+// }
 
-func UploadFileSetTimestamp(timestamp time.Time) func(t *UploadFileTask) {
-	return func(t *UploadFileTask) {
-		t.Timestamp = timestamp
-	}
-}
+// func UploadFileSetTimestamp(timestamp time.Time) func(t *UploadFileTask) {
+// 	return func(t *UploadFileTask) {
+// 		t.Timestamp = timestamp
+// 	}
+// }
 
-func UploadFileSetContentLength(contentLength int64) func(t *UploadFileTask) {
-	return func(t *UploadFileTask) {
-		t.ContentLength = contentLength
-	}
-}
+// func UploadFileSetContentLength(contentLength int64) func(t *UploadFileTask) {
+// 	return func(t *UploadFileTask) {
+// 		t.ContentLength = contentLength
+// 	}
+// }
 
-func UploadFileSetClientId(clientId string) func(t *UploadFileTask) {
-	return func(t *UploadFileTask) {
-		t.ClientId = clientId
-	}
-}
+// func UploadFileSetClientId(clientId string) func(t *UploadFileTask) {
+// 	return func(t *UploadFileTask) {
+// 		t.ClientId = clientId
+// 	}
+// }
 
-func UploadFileSetRaw() func(t *UploadFileTask) {
-	return func(t *UploadFileTask) {
-		t.Raw = true
-	}
-}
+// func UploadFileSetRaw() func(t *UploadFileTask) {
+// 	return func(t *UploadFileTask) {
+// 		t.Raw = true
+// 	}
+// }
 
 type UploadFileTask struct {
 	Name          string // File name

@@ -58,10 +58,6 @@ func (fi *FileInfo) ToJSON() string {
 	return model.ModelToJson(fi)
 }
 
-func FileInfosToJson(infos []*FileInfo) string {
-	return model.ModelToJson(infos)
-}
-
 func (fi *FileInfo) PreSave() {
 	if fi.Id == "" {
 		fi.Id = model.NewId()
