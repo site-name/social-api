@@ -11,6 +11,7 @@ import (
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -5071,6 +5072,22 @@ func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 	return result, err
 }
 
+func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+	start := timemodule.Now()
+
+	result := s.ProductStore.AdvancedFilterQueryBuilder(input)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.AdvancedFilterQueryBuilder", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 	start := timemodule.Now()
 
@@ -5083,6 +5100,22 @@ func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.Pro
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.FilterByQuery(query, limit, createdAtGt)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.FilterByQuery", success, elapsed)
 	}
 	return result, err
 }

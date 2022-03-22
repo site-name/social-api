@@ -51,6 +51,19 @@ const (
 // this field is for serialize, don't delete
 type StringMap map[string]string
 
+func (m StringMap) DeepCopy() StringMap {
+	if m == nil {
+		return nil
+	}
+
+	res := StringMap{}
+	for key, value := range m {
+		res[key] = value
+	}
+
+	return res
+}
+
 // this field is for serialize, don't delete
 type ModelMetadata struct {
 	// Id              string    `json:"string,omitempty"`
@@ -291,10 +304,10 @@ func (u *User) DeepCopy() *User {
 		copyUser.AuthData = model.NewString(*u.AuthData)
 	}
 	if u.NotifyProps != nil {
-		copyUser.NotifyProps = model.CopyStringMap(u.NotifyProps)
+		copyUser.NotifyProps = u.NotifyProps.DeepCopy()
 	}
 	if u.Timezone != nil {
-		copyUser.Timezone = model.CopyStringMap(u.Timezone)
+		copyUser.Timezone = u.Timezone.DeepCopy()
 	}
 
 	return &copyUser

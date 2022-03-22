@@ -491,14 +491,22 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 	return products, nil
 }
 
-// AdvancedFilter advancedly finds products, filtered using given options
-func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) (product_and_discount.Products, error) {
+// AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTableName).
-		OrderBy("CreateAt")
+		OrderBy("Products.CreateAt")
 
-	var channelID interface{} = nil
+	if input.Scope == gqlmodel.ExportScopeAll {
+		return query
+	}
+	if input.Scope == gqlmodel.ExportScopeIDS {
+		return query.Where("Products.Id IN ?", input.Ids)
+	}
+
+	var options = input.Filter
+	var channelID interface{}
 	if options.Channel != nil {
 		channelID = *options.Channel
 	}
@@ -515,10 +523,10 @@ func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) 
 	}
 	if options.HasCategory != nil {
 		// default to has no category
-		var condition squirrel.Sqlizer = squirrel.Eq{store.ProductTableName + ".CategoryID": nil}
+		condition := "Products.CategoryID IS NULL"
 
 		if *options.HasCategory {
-			condition = squirrel.NotEq(condition.(squirrel.Eq))
+			condition = "Products.CategoryID IS NOT NULL"
 		}
 		query = query.Where(condition)
 	}
@@ -552,17 +560,24 @@ func (ps *SqlProductStore) AdvancedFilter(options *gqlmodel.ProductFilterInput) 
 	if options.Search != nil {
 		query = ps.filterSearch(query, *options.Search)
 	}
+	return query
+}
 
-	queryString, args, err := query.ToSql()
+// FilterByQuery finds and returns products with given query, limit, createdAtGt
+func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+	queryString, args, err := query.
+		Limit(limit).
+		Where("Products.CreateAt > ?", createdAtGt).ToSql()
+
 	if err != nil {
-		return nil, errors.Wrap(err, "AdvancedFilter_ToSql")
+		return nil, errors.Wrap(err, "FilterByQuery_ToSql")
 	}
 
 	var products product_and_discount.Products
 
 	_, err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find products with given options")
+		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
 	}
 
 	return products, nil

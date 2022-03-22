@@ -2,7 +2,6 @@ package file
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/sitename/sitename/model"
 )
@@ -34,25 +33,10 @@ func (us *UploadSession) ToJSON() string {
 	return model.ModelToJson(us)
 }
 
-func UploadSessionFromJson(data io.Reader) *UploadSession {
-	var us *UploadSession
-	model.ModelFromJson(&us, data)
-	return us
-}
-
 // UploadSessionsToJson serializes a list of UploadSession into JSON and
 // returns it as string.
 func UploadSessionsToJson(uss []*UploadSession) string {
 	return model.ModelToJson(uss)
-}
-
-// UploadSessionsFromJson deserializes a list of UploadSession from JSON data.
-func UploadSessionsFromJson(data io.Reader) []*UploadSession {
-	var uss []*UploadSession
-	if err := model.ModelFromJson(&uss, data); err != nil {
-		return nil
-	}
-	return uss
 }
 
 // PreSave is a utility function used to fill required information.

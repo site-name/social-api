@@ -3,6 +3,7 @@ package csv
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -37,9 +38,9 @@ type ExportEvent struct {
 
 // ExportEventFilterOption is used to build squirrel queries
 type ExportEventFilterOption struct {
-	Id           *model.StringFilter
-	ExportFileID *model.StringFilter
-	UserID       *model.StringFilter
+	Id           squirrel.Sqlizer
+	ExportFileID squirrel.Sqlizer
+	UserID       squirrel.Sqlizer
 }
 
 func (e *ExportEvent) IsValid() *model.AppError {

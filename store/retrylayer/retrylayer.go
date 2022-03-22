@@ -12,6 +12,7 @@ import (
 	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -5931,11 +5932,37 @@ func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 
 }
 
+func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+
+	return s.ProductStore.AdvancedFilterQueryBuilder(input)
+
+}
+
 func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
 
 	tries := 0
 	for {
 		result, err := s.ProductStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.FilterByQuery(query, limit, createdAtGt)
 		if err == nil {
 			return result, nil
 		}

@@ -12,12 +12,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/services/docextractor"
 )
 
 const (
@@ -313,5 +316,36 @@ func (a *ServiceFile) RemoveDirectory(path string) *model.AppError {
 		return model.NewAppError("RemoveDirectory", "api.file.remove_directory.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 	}
 
+	return nil
+}
+
+func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *file.FileInfo) error {
+	file, aerr := a.FileReader(fileInfo.Path)
+	if aerr != nil {
+		return errors.Wrap(aerr, "failed to open file for extract file content")
+	}
+	defer file.Close()
+
+	text, err := docextractor.Extract(fileInfo.Name, file, docextractor.ExtractSettings{
+		ArchiveRecursion: *a.srv.Config().FileSettings.ArchiveRecursion,
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to extract file content")
+	}
+	if text != "" {
+		if len(text) > maxContentExtractionSize {
+			text = text[0:maxContentExtractionSize]
+		}
+		if storeErr := a.srv.Store.FileInfo().SetContent(fileInfo.Id, text); storeErr != nil {
+			return errors.Wrap(storeErr, "failed to save the extracted file content")
+		}
+		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.Id)
+		if storeErr != nil {
+			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.Id))
+		} else {
+			// a.srv.Store.FileInfo().InvalidateFileInfosForPostCache()
+			slog.Warn("This flow is not implemented", slog.String("function", "generateMiniPreview"))
+		}
+	}
 	return nil
 }

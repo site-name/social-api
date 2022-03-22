@@ -431,7 +431,7 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 			continue
 		}
 
-		updatedConfiguration = append(updatedConfiguration, model.CopyStringInterface(configField))
+		updatedConfiguration = append(updatedConfiguration, configField.DeepCopy())
 	}
 
 	configuredKeys := []string{}
@@ -458,7 +458,7 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 	updatedValues := []model.StringInterface{}
 	for _, item := range b.Manifest.DefaultConfiguration {
 		if util.StringInSlice(item["name"].(string), missingKeys) {
-			updatedValues = append(updatedValues, model.CopyStringInterface(item))
+			updatedValues = append(updatedValues, item.DeepCopy())
 		}
 	}
 

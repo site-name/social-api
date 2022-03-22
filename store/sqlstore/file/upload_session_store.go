@@ -74,9 +74,6 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSessio
 		"SELECT * FROM "+store.UploadSessionTableName+" WHERE UserId = :UserId ORDER BY CreateAt ASC",
 		map[string]interface{}{"UserId": userId},
 	); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.UploadSessionTableName, "UserId="+userId)
-		}
 		return nil, errors.Wrap(err, "failed to find upload session for user id="+userId)
 	}
 	return sessions, nil

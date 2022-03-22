@@ -3,11 +3,11 @@ package localcachelayer
 import (
 	"bytes"
 	"context"
-	"sort"
 	"sync"
 
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
 )
@@ -138,7 +138,7 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*account.User
 func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
 	var cachedUsers []*account.User
 	var notCachedUserIds []string
-	uniqIDs := dedup(ids)
+	uniqIDs := util.RemoveDuplicatesFromStringArray(ids)
 
 	fromMaster := false
 	for _, id := range uniqIDs {
@@ -180,26 +180,4 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*acc
 	}
 
 	return cachedUsers, nil
-}
-
-func dedup(elements []string) []string {
-	if len(elements) == 0 {
-		return elements
-	}
-
-	sort.Strings(elements)
-
-	j := 0
-	for i := 1; i < len(elements); i++ {
-		if elements[j] == elements[i] {
-			continue
-		}
-		j++
-		// preserve the original data
-		// in[i], in[j] = in[j], in[i]
-		// only set what is required
-		elements[j] = elements[i]
-	}
-
-	return elements[:j+1]
 }

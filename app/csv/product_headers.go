@@ -73,38 +73,37 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo gqlmodel.ExportInfoInput) ([
 		}
 	)
 
-	filterOptions := [...]*attribute.AttributeFilterOption{
-		{
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+
+		attributes, appErr := a.srv.AttributeService().AttributesByOption(&attribute.AttributeFilterOption{
 			Distinct:     true,
 			Id:           squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
 			ProductTypes: squirrel.NotEq{store.AttributeProductTableName + ".ProductTypeID": nil},
-		},
-		{
+		})
+		if appErr != nil {
+			syncSetAppError(appErr)
+		} else {
+			attributes_01 = attributes
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		attributes, appErr := a.srv.AttributeService().AttributesByOption(&attribute.AttributeFilterOption{
 			Distinct:            true,
 			Id:                  squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
 			ProductVariantTypes: squirrel.NotEq{store.AttributeVariantTableName + ".ProductTypeID": nil},
-		},
-	}
-
-	wg.Add(len(filterOptions))
-
-	for index, filterOption := range filterOptions {
-
-		go func(idx int, option *attribute.AttributeFilterOption) {
-
-			attributes, appErr := a.srv.AttributeService().AttributesByOption(option)
-			if appErr != nil {
-				syncSetAppError(appErr)
-			} else {
-				if idx == 0 {
-					attributes_01 = attributes
-				} else {
-					attributes_02 = attributes
-				}
-			}
-
-		}(index, filterOption)
-	}
+		})
+		if appErr != nil {
+			syncSetAppError(appErr)
+		} else {
+			attributes_02 = attributes
+		}
+	}()
 
 	wg.Wait()
 
@@ -163,7 +162,6 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo gqlmodel.ExportInfoInput) ([]
 	channels, appErr := a.srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": exportInfo.Channels},
 	})
-
 	if appErr != nil {
 		return nil, appErr
 	}

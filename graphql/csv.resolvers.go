@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/modules/json"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/shared"
 )
 
@@ -35,7 +37,7 @@ func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEven
 }
 
 func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile) (*gqlmodel.User, error) {
-	session, appErr := CheckUserAuthenticated("exportEventResolver.User", ctx)
+	session, appErr := CheckUserAuthenticated("exportFileResolver.User", ctx)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -57,11 +59,7 @@ func (r *exportFileResolver) URL(ctx context.Context, obj *gqlmodel.ExportFile) 
 
 func (r *exportFileResolver) Events(ctx context.Context, obj *gqlmodel.ExportFile) ([]*gqlmodel.ExportEvent, error) {
 	events, appErr := r.Srv().CsvService().ExportEventsByOption(&csv.ExportEventFilterOption{
-		ExportFileID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: obj.ID,
-			},
-		},
+		ExportFileID: squirrel.Eq{store.CsvExportEventTablename + ".ExportFileID": obj.ID},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -21,16 +21,16 @@ const (
 )
 
 type AttributeValue struct {
-	Id          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Value       string                 `json:"value"`
-	Slug        string                 `json:"slug"`
-	FileUrl     *string                `json:"file_url"`
-	ContentType *string                `json:"content_file"`
-	AttributeID string                 `json:"attribute_id"`
-	RichText    *model.StringInterface `json:"rich_text"`
-	Boolean     *bool                  `json:"boolean"`
-	Datetime    *time.Time             `json:"date_time"`
+	Id          string                `json:"id"`
+	Name        string                `json:"name"`
+	Value       string                `json:"value"`
+	Slug        string                `json:"slug"`
+	FileUrl     *string               `json:"file_url"`
+	ContentType *string               `json:"content_file"`
+	AttributeID string                `json:"attribute_id"`
+	RichText    model.StringInterface `json:"rich_text"`
+	Boolean     *bool                 `json:"boolean"`
+	Datetime    *time.Time            `json:"date_time"`
 	model.Sortable
 
 	Attribute *Attribute `db:"-" json:"-"`
@@ -114,7 +114,9 @@ func (a *AttributeValue) ToJSON() string {
 func (a *AttributeValue) DeepCopy() *AttributeValue {
 	res := *a
 
-	res.RichText = a.RichText.DeepCopy()
+	if a.RichText != nil {
+		res.RichText = a.RichText.DeepCopy()
+	}
 
 	if a.Attribute != nil {
 		res.Attribute = a.Attribute.DeepCopy()

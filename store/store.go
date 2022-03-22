@@ -604,7 +604,8 @@ type (
 		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                                                                      // PublishedWithVariants finds and returns products.
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-		AdvancedFilter(options *gqlmodel.ProductFilterInput) (product_and_discount.Products, error)                                                             // AdvancedFilter advancedly finds products, filtered using given options
+		AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder                                                                  // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+		FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error)                                     // FilterByQuery finds and returns products with given query, limit, createdAtGt
 	}
 )
 

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io"
 	"strconv"
 	"strings"
 
@@ -43,6 +42,24 @@ func (m StringMap) DeepCopy() StringMap {
 	return res
 }
 
+func (m StringMap) Keys() []string {
+	res := []string{}
+	for key := range m {
+		res = append(res, key)
+	}
+
+	return res
+}
+
+func (m StringMap) Values() []string {
+	res := []string{}
+	for key := range m {
+		res = append(res, m[key])
+	}
+
+	return res
+}
+
 // Session contains the user session details.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
@@ -79,12 +96,6 @@ func (s *Session) DeepCopy() *Session {
 
 func (s *Session) ToJSON() string {
 	return ModelToJson(s)
-}
-
-func SessionFromJson(data io.Reader) *Session {
-	var s Session
-	ModelFromJson(&s, data)
-	return &s
 }
 
 func (s *Session) PreSave() {
@@ -230,10 +241,4 @@ func (s *Session) GetCSRF() string {
 
 func SessionsToJson(o []*Session) string {
 	return ModelToJson(o)
-}
-
-func SessionsFromJson(data io.Reader) []*Session {
-	var o []*Session
-	ModelFromJson(&o, data)
-	return o
 }

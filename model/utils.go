@@ -42,11 +42,7 @@ const (
 
 // ValidId constrains the set of valid plugin identifiers:
 //  ^[a-zA-Z0-9-_\.]+
-var validId *regexp.Regexp
-
-func init() {
-	validId = regexp.MustCompile(ValidIdRegex)
-}
+var validId *regexp.Regexp = regexp.MustCompile(ValidIdRegex)
 
 // IsValidPluginId verifies that the plugin id has a minimum length of 3, maximum length of 190, and
 // contains only alphanumeric characters, dashes, underscores and periods.
@@ -71,21 +67,22 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 
 type StringInterface map[string]interface{}
 
-func (s *StringInterface) DeepCopy() *StringInterface {
+func (s StringInterface) DeepCopy() StringInterface {
 	if s == nil {
 		return nil
 	}
 
 	res := StringInterface{}
 
-	for key, value := range *s {
+	for key, value := range s {
 		res[key] = value
 	}
 
-	return &res
+	return res
 }
 
 type StringArray []string
+type StringSet []string
 
 func NewBool(b bool) *bool                          { return &b }
 func NewInt(n int) *int                             { return &n }
@@ -282,25 +279,6 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 		return NewAppError("AppErrorFromJson", "model.utils.decode_json.app_error", nil, "body: "+str, http.StatusInternalServerError)
 	}
 	return &er
-}
-
-// CopyStringMap make a new map, copy all the key-value pairs from original map into the new map
-func CopyStringMap(originalMap map[string]string) map[string]string {
-	copyMap := make(map[string]string)
-	for k, v := range originalMap {
-		copyMap[k] = v
-	}
-	return copyMap
-}
-
-// CopyStringInterface
-func CopyStringInterface(origin StringInterface) StringInterface {
-	res := StringInterface{}
-	for key, value := range origin {
-		res[key] = value
-	}
-
-	return res
 }
 
 func (m StringInterface) Merge(other StringInterface) {

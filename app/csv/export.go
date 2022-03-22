@@ -7,22 +7,23 @@ import (
 
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
 )
 
 // ExportProducts is called by product export job, taks needed arguments then exports products
-func (s *ServiceCsv) ExportProducts(exportFile *csv.ExportFile, exportProductsInput *gqlmodel.ExportProductsInput, delimeter string) *model.AppError {
+func (s *ServiceCsv) ExportProducts(exportProductsInput *gqlmodel.ExportProductsInput, delimeter string) *model.AppError {
 	if delimeter == "" {
 		delimeter = ";"
 	}
 
-	// parse export info
+	productFilterQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(exportProductsInput)
 
-	// s.GetExportFieldsAndHeadersInfo()
+	exportFields, fileHeaders, dataHeaders, appErr := s.GetExportFieldsAndHeadersInfo(*exportProductsInput.ExportInfo)
+	if appErr != nil {
+		return appErr
+	}
 
 	getFileName("product", strings.ToLower(string(exportProductsInput.FileType)))
 
-	panic("not implemented")
 }
 
 // getFileName returns a file name for exported file

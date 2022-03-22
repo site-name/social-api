@@ -53,13 +53,13 @@ func (cs *SqlCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterO
 
 	// parse options
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Id"))
+		query = query.Where(options.Id)
 	}
 	if options.ExportFileID != nil {
-		query = query.Where(options.ExportFileID.ToSquirrel("ExportFileID"))
+		query = query.Where(options.ExportFileID)
 	}
 	if options.UserID != nil {
-		query = query.Where(options.UserID.ToSquirrel("UserID"))
+		query = query.Where(options.UserID)
 	}
 
 	queryString, args, err := query.ToSql()

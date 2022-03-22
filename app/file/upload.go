@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -19,16 +18,33 @@ const IncompleteUploadSuffix = ".tmp"
 
 func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
 	uss, err := a.srv.Store.UploadSession().GetForUser(userID)
+	var (
+		statusCode int
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSessionForUser", "app.file.upload_session_for_user_missing.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(uss) == 0 {
+		statusCode = http.StatusNotFound
 	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("GetUploadSessionsForUser", "app.file_error_finding_upload_sessions_for_user.app_error", nil, errMsg, statusCode)
+	}
+
 	return uss, nil
 }
 
 func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
 	us, err := a.srv.Store.UploadSession().Get(uploadId)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUploadSession", "app.file.upload_session_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("GetUploadSession", "app.file.error_finding_upload_session_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return us, nil
@@ -204,13 +220,10 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 
 	var storeErr error
 	if info, storeErr = a.srv.Store.FileInfo().Save(info); storeErr != nil {
-		var appErr *model.AppError
-		switch {
-		case errors.As(storeErr, &appErr):
+		if appErr, ok := storeErr.(*model.AppError); ok {
 			return nil, appErr
-		default:
-			return nil, model.NewAppError("uploadData", "app.upload.upload_data.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 		}
+		return nil, model.NewAppError("uploadData", "app.upload.upload_data.save.app_error", nil, storeErr.Error(), http.StatusInternalServerError)
 	}
 
 	if *a.srv.Config().FileSettings.ExtractContent {

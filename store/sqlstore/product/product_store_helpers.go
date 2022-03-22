@@ -294,37 +294,53 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 
 	if len(value_list) > 0 {
 		wg.Add(1)
-		err := ps.cleanProductAttributesFilterInput(value_list, queries)
-		syncSetErr(err)
-		wg.Done()
+
+		go func() {
+			err := ps.cleanProductAttributesFilterInput(value_list, queries)
+			syncSetErr(err)
+			wg.Done()
+		}()
+
 	}
 
 	if len(value_range_list) > 0 {
 		wg.Add(1)
-		err := ps.cleanProductAttributesRangeFilterInput(value_range_list, queries)
-		syncSetErr(err)
-		wg.Done()
+
+		go func() {
+			err := ps.cleanProductAttributesRangeFilterInput(value_range_list, queries)
+			syncSetErr(err)
+			wg.Done()
+		}()
 	}
 
 	if len(date_range_list) > 0 {
 		wg.Add(1)
-		err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_range_list, queries, true)
-		syncSetErr(err)
-		wg.Done()
+
+		go func() {
+			err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_range_list, queries, true)
+			syncSetErr(err)
+			wg.Done()
+		}()
 	}
 
 	if len(date_time_range_list) > 0 {
 		wg.Add(1)
-		err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_time_range_list, queries, false)
-		syncSetErr(err)
-		wg.Done()
+
+		go func() {
+			err := ps.cleanProductAttributesDateTimeRangeFilterInput(date_time_range_list, queries, false)
+			syncSetErr(err)
+			wg.Done()
+		}()
 	}
 
 	if len(boolean_list) > 0 {
 		wg.Add(1)
-		err := ps.cleanProductAttributesBooleanFilterInput(boolean_list, queries)
-		syncSetErr(err)
-		wg.Done()
+
+		go func() {
+			err := ps.cleanProductAttributesBooleanFilterInput(boolean_list, queries)
+			syncSetErr(err)
+			wg.Done()
+		}()
 	}
 
 	wg.Wait()
@@ -397,12 +413,10 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 }
 
 func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueList, queries *safeMap) error {
-	var attributes []*attribute.Attribute
-	_, err := ps.GetReplica().Select(&attributes, "SELECT * FROM "+store.AttributeTableName)
+	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{})
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attributes")
 	}
-
 	var (
 		attributesSlugPkMap = map[string]string{}
 		attributesPkSlugMap = map[string]string{}
