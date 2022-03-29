@@ -1536,6 +1536,22 @@ func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 	return err
 }
 
+func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
@@ -2624,6 +2640,22 @@ func (s *TimerLayerCollectionStore) Upsert(collection *product_and_discount.Coll
 	return result, err
 }
 
+func (s *TimerLayerCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionProductStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionProductStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 	start := timemodule.Now()
 
@@ -3250,7 +3282,7 @@ func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, erro
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
@@ -5104,10 +5136,10 @@ func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.Pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.FilterByQuery(query, limit, createdAtGt)
+	result, err := s.ProductStore.FilterByQuery(query, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

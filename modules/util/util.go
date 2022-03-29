@@ -48,20 +48,42 @@ func OptionalBoolOf(b bool) OptionalBool {
 	return OptionalBoolFalse
 }
 
-// Max max of two ints
-func Max(a, b int) int {
-	if a < b {
-		return b
+// Max max of ints
+func Max(nums ...int) int {
+	if len(nums) == 0 {
+		return 0
 	}
-	return a
+	if len(nums) == 1 {
+		return nums[0]
+	}
+
+	max := nums[0]
+	for _, num := range nums[1:] {
+		if num > max {
+			max = num
+		}
+	}
+
+	return max
 }
 
-// Min min of two ints
-func Min(a, b int) int {
-	if a > b {
-		return b
+// Min min of ints
+func Min(nums ...int) int {
+	if len(nums) == 0 {
+		return 0
 	}
-	return a
+	if len(nums) == 1 {
+		return nums[0]
+	}
+
+	min := nums[0]
+	for _, num := range nums[1:] {
+		if num < min {
+			min = num
+		}
+	}
+
+	return min
 }
 
 func UintMin(a, b uint) uint {

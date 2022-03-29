@@ -37,7 +37,7 @@ type ProductMedia struct {
 	Type        string                `json:"type"`
 	ExternalUrl *string               `json:"external_url"`
 	OembedData  model.StringInterface `json:"oembed_data"`
-	*model.Sortable
+	model.Sortable
 }
 
 // ProductMediaFilterOption is used for building squirrel sql queries

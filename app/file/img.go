@@ -921,7 +921,7 @@ func (a *ServiceFile) generateMiniPreviewForInfos(fileInfos []*file.FileInfo) {
 
 // GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
 func (a *ServiceFile) GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError) {
-	fileInfos, err := a.srv.Store.FileInfo().GetWithOptions(page, perPage, opt)
+	fileInfos, err := a.srv.Store.FileInfo().GetWithOptions(&page, &perPage, opt)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
 		var ltErr *store.ErrLimitExceeded

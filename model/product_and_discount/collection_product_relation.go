@@ -1,6 +1,7 @@
 package product_and_discount
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -8,6 +9,16 @@ type CollectionProduct struct {
 	Id           string `json:"id"`
 	CollectionID string `json:"collection_id"`
 	ProductID    string `json:"product_id"`
+
+	Collection *Collection `json:"-" db:"-"`
+	Product    *Product    `json:"-" db:"-"`
+}
+
+type CollectionProductFilterOptions struct {
+	CollectionID squirrel.Sqlizer
+	ProductID    squirrel.Sqlizer
+
+	SelectRelatedCollection bool
 }
 
 func (c *CollectionProduct) IsValid() *model.AppError {
@@ -29,4 +40,20 @@ func (c *CollectionProduct) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()
 	}
+}
+
+func (c *CollectionProduct) DeepCopy() *CollectionProduct {
+	if c == nil {
+		return nil
+	}
+
+	res := *c
+	if c.Collection != nil {
+		res.Collection = c.Collection.DeepCopy()
+	}
+	if c.Product != nil {
+		res.Product = c.Product.DeepCopy()
+	}
+
+	return &res
 }

@@ -232,7 +232,7 @@ type FileInfoStore interface {
 	GetByIds(ids []string) ([]*file.FileInfo, error)
 	GetByPath(path string) (*file.FileInfo, error)
 	GetForUser(userID string) ([]*file.FileInfo, error)
-	GetWithOptions(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error)
+	GetWithOptions(page, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) // Leave perPage and page nil to get all result
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
@@ -332,6 +332,7 @@ type (
 		Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error)    // Save inserts new assgignedProductAttribute into database and returns it with an error
 		Get(id string) (*attribute.AssignedProductAttribute, error)                                                        // Get finds and returns an assignedProductAttribute with en error
 		GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
+		FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error)
 	}
 	AttributeProductStore interface {
 		CreateIndexesIfNotExists()
@@ -500,9 +501,11 @@ type (
 		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*product_and_discount.Collection, error)                                              // Get finds and returns collection with given collectionID
 		FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
+		ScanFields(col product_and_discount.Collection) []interface{}
 	}
 	CollectionProductStore interface {
 		CreateIndexesIfNotExists()
+		FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error)
 	}
 	VariantMediaStore interface {
 		CreateIndexesIfNotExists()
@@ -605,7 +608,7 @@ type (
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder                                                                  // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-		FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error)                                     // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error)           // FilterByQuery finds and returns products with given query, limit, createdAtGt
 	}
 )
 

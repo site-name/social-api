@@ -81,6 +81,22 @@ func (_m *CollectionStore) ModelFields() []string {
 	return r0
 }
 
+// ScanFields provides a mock function with given fields: col
+func (_m *CollectionStore) ScanFields(col product_and_discount.Collection) []interface{} {
+	ret := _m.Called(col)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(product_and_discount.Collection) []interface{}); ok {
+		r0 = rf(col)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
 // Upsert provides a mock function with given fields: collection
 func (_m *CollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
 	ret := _m.Called(collection)

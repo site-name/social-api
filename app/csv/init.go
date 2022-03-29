@@ -26,7 +26,7 @@ var ProductExportFields = &Fields{
 			"variant_id":                        "variants__id",
 			"variant_sku":                       "variants__sku",
 			"variant_weight":                    "variant_weight",
-			"variant_is preorder":               "variants__is_preorder",
+			"variant_is_preorder":               "variants__is_preorder",
 			"variant_preorder_global_threshold": "variants__preorder_global_threshold",
 			"variant_preorder_end_date":         "variants__preorder_end_date",
 		},

@@ -1,8 +1,6 @@
 package attribute
 
 import (
-	"io"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
@@ -44,12 +42,6 @@ func (a *AttributeProduct) ToJSON() string {
 	return model.ModelToJson(a)
 }
 
-func AttributeProductFromJson(data io.Reader) *AttributeProduct {
-	var a AttributeProduct
-	model.ModelFromJson(&a, data)
-	return &a
-}
-
 func (a *AttributeProduct) PreSave() {
 	if a.Id == "" {
 		a.Id = model.NewId()
@@ -62,8 +54,9 @@ type AssignedProductAttribute struct {
 	Id           string `json:"id"`
 	ProductID    string `json:"product_id"`    // to product.Product
 	AssignmentID string `json:"assignment_id"` // to attribute.AttributeProduct
-	BaseAssignedAttribute
 }
+
+type AssignedProductAttributes []*AssignedProductAttribute
 
 // AssignedProductAttributeFilterOption is used to filter or creat new AssignedProductAttribute
 type AssignedProductAttributeFilterOption struct {
@@ -100,10 +93,22 @@ func (a *AssignedProductAttribute) PreSave() {
 	}
 }
 
-func AssignedProductAttributeFromJson(data io.Reader) *AssignedProductAttribute {
-	var a AssignedProductAttribute
-	model.ModelFromJson(&a, data)
-	return &a
+func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
+	if a == nil {
+		return nil
+	}
+
+	res := *a
+	return &res
+}
+
+func (a AssignedProductAttributes) DeepCopy() AssignedProductAttributes {
+	res := AssignedProductAttributes{}
+	for _, item := range a {
+		res = append(res, item.DeepCopy())
+	}
+
+	return res
 }
 
 // ValueID unique together AssignmentID

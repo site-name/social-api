@@ -26,31 +26,32 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 	}
 
 	s.queryFields = []string{
-		"FileInfo.Id",
-		"FileInfo.CreatorId",
-		// "FileInfo.PostId",
-		"FileInfo.CreateAt",
-		"FileInfo.UpdateAt",
-		"FileInfo.DeleteAt",
-		"FileInfo.Path",
-		"FileInfo.ThumbnailPath",
-		"FileInfo.PreviewPath",
-		"FileInfo.Name",
-		"FileInfo.Extension",
-		"FileInfo.Size",
-		"FileInfo.MimeType",
-		"FileInfo.Width",
-		"FileInfo.Height",
-		"FileInfo.HasPreviewImage",
-		"FileInfo.MiniPreview",
-		"Coalesce(FileInfo.Content, '') AS Content",
-		"Coalesce(FileInfo.RemoteId, '') AS RemoteId",
+		"FileInfos.Id",
+		"FileInfos.CreatorId",
+		"FileInfos.ParentID",
+		"FileInfos.CreateAt",
+		"FileInfos.UpdateAt",
+		"FileInfos.DeleteAt",
+		"FileInfos.Path",
+		"FileInfos.ThumbnailPath",
+		"FileInfos.PreviewPath",
+		"FileInfos.Name",
+		"FileInfos.Extension",
+		"FileInfos.Size",
+		"FileInfos.MimeType",
+		"FileInfos.Width",
+		"FileInfos.Height",
+		"FileInfos.HasPreviewImage",
+		"FileInfos.MiniPreview",
+		"Coalesce(FileInfos.Content, '') AS Content",
+		"Coalesce(FileInfos.RemoteId, '') AS RemoteId",
 	}
 
 	for _, db := range sqlStore.GetAllConns() {
 		table := db.AddTableWithName(file.FileInfo{}, store.FileInfoTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("CreatorId").SetMaxSize(store.UUID_MAX_LENGTH)
+		table.ColMap("ParentID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("Path").SetMaxSize(512)
 		table.ColMap("ThumbnailPath").SetMaxSize(512)
 		table.ColMap("PreviewPath").SetMaxSize(512)
@@ -69,10 +70,11 @@ func (fs *SqlFileInfoStore) CreateIndexesIfNotExists() {
 	fs.CreateIndexIfNotExists("idx_fileinfo_create_at", store.FileInfoTableName, "CreateAt")
 	fs.CreateIndexIfNotExists("idx_fileinfo_delete_at", store.FileInfoTableName, "DeleteAt")
 	fs.CreateIndexIfNotExists("idx_fileinfo_extension_at", store.FileInfoTableName, "Extension")
+	fs.CreateIndexIfNotExists("idx_fileinfo_parent_id", store.FileInfoTableName, "ParentID")
+
 	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_name_txt", store.FileInfoTableName, "Name")
 	fs.CreateFullTextFuncIndexIfNotExists("idx_fileinfo_name_splitted", store.FileInfoTableName, "Translate(Name, '.,-', '   ')")
 	fs.CreateFullTextIndexIfNotExists("idx_fileinfo_content_txt", store.FileInfoTableName, "Content")
-	// fs.CreateIndexIfNotExists("idx_fileinfo_postid_at", store.FileInfoTableName, "PostId")
 }
 
 func (fs *SqlFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
@@ -82,7 +84,7 @@ func (fs *SqlFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
 	}
 
 	if err := fs.GetMaster().Insert(info); err != nil {
-		return nil, errors.Wrap(err, "failed to save FileInfo")
+		return nil, errors.Wrap(err, "failed to save FileInfos")
 	}
 	return info, nil
 }
@@ -115,11 +117,11 @@ func (fs *SqlFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) 
 
 	n, err := fs.GetMaster().Update(info)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to update FileInfo")
+		return nil, errors.Wrap(err, "failed to update FileInfos")
 	}
 	if n == 0 {
 		if err = fs.GetMaster().Insert(info); err != nil {
-			return nil, errors.Wrap(err, "failed to save FileInfo")
+			return nil, errors.Wrap(err, "failed to save FileInfos")
 		}
 	}
 	return info, nil
@@ -145,9 +147,9 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*file.FileInfo, err
 
 	if err := db.SelectOne(info, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("FileInfo", id)
+			return nil, store.NewErrNotFound("FileInfos", id)
 		}
-		return nil, errors.Wrapf(err, "failed to get FileInfo with id=%s")
+		return nil, errors.Wrapf(err, "failed to get FileInfos with id=%s")
 	}
 	return info, nil
 }
@@ -160,13 +162,15 @@ func (fs *SqlFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
 	return fs.get(id, true)
 }
 
-func (fs *SqlFileInfoStore) GetWithOptions(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
-	if perPage < 0 {
-		return nil, store.NewErrLimitExceeded("perPage", perPage, "value used in pagination while getting FileInfos")
-	} else if page < 0 {
-		return nil, store.NewErrLimitExceeded("page", page, "value used in pagination while getting FileInfos")
+// GetWithOptions finds and returns fileinfos with given options.
+// Leave page, perPage nil to get all result.
+func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+	if perPage != nil && *perPage < 0 {
+		return nil, store.NewErrLimitExceeded("perPage", *perPage, "value used in pagination while getting FileInfos")
+	} else if page != nil && *page < 0 {
+		return nil, store.NewErrLimitExceeded("page", *page, "value used in pagination while getting FileInfos")
 	}
-	if perPage == 0 {
+	if *perPage == 0 {
 		return nil, nil
 	}
 
@@ -178,21 +182,19 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage int, opt *file.GetFileI
 		Select(fs.queryFields...).
 		From(store.FileInfoTableName)
 
-	// if len(opt.ChannelIds) > 0 {
-	// 	query = query.Join("Posts ON FileInfo.PostId = Posts.Id").
-	// 		Where(sq.Eq{"Posts.ChannelId": opt.ChannelIds})
-	// }
-
 	if len(opt.UserIds) > 0 {
-		query = query.Where(squirrel.Eq{"FileInfo.CreatorId": opt.UserIds})
+		query = query.Where(squirrel.Eq{"FileInfos.CreatorId": opt.UserIds})
 	}
 
 	if opt.Since > 0 {
-		query = query.Where(squirrel.GtOrEq{"FileInfo.CreateAt": opt.Since})
+		query = query.Where(squirrel.GtOrEq{"FileInfos.CreateAt": opt.Since})
 	}
 
 	if !opt.IncludeDeleted {
-		query = query.Where("FileInfo.DeleteAt = 0")
+		query = query.Where("FileInfos.DeleteAt = 0")
+	}
+	if len(opt.ParentID) > 0 {
+		query = query.Where("FileInfos.ParentID IN ?", opt.ParentID)
 	}
 
 	if opt.SortBy == "" {
@@ -205,16 +207,18 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage int, opt *file.GetFileI
 
 	switch opt.SortBy {
 	case file.FILEINFO_SORT_BY_CREATED:
-		query = query.OrderBy("FileInfo.CreateAt " + sortDirection)
+		query = query.OrderBy("FileInfos.CreateAt " + sortDirection)
 	case file.FILEINFO_SORT_BY_SIZE:
-		query = query.OrderBy("FileInfo.Size " + sortDirection)
+		query = query.OrderBy("FileInfos.Size " + sortDirection)
 	default:
-		return nil, store.NewErrInvalidInput("FileInfo", "<sortOption>", opt.SortBy)
+		return nil, store.NewErrInvalidInput("FileInfos", "<sortOption>", opt.SortBy)
 	}
 
-	query = query.OrderBy("FileInfo.Id ASC") // secondary sort for sort stability
+	query = query.OrderBy("FileInfos.Id ASC") // secondary sort for sort stability
 
-	query = query.Limit(uint64(perPage)).Offset(uint64(perPage * page))
+	if perPage != nil && page != nil {
+		query = query.Limit(uint64(*perPage)).Offset(uint64(*perPage * *page))
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -244,10 +248,10 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 
 	if err := fs.GetReplica().SelectOne(info, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("FileInfo", fmt.Sprintf("path=%s", path))
+			return nil, store.NewErrNotFound("FileInfos", fmt.Sprintf("path=%s", path))
 		}
 
-		return nil, errors.Wrapf(err, "failed to get FileInfo with path=%s", path)
+		return nil, errors.Wrapf(err, "failed to get FileInfos with path=%s", path)
 	}
 	return info, nil
 }
@@ -287,7 +291,7 @@ func (fs *SqlFileInfoStore) SetContent(fileId, content string) error {
 	}
 	_, err = fs.GetMaster().Exec(queryString, args...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to update FileInfo content with id=%s", fileId)
+		return errors.Wrapf(err, "failed to update FileInfos content with id=%s", fileId)
 	}
 
 	return nil
@@ -300,7 +304,7 @@ func (fs *SqlFileInfoStore) PermanentDelete(fileId string) error {
 			WHERE
 				Id = :FileId`,
 		map[string]interface{}{"FileId": fileId}); err != nil {
-		return errors.Wrapf(err, "failed to delete FileInfo with id=%s", fileId)
+		return errors.Wrapf(err, "failed to delete FileInfos with id=%s", fileId)
 	}
 	return nil
 }
@@ -343,7 +347,7 @@ func (fs SqlFileInfoStore) PermanentDeleteByUser(userId string) (int64, error) {
 		"CreatorId": userId,
 	})
 	if err != nil {
-		return 0, errors.Wrapf(err, "failed to delete FileInfo with creatorId=%s", userId)
+		return 0, errors.Wrapf(err, "failed to delete FileInfos with creatorId=%s", userId)
 	}
 
 	rowsAffected, err := sqlResult.RowsAffected()
@@ -357,7 +361,7 @@ func (fs SqlFileInfoStore) PermanentDeleteByUser(userId string) (int64, error) {
 func (fs *SqlFileInfoStore) CountAll() (int64, error) {
 	query := fs.GetQueryBuilder().
 		Select("COUNT(*)").
-		From("FileInfo").
+		From("FileInfos").
 		Where("DeleteAt = 0")
 
 	queryString, args, err := query.ToSql()

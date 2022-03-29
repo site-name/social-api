@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
@@ -61,29 +62,28 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedP
 	return &res, nil
 }
 
-func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *attribute.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().Select("*").From(store.AssignedProductAttributeTableName)
 
 	// parse option
-	if option.AssignmentID != nil {
-		query = query.Where(option.AssignmentID)
+	if options.AssignmentID != nil {
+		query = query.Where(options.AssignmentID)
 	}
-	if option.ProductID != nil {
-		query = query.Where(option.ProductID)
+	if options.ProductID != nil {
+		query = query.Where(options.ProductID)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
 
 	var res attribute.AssignedProductAttribute
-
-	err = as.GetReplica().SelectOne(
-		&res,
-		queryString,
-		args...,
-	)
+	err = as.GetReplica().SelectOne(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedProductAttributeTableName, "option")
@@ -92,4 +92,19 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.Assi
 	}
 
 	return &res, nil
+}
+
+func (as *SqlAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+	queryString, args, err := as.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetWithOption_ToSql")
+	}
+
+	var res []*attribute.AssignedProductAttribute
+	_, err = as.GetReplica().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find assigned product attributes with given options")
+	}
+
+	return res, nil
 }

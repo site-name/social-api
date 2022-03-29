@@ -1571,6 +1571,24 @@ func (s *OpenTracingLayerAssignedPageAttributeValueStore) UpdateInBulk(attribute
 	return err
 }
 
+func (s *OpenTracingLayerAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeStore.Get")
@@ -2795,6 +2813,24 @@ func (s *OpenTracingLayerCollectionStore) Upsert(collection *product_and_discoun
 	return result, err
 }
 
+func (s *OpenTracingLayerCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionProductStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CollectionProductStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ComplianceStore.ComplianceExport")
@@ -3490,7 +3526,7 @@ func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetWithOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -5548,7 +5584,7 @@ func (s *OpenTracingLayerProductStore) FilterByOption(option *product_and_discou
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterByQuery")
 	s.Root.Store.SetContext(newCtx)
@@ -5557,7 +5593,7 @@ func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilde
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.FilterByQuery(query, limit, createdAtGt)
+	result, err := s.ProductStore.FilterByQuery(query, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

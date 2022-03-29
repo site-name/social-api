@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -564,20 +566,123 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProd
 }
 
 // FilterByQuery finds and returns products with given query, limit, createdAtGt
-func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
-	queryString, args, err := query.
-		Limit(limit).
-		Where("Products.CreateAt > ?", createdAtGt).ToSql()
+func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
+	if options.CreateAt != nil {
+		query = query.Where(options.CreateAt)
+	}
+	if options.Limit != nil {
+		query = query.Limit(*options.Limit)
+	}
+
+	queryString, args, err := query.ToSql()
 
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByQuery_ToSql")
 	}
 
 	var products product_and_discount.Products
-
 	_, err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
+	}
+
+	var (
+		productIDs             = products.IDs()
+		productsMap            = map[string]*product_and_discount.Product{} // productsMap has keys are product ids
+		productsLengthPositive = len(productIDs) > 0                        // only prefetch if at least 1 product found
+	)
+	for _, product := range products {
+		productsMap[product.Id] = product
+	}
+
+	// check if need prefetch related assigned product attribute
+	if options.PrefetchRelatedAssignedProductAttributes && productsLengthPositive {
+		assignedAttributes, err := ps.AssignedProductAttribute().FilterByOptions(&attribute.AssignedProductAttributeFilterOption{
+			ProductID: squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": productIDs},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, attr := range assignedAttributes {
+			product, ok := productsMap[attr.ProductID]
+			if ok && product != nil {
+				product.AssignedProductAttributes = append(product.AssignedProductAttributes, attr)
+			}
+		}
+	}
+
+	// check if need prefetch related categories
+	if options.PrefetchRelatedCategory && productsLengthPositive {
+		categories, err := ps.Category().FilterByOption(&product_and_discount.CategoryFilterOption{
+			Id: squirrel.Eq{store.ProductCategoryTableName + ".Id": products.CategoryIDs()},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		var categoriesMap = map[string]*product_and_discount.Category{}
+		for _, cate := range categories {
+			categoriesMap[cate.Id] = cate
+		}
+
+		for _, prd := range products {
+			if prd.CategoryID != nil {
+				prd.Category = categoriesMap[*prd.CategoryID]
+			}
+		}
+	}
+
+	// check if need prefetch related collections
+	if options.PrefetchRelatedCollections && productsLengthPositive {
+		collectionProducts, err := ps.CollectionProduct().FilterByOptions(&product_and_discount.CollectionProductFilterOptions{
+			ProductID:               squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productIDs},
+			SelectRelatedCollection: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, rel := range collectionProducts {
+			product, ok := productsMap[rel.ProductID]
+			if ok && product != nil {
+				product.Collections = append(product.Collections, rel.Collection)
+			}
+		}
+	}
+
+	// check if we need to prefetch related product type
+	if options.PrefetchRelatedProductType && productsLengthPositive {
+		productTypes, err := ps.ProductType().ProductTypesByProductIDs(productIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		var productTypesMap = map[string]*product_and_discount.ProductType{}
+		for _, prdType := range productTypes {
+			productTypesMap[prdType.Id] = prdType
+		}
+
+		for _, product := range products {
+			product.ProductType = productTypesMap[product.ProductTypeID]
+		}
+	}
+
+	// check if we need to prefetch related file infos
+	if options.PrefetchRelatedMedia && productsLengthPositive {
+		fileInfos, err := ps.FileInfo().GetWithOptions(nil, nil, &file.GetFileInfosOptions{
+			ParentID: productIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, info := range fileInfos {
+			product, ok := productsMap[info.ParentID]
+			if ok && product != nil {
+				product.Medias = append(product.Medias, info)
+			}
+		}
 	}
 
 	return products, nil

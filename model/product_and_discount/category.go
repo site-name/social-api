@@ -86,6 +86,22 @@ func (c *Category) IsValid() *model.AppError {
 	return nil
 }
 
+func (s *Category) DeepCopy() *Category {
+	if s == nil {
+		return nil
+	}
+
+	res := *s
+
+	if len(s.Children) > 0 {
+		res.Children = Categories{}
+		for _, item := range s.Children {
+			res.Children = append(res.Children, item.DeepCopy())
+		}
+	}
+	return &res
+}
+
 func (c *Category) PreSave() {
 	if c.Id == "" {
 		c.Id = model.NewId()

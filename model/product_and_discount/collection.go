@@ -77,9 +77,7 @@ func (c Collections) IDs() []string {
 func (c Collections) DeepCopy() Collections {
 	res := Collections{}
 	for _, cl := range c {
-		if cl != nil {
-			res = append(res, cl.DeepCopy())
-		}
+		res = append(res, cl.DeepCopy())
 	}
 
 	return res

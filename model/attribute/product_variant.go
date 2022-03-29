@@ -50,10 +50,9 @@ func (a *AssignedVariantAttributeValue) DeepCopy() *AssignedVariantAttributeValu
 
 // Associate a product type attribute and selected values to a given variant.
 type AssignedVariantAttribute struct {
-	Id                    string `json:"id"`
-	VariantID             string `json:"variant_id"`    // to product.ProductVariant
-	AssignmentID          string `json:"assignment_id"` // to attribute.AttributeVariant
-	BaseAssignedAttribute `db:"-"`
+	Id           string `json:"id"`
+	VariantID    string `json:"variant_id"`    // to product.ProductVariant
+	AssignmentID string `json:"assignment_id"` // to attribute.AttributeVariant
 }
 
 // AssignedVariantAttributeFilterOption is used for lookup, if cannot found, creating new instance

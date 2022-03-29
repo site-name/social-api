@@ -161,11 +161,11 @@ func (_m *FileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
 }
 
 // GetWithOptions provides a mock function with given fields: page, perPage, opt
-func (_m *FileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (_m *FileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 	ret := _m.Called(page, perPage, opt)
 
 	var r0 []*file.FileInfo
-	if rf, ok := ret.Get(0).(func(int, int, *file.GetFileInfosOptions) []*file.FileInfo); ok {
+	if rf, ok := ret.Get(0).(func(*int, *int, *file.GetFileInfosOptions) []*file.FileInfo); ok {
 		r0 = rf(page, perPage, opt)
 	} else {
 		if ret.Get(0) != nil {
@@ -174,7 +174,7 @@ func (_m *FileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFile
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int, int, *file.GetFileInfosOptions) error); ok {
+	if rf, ok := ret.Get(1).(func(*int, *int, *file.GetFileInfosOptions) error); ok {
 		r1 = rf(page, perPage, opt)
 	} else {
 		r1 = ret.Error(1)

@@ -113,11 +113,11 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 	var productTypes []*product_and_discount.ProductType
 	_, err := pts.GetReplica().Select(
 		&productTypes,
-		`SELECT * FROM `+store.ProductTypeTableName+` PT 
-		INNER JOIN `+store.ProductTableName+` P ON (
-			PT.Id = P.ProductTypeID
+		`SELECT * FROM `+store.ProductTypeTableName+` 
+		INNER JOIN `+store.ProductTableName+` ON (
+			ProductTypes.Id = Products.ProductTypeID
 		) 
-		WHERE P.Id IN :IDs`,
+		WHERE Products.Id IN :IDs`,
 		map[string]interface{}{
 			"IDs": productIDs,
 		},

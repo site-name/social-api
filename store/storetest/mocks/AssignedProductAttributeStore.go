@@ -19,6 +19,29 @@ func (_m *AssignedProductAttributeStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// FilterByOptions provides a mock function with given fields: options
+func (_m *AssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+	ret := _m.Called(options)
+
+	var r0 []*attribute.AssignedProductAttribute
+	if rf, ok := ret.Get(0).(func(*attribute.AssignedProductAttributeFilterOption) []*attribute.AssignedProductAttribute); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*attribute.AssignedProductAttribute)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*attribute.AssignedProductAttributeFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: id
 func (_m *AssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 	ret := _m.Called(id)

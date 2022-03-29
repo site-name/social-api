@@ -6,8 +6,11 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // max lengths for some fields of products
@@ -35,8 +38,12 @@ type Product struct {
 	model.ModelMetadata
 	seo.Seo
 
-	Collections Collections  `json:"-" db:"-"`
-	ProductType *ProductType `json:"-" db:"-"`
+	Collections               Collections                         `json:"-" db:"-"`
+	ProductType               *ProductType                        `json:"-" db:"-"`
+	AssignedProductAttributes attribute.AssignedProductAttributes `json:"-" db:"-"`
+	ProductVariants           ProductVariants                     `json:"-" db:"-"`
+	Category                  *Category                           `json:"-" db:"-"`
+	Medias                    file.FileInfos                      `json:"-" db:"-"`
 }
 
 // ProductFilterOption is used to compose squirrel sql queries
@@ -51,6 +58,18 @@ type ProductFilterOption struct {
 	SaleID           squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
 }
 
+type ProductFilterByQueryOptions struct {
+	CreateAt squirrel.Sqlizer
+	Limit    *uint64
+
+	PrefetchRelatedAssignedProductAttributes bool
+	PrefetchRelatedVariants                  bool
+	PrefetchRelatedCollections               bool
+	PrefetchRelatedMedia                     bool
+	PrefetchRelatedProductType               bool
+	PrefetchRelatedCategory                  bool
+}
+
 type Products []*Product
 
 func (p Products) IDs() []string {
@@ -58,6 +77,60 @@ func (p Products) IDs() []string {
 	for _, product := range p {
 		if product != nil {
 			res = append(res, product.Id)
+		}
+	}
+
+	return res
+}
+
+func (p Products) CategoryIDs() []string {
+	res := []string{}
+	for _, product := range p {
+		if product != nil && product.CategoryID != nil {
+			res = append(res, *product.CategoryID)
+		}
+	}
+
+	return res
+}
+
+func (ps Products) Flat() []model.StringInterface {
+	var res = []model.StringInterface{}
+
+	for _, prd := range ps {
+
+		maxLength := util.Max(
+			len(prd.Collections),
+			len(prd.Medias),
+			len(prd.AssignedProductAttributes),
+			len(prd.ProductVariants),
+		)
+
+		for i := 0; i < maxLength; i++ {
+			data := model.StringInterface{
+				"id":                 prd.Id,
+				"name":               prd.Name,
+				"description_as_str": prd.DescriptionPlainText,
+				"charge_taxes":       *prd.ChargeTaxes,
+			}
+
+			if i < len(prd.Collections) {
+				data["collections__slug"] = prd.Collections[i].Slug
+			}
+
+			if i < len(prd.Medias) {
+				data["media__image"] = prd.Medias[i].Path
+			}
+
+			if i < len(prd.AssignedProductAttributes) {
+
+			}
+
+			if i < len(prd.ProductVariants) {
+
+			}
+
+			res = append(res, data)
 		}
 	}
 
@@ -146,9 +219,21 @@ func (p *Product) DeepCopy() *Product {
 	if p.Collections != nil {
 		res.Collections = p.Collections.DeepCopy()
 	}
-
 	if p.ProductType != nil {
 		res.ProductType = p.ProductType.DeepCopy()
 	}
+	if len(p.AssignedProductAttributes) > 0 {
+		res.AssignedProductAttributes = p.AssignedProductAttributes.DeepCopy()
+	}
+	if len(p.ProductVariants) > 0 {
+		res.ProductVariants = p.ProductVariants.DeepCopy()
+	}
+	if p.Category != nil {
+		res.Category = p.Category.DeepCopy()
+	}
+	if len(p.Medias) > 0 {
+		res.Medias = p.Medias.DeepCopy()
+	}
+
 	return &res
 }

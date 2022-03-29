@@ -53,6 +53,22 @@ func (ps *SqlCollectionStore) ModelFields() []string {
 	}
 }
 
+func (ps *SqlCollectionStore) ScanFields(col product_and_discount.Collection) []interface{} {
+	return []interface{}{
+		&col.Id,
+		&col.ShopID,
+		&col.Name,
+		&col.Slug,
+		&col.BackgroundImage,
+		&col.BackgroundImageAlt,
+		&col.Description,
+		&col.Metadata,
+		&col.PrivateMetadata,
+		&col.SeoTitle,
+		&col.SeoDescription,
+	}
+}
+
 // Upsert depends on given collection's Id property to decide update or insert the collection
 func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
 	var isSaving bool
@@ -112,7 +128,6 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Co
 func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
 	var res []*product_and_discount.Collection
 
-	// check if SelectAll is true, returns all collections
 	if option.SelectAll {
 		_, err := cs.GetReplica().Select(&res, "SELECT * FROM "+store.ProductCollectionTableName+" WHERE ShopID = :ShopID", map[string]interface{}{"ShopID": option.ShopID})
 		if err != nil {
@@ -191,6 +206,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 		}
 		if !joined_ChannelTable {
 			query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
+			joined_ChannelTable = true //
 		}
 		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingChannelIsActive})
 	}

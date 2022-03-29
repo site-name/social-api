@@ -25,7 +25,7 @@ func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEven
 		return nil, appErr
 	}
 
-	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, gqlmodel.SaleorGraphqlPermissionToSystemPermission(gqlmodel.PermissionEnumManageStaff))) {
+	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageStaff)) {
 		return nil, nil
 	}
 
@@ -42,7 +42,7 @@ func (r *exportFileResolver) User(ctx context.Context, obj *gqlmodel.ExportFile)
 		return nil, appErr
 	}
 
-	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, gqlmodel.SaleorGraphqlPermissionToSystemPermission(gqlmodel.PermissionEnumManageStaff))) {
+	if obj.UserID == nil || (session.UserId != *obj.UserID && !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageStaff)) {
 		return nil, appErr
 	}
 

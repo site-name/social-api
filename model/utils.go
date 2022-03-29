@@ -81,6 +81,24 @@ func (s StringInterface) DeepCopy() StringInterface {
 	return res
 }
 
+func (s StringInterface) Get(key string, defaultValue ...interface{}) interface{} {
+	if vl, ok := s[key]; ok {
+		return vl
+	}
+
+	return defaultValue[0]
+}
+
+func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{} {
+	defer delete(s, key)
+
+	if vl, ok := s[key]; ok {
+		return vl
+	}
+
+	return defaultValue[0]
+}
+
 type StringArray []string
 type StringSet []string
 

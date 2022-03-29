@@ -29,6 +29,16 @@ const (
 
 type StringMap map[string]string
 
+func (m StringMap) Pop(key string, defaultValue ...string) string {
+	defer delete(m, key)
+
+	if v, ok := m[key]; ok {
+		return v
+	}
+
+	return defaultValue[0]
+}
+
 func (m StringMap) DeepCopy() StringMap {
 	if m == nil {
 		return nil

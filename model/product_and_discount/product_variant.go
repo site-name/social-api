@@ -53,6 +53,15 @@ type ProductVariantFilterOption struct {
 
 type ProductVariants []*ProductVariant
 
+func (p ProductVariants) DeepCopy() ProductVariants {
+	res := ProductVariants{}
+	for _, item := range p {
+		res = append(res, item.DeepCopy())
+	}
+
+	return res
+}
+
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants
 func (p ProductVariants) FilterNils() ProductVariants {
 	var res ProductVariants

@@ -1607,6 +1607,26 @@ func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 
 }
 
+func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
 
 	tries := 0
@@ -2967,6 +2987,26 @@ func (s *RetryLayerCollectionStore) Upsert(collection *product_and_discount.Coll
 
 }
 
+func (s *RetryLayerCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionProductStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
 
 	tries := 0
@@ -3722,7 +3762,7 @@ func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, erro
 
 }
 
-func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -5958,11 +5998,11 @@ func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.Pro
 
 }
 
-func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, limit uint64, createdAtGt int64) (product_and_discount.Products, error) {
+func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.FilterByQuery(query, limit, createdAtGt)
+		result, err := s.ProductStore.FilterByQuery(query, options)
 		if err == nil {
 			return result, nil
 		}

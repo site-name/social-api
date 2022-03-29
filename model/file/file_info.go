@@ -24,18 +24,18 @@ type GetFileInfosOptions struct {
 	IncludeDeleted bool     `json:"include_deleted"`
 	SortBy         string   `json:"sort_by"`
 	SortDescending bool     `json:"sort_descending"`
+	ParentID       []string `json:"parent_id"`
 }
 
 type FileForIndexing struct {
 	FileInfo
-	// ChannelId string `json:"channel_id"`
 	Content string `json:"content"`
 }
 
 type FileInfo struct {
 	Id              string  `json:"id"`
 	CreatorId       string  `json:"user_id"`
-	ProductId       string  `json:"product_id,omitempty"`
+	ParentID        string  `json:"parent_id,omitempty"` // can be a product's id, comment's id
 	CreateAt        int64   `json:"create_at"`
 	UpdateAt        int64   `json:"update_at"`
 	DeleteAt        int64   `json:"delete_at"`
@@ -53,6 +53,8 @@ type FileInfo struct {
 	Content         string  `json:"-"`
 	RemoteId        *string `json:"remote_id"`
 }
+
+type FileInfos []*FileInfo
 
 func (fi *FileInfo) ToJSON() string {
 	return model.ModelToJson(fi)
@@ -75,6 +77,24 @@ func (fi *FileInfo) PreSave() {
 	}
 }
 
+func (fi *FileInfo) DeepCopy() *FileInfo {
+	if fi == nil {
+		return nil
+	}
+
+	res := *fi
+	return &res
+}
+
+func (f FileInfos) DeepCopy() FileInfos {
+	res := FileInfos{}
+	for _, item := range f {
+		res = append(res, item.DeepCopy())
+	}
+
+	return res
+}
+
 func (fi *FileInfo) IsValid() *model.AppError {
 	outer := model.CreateAppErrorForModel(
 		"model.file_info.is_valid.%s.app_error",
@@ -87,7 +107,7 @@ func (fi *FileInfo) IsValid() *model.AppError {
 	if !model.IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
 		return outer("creator_id", &fi.Id)
 	}
-	if fi.ProductId != "" && !model.IsValidId(fi.ProductId) {
+	if fi.ParentID != "" && !model.IsValidId(fi.ParentID) {
 		return outer("product_id", &fi.Id)
 	}
 	if fi.CreateAt == 0 {
@@ -180,5 +200,5 @@ func GetEtagForFileInfos(infos []*FileInfo) string {
 		}
 	}
 
-	return model.Etag(infos[0].ProductId, maxUpdateAt)
+	return model.Etag(infos[0].ParentID, maxUpdateAt)
 }

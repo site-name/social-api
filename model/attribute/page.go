@@ -51,10 +51,9 @@ func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
 // Associate a page type attribute and selected values to a given page.
 // PageID unique together with AssignmentID
 type AssignedPageAttribute struct {
-	Id                    string `json:"id"`
-	PageID                string `json:"page_id"`
-	AssignmentID          string `json:"assignment_id"` // AttributePage
-	BaseAssignedAttribute `db:"-"`
+	Id           string `json:"id"`
+	PageID       string `json:"page_id"`
+	AssignmentID string `json:"assignment_id"` // AttributePage
 }
 
 // AssignedPageAttributeFilterOption is used to find or creat new AssignedPageAttribute
