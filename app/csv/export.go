@@ -37,11 +37,21 @@ func (s *ServiceCsv) ExportProducts(input *gqlmodel.ExportProductsInput, delimet
 func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo gqlmodel.ExportInfoInput, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError {
 	var createAtGt int64 = 0
 
-	// fetch products in batches with size 10000 each to prevent memory leaking
 	for {
-		products, err := s.srv.Store.Product().FilterByQuery(productQuery, &product_and_discount.ProductFilterByQueryOptions{
-			CreateAt:                                 squirrel.Gt{store.ProductTableName + ".CreateAt": createAtGt},
-			Limit:                                    &productFetchBatchSize,
+		prds, err := s.srv.Store.Product().FilterByQuery(productQuery.Where("Products.CreateAt > ?", createAtGt).Limit(productFetchBatchSize))
+		if err != nil {
+			return model.NewAppError("ExportProductsInBatches", "app.csv.error_finding_products_by_query.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		if len(prds) == 0 {
+			break
+		}
+
+		// reset for later loop(s)
+		createAtGt = prds[len(prds)-1].CreateAt
+
+		products, appErr := s.srv.ProductService().ProductsByOption(&product_and_discount.ProductFilterOption{
+			Id:                                       squirrel.Eq{store.ProductTableName + ".Id": prds.IDs()},
 			PrefetchRelatedAssignedProductAttributes: true,
 			PrefetchRelatedVariants:                  true,
 			PrefetchRelatedCollections:               true,
@@ -49,15 +59,12 @@ func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder
 			PrefetchRelatedProductType:               true,
 			PrefetchRelatedCategory:                  true,
 		})
-		if err != nil {
-			return model.NewAppError("ExportProductsInBatches", "app.csv.error_finding_products_by_query.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-
-		if len(products) == 0 {
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return appErr
+			}
 			break
 		}
-
-		createAtGt = products[len(products)-1].CreateAt
 
 		s.GetProductsData(products, exportFields, exportInfo.Attributes, exportInfo.Warehouses, exportInfo.Channels)
 	}

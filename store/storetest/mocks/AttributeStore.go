@@ -104,8 +104,24 @@ func (_m *AttributeStore) ModelFields() []string {
 	return r0
 }
 
-// Save provides a mock function with given fields: attr
-func (_m *AttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+// ScanFields provides a mock function with given fields: v
+func (_m *AttributeStore) ScanFields(v attribute.Attribute) []interface{} {
+	ret := _m.Called(v)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(attribute.Attribute) []interface{}); ok {
+		r0 = rf(v)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	return r0
+}
+
+// Upsert provides a mock function with given fields: attr
+func (_m *AttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	ret := _m.Called(attr)
 
 	var r0 *attribute.Attribute
@@ -125,20 +141,4 @@ func (_m *AttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute,
 	}
 
 	return r0, r1
-}
-
-// ScanFields provides a mock function with given fields: v
-func (_m *AttributeStore) ScanFields(v attribute.Attribute) []interface{} {
-	ret := _m.Called(v)
-
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(attribute.Attribute) []interface{}); ok {
-		r0 = rf(v)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
-		}
-	}
-
-	return r0
 }

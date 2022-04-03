@@ -66,28 +66,34 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*c
 	if err := checkoutLine.IsValid(); err != nil {
 		return nil, err
 	}
-	if isSave {
-		if err := cls.GetMaster().Insert(checkoutLine); err != nil {
-			return nil, errors.Wrapf(err, "failed to save checkout line with id=%s", checkoutLine.Id)
-		}
-	}
 
-	if updated, err := cls.GetMaster().Update(checkoutLine); err != nil {
-		return nil, errors.Wrapf(err, "failed to update checkout line with id=%s", checkoutLine.Id)
-	} else if updated > 1 {
-		return nil, errors.Errorf("multiple checkout lines were updated: %d, expected: 1", updated)
+	var (
+		numUpdated int64
+		err        error
+	)
+	if isSave {
+		err = cls.GetMaster().Insert(checkoutLine)
+	} else {
+		numUpdated, err = cls.GetMaster().Update(checkoutLine)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to upsert checkout line")
+	}
+	if numUpdated > 1 {
+		return nil, errors.Errorf("%d checkout lines were updated instead of 1", numUpdated)
 	}
 
 	return checkoutLine, nil
 }
 
 func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
-	res, err := cls.GetReplica().Get(checkout.CheckoutLine{}, id)
+	var res checkout.CheckoutLine
+	err := cls.GetReplica().SelectOne(&res, "SELECT * FROM "+store.CheckoutLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to to find checkout line with id=%s", id)
 	}
 
-	return res.(*checkout.CheckoutLine), nil
+	return &res, nil
 }
 
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*checkout.CheckoutLine, error) {
@@ -161,12 +167,6 @@ func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*checkout.CheckoutLine) erro
 }
 
 func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
-	for _, line := range lines {
-		if line == nil {
-			return nil, store.NewErrInvalidInput(store.CheckoutLineTableName, "lines", "nil value")
-		}
-	}
-
 	tx, err := cls.GetMaster().Begin()
 	if err != nil {
 		return nil, errors.Wrap(err, "begin_transaction")
@@ -174,13 +174,15 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 	defer store.FinalizeTransaction(tx)
 
 	for _, line := range lines {
-		line.PreSave()
-		if appErr := line.IsValid(); appErr != nil {
-			return nil, appErr
-		}
-		err = tx.Insert(line)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to save checkout line with id=%s", line.Id)
+		if line != nil {
+			line.PreSave()
+			if appErr := line.IsValid(); appErr != nil {
+				return nil, appErr
+			}
+			err = tx.Insert(line)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to save checkout line with id=%s", line.Id)
+			}
 		}
 	}
 

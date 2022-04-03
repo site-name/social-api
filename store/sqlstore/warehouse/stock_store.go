@@ -213,7 +213,7 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		}
 
 		if options.SelectRelatedProductVariant {
-			stock.ProductVariant = &productVariant
+			stock.SetProductVariant(&productVariant)
 		}
 		returningStocks = append(returningStocks, stock.DeepCopy())
 	}
@@ -316,10 +316,10 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 		}
 
 		if options.SelectRelatedWarehouse {
-			stock.Warehouse = wareHouse.DeepCopy()
+			stock.SetWarehouse(&wareHouse)
 		}
 		if options.SelectRelatedProductVariant {
-			stock.ProductVariant = variant.DeepCopy()
+			stock.SetProductVariant(&variant)
 		}
 		if options.AnnotateAvailabeQuantity {
 			stock.AvailableQuantity = availableQuantity
@@ -421,8 +421,8 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transactio
 			return nil, errors.Wrap(err, "failed to scan a row of stock, warehouse, product variant")
 		}
 
-		stock.Warehouse = wareHouse.DeepCopy()
-		stock.ProductVariant = productVariant.DeepCopy()
+		stock.SetWarehouse(&wareHouse)
+		stock.SetProductVariant(&productVariant)
 		returningStocks = append(returningStocks, stock.DeepCopy())
 
 		if options.AnnotateAvailabeQuantity {

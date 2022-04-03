@@ -47,4 +47,8 @@ type AttributeService interface {
 	// GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
 	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
+	// UpsertAttribute inserts or updates given attribute and returns it
+  UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError)
+  // UpsertAttributeValue insderts or updates given attribute value then returns it
+  UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
 }

@@ -88,3 +88,73 @@ func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
 		Unit:            unit,
 	}
 }
+
+var AttributeCreateInputBooleanFieldNames = []string{
+	"FilterableInStorefront",
+	"FilterableInDashboard",
+	"StorefrontSearchPosition",
+	"AvailableInGrid",
+}
+
+func (i *AttributeCreateInput) GetValueByField(fieldName string) interface{} {
+	switch fieldName {
+	case "FilterableInStorefront":
+		return i.FilterableInStorefront
+	case "FilterableInDashboard":
+		return i.FilterableInDashboard
+	case "StorefrontSearchPosition":
+		return i.StorefrontSearchPosition
+	case "AvailableInGrid":
+		return i.AvailableInGrid
+
+	default:
+		return nil
+	}
+}
+
+var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputTypeEnum{
+	"FilterableInStorefront": {
+		AttributeInputTypeEnumDropdown,
+		AttributeInputTypeEnumMultiselect,
+		AttributeInputTypeEnumNumeric,
+		AttributeInputTypeEnumSwatch,
+		AttributeInputTypeEnumBoolean,
+		AttributeInputTypeEnumDate,
+		AttributeInputTypeEnumDateTime,
+	},
+	"FilterableInDashboard": {
+		AttributeInputTypeEnumDropdown,
+		AttributeInputTypeEnumMultiselect,
+		AttributeInputTypeEnumNumeric,
+		AttributeInputTypeEnumSwatch,
+		AttributeInputTypeEnumBoolean,
+		AttributeInputTypeEnumDate,
+		AttributeInputTypeEnumDateTime,
+	},
+	"AvailableInGrid": {
+		AttributeInputTypeEnumDropdown,
+		AttributeInputTypeEnumMultiselect,
+		AttributeInputTypeEnumNumeric,
+		AttributeInputTypeEnumSwatch,
+		AttributeInputTypeEnumBoolean,
+		AttributeInputTypeEnumDate,
+		AttributeInputTypeEnumDateTime,
+	},
+	"StorefrontSearchPosition": {
+		AttributeInputTypeEnumDropdown,
+		AttributeInputTypeEnumMultiselect,
+		AttributeInputTypeEnumBoolean,
+		AttributeInputTypeEnumDate,
+		AttributeInputTypeEnumDateTime,
+	},
+}
+
+func AttributeInputTypeEnumInSlice(value AttributeInputTypeEnum, slice ...AttributeInputTypeEnum) bool {
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+
+	return false
+}

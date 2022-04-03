@@ -1,6 +1,7 @@
 package product_and_discount
 
 import (
+	"fmt"
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
@@ -44,6 +45,7 @@ type Product struct {
 	ProductVariants           ProductVariants                     `json:"-" db:"-"`
 	Category                  *Category                           `json:"-" db:"-"`
 	Medias                    file.FileInfos                      `json:"-" db:"-"`
+	ProductChannelListings    ProductChannelListings              `json:"-" db:"-"`
 }
 
 // ProductFilterOption is used to compose squirrel sql queries
@@ -52,15 +54,13 @@ type ProductFilterOption struct {
 
 	// LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
 	//
-	// LEFT JOIN when squirrel.Eq{"": nil}, INNER JOIN otherwise
+	// LEFT JOIN when squirrel.Eq{...: nil}, INNER JOIN otherwise
 	ProductVariantID squirrel.Sqlizer
 	VoucherID        squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
 	SaleID           squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
-}
+	CreateAt         squirrel.Sqlizer
 
-type ProductFilterByQueryOptions struct {
-	CreateAt squirrel.Sqlizer
-	Limit    *uint64
+	Limit *uint64
 
 	PrefetchRelatedAssignedProductAttributes bool
 	PrefetchRelatedVariants                  bool
@@ -68,6 +68,17 @@ type ProductFilterByQueryOptions struct {
 	PrefetchRelatedMedia                     bool
 	PrefetchRelatedProductType               bool
 	PrefetchRelatedCategory                  bool
+
+	Prefetch_Related_AssignedProductAttribute_AttributeValues                                 bool
+	Prefetch_Related_AssignedProductAttribute_AttributeProduct_Attribute                      bool
+	Prefetch_Related_ProductChannelListings                                                   bool
+	Prefetch_Related_ProductChannelListings_Channel                                           bool
+	Prefetch_Related_ProductVariants_Stocks                                                   bool
+	Prefetch_Related_ProductVariants_Stocks_Warehouses                                        bool
+	Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeValues            bool
+	Prefetch_Related_ProductVariants_AssignedVariantAttributeValue_AttributeVariant_Attribute bool
+	Prefetch_Related_ProductVariants_ProductVariantChannelListing_Channel                     bool
+	Prefetch_Related_ProductVariants_ProductVariantChannelListings                            bool
 }
 
 type Products []*Product
@@ -94,6 +105,20 @@ func (p Products) CategoryIDs() []string {
 	return res
 }
 
+func (p *Product) WeightString() string {
+	if p == nil || p.Weight == nil {
+		return ""
+	}
+
+	u := p.WeightUnit
+
+	if measurement.WEIGHT_UNIT_STRINGS[u] == "" {
+		u = measurement.G
+	}
+
+	return fmt.Sprintf("%f %s", *p.Weight, u)
+}
+
 func (ps Products) Flat() []model.StringInterface {
 	var res = []model.StringInterface{}
 
@@ -106,12 +131,27 @@ func (ps Products) Flat() []model.StringInterface {
 			len(prd.ProductVariants),
 		)
 
+		var (
+			categorySlug    string
+			productTypeName string
+		)
+
+		if prd.CategoryID != nil && prd.Category != nil {
+			categorySlug = prd.Category.Slug
+		}
+		if prd.ProductType != nil {
+			productTypeName = prd.ProductType.Name
+		}
+
 		for i := 0; i < maxLength; i++ {
 			data := model.StringInterface{
 				"id":                 prd.Id,
 				"name":               prd.Name,
 				"description_as_str": prd.DescriptionPlainText,
+				"category_slug":      categorySlug,
+				"product_type__name": productTypeName,
 				"charge_taxes":       *prd.ChargeTaxes,
+				"product_weight":     prd.WeightString(),
 			}
 
 			if i < len(prd.Collections) {
@@ -127,7 +167,12 @@ func (ps Products) Flat() []model.StringInterface {
 			}
 
 			if i < len(prd.ProductVariants) {
-
+				data["variant_weight"] = prd.ProductVariants[i].WeightString()
+				data["variants__id"] = prd.ProductVariants[i].Id
+				data["variants__sku"] = prd.ProductVariants[i].Sku // can be nil
+				data["variants__is_preorder"] = prd.ProductVariants[i].IsPreOrder
+				data["variants__preorder_global_threshold"] = prd.ProductVariants[i].PreOrderGlobalThreshold // can be nil
+				data["variants__preorder_end_date"] = prd.ProductVariants[i].PreorderEndDate                 // can be nil
 			}
 
 			res = append(res, data)
@@ -222,17 +267,20 @@ func (p *Product) DeepCopy() *Product {
 	if p.ProductType != nil {
 		res.ProductType = p.ProductType.DeepCopy()
 	}
-	if len(p.AssignedProductAttributes) > 0 {
+	if p.AssignedProductAttributes != nil {
 		res.AssignedProductAttributes = p.AssignedProductAttributes.DeepCopy()
 	}
-	if len(p.ProductVariants) > 0 {
+	if p.ProductVariants != nil {
 		res.ProductVariants = p.ProductVariants.DeepCopy()
 	}
 	if p.Category != nil {
 		res.Category = p.Category.DeepCopy()
 	}
-	if len(p.Medias) > 0 {
+	if p.Medias != nil {
 		res.Medias = p.Medias.DeepCopy()
+	}
+	if p.ProductChannelListings != nil {
+		res.ProductChannelListings = p.ProductChannelListings.DeepCopy()
 	}
 
 	return &res

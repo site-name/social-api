@@ -2027,11 +2027,11 @@ func (s *RetryLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute,
 
 }
 
-func (s *RetryLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (s *RetryLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeStore.Save(attr)
+		result, err := s.AttributeStore.Upsert(attr)
 		if err == nil {
 			return result, nil
 		}
@@ -2207,11 +2207,11 @@ func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 
 }
 
-func (s *RetryLayerAttributeValueStore) Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeValueStore.Save(attribute)
+		result, err := s.AttributeValueStore.Upsert(av)
 		if err == nil {
 			return result, nil
 		}
@@ -5998,11 +5998,11 @@ func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.Pro
 
 }
 
-func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
+func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.FilterByQuery(query, options)
+		result, err := s.ProductStore.FilterByQuery(query)
 		if err == nil {
 			return result, nil
 		}

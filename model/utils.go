@@ -81,22 +81,36 @@ func (s StringInterface) DeepCopy() StringInterface {
 	return res
 }
 
+// Get trys finding and returns the value associated with given key.
+// If the key does not exist:
+//
+// 1) Checks if there is any default value given, returns the first given
+//
+// 2) returns nil
 func (s StringInterface) Get(key string, defaultValue ...interface{}) interface{} {
 	if vl, ok := s[key]; ok {
 		return vl
 	}
 
-	return defaultValue[0]
-}
-
-func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{} {
-	defer delete(s, key)
-
-	if vl, ok := s[key]; ok {
-		return vl
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
 	}
 
-	return defaultValue[0]
+	return nil
+}
+
+// Pop trys finding and returns the value associated with given key.
+// If the key does not exist:
+//
+// 1) Check if any default value given, returns the first value
+//
+// 2) returns nil
+//
+// Also delete the key-value from the map if found
+func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{} {
+	v := s.Get(key)
+	delete(s, key)
+	return v
 }
 
 type StringArray []string
@@ -114,14 +128,14 @@ func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
 
 // Remove removes input from the array
 func (sa StringArray) Remove(input string) StringArray {
-	for index := range sa {
-		if sa[index] == input {
-			ret := make(StringArray, 0, len(sa)-1)
-			ret = append(ret, sa[:index]...)
-			return append(ret, sa[index+1:]...)
+	res := StringArray{}
+	for _, item := range sa {
+		if item != input {
+			res = append(res, item)
 		}
 	}
-	return sa
+
+	return res
 }
 
 // Map takes a mapFunc, loops through current string slice and applies mapFunc for each item
@@ -157,16 +171,7 @@ func (sa StringArray) Contains(input string) bool {
 
 // Equals checks if two arrays of strings have same length and contains the same elements at each index
 func (sa StringArray) Equals(input StringArray) bool {
-	if len(sa) != len(input) {
-		return false
-	}
-	for index := range sa {
-		if sa[index] != input[index] {
-			return false
-		}
-	}
-
-	return true
+	return reflect.DeepEqual(sa, input)
 }
 
 // StringInterfaceFromJson decodes input data in to a map with keys are strings and values are interface{}
@@ -300,7 +305,7 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 }
 
 func (m StringInterface) Merge(other StringInterface) {
-	for key, value := range m {
+	for key, value := range other {
 		m[key] = value
 	}
 }

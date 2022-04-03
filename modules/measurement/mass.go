@@ -8,28 +8,22 @@ import (
 type WeightUnit string
 
 var (
-	WEIGHT_UNIT_STRINGS    map[WeightUnit]string  // weight unit aliases to their full name
-	WEIGHT_UNIT_CONVERSION map[WeightUnit]float32 // amount of weight units
-	ErrInvalidWeightUnit   error                  // Error used when users use weight unit does not match type WeightUnit
-)
-
-func init() {
 	WEIGHT_UNIT_STRINGS = map[WeightUnit]string{
 		G:     "Gram",
 		LB:    "Pound",
 		OZ:    "Ounce",
 		KG:    "Kg",
 		TONNE: "Tonne",
-	}
+	} // weight unit aliases to their full name
 	WEIGHT_UNIT_CONVERSION = map[WeightUnit]float32{
 		KG:    1.0,
 		G:     1000.0,
 		OZ:    35.27396195,
 		TONNE: 0.001,
 		LB:    2.20462262,
-	}
-	ErrInvalidWeightUnit = errors.New("invalid weight unit, must be either (g|lb|oz|kg|tonne)")
-}
+	} // amount of weight units
+	ErrInvalidWeightUnit = errors.New("invalid weight unit, must be either (g|lb|oz|kg|tonne)") // Error used when users use weight unit does not match type WeightUnit
+)
 
 // weight units supported by app
 const (

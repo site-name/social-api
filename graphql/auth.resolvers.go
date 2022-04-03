@@ -134,7 +134,7 @@ func (r *mutationResolver) RequestPasswordReset(ctx context.Context, channel *st
 
 	// checks if user is active to perform this:
 	if !userWithEmail.IsActive {
-		return nil, model.NewAppError("RequestPasswordReset", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("RequestPasswordReset", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 
 	if channel != nil {

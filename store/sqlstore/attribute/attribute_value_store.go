@@ -72,17 +72,44 @@ func (as *SqlAttributeValueStore) CreateIndexesIfNotExists() {
 	as.CreateForeignKeyIfNotExists(store.AttributeValueTableName, "AttributeID", store.AttributeTableName, "Id", true)
 }
 
-func (as *SqlAttributeValueStore) Save(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
-	av.PreSave()
-	if err := av.IsValid(); err != nil {
-		return nil, err
+func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+	var isSaving bool
+
+	if !model.IsValidId(av.Id) {
+		av.Id = ""
+		isSaving = true
 	}
 
-	if err := as.GetMaster().Insert(av); err != nil {
+	var (
+		err        error
+		numUpdated int64
+	)
+	if isSaving {
+		av.PreSave()
+		if err := av.IsValid(); err != nil {
+			return nil, err
+		}
+
+		err = as.GetMaster().Insert(av)
+
+	} else {
+		av.PreUpdate()
+		if err := av.IsValid(); err != nil {
+			return nil, err
+		}
+
+		numUpdated, err = as.GetMaster().Update(av)
+	}
+
+	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
 		}
-		return nil, errors.Wrapf(err, "failed to save attribute value with id=%s", av.Id)
+		return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", av.Id)
+	}
+
+	if numUpdated > 1 {
+		return nil, errors.Errorf("%d attribute values were/was updated instead of 1", numUpdated)
 	}
 
 	return av, nil

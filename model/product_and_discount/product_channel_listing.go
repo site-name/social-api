@@ -127,3 +127,30 @@ func (p *ProductChannelListing) PreSave() {
 func (p *ProductChannelListing) PreUpdate() {
 	p.commonPre()
 }
+
+func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
+	if p == nil {
+		return nil
+	}
+
+	res := *p
+	if p.Channel != nil {
+		res.Channel = p.Channel.DeepCopy()
+	}
+	return &res
+}
+
+func (p ProductChannelListings) DeepCopy() ProductChannelListings {
+	if p == nil {
+		return nil
+	}
+
+	res := ProductChannelListings{}
+	for _, item := range p {
+		if item != nil {
+			res = append(res, item.DeepCopy())
+		}
+	}
+
+	return res
+}

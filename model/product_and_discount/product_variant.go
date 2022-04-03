@@ -32,7 +32,6 @@ type ProductVariant struct {
 
 	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
 	Product        *Product        `json:"-" db:"-"`
-	// ChannelListing []*ProductVariantChannelListing `json:"-" db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
@@ -51,12 +50,32 @@ type ProductVariantFilterOption struct {
 	SelectRelatedDigitalContent bool // if true, JOIN Digital content table and attach related values to returning values(s)
 }
 
+func (p *ProductVariant) WeightString() string {
+	if p == nil || p.Weight == nil {
+		return ""
+	}
+
+	u := p.WeightUnit
+
+	if measurement.WEIGHT_UNIT_STRINGS[u] == "" {
+		u = measurement.G
+	}
+
+	return fmt.Sprintf("%f %s", *p.Weight, u)
+}
+
 type ProductVariants []*ProductVariant
 
 func (p ProductVariants) DeepCopy() ProductVariants {
+	if p == nil {
+		return nil
+	}
+
 	res := ProductVariants{}
 	for _, item := range p {
-		res = append(res, item.DeepCopy())
+		if item != nil {
+			res = append(res, item.DeepCopy())
+		}
 	}
 
 	return res
@@ -170,6 +189,10 @@ func (p *ProductVariant) PreUpdate() {
 }
 
 func (p *ProductVariant) DeepCopy() *ProductVariant {
+	if p == nil {
+		return nil
+	}
+
 	res := *p
 
 	if p.Product != nil {

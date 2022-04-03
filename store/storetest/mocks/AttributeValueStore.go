@@ -81,29 +81,6 @@ func (_m *AttributeValueStore) ModelFields() []string {
 	return r0
 }
 
-// Save provides a mock function with given fields: _a0
-func (_m *AttributeValueStore) Save(_a0 *attribute.AttributeValue) (*attribute.AttributeValue, error) {
-	ret := _m.Called(_a0)
-
-	var r0 *attribute.AttributeValue
-	if rf, ok := ret.Get(0).(func(*attribute.AttributeValue) *attribute.AttributeValue); ok {
-		r0 = rf(_a0)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*attribute.AttributeValue)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*attribute.AttributeValue) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ScanFields provides a mock function with given fields: attributeValue
 func (_m *AttributeValueStore) ScanFields(attributeValue attribute.AttributeValue) []interface{} {
 	ret := _m.Called(attributeValue)
@@ -118,4 +95,27 @@ func (_m *AttributeValueStore) ScanFields(attributeValue attribute.AttributeValu
 	}
 
 	return r0
+}
+
+// Upsert provides a mock function with given fields: av
+func (_m *AttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+	ret := _m.Called(av)
+
+	var r0 *attribute.AttributeValue
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeValue) *attribute.AttributeValue); ok {
+		r0 = rf(av)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*attribute.AttributeValue)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*attribute.AttributeValue) error); ok {
+		r1 = rf(av)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

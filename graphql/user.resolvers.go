@@ -139,7 +139,7 @@ func (r *userResolver) DefaultShippingAddress(ctx context.Context, obj *gqlmodel
 
 	// checks if current user has right to perform this action
 	if session.UserId != obj.ID {
-		return nil, model.NewAppError("DefaultShippingAddress", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("DefaultShippingAddress", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 
 	if obj.DefaultShippingAddressID == nil || !model.IsValidId(*obj.DefaultShippingAddressID) {
@@ -160,7 +160,7 @@ func (r *userResolver) DefaultBillingAddress(ctx context.Context, obj *gqlmodel.
 	}
 	// checks if current user has right to perform this action
 	if session.UserId != obj.ID {
-		return nil, model.NewAppError("DefaultBillingAddress", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("DefaultBillingAddress", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 
 	if obj.DefaultBillingAddressID == nil || !model.IsValidId(*obj.DefaultBillingAddressID) {
@@ -182,7 +182,7 @@ func (r *userResolver) Addresses(ctx context.Context, obj *gqlmodel.User) ([]*gq
 	}
 	// check if current user has right to perform this action:
 	if session.UserId != obj.ID {
-		return nil, model.NewAppError("Addresses", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("Addresses", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 	addresses, AppErr := r.Srv().AccountService().AddressesByUserId(obj.ID)
 	if AppErr != nil {
@@ -253,7 +253,7 @@ func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.U
 		return nil, appErr
 	}
 	if session.UserId != obj.ID {
-		return nil, model.NewAppError("StoredPaymentSources", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("StoredPaymentSources", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 	// TODO: implement me
 	panic("not implemented")
@@ -266,7 +266,7 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 	}
 	// users can ONLY see their own wishlist
 	if session.UserId != obj.ID {
-		return nil, model.NewAppError("Wishlist", permissionDeniedId, nil, "", http.StatusUnauthorized)
+		return nil, model.NewAppError("Wishlist", PermissionDeniedId, nil, "", http.StatusUnauthorized)
 	}
 
 	wishList, appErr := r.Srv().WishlistService().WishlistByOption(&wishlist.WishlistFilterOption{

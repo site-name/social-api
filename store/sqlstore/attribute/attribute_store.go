@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -78,18 +79,46 @@ func (as *SqlAttributeStore) CreateIndexesIfNotExists() {
 	as.CreateIndexIfNotExists("idx_attributes_slug", store.AttributeTableName, "Slug")
 }
 
-// Save inserts given attribute into database then returns it
-func (as *SqlAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
-	attr.PreSave()
-	if err := attr.IsValid(); err != nil {
-		return nil, err
+// Upsert inserts or updates given attribute then returns it
+func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
+	var isSaving bool
+
+	if !model.IsValidId(attr.Id) {
+		attr.Id = ""
+		isSaving = true
 	}
 
-	if err := as.GetMaster().Insert(attr); err != nil {
+	var (
+		err        error
+		numUpdated int64
+	)
+
+	if isSaving {
+		attr.PreSave()
+		if err := attr.IsValid(); err != nil {
+			return nil, err
+		}
+
+		err = as.GetMaster().Insert(attr)
+	} else {
+		attr.PreUpdate()
+		if err := attr.IsValid(); err != nil {
+			return nil, err
+		}
+
+		numUpdated, err = as.GetMaster().Update(attr)
+	}
+
+	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeTableName, "slug", attr.Slug)
 		}
-		return nil, errors.Wrapf(err, "failed to save Attribute with attributeId=%s", attr.Id)
+
+		return nil, errors.Wrap(err, "failed to upsert attribute")
+	}
+
+	if numUpdated > 1 {
+		return nil, errors.Errorf("%d attribute(s) was/were updated instead of 1", numUpdated)
 	}
 
 	return attr, nil
@@ -172,10 +201,8 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 			return nil, err
 		}
 
-		var (
-			// attributesMap has keys are attribute ids
-			attributesMap = map[string]*attribute.Attribute{}
-		)
+		// attributesMap has keys are attribute ids
+		var attributesMap = map[string]*attribute.Attribute{}
 
 		for _, attr := range res {
 			attributesMap[attr.Id] = attr

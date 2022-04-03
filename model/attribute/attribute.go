@@ -94,7 +94,7 @@ type Attribute struct {
 	AvailableInGrid          bool    `json:"available_in_grid"`
 	model.ModelMetadata
 
-	AttributeValues `json:"-" db:"-"`
+	AttributeValues AttributeValues `json:"-" db:"-"`
 }
 
 type AttributeFilterOption struct {
@@ -184,11 +184,7 @@ func (a *Attribute) DeepCopy() *Attribute {
 	res := *a
 
 	res.ModelMetadata = *(a.ModelMetadata.DeepCopy())
-	res.AttributeValues = AttributeValues{}
-
-	for _, item := range a.AttributeValues {
-		res.AttributeValues = append(res.AttributeValues, item.DeepCopy())
-	}
+	res.AttributeValues = a.AttributeValues.DeepCopy()
 
 	return &res
 }

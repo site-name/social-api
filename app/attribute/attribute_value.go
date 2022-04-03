@@ -31,3 +31,22 @@ func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*at
 
 	return attrValues, nil
 }
+
+// UpsertAttributeValue insderts or updates given attribute value then returns it
+func (a *ServiceAttribute) UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError) {
+	attrValue, err := a.srv.Store.AttributeValue().Upsert(attrValue)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertAttributeValue", "app.attribute.error_upserting_attribute_value.app_error", nil, err.Error(), statusCode)
+	}
+
+	return attrValue, nil
+}

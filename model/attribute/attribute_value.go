@@ -24,7 +24,7 @@ type AttributeValue struct {
 	Id          string                `json:"id"`
 	Name        string                `json:"name"`
 	Value       string                `json:"value"`
-	Slug        string                `json:"slug"`
+	Slug        string                `json:"slug"` // unique
 	FileUrl     *string               `json:"file_url"`
 	ContentType *string               `json:"content_file"`
 	AttributeID string                `json:"attribute_id"`
@@ -55,6 +55,19 @@ func (a AttributeValues) IDs() []string {
 			res = append(res, item.Id)
 			meetMap[item.Id] = true
 		}
+	}
+
+	return res
+}
+
+func (a AttributeValues) DeepCopy() AttributeValues {
+	if a == nil {
+		return nil
+	}
+
+	res := AttributeValues{}
+	for _, item := range a {
+		res = append(res, item.DeepCopy())
 	}
 
 	return res

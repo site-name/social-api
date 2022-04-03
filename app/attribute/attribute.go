@@ -5,6 +5,8 @@
 package attribute
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -15,10 +17,6 @@ import (
 type ServiceAttribute struct {
 	srv *app.Server
 }
-
-const (
-	AttributeMissingErrID = "app.attribute.attribute_missing.app_error"
-)
 
 func init() {
 	app.RegisterAttributeService(func(s *app.Server) (sub_app_iface.AttributeService, error) {
@@ -32,7 +30,11 @@ func init() {
 func (a *ServiceAttribute) AttributeByID(id string) (*attribute.Attribute, *model.AppError) {
 	attr, err := a.srv.Store.Attribute().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AttributeByID", AttributeMissingErrID, err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AttributeByID", "app.attriute.error_finding_attribute_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return attr, nil
@@ -42,17 +44,55 @@ func (a *ServiceAttribute) AttributeByID(id string) (*attribute.Attribute, *mode
 func (a *ServiceAttribute) AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) {
 	attr, err := a.srv.Store.Attribute().GetBySlug(slug)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AttributeBySlug", AttributeMissingErrID, err)
+		var statusCode = http.StatusInternalServerError
+
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AttributeBySlug", "app.attribute.error_finding_attribute_by_slug.app_error", nil, err.Error(), statusCode)
 	}
+
 	return attr, nil
 }
 
 // AttributesByOption returns a list of attributes filtered using given options
 func (a *ServiceAttribute) AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError) {
 	attributes, err := a.srv.Store.Attribute().FilterbyOption(option)
+
+	var (
+		statusCode int = 0
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AttributesByOption", "app.attribute.error_finding_attributes_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(attributes) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("AttributesByOption", "app.attribute.error_finding_attributes_by_options.app_error", nil, errMsg, statusCode)
 	}
 
 	return attributes, nil
+}
+
+// UpsertAttribute inserts or updates given attribute and returns it
+func (s *ServiceAttribute) UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError) {
+	attr, err := s.srv.Store.Attribute().Upsert(attr)
+
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertAttribute", "app.attribute.error_upserting_attribute.app_error", nil, err.Error(), statusCode)
+	}
+
+	return attr, nil
 }

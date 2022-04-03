@@ -62,13 +62,13 @@ func (_m *ProductStore) FilterByOption(option *product_and_discount.ProductFilte
 	return r0, r1
 }
 
-// FilterByQuery provides a mock function with given fields: query, options
-func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
-	ret := _m.Called(query, options)
+// FilterByQuery provides a mock function with given fields: query
+func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
+	ret := _m.Called(query)
 
 	var r0 product_and_discount.Products
-	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder, *product_and_discount.ProductFilterByQueryOptions) product_and_discount.Products); ok {
-		r0 = rf(query, options)
+	if rf, ok := ret.Get(0).(func(squirrel.SelectBuilder) product_and_discount.Products); ok {
+		r0 = rf(query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(product_and_discount.Products)
@@ -76,8 +76,8 @@ func (_m *ProductStore) FilterByQuery(query squirrel.SelectBuilder, options *pro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(squirrel.SelectBuilder, *product_and_discount.ProductFilterByQueryOptions) error); ok {
-		r1 = rf(query, options)
+	if rf, ok := ret.Get(1).(func(squirrel.SelectBuilder) error); ok {
+		r1 = rf(query)
 	} else {
 		r1 = ret.Error(1)
 	}

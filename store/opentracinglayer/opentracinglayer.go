@@ -1949,16 +1949,16 @@ func (s *OpenTracingLayerAttributeStore) GetBySlug(slug string) (*attribute.Attr
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (s *OpenTracingLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.AttributeStore.Save(attr)
+	result, err := s.AttributeStore.Upsert(attr)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2111,16 +2111,16 @@ func (s *OpenTracingLayerAttributeValueStore) Get(attributeID string) (*attribut
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeValueStore) Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (s *OpenTracingLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Save")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.AttributeValueStore.Save(attribute)
+	result, err := s.AttributeValueStore.Upsert(av)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5584,7 +5584,7 @@ func (s *OpenTracingLayerProductStore) FilterByOption(option *product_and_discou
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
+func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.FilterByQuery")
 	s.Root.Store.SetContext(newCtx)
@@ -5593,7 +5593,7 @@ func (s *OpenTracingLayerProductStore) FilterByQuery(query squirrel.SelectBuilde
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.FilterByQuery(query, options)
+	result, err := s.ProductStore.FilterByQuery(query)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

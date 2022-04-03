@@ -254,7 +254,7 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		ScanFields(v attribute.Attribute) []interface{}
-		Save(attr *attribute.Attribute) (*attribute.Attribute, error)                         // Save insert given attribute into database then returns it with an error. Returned can be wither *AppError or *NewErrInvalidInput or system error
+		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
 		Get(id string) (*attribute.Attribute, error)                                          // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
 		GetBySlug(slug string) (*attribute.Attribute, error)                                  // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
 		FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) // FilterbyOption returns a list of attributes by given option
@@ -266,7 +266,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
-		Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error)                      // Save inserts given attribute value into database, then returns inserted value and an error
+		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}
@@ -608,7 +608,7 @@ type (
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder                                                                  // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-		FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error)           // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error)                                                                      // FilterByQuery finds and returns products with given query, limit, createdAtGt
 	}
 )
 

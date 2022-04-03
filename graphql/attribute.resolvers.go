@@ -7,7 +7,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/app"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
@@ -36,7 +38,168 @@ func (r *attributeResolver) WithChoices(ctx context.Context, obj *gqlmodel.Attri
 }
 
 func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.AttributeCreateInput) (*gqlmodel.AttributeCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("AttributeCreate", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// check if user has permission to proceed
+	var permission *model.Permission
+	if input.Type == gqlmodel.AttributeTypeEnumPageType {
+		permission = model.PermissionManagePageTypesAndAttributes
+	} else {
+		permission = model.PermissionManageProductTypesAndAttributes
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, permission) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, permission)
+	}
+
+	// validate input type & entity type are valid
+	if input.InputType != nil &&
+		*input.InputType == gqlmodel.AttributeInputTypeEnumReference &&
+		(input.EntityType == nil || !(*input.EntityType).IsValid()) {
+
+		return nil, model.NewAppError("AttributeCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.EntityType"}, "Entity type is required when REFERENCE input type is used", http.StatusBadRequest)
+	}
+
+	// clean attribute.
+	var slugValue string
+
+	if input.Slug != nil {
+		slugValue = *input.Slug
+	}
+	if slugValue == "" {
+		slugValue = slug.Make(input.Name)
+	}
+
+	// check if slug is unique,
+	// if not, generate a new one
+	for {
+		_, appErr := r.Srv().AttributeService().AttributeBySlug(slugValue)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
+			}
+
+			// this error means this slug is valid
+			break
+		}
+
+		slugValue = slugValue + "-" + model.NewId()
+	}
+
+	for key, value := range gqlmodel.ATTRIBUTE_PROPERTIES_CONFIGURATION {
+		if input.InputType != nil {
+
+			vl := input.GetValueByField(key)
+			vlValid := vl != nil
+
+			if vlValid {
+				switch t := vl.(type) {
+				case *bool:
+					vlValid = *t
+				case *int:
+					vlValid = *t != 0
+				}
+			}
+
+			if !gqlmodel.AttributeInputTypeEnumInSlice(*input.InputType, value...) && vlValid {
+				return nil, model.NewAppError("AttributeCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.InputType"}, "", http.StatusBadRequest)
+			}
+		}
+	}
+
+	// clean values
+	if len(input.Values) != 0 {
+
+		if input.InputType != nil &&
+			gqlmodel.AttributeInputTypeEnumInSlice(*input.InputType, gqlmodel.AttributeInputTypeEnumFile, gqlmodel.AttributeInputTypeEnumReference) &&
+			len(input.Values) != 0 {
+			return nil, model.NewAppError("AttributeCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.InputType, input.Values"}, fmt.Sprintf("Values cannot be used with input type %s", *input.InputType), http.StatusBadRequest)
+		}
+
+		for _, value := range input.Values {
+			if value != nil {
+				appErr = r.validateValue(*value, *input.InputType == gqlmodel.AttributeInputTypeEnumNumeric, *input.InputType == gqlmodel.AttributeInputTypeEnumSwatch)
+				if appErr != nil {
+					return nil, appErr
+				}
+			}
+		}
+	}
+
+	// construct instance
+	attr := &attribute.Attribute{
+		Name: input.Name,
+		Type: strings.ToLower(string(input.Type)),
+		Slug: slugValue,
+	}
+	if input.InputType != nil {
+		attr.InputType = strings.ToLower(string(*input.InputType))
+	}
+	if input.EntityType != nil {
+		attr.EntityType = model.NewString(strings.ToLower(string(*input.EntityType)))
+	}
+	if input.Unit != nil {
+		attr.Unit = model.NewString(strings.ToLower(string(*input.Unit)))
+	}
+	if input.ValueRequired != nil {
+		attr.ValueRequired = *input.ValueRequired
+	}
+	if input.IsVariantOnly != nil {
+		attr.IsVariantOnly = *input.IsVariantOnly
+	}
+	if input.VisibleInStorefront != nil {
+		attr.VisibleInStoreFront = *input.VisibleInStorefront
+	}
+	if input.FilterableInStorefront != nil {
+		attr.FilterableInStorefront = *input.FilterableInStorefront
+	}
+	if input.FilterableInDashboard != nil {
+		attr.FilterableInDashboard = *input.FilterableInDashboard
+	}
+	if input.StorefrontSearchPosition != nil {
+		attr.StorefrontSearchPosition = *input.StorefrontSearchPosition
+	}
+	if input.AvailableInGrid != nil {
+		attr.AvailableInGrid = *input.AvailableInGrid
+	}
+
+	savedAttr, appErr := r.Srv().AttributeService().UpsertAttribute(attr)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// create attribute values if input.Values is provided.
+	if len(input.Values) > 0 {
+		for _, value := range input.Values {
+
+			var aValue string
+			if value.Value != nil {
+				aValue = *value.Value
+			}
+
+			attrValue := &attribute.AttributeValue{
+				AttributeID: savedAttr.Id,
+
+				Name:        value.Name,
+				RichText:    value.RichText,
+				FileUrl:     value.FileURL,
+				ContentType: value.ContentType,
+				Value:       aValue,
+			}
+
+			_, appErr = r.Srv().AttributeService().UpsertAttributeValue(attrValue)
+			if appErr != nil {
+				return nil, appErr
+			}
+		}
+	}
+
+	return &gqlmodel.AttributeCreate{
+		Attribute: gqlmodel.ModelAttributeToGraphqlAttribute(savedAttr),
+	}, nil
 }
 
 func (r *mutationResolver) AttributeDelete(ctx context.Context, id string) (*gqlmodel.AttributeDelete, error) {
@@ -84,11 +247,6 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 }
 
 func (r *queryResolver) Attribute(ctx context.Context, id *string, slug *string) (*gqlmodel.Attribute, error) {
-	// validate if either arguments are provided
-	if id == nil && slug == nil {
-		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "'id', 'slug'"}, "", http.StatusBadRequest)
-	}
-
 	var (
 		attr   *attribute.Attribute
 		appErr *model.AppError

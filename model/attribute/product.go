@@ -11,6 +11,8 @@ type AttributeProduct struct {
 	AttributeID   string `json:"attribute_id"`    // to attribute.Attribute
 	ProductTypeID string `json:"product_type_id"` // to product.ProductType
 	model.Sortable
+
+	Attribute *Attribute `json:"-" db:"-"`
 }
 
 // AttributeProductFilterOption is used when finding an attributeProduct.
@@ -48,12 +50,25 @@ func (a *AttributeProduct) PreSave() {
 	}
 }
 
+func (a *AttributeProduct) DeepCopy() *AttributeProduct {
+	if a == nil {
+		return nil
+	}
+
+	res := *a
+	res.Attribute = a.Attribute.DeepCopy()
+	return &res
+}
+
 // Associate a product type attribute and selected values to a given product
 // ProductID unique with AssignmentID
 type AssignedProductAttribute struct {
 	Id           string `json:"id"`
 	ProductID    string `json:"product_id"`    // to product.Product
 	AssignmentID string `json:"assignment_id"` // to attribute.AttributeProduct
+
+	AttributeValues  AttributeValues   `json:"-" db:"-"`
+	AttributeProduct *AttributeProduct `json:"-" db:"-"`
 }
 
 type AssignedProductAttributes []*AssignedProductAttribute
@@ -99,6 +114,8 @@ func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
 	}
 
 	res := *a
+	res.AttributeValues = a.AttributeValues.DeepCopy()
+	res.AttributeProduct = a.AttributeProduct.DeepCopy()
 	return &res
 }
 

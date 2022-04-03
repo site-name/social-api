@@ -1872,10 +1872,10 @@ func (s *TimerLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute,
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (s *TimerLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeStore.Save(attr)
+	result, err := s.AttributeStore.Upsert(attr)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1883,7 +1883,7 @@ func (s *TimerLayerAttributeStore) Save(attr *attribute.Attribute) (*attribute.A
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -2016,10 +2016,10 @@ func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Save(attribute *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (s *TimerLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeValueStore.Save(attribute)
+	result, err := s.AttributeValueStore.Upsert(av)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2027,7 +2027,7 @@ func (s *TimerLayerAttributeValueStore) Save(attribute *attribute.AttributeValue
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -5136,10 +5136,10 @@ func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.Pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder, options *product_and_discount.ProductFilterByQueryOptions) (product_and_discount.Products, error) {
+func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.FilterByQuery(query, options)
+	result, err := s.ProductStore.FilterByQuery(query)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

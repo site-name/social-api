@@ -15,8 +15,8 @@ type Stock struct {
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
 
 	AvailableQuantity int                                  `json:"-" db:"-"` // this field will be populated in same queries
-	Warehouse         *WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
-	ProductVariant    *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
+	warehouse         *WareHouse                           `json:"-" db:"-"` // this foreign field is populated with select related data
+	productVariant    *product_and_discount.ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
 }
 
 // StockFilterForChannelOption is used by a filter function at store/sqlstore/channel/channel_store.go
@@ -156,13 +156,29 @@ func (s *Stock) PreUpdate() {
 func (s *Stock) DeepCopy() *Stock {
 	res := *s
 
-	if s.Warehouse != nil {
-		res.Warehouse = s.Warehouse.DeepCopy()
+	if s.warehouse != nil {
+		res.warehouse = s.warehouse.DeepCopy()
 	}
 
-	if s.ProductVariant != nil {
-		res.ProductVariant = s.ProductVariant.DeepCopy()
+	if s.productVariant != nil {
+		res.productVariant = s.productVariant.DeepCopy()
 	}
 
 	return &res
+}
+
+func (s *Stock) GetWarehouse() *WareHouse {
+	return s.warehouse
+}
+
+func (s *Stock) SetWarehouse(w *WareHouse) {
+	s.warehouse = w
+}
+
+func (s *Stock) GetProductVariant() *product_and_discount.ProductVariant {
+	return s.productVariant
+}
+
+func (s *Stock) SetProductVariant(p *product_and_discount.ProductVariant) {
+	s.productVariant = p
 }
