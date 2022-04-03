@@ -1824,6 +1824,22 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
+func (s *TimerLayerAttributeStore) Delete(id string) error {
+	start := timemodule.Now()
+
+	err := s.AttributeStore.Delete(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	start := timemodule.Now()
 

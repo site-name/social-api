@@ -215,3 +215,17 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 
 	return res, nil
 }
+
+func (as *SqlAttributeStore) Delete(id string) error {
+	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete attribute with id=%s", id)
+	}
+
+	numDeleted, _ := res.RowsAffected()
+	if numDeleted != 1 {
+		return errors.Errorf("%d attribute(s) was/were deleted instead of 1", numDeleted)
+	}
+
+	return nil
+}

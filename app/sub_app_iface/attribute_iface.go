@@ -51,4 +51,6 @@ type AttributeService interface {
   UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError)
   // UpsertAttributeValue insderts or updates given attribute value then returns it
   UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
+	// DeleteAttribute deletes from database attribute with given id
+	DeleteAttribute(id string) *model.AppError
 }

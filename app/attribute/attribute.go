@@ -96,3 +96,12 @@ func (s *ServiceAttribute) UpsertAttribute(attr *attribute.Attribute) (*attribut
 
 	return attr, nil
 }
+
+func (s *ServiceAttribute) DeleteAttribute(id string) *model.AppError {
+	err := s.srv.Store.Attribute().Delete(id)
+	if err != nil {
+		return model.NewAppError("DeleteAttribute", "app.attribute.error_deleting_attribute.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}

@@ -253,6 +253,7 @@ type (
 	AttributeStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
+		Delete(id string) error
 		ScanFields(v attribute.Attribute) []interface{}
 		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
 		Get(id string) (*attribute.Attribute, error)                                          // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error

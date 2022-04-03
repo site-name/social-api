@@ -203,7 +203,25 @@ func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.A
 }
 
 func (r *mutationResolver) AttributeDelete(ctx context.Context, id string) (*gqlmodel.AttributeDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("AttributeDelete", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageProductTypesAndAttributes) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageProductTypesAndAttributes)
+	}
+
+	appErr = r.Srv().AttributeService().DeleteAttribute(id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.AttributeDelete{
+		Attribute: &gqlmodel.Attribute{
+			ID: id,
+		},
+	}, nil
 }
 
 func (r *mutationResolver) AttributeUpdate(ctx context.Context, id string, input gqlmodel.AttributeUpdateInput) (*gqlmodel.AttributeUpdate, error) {
