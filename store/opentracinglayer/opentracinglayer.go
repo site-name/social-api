@@ -1931,34 +1931,16 @@ func (s *OpenTracingLayerAttributeStore) FilterbyOption(option *attribute.Attrib
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+func (s *OpenTracingLayerAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Get")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.AttributeStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetBySlug")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeStore.GetBySlug(slug)
+	result, err := s.AttributeStore.GetByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2091,6 +2073,24 @@ func (s *OpenTracingLayerAttributeProductStore) Save(attributeProduct *attribute
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerAttributeValueStore) Delete(id string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.AttributeValueStore.Delete(id)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {

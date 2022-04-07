@@ -4,9 +4,11 @@
 package sub_app_iface
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
+	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // CsvService contains methods for working with csv
@@ -20,7 +22,7 @@ type CsvService interface {
 	// ExportFileById returns an export file found by given id
 	ExportFileById(id string) (*csv.ExportFile, *model.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products
-	ExportProducts(exportFile *csv.ExportFile, exportProductsInput *gqlmodel.ExportProductsInput, delimeter string) *model.AppError
+	ExportProducts(input *gqlmodel.ExportProductsInput, delimeter string) *model.AppError
 	// Get export fields, all headers and headers mapping.
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.
@@ -49,5 +51,6 @@ type CsvService interface {
 	//
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
-	GetProductsData()
+	GetProductsData(products product_and_discount.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string)
+	ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo gqlmodel.ExportInfoInput, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError
 }

@@ -124,34 +124,7 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 	return attr, nil
 }
 
-func (as *SqlAttributeStore) Get(id string) (*attribute.Attribute, error) {
-	var res attribute.Attribute
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("Attribute", id)
-		}
-		return nil, errors.Wrapf(err, "failed to get Attribute with Id=%s", id)
-	}
-
-	return &res, nil
-}
-
-func (as *SqlAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
-	var attr *attribute.Attribute
-	err := as.GetReplica().SelectOne(&attr, "SELECT * FROM "+store.AttributeTableName+" WHERE Slug = :Slug", map[string]interface{}{"Slug": slug})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributeTableName, "slug="+slug)
-		}
-		return nil, errors.Wrapf(err, "failed to find attribute with slug=%s", slug)
-	}
-
-	return attr, nil
-}
-
-// FilterbyOption returns a list of attributes by given option
-func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
+func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields()...).
 		From(store.AttributeTableName).
@@ -181,21 +154,57 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 			Where(option.ProductVariantTypes)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query.ToSql()
+}
+
+func (as *SqlAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
+	queryString, args, err := as.commonQueryBuilder(option)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	var res attribute.Attribute
+	err = as.GetReplica().SelectOne(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.AttributeTableName, "options")
+		}
+		return nil, errors.Wrap(err, "failed to find attribute by option")
+	}
+
+	// check if we need to prefetch related attribute values of found attributes
+	if option.PrefetchRelatedAttributeValues {
+		attributeValues, err := as.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": res.Id},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		res.AttributeValues = attributeValues
+	}
+
+	return &res, nil
+}
+
+// FilterbyOption returns a list of attributes by given option
+func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
+
+	queryString, args, err := as.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var res attribute.Attributes
-	_, err = as.GetReplica().Select(&res, queryString, args...)
+	var attributes attribute.Attributes
+	_, err = as.GetReplica().Select(&attributes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
 	}
 
 	// check if we need to prefetch related attribute values of found attributes
-	if option.PrefetchRelatedAttributeValues && len(res) > 0 {
+	if option.PrefetchRelatedAttributeValues && len(attributes) > 0 {
 		attributeValues, err := as.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": res.IDs()},
+			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributes.IDs()},
 		})
 		if err != nil {
 			return nil, err
@@ -204,7 +213,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 		// attributesMap has keys are attribute ids
 		var attributesMap = map[string]*attribute.Attribute{}
 
-		for _, attr := range res {
+		for _, attr := range attributes {
 			attributesMap[attr.Id] = attr
 		}
 
@@ -213,16 +222,16 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 		}
 	}
 
-	return res, nil
+	return attributes, nil
 }
 
 func (as *SqlAttributeStore) Delete(id string) error {
-	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	result, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete attribute with id=%s", id)
 	}
 
-	numDeleted, _ := res.RowsAffected()
+	numDeleted, _ := result.RowsAffected()
 	if numDeleted != 1 {
 		return errors.Errorf("%d attribute(s) was/were deleted instead of 1", numDeleted)
 	}

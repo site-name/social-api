@@ -28,10 +28,6 @@ type AttributeService interface {
 	//
 	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
 	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError)
-	// AttributeByID returns an attribute with given id
-	AttributeByID(id string) (*attribute.Attribute, *model.AppError)
-	// AttributeBySlug returns an attribute with given slug
-	AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError)
 	// AttributePageByOption returns an attribute page filtered using given option
 	AttributePageByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, *model.AppError)
 	// AttributeProductByOption returns an attribute product filtered using given option
@@ -46,11 +42,13 @@ type AttributeService interface {
 	GetOrCreateAssignedProductAttribute(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, *model.AppError)
 	// GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
 	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, *model.AppError)
-	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
 	// UpsertAttribute inserts or updates given attribute and returns it
-  UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError)
-  // UpsertAttributeValue insderts or updates given attribute value then returns it
-  UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
-	// DeleteAttribute deletes from database attribute with given id
+	UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError)
+	// UpsertAttributeValue insderts or updates given attribute value then returns it
+	UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
+	AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError)
+	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
 	DeleteAttribute(id string) *model.AppError
+	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)
+	NewReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering
 }

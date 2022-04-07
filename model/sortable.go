@@ -5,7 +5,7 @@ import (
 )
 
 type Sortable struct {
-	SortOrder int `json:"sort_order"`
+	SortOrder *int `json:"sort_order"`
 }
 
 type Publishable struct {

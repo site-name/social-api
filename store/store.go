@@ -256,8 +256,7 @@ type (
 		Delete(id string) error
 		ScanFields(v attribute.Attribute) []interface{}
 		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
-		Get(id string) (*attribute.Attribute, error)                                          // Get try finding an attribute with given id then returns it with an error. Returned error can be either *store.ErrNotFound or system error
-		GetBySlug(slug string) (*attribute.Attribute, error)                                  // GetBySlug finds an attribute with given slug, then returns it with an error. Returned error can be wither *ErrNotFound or system error
+		GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error)    // GetByOption finds and returns 1 attribute
 		FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) // FilterbyOption returns a list of attributes by given option
 	}
 	AttributeTranslationStore interface {
@@ -267,6 +266,7 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
+		Delete(id string) error
 		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options

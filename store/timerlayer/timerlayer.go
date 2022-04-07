@@ -1856,10 +1856,10 @@ func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFil
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+func (s *TimerLayerAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeStore.Get(id)
+	result, err := s.AttributeStore.GetByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1867,23 +1867,7 @@ func (s *TimerLayerAttributeStore) Get(id string) (*attribute.Attribute, error) 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeStore.GetBySlug(slug)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetBySlug", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetByOption", success, elapsed)
 	}
 	return result, err
 }
@@ -1998,6 +1982,22 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerAttributeValueStore) Delete(id string) error {
+	start := timemodule.Now()
+
+	err := s.AttributeValueStore.Delete(id)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {

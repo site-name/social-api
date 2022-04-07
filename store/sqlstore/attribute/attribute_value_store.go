@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
@@ -130,6 +131,11 @@ func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, err
 
 // FilterByOptions finds and returns all matched attribute values based on given options
 func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+	var executor gorp.SqlExecutor = as.GetReplica()
+	if options.Transaction != nil {
+		executor = options.Transaction
+	}
+
 	selectFields := as.ModelFields()
 	if options.SelectRelatedAttribute {
 		selectFields = append(selectFields, as.Attribute().ModelFields()...)
@@ -139,6 +145,13 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 		Select(selectFields...).
 		From(store.AttributeValueTableName)
 
+	// parse options
+	if options.SelectForUpdate {
+		query = query.Suffix("FOR UPDATE")
+	}
+	if options.OrderBy != "" {
+		query = query.OrderBy(options.OrderBy)
+	}
 	if options.SelectRelatedAttribute {
 		query = query.InnerJoin(store.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
 	}
@@ -155,7 +168,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 		}
 	}
 
-	rows, err := query.RunWith(as.GetReplica()).Query()
+	rows, err := query.RunWith(executor).Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute values")
 	}
@@ -179,7 +192,9 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 
 		// don't worry when we assign directly value here.
 		// The Attribute will be deep copied later
-		attributeValue.Attribute = &attr
+		if options.SelectRelatedAttribute {
+			attributeValue.Attribute = &attr
+		}
 
 		res = append(res, attributeValue.DeepCopy())
 	}
@@ -189,4 +204,18 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 	}
 
 	return res, nil
+}
+
+func (as *SqlAttributeValueStore) Delete(id string) error {
+	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete attribute value with id=%s", id)
+	}
+
+	numDeleted, _ := res.RowsAffected()
+	if numDeleted != 1 {
+		return errors.Errorf("%d attribute value(s) was/were deleted instead of 1", numDeleted)
+	}
+
+	return nil
 }

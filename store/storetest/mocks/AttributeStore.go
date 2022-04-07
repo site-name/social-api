@@ -19,6 +19,20 @@ func (_m *AttributeStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
+// Delete provides a mock function with given fields: id
+func (_m *AttributeStore) Delete(id string) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FilterbyOption provides a mock function with given fields: option
 func (_m *AttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
 	ret := _m.Called(option)
@@ -42,13 +56,13 @@ func (_m *AttributeStore) FilterbyOption(option *attribute.AttributeFilterOption
 	return r0, r1
 }
 
-// Get provides a mock function with given fields: id
-func (_m *AttributeStore) Get(id string) (*attribute.Attribute, error) {
-	ret := _m.Called(id)
+// GetByOption provides a mock function with given fields: option
+func (_m *AttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
+	ret := _m.Called(option)
 
 	var r0 *attribute.Attribute
-	if rf, ok := ret.Get(0).(func(string) *attribute.Attribute); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeFilterOption) *attribute.Attribute); ok {
+		r0 = rf(option)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*attribute.Attribute)
@@ -56,31 +70,8 @@ func (_m *AttributeStore) Get(id string) (*attribute.Attribute, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetBySlug provides a mock function with given fields: slug
-func (_m *AttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
-	ret := _m.Called(slug)
-
-	var r0 *attribute.Attribute
-	if rf, ok := ret.Get(0).(func(string) *attribute.Attribute); ok {
-		r0 = rf(slug)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*attribute.Attribute)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(slug)
+	if rf, ok := ret.Get(1).(func(*attribute.AttributeFilterOption) error); ok {
+		r1 = rf(option)
 	} else {
 		r1 = ret.Error(1)
 	}

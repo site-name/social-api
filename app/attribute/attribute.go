@@ -26,30 +26,15 @@ func init() {
 	})
 }
 
-// AttributeByID returns an attribute with given id
-func (a *ServiceAttribute) AttributeByID(id string) (*attribute.Attribute, *model.AppError) {
-	attr, err := a.srv.Store.Attribute().Get(id)
+func (a *ServiceAttribute) AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError) {
+	attr, err := a.srv.Store.Attribute().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("AttributeByID", "app.attriute.error_finding_attribute_by_id.app_error", nil, err.Error(), statusCode)
-	}
 
-	return attr, nil
-}
-
-// AttributeBySlug returns an attribute with given slug
-func (a *ServiceAttribute) AttributeBySlug(slug string) (*attribute.Attribute, *model.AppError) {
-	attr, err := a.srv.Store.Attribute().GetBySlug(slug)
-	if err != nil {
-		var statusCode = http.StatusInternalServerError
-
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("AttributeBySlug", "app.attribute.error_finding_attribute_by_slug.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("AttributeByOption", "app.attribute.error_finding_attribute_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return attr, nil

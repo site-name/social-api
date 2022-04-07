@@ -8,6 +8,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -43,6 +44,10 @@ type AttributeValueFilterOptions struct {
 	Extra                  squirrel.Sqlizer
 	All                    bool // if true, select all attribute values, ignore other options
 	SelectRelatedAttribute bool
+
+	Transaction     *gorp.Transaction
+	OrderBy         string
+	SelectForUpdate bool
 }
 
 type AttributeValues []*AttributeValue

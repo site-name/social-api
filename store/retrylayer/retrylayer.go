@@ -2007,31 +2007,11 @@ func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFil
 
 }
 
-func (s *RetryLayerAttributeStore) Get(id string) (*attribute.Attribute, error) {
+func (s *RetryLayerAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAttributeStore) GetBySlug(slug string) (*attribute.Attribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeStore.GetBySlug(slug)
+		result, err := s.AttributeStore.GetByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -2182,6 +2162,26 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeValueStore) Delete(id string) error {
+
+	tries := 0
+	for {
+		err := s.AttributeValueStore.Delete(id)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

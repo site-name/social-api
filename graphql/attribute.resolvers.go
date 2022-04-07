@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/app"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/store"
 )
 
 func (r *attributeResolver) ProductTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
@@ -245,7 +247,21 @@ func (r *mutationResolver) AttributeValueCreate(ctx context.Context, attribute s
 }
 
 func (r *mutationResolver) AttributeValueDelete(ctx context.Context, id string) (*gqlmodel.AttributeValueDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("AttributeValueDelete", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageProductTypesAndAttributes) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageProductTypesAndAttributes)
+	}
+
+	err := r.Srv().Store.AttributeValue().Delete(id)
+	if err != nil {
+		return nil, model.NewAppError("AttributeValueDelete", "app.attribute.error_deleting_attribute_value.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil, nil
 }
 
 func (r *mutationResolver) AttributeValueUpdate(ctx context.Context, id string, input gqlmodel.AttributeValueUpdateInput) (*gqlmodel.AttributeValueUpdate, error) {
@@ -265,21 +281,19 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 }
 
 func (r *queryResolver) Attribute(ctx context.Context, id *string, slug *string) (*gqlmodel.Attribute, error) {
-	var (
-		attr   *attribute.Attribute
-		appErr *model.AppError
-	)
-
-	// check if `id` is provided correctly:
+	option := &attribute.AttributeFilterOption{}
 	if id != nil && model.IsValidId(*id) {
-		attr, appErr = r.Srv().AttributeService().AttributeByID(*id)
-	} else if slug != nil {
-		attr, appErr = r.Srv().AttributeService().AttributeBySlug(*slug)
+		option.Id = squirrel.Eq{store.AttributeTableName + ".Id": *id}
+	}
+	if slug != nil {
+		option.Slug = squirrel.Eq{store.AttributeTableName + ".Slug": *slug}
 	}
 
+	attr, appErr := r.Srv().AttributeService().AttributeByOption(option)
 	if appErr != nil {
 		return nil, appErr
 	}
+
 	return gqlmodel.ModelAttributeToGraphqlAttribute(attr), nil
 }
 
