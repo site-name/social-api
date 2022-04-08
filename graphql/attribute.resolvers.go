@@ -78,7 +78,9 @@ func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.A
 	// check if slug is unique,
 	// if not, generate a new one
 	for {
-		_, appErr := r.Srv().AttributeService().AttributeBySlug(slugValue)
+		_, appErr := r.Srv().AttributeService().AttributeByOption(&attribute.AttributeFilterOption{
+			Slug: squirrel.Eq{store.AttributeTableName + ".Slug": slugValue},
+		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, appErr
@@ -273,7 +275,51 @@ func (r *mutationResolver) AttributeValueTranslate(ctx context.Context, id strin
 }
 
 func (r *mutationResolver) AttributeReorderValues(ctx context.Context, attributeID string, moves []*gqlmodel.ReorderInput) (*gqlmodel.AttributeReorderValues, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("AttributeReorderValues", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageProductTypesAndAttributes) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageProductTypesAndAttributes)
+	}
+
+	// check if an attribute with given id does really exist
+	attr, appErr := r.Srv().AttributeService().AttributeByOption(&attribute.AttributeFilterOption{
+		Id: squirrel.Eq{store.AttributeTableName + ".Id": attributeID},
+
+		PrefetchRelatedAttributeValues: true, //
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// operations has keys are attribute value ids
+	var operations = map[string]*int{}
+	for _, value := range attr.AttributeValues {
+		if value != nil {
+			operations[value.Id] = nil
+		}
+	}
+
+	for _, moveInfo := range moves {
+		_, exist := operations[moveInfo.ID]
+		if !exist {
+			return nil, model.NewAppError("AttributeReorderValues", "graphql.attribute.error_resolving_an_attribute_value.app_error", nil, "Couldn't resolve to an attribute value: Id="+moveInfo.ID, http.StatusNotFound)
+		}
+
+		operations[moveInfo.ID] = moveInfo.SortOrder
+	}
+
+	appErr = r.Srv().AttributeService().PerformReordering(attr.AttributeValues, operations)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// TODO: consider if we need to refetching attribute value from database
+	return &gqlmodel.AttributeReorderValues{
+		Attribute: gqlmodel.ModelAttributeToGraphqlAttribute(attr),
+	}, nil
 }
 
 func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.AttributeFilterInput, sortBy *gqlmodel.AttributeSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.AttributeCountableConnection, error) {

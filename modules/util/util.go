@@ -179,12 +179,14 @@ func IntInSlice(a int, slice []int) bool {
 
 // RemoveStringFromSlice removes the first occurrence of a from slice.
 func RemoveStringFromSlice(a string, slice []string) []string {
-	for i, str := range slice {
-		if str == a {
-			return append(slice[:i], slice[i+1:]...)
+	res := []string{}
+
+	for _, str := range slice {
+		if str != a {
+			res = append(res, str)
 		}
 	}
-	return slice
+	return res
 }
 
 // RemoveStringsFromSlice removes all occurrences of strings from slice.

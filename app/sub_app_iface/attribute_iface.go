@@ -50,5 +50,5 @@ type AttributeService interface {
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
 	DeleteAttribute(id string) *model.AppError
 	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)
-	NewReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering
+	PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError
 }

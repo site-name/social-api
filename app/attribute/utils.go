@@ -186,13 +186,9 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 //
 //  +) *Page           - *AssignedPageAttribute
 func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
-	// validate if `instance` and `assignment` are provided accordingly:
-	invalidArgumentErrorHandler := func(field string) *model.AppError {
-		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": field}, "", http.StatusBadRequest)
-	}
 
 	if instance == nil || assignment == nil || len(valueIDs) == 0 {
-		return invalidArgumentErrorHandler("assignment or instance or valuesIDs")
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment or instance or valuesIDs"}, "", http.StatusBadRequest)
 	}
 
 	switch instance.(type) {
@@ -201,14 +197,14 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			assignedProductAttrValues, attrValues, err := a.srv.Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
-				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_product_attribute_values_for_sort.app_error", err)
+				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_product_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedProductAttrValues) == len(attrValues)
 			sort.Slice(assignedProductAttrValues, func(i, j int) bool {
 				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
 			})
 			for i, value := range assignedProductAttrValues {
-				value.SortOrder = i
+				value.SortOrder = &i
 			}
 			// update if database:
 			if err = a.srv.Store.AssignedProductAttributeValue().UpdateInBulk(assignedProductAttrValues); err != nil {
@@ -216,20 +212,21 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return invalidArgumentErrorHandler("assignment")
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
+
 	case *product_and_discount.ProductVariant:
 		if assignmentValue, ok := assignment.(*attribute.AssignedVariantAttribute); ok {
 			assignedVariantAttrValues, attrValues, err := a.srv.Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
-				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_variant_attribute_values_for_sort.app_error", err)
+				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_variant_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedVariantAttrValues) == len(attrValues)
 			sort.Slice(assignedVariantAttrValues, func(i, j int) bool {
 				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
 			})
 			for i, value := range assignedVariantAttrValues {
-				value.SortOrder = i
+				value.SortOrder = &i
 			}
 			// update if database:
 			if err = a.srv.Store.AssignedVariantAttributeValue().UpdateInBulk(assignedVariantAttrValues); err != nil {
@@ -237,20 +234,21 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return invalidArgumentErrorHandler("assignment")
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
+
 	case *page.Page:
 		if assignmentValue, ok := assignment.(*attribute.AssignedPageAttribute); ok {
 			assignedPageAttrValues, attrValues, err := a.srv.Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
-				return store.AppErrorFromDatabaseLookupError("sortAssignedAttributeValues", "app.attribute.select_assigned_page_attribute_values_for_sort.app_error", err)
+				return model.NewAppError("sortAssignedAttributeValues", "app.attribute.select_assigned_page_attribute_values_for_sort.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			// NOTE: this sort can be done since len(assignedPageAttrValues) == len(attrValues)
 			sort.Slice(assignedPageAttrValues, func(i, j int) bool {
 				return sort.SearchStrings(valueIDs, attrValues[i].Id) <= sort.SearchStrings(valueIDs, attrValues[j].Id)
 			})
 			for i, value := range assignedPageAttrValues {
-				value.SortOrder = i
+				value.SortOrder = &i
 			}
 			// update if database:
 			if err = a.srv.Store.AssignedPageAttributeValue().UpdateInBulk(assignedPageAttrValues); err != nil {
@@ -258,9 +256,9 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 			}
 		}
 		// other types are not accepted and returns an error:
-		return invalidArgumentErrorHandler("assignment")
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
 	default:
-		return invalidArgumentErrorHandler("instance")
+		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 }

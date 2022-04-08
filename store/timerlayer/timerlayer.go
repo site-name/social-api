@@ -1984,6 +1984,22 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 	return result, err
 }
 
+func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.BulkUpsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeValueStore) Delete(id string) error {
 	start := timemodule.Now()
 

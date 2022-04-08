@@ -219,3 +219,53 @@ func (as *SqlAttributeValueStore) Delete(id string) error {
 
 	return nil
 }
+
+func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+	var executor gorp.SqlExecutor = as.GetMaster()
+	if transaction != nil {
+		executor = transaction
+	}
+
+	for _, value := range values {
+
+		var (
+			isSaving   bool
+			err        error
+			numUpdated int64
+		)
+
+		if !model.IsValidId(value.Id) {
+			isSaving = true
+			value.Id = ""
+		}
+
+		if isSaving {
+			value.PreSave()
+			if err := value.IsValid(); err != nil {
+				return nil, err
+			}
+
+			err = executor.Insert(value)
+		} else {
+			value.PreUpdate()
+			if err := value.IsValid(); err != nil {
+				return nil, err
+			}
+
+			numUpdated, err = executor.Update(value)
+		}
+
+		if err != nil {
+			if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
+				return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+value.AttributeID)
+			}
+			return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", value.Id)
+		}
+
+		if numUpdated != 1 {
+			return nil, errors.Errorf("%d attribute value(1) was/were updated instead of 1", numUpdated)
+		}
+	}
+
+	return values, nil
+}

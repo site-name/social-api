@@ -47,7 +47,7 @@ type AttributeValueFilterOptions struct {
 
 	Transaction     *gorp.Transaction
 	OrderBy         string
-	SelectForUpdate bool
+	SelectForUpdate bool // is true, add `FOR UPDATE` suffic to the end of sql query
 }
 
 type AttributeValues []*AttributeValue

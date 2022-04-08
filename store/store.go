@@ -268,6 +268,7 @@ type (
 		ModelFields() []string
 		Delete(id string) error
 		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
+		BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}

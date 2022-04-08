@@ -2,11 +2,14 @@ package attribute
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -73,6 +76,24 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *attribute.AttributeVa
 	return attrValue, nil
 }
 
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError) {
+	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("BulkUpsertAttributeValue", "app.attribute.error_upserting_attribute_values.app_error", nil, err.Error(), statusCode)
+	}
+
+	return values, nil
+}
+
 type Reordering struct {
 	Values     attribute.AttributeValues
 	Operations map[string]*int
@@ -83,6 +104,9 @@ type Reordering struct {
 	// actually were changed
 	OldSortMap map[string]*int
 
+	cachedOrderedNodeMap  map[string]*int
+	cachedAttributeValues attribute.AttributeValues
+
 	// Will contain the list of keys kept
 	// in correct order in accordance to their sort order
 	OrderedPKs []string
@@ -91,7 +115,7 @@ type Reordering struct {
 	runned bool
 }
 
-func (s *ServiceAttribute) NewReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering {
+func (s *ServiceAttribute) newReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering {
 	return &Reordering{
 		Values:     values,
 		Operations: operations,
@@ -100,7 +124,7 @@ func (s *ServiceAttribute) NewReordering(values attribute.AttributeValues, opera
 	}
 }
 
-func (r *Reordering) OrderedNodeMap(transaction *gorp.Transaction) (map[string]*int, *model.AppError) {
+func (r *Reordering) orderedNodeMap(transaction *gorp.Transaction) (map[string]*int, *model.AppError) {
 	if !r.runned { // check if runned or not
 		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(attribute.AttributeValueFilterOptions{
 			Transaction:     transaction,
@@ -112,7 +136,11 @@ func (r *Reordering) OrderedNodeMap(transaction *gorp.Transaction) (map[string]*
 			return nil, appErr
 		}
 
-		var orderingMap = map[string]*int{}
+		// cached
+		r.cachedAttributeValues = attributeValues
+
+		// orderingMap has keys are attribute value ids
+		var orderingMap = make(map[string]*int)
 		for _, value := range attributeValues {
 			orderingMap[value.Id] = value.SortOrder
 		}
@@ -128,9 +156,9 @@ func (r *Reordering) OrderedNodeMap(transaction *gorp.Transaction) (map[string]*
 		previousSortOrder := 0
 
 		// Add sort order to null values
-		for key, value := range orderingMap {
-			if value != nil {
-				previousSortOrder = *value
+		for key, sortOrder := range orderingMap {
+			if sortOrder != nil {
+				previousSortOrder = *sortOrder
 				continue
 			}
 
@@ -139,17 +167,46 @@ func (r *Reordering) OrderedNodeMap(transaction *gorp.Transaction) (map[string]*
 			orderingMap[key] = &i
 		}
 
+		// cache
+		r.cachedOrderedNodeMap = make(map[string]*int)
+		for key, value := range orderingMap {
+			r.cachedOrderedNodeMap[key] = value
+		}
 		// indicate runned
 		r.runned = true
 
 		return orderingMap, nil
 	}
 
-	return r.OldSortMap, nil
+	return r.cachedOrderedNodeMap, nil
 }
 
-func (s *Reordering) ProcessMoveOperation(pk string, move *int) {
-	oldSortOrder, _ := s.OrderedNodeMap(nil)
+func (r *Reordering) calculateNewSortOrder(pk string, move int) (int, int, int) {
+	// Retrieve the position of the node to move
+	nodePos := sort.SearchStrings(r.OrderedPKs, pk)
+
+	// Set the target position from the current position
+	// of the node + the relative position to move from
+	targetPos := nodePos + move
+
+	// Make sure we are not getting out of bounds
+	targetPos = util.Max(0, targetPos)
+	targetPos = util.Min(len(r.OrderedPKs)-1, targetPos)
+
+	// Retrieve the target node and its sort order
+	var (
+		targetPk          = r.OrderedPKs[targetPos]
+		orderedNodeMap, _ = r.orderedNodeMap(nil)
+		targetPosition    = orderedNodeMap[targetPk]
+	)
+
+	// Return the new position
+	return nodePos, targetPos, *targetPosition
+}
+
+func (s *Reordering) processMoveOperation(pk string, move *int) {
+	m, _ := s.orderedNodeMap(nil)
+	oldSortOrder := m[pk]
 
 	// skip if nothing to do
 	if move != nil && *move == 0 {
@@ -159,12 +216,83 @@ func (s *Reordering) ProcessMoveOperation(pk string, move *int) {
 		move = model.NewInt(1)
 	}
 
+	_, targetPos, newSortOrder := s.calculateNewSortOrder(pk, *move) // move is non-nil now
+
+	// Determine how we should shift for this operation
+	var (
+		shift  int
+		range_ []int
+	)
+	if *move > 0 {
+		shift = -1
+		range_ = []int{*oldSortOrder + 1, newSortOrder}
+	} else {
+		shift = 1
+		range_ = []int{newSortOrder, *oldSortOrder - 1}
+	}
+
+	// Shift the sort orders within the moving range
+	s.addToSortValueIfInRange(shift, range_[0], range_[1])
+
+	// Update the sort order of the node to move
+	s.cachedOrderedNodeMap[pk] = &newSortOrder
+
+	// Reorder the pk list
+	s.OrderedPKs = util.RemoveStringFromSlice(pk, s.OrderedPKs)
+	s.OrderedPKs = append( // <=> list.insert() in python3
+		s.OrderedPKs[0:targetPos],
+		append(
+			[]string{pk},
+			s.OrderedPKs[targetPos:]...,
+		)...,
+	)
+}
+
+func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int) {
+	orderedNodeMap, _ := r.orderedNodeMap(nil)
+	for pk, sortOrder := range orderedNodeMap {
+		if sortOrder != nil {
+			if !(start <= *sortOrder && *sortOrder <= end) {
+				continue
+			}
+
+			r.cachedOrderedNodeMap[pk] = model.NewInt(valueToAdd + *sortOrder)
+		}
+	}
+}
+
+func (r *Reordering) commit(transaction *gorp.Transaction) *model.AppError {
+	if len(r.OldSortMap) == 0 {
+		return nil
+	}
+
+	var attributeValuesMap = make(map[string]*attribute.AttributeValue)
+	for _, item := range r.cachedAttributeValues {
+		attributeValuesMap[item.Id] = item
+	}
+
+	changed := false
+
+	orderedNodeMap, _ := r.orderedNodeMap(nil)
+	for pk, sortOrder := range orderedNodeMap {
+		if sortOrder != nil && r.OldSortMap[pk] != nil && *sortOrder != *(r.OldSortMap[pk]) {
+			changed = true
+			attributeValuesMap[pk].SortOrder = sortOrder
+		}
+	}
+
+	if !changed {
+		return nil
+	}
+
+	_, appErr := r.s.BulkUpsertAttributeValue(transaction, r.cachedAttributeValues)
+	return appErr
 }
 
 func (r *Reordering) Run(transaction *gorp.Transaction) *model.AppError {
-	for key, value := range r.Operations {
+	for key, move := range r.Operations {
 		// skip operation if it was deleted in concurrence
-		orderedNodeMap, appErr := r.OrderedNodeMap(transaction)
+		orderedNodeMap, appErr := r.orderedNodeMap(transaction)
 		if appErr != nil {
 			return appErr
 		}
@@ -173,6 +301,33 @@ func (r *Reordering) Run(transaction *gorp.Transaction) *model.AppError {
 			continue
 		}
 
-		r.ProcessMoveOperation(key, value)
+		r.processMoveOperation(key, move)
 	}
+
+	appErr := r.commit(transaction)
+	if appErr != nil {
+		return appErr
+	}
+
+	return nil
+}
+
+func (s *ServiceAttribute) PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError {
+	transaction, err := s.srv.Store.GetMaster().Begin()
+	if err != nil {
+		return model.NewAppError("PerformReordering", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer s.srv.Store.FinalizeTransaction(transaction)
+
+	appErr := s.newReordering(values, operations, "moves").Run(transaction)
+	if appErr != nil {
+		return appErr
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return model.NewAppError("PerformReordering", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

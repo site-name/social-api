@@ -2167,6 +2167,26 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 
 }
 
+func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeValueStore) Delete(id string) error {
 
 	tries := 0
