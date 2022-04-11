@@ -181,13 +181,13 @@ new-migration: migration-prereqs ## Creates a new migration
 	@echo "When you are done writing your migration, run 'make migrations'"
 
 migrations-bindata: ## Generates bindata migrations
-	$(GO) get -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
+	$(GO) get -d -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
 
 	@echo Generating bindata for migrations
 	$(GO) generate $(GOFLAGS) ./db/migrations/
 
 filestore-mocks: ## Creates mock files.
-	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
+	$(GO) get -d -modfile=go.tools.mod github.com/vektra/mockery/...
 	$(GOBIN)/mockery -dir modules/filestore -all -output modules/filestore/mocks -note 'Regenerate this file using `make filestore-mocks`.'
 
 einterfaces-mocks: ## Creates mock files for einterfaces.
@@ -206,13 +206,13 @@ gen-serialized: ## Generates serialization methods for hot structs
 	# identifiers will be resolved. An alternative to remove the warnings
 	# would be to temporarily move all the structs to the same file,
 	# but that involves a lot of manual work.
-	$(GO) get -modfile=go.tools.mod github.com/tinylib/msgp
+	$(GO) get -d -modfile=go.tools.mod github.com/tinylib/msgp
 	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
 	$(GOBIN)/msgp -file=./model/account/user.go -tests=false -o=./model/account/user_serial_gen.go
 
 gqlgen:
-	$(GO) get -modfile=go.tools.mod github.com/99designs/gqlgen@v0.13.0
-	$(GO) get -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
+	$(GO) get -d -modfile=go.tools.mod github.com/99designs/gqlgen@v0.13.0
+	$(GO) get -d -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
 
 	$(GOBIN)/gqlgen
 	@echo Gqlgen has done generating.
@@ -234,7 +234,7 @@ server:
 	$(GO) run cmd/sitename/main.go server
 
 store-mocks: ## Creates mock files.
-	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
+	$(GO) get -d -modfile=go.tools.mod github.com/vektra/mockery/...
 	$(GOBIN)/mockery -dir store -all -output store/storetest/mocks -note 'Regenerate this file using `make store-mocks`.'
 
 dataloaders:

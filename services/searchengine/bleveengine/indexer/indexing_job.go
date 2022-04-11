@@ -1,16 +1,15 @@
-package ebleveengine
+package indexer
 
 import (
 	"context"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/jobs"
-	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
 )
@@ -24,46 +23,43 @@ const (
 	EstimatedUserCount    = 10000
 )
 
-func init() {
-	app.RegisterJobsBleveIndexerInterface(func(s *app.Server) tjobs.IndexerJobInterface {
-		return &BleveIndexerInterfaceImpl{s}
-	})
-}
-
-type BleveIndexerInterfaceImpl struct {
-	Server *app.Server
-}
-
 type BleveIndexerWorker struct {
 	name      string
-	stop      chan bool
+	stop      chan struct{}
 	stopped   chan bool
 	jobs      chan model.Job
 	jobServer *jobs.JobServer
-
-	engine *bleveengine.BleveEngine
+	engine    *bleveengine.BleveEngine
+	closed    int32
 }
 
-func (bi *BleveIndexerInterfaceImpl) MakeWorker() model.Worker {
-	if bi.Server.SearchEngine.BleveEngine == nil {
+func MakeWorker(jobServer *jobs.JobServer, engine *bleveengine.BleveEngine) model.Worker {
+	if engine == nil {
 		return nil
 	}
 	return &BleveIndexerWorker{
 		name:      "BleveIndexer",
-		stop:      make(chan bool, 1),
+		stop:      make(chan struct{}),
 		stopped:   make(chan bool, 1),
 		jobs:      make(chan model.Job),
-		jobServer: bi.Server.Jobs,
-
-		engine: bi.Server.SearchEngine.BleveEngine.(*bleveengine.BleveEngine),
+		jobServer: jobServer,
+		engine:    engine,
 	}
 }
 
+func (worker *BleveIndexerWorker) IsEnabled(cfg *model.Config) bool {
+	return true
+}
+
 type IndexingProgress struct {
-	Now            time.Time
-	StartAtTime    int64
-	EndAtTime      int64
-	LastEntityTime int64
+	Now             time.Time
+	StartAtTime     int64
+	EndAtTime       int64
+	LastEntityTime  int64
+	TotalUsersCount int64
+	DoneUsersCount  int64
+	DoneUsers       bool
+
 	// TotalPostsCount    int64
 	// DonePostsCount     int64
 	// DonePosts          bool
@@ -73,9 +69,6 @@ type IndexingProgress struct {
 	// TotalChannelsCount int64
 	// DoneChannelsCount  int64
 	// DoneChannels       bool
-	TotalUsersCount int64
-	DoneUsersCount  int64
-	DoneUsers       bool
 }
 
 func (ip *IndexingProgress) CurrentProgress() int64 {
@@ -113,8 +106,12 @@ func (worker *BleveIndexerWorker) Run() {
 }
 
 func (worker *BleveIndexerWorker) Stop() {
+	// Set to close, and if already closed before, then return.
+	if !atomic.CompareAndSwapInt32(&worker.closed, 0, 1) {
+		return
+	}
 	slog.Debug("Worker Stopping", slog.String("workername", worker.name))
-	worker.stop <- true
+	close(worker.stop)
 	<-worker.stopped
 }
 

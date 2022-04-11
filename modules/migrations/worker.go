@@ -3,12 +3,13 @@ package migrations
 import (
 	"context"
 	"net/http"
+	"sync/atomic"
 	"time"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/store"
 )
 
 const (
@@ -17,24 +18,27 @@ const (
 
 type Worker struct {
 	name      string
-	stop      chan bool
+	stop      chan struct{}
 	stopped   chan bool
 	jobs      chan model.Job
 	jobServer *jobs.JobServer
-	srv       *app.Server
+	store     store.Store
+	closed    int32
 }
 
-func (m *MigrationsJobInterfaceImpl) MakeWorker() model.Worker {
-	worker := Worker{
+func MakeWorker(jobServer *jobs.JobServer, store store.Store) model.Worker {
+	return &Worker{
 		name:      "Migrations",
-		stop:      make(chan bool, 1),
+		stop:      make(chan struct{}),
 		stopped:   make(chan bool, 1),
 		jobs:      make(chan model.Job),
-		jobServer: m.srv.Jobs,
-		srv:       m.srv,
+		jobServer: jobServer,
+		store:     store,
 	}
+}
 
-	return &worker
+func (worker *Worker) IsEnabled(_ *model.Config) bool {
+	return true
 }
 
 func (worker *Worker) Run() {
@@ -61,8 +65,12 @@ func (worker *Worker) Run() {
 }
 
 func (w *Worker) Stop() {
+	// Set to close, and if already closed before, then return.
+	if !atomic.CompareAndSwapInt32(&w.closed, 0, 1) {
+		return
+	}
 	slog.Debug("Worker stopping", slog.String("worker", w.name))
-	w.stop <- true
+	close(w.stop)
 	<-w.stopped
 }
 
@@ -84,7 +92,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 	cancelCtx, cancelCancelWatcher := context.WithCancel(context.Background())
 	cancelWatcherChan := make(chan interface{}, 1)
 
-	go worker.srv.Jobs.CancellationWatcher(cancelCtx, job.Id, cancelWatcherChan)
+	go worker.jobServer.CancellationWatcher(cancelCtx, job.Id, cancelWatcherChan)
 
 	defer cancelCancelWatcher()
 
@@ -101,7 +109,7 @@ func (worker *Worker) DoJob(job *model.Job) {
 			return
 
 		case <-time.After(TimeBetweenBatches * time.Millisecond):
-			done, progress, err := worker.runMigration(job.Data[JobDataKeyMigration], job.Data[JobDataKeyMigration_LAST_DONE])
+			done, progress, err := worker.runMigration(job.Data[JobDataKeyMigration], job.Data[JobDataKeyMigrationLastDone])
 			if err != nil {
 				slog.Error("Worker: Failed to run migration", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 				worker.setJobError(job, err)
@@ -111,8 +119,8 @@ func (worker *Worker) DoJob(job *model.Job) {
 				worker.setJobSuccess(job)
 				return
 			} else {
-				job.Data[JobDataKeyMigration_LAST_DONE] = progress
-				if err := worker.srv.Jobs.UpdateInProgressJobData(job); err != nil {
+				job.Data[JobDataKeyMigrationLastDone] = progress
+				if err := worker.jobServer.UpdateInProgressJobData(job); err != nil {
 					slog.Error("Worker: Failed to update migration status data for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 					worker.setJobError(job, err)
 					return
@@ -123,20 +131,20 @@ func (worker *Worker) DoJob(job *model.Job) {
 }
 
 func (worker *Worker) setJobSuccess(job *model.Job) {
-	if err := worker.srv.Jobs.SetJobSuccess(job); err != nil {
+	if err := worker.jobServer.SetJobSuccess(job); err != nil {
 		slog.Error("Worker: Failed to set success for job", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 		worker.setJobError(job, err)
 	}
 }
 
 func (worker *Worker) setJobError(job *model.Job, appError *model.AppError) {
-	if err := worker.srv.Jobs.SetJobError(job, appError); err != nil {
+	if err := worker.jobServer.SetJobError(job, appError); err != nil {
 		slog.Error("Worker: Failed to set job error", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 	}
 }
 
 func (worker *Worker) setJobCanceled(job *model.Job) {
-	if err := worker.srv.Jobs.SetJobCanceled(job); err != nil {
+	if err := worker.jobServer.SetJobCanceled(job); err != nil {
 		slog.Error("Worker: Failed to mark job as canceled", slog.String("worker", worker.name), slog.String("job_id", job.Id), slog.String("error", err.Error()))
 	}
 }
@@ -158,7 +166,7 @@ func (worker *Worker) runMigration(key string, lastDone string) (bool, string, *
 	}
 
 	if done {
-		if nErr := worker.srv.Store.System().Save(&model.System{Name: key, Value: "true"}); nErr != nil {
+		if nErr := worker.store.System().Save(&model.System{Name: key, Value: "true"}); nErr != nil {
 			return false, "", model.NewAppError("runMigration", "migrations.system.save.app_error", nil, nErr.Error(), http.StatusInternalServerError)
 		}
 	}

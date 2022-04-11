@@ -19,6 +19,51 @@ type SqlStore interface {
 
 // Store can be used to provide mock stores for testing.
 type Store struct {
+	mocks.AddressStore
+	mocks.AllocationStore
+	mocks.AppStore
+	mocks.AppTokenStore
+	mocks.AssignedPageAttributeStore
+	mocks.AssignedPageAttributeValueStore
+	mocks.AssignedProductAttributeStore
+	mocks.AssignedProductAttributeValueStore
+	mocks.AssignedVariantAttributeStore
+	mocks.AssignedVariantAttributeValueStore
+	mocks.AttributePageStore
+	mocks.AttributeProductStore
+	mocks.AttributeStore
+	mocks.AttributeTranslationStore
+	mocks.AttributeValueStore
+	mocks.AttributeValueTranslationStore
+	mocks.AttributeVariantStore
+	mocks.CategoryStore
+	mocks.CategoryTranslationStore
+	mocks.CheckoutLineStore
+	mocks.CheckoutStore
+	mocks.CollectionChannelListingStore
+	mocks.CollectionProductStore
+	mocks.CollectionStore
+	mocks.CollectionTranslationStore
+	mocks.CsvExportEventStore
+	mocks.CsvExportFileStore
+	mocks.CustomerEventStore
+	mocks.CustomerNoteStore
+	mocks.DigitalContentStore
+	mocks.DigitalContentUrlStore
+	mocks.DiscountSaleChannelListingStore
+	mocks.DiscountSaleStore
+	mocks.DiscountSaleTranslationStore
+	mocks.DiscountVoucherStore
+	mocks.FulfillmentLineStore
+	mocks.FulfillmentStore
+	mocks.GiftCardCheckoutStore
+	mocks.GiftcardEventStore
+	mocks.GiftCardOrderStore
+	mocks.GiftCardStore
+	mocks.InvoiceEventStore
+	mocks.InvoiceStore
+	mocks.MenuItemStore
+
 	ChannelStore           mocks.ChannelStore
 	UserStore              mocks.UserStore
 	AuditStore             mocks.AuditStore

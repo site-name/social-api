@@ -6,17 +6,13 @@ package graphql
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/web/shared"
 )
 
 func (r *exportEventResolver) User(ctx context.Context, obj *gqlmodel.ExportEvent) (*gqlmodel.User, error) {
@@ -69,59 +65,11 @@ func (r *exportFileResolver) Events(ctx context.Context, obj *gqlmodel.ExportFil
 }
 
 func (r *mutationResolver) ExportProducts(ctx context.Context, input gqlmodel.ExportProductsInput) (*gqlmodel.ExportProducts, error) {
-	// authentication and permissions checks are already done, thank to directive.
-	embedContext := ctx.Value(shared.APIContextKey).(*shared.Context)
-
-	// validate export scope
-	if input.Scope == gqlmodel.ExportScopeIDS && len(input.Ids) == 0 {
-		return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Ids"}, "", http.StatusBadRequest)
-	}
-	if input.Scope == gqlmodel.ExportScopeFilter && input.Filter == nil {
-		return nil, model.NewAppError("graphql.ExportProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Filter"}, "", http.StatusBadRequest)
-	}
-
-	newExportFile, appErr := r.Srv().CsvService().CreateExportFile(&csv.ExportFile{
-		UserID: &embedContext.AppContext.Session().UserId, // embedContext is usable since current user is authenticated
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	_, appErr = r.Srv().CsvService().CommonCreateExportEvent(&csv.ExportEvent{
-		ExportFileID: newExportFile.Id,
-		UserID:       &embedContext.AppContext.Session().UserId,
-		Type:         csv.EXPORT_PENDING,
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	// embed input to job's data
-	exportInput, err := json.JSON.Marshal(input)
-	if err != nil {
-		return nil, model.NewAppError("graphql.ExportProducts", app.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	_, appErr = r.Srv().Jobs.CreateJob(model.JOB_TYPE_EXPORT_CSV, map[string]string{
-		"input":          string(exportInput),
-		"export_file_id": newExportFile.Id,
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return &gqlmodel.ExportProducts{
-		ExportFile: gqlmodel.SystemExportFileToGraphqlExportFile(newExportFile),
-	}, nil
+	panic("not implemented")
 }
 
 func (r *queryResolver) ExportFile(ctx context.Context, id string) (*gqlmodel.ExportFile, error) {
-	// user authentication and permission checking are done in @directive already
-	exportFile, appErr := r.Srv().CsvService().ExportFileById(id)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return gqlmodel.SystemExportFileToGraphqlExportFile(exportFile), nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) ExportFiles(ctx context.Context, filter *gqlmodel.ExportFileFilterInput, sortBy *gqlmodel.ExportFileSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.ExportFileCountableConnection, error) {

@@ -38,8 +38,10 @@ import (
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
+	"github.com/sitename/sitename/modules/jobs/active_users"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
+	"github.com/sitename/sitename/modules/migrations"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
@@ -52,6 +54,7 @@ import (
 	"github.com/sitename/sitename/services/imageproxy"
 	"github.com/sitename/sitename/services/searchengine"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
+	"github.com/sitename/sitename/services/searchengine/bleveengine/indexer"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/localcachelayer"
@@ -566,29 +569,53 @@ func (s *Server) initJobs() {
 	s.Jobs = jobs.NewJobServer(s, s.Store, s.Metrics)
 
 	if jobsDataRetentionJobInterface != nil {
-		s.Jobs.DataRetentionJob = jobsDataRetentionJobInterface(s)
-	}
-	if jobsMessageExportJobInterface != nil {
-		s.Jobs.MessageExportJob = jobsMessageExportJobInterface(s)
-	}
-	if jobsElasticsearchAggregatorInterface != nil {
-		s.Jobs.ElasticsearchAggregator = jobsElasticsearchAggregatorInterface(s)
-	}
-	if jobsElasticsearchIndexerInterface != nil {
-		s.Jobs.ElasticsearchIndexer = jobsElasticsearchIndexerInterface(s)
-	}
-	if jobsBleveIndexerInterface != nil {
-		s.Jobs.BleveIndexer = jobsBleveIndexerInterface(s)
-	}
-	if jobsMigrationsInterface != nil {
-		s.Jobs.Migrations = jobsMigrationsInterface(s)
-	}
-	if csvExportInterface != nil {
-		s.Jobs.CsvExport = csvExportInterface(s)
+		builder := jobsDataRetentionJobInterface(s)
+		s.Jobs.RegisterJobType(model.JobTypeDataRetention, builder.MakeWorker(), builder.MakeScheduler())
 	}
 
-	s.Jobs.InitWorkers()
-	s.Jobs.InitSchedulers()
+	if jobsMessageExportJobInterface != nil {
+		builder := jobsMessageExportJobInterface(s)
+		s.Jobs.RegisterJobType(model.JobTypeMessageExport, builder.MakeWorker(), builder.MakeScheduler())
+	}
+
+	if jobsElasticsearchAggregatorInterface != nil {
+		builder := jobsElasticsearchAggregatorInterface(s)
+		s.Jobs.RegisterJobType(model.JobTypeElasticsearchPostAggregation, builder.MakeWorker(), builder.MakeScheduler())
+	}
+
+	if jobsElasticsearchIndexerInterface != nil {
+		builder := jobsElasticsearchIndexerInterface(s)
+		s.Jobs.RegisterJobType(model.JobTypeElasticsearchPostIndexing, builder.MakeWorker(), nil)
+	}
+
+	if jobsLdapSyncInterface != nil {
+		builder := jobsLdapSyncInterface(New())
+		s.Jobs.RegisterJobType(model.JobTypeLdapSync, builder.MakeWorker(), builder.MakeScheduler())
+	}
+
+	s.Jobs.RegisterJobType(
+		model.JobTypeBlevePostIndexing,
+		indexer.MakeWorker(s.Jobs, s.SearchEngine.BleveEngine.(*bleveengine.BleveEngine)),
+		nil,
+	)
+
+	s.Jobs.RegisterJobType(
+		model.JobTypeMigrations,
+		migrations.MakeWorker(s.Jobs, s.Store),
+		migrations.MakeScheduler(s.Jobs, s.Store),
+	)
+
+	s.Jobs.RegisterJobType(
+		model.JobTypeActiveUsers,
+		active_users.MakeWorker(s.Jobs, s.Store, func() einterfaces.MetricsInterface { return s.Metrics }),
+		active_users.MakeScheduler(s.Jobs),
+	)
+
+	// s.Jobs.RegisterJobType(
+	// 	model.JobTypeResendInvitationEmail,
+	// 	resend_invitation_email.MakeWorker(s.Jobs, New(ServerConnector(s), s.Store, s.telemetryService),
+	// 	nil,
+	// )
 }
 
 // func (s *Server) TelemetryId() string {

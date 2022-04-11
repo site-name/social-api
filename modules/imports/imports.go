@@ -4,12 +4,6 @@
 package imports
 
 import (
-	_ "github.com/sitename/sitename/modules/jobs/active_users"
-	_ "github.com/sitename/sitename/modules/jobs/csv_export"
-
-	// _ "github.com/sitename/sitename/modules/migrations"
-
-	// register all sub applications
 	_ "github.com/sitename/sitename/app/account"
 	_ "github.com/sitename/sitename/app/attribute"
 	_ "github.com/sitename/sitename/app/channel"

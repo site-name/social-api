@@ -1,11 +1,9 @@
 package migrations
 
 import (
-	"github.com/sitename/sitename/model"
-	// "github.com/sitename/sitename/modules/json"
 	"io"
-	// "net/http"
-	// "strings"
+
+	"github.com/sitename/sitename/model"
 )
 
 type AdvancedPermissionsPhase2Progress struct {
@@ -49,11 +47,6 @@ func (p *AdvancedPermissionsPhase2Progress) IsValid() bool {
 }
 
 func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model.AppError) {
-	// var progress *AdvancedPermissionsPhase2Progress
-	// if lastDone == "" {
-	// 	// have not started the migration yet
-	// 	progress = new(AdvancedPermissionsPhase2Progress)
-	// 	progress.CurrentTable = ""
-	// }
+
 	panic("not implemented")
 }

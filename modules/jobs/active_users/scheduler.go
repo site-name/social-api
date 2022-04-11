@@ -3,47 +3,15 @@ package active_users
 import (
 	"time"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/jobs"
 )
 
-const (
-	SchedFreqMinutes = 10
-)
+const schedFreq = 10 * time.Minute
 
-type Scheduler struct {
-	App *app.App
-}
-
-func (m *ActiveUsersJobInterfaceImpl) MakeScheduler() model.Scheduler {
-	return &Scheduler{m.App}
-}
-
-func (scheduler *Scheduler) Name() string {
-	return JobName + "Scheduler"
-}
-
-func (scheduler *Scheduler) JobType() string {
-	return model.JOB_TYPE_ACTIVE_USERS
-}
-
-func (scheduler *Scheduler) Enabled(cfg *model.Config) bool {
-	// Only enabled when Metrics are enabled.
-	return *cfg.MetricsSettings.Enable
-}
-
-func (scheduler *Scheduler) NextScheduleTime(cfg *model.Config, now time.Time, pendingJobs bool, lastSuccessfulJob *model.Job) *time.Time {
-	nextTime := now.Add(SchedFreqMinutes * time.Minute)
-	return &nextTime
-}
-
-// ScheduleJob just create a new job with type of "active_users" and returns it
-func (scheduler *Scheduler) ScheduleJob(_ *model.Config, _ bool, _ *model.Job) (*model.Job, *model.AppError) {
-	data := map[string]string{}
-
-	job, err := scheduler.App.Srv().Jobs.CreateJob(model.JOB_TYPE_ACTIVE_USERS, data)
-	if err != nil {
-		return nil, err
+func MakeScheduler(jobServer *jobs.JobServer) model.Scheduler {
+	isEnabled := func(cfg *model.Config) bool {
+		return *cfg.MetricsSettings.Enable
 	}
-	return job, nil
+	return jobs.NewPeriodicScheduler(jobServer, model.JobTypeActiveUsers, schedFreq, isEnabled)
 }

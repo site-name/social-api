@@ -2,11 +2,10 @@ package jobs
 
 import (
 	"sync"
+	"time"
 
 	"github.com/sitename/sitename/einterfaces"
-	ejobs "github.com/sitename/sitename/einterfaces/jobs"
 	"github.com/sitename/sitename/model"
-	tjobs "github.com/sitename/sitename/modules/jobs/interfaces"
 	"github.com/sitename/sitename/services/configservice"
 	"github.com/sitename/sitename/store"
 )
@@ -16,25 +15,6 @@ type JobServer struct {
 	Store         store.Store
 	metrics       einterfaces.MetricsInterface
 
-	DataRetentionJob        ejobs.DataRetentionJobInterface         //
-	MessageExportJob        ejobs.MessageExportJobInterface         //
-	ElasticsearchAggregator ejobs.ElasticsearchAggregatorInterface  //
-	ElasticsearchIndexer    tjobs.IndexerJobInterface               //
-	LdapSync                ejobs.LdapSyncInterface                 //
-	Migrations              tjobs.MigrationsJobInterface            //
-	Plugins                 tjobs.PluginsJobInterface               //
-	BleveIndexer            tjobs.IndexerJobInterface               //
-	ExpiryNotify            tjobs.ExpiryNotifyJobInterface          //
-	ProductNotices          tjobs.ProductNoticesJobInterface        //
-	ActiveUsers             tjobs.ActiveUsersJobInterface           //
-	ImportProcess           tjobs.ImportProcessInterface            //
-	ImportDelete            tjobs.ImportDeleteInterface             //
-	ExportProcess           tjobs.ExportProcessInterface            //
-	ExportDelete            tjobs.ExportDeleteInterface             //
-	Cloud                   ejobs.CloudJobInterface                 //
-	ResendInvitationEmails  ejobs.ResendInvitationEmailJobInterface //
-	CsvExport               tjobs.CsvExportInterface                // csv export
-
 	// mut is used to protect the following fields from concurrent access.
 	mut        sync.Mutex
 	workers    *Workers
@@ -42,20 +22,41 @@ type JobServer struct {
 }
 
 func NewJobServer(configService configservice.ConfigService, store store.Store, metrics einterfaces.MetricsInterface) *JobServer {
-	return &JobServer{
+	srv := &JobServer{
 		ConfigService: configService,
 		Store:         store,
 		metrics:       metrics,
 	}
+	srv.initWorkers()
+	srv.initSchedulers()
+	return srv
 }
 
-func (srv *JobServer) MakeWatcher(workers *Workers, pollingInterval int) *Watcher {
-	return &Watcher{
-		stop:            make(chan struct{}),
-		stopped:         make(chan struct{}),
-		pollingInterval: pollingInterval,
-		workers:         workers,
-		srv:             srv,
+func (srv *JobServer) initWorkers() {
+	workers := NewWorkers(srv.ConfigService)
+	workers.Watcher = srv.MakeWatcher(workers, DefaultWatcherPollingInterval)
+	srv.workers = workers
+}
+
+func (srv *JobServer) initSchedulers() {
+	srv.schedulers = &Schedulers{
+		configChanged:        make(chan *model.Config),
+		clusterLeaderChanged: make(chan bool, 1),
+		jobs:                 srv,
+		isLeader:             true,
+		schedulers:           make(map[string]model.Scheduler),
+		nextRunTimes:         make(map[string]*time.Time),
+	}
+}
+
+func (srv *JobServer) RegisterJobType(name string, worker model.Worker, scheduler model.Scheduler) {
+	srv.mut.Lock()
+	defer srv.mut.Unlock()
+	if worker != nil {
+		srv.workers.AddWorker(name, worker)
+	}
+	if scheduler != nil {
+		srv.schedulers.AddScheduler(name, scheduler)
 	}
 }
 
