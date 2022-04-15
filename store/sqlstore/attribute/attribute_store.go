@@ -134,6 +134,13 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilte
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
+	if option.VisibleInStoreFront != nil {
+		expr := store.AttributeTableName + ".VisibleInStoreFront"
+		if !*option.VisibleInStoreFront {
+			expr = "NOT " + expr
+		}
+		query = query.Where(expr)
+	}
 	if option.Distinct {
 		query = query.Distinct()
 	}
@@ -225,16 +232,16 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 	return attributes, nil
 }
 
-func (as *SqlAttributeStore) Delete(id string) error {
-	result, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
+	result, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id IN :IDs", map[string]interface{}{"IDs": ids})
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete attribute with id=%s", id)
+		return 0, errors.Wrap(err, "failed to delete attributes")
 	}
 
-	numDeleted, _ := result.RowsAffected()
-	if numDeleted != 1 {
-		return errors.Errorf("%d attribute(s) was/were deleted instead of 1", numDeleted)
+	numDeleted, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of deleted attributes")
 	}
 
-	return nil
+	return numDeleted, nil
 }

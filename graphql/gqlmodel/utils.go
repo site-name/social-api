@@ -5,6 +5,7 @@ import (
 
 	"github.com/site-name/i18naddress"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
@@ -54,7 +55,7 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 		CountryName:        &r.CountryName,
 		AddressFormat:      &r.AddressFormat,
 		AddressLatinFormat: &r.AddressLatinFormat,
-		AllowedFields:      getAllowedFieldsCamelCase(&r.AllowedFields),
+		AllowedFields:      getAllowedFieldsCamelCase(r.AllowedFields),
 		RequiredFields:     getFieldsToCamelCase(&r.RequiredFields),
 		UpperFields:        getFieldsToCamelCase(&r.UpperFields),
 		CountryAreaType:    &r.CountryAreaType,
@@ -64,8 +65,8 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 		CityAreaType:       &r.CityAreaType,
 		CityAreaChoices:    choicesToChoiceValues(r.CityAreaChoices),
 		PostalCodeType:     &r.PostalCodeType,
-		PostalCodeMatchers: StringSliceToStringPointerSlice(i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
-		PostalCodeExamples: StringSliceToStringPointerSlice(r.PostalCodeExamples),
+		PostalCodeMatchers: util.StringSliceToStringPointerSlice(i18naddress.RegexesToStrings(r.PostalCodeMatchers)),
+		PostalCodeExamples: util.StringSliceToStringPointerSlice(r.PostalCodeExamples),
 		PostalCodePrefix:   &r.PostalCodePrefix,
 	}
 }
@@ -124,11 +125,11 @@ func getFieldsToCamelCase(fields *[]string) []*string {
 	return res
 }
 
-func getAllowedFieldsCamelCase(allowedFields *[]string) []*string {
+func getAllowedFieldsCamelCase(allowedFields []string) []*string {
 	res := []*string{}
 
-	for i := range *allowedFields {
-		convStr := validationFieldToCamelCase((*allowedFields)[i])
+	for i := range allowedFields {
+		convStr := validationFieldToCamelCase(allowedFields[i])
 		res = append(res, &convStr)
 		if convStr == "streetAddress1" {
 			res = append(res, model.NewString("streetAddress2"))
@@ -136,26 +137,4 @@ func getAllowedFieldsCamelCase(allowedFields *[]string) []*string {
 	}
 
 	return res
-}
-
-// StringSliceToStringPointerSlice convert []string => []*string
-func StringSliceToStringPointerSlice(s []string) []*string {
-	res := make([]*string, len(s))
-
-	for i := range s {
-		res[i] = &s[i]
-	}
-
-	return res
-}
-
-var repl = strings.NewReplacer("-", "_")
-
-// stringToGraphqlEnumString converts given s to version that is convertable to graphql enums
-//
-// E.g:
-//  "type_any" => "TYPE_ANY"
-//  "type-any" => "TYPE_ANY"
-func stringToGraphqlEnumString(s string) string {
-	return strings.ToUpper(repl.Replace(s))
 }

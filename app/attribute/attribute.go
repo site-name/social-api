@@ -82,11 +82,21 @@ func (s *ServiceAttribute) UpsertAttribute(attr *attribute.Attribute) (*attribut
 	return attr, nil
 }
 
-func (s *ServiceAttribute) DeleteAttribute(id string) *model.AppError {
-	err := s.srv.Store.Attribute().Delete(id)
+func (s *ServiceAttribute) DeleteAttributes(ids ...string) (int64, *model.AppError) {
+	numDeleted, err := s.srv.Store.Attribute().Delete(ids...)
 	if err != nil {
-		return model.NewAppError("DeleteAttribute", "app.attribute.error_deleting_attribute.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return 0, model.NewAppError("DeleteAttribute", "app.attribute.error_deleting_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return nil
+	return numDeleted, nil
+}
+
+func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (attribute.Attributes, *model.AppError) {
+	if s.srv.AccountService().SessionHasPermissionToAny(session, model.PermissionManagePageTypesAndAttributes, model.PermissionManageProductTypesAndAttributes) {
+		return s.AttributesByOption(&attribute.AttributeFilterOption{})
+	}
+
+	return s.AttributesByOption(&attribute.AttributeFilterOption{
+		VisibleInStoreFront: model.NewBool(true),
+	})
 }

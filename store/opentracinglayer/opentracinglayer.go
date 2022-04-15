@@ -1895,7 +1895,7 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) UpdateInBulk(attrib
 	return err
 }
 
-func (s *OpenTracingLayerAttributeStore) Delete(id string) error {
+func (s *OpenTracingLayerAttributeStore) Delete(ids ...string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -1904,13 +1904,13 @@ func (s *OpenTracingLayerAttributeStore) Delete(id string) error {
 	}()
 
 	defer span.Finish()
-	err := s.AttributeStore.Delete(id)
+	result, err := s.AttributeStore.Delete(ids...)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return err
+	return result, err
 }
 
 func (s *OpenTracingLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
@@ -2093,7 +2093,25 @@ func (s *OpenTracingLayerAttributeValueStore) BulkUpsert(transaction *gorp.Trans
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeValueStore) Delete(id string) error {
+func (s *OpenTracingLayerAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Count")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeValueStore.Count(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -2102,13 +2120,13 @@ func (s *OpenTracingLayerAttributeValueStore) Delete(id string) error {
 	}()
 
 	defer span.Finish()
-	err := s.AttributeValueStore.Delete(id)
+	result, err := s.AttributeValueStore.Delete(ids...)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
-	return err
+	return result, err
 }
 
 func (s *OpenTracingLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {

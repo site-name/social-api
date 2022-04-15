@@ -48,7 +48,8 @@ type AttributeService interface {
 	UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
 	AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
-	DeleteAttribute(id string) *model.AppError
+	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)
 	PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError
+	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 }

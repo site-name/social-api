@@ -808,7 +808,6 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 	query = applyViewRestrictionsFilter(query, true)
 	query = applyMultiRoleFilters(query, options.Roles)
 
-	query = query.PlaceholderFormat(squirrel.Dollar)
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return int64(0), errors.Wrap(err, "count_tosql")

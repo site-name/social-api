@@ -3,6 +3,13 @@ schema {
   mutation: Mutation
 }
 
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
 scalar PlaceHolder
 
 enum AreaUnitsEnum {

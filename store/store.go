@@ -253,7 +253,7 @@ type (
 	AttributeStore interface {
 		CreateIndexesIfNotExists()
 		ModelFields() []string
-		Delete(id string) error
+		Delete(ids ...string) (int64, error)
 		ScanFields(v attribute.Attribute) []interface{}
 		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
 		GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error)    // GetByOption finds and returns 1 attribute
@@ -266,7 +266,8 @@ type (
 		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
 		ModelFields() []string
-		Delete(id string) error
+		Count(options *attribute.AttributeValueFilterOptions) (int64, error)
+		Delete(ids ...string) (int64, error)
 		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
 		BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error

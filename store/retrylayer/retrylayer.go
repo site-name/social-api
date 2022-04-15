@@ -1967,21 +1967,21 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAttributeStore) Delete(id string) error {
+func (s *RetryLayerAttributeStore) Delete(ids ...string) (int64, error) {
 
 	tries := 0
 	for {
-		err := s.AttributeStore.Delete(id)
+		result, err := s.AttributeStore.Delete(ids...)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
 		}
 	}
 
@@ -2187,21 +2187,41 @@ func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction
 
 }
 
-func (s *RetryLayerAttributeValueStore) Delete(id string) error {
+func (s *RetryLayerAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
-		err := s.AttributeValueStore.Delete(id)
+		result, err := s.AttributeValueStore.Count(options)
 		if err == nil {
-			return nil
+			return result, nil
 		}
 		if !isRepeatableError(err) {
-			return err
+			return result, err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeValueStore.Delete(ids...)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 

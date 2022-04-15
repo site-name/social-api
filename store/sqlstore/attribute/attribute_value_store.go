@@ -103,7 +103,7 @@ func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribu
 	}
 
 	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
+		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", "attributevalues_slug_attributeid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", av.Id)
@@ -146,6 +146,9 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 		From(store.AttributeValueTableName)
 
 	// parse options
+	if options.Limit != 0 {
+		query = query.Limit(options.Limit)
+	}
 	if options.SelectForUpdate {
 		query = query.Suffix("FOR UPDATE")
 	}
@@ -155,17 +158,14 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 	if options.SelectRelatedAttribute {
 		query = query.InnerJoin(store.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
 	}
-
-	if !options.All { // check if we need to filter further
-		if options.Id != nil {
-			query = query.Where(options.Id)
-		}
-		if options.AttributeID != nil {
-			query = query.Where(options.AttributeID)
-		}
-		if options.Extra != nil {
-			query = query.Where(options.Extra)
-		}
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.AttributeID != nil {
+		query = query.Where(options.AttributeID)
+	}
+	if options.Extra != nil {
+		query = query.Where(options.Extra)
 	}
 
 	rows, err := query.RunWith(executor).Query()
@@ -206,18 +206,19 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 	return res, nil
 }
 
-func (as *SqlAttributeValueStore) Delete(id string) error {
-	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
+	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id IN :IDS",
+		map[string]interface{}{"IDS": ids})
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete attribute value with id=%s", id)
+		return 0, errors.Wrap(err, "failed to delete attribute values")
 	}
 
-	numDeleted, _ := res.RowsAffected()
-	if numDeleted != 1 {
-		return errors.Errorf("%d attribute value(s) was/were deleted instead of 1", numDeleted)
+	numDeleted, err := res.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of deleted attribute values")
 	}
 
-	return nil
+	return numDeleted, nil
 }
 
 func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
@@ -268,4 +269,31 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, valu
 	}
 
 	return values, nil
+}
+
+func (as *SqlAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+	query := as.GetQueryBuilder().
+		Select("COUNT (*)").
+		From(store.AttributeValueTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.AttributeID != nil {
+		query = query.Where(options.AttributeID)
+	}
+	if options.Extra != nil {
+		query = query.Where(options.Extra)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "AttributeValue.Count.ToSql")
+	}
+	count, err := as.GetReplica().SelectInt(queryStr, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of attribute value with given options")
+	}
+
+	return count, nil
 }

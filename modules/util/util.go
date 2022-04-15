@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/base64"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -366,4 +367,35 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 //  fmt.Println(name) == "hello"
 func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func Base64Encode(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+func Base64Decode(s string) string {
+	res, _ := base64.StdEncoding.DecodeString(s)
+	return string(res)
+}
+
+// StringSliceToStringPointerSlice convert []string => []*string
+func StringSliceToStringPointerSlice(s []string) []*string {
+	res := make([]*string, len(s))
+
+	for i := range s {
+		res[i] = &s[i]
+	}
+
+	return res
+}
+
+func StringPointerSliceToStringSlice(s []*string) []string {
+	res := []string{}
+	for _, item := range s {
+		if item != nil {
+			res = append(res, *item)
+		}
+	}
+
+	return res
 }

@@ -2,7 +2,9 @@ package gqlmodel
 
 import (
 	"strings"
+	"time"
 
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 )
 
@@ -89,14 +91,81 @@ func ModelAttributeToGraphqlAttribute(a *attribute.Attribute) *Attribute {
 	}
 }
 
-var AttributeCreateInputBooleanFieldNames = []string{
-	"FilterableInStorefront",
-	"FilterableInDashboard",
-	"StorefrontSearchPosition",
-	"AvailableInGrid",
+//---------------------------------------------
+// initial implementation
+// type AttributeValue struct {
+// 	ID          string                     `json:"id"`
+// 	Name        *string                    `json:"name"`
+// 	Slug        *string                    `json:"slug"`
+// 	Value       *string                    `json:"value"`
+// 	Translation *AttributeValueTranslation `json:"translation"`
+// 	InputType   *AttributeInputTypeEnum    `json:"inputType"`
+// 	Reference   *string                    `json:"reference"`
+// 	File        *File                      `json:"file"`
+// 	RichText    model.StringInterface      `json:"richText"`
+// 	Boolean     *bool                      `json:"boolean"`
+// 	Date        *time.Time                 `json:"date"`
+// 	DateTime    *time.Time                 `json:"dateTime"`
+// }
+
+type AttributeValue struct {
+	ID          string                            `json:"id"`
+	Name        *string                           `json:"name"`
+	Slug        *string                           `json:"slug"`
+	Value       *string                           `json:"value"`
+	Translation func() *AttributeValueTranslation `json:"translation"`
+	InputType   func() *AttributeInputTypeEnum    `json:"inputType"`
+	Reference   func() *string                    `json:"reference"`
+	File        *File                             `json:"file"`
+	RichText    model.StringInterface             `json:"richText"`
+	Boolean     *bool                             `json:"boolean"`
+	Date        func() *time.Time                 `json:"date"`
+	DateTime    func() *time.Time                 `json:"dateTime"`
+}
+
+func (AttributeValue) IsNode() {}
+
+func ModelAttributeValueToGraphqlAttributeValue(a *attribute.AttributeValue) *AttributeValue {
+	if a == nil {
+		return nil
+	}
+
+	res := &AttributeValue{
+		ID:       a.Id,
+		Name:     &a.Name,
+		Slug:     &a.Slug,
+		Value:    &a.Value,
+		RichText: a.RichText,
+		Boolean:  a.Boolean,
+		File: &File{
+			ContentType: a.ContentType,
+		},
+	}
+
+	if a.FileUrl != nil {
+		res.File.URL = *a.FileUrl
+	}
+
+	return res
 }
 
 func (i *AttributeCreateInput) GetValueByField(fieldName string) interface{} {
+	switch fieldName {
+	case "FilterableInStorefront":
+		return i.FilterableInStorefront
+	case "FilterableInDashboard":
+		return i.FilterableInDashboard
+	case "StorefrontSearchPosition":
+		return i.StorefrontSearchPosition
+	case "AvailableInGrid":
+		return i.AvailableInGrid
+
+	default:
+		return nil
+	}
+}
+
+func (i *AttributeUpdateInput) GetValueByField(fieldName string) interface{} {
 	switch fieldName {
 	case "FilterableInStorefront":
 		return i.FilterableInStorefront
@@ -157,4 +226,22 @@ func AttributeInputTypeEnumInSlice(value AttributeInputTypeEnum, slice ...Attrib
 	}
 
 	return false
+}
+
+func ModelAttributeValueTranslationToGraphqlAttributeValueTranslation(t *attribute.AttributeValueTranslation) *AttributeValueTranslation {
+	if t == nil {
+		return nil
+	}
+
+	res := &AttributeValueTranslation{
+		ID:       t.Id,
+		Name:     t.Name,
+		RichText: t.RichText,
+		Language: &LanguageDisplay{
+			Code:     LanguageCodeEnum(strings.ToUpper(t.LanguageCode)),
+			Language: model.Languages[strings.ToLower(t.LanguageCode)],
+		},
+	}
+
+	return res
 }

@@ -471,7 +471,6 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		Limit(1)
 
 	attributeValues, err := ps.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
-		All:                    true,
 		SelectRelatedAttribute: true,
 		Extra:                  attributeQuery,
 	})

@@ -112,7 +112,7 @@ type Reordering struct {
 	OrderedPKs []string
 
 	s      *ServiceAttribute
-	runned bool
+	runned bool // to make sure that the method `orderedNodeMap` only run once
 }
 
 func (s *ServiceAttribute) newReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering {
@@ -163,8 +163,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorp.Transaction) (map[string]*
 			}
 
 			previousSortOrder++
-			i := previousSortOrder
-			orderingMap[key] = &i
+			orderingMap[key] = model.NewInt(previousSortOrder)
 		}
 
 		// cache
@@ -205,8 +204,10 @@ func (r *Reordering) calculateNewSortOrder(pk string, move int) (int, int, int) 
 }
 
 func (s *Reordering) processMoveOperation(pk string, move *int) {
-	m, _ := s.orderedNodeMap(nil)
-	oldSortOrder := m[pk]
+	var (
+		orderedNodeMap, _ = s.orderedNodeMap(nil)
+		oldSortOrder      = orderedNodeMap[pk]
+	)
 
 	// skip if nothing to do
 	if move != nil && *move == 0 {
@@ -221,14 +222,14 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 	// Determine how we should shift for this operation
 	var (
 		shift  int
-		range_ []int
+		range_ [2]int
 	)
 	if *move > 0 {
 		shift = -1
-		range_ = []int{*oldSortOrder + 1, newSortOrder}
+		range_ = [2]int{*oldSortOrder + 1, newSortOrder}
 	} else {
 		shift = 1
-		range_ = []int{newSortOrder, *oldSortOrder - 1}
+		range_ = [2]int{newSortOrder, *oldSortOrder - 1}
 	}
 
 	// Shift the sort orders within the moving range
@@ -262,6 +263,7 @@ func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int)
 }
 
 func (r *Reordering) commit(transaction *gorp.Transaction) *model.AppError {
+	// Do nothing if nothing was done
 	if len(r.OldSortMap) == 0 {
 		return nil
 	}
@@ -276,7 +278,9 @@ func (r *Reordering) commit(transaction *gorp.Transaction) *model.AppError {
 	orderedNodeMap, _ := r.orderedNodeMap(nil)
 	for pk, sortOrder := range orderedNodeMap {
 		if sortOrder != nil && r.OldSortMap[pk] != nil && *sortOrder != *(r.OldSortMap[pk]) {
-			changed = true
+			if !changed {
+				changed = true
+			}
 			attributeValuesMap[pk].SortOrder = sortOrder
 		}
 	}
@@ -330,4 +334,13 @@ func (s *ServiceAttribute) PerformReordering(values attribute.AttributeValues, o
 	}
 
 	return nil
+}
+
+func (s *ServiceAttribute) DeleteAttributeValues(ids ...string) (int64, *model.AppError) {
+	numDeleted, err := s.srv.Store.AttributeValue().Delete(ids...)
+	if err != nil {
+		return 0, model.NewAppError("DeleteAttributeValues", "app.attribute.error_delete_attribute_values_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return numDeleted, nil
 }

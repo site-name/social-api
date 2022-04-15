@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"io"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -42,12 +41,13 @@ type AttributeValueFilterOptions struct {
 	AttributeID squirrel.Sqlizer
 
 	Extra                  squirrel.Sqlizer
-	All                    bool // if true, select all attribute values, ignore other options
 	SelectRelatedAttribute bool
 
 	Transaction     *gorp.Transaction
 	OrderBy         string
 	SelectForUpdate bool // is true, add `FOR UPDATE` suffic to the end of sql query
+
+	Limit uint64
 }
 
 type AttributeValues []*AttributeValue
@@ -150,11 +150,11 @@ const (
 
 // LanguageCode unique together AttributeValueID
 type AttributeValueTranslation struct {
-	Id               string                 `json:"id"`
-	LanguageCode     string                 `json:"language_code"`
-	AttributeValueID string                 `json:"attribute_value"`
-	Name             string                 `json:"name"`
-	RichText         *model.StringInterface `json:"rich_text"`
+	Id               string                `json:"id"`
+	LanguageCode     string                `json:"language_code"`
+	AttributeValueID string                `json:"attribute_value"`
+	Name             string                `json:"name"`
+	RichText         model.StringInterface `json:"rich_text"`
 }
 
 func (a *AttributeValueTranslation) String() string {
@@ -196,10 +196,4 @@ func (a *AttributeValueTranslation) PreUpdate() {
 
 func (a *AttributeValueTranslation) ToJSON() string {
 	return model.ModelToJson(a)
-}
-
-func AttributeValueTranslationFromJson(data io.Reader) *AttributeValueTranslation {
-	var a *AttributeValueTranslation
-	model.ModelFromJson(&a, data)
-	return a
 }

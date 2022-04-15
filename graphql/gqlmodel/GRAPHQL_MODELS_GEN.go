@@ -492,23 +492,6 @@ type AttributeUpdateInput struct {
 	AvailableInGrid          *bool                        `json:"availableInGrid"`
 }
 
-type AttributeValue struct {
-	ID          string                     `json:"id"`
-	Name        *string                    `json:"name"`
-	Slug        *string                    `json:"slug"`
-	Value       *string                    `json:"value"`
-	Translation *AttributeValueTranslation `json:"translation"`
-	InputType   *AttributeInputTypeEnum    `json:"inputType"`
-	Reference   *string                    `json:"reference"`
-	File        *File                      `json:"file"`
-	RichText    model.StringInterface      `json:"richText"`
-	Boolean     *bool                      `json:"boolean"`
-	Date        *time.Time                 `json:"date"`
-	DateTime    *time.Time                 `json:"dateTime"`
-}
-
-func (AttributeValue) IsNode() {}
-
 type AttributeValueBulkDelete struct {
 	Count  int               `json:"count"`
 	Errors []*AttributeError `json:"errors"`
@@ -2426,9 +2409,10 @@ type PageFilterInput struct {
 }
 
 type PageInfo struct {
-	HasNextPage     bool `json:"hasNextPage"`
-	HasPreviousPage bool `json:"hasPreviousPage"`
-	CurrentPage     int  `json:"currentPage"`
+	HasNextPage     bool    `json:"hasNextPage"`
+	HasPreviousPage bool    `json:"hasPreviousPage"`
+	StartCursor     *string `json:"startCursor"`
+	EndCursor       *string `json:"endCursor"`
 }
 
 type PageInput struct {

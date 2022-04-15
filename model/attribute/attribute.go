@@ -48,11 +48,10 @@ const (
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = []string{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
-	TYPES_WITH_CHOICES           = []string{DROPDOWN, MULTISELECT, SWATCH}
-	// list of the input types that are unique per instances
-	TYPES_WITH_UNIQUE_VALUES = []string{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
-	TRANSLATABLE_ATTRIBUTES  = []string{RICH_TEXT}
+	ALLOWED_IN_VARIANT_SELECTION = model.StringArray{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
+	TYPES_WITH_CHOICES           = model.StringArray{DROPDOWN, MULTISELECT, SWATCH}
+	TYPES_WITH_UNIQUE_VALUES     = model.StringArray{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES      = model.StringArray{RICH_TEXT}
 )
 var AttributeInputTypeStrings = map[string]string{
 	DROPDOWN:    "Dropdown",
@@ -104,6 +103,17 @@ type AttributeFilterOption struct {
 	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
 	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
 	Distinct            bool
+	VisibleInStoreFront *bool
+
+	ValueRequired          *bool
+	IsVariantOnly          *bool
+	VisibleInStorefront    *bool
+	FilterableInStorefront *bool
+	FilterableInDashboard  *bool
+	AvailableInGrid        *bool
+	Type                   string
+
+	OrderBy string
 
 	PrefetchRelatedAttributeValues bool
 }

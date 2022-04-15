@@ -3,7 +3,6 @@ package product
 import (
 	"database/sql"
 	"strings"
-	"time"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
@@ -327,7 +326,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and
 
 	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
 
-	today := util.StartOfDay(time.Now().UTC())
+	today := util.StartOfDay(timemodule.Now().UTC())
 
 	productChannelListingQuery := ps.
 		GetQueryBuilder().
@@ -419,7 +418,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	var res []*struct {
 		product_and_discount.Product
 		IsPublished     bool
-		PublicationDate *time.Time
+		PublicationDate *timemodule.Time
 	}
 
 	_, err = ps.GetReplica().Select(&res, queryString, args...)
@@ -436,7 +435,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
 
 	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
-	today := util.StartOfDay(time.Now().UTC())
+	today := util.StartOfDay(timemodule.Now().UTC())
 
 	productChannelListingQuery := ps.
 		GetQueryBuilder().

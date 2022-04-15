@@ -154,14 +154,6 @@ enum PageSortField {
   PUBLICATION_DATE
 }
 
-type PageInfo {
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  currentPage: Int!
-  # startCursor: String
-  # endCursor: String
-}
-
 type PageTranslation implements Node {
   id: ID!
   seoTitle: String

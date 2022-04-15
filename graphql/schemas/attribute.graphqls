@@ -5,7 +5,7 @@ extend type Mutation {
   attributeTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate
   attributeBulkDelete(ids: [ID]!): AttributeBulkDelete
   attributeValueBulkDelete(ids: [ID]!): AttributeValueBulkDelete
-  attributeValueCreate(attribute: ID!, input: AttributeValueCreateInput!): AttributeValueCreate
+  attributeValueCreate(attributeID: ID!, input: AttributeValueCreateInput!): AttributeValueCreate
   attributeValueDelete(id: ID!): AttributeValueDelete
   attributeValueUpdate(id: ID!, input: AttributeValueUpdateInput!): AttributeValueUpdate
   attributeValueTranslate(id: ID!, input: AttributeValueTranslationInput!, languageCode: LanguageCodeEnum!): AttributeValueTranslate
@@ -13,7 +13,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
+  attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, chanelSlug: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
   attribute(id: ID, slug: String): Attribute
 }
 
