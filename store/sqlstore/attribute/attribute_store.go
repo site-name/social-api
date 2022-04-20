@@ -127,19 +127,61 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields()...).
-		From(store.AttributeTableName).
-		OrderBy(store.TableOrderingMap[store.AttributeTableName])
+		From(store.AttributeTableName)
 
 	// parse options
+	if option.OrderBy != "" {
+		query = query.OrderBy(option.OrderBy)
+	} else {
+		query = query.OrderBy(store.TableOrderingMap[store.AttributeTableName])
+	}
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
 	if option.VisibleInStoreFront != nil {
-		expr := store.AttributeTableName + ".VisibleInStoreFront"
+		cond := store.AttributeTableName + ".VisibleInStoreFront"
 		if !*option.VisibleInStoreFront {
-			expr = "NOT " + expr
+			cond = "NOT " + cond
 		}
-		query = query.Where(expr)
+		query = query.Where(cond)
+	}
+	if option.ValueRequired != nil {
+		cond := store.AttributeTableName + ".ValueRequired"
+		if !*option.ValueRequired {
+			cond = "NOT " + cond
+		}
+		query = query.Where(cond)
+	}
+	if option.IsVariantOnly != nil {
+		cond := store.AttributeTableName + ".IsVariantOnly"
+		if !*option.IsVariantOnly {
+			cond = "NOT " + cond
+		}
+		query = query.Where(cond)
+	}
+	if option.FilterableInStorefront != nil {
+		cond := store.AttributeTableName + ".FilterableInStorefront"
+		if !*option.FilterableInStorefront {
+			cond = "NOT " + cond
+		}
+		query = query.Where(cond)
+	}
+	if option.FilterableInDashboard != nil {
+		cond := store.AttributeTableName + ".FilterableInDashboard"
+		if !*option.FilterableInDashboard {
+			cond = "NOT " + cond
+		}
+		query = query.Where(cond)
+	}
+	if option.AvailableInGrid != nil {
+		cond := store.AttributeTableName + ".AvailableInGrid"
+		if !*option.AvailableInGrid {
+			cond = "NOT " + cond
+		}
+		query = query.Where(cond)
+	}
+	if option.Type != nil {
+		query = query.Where(option.Type)
 	}
 	if option.Distinct {
 		query = query.Distinct()
@@ -149,6 +191,9 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilte
 	}
 	if option.InputType != nil {
 		query = query.Where(option.InputType)
+	}
+	if option.Extra != nil {
+		query = query.Where(option.Extra)
 	}
 	if option.ProductTypes != nil {
 		query = query.

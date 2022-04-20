@@ -56,7 +56,9 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 	}
 
 	res := *a
-	res.Attribute = a.Attribute.DeepCopy()
+	if a.Attribute != nil {
+		res.Attribute = a.Attribute.DeepCopy()
+	}
 	return &res
 }
 
@@ -115,7 +117,9 @@ func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
 
 	res := *a
 	res.AttributeValues = a.AttributeValues.DeepCopy()
-	res.AttributeProduct = a.AttributeProduct.DeepCopy()
+	if a.AttributeProduct != nil {
+		res.AttributeProduct = a.AttributeProduct.DeepCopy()
+	}
 	return &res
 }
 

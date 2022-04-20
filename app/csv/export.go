@@ -3,7 +3,6 @@ package csv
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -19,19 +18,20 @@ var (
 
 // ExportProducts is called by product export job, taks needed arguments then exports products
 func (s *ServiceCsv) ExportProducts(input *gqlmodel.ExportProductsInput, delimeter string) *model.AppError {
-	if delimeter == "" {
-		delimeter = ";"
-	}
+	// if delimeter == "" {
+	// 	delimeter = ";"
+	// }
 
-	productFilterQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(input)
+	// productFilterQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(input)
 
-	exportFields, fileHeaders, dataHeaders, appErr := s.GetExportFieldsAndHeadersInfo(*input.ExportInfo)
-	if appErr != nil {
-		return appErr
-	}
+	// exportFields, fileHeaders, dataHeaders, appErr := s.GetExportFieldsAndHeadersInfo(*input.ExportInfo)
+	// if appErr != nil {
+	// 	return appErr
+	// }
 
-	getFileName("product", strings.ToLower(string(input.FileType)))
+	// getFileName("product", strings.ToLower(string(input.FileType)))
 
+	panic("not implt")
 }
 
 func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo gqlmodel.ExportInfoInput, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError {
@@ -69,6 +69,7 @@ func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder
 		s.GetProductsData(products, exportFields, exportInfo.Attributes, exportInfo.Warehouses, exportInfo.Channels)
 	}
 
+	panic("not implt")
 }
 
 // getFileName returns a file name for exported file

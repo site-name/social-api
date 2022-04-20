@@ -5,7 +5,9 @@
 package mocks
 
 import (
+	gorp "github.com/mattermost/gorp"
 	attribute "github.com/sitename/sitename/model/attribute"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -14,23 +16,80 @@ type AttributeValueStore struct {
 	mock.Mock
 }
 
+// BulkUpsert provides a mock function with given fields: transaction, values
+func (_m *AttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+	ret := _m.Called(transaction, values)
+
+	var r0 attribute.AttributeValues
+	if rf, ok := ret.Get(0).(func(*gorp.Transaction, attribute.AttributeValues) attribute.AttributeValues); ok {
+		r0 = rf(transaction, values)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(attribute.AttributeValues)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*gorp.Transaction, attribute.AttributeValues) error); ok {
+		r1 = rf(transaction, values)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Count provides a mock function with given fields: options
+func (_m *AttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+	ret := _m.Called(options)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*attribute.AttributeValueFilterOptions) int64); ok {
+		r0 = rf(options)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*attribute.AttributeValueFilterOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *AttributeValueStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// Delete provides a mock function with given fields: id
-func (_m *AttributeValueStore) Delete(id string) error {
-	ret := _m.Called(id)
+// Delete provides a mock function with given fields: ids
+func (_m *AttributeValueStore) Delete(ids ...string) (int64, error) {
+	_va := make([]interface{}, len(ids))
+	for _i := range ids {
+		_va[_i] = ids[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(id)
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(...string) int64); ok {
+		r0 = rf(ids...)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(...string) error); ok {
+		r1 = rf(ids...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // FilterByOptions provides a mock function with given fields: options

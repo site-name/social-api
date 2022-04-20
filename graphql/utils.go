@@ -90,6 +90,8 @@ func (g *GraphqlArgumentsParser) decode() (string, *model.AppError) {
 // 3) construct a squirrel expression based on given key
 //  Eg
 //  ConstructSqlExpr("TableName.FieldName") => squirrel.Gt{"TableName.FieldName": ...}
+//
+// NOTE: Call IsValid() before calling this
 func (g *GraphqlArgumentsParser) ConstructSqlExpr(key string) (squirrel.Sqlizer, *model.AppError) {
 
 	cmp, err := g.decode()
@@ -121,6 +123,8 @@ func (g *GraphqlArgumentsParser) ConstructSqlExpr(key string) (squirrel.Sqlizer,
 }
 
 // Limit must be called after
+//
+// NOTE: Call IsValid() before calling this
 func (g *GraphqlArgumentsParser) Limit() int {
 	if g.First != nil {
 		return *g.First
@@ -131,6 +135,9 @@ func (g *GraphqlArgumentsParser) Limit() int {
 	return 0
 }
 
+// HasPreviousPage determines if there is previous page
+//
+// NOTE: Call IsValid() before calling this
 func (g *GraphqlArgumentsParser) HasPreviousPage() bool {
 	return (g.First != nil && g.After != nil) || (g.Last != nil && g.Before != nil)
 }

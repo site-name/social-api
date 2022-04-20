@@ -10,7 +10,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
-	"github.com/sitename/sitename/graphql/dataloaders"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/graphql/scalars"
@@ -235,16 +234,17 @@ func (r *userResolver) Avatar(ctx context.Context, obj *gqlmodel.User, size *int
 }
 
 func (r *userResolver) Events(ctx context.Context, obj *gqlmodel.User) ([]*gqlmodel.CustomerEvent, error) {
-	session, appErr := CheckUserAuthenticated("Events", ctx)
-	if appErr != nil {
-		return nil, appErr
-	}
+	// session, appErr := CheckUserAuthenticated("Events", ctx)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	if r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
-		return ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).CustomerEventsByUser.Load(obj.ID)
-	}
+	// if r.Srv().AccountService().SessionHasPermissionToAny(session, model.PermissionManageUsers, model.PermissionManageStaff) {
+	// 	return ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).CustomerEventsByUser.Load(obj.ID)
+	// }
 
-	return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
+	// return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers, model.PermissionManageStaff)
+	panic("not implt")
 }
 
 func (r *userResolver) StoredPaymentSources(ctx context.Context, obj *gqlmodel.User, channel *string) ([]*gqlmodel.PaymentSource, error) {

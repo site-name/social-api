@@ -102,18 +102,20 @@ type AttributeFilterOption struct {
 	InputType           squirrel.Sqlizer
 	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
 	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
-	Distinct            bool
-	VisibleInStoreFront *bool
+	Type                squirrel.Sqlizer
 
+	VisibleInStoreFront    *bool
 	ValueRequired          *bool
 	IsVariantOnly          *bool
 	VisibleInStorefront    *bool
 	FilterableInStorefront *bool
 	FilterableInDashboard  *bool
 	AvailableInGrid        *bool
-	Type                   string
 
-	OrderBy string
+	OrderBy  string
+	Distinct bool
+
+	Extra squirrel.Sqlizer
 
 	PrefetchRelatedAttributeValues bool
 }

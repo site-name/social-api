@@ -11,28 +11,36 @@ import (
 	"github.com/sitename/sitename/model/attribute"
 )
 
-func (r *mutationResolver) validateValue(valueData gqlmodel.AttributeValueCreateInput, isNumericAttr, isSwatchAttr bool) *model.AppError {
+func (r *mutationResolver) validateValue(valueData gqlmodel.AttributeValueCreateUpdateInterface, isNumericAttr, isSwatchAttr bool) *model.AppError {
+	var (
+		fileURL     = valueData.GetFileURL()
+		contentType = valueData.GetContentType()
+		value       = valueData.GetValue()
+		name        = valueData.GetName()
+		richText    = valueData.GetRichText()
+	)
+
 	if !isSwatchAttr &&
-		((valueData.FileURL != nil && *valueData.FileURL != "") ||
-			(valueData.ContentType != nil && *valueData.ContentType != "") ||
-			(valueData.Value != nil && *valueData.Value != "")) {
+		((fileURL != nil && *fileURL != "") ||
+			(contentType != nil && *contentType != "") ||
+			(value != nil && *value != "")) {
 
 		return model.NewAppError("validateValue", "graphql.attribute.not_swatch_attribute.app_error", nil, "Cannot define value, file and content type fields for not swatch attribute", http.StatusBadRequest)
 	}
 
 	if isNumericAttr {
-		if _, err := strconv.ParseFloat(valueData.Name, 64); err != nil {
+		if _, err := strconv.ParseFloat(*valueData.GetName(), 64); err != nil {
 			return model.NewAppError("validateValue", "graphql.attribute.invalid_numeric_value.app_error", nil, "Value of numeric attribute must be numeric", http.StatusBadRequest)
 		}
 	} else if isSwatchAttr {
-		if (valueData.Value != nil && *valueData.Value != "") &&
-			(valueData.FileURL != nil && *valueData.FileURL != "") {
+		if (value != nil && *value != "") &&
+			(fileURL != nil && *fileURL != "") {
 
 			return model.NewAppError("validateValue", "graphql.attribute.redundant_values.app_error", nil, "Cannot specify both value and file for swatch attribute", http.StatusBadRequest)
 		}
 	}
 
-	var slugValue = valueData.Name
+	var slugValue = *name
 
 	if isNumericAttr {
 		slugValue = strings.ReplaceAll(slugValue, ".", "_")
@@ -40,14 +48,14 @@ func (r *mutationResolver) validateValue(valueData gqlmodel.AttributeValueCreate
 
 	attributeValue := &attribute.AttributeValue{
 		AttributeID: model.NewId(), // fake for validation purpose
-		Name:        valueData.Name,
-		RichText:    valueData.RichText,
-		FileUrl:     valueData.FileURL,
-		ContentType: valueData.ContentType,
+		Name:        *name,
+		RichText:    richText,
+		FileUrl:     fileURL,
+		ContentType: contentType,
 		Slug:        slug.Make(slugValue),
 	}
-	if valueData.Value != nil {
-		attributeValue.Value = *valueData.Value
+	if value != nil {
+		attributeValue.Value = *value
 	}
 	if appErr := attributeValue.IsValid(); appErr != nil {
 		return appErr

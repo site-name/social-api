@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/graph-gophers/dataloader"
 	"github.com/sitename/sitename/app"
 )
 
@@ -24,18 +25,16 @@ var (
 
 // DataLoaders contains all data loaders for the project
 type DataLoaders struct {
-	OrdersByUser         *OrdersByUser
-	CustomerEventsByUser *CustomerEventsByUserLoader
-	AddressByID          *AddressByIDLoader
+	AttributeLoader *dataloader.Loader
 }
 
 // NewLoaders returns new pointer to a DataLoaders
-func NewLoaders(a app.AppIface) *DataLoaders {
+func NewLoaders(srv *app.Server) *DataLoaders {
 	once.Do(func() {
+		attributeReader := &attributeReader{srv}
+
 		loaders = &DataLoaders{
-			OrdersByUser:         ordersByUserLoader(a.Srv()),
-			CustomerEventsByUser: customerEventsByUserLoader(a.Srv()),
-			AddressByID:          addressByIDLoader(a.Srv()),
+			AttributeLoader: dataloader.NewBatchedLoader(attributeReader.getAttributes),
 		}
 	})
 

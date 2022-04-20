@@ -12,7 +12,10 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/graph-gophers/dataloader"
+	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/graphql/dataloaders"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
@@ -34,14 +37,14 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 		return nil, nil
 	}
 
-	// construct attribute value filter options
-	attrValueFilterOptions := &attribute.AttributeValueFilterOptions{
-		AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": obj.ID},
-	}
-
 	var (
 		key            string
 		orderDirection = gqlmodel.OrderDirectionAsc
+		// construct attribute value filter options
+		attrValueFilterOptions = &attribute.AttributeValueFilterOptions{
+			AttributeID:            squirrel.Eq{store.AttributeValueTableName + ".AttributeID": obj.ID},
+			SelectRelatedAttribute: true, //
+		}
 	)
 
 	// parse order by
@@ -61,8 +64,8 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 	// parse search value
 	if filter != nil && filter.Search != nil {
 		attrValueFilterOptions.Extra = squirrel.Or{
-			squirrel.ILike{store.AttributeValueTableName + ".Name": *filter.Search},
-			squirrel.ILike{store.AttributeValueTableName + ".Slug": *filter.Search},
+			squirrel.ILike{store.AttributeValueTableName + ".Name": "%" + *filter.Search + "%"},
+			squirrel.ILike{store.AttributeValueTableName + ".Slug": "%" + *filter.Search + "%"},
 		}
 	}
 
@@ -116,12 +119,9 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 	}
 
 	for i := 0; i < util.Min(len(attributeValues), limit); i++ {
-		var cursor string
+		var cursor = attributeValues[i].Name
 
-		switch sortBy.Field {
-		case gqlmodel.AttributeChoicesSortFieldName:
-			cursor = attributeValues[i].Name
-		case gqlmodel.AttributeChoicesSortFieldSlug:
+		if sortBy != nil && sortBy.Field == gqlmodel.AttributeChoicesSortFieldSlug {
 			cursor = attributeValues[i].Slug
 		}
 
@@ -154,18 +154,39 @@ func (r *attributeValueResolver) Translation(ctx context.Context, obj *gqlmodel.
 }
 
 func (r *attributeValueResolver) InputType(ctx context.Context, obj *gqlmodel.AttributeValue) (*gqlmodel.AttributeInputTypeEnum, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("InputType", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// extract data loaders
+	thunk := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).AttributeLoader.
+		Load(ctx, dataloader.StringKey(obj.AttributeID))
+
+	result, err := thunk()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute thunk")
+	}
+
+	attr := result.(*attribute.Attribute) // type casting
+	if attr.Type == attribute.PAGE_TYPE {
+
+		if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManagePages) {
+			res := gqlmodel.AttributeInputTypeEnum(strings.ToUpper(attr.InputType))
+			return &res, nil
+		}
+
+		return nil, model.NewAppError("InputType", PermissionDeniedId, nil, "", http.StatusForbidden)
+
+	} else if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageProducts) {
+		res := gqlmodel.AttributeInputTypeEnum(strings.ToUpper(attr.InputType))
+		return &res, nil
+	}
+
+	return nil, model.NewAppError("InputType", PermissionDeniedId, nil, "", http.StatusForbidden)
 }
 
 func (r *attributeValueResolver) Reference(ctx context.Context, obj *gqlmodel.AttributeValue) (*string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *attributeValueResolver) Date(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *attributeValueResolver) DateTime(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -255,7 +276,7 @@ func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.A
 
 		for _, value := range input.Values {
 			if value != nil {
-				appErr = r.validateValue(*value, *input.InputType == gqlmodel.AttributeInputTypeEnumNumeric, *input.InputType == gqlmodel.AttributeInputTypeEnumSwatch)
+				appErr = r.validateValue(value, *input.InputType == gqlmodel.AttributeInputTypeEnumNumeric, *input.InputType == gqlmodel.AttributeInputTypeEnumSwatch)
 				if appErr != nil {
 					return nil, appErr
 				}
@@ -269,35 +290,35 @@ func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.A
 		Type: strings.ToLower(string(input.Type)),
 		Slug: slugValue,
 	}
-	if input.InputType != nil {
-		attr.InputType = strings.ToLower(string(*input.InputType))
+	if v := input.InputType; v != nil {
+		attr.InputType = strings.ToLower(string(*v))
 	}
-	if input.EntityType != nil {
-		attr.EntityType = model.NewString(strings.ToLower(string(*input.EntityType)))
+	if v := input.EntityType; v != nil {
+		attr.EntityType = model.NewString(strings.ToLower(string(*v)))
 	}
-	if input.Unit != nil {
-		attr.Unit = model.NewString(strings.ToLower(string(*input.Unit)))
+	if v := input.Unit; v != nil {
+		attr.Unit = model.NewString(strings.ToLower(string(*v)))
 	}
-	if input.ValueRequired != nil {
-		attr.ValueRequired = *input.ValueRequired
+	if v := input.ValueRequired; v != nil {
+		attr.ValueRequired = *v
 	}
-	if input.IsVariantOnly != nil {
-		attr.IsVariantOnly = *input.IsVariantOnly
+	if v := input.IsVariantOnly; v != nil {
+		attr.IsVariantOnly = *v
 	}
-	if input.VisibleInStorefront != nil {
-		attr.VisibleInStoreFront = *input.VisibleInStorefront
+	if v := input.VisibleInStorefront; v != nil {
+		attr.VisibleInStoreFront = *v
 	}
-	if input.FilterableInStorefront != nil {
-		attr.FilterableInStorefront = *input.FilterableInStorefront
+	if v := input.FilterableInStorefront; v != nil {
+		attr.FilterableInStorefront = *v
 	}
-	if input.FilterableInDashboard != nil {
-		attr.FilterableInDashboard = *input.FilterableInDashboard
+	if v := input.FilterableInDashboard; v != nil {
+		attr.FilterableInDashboard = *v
 	}
-	if input.StorefrontSearchPosition != nil {
-		attr.StorefrontSearchPosition = *input.StorefrontSearchPosition
+	if v := input.StorefrontSearchPosition; v != nil {
+		attr.StorefrontSearchPosition = *v
 	}
-	if input.AvailableInGrid != nil {
-		attr.AvailableInGrid = *input.AvailableInGrid
+	if v := input.AvailableInGrid; v != nil {
+		attr.AvailableInGrid = *v
 	}
 
 	savedAttr, appErr := r.Srv().AttributeService().UpsertAttribute(attr)
@@ -377,7 +398,7 @@ func (r *mutationResolver) AttributeUpdate(ctx context.Context, id string, input
 	}
 
 	// clean attribute.
-	if input.Slug != nil && strings.TrimSpace(*input.Slug) == "" {
+	if input.Slug == nil || (input.Slug != nil && strings.TrimSpace(*input.Slug) == "") {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Slug"}, "Slug value cannot be blank", http.StatusBadRequest)
 	}
 
@@ -404,20 +425,88 @@ func (r *mutationResolver) AttributeUpdate(ctx context.Context, id string, input
 		}
 	}
 
-	if len(input.AddValues) != 0 {
-
+	// clean values
+	if len(input.AddValues) > 0 {
 		if attributeInputType == attribute.FILE ||
 			attributeInputType == attribute.REFERENCE {
 
 			return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attribute.InputType"}, "Values cannot be used with input type "+attributeInputType, http.StatusBadRequest)
 		}
 
-		// for _, valueData := range input.AddValues {
-
-		// }
+		for _, valueData := range input.AddValues {
+			if valueData != nil {
+				appErr = r.validateValue(valueData, attributeInputType == attribute.NUMERIC, attributeInputType == attribute.SWATCH)
+				if appErr != nil {
+					return nil, appErr
+				}
+			}
+		}
 	}
 
-	panic("not implemented")
+	// clean remove values
+	attributeValueIDs := util.StringPointerSliceToStringSlice(input.RemoveValues)
+	for _, valueID := range attributeValueIDs {
+		if model.IsValidId(valueID) {
+			attrValues, appErr := r.Srv().AttributeService().FilterAttributeValuesByOptions(attribute.AttributeValueFilterOptions{
+				Id: squirrel.Eq{store.AttributeValueTableName + ".Id": valueID},
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			// check if attribute parent of this attribute value is current attribute to update
+			if attrValues[0].AttributeID != attributeToUpdate.Id {
+				return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "value.AttributeID"}, "Value does not belong to this attribute", http.StatusBadRequest)
+			}
+		}
+	}
+
+	// construct attribute instance
+	if input.Name != nil {
+		attributeToUpdate.Name = *input.Name
+	}
+	if input.Slug != nil {
+		attributeToUpdate.Slug = *input.Slug
+	}
+	if input.Unit != nil {
+		attributeToUpdate.Unit = model.NewString(strings.ToLower(string(*input.Unit)))
+	}
+	if v := input.ValueRequired; v != nil {
+		attributeToUpdate.ValueRequired = *v
+	}
+	if v := input.IsVariantOnly; v != nil {
+		attributeToUpdate.IsVariantOnly = *v
+	}
+	if v := input.VisibleInStorefront; v != nil {
+		attributeToUpdate.VisibleInStoreFront = *v
+	}
+	if v := input.FilterableInStorefront; v != nil {
+		attributeToUpdate.FilterableInStorefront = *v
+	}
+	if v := input.FilterableInDashboard; v != nil {
+		attributeToUpdate.FilterableInDashboard = *v
+	}
+	if v := input.StorefrontSearchPosition; v != nil {
+		attributeToUpdate.StorefrontSearchPosition = *v
+	}
+	if v := input.AvailableInGrid; v != nil {
+		attributeToUpdate.AvailableInGrid = *v
+	}
+
+	attr, appErr := r.Srv().AttributeService().UpsertAttribute(attributeToUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// remove attribute values
+	_, appErr = r.Srv().AttributeService().DeleteAttributeValues(attributeValueIDs...)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &gqlmodel.AttributeUpdate{
+		Attribute: gqlmodel.ModelAttributeToGraphqlAttribute(attr),
+	}, nil
 }
 
 func (r *mutationResolver) AttributeTranslate(ctx context.Context, id string, input gqlmodel.NameTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.AttributeTranslate, error) {
@@ -526,6 +615,10 @@ func (r *mutationResolver) AttributeValueCreate(ctx context.Context, attributeID
 		return nil, appErr
 	}
 
+	// this for ModelAttributeValueToGraphqlAttributeValue()
+	// know how to handle Date, DateTime
+	attributeValue.Attribute = parentAttribute
+
 	return &gqlmodel.AttributeValueCreate{
 		Attribute:      gqlmodel.ModelAttributeToGraphqlAttribute(parentAttribute),
 		AttributeValue: gqlmodel.ModelAttributeValueToGraphqlAttributeValue(attributeValue),
@@ -555,7 +648,85 @@ func (r *mutationResolver) AttributeValueDelete(ctx context.Context, id string) 
 }
 
 func (r *mutationResolver) AttributeValueUpdate(ctx context.Context, id string, input gqlmodel.AttributeValueUpdateInput) (*gqlmodel.AttributeValueUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("AttributeValueUpdate", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageProductTypesAndAttributes) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageProductTypesAndAttributes)
+	}
+
+	// check if attribute value with id = given id does exist:
+	attributeValues, appErr := r.Srv().AttributeService().FilterAttributeValuesByOptions(attribute.AttributeValueFilterOptions{
+		Id:                     squirrel.Eq{store.AttributeValueTableName + ".Id": id},
+		SelectRelatedAttribute: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		attributeValueToUpdate = attributeValues[0]
+		parentAttribute        = attributeValueToUpdate.Attribute
+	)
+
+	// clean input
+	var slugValue string
+	if input.Name != nil {
+		slugValue = slug.Make(*input.Name)
+	}
+
+	if attributeValueToUpdate.Attribute.InputType != attribute.SWATCH {
+		if input.FileURL != nil && *input.FileURL != "" {
+			return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.FileURL"}, "The field FileURL can be defined only for swatch attributes.", http.StatusBadRequest)
+		}
+		if input.ContentType != nil && *input.ContentType != "" {
+			return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.ContentType"}, "The field ContentType can be defined only for swatch attributes.", http.StatusBadRequest)
+		}
+	} else {
+		if input.Value != nil && *input.Value != "" && input.FileURL != nil && *input.FileURL != "" {
+			return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input.Value, input.FileURL"}, "Cannot specify both value and file for swatch attribute.", http.StatusBadRequest)
+		}
+	}
+
+	if input.Value != nil && *input.Value != "" {
+		input.FileURL = nil
+		input.ContentType = nil
+	} else if input.FileURL != nil && *input.FileURL != "" {
+		input.Value = nil
+	}
+
+	// construct instance
+	if v := input.Value; v != nil {
+		attributeValueToUpdate.Value = *v
+	}
+	if v := input.RichText; len(v) > 0 {
+		attributeValueToUpdate.RichText = v
+	}
+	if v := input.FileURL; v != nil {
+		attributeValueToUpdate.FileUrl = v
+	}
+	if v := input.ContentType; v != nil {
+		attributeValueToUpdate.ContentType = v
+	}
+	if v := input.Name; v != nil {
+		attributeValueToUpdate.Name = *v
+	}
+	attributeValueToUpdate.Slug = slugValue
+
+	attrValue, appErr := r.Srv().AttributeService().UpsertAttributeValue(attributeValueToUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// for ModelAttributeValueToGraphqlAttributeValue() to know
+	// how to resolve Date and DateTime
+	attrValue.Attribute = parentAttribute
+
+	return &gqlmodel.AttributeValueUpdate{
+		Attribute:      gqlmodel.ModelAttributeToGraphqlAttribute(attributeValueToUpdate.Attribute),
+		AttributeValue: gqlmodel.ModelAttributeValueToGraphqlAttributeValue(attrValue),
+	}, nil
 }
 
 func (r *mutationResolver) AttributeValueTranslate(ctx context.Context, id string, input gqlmodel.AttributeValueTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.AttributeValueTranslate, error) {
@@ -611,14 +782,14 @@ func (r *mutationResolver) AttributeReorderValues(ctx context.Context, attribute
 
 func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.AttributeFilterInput, sortBy *gqlmodel.AttributeSortingInput, chanelSlug *string, before *string, after *string, first *int, last *int) (*gqlmodel.AttributeCountableConnection, error) {
 	var (
-		session, _             = CheckUserAuthenticated("Attributes", ctx)
-		orderDirection         = gqlmodel.OrderDirectionAsc // default to "ASC"
-		key                    string
+		session, _     = CheckUserAuthenticated("Attributes", ctx)
+		orderDirection = gqlmodel.OrderDirectionAsc // default to "ASC"
+		// key                    = ""
 		attributeFilterOptions = &attribute.AttributeFilterOption{Distinct: true}
 	)
 
 	// if user not authenticated or
-	// authenticated but does not has specific permission(s),
+	// authenticated but does not have specific permission(s),
 	// then show only visible to store attributes
 	if session == nil ||
 		(session != nil && !r.Srv().AccountService().SessionHasPermissionToAny(
@@ -653,7 +824,7 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".VisibleInStoreFront"
 		}
 
-		key = attributeFilterOptions.OrderBy //
+		// key = attributeFilterOptions.OrderBy //
 		attributeFilterOptions.OrderBy += " " + string(orderDirection)
 	}
 
@@ -664,6 +835,22 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 		attributeFilterOptions.FilterableInStorefront = filter.FilterableInStorefront
 		attributeFilterOptions.FilterableInDashboard = filter.FilterableInDashboard
 		attributeFilterOptions.AvailableInGrid = filter.AvailableInGrid
+
+		ids := util.StringPointerSliceToStringSlice(filter.Ids)
+		if len(ids) > 0 {
+			attributeFilterOptions.Id = squirrel.Eq{store.AttributeTableName + ".Id": ids}
+		}
+
+		if filter.Type != nil {
+			attributeFilterOptions.Type = squirrel.Eq{store.AttributeTableName + ".Type": strings.ToLower(string(*filter.Type))}
+		}
+
+		if filter.Search != nil {
+			attributeFilterOptions.Extra = squirrel.Or{
+				squirrel.ILike{store.AttributeTableName + ".Slug": "%" + *filter.Search + "%"},
+				squirrel.ILike{store.AttributeTableName + ".Name": "%" + *filter.Search + "%"},
+			}
+		}
 	}
 
 	// check graphql arguments
@@ -709,3 +896,16 @@ func (r *Resolver) AttributeValue() graphql1.AttributeValueResolver {
 
 type attributeResolver struct{ *Resolver }
 type attributeValueResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *attributeValueResolver) Date(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+func (r *attributeValueResolver) DateTime(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
+	panic(fmt.Errorf("not implemented"))
+}

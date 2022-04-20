@@ -101,6 +101,8 @@
         "OpenExchangeRecuringDurationHours": 2,
         "EnablePermalinkPreviews": true,
         "EnableInlineLatex": true,
+        "GraphqlPlaygroundPath": "/playground",
+        "GraphqlApiPath": "/api/graphql",
         "ImageProxyType": "",
         "ImageProxyURL": "",
         "ImageProxyOptions": "",

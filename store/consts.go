@@ -46,16 +46,16 @@ func init() {
 		ProductVariantChannelListingTableName:    "CreateAt ASC",                //
 		ProductVariantMediaTableName:             "",                            //
 		ProductVariantTableName:                  "SortOrder ASC, Sku ASC",      //
-		ProductVariantTranslationTableName:       "",                            //
+		ProductVariantTranslationTableName:       "Name ASC",                    //
 
 		CheckoutLineTableName: "CreatAt ASC",                // checkout
 		CheckoutTableName:     "CreatAt ASC, UpdateAt DESC", //
 
 		ChannelTableName: "Slug ASC", //channel
 
-		WishlistItemTableName:           "", // wishlist
-		WishlistProductVariantTableName: "", //
-		WishlistTableName:               "", //
+		WishlistItemTableName:           "CreateAt ASC", // wishlist
+		WishlistProductVariantTableName: "",             //
+		WishlistTableName:               "CreateAt ASC", //
 
 		StockTableName:                 "CreateAt ASC", // warehouse
 		WarehouseTableName:             "Slug DESC",    //
@@ -63,7 +63,7 @@ func init() {
 		AllocationTableName:            "CreateAt ASC", //
 		PreOrderAllocationTableName:    "",             //
 
-		AddressTableName:                    "",               // account
+		AddressTableName:                    "CreateAt ASC",   // account
 		UserTableName:                       "Email ASC",      //
 		CustomerEventTableName:              "Date ASC",       //
 		StaffNotificationRecipientTableName: "StaffEmail ASC", //
@@ -81,34 +81,34 @@ func init() {
 		PaymentTableName:     "CreateAt ASC", // payment
 		TransactionTableName: "CreateAt ASC", //
 
-		PluginKeyValueStoreTableName: "PluginKeyValueStore", //
+		PluginKeyValueStoreTableName: "", //
 
-		PreferenceTableName: "Preferences", //
+		PreferenceTableName: "", //
 
-		RoleTableName: "Roles", //
+		RoleTableName: "", //
 
 		CsvExportEventTablename: "Date ASC", // csv
 		CsvExportFileTablename:  "",         //
 
-		BaseAssignedAttributeTableName:         "BaseAssignedAttributes",                 // attribute
+		BaseAssignedAttributeTableName:         "",                                       // attribute
 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
-		AttributeTranslationTableName:          "AttributeTranslations",                  //
-		AttributeValueTableName:                "AttributeValues",                        //
-		AttributeValueTranslationTableName:     "AttributeValueTranslations",             //
-		AssignedPageAttributeValueTableName:    "AssignedPageAttributeValues",            //
-		AssignedPageAttributeTableName:         "AssignedPageAttributes",                 //
-		AttributePageTableName:                 "AttributePages",                         //
-		AssignedVariantAttributeValueTableName: "AssignedVariantAttributeValues",         //
-		AssignedVariantAttributeTableName:      "AssignedVariantAttributes",              //
-		AttributeVariantTableName:              "AttributeVariants",                      //
-		AssignedProductAttributeValueTableName: "AssignedProductAttributeValues",         //
-		AssignedProductAttributeTableName:      "AssignedProductAttributes",              //
-		AttributeProductTableName:              "AttributeProducts",                      //
+		AttributeTranslationTableName:          "",                                       //
+		AttributeValueTableName:                "",                                       //
+		AttributeValueTranslationTableName:     "",                                       //
+		AssignedPageAttributeValueTableName:    "",                                       //
+		AssignedPageAttributeTableName:         "",                                       //
+		AttributePageTableName:                 "",                                       //
+		AssignedVariantAttributeValueTableName: "",                                       //
+		AssignedVariantAttributeTableName:      "",                                       //
+		AttributeVariantTableName:              "",                                       //
+		AssignedProductAttributeValueTableName: "",                                       //
+		AssignedProductAttributeTableName:      "",                                       //
+		AttributeProductTableName:              "",                                       //
 
 		VoucherTableName:                "Code ASC",                         // discount
-		VoucherCategoryTableName:        "VoucherCategories",                //
-		VoucherCollectionTableName:      "VoucherCollections",               //
-		VoucherProductTableName:         "VoucherProducts",                  //
+		VoucherCategoryTableName:        "",                                 //
+		VoucherCollectionTableName:      "",                                 //
+		VoucherProductTableName:         "",                                 //
 		VoucherChannelListingTableName:  "CreateAt ASC",                     //
 		VoucherCustomerTableName:        "VoucherID ASC, CustomerEmail ASC", //
 		SaleChannelListingTableName:     "CreateAt ASC",                     //
@@ -122,26 +122,26 @@ func init() {
 		VoucherProductVariantTableName:  "CreateAt ASC",                     //
 		SaleProductVariantTableName:     "CreateAt ASC",                     //
 
-		ShopTableName:            "Shops",            // shop
-		ShopTranslationTableName: "ShopTranslations", //
-		ShopStaffTableName:       "ShopStaffs",       //
+		ShopTableName:            "", // shop
+		ShopTranslationTableName: "", //
+		ShopStaffTableName:       "", //
 
 		MenuTableName:                "CreateAt ASC",     // menu
 		MenuItemTableName:            "SortOrder ASC",    //
 		MenuItemTranslationTableName: "LanguageCode ASC", //
 
-		ShippingMethodTableName:                "",                               // shipping
-		ShippingZoneTableName:                  "CreateAt ASC",                   //
-		ShippingZoneChannelTableName:           "ShippingZoneChannels",           //
-		ShippingMethodTranslationTableName:     "",                               //
-		ShippingMethodPostalCodeRuleTableName:  "",                               //
-		ShippingMethodChannelListingTableName:  "CreateAt ASC",                   //
-		ShippingMethodExcludedProductTableName: "ShippingMethodExcludedProducts", //
+		ShippingMethodTableName:                "",             // shipping
+		ShippingZoneTableName:                  "CreateAt ASC", //
+		ShippingZoneChannelTableName:           "",             //
+		ShippingMethodTranslationTableName:     "",             //
+		ShippingMethodPostalCodeRuleTableName:  "",             //
+		ShippingMethodChannelListingTableName:  "CreateAt ASC", //
+		ShippingMethodExcludedProductTableName: "",             //
 
-		JobTableName: "Jobs", // job
+		JobTableName: "", // job
 
-		FileInfoTableName:      "FileInfos",      // file
-		UploadSessionTableName: "UploadSessions", //
+		FileInfoTableName:      "", // file
+		UploadSessionTableName: "", //
 
 		PageTableName:            "Slug ASC",         // page
 		PageTranslationtableName: "LanguageCode ASC", //

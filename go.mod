@@ -71,6 +71,8 @@ require (
 	willnorris.com/go/imageproxy v0.11.2
 )
 
+require github.com/graph-gophers/dataloader v5.0.0+incompatible
+
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect

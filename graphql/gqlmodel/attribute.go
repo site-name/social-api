@@ -119,8 +119,10 @@ type AttributeValue struct {
 	File        *File                             `json:"file"`
 	RichText    model.StringInterface             `json:"richText"`
 	Boolean     *bool                             `json:"boolean"`
-	Date        func() *time.Time                 `json:"date"`
-	DateTime    func() *time.Time                 `json:"dateTime"`
+	Date        *time.Time                        `json:"date"`
+	DateTime    *time.Time                        `json:"dateTime"`
+
+	AttributeID string `json:"-"`
 }
 
 func (AttributeValue) IsNode() {}
@@ -144,6 +146,18 @@ func ModelAttributeValueToGraphqlAttributeValue(a *attribute.AttributeValue) *At
 
 	if a.FileUrl != nil {
 		res.File.URL = *a.FileUrl
+	}
+
+	if a.Attribute != nil {
+		// set DateTime
+		if a.Attribute.InputType == attribute.DATE_TIME {
+			res.DateTime = a.Datetime
+		}
+
+		// set Date
+		if a.Attribute.InputType == attribute.DATE {
+			res.Date = a.Datetime
+		}
 	}
 
 	return res
@@ -244,4 +258,53 @@ func ModelAttributeValueTranslationToGraphqlAttributeValueTranslation(t *attribu
 	}
 
 	return res
+}
+
+type AttributeValueCreateUpdateInterface interface {
+	GetName() *string // should not be nil
+	GetValue() *string
+	GetRichText() model.StringInterface
+	GetFileURL() *string
+	GetContentType() *string
+}
+
+var (
+	_ AttributeValueCreateUpdateInterface = (*AttributeValueCreateInput)(nil)
+	_ AttributeValueCreateUpdateInterface = (*AttributeValueUpdateInput)(nil)
+)
+
+func (a *AttributeValueCreateInput) GetName() *string {
+	return &a.Name
+}
+func (a *AttributeValueCreateInput) GetValue() *string {
+	return a.Value
+}
+func (a *AttributeValueCreateInput) GetFileURL() *string {
+	return a.FileURL
+}
+func (a *AttributeValueCreateInput) GetContentType() *string {
+	return a.ContentType
+}
+func (a *AttributeValueCreateInput) GetRichText() model.StringInterface {
+	return a.RichText
+}
+
+//----------------------------
+func (a *AttributeValueUpdateInput) GetName() *string {
+	if a.Name == nil {
+		return model.NewString("")
+	}
+	return a.Name
+}
+func (a *AttributeValueUpdateInput) GetValue() *string {
+	return a.Value
+}
+func (a *AttributeValueUpdateInput) GetFileURL() *string {
+	return a.FileURL
+}
+func (a *AttributeValueUpdateInput) GetContentType() *string {
+	return a.ContentType
+}
+func (a *AttributeValueUpdateInput) GetRichText() model.StringInterface {
+	return a.RichText
 }

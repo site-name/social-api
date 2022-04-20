@@ -60,10 +60,10 @@ func (s *ServiceCsv) prepareProductsRelationsData(products product_and_discount.
 		fields = append(fields, channelFields.Values()...)
 	}
 
-	var (
-		channelPkLookup   = channelFields.Pop("channel_pk")
-		channelSlugLookup = channelFields.Pop("slug")
-	)
+	// var (
+	// 	channelPkLookup   = channelFields.Pop("channel_pk")
+	// 	channelSlugLookup = channelFields.Pop("slug")
+	// )
 
 	for _, data := range products.Flat() {
 		var (
@@ -88,6 +88,8 @@ func (s *ServiceCsv) prepareProductsRelationsData(products product_and_discount.
 
 		s.handleAttributeData(pk, data, attributeIDs, resultData, ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS, "product attribute")
 	}
+
+	panic("not implt")
 }
 
 func (s *ServiceCsv) getVariantsRelationsData(products product_and_discount.Products, exportFields, attributeIDs, warehouseIDs, channelIDs []string) {

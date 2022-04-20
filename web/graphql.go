@@ -58,7 +58,7 @@ func commonGraphHandler(handler http.Handler) func(c *shared.Context, w http.Res
 			context.WithValue(
 				context.WithValue(r.Context(), shared.APIContextKey, c),
 				dataloaders.DataloaderContextKey,
-				dataloaders.NewLoaders(c.App),
+				dataloaders.NewLoaders(c.App.Srv()),
 			),
 		))
 	}

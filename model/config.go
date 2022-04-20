@@ -232,7 +232,7 @@ const (
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
 
 	GRAPHQL_API_PLAYGROUND_PATH = "/playground"
-	GRAPHWL_API_PATH            = "/api/graphql"
+	GRAPHQL_API_PATH            = "/api/graphql"
 )
 
 func GetDefaultAppCustomURLSchemes() []string {
@@ -843,7 +843,7 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 		s.GraphqlPlaygroundPath = NewString(GRAPHQL_API_PLAYGROUND_PATH)
 	}
 	if s.GraphqlApiPath == nil {
-		s.GraphqlApiPath = NewString(GRAPHWL_API_PATH)
+		s.GraphqlApiPath = NewString(GRAPHQL_API_PATH)
 	}
 }
 
