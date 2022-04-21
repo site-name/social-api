@@ -6402,11 +6402,51 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_disc
 
 }
 
+func (s *RetryLayerProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTypeStore.Count(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 
 	tries := 0
 	for {
 		result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductTypeStore.FilterbyOption(options)
 		if err == nil {
 			return result, nil
 		}

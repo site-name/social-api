@@ -56,6 +56,11 @@ func (p *ProductType) DeepCopy() *ProductType {
 type ProductTypeFilterOption struct {
 	Id   squirrel.Sqlizer
 	Name squirrel.Sqlizer
+
+	AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
+
+	Limit int
+	Extra squirrel.Sqlizer
 }
 
 func (p *ProductType) String() string {

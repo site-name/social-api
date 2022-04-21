@@ -5,6 +5,7 @@ package graphql
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -13,19 +14,78 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/graph-gophers/dataloader"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/graphql/dataloaders"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 func (r *attributeResolver) ProductTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	parser := &GraphqlArgumentsParser{
+		First:          first,
+		Last:           last,
+		Before:         before,
+		After:          after,
+		OrderDirection: gqlmodel.OrderDirectionAsc,
+	}
+	if appErr := parser.IsValid(); appErr != nil {
+		return nil, appErr
+	}
+
+	expr, appErr := parser.ConstructSqlExpr(store.ProductTypeTableName + ".Slug") // since product type table has "slug" ordering
+	if appErr != nil {
+		appErr.Where = "attributeResolver.ProductTypes"
+		return nil, appErr
+	}
+	limit := parser.Limit()
+
+	filterOptions := &product_and_discount.ProductTypeFilterOption{
+		Extra:       expr,
+		Limit:       limit + 1, // +1 to check if there is a next page available
+		AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": obj.ID},
+	}
+	// find product types
+	prdTypes, appErr := r.Srv().ProductService().ProductTypesByOptions(filterOptions)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+
+		return &gqlmodel.ProductTypeCountableConnection{
+			TotalCount: model.NewInt(0),
+		}, nil
+	}
+
+	// count total number of product types
+	count, err := r.Srv().Store.ProductType().Count(filterOptions)
+	if err != nil {
+		return nil, model.NewAppError("attributeResolver.ProductTypes", "graphql.attribute.error_counting_number_of_product_types.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	result := &gqlmodel.ProductTypeCountableConnection{
+		TotalCount: model.NewInt(int(count)),
+	}
+
+	for i := 0; i < util.Min(limit, len(prdTypes)); i++ {
+		result.Edges = append(result.Edges, &gqlmodel.ProductTypeCountableEdge{
+			Cursor: base64.StdEncoding.EncodeToString([]byte(prdTypes[i].Slug)),
+			Node:   gqlmodel.SystemProductTypeToGraphqlProductType(prdTypes[i]),
+		})
+	}
+
+	result.PageInfo = &gqlmodel.PageInfo{
+		HasNextPage:     len(prdTypes) > limit,
+		HasPreviousPage: parser.HasPreviousPage(),
+		StartCursor:     &result.Edges[0].Cursor,
+		EndCursor:       &result.Edges[len(result.Edges)-1].Cursor,
+	}
+
+	return result, nil
 }
 
 func (r *attributeResolver) ProductVariantTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
@@ -85,9 +145,11 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 		return nil, appErr
 	}
 
-	attrValueFilterOptions.Extra = squirrel.And{
-		attrValueFilterOptions.Extra,
-		expression,
+	if attrValueFilterOptions.Extra != nil {
+		attrValueFilterOptions.Extra = squirrel.And{
+			attrValueFilterOptions.Extra,
+			expression,
+		}
 	}
 
 	limit := parser.Limit()
@@ -126,7 +188,7 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 		}
 
 		result.Edges = append(result.Edges, &gqlmodel.AttributeValueCountableEdge{
-			Cursor: util.Base64Encode(cursor),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(cursor)),
 			Node:   gqlmodel.ModelAttributeValueToGraphqlAttributeValue(attributeValues[i]),
 		})
 	}
@@ -165,10 +227,10 @@ func (r *attributeValueResolver) InputType(ctx context.Context, obj *gqlmodel.At
 
 	result, err := thunk()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to execute thunk")
+		return nil, err
 	}
 
-	attr := result.(*attribute.Attribute) // type casting
+	attr := result.(*attribute.Attribute)
 	if attr.Type == attribute.PAGE_TYPE {
 
 		if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManagePages) {
@@ -187,7 +249,7 @@ func (r *attributeValueResolver) InputType(ctx context.Context, obj *gqlmodel.At
 }
 
 func (r *attributeValueResolver) Reference(ctx context.Context, obj *gqlmodel.AttributeValue) (*string, error) {
-	panic(fmt.Errorf("not implemented"))
+	panic("not implemented")
 }
 
 func (r *mutationResolver) AttributeCreate(ctx context.Context, input gqlmodel.AttributeCreateInput) (*gqlmodel.AttributeCreate, error) {

@@ -5460,6 +5460,22 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_disc
 	return result, err
 }
 
+func (s *TimerLayerProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.Count(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.Count", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
 	start := timemodule.Now()
 
@@ -5472,6 +5488,22 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutT
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterProductTypesByCheckoutToken", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductTypeStore.FilterbyOption(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductTypeStore.FilterbyOption", success, elapsed)
 	}
 	return result, err
 }

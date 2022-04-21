@@ -89,11 +89,11 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	queryString, args, err := ps.GetQueryBuilder().
 		Select(ps.ModelFields()...).
 		From(store.ProductTypeTableName).
-		InnerJoin(store.ProductTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
-		InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.ProductID = Products.Id)").
-		InnerJoin(store.CheckoutLineTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
-		InnerJoin(store.CheckoutTableName + " ON (Checkouts.Token = CheckoutLines.CheckoutID)").
-		Where(squirrel.Eq{"Checkouts.Token": checkoutToken}).
+		InnerJoin(store.ProductTableName+" ON (ProductTypes.Id = Products.ProductTypeID)").
+		InnerJoin(store.ProductVariantTableName+" ON (ProductVariants.ProductID = Products.Id)").
+		InnerJoin(store.CheckoutLineTableName+" ON (CheckoutLines.VariantID = ProductVariants.Id)").
+		InnerJoin(store.CheckoutTableName+" ON (Checkouts.Token = CheckoutLines.CheckoutID)").
+		Where("Checkouts.Token = ?", checkoutToken).
 		ToSql()
 
 	if err != nil {
@@ -136,9 +136,9 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 		Select(pts.ModelFields()...).
 		From(store.ProductTypeTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTypeTableName]).
-		InnerJoin(store.ProductTableName + " ON (Products.ProductTypeID = ProductTypes.Id)").
-		InnerJoin(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
-		Where(squirrel.Eq{"ProductVariants.Id": variantID})
+		InnerJoin(store.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
+		InnerJoin(store.ProductVariantTableName+" ON (Products.Id = ProductVariants.ProductID)").
+		Where("ProductVariants.Id = ?", variantID)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -159,16 +159,26 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 
 func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
-		Select("*").
+		Select(pts.ModelFields()...).
 		From(store.ProductTypeTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
 
 	// parse options
+	if options.Limit > 0 {
+		query = query.Limit(uint64(options.Limit))
+	}
 	if options.Id != nil {
 		query = query.Where(options.Id)
 	}
 	if options.Name != nil {
 		query = query.Where(options.Name)
+	}
+	if options.AttributeID != nil {
+		query = query.InnerJoin(store.AttributeProductTableName + " ON AttributeProducts.ProductTypeID = ProductTypes.Id").
+			Where(options.AttributeID)
+	}
+	if options.Extra != nil {
+		query = query.Where(options.Extra)
 	}
 
 	return query
@@ -207,4 +217,22 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *product_and_discount.Pro
 	}
 
 	return res, nil
+}
+
+func (pts *SqlProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+	options.Limit = 0 // unset limit
+
+	query := pts.commonQueryBuilder(options)
+
+	queryStr, args, err := pts.GetQueryBuilder().Select("COUNT(*)").FromSelect(query, "c").ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "Count_ToSql")
+	}
+
+	count, err := pts.GetReplica().SelectInt(queryStr, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of product types by options")
+	}
+
+	return count, nil
 }

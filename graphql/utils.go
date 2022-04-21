@@ -34,13 +34,6 @@ func CheckUserAuthenticated(where string, ctx context.Context) (*model.Session, 
 	return session, nil
 }
 
-// GraphqlArgumentsParser validates against these rules:
-//
-// 1) Either First or Last must be provided, not both
-//
-// 2) First and Before can not go together
-//
-// 3) Last and After can not go together
 type GraphqlArgumentsParser struct {
 	First          *int
 	Last           *int
@@ -49,8 +42,18 @@ type GraphqlArgumentsParser struct {
 	OrderDirection gqlmodel.OrderDirection
 }
 
+// IsValid validates against these rules:
+//
+// 1) Either First or Last must be provided, not both, can't be 0
+//
+// 2) First and Before can not go together
+//
+// 3) Last and After can not go together
 func (g *GraphqlArgumentsParser) IsValid() *model.AppError {
-	if (g.First == nil && g.Last == nil) || (g.First != nil && g.Last != nil) {
+	if (g.First == nil && g.Last == nil) || // both not provided
+		(g.First != nil && g.Last != nil) || // both provided
+		(g.First != nil && *g.First == 0) || // first == 0
+		(g.Last != nil && *g.Last == 0) { // last == 0
 		return model.NewAppError("GraphqlArgumentsParser.IsValid", GraphqlArgumentInvalidID, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
 	}
 	if g.First != nil && g.Before != nil {
@@ -83,11 +86,9 @@ func (g *GraphqlArgumentsParser) decode() (string, *model.AppError) {
 
 // ConstructSqlExpr does:
 //
-// 1) check if arguments are provided properly
+// 1) decodes given before or after cursor
 //
-// 2) decodes given before or after cursor
-//
-// 3) construct a squirrel expression based on given key
+// 2) construct a squirrel expression based on given key
 //  Eg
 //  ConstructSqlExpr("TableName.FieldName") => squirrel.Gt{"TableName.FieldName": ...}
 //
@@ -128,11 +129,8 @@ func (g *GraphqlArgumentsParser) ConstructSqlExpr(key string) (squirrel.Sqlizer,
 func (g *GraphqlArgumentsParser) Limit() int {
 	if g.First != nil {
 		return *g.First
-	} else if g.Last != nil {
-		return *g.Last
 	}
-
-	return 0
+	return *g.Last
 }
 
 // HasPreviousPage determines if there is previous page

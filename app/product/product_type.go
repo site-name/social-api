@@ -65,3 +65,24 @@ func (s *ServiceProduct) ProductTypeByOption(options *product_and_discount.Produ
 
 	return productType, nil
 }
+
+func (s *ServiceProduct) ProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, *model.AppError) {
+	prdTypes, err := s.srv.Store.ProductType().FilterbyOption(options)
+	var (
+		statusCode int
+		errMsg     string
+	)
+
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(prdTypes) == 0 {
+		statusCode = http.StatusNotFound
+	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("ProductTypesByOptions", "app.product.error_finding_product_types_by_options.app_error", nil, errMsg, statusCode)
+	}
+
+	return prdTypes, nil
+}

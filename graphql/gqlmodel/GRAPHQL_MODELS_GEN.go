@@ -3014,25 +3014,7 @@ type ProductTranslation struct {
 
 func (ProductTranslation) IsNode() {}
 
-type ProductType struct {
-	ID                  string                        `json:"id"`
-	Name                string                        `json:"name"`
-	Slug                string                        `json:"slug"`
-	HasVariants         bool                          `json:"hasVariants"`
-	IsShippingRequired  bool                          `json:"isShippingRequired"`
-	IsDigital           bool                          `json:"isDigital"`
-	Weight              *Weight                       `json:"weight"`
-	PrivateMetadata     []*MetadataItem               `json:"privateMetadata"`
-	Metadata            []*MetadataItem               `json:"metadata"`
-	Kind                ProductTypeKindEnum           `json:"kind"`
-	TaxType             *TaxType                      `json:"taxType"`
-	VariantAttributes   []*Attribute                  `json:"variantAttributes"`
-	ProductAttributes   []*Attribute                  `json:"productAttributes"`
-	AvailableAttributes *AttributeCountableConnection `json:"availableAttributes"`
-}
 
-func (ProductType) IsNode()               {}
-func (ProductType) IsObjectWithMetadata() {}
 
 type ProductTypeBulkDelete struct {
 	Count  int             `json:"count"`

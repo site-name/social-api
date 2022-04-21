@@ -1,6 +1,7 @@
 package gqlmodel
 
 import (
+	"strings"
 	"time"
 
 	"github.com/sitename/sitename/model"
@@ -107,4 +108,73 @@ func SystemProductToGraphqlProduct(p *product_and_discount.Product) *Product {
 		Metadata:        MapToGraphqlMetaDataItems(p.Metadata),
 		TaxType:         &TaxType{}, // TODO: fixme
 	}
+}
+
+// -----------------------------------
+// initial implementation
+// type ProductType struct {
+// 	ID                  string                        `json:"id"`
+// 	Name                string                        `json:"name"`
+// 	Slug                string                        `json:"slug"`
+// 	HasVariants         bool                          `json:"hasVariants"`
+// 	IsShippingRequired  bool                          `json:"isShippingRequired"`
+// 	IsDigital           bool                          `json:"isDigital"`
+// 	Weight              *Weight                       `json:"weight"`
+// 	PrivateMetadata     []*MetadataItem               `json:"privateMetadata"`
+// 	Metadata            []*MetadataItem               `json:"metadata"`
+// 	Kind                ProductTypeKindEnum           `json:"kind"`
+// 	TaxType             *TaxType                      `json:"taxType"`
+// 	VariantAttributes   []*Attribute                  `json:"variantAttributes"`
+// 	ProductAttributes   []*Attribute                  `json:"productAttributes"`
+// 	AvailableAttributes *AttributeCountableConnection `json:"availableAttributes"`
+// }
+
+// func (ProductType) IsNode()               {}
+// func (ProductType) IsObjectWithMetadata() {}
+
+type ProductType struct {
+	ID                  string                               `json:"id"`
+	Name                string                               `json:"name"`
+	Slug                string                               `json:"slug"`
+	HasVariants         bool                                 `json:"hasVariants"`
+	IsShippingRequired  bool                                 `json:"isShippingRequired"`
+	IsDigital           bool                                 `json:"isDigital"`
+	Weight              *Weight                              `json:"weight"`
+	PrivateMetadata     []*MetadataItem                      `json:"privateMetadata"`
+	Metadata            []*MetadataItem                      `json:"metadata"`
+	Kind                ProductTypeKindEnum                  `json:"kind"`
+	TaxType             func() *TaxType                      `json:"taxType"`
+	VariantAttributeIDs []string                             `json:"variantAttributes"`
+	ProductAttributeIDs []string                             `json:"productAttributes"`
+	AvailableAttributes func() *AttributeCountableConnection `json:"availableAttributes"`
+}
+
+func (ProductType) IsNode()               {}
+func (ProductType) IsObjectWithMetadata() {}
+
+func SystemProductTypeToGraphqlProductType(p *product_and_discount.ProductType) *ProductType {
+	if p == nil {
+		return nil
+	}
+
+	res := &ProductType{
+		ID:                 p.Id,
+		Name:               p.Name,
+		Slug:               p.Slug,
+		HasVariants:        *p.HasVariants,
+		IsShippingRequired: *p.IsShippingRequired,
+		IsDigital:          *p.IsDigital,
+		Kind:               ProductTypeKindEnum(strings.ToUpper(string(p.Kind))),
+		Metadata:           MapToGraphqlMetaDataItems(p.Metadata),
+		PrivateMetadata:    MapToGraphqlMetaDataItems(p.PrivateMetadata),
+	}
+
+	if p.Weight != nil {
+		res.Weight = &Weight{
+			Unit:  WeightUnitsEnum(strings.ToUpper(string(p.WeightUnit))),
+			Value: float64(*p.Weight),
+		}
+	}
+
+	return res
 }
