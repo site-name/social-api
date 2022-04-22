@@ -3014,8 +3014,6 @@ type ProductTranslation struct {
 
 func (ProductTranslation) IsNode() {}
 
-
-
 type ProductTypeBulkDelete struct {
 	Count  int             `json:"count"`
 	Errors []*ProductError `json:"errors"`
