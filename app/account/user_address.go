@@ -43,8 +43,7 @@ func (s *ServiceAccount) FilterUserAddressRelations(options *account.UserAddress
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		errMsg = err.Error()
-	}
-	if len(relations) == 0 {
+	} else if len(relations) == 0 {
 		statusCode = http.StatusNotFound
 	}
 

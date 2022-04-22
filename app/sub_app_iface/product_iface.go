@@ -135,4 +135,5 @@ type ProductService interface {
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError
 	ProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, *model.AppError)
+	CountProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) (int64, *model.AppError)
 }

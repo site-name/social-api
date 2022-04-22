@@ -14,6 +14,27 @@ type ProductTypeStore struct {
 	mock.Mock
 }
 
+// Count provides a mock function with given fields: options
+func (_m *ProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+	ret := _m.Called(options)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductTypeFilterOption) int64); ok {
+		r0 = rf(options)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductTypeFilterOption) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateIndexesIfNotExists provides a mock function with given fields:
 func (_m *ProductTypeStore) CreateIndexesIfNotExists() {
 	_m.Called()
@@ -35,6 +56,29 @@ func (_m *ProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken stri
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(checkoutToken)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterbyOption provides a mock function with given fields: options
+func (_m *ProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+	ret := _m.Called(options)
+
+	var r0 []*product_and_discount.ProductType
+	if rf, ok := ret.Get(0).(func(*product_and_discount.ProductTypeFilterOption) []*product_and_discount.ProductType); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*product_and_discount.ProductType)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*product_and_discount.ProductTypeFilterOption) error); ok {
+		r1 = rf(options)
 	} else {
 		r1 = ret.Error(1)
 	}

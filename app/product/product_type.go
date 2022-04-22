@@ -86,3 +86,15 @@ func (s *ServiceProduct) ProductTypesByOptions(options *product_and_discount.Pro
 
 	return prdTypes, nil
 }
+
+func (s *ServiceProduct) CountProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) (int64, *model.AppError) {
+	if options == nil {
+		options = &product_and_discount.ProductTypeFilterOption{}
+	}
+	count, err := s.srv.Store.ProductType().Count(options)
+	if err != nil {
+		return 0, model.NewAppError("CountProductTypesByOptions", "app.product.error_counting_product_types_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return count, nil
+}

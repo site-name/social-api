@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -62,9 +61,9 @@ func (r *attributeResolver) ProductTypes(ctx context.Context, obj *gqlmodel.Attr
 	}
 
 	// count total number of product types
-	count, err := r.Srv().Store.ProductType().Count(filterOptions)
-	if err != nil {
-		return nil, model.NewAppError("attributeResolver.ProductTypes", "graphql.attribute.error_counting_number_of_product_types.app_error", nil, err.Error(), http.StatusInternalServerError)
+	count, appErr := r.Srv().ProductService().CountProductTypesByOptions(filterOptions)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	result := &gqlmodel.ProductTypeCountableConnection{
@@ -89,7 +88,66 @@ func (r *attributeResolver) ProductTypes(ctx context.Context, obj *gqlmodel.Attr
 }
 
 func (r *attributeResolver) ProductVariantTypes(ctx context.Context, obj *gqlmodel.Attribute, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	parser := &GraphqlArgumentsParser{
+		First:          first,
+		Last:           last,
+		Before:         before,
+		After:          after,
+		OrderDirection: gqlmodel.OrderDirectionAsc,
+	}
+	if appErr := parser.IsValid(); appErr != nil {
+		return nil, appErr
+	}
+
+	expr, appErr := parser.ConstructSqlExpr(store.AttributeVariantTableName + ".Slug") // since product type table has slug as ordering
+	if appErr != nil {
+		return nil, appErr
+	}
+	limit := parser.Limit()
+
+	productTypeFilterOptions := &product_and_discount.ProductTypeFilterOption{
+		Limit:       limit + 1, // +1 to determine if there is next page available
+		Extra:       expr,
+		AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": obj.ID},
+	}
+
+	// find product types
+	productTypes, appErr := r.Srv().ProductService().ProductTypesByOptions(productTypeFilterOptions)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+
+		return &gqlmodel.ProductTypeCountableConnection{
+			TotalCount: model.NewInt(0),
+		}, nil
+	}
+
+	// count
+	count, appErr := r.Srv().ProductService().CountProductTypesByOptions(productTypeFilterOptions)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	result := &gqlmodel.ProductTypeCountableConnection{
+		TotalCount: model.NewInt(int(count)),
+	}
+
+	for i := 0; i > util.Min(len(productTypes), limit); i++ {
+		result.Edges = append(result.Edges, &gqlmodel.ProductTypeCountableEdge{
+			Cursor: productTypes[i].Slug,
+			Node:   gqlmodel.SystemProductTypeToGraphqlProductType(productTypes[i]),
+		})
+	}
+
+	result.PageInfo = &gqlmodel.PageInfo{
+		StartCursor:     &result.Edges[0].Cursor,
+		EndCursor:       &result.Edges[len(result.Edges)-1].Cursor,
+		HasNextPage:     len(productTypes) > limit,
+		HasPreviousPage: parser.HasPreviousPage(),
+	}
+
+	return result, nil
 }
 
 func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute, sortBy *gqlmodel.AttributeChoicesSortingInput, filter *gqlmodel.AttributeValueFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.AttributeValueCountableConnection, error) {
@@ -150,6 +208,8 @@ func (r *attributeResolver) Choices(ctx context.Context, obj *gqlmodel.Attribute
 			attrValueFilterOptions.Extra,
 			expression,
 		}
+	} else {
+		attrValueFilterOptions.Extra = expression
 	}
 
 	limit := parser.Limit()
@@ -844,15 +904,15 @@ func (r *mutationResolver) AttributeReorderValues(ctx context.Context, attribute
 
 func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.AttributeFilterInput, sortBy *gqlmodel.AttributeSortingInput, chanelSlug *string, before *string, after *string, first *int, last *int) (*gqlmodel.AttributeCountableConnection, error) {
 	var (
-		session, _     = CheckUserAuthenticated("Attributes", ctx)
-		orderDirection = gqlmodel.OrderDirectionAsc // default to "ASC"
-		// key                    = ""
+		session, _             = CheckUserAuthenticated("Attributes", ctx)
+		orderDirection         = gqlmodel.OrderDirectionAsc         // default to "ASC"
+		key                    = store.AttributeTableName + ".Slug" // default to "Attributes.Slug" since attribute table has slug as default ordering
 		attributeFilterOptions = &attribute.AttributeFilterOption{Distinct: true}
 	)
 
 	// if user not authenticated or
 	// authenticated but does not have specific permission(s),
-	// then show only visible to store attributes
+	// then show only visible to store front attributes
 	if session == nil ||
 		(session != nil && !r.Srv().AccountService().SessionHasPermissionToAny(
 			session,
@@ -876,17 +936,17 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".IsVariantOnly"
 		case gqlmodel.AttributeSortFieldName:
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".Name"
-		case gqlmodel.AttributeSortFieldSlug:
-			attributeFilterOptions.OrderBy = store.AttributeTableName + ".Slug"
 		case gqlmodel.AttributeSortFieldStorefrontSearchPosition:
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".StorefrontSearchPosition"
 		case gqlmodel.AttributeSortFieldValueRequired:
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".ValueRequired"
 		case gqlmodel.AttributeSortFieldVisibleInStorefront:
 			attributeFilterOptions.OrderBy = store.AttributeTableName + ".VisibleInStoreFront"
+		case gqlmodel.AttributeSortFieldSlug:
+			attributeFilterOptions.OrderBy = store.AttributeTableName + ".Slug"
 		}
 
-		// key = attributeFilterOptions.OrderBy //
+		key = attributeFilterOptions.OrderBy // re allocate key
 		attributeFilterOptions.OrderBy += " " + string(orderDirection)
 	}
 
@@ -927,6 +987,20 @@ func (r *queryResolver) Attributes(ctx context.Context, filter *gqlmodel.Attribu
 		return nil, appErr
 	}
 
+	expression, appErr := parser.ConstructSqlExpr(key)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if attributeFilterOptions.Extra != nil {
+		attributeFilterOptions.Extra = squirrel.And{
+			attributeFilterOptions.Extra,
+			expression,
+		}
+	} else {
+		attributeFilterOptions.Extra = expression
+	}
+
 	panic("not implt")
 }
 
@@ -958,16 +1032,3 @@ func (r *Resolver) AttributeValue() graphql1.AttributeValueResolver {
 
 type attributeResolver struct{ *Resolver }
 type attributeValueResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *attributeValueResolver) Date(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-func (r *attributeValueResolver) DateTime(ctx context.Context, obj *gqlmodel.AttributeValue) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented"))
-}
