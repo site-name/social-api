@@ -5,12 +5,19 @@ package graphql
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/app"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 func (r *checkoutResolver) User(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.User, error) {
@@ -46,6 +53,23 @@ func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([
 }
 
 func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID *string, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutAddPromoCode, error) {
+	// if (checkoutID == nil && token == nil) || (checkoutID != nil && token != nil) {
+	// 	return nil, model.NewAppError("CheckoutAddPromoCode", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutID, token"}, "", http.StatusBadRequest)
+	// }
+
+	// var tok string
+	// if checkoutID != nil {
+	// 	tok = *checkoutID
+	// } else if token != nil {
+	// 	tok = token.String()
+	// }
+
+	// checkOut, appErr := r.Srv().CheckoutService().CheckoutByOption(&checkout.CheckoutFilterOption{
+	// 	Token: squirrel.Eq{store.CheckoutTableName + ".Token": tok},
+	// })
+	// if appErr != nil {
+
+	// }
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -94,30 +118,124 @@ func (r *mutationResolver) CheckoutLanguageCodeUpdate(ctx context.Context, check
 }
 
 func (r *queryResolver) Checkout(ctx context.Context, token *uuid.UUID) (*gqlmodel.Checkout, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, sessionAppErr := CheckUserAuthenticated("Checkout", ctx)
+	if sessionAppErr != nil {
+		return nil, sessionAppErr
+	}
+
+	if token == nil {
+		return nil, model.NewAppError("Checkout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "", http.StatusBadRequest)
+	}
+
+	checkOut, appErr := r.Srv().CheckoutService().CheckoutByOption(&checkout.CheckoutFilterOption{
+		Token:                squirrel.Eq{store.CheckoutTableName + ".Token": token.String()},
+		SelectRelatedChannel: true, // NOTE this
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return nil, nil
+	}
+
+	// resolve checkout in active channel
+	if checkOut.GetChannel().IsActive {
+		// resolve checkout for anonymous customer
+		if checkOut.UserID == nil {
+			return gqlmodel.SystemCheckoutToGraphqlCheckout(checkOut), nil
+		}
+
+		// resolve checkout for logged-in customer
+		if checkOut.UserID != nil &&
+			*checkOut.UserID == session.UserId {
+			return gqlmodel.SystemCheckoutToGraphqlCheckout(checkOut), nil
+		}
+	}
+
+	// resolve checkout for staff user
+	if r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageCheckouts) {
+		return gqlmodel.SystemCheckoutToGraphqlCheckout(checkOut), nil
+	}
+
+	return nil, nil
 }
 
 func (r *queryResolver) Checkouts(ctx context.Context, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.CheckoutCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("Checkouts", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageCheckouts) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageCheckouts)
+	}
+
+	parser := &GraphqlArgumentsParser{
+		First:          first,
+		Last:           last,
+		Before:         before,
+		After:          after,
+		OrderDirection: gqlmodel.OrderDirectionAsc,
+	}
+	if appErr := parser.IsValid(); appErr != nil {
+		return nil, appErr
+	}
+
+	expr, appErr := parser.ConstructSqlExpr(store.CheckoutTableName + ".CreateAt") // checkout table has createAt is ordering
+	if appErr != nil {
+		return nil, appErr
+	}
+	limit := parser.Limit()
+
+	checkoutFilterOptions := &checkout.CheckoutFilterOption{
+		Extra: expr,
+		Limit: limit + 1, // +1 to determine if there is next page available
+	}
+	if channel != nil {
+		checkoutFilterOptions.ChannelID = squirrel.Eq{store.CheckoutTableName + ".ChannelID": *channel}
+	}
+
+	// finding checkouts
+	checkouts, appErr := r.Srv().CheckoutService().CheckoutsByOption(checkoutFilterOptions)
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+
+		return &gqlmodel.CheckoutCountableConnection{
+			TotalCount: model.NewInt(0),
+		}, nil
+	}
+
+	// counting checkout
+	count, err := r.Srv().Store.Checkout().CountCheckouts(checkoutFilterOptions)
+	if err != nil {
+		return nil, model.NewAppError("Checkouts", "app.checkout.error_counting_checkouts.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// construct result
+	result := &gqlmodel.CheckoutCountableConnection{
+		TotalCount: model.NewInt(int(count)),
+	}
+
+	for i := 0; i < util.Min(limit, len(checkouts)); i++ {
+		result.Edges = append(result.Edges, &gqlmodel.CheckoutCountableEdge{
+			Cursor: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", checkouts[i].CreateAt))),
+			Node:   gqlmodel.SystemCheckoutToGraphqlCheckout(checkouts[i]),
+		})
+	}
+
+	result.PageInfo = &gqlmodel.PageInfo{
+		StartCursor:     &result.Edges[0].Cursor,
+		EndCursor:       &result.Edges[len(result.Edges)-1].Cursor,
+		HasNextPage:     len(checkouts) > limit,
+		HasPreviousPage: parser.HasPreviousPage(),
+	}
+
+	return result, nil
 }
 
 // Checkout returns graphql1.CheckoutResolver implementation.
 func (r *Resolver) Checkout() graphql1.CheckoutResolver { return &checkoutResolver{r} }
 
 type checkoutResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *checkoutResolver) AvailablePaymentGateways(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.PaymentGateway, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-func (r *checkoutResolver) DeliveryMethod(ctx context.Context, obj *gqlmodel.Checkout) (gqlmodel.DeliveryMethod, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-func (r *mutationResolver) CheckoutShippingMethodUpdate(ctx context.Context, checkoutID *string, shippingMethodID string, token *uuid.UUID) (*gqlmodel.CheckoutShippingMethodUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
-}

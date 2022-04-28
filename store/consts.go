@@ -48,8 +48,8 @@ func init() {
 		ProductVariantTableName:                  "SortOrder ASC, Sku ASC",      //
 		ProductVariantTranslationTableName:       "Name ASC",                    //
 
-		CheckoutLineTableName: "CreatAt ASC",                // checkout
-		CheckoutTableName:     "CreatAt ASC, UpdateAt DESC", //
+		CheckoutLineTableName: "CreateAt ASC", // checkout
+		CheckoutTableName:     "CreateAt ASC", //
 
 		ChannelTableName: "Slug ASC", //channel
 

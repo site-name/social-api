@@ -1,6 +1,7 @@
 package gqlmodel
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -81,7 +82,7 @@ func SystemCheckoutToGraphqlCheckout(c *checkout.Checkout) *Checkout {
 		return nil
 	}
 
-	return &Checkout{
+	res := &Checkout{
 		ID:                     c.Token,
 		Created:                util.TimeFromMillis(c.CreateAt),
 		LastChange:             util.TimeFromMillis(c.UpdateAt),
@@ -95,9 +96,20 @@ func SystemCheckoutToGraphqlCheckout(c *checkout.Checkout) *Checkout {
 		VoucherCode:            c.VoucherCode,
 		PrivateMetadata:        MapToGraphqlMetaDataItems(c.PrivateMetadata),
 		Metadata:               MapToGraphqlMetaDataItems(c.Metadata),
-		// AvailablePaymentGateways: ,
-		Email: c.Email,
+		Email:                  c.Email,
+		LanguageCode:           LanguageCodeEnum(strings.ToUpper(c.LanguageCode)),
+		// Quantity:               int(c.Quantity),
 		// IsShippingRequired: ,
-		Quantity: int(c.Quantity),
+		// AvailablePaymentGateways: ,
 	}
+
+	if c.DiscountAmount != nil {
+		fl, _ := c.DiscountAmount.Float64()
+		res.Discount = &Money{
+			Amount:   fl,
+			Currency: c.Currency,
+		}
+	}
+
+	return res
 }

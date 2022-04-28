@@ -2567,6 +2567,26 @@ func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 
 }
 
+func (s *RetryLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.CheckoutStore.CountCheckouts(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
 
 	tries := 0

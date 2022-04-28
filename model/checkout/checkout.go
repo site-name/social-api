@@ -4,9 +4,11 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/channel"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
@@ -46,13 +48,19 @@ type Checkout struct {
 	TrackingCode           *string          `json:"tracking_code"`
 	LanguageCode           string           `json:"language_code"`
 	model.ModelMetadata
+
+	channel *channel.Channel `db:"-"`
 }
 
 // CheckoutFilterOption is used for bulding sql queries
 type CheckoutFilterOption struct {
-	Token     *model.StringFilter
-	UserID    *model.StringFilter
-	ChannelID *model.StringFilter
+	Token     squirrel.Sqlizer
+	UserID    squirrel.Sqlizer
+	ChannelID squirrel.Sqlizer
+	Extra     squirrel.Sqlizer
+
+	SelectRelatedChannel bool
+	Limit                int
 }
 
 func (c *Checkout) IsValid() *model.AppError {
@@ -125,6 +133,14 @@ func (c *Checkout) PopulateNonDbFields() {
 	}
 }
 
+func (s *Checkout) SetChannel(c *channel.Channel) {
+	s.channel = c
+}
+
+func (s *Checkout) GetChannel() *channel.Channel {
+	return s.channel
+}
+
 func (c *Checkout) PreSave() {
 	if c.Token == "" {
 		c.Token = model.NewId()
@@ -162,4 +178,16 @@ func (c *Checkout) commonPre() {
 func (c *Checkout) PreUpdate() {
 	c.UpdateAt = model.GetMillis()
 	c.commonPre()
+}
+
+func (c *Checkout) DeepCopy() *Checkout {
+	if c == nil {
+		return nil
+	}
+
+	res := *c
+	if c.channel != nil {
+		res.channel = c.channel.DeepCopy()
+	}
+	return &res
 }

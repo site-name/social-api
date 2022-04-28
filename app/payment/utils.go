@@ -18,6 +18,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // CreatePaymentInformation Extract order information along with payment details.
@@ -37,11 +38,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 
 	if payMent.CheckoutID != nil {
 		checkoutOfPayment, appErr := a.srv.CheckoutService().CheckoutByOption(&checkout.CheckoutFilterOption{
-			Token: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: *payMent.CheckoutID,
-				},
-			},
+			Token: squirrel.Eq{store.CheckoutTableName + ".Token": *payMent.CheckoutID},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // ignore not found error

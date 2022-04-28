@@ -2435,6 +2435,24 @@ func (s *OpenTracingLayerChannelStore) Save(ch *channel.Channel) (*channel.Chann
 	return result, err
 }
 
+func (s *OpenTracingLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.CountCheckouts")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CheckoutStore.CountCheckouts(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.DeleteCheckoutsByOption")

@@ -2304,6 +2304,22 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
+func (s *TimerLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.CheckoutStore.CountCheckouts(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.CountCheckouts", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
 	start := timemodule.Now()
 

@@ -195,21 +195,36 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 	andCondition := squirrel.And{}
 	// parse option
 	if option.Token != nil {
-		andCondition = append(andCondition, option.Token.ToSquirrel("Token"))
+		andCondition = append(andCondition, option.Token)
 	}
 	if option.UserID != nil {
-		andCondition = append(andCondition, option.UserID.ToSquirrel("UserID"))
+		andCondition = append(andCondition, option.UserID)
 	}
 	if option.ChannelID != nil {
-		andCondition = append(andCondition, option.ChannelID.ToSquirrel("ChannelID"))
+		andCondition = append(andCondition, option.ChannelID)
 	}
 
 	if statementType == slect {
-		return cs.GetQueryBuilder().
-			Select(cs.ModelFields()...).
+		selectFields := cs.ModelFields()
+		if option.SelectRelatedChannel {
+			selectFields = append(selectFields, cs.Channel().ModelFields()...)
+		}
+
+		query := cs.GetQueryBuilder().
+			Select(selectFields...).
 			From(store.CheckoutTableName).
 			Where(andCondition).
 			OrderBy(store.TableOrderingMap[store.CheckoutTableName])
+
+		if option.SelectRelatedChannel {
+			query = query.InnerJoin(store.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
+		}
+
+		if option.Limit > 0 {
+			query = query.Limit(uint64(option.Limit))
+		}
+
+		return query
 	}
 
 	return cs.GetQueryBuilder().Delete(store.CheckoutTableName).Where(andCondition)
@@ -217,34 +232,72 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 
 // GetByOption finds and returns 1 checkout based on given option
 func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
-	queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	option.Limit = 0 // no limit
+	// queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	// }
+
+	var (
+		res      checkout.Checkout
+		aChannel channel.Channel
+	)
+	scanFields := cs.ScanFields(res)
+	if option.SelectRelatedChannel {
+		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
 	}
 
-	var res *checkout.Checkout
-	err = cs.GetReplica().SelectOne(&res, queryString, args...)
+	err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).
+		RunWith(cs.GetReplica()).
+		QueryRow().
+		Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CheckoutTableName, "option")
 		}
-		return nil, errors.Wrap(err, "failed to find checkout woth given option")
+		return nil, errors.Wrap(err, "failed to scan a checkout")
 	}
 
-	return res, nil
+	if option.SelectRelatedChannel {
+		res.SetChannel(&aChannel)
+	}
+
+	return &res, nil
 }
 
 // FilterByOption finds and returns a list of checkout based on given option
 func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
-	queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
+	rows, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).
+		RunWith(cs.GetReplica()).
+		Query()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
 
-	var res []*checkout.Checkout
-	_, err = cs.GetReplica().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find checkouts by given option")
+	var (
+		res        []*checkout.Checkout
+		checkOut   checkout.Checkout
+		aChannel   channel.Channel
+		scanFields = cs.ScanFields(checkOut)
+	)
+	if option.SelectRelatedChannel {
+		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
+	}
+
+	for rows.Next() {
+		if err := rows.Scan(scanFields...); err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of checkout")
+		}
+
+		if option.SelectRelatedChannel {
+			checkOut.SetChannel(&aChannel)
+		}
+
+		res = append(res, checkOut.DeepCopy())
+	}
+
+	if err := rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows")
 	}
 
 	return res, nil
@@ -475,4 +528,22 @@ func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transactio
 	}
 
 	return nil
+}
+
+func (cs *SqlCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+	options.Limit = 0 // no limit
+
+	query := cs.commonFilterQueryBuilder(options, slect).(squirrel.SelectBuilder)
+	queryString, args, err := cs.GetQueryBuilder().Select("COUNT(*)").FromSelect(query, "count").ToSql()
+
+	if err != nil {
+		return 0, errors.Wrap(err, "CountCheckouts_ToSql")
+	}
+
+	count, err := cs.GetReplica().SelectInt(queryString, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of checkouts")
+	}
+
+	return count, err
 }

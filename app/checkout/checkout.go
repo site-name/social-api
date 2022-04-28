@@ -39,7 +39,11 @@ func init() {
 func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
 	chekout, err := a.srv.Store.Checkout().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckoutbyOption", "app.checkout.error_finding_checkout_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("CheckoutbyOption", "app.checkout.error_finding_checkout_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return chekout, nil
@@ -48,9 +52,21 @@ func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption
 // CheckoutsByOption returns a list of checkouts, filtered by given option
 func (a *ServiceCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError) {
 	checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
+	var (
+		statusCode int
+		errMsg     string
+	)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckoutsByOption", "app.checkout_error_finding_checkouts_by_option.app_error", err)
+		statusCode = http.StatusInternalServerError
+		errMsg = err.Error()
+	} else if len(checkouts) == 0 {
+		statusCode = http.StatusNotFound
 	}
+
+	if statusCode != 0 {
+		return nil, model.NewAppError("CheckoutsByOption", "app.checkout.error_finding_checkouts.app_error", nil, errMsg, statusCode)
+	}
+
 	return checkouts, nil
 }
 

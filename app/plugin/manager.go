@@ -38,13 +38,13 @@ type PluginManager struct {
 
 // NewPluginManager returns a new plugin manager
 func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManagerInterface, *model.AppError) {
-	m := &PluginManager{
+	manager := &PluginManager{
 		Srv:    s.srv,
 		ShopID: shopID,
 	}
 
 	// find all channels belong to given shop
-	channels, appErr := m.Srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
+	channels, appErr := manager.Srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
 		ShopID: squirrel.Eq{store.ChannelTableName + ".ShopID": shopID},
 	})
 	if appErr != nil {
@@ -52,7 +52,7 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 	}
 
 	// finds a list of plugin configs belong found channels
-	pluginConfigsOfChannels, appErr := m.Srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
+	pluginConfigsOfChannels, appErr := manager.Srv.PluginService().FilterPluginConfigurations(&plugins.PluginConfigurationFilterOptions{
 		ChannelID: squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
 	})
 	if appErr != nil {
@@ -79,16 +79,16 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 		}
 
 		plugin := pluginInitObj.NewPluginFunc(&NewPluginConfig{
-			Manager:       m,
+			Manager:       manager,
 			Configuration: pluginConfig,
 			Active:        active,
 			ChannelID:     channelID,
 		})
 
-		m.AllPlugins = append(m.AllPlugins, plugin)
+		manager.AllPlugins = append(manager.AllPlugins, plugin)
 	}
 
-	return m, nil
+	return manager, nil
 }
 
 func (m *PluginManager) GetShopID() string {
@@ -111,22 +111,22 @@ func (m *PluginManager) ChangeUserAddress(address account.Address, addressType s
 	var (
 		appErr        *model.AppError
 		previousValue account.Address = address
-		address_      *account.Address
+		anAddress     *account.Address
 	)
 
 	for _, plg := range m.getPlugins("", true) {
-		address_, appErr = plg.ChangeUserAddress(address, addressType, user, previousValue)
+		anAddress, appErr = plg.ChangeUserAddress(address, addressType, user, previousValue)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusNotImplemented {
-				address_ = &previousValue
+				anAddress = &previousValue
 				continue
 			}
 			return nil, appErr
 		}
-		previousValue = *address_
+		previousValue = *anAddress
 	}
 
-	return address_, nil
+	return anAddress, nil
 }
 
 func (m *PluginManager) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {

@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
@@ -961,11 +962,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 		// if not appError nor insufficient stock error, remove checkout after order is successfully created:
 		appErr = s.DeleteCheckoutsByOption(nil, &checkout.CheckoutFilterOption{
-			Token: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: checkOut.Token,
-				},
-			},
+			Token: squirrel.Eq{store.CheckoutTableName + ".Token": checkOut.Token},
 		})
 		if appErr != nil {
 			return nil, false, nil, nil, appErr
