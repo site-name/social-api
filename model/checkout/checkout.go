@@ -75,6 +75,9 @@ func (c *Checkout) IsValid() *model.AppError {
 	if !model.IsValidId(c.ShopID) {
 		return outer("shop_id", &c.Token)
 	}
+	if !model.IsValidId(c.ChannelID) {
+		return outer("channel_id", &c.Token)
+	}
 	if c.BillingAddressID != nil && !model.IsValidId(*c.BillingAddressID) {
 		return outer("billing_address", &c.Token)
 	}

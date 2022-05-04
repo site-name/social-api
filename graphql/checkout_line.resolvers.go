@@ -8,8 +8,13 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 )
+
+func (r *checkoutLineResolver) Variant(ctx context.Context, obj *gqlmodel.CheckoutLine) (*gqlmodel.ProductVariant, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *mutationResolver) CheckoutLineDelete(ctx context.Context, checkoutID *string, lineID *string, token *uuid.UUID) (*gqlmodel.CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -26,3 +31,8 @@ func (r *mutationResolver) CheckoutLinesUpdate(ctx context.Context, checkoutID *
 func (r *queryResolver) CheckoutLines(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.CheckoutLineCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// CheckoutLine returns generated.CheckoutLineResolver implementation.
+func (r *Resolver) CheckoutLine() generated.CheckoutLineResolver { return &checkoutLineResolver{r} }
+
+type checkoutLineResolver struct{ *Resolver }

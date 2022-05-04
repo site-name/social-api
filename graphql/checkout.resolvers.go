@@ -52,7 +52,7 @@ func (r *checkoutResolver) Lines(ctx context.Context, obj *gqlmodel.Checkout) ([
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID *string, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutAddPromoCode, error) {
+func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutAddPromoCode, error) {
 	// if (checkoutID == nil && token == nil) || (checkoutID != nil && token != nil) {
 	// 	return nil, model.NewAppError("CheckoutAddPromoCode", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutID, token"}, "", http.StatusBadRequest)
 	// }
@@ -73,11 +73,11 @@ func (r *mutationResolver) CheckoutAddPromoCode(ctx context.Context, checkoutID 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutBillingAddressUpdate(ctx context.Context, billingAddress gqlmodel.AddressInput, checkoutID string, token *uuid.UUID) (*gqlmodel.CheckoutBillingAddressUpdate, error) {
+func (r *mutationResolver) CheckoutBillingAddressUpdate(ctx context.Context, billingAddress gqlmodel.AddressInput, token *uuid.UUID) (*gqlmodel.CheckoutBillingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutComplete(ctx context.Context, checkoutID *string, paymentData model.StringInterface, redirectURL *string, storeSource *bool, token *uuid.UUID) (*gqlmodel.CheckoutComplete, error) {
+func (r *mutationResolver) CheckoutComplete(ctx context.Context, paymentData model.StringInterface, redirectURL *string, storeSource *bool, token *uuid.UUID) (*gqlmodel.CheckoutComplete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -85,27 +85,27 @@ func (r *mutationResolver) CheckoutCreate(ctx context.Context, input gqlmodel.Ch
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, checkoutID *string, customerID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerAttach, error) {
+func (r *mutationResolver) CheckoutCustomerAttach(ctx context.Context, customerID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerAttach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutCustomerDetach(ctx context.Context, checkoutID *string, token *uuid.UUID) (*gqlmodel.CheckoutCustomerDetach, error) {
+func (r *mutationResolver) CheckoutCustomerDetach(ctx context.Context, token *uuid.UUID) (*gqlmodel.CheckoutCustomerDetach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutEmailUpdate(ctx context.Context, checkoutID *string, email string, token *uuid.UUID) (*gqlmodel.CheckoutEmailUpdate, error) {
+func (r *mutationResolver) CheckoutEmailUpdate(ctx context.Context, email string, token *uuid.UUID) (*gqlmodel.CheckoutEmailUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutRemovePromoCode(ctx context.Context, checkoutID *string, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutRemovePromoCode, error) {
+func (r *mutationResolver) CheckoutRemovePromoCode(ctx context.Context, promoCode string, token *uuid.UUID) (*gqlmodel.CheckoutRemovePromoCode, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutPaymentCreate(ctx context.Context, checkoutID *string, input gqlmodel.PaymentInput, token *uuid.UUID) (*gqlmodel.CheckoutPaymentCreate, error) {
+func (r *mutationResolver) CheckoutPaymentCreate(ctx context.Context, input gqlmodel.PaymentInput, token *uuid.UUID) (*gqlmodel.CheckoutPaymentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutShippingAddressUpdate(ctx context.Context, checkoutID *string, shippingAddress gqlmodel.AddressInput, token *uuid.UUID) (*gqlmodel.CheckoutShippingAddressUpdate, error) {
+func (r *mutationResolver) CheckoutShippingAddressUpdate(ctx context.Context, shippingAddress gqlmodel.AddressInput, token *uuid.UUID) (*gqlmodel.CheckoutShippingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -113,8 +113,34 @@ func (r *mutationResolver) CheckoutDeliveryMethodUpdate(ctx context.Context, del
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CheckoutLanguageCodeUpdate(ctx context.Context, checkoutID *string, languageCode gqlmodel.LanguageCodeEnum, token *uuid.UUID) (*gqlmodel.CheckoutLanguageCodeUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) CheckoutLanguageCodeUpdate(ctx context.Context, languageCode gqlmodel.LanguageCodeEnum, token *uuid.UUID) (*gqlmodel.CheckoutLanguageCodeUpdate, error) {
+	_, appErr := CheckUserAuthenticated("CheckoutLanguageCodeUpdate", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if token == nil {
+		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "", http.StatusBadRequest)
+	}
+
+	// get checkout
+	checkOut, appErr := r.Srv().CheckoutService().CheckoutByOption(&checkout.CheckoutFilterOption{
+		Token: squirrel.Eq{store.CheckoutTableName + ".Token": token.String()},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	checkOut.LanguageCode = string(languageCode)
+	_, appErr = r.Srv().CheckoutService().UpsertCheckout(checkOut)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// TODO: determine if we need to call checkout updated plugin methods here
+	return &gqlmodel.CheckoutLanguageCodeUpdate{
+		Checkout: gqlmodel.SystemCheckoutToGraphqlCheckout(checkOut),
+	}, nil
 }
 
 func (r *queryResolver) Checkout(ctx context.Context, token *uuid.UUID) (*gqlmodel.Checkout, error) {

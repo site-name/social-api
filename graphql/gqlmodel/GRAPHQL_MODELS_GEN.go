@@ -828,15 +828,7 @@ type CheckoutLanguageCodeUpdate struct {
 	Errors   []*CheckoutError `json:"errors"`
 }
 
-type CheckoutLine struct {
-	ID               string          `json:"id"`
-	Variant          *ProductVariant `json:"variant"`
-	Quantity         int             `json:"quantity"`
-	TotalPrice       *TaxedMoney     `json:"totalPrice"`
-	RequiresShipping *bool           `json:"requiresShipping"`
-}
 
-func (CheckoutLine) IsNode() {}
 
 type CheckoutLineCountableConnection struct {
 	PageInfo   *PageInfo                    `json:"pageInfo"`

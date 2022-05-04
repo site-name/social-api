@@ -98,9 +98,6 @@ func SystemCheckoutToGraphqlCheckout(c *checkout.Checkout) *Checkout {
 		Metadata:               MapToGraphqlMetaDataItems(c.Metadata),
 		Email:                  c.Email,
 		LanguageCode:           LanguageCodeEnum(strings.ToUpper(c.LanguageCode)),
-		// Quantity:               int(c.Quantity),
-		// IsShippingRequired: ,
-		// AvailablePaymentGateways: ,
 	}
 
 	if c.DiscountAmount != nil {
@@ -112,4 +109,39 @@ func SystemCheckoutToGraphqlCheckout(c *checkout.Checkout) *Checkout {
 	}
 
 	return res
+}
+
+// -------------------
+// ORIGINAL implementation
+//
+// type CheckoutLine struct {
+// 	ID               string          `json:"id"`
+// 	Variant          *ProductVariant `json:"variant"`
+// 	Quantity         int             `json:"quantity"`
+// 	TotalPrice       *TaxedMoney     `json:"totalPrice"`
+// 	RequiresShipping *bool           `json:"requiresShipping"`
+// }
+
+// func (CheckoutLine) IsNode() {}
+
+type CheckoutLine struct {
+	ID               string      `json:"id"`
+	VariantID        *string     `json:"variant"`
+	Quantity         int         `json:"quantity"`
+	TotalPrice       *TaxedMoney `json:"totalPrice"`
+	RequiresShipping *bool       `json:"requiresShipping"`
+}
+
+func (CheckoutLine) IsNode() {}
+
+func SystemCheckoutLineToGraphqlCheckoutLine(c *checkout.CheckoutLine) *CheckoutLine {
+	if c == nil {
+		return nil
+	}
+
+	return &CheckoutLine{
+		ID:        c.Id,
+		VariantID: &c.VariantID,
+		Quantity:  c.Quantity,
+	}
 }
