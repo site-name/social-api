@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -56,12 +57,12 @@ type GiftCard struct {
 
 // GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
-	ExpiryDate    *model.TimeFilter
-	StartDate     *model.TimeFilter
-	Code          *model.StringFilter
-	Currency      *model.StringFilter
-	CreatedByID   *model.StringFilter
-	CheckoutToken *model.StringFilter // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'CheckoutID' ...)
+	ExpiryDate    squirrel.Sqlizer
+	StartDate     squirrel.Sqlizer
+	Code          squirrel.Sqlizer
+	Currency      squirrel.Sqlizer
+	CreatedByID   squirrel.Sqlizer
+	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'CheckoutID' ...)
 	IsActive      *bool
 	Distinct      bool // if true, SELECT DISTINCT
 

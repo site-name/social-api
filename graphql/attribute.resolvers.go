@@ -282,12 +282,13 @@ func (r *attributeValueResolver) InputType(ctx context.Context, obj *gqlmodel.At
 	}
 
 	// extract data loaders
-	thunk := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).AttributeLoader.
+	thunk := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).
+		AttributeLoader.
 		Load(ctx, dataloader.StringKey(obj.AttributeID))
 
 	result, err := thunk()
 	if err != nil {
-		return nil, err
+		return nil, model.NewAppError("attributeValueResolver.InputType", DataloaderFailed, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	attr := result.(*attribute.Attribute)

@@ -26,14 +26,19 @@ var (
 // DataLoaders contains all data loaders for the project
 type DataLoaders struct {
 	AttributeLoader *dataloader.Loader
+	AddressLoader   *dataloader.Loader
 }
 
 // NewLoaders returns new pointer to a DataLoaders
 func NewLoaders(srv *app.Server) *DataLoaders {
 	once.Do(func() {
-		attributeReader := &attributeReader{srv}
+		var (
+			attributeReader = &attributeReader{srv}
+			addressReader   = &addressReader{srv}
+		)
 
 		loaders = &DataLoaders{
+			AddressLoader:   dataloader.NewBatchedLoader(addressReader.getAddresses),
 			AttributeLoader: dataloader.NewBatchedLoader(attributeReader.getAttributes),
 		}
 	})

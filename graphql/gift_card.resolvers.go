@@ -7,8 +7,29 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 )
+
+func (r *giftCardResolver) CreatedBy(ctx context.Context, obj *gqlmodel.GiftCard) (*gqlmodel.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *giftCardResolver) UsedBy(ctx context.Context, obj *gqlmodel.GiftCard) (*gqlmodel.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *giftCardResolver) App(ctx context.Context, obj *gqlmodel.GiftCard) (*gqlmodel.App, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *giftCardResolver) Product(ctx context.Context, obj *gqlmodel.GiftCard) (*gqlmodel.Product, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *giftCardResolver) Events(ctx context.Context, obj *gqlmodel.GiftCard) ([]*gqlmodel.GiftCardEvent, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *mutationResolver) GiftCardActivate(ctx context.Context, id string) (*gqlmodel.GiftCardActivate, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -65,3 +86,8 @@ func (r *queryResolver) GiftCards(ctx context.Context, sortBy *gqlmodel.GiftCard
 func (r *queryResolver) GiftCardCurrencies(ctx context.Context) ([]string, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// GiftCard returns generated.GiftCardResolver implementation.
+func (r *Resolver) GiftCard() generated.GiftCardResolver { return &giftCardResolver{r} }
+
+type giftCardResolver struct{ *Resolver }

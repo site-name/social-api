@@ -135,25 +135,25 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option
 		query = query.Distinct()
 	}
 	if option.CreatedByID != nil {
-		query = query.Where(option.CreatedByID.ToSquirrel("CreatedByID"))
+		query = query.Where(option.CreatedByID)
 	}
 	if option.Code != nil {
-		query = query.Where(option.Code.ToSquirrel("Code"))
+		query = query.Where(option.Code)
 	}
 	if option.Currency != nil {
-		query = query.Where(option.Currency.ToSquirrel("Currency"))
+		query = query.Where(option.Currency)
 	}
 	if option.ExpiryDate != nil {
-		query = query.Where(option.ExpiryDate.ToSquirrel("ExpiryDate"))
+		query = query.Where(option.ExpiryDate)
 	}
 	if option.StartDate != nil {
-		query = query.Where(option.StartDate.ToSquirrel("StartDate"))
+		query = query.Where(option.StartDate)
 	}
 	if option.CheckoutToken != nil {
 		subSelect := gs.GetQueryBuilder().
 			Select("GiftcardID").
 			From(store.GiftcardCheckoutTableName).
-			Where(option.CheckoutToken.ToSquirrel("GiftcardCheckouts.CheckoutID"))
+			Where(option.CheckoutToken)
 
 		query = query.Where(squirrel.Expr("Id IN ?", subSelect))
 	}

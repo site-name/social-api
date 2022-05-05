@@ -11,17 +11,39 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/graph-gophers/dataloader"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/graphql/dataloaders"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/checkout"
+	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 func (r *checkoutResolver) User(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	session, appErr := CheckUserAuthenticated("checkoutResolve.User", ctx)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if !r.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageUsers) {
+		return nil, r.Srv().AccountService().MakePermissionError(session, model.PermissionManageUsers)
+	}
+
+	if obj.UserID == nil || !model.IsValidId(*obj.UserID) {
+		return nil, nil
+	}
+
+	user, appErr := r.Srv().AccountService().UserById(ctx, *obj.UserID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return gqlmodel.SystemUserToGraphqlUser(user), nil
 }
 
 func (r *checkoutResolver) Channel(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Channel, error) {
@@ -29,15 +51,53 @@ func (r *checkoutResolver) Channel(ctx context.Context, obj *gqlmodel.Checkout) 
 }
 
 func (r *checkoutResolver) BillingAddress(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.BillingAddressID == nil || !model.IsValidId(*obj.BillingAddressID) {
+		return nil, nil
+	}
+
+	// extract data loaders
+	thunk := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).
+		AddressLoader.
+		Load(ctx, dataloader.StringKey(*obj.BillingAddressID))
+
+	result, err := thunk()
+	if err != nil {
+		return nil, model.NewAppError("checkoutResolver.BillingAddress", DataloaderFailed, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return gqlmodel.SystemAddressToGraphqlAddress(result.(*account.Address)), nil
 }
 
 func (r *checkoutResolver) ShippingAddress(ctx context.Context, obj *gqlmodel.Checkout) (*gqlmodel.Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	if obj.ShippingAddressID == nil || !model.IsValidId(*obj.ShippingAddressID) {
+		return nil, nil
+	}
+
+	// extract data loaders
+	thunk := ctx.Value(dataloaders.DataloaderContextKey).(*dataloaders.DataLoaders).
+		AddressLoader.
+		Load(ctx, dataloader.StringKey(*obj.ShippingAddressID))
+
+	result, err := thunk()
+	if err != nil {
+		return nil, model.NewAppError("checkoutResolver.ShippingAddress", DataloaderFailed, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return gqlmodel.SystemAddressToGraphqlAddress(result.(*account.Address)), nil
 }
 
 func (r *checkoutResolver) GiftCards(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.GiftCard, error) {
-	panic(fmt.Errorf("not implemented"))
+	giftcards, appErr := r.Srv().GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
+		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": obj.Token},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusInternalServerError {
+			return nil, appErr
+		}
+		return []*gqlmodel.GiftCard{}, nil
+	}
+
+	return gqlmodel.SystemGiftcardsToGraphqlGiftcards(giftcards), nil
 }
 
 func (r *checkoutResolver) AvailableShippingMethods(ctx context.Context, obj *gqlmodel.Checkout) ([]*gqlmodel.ShippingMethod, error) {

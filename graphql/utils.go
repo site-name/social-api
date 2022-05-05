@@ -16,6 +16,7 @@ const (
 	UserUnauthenticatedId    = "graphql.account.user_unauthenticated.app_error"
 	PermissionDeniedId       = "app.account.permission_denied.app_error"
 	GraphqlArgumentInvalidID = "util.invalid_graphql_arguments.app_error"
+	DataloaderFailed         = "graphql.dataloader_failed_to_load.app_error"
 )
 
 // CheckUserAuthenticated is an utility function that check if session contained inside context is authenticated:

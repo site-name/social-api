@@ -15,10 +15,8 @@ type attributeReader struct {
 }
 
 func (a *attributeReader) getAttributes(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	attributeIDs := dataloaderKeysToStringSlice(keys)
-
 	attributes, appErr := a.srv.AttributeService().AttributesByOption(&attribute.AttributeFilterOption{
-		Id: squirrel.Eq{store.AttributeTableName + ".Id": attributeIDs},
+		Id: squirrel.Eq{store.AttributeTableName + ".Id": keys.Keys()},
 	})
 	if appErr != nil {
 		return []*dataloader.Result{

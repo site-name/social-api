@@ -828,8 +828,6 @@ type CheckoutLanguageCodeUpdate struct {
 	Errors   []*CheckoutError `json:"errors"`
 }
 
-
-
 type CheckoutLineCountableConnection struct {
 	PageInfo   *PageInfo                    `json:"pageInfo"`
 	Edges      []*CheckoutLineCountableEdge `json:"edges"`
@@ -1477,32 +1475,6 @@ type GatewayConfigLine struct {
 	Field string  `json:"field"`
 	Value *string `json:"value"`
 }
-
-type GiftCard struct {
-	Code            string           `json:"code"`
-	IsActive        bool             `json:"isActive"`
-	ExpiryDate      *time.Time       `json:"expiryDate"`
-	Tag             *string          `json:"tag"`
-	Created         time.Time        `json:"created"`
-	LastUsedOn      *time.Time       `json:"lastUsedOn"`
-	InitialBalance  *Money           `json:"initialBalance"`
-	CurrentBalance  *Money           `json:"currentBalance"`
-	ID              string           `json:"id"`
-	PrivateMetadata []*MetadataItem  `json:"privateMetadata"`
-	Metadata        []*MetadataItem  `json:"metadata"`
-	DisplayCode     string           `json:"displayCode"`
-	CreatedBy       *User            `json:"createdBy"`
-	UsedBy          *User            `json:"usedBy"`
-	CreatedByEmail  *string          `json:"createdByEmail"`
-	UsedByEmail     *string          `json:"usedByEmail"`
-	App             *App             `json:"app"`
-	Product         *Product         `json:"product"`
-	Events          []*GiftCardEvent `json:"events"`
-	BoughtInChannel *string          `json:"boughtInChannel"`
-}
-
-func (GiftCard) IsNode()               {}
-func (GiftCard) IsObjectWithMetadata() {}
 
 type GiftCardActivate struct {
 	GiftCard *GiftCard        `json:"giftCard"`
