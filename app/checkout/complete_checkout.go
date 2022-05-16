@@ -168,12 +168,8 @@ func (s *ServiceCheckout) validateGiftcards(checkOut checkout.Checkout) (*produc
 	)
 
 	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkOut.Token,
-			},
-		},
-		Distinct: true,
+		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
+		Distinct:      true,
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -827,7 +823,7 @@ func (s *ServiceCheckout) processPayment(payMent *payment.Payment, customerID *s
 	}
 
 	// re fetching payment from db since the payment may was modified in two calls above
-	payMent, appErr = s.srv.PaymentService().PaymentByID(nil, paymentID, false)
+	_, appErr = s.srv.PaymentService().PaymentByID(nil, paymentID, false)
 	if appErr != nil {
 		return nil, nil, appErr
 	}

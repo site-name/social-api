@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
@@ -20,6 +21,7 @@ import (
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -177,17 +179,10 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *mo
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *checkout.Checkout) (*goprices.Money, *model.AppError) {
 	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkOut.Token,
-			},
-		},
-		ExpiryDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				NULL:              model.NewBool(true),
-				GtE:               model.NewTime(time.Now()),
-				CompareStartOfDay: true,
-			},
+		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
+		ExpiryDate: squirrel.Or{
+			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
+			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
 		},
 		IsActive: model.NewBool(true),
 	})

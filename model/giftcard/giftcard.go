@@ -62,7 +62,7 @@ type GiftCardFilterOption struct {
 	Code          squirrel.Sqlizer
 	Currency      squirrel.Sqlizer
 	CreatedByID   squirrel.Sqlizer
-	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'CheckoutID' ...)
+	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
 	IsActive      *bool
 	Distinct      bool // if true, SELECT DISTINCT
 
