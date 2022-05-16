@@ -983,12 +983,8 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checko
 	)
 
 	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(transaction, &giftcard.GiftCardFilterOption{
-		SelectForUpdate: true, // SELECT ... FOR UPDATE
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.Checkout.Token,
-			},
-		},
+		SelectForUpdate: true,
+		CheckoutToken:   squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkoutInfo.Checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

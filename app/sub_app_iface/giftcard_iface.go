@@ -19,7 +19,7 @@ import (
 // GiftcardService contains methods for working with giftcards
 type GiftcardService interface {
 	// ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-	ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError)
+	ActiveGiftcards(date time.Time) ([]*giftcard.GiftCard, *model.AppError)
 	// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
 	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)
 	// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them

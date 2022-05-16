@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -39,22 +41,14 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*giftcard.GiftCard, *model.App
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError) {
 	return a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutToken,
-			},
-		},
+		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkoutToken},
 	})
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		Code: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: code,
-			},
-		},
+		Code: squirrel.Eq{store.GiftcardTableName + ".Code": code},
 	})
 
 	if appErr != nil {
@@ -110,14 +104,11 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorp.Transaction, giftcar
 }
 
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-func (s *ServiceGiftcard) ActiveGiftcards(date *time.Time) ([]*giftcard.GiftCard, *model.AppError) {
+func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*giftcard.GiftCard, *model.AppError) {
 	return s.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		ExpiryDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				GtE:               date,
-				NULL:              model.NewBool(true),
-				CompareStartOfDay: true,
-			},
+		ExpiryDate: squirrel.Or{
+			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
+			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
 		},
 		IsActive: model.NewBool(true),
 	})

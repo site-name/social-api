@@ -16,35 +16,22 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
 func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError) {
-	now := model.NewTime(time.Now())
+	now := time.Now().UTC()
 
 	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		Code: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: promoCode,
-			},
+		Code:     squirrel.Eq{store.GiftcardTableName + ".Code": promoCode},
+		Currency: squirrel.Eq{store.GiftcardTableName + ".Currency": strings.ToUpper(currency)},
+		ExpiryDate: squirrel.Or{
+			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": now},
+			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 		},
-		Currency: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: strings.ToUpper(currency),
-			},
-		},
-		ExpiryDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				NULL: model.NewBool(true),
-				GtE:  now,
-			},
-		},
-		StartDate: &model.TimeFilter{
-			TimeOption: &model.TimeOption{
-				LtE: now,
-			},
-		},
-		IsActive: model.NewBool(true),
+		StartDate: squirrel.LtOrEq{store.GiftcardTableName + ".StartDate": now},
+		IsActive:  model.NewBool(true),
 	})
 
 	if appErr != nil {
@@ -66,11 +53,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *checkout.Checkout, em
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError {
 	giftcards, appErr := a.GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
-		Code: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: giftcardCode,
-			},
-		},
+		Code: squirrel.Eq{store.GiftcardTableName + ".Code": giftcardCode},
 	})
 
 	if appErr != nil {
